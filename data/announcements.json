@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ann-001",
+    "title": "2024학년도 1학기 수강신청 안내",
+    "content": "2024학년도 1학기 수강신청이 시작됩니다. 학년별로 수강신청 기간이 다르니 참고해주시기 바랍니다.",
+    "category": "academic",
+    "date": "2024-01-15",
+    "author": "교무처",
+    "views": 2847,
+    "isImportant": true
+  },
+  {
+    "id": "ann-002",
+    "title": "2024년 봄 학위수여식 안내",
+    "content": "2024년 2월 17일(토) 10:00에 학위수여식이 진행될 예정입니다.",
+    "category": "academic",
+    "date": "2024-01-10",
+    "author": "학생지원팀",
+    "views": 1523,
+    "isImportant": true
+  },
+  {
+    "id": "ann-003",
+    "title": "학생식당 운영시간 변경 안내",
+    "content": "1월 15일부터 학생식당 운영시간이 변경됩니다. (11:00-13:30 / 17:00-19:00)",
+    "category": "campus",
+    "date": "2024-01-08",
+    "author": "식당관리팀",
+    "views": 1204,
+    "isImportant": true
+  },
+  {
+    "id": "ann-004",
+    "title": "도서관 겨울방학 휴실 안내",
+    "content": "1월 1일부터 1월 8일까지 도서관이 휴관합니다.",
+    "category": "campus",
+    "date": "2023-12-28",
+    "author": "중앙도서관",
+    "views": 856,
+    "isImportant": false
+  },
+  {
+    "id": "ann-005",
+    "title": "제34대 학생회 임원진 선출 안내",
+    "content": "제34대 학생회 임원진 선출이 1월 20일에 진행됩니다. 많은 관심 바랍니다.",
+    "category": "activity",
+    "date": "2024-01-05",
+    "author": "학생회",
+    "views": 743,
+    "isImportant": false
+  },
+  {
+    "id": "ann-006",
+    "title": "2024학년도 입학정원 변경 안내",
+    "content": "2024학년도 입학정원이 변경되었습니다. 모집요강을 참고해주세요.",
+    "category": "admin",
+    "date": "2023-12-20",
+    "author": "입시관리팀",
+    "views": 1456,
+    "isImportant": false
+  },
+  {
+    "id": "ann-007",
+    "title": "캠퍼스 주차장 공사 안내",
+    "content": "1월 15일부터 3월 31일까지 남측 주차장 공사가 진행됩니다.",
+    "category": "campus",
+    "date": "2024-01-02",
+    "author": "시설과",
+    "views": 2134,
+    "isImportant": true
+  },
+  {
+    "id": "ann-008",
+    "title": "2024년 신입생 오리엔테이션 일정",
+    "content": "신입생 오리엔테이션이 2월 12일~14일에 진행됩니다.",
+    "category": "academic",
+    "date": "2023-12-18",
+    "author": "학생지원팀",
+    "views": 1876,
+    "isImportant": false
+  }
+]

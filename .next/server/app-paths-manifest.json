@@ -1,0 +1,7 @@
+{
+  "/page": "app/page.js",
+  "/campus/health-center/page": "app/campus/health-center/page.js",
+  "/more/page": "app/more/page.js",
+  "/terms/page": "app/terms/page.js",
+  "/privacy/page": "app/privacy/page.js"
+}

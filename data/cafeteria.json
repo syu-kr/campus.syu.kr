@@ -1,0 +1,100 @@
+[
+  {
+    "id": "menu-20240115-mon",
+    "date": "2024-01-15",
+    "dayOfWeek": "월",
+    "location": "학생식당",
+    "breakfast": [
+      { "name": "쌀밥", "calories": 300 },
+      { "name": "된장국", "calories": 80 },
+      { "name": "계란말이", "calories": 150, "allergens": ["계란"] },
+      { "name": "김", "calories": 10 },
+      { "name": "깍두기", "calories": 30 }
+    ],
+    "lunch": [
+      { "name": "쌀밥", "calories": 300 },
+      {
+        "name": "소불고기덮밥",
+        "calories": 580,
+        "allergens": ["소고기", "대두"]
+      },
+      { "name": "미소국", "calories": 70 },
+      { "name": "계란범벅", "calories": 120, "allergens": ["계란"] },
+      { "name": "피클", "calories": 20 },
+      { "name": "김", "calories": 10 }
+    ],
+    "dinner": [
+      { "name": "쌀밥", "calories": 300 },
+      {
+        "name": "제육볶음덮밥",
+        "calories": 560,
+        "allergens": ["돼지고기", "대두"]
+      },
+      { "name": "계란국", "calories": 80, "allergens": ["계란"] },
+      { "name": "오이무침", "calories": 30 },
+      { "name": "김", "calories": 10 }
+    ]
+  },
+  {
+    "id": "menu-20240116-tue",
+    "date": "2024-01-16",
+    "dayOfWeek": "화",
+    "location": "학생식당",
+    "breakfast": [
+      { "name": "쌀밥", "calories": 300 },
+      { "name": "미역국", "calories": 60 },
+      { "name": "스크램블 계란", "calories": 140, "allergens": ["계란"] },
+      { "name": "두부구이", "calories": 100, "allergens": ["대두"] },
+      { "name": "김", "calories": 10 }
+    ],
+    "lunch": [
+      { "name": "쌀밥", "calories": 300 },
+      {
+        "name": "돈까스",
+        "calories": 520,
+        "allergens": ["돼지고기", "계란", "밀"]
+      },
+      { "name": "한우국", "calories": 90 },
+      { "name": "당근무침", "calories": 40 },
+      { "name": "김", "calories": 10 }
+    ],
+    "dinner": [
+      { "name": "보리밥", "calories": 280 },
+      {
+        "name": "생선까스",
+        "calories": 480,
+        "allergens": ["생선", "계란", "밀"]
+      },
+      { "name": "된장국", "calories": 80 },
+      { "name": "색무침", "calories": 35 },
+      { "name": "김", "calories": 10 }
+    ]
+  },
+  {
+    "id": "menu-20240117-wed",
+    "date": "2024-01-17",
+    "dayOfWeek": "수",
+    "location": "학생식당",
+    "breakfast": [
+      { "name": "쌀밥", "calories": 300 },
+      { "name": "계란국", "calories": 85, "allergens": ["계란"] },
+      { "name": "소시지구이", "calories": 180, "allergens": ["돼지고기"] },
+      { "name": "나물무침", "calories": 50 },
+      { "name": "김", "calories": 10 }
+    ],
+    "lunch": [
+      { "name": "쌀밥", "calories": 300 },
+      { "name": "닭봉조림", "calories": 420, "allergens": ["닭고기"] },
+      { "name": "청국장", "calories": 95, "allergens": ["대두"] },
+      { "name": "열무김치", "calories": 25 },
+      { "name": "김", "calories": 10 }
+    ],
+    "dinner": [
+      { "name": "쌀밥", "calories": 300 },
+      { "name": "우육스튜", "calories": 480, "allergens": ["소고기"] },
+      { "name": "미역국", "calories": 60 },
+      { "name": "시금치나물", "calories": 45 },
+      { "name": "김", "calories": 10 }
+    ]
+  }
+]

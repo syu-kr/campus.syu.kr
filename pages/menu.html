@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="삼육대학교 학식 메뉴">
+    <meta name="theme-color" content="#0066FF">
+
+    <title>학식 - 삼육대 캠퍼스</title>
+
+    <link rel="manifest" href="../manifest.json">
+    <link rel="icon" type="image/png" href="../assets/icons/favicon-32x32.png">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-container">
+            <a href="../index.html" class="logo">
+                <h1>삼육대</h1>
+                <p>캠퍼스</p>
+            </a>
+            <nav class="nav" id="mobileNav">
+                <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="../index.html" class="nav-item" data-page="home">
+            <span class="icon">🏠</span>
+            <span class="label">홈</span>
+        </a>
+        <a href="notices.html" class="nav-item" data-page="notices">
+            <span class="icon">📢</span>
+            <span class="label">공지</span>
+        </a>
+        <a href="menu.html" class="nav-item active" data-page="menu">
+            <span class="icon">🍽️</span>
+            <span class="label">학식</span>
+        </a>
+        <a href="schedule.html" class="nav-item" data-page="schedule">
+            <span class="icon">📅</span>
+            <span class="label">학사</span>
+        </a>
+        <a href="#" class="nav-item" data-page="more">
+            <span class="icon">⋯</span>
+            <span class="label">더보기</span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Date Selector -->
+        <section style="margin-bottom: var(--spacing-lg);">
+            <div style="display: flex; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-md);">
+                <button class="date-nav-btn" id="prevDay">◀</button>
+                <div class="date-display">
+                    <h2 id="selectedDate" style="margin: 0;">오늘</h2>
+                    <p id="selectedDateDetail" style="margin: 0; font-size: var(--font-size-sm); color: var(--text-secondary);">2024-03-19</p>
+                </div>
+                <button class="date-nav-btn" id="nextDay">▶</button>
+            </div>
+        </section>
+
+        <!-- Cafeteria Cards -->
+        <section class="featured">
+            <h2 class="section-title">학식 메뉴</h2>
+            <div class="cards-grid cafeteria-grid">
+                <div class="cafeteria-card">
+                    <div class="cafeteria-header">
+                        <h3>학생식당</h3>
+                        <span class="badge">11:00-13:30</span>
+                    </div>
+                    <div class="cafeteria-menu">
+                        <div class="menu-item">
+                            <strong>중식</strong>
+                            <p>불고기비빔밥</p>
+                            <p style="color: var(--text-light); font-size: var(--font-size-sm);">4,500원</p>
+                        </div>
+                        <hr style="margin: var(--spacing-sm) 0; border: none; border-top: 1px solid var(--border-light);">
+                        <div class="menu-item">
+                            <strong>반찬</strong>
+                            <p>계란말이, 깍두기, 미역국</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cafeteria-card">
+                    <div class="cafeteria-header">
+                        <h3>기숙사식당</h3>
+                        <span class="badge secondary">12:00-13:30</span>
+                    </div>
+                    <div class="cafeteria-menu">
+                        <div class="menu-item">
+                            <strong>중식</strong>
+                            <p>제육스팀</p>
+                            <p style="color: var(--text-light); font-size: var(--font-size-sm);">3,500원</p>
+                        </div>
+                        <hr style="margin: var(--spacing-sm) 0; border: none; border-top: 1px solid var(--border-light);">
+                        <div class="menu-item">
+                            <strong>반찬</strong>
+                            <p>시금치나물, 단호박, 된장국</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cafeteria-card">
+                    <div class="cafeteria-header">
+                        <h3>학생카페</h3>
+                        <span class="badge tertiary">10:00-18:00</span>
+                    </div>
+                    <div class="cafeteria-menu">
+                        <div class="menu-item">
+                            <strong>음료</strong>
+                            <p>아메리카노, 카페라떼</p>
+                            <p style="color: var(--text-light); font-size: var(--font-size-sm);">2,000~3,000원</p>
+                        </div>
+                        <hr style="margin: var(--spacing-sm) 0; border: none; border-top: 1px solid var(--border-light);">
+                        <div class="menu-item">
+                            <strong>간식</strong>
+                            <p>샌드위치, 베이글, 쿠키</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cafeteria-card">
+                    <div class="cafeteria-header">
+                        <h3>편의점</h3>
+                        <span class="badge quaternary">08:00-22:00</span>
+                    </div>
+                    <div class="cafeteria-menu">
+                        <div class="menu-item">
+                            <strong>간편식</strong>
+                            <p>김밥, 라면, 샐러드</p>
+                        </div>
+                        <hr style="margin: var(--spacing-sm) 0; border: none; border-top: 1px solid var(--border-light);">
+                        <div class="menu-item">
+                            <strong>음료</strong>
+                            <p>생수, 음료수, 커피</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Operating Hours -->
+        <section style="margin-top: var(--spacing-2xl);">
+            <h2 class="section-title">운영 시간</h2>
+            <div style="background: var(--primary-light); border-radius: var(--radius-lg); padding: var(--spacing-lg);">
+                <div style="margin-bottom: var(--spacing-md);">
+                    <strong>조식 (07:00-08:30)</strong>
+                    <p style="color: var(--text-secondary); margin-top: 4px;">학생식당, 기숙사식당</p>
+                </div>
+                <div style="margin-bottom: var(--spacing-md);">
+                    <strong>중식 (11:00-13:30)</strong>
+                    <p style="color: var(--text-secondary); margin-top: 4px;">학생식당, 기숙사식당</p>
+                </div>
+                <div>
+                    <strong>석식 (17:30-19:00)</strong>
+                    <p style="color: var(--text-secondary); margin-top: 4px;">학생식당, 기숙사식당</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Sahmyook University. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+                <a href="#">문의하기</a>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .date-nav-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition-base);
+            color: var(--text-primary);
+        }
+
+        .date-nav-btn:active {
+            background: var(--primary-light);
+        }
+
+        .date-display {
+            flex: 1;
+            text-align: center;
+        }
+
+        .cafeteria-grid {
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .cafeteria-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .cafeteria-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .cafeteria-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            transition: var(--transition-base);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cafeteria-card:active {
+            box-shadow: var(--shadow-md);
+        }
+
+        .cafeteria-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .cafeteria-header h3 {
+            margin: 0;
+            font-size: var(--font-size-lg);
+        }
+
+        .cafeteria-menu {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .menu-item p {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+    </style>
+
+    <script src="../js/main.js"></script>
+    <script>
+        // Date navigation
+        let currentDate = new Date();
+
+        function updateDateDisplay() {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const isToday = new Date().toISOString().split('T')[0] === dateStr;
+
+            document.getElementById('selectedDate').textContent = isToday ? '오늘' : '선택일';
+            document.getElementById('selectedDateDetail').textContent = dateStr;
+        }
+
+        document.getElementById('prevDay').addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+        });
+
+        document.getElementById('nextDay').addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+        });
+
+        updateDateDisplay();
+    </script>
+</body>
+</html>

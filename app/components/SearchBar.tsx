@@ -1,0 +1,101 @@
+"use client";
+
+import React, { useState, useCallback } from "react";
+import clsx from "clsx";
+
+interface SearchBarProps {
+  placeholder?: string;
+  onSearch: (query: string) => void;
+  isLoading?: boolean;
+  className?: string;
+}
+
+export function SearchBar({
+  placeholder = "공지, 학식, 학사일정 검색...",
+  onSearch,
+  isLoading = false,
+  className,
+}: SearchBarProps) {
+  const [query, setQuery] = useState("");
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+  }, []);
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (query.trim()) {
+        onSearch(query);
+      }
+    },
+    [query, onSearch],
+  );
+
+  const handleClear = useCallback(() => {
+    setQuery("");
+    onSearch("");
+  }, [onSearch]);
+
+  return (
+    <form onSubmit={handleSubmit} className={className}>
+      <div className="relative">
+        <input
+          type="text"
+          value={query}
+          onChange={handleChange}
+          placeholder={placeholder}
+          className={clsx(
+            "w-full px-4 py-3 pl-10 bg-neutral-50 border border-neutral-200 rounded-lg",
+            "text-sm placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent",
+            "transition-all",
+          )}
+          aria-label="검색"
+        />
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        {query && !isLoading && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-200 rounded transition-colors"
+            aria-label="검색어 삭제"
+          >
+            <svg
+              className="w-4 h-4 text-neutral-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+        {isLoading && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+    </form>
+  );
+}
+
+export default SearchBar;

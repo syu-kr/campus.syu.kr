@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정">
+    <meta name="theme-color" content="#0066FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>삼육대 캠퍼스</title>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="assets/icons/favicon-32x32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-192x192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <h1>삼육대</h1>
+                <p>캠퍼스</p>
+            </div>
+            <nav class="nav" id="mobileNav">
+                <button class="menu-toggle" id="menuToggle" aria-label="메뉴 열기">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active" data-page="home">
+            <span class="icon">🏠</span>
+            <span class="label">홈</span>
+        </a>
+        <a href="pages/notices.html" class="nav-item" data-page="notices">
+            <span class="icon">📢</span>
+            <span class="label">공지</span>
+        </a>
+        <a href="pages/menu.html" class="nav-item" data-page="menu">
+            <span class="icon">🍽️</span>
+            <span class="label">학식</span>
+        </a>
+        <a href="pages/schedule.html" class="nav-item" data-page="schedule">
+            <span class="icon">📅</span>
+            <span class="label">학사</span>
+        </a>
+        <a href="#" class="nav-item" data-page="more">
+            <span class="icon">⋯</span>
+            <span class="label">더보기</span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Quick Access Cards -->
+        <section class="quick-access">
+            <h2 class="section-title">빠른 접근</h2>
+            <div class="cards-grid">
+                <a href="pages/notices.html" class="card card-primary">
+                    <div class="card-icon">📢</div>
+                    <div class="card-content">
+                        <h3>공지사항</h3>
+                        <p>최신 학교 소식</p>
+                    </div>
+                </a>
+                <a href="pages/menu.html" class="card card-secondary">
+                    <div class="card-icon">🍽️</div>
+                    <div class="card-content">
+                        <h3>오늘의 학식</h3>
+                        <p>학교 식당 메뉴</p>
+                    </div>
+                </a>
+                <a href="pages/schedule.html" class="card card-tertiary">
+                    <div class="card-icon">📅</div>
+                    <div class="card-content">
+                        <h3>학사일정</h3>
+                        <p>중요한 날짜</p>
+                    </div>
+                </a>
+                <a href="#" class="card card-quaternary">
+                    <div class="card-icon">🎓</div>
+                    <div class="card-content">
+                        <h3>학사정보</h3>
+                        <p>학적 관련 정보</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Featured Section -->
+        <section class="featured">
+            <h2 class="section-title">주요 소식</h2>
+            <div class="featured-list">
+                <article class="featured-item">
+                    <div class="featured-meta">
+                        <span class="badge">공지</span>
+                        <time>2024-03-19</time>
+                    </div>
+                    <h3>2024학년도 봄학기 수강신청 안내</h3>
+                    <p>3월 20일부터 수강신청이 시작됩니다. 자세한 내용은 학사관리 시스템을 확인해주세요.</p>
+                </article>
+
+                <article class="featured-item">
+                    <div class="featured-meta">
+                        <span class="badge secondary">학사</span>
+                        <time>2024-03-18</time>
+                    </div>
+                    <h3>봄학기 캠퍼스 축제 개최</h3>
+                    <p>3월 25일-27일 캠퍼스 전역에서 봄학기 축제가 개최됩니다. 많은 참여 부탁드립니다.</p>
+                </article>
+
+                <article class="featured-item">
+                    <div class="featured-meta">
+                        <span class="badge tertiary">학식</span>
+                        <time>2024-03-19</time>
+                    </div>
+                    <h3>3월 식당 메뉴 개편 안내</h3>
+                    <p>이번 달부터 새로운 메뉴가 추가되었습니다. 다양한 요리를 만나보세요!</p>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Sahmyook University. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+                <a href="#">문의하기</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
