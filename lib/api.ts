@@ -20,15 +20,16 @@ export async function fetchAnnouncements(
     let data: Announcement[] = [];
 
     if (!category || category === "academic") {
-      const academic = await fetch("/data/announcements-academic.json").then(
-        (r) => r.json(),
-      );
+      const academic = await fetch("/data/announcements-academic.json", {
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      }).then((r) => r.json());
       data = [...data, ...(academic as Announcement[])];
     }
 
     if (!category || category === "scholarship") {
       const scholarship = await fetch(
         "/data/announcements-scholarship.json",
+        { next: { revalidate: 3600 } }, // Cache for 1 hour
       ).then((r) => r.json());
       data = [
         ...data,
@@ -135,9 +136,9 @@ export async function fetchAcademicSchedules(
   category?: string,
 ): Promise<AcademicSchedule[]> {
   try {
-    const schedules = await fetch("/data/schedules-major.json").then((r) =>
-      r.json(),
-    );
+    const schedules = await fetch("/data/schedules-major.json", {
+      next: { revalidate: 86400 }, // Cache for 24 hours
+    }).then((r) => r.json());
     if (category) {
       return (schedules as AcademicSchedule[]).filter(
         (s) => s.category === category,
@@ -230,9 +231,9 @@ export async function searchAll(
   try {
     // 1. 크롤링된 공지사항 검색
     try {
-      const eventNotices = await fetch("/data/announcements-events.json").then(
-        (r) => r.json(),
-      );
+      const eventNotices = await fetch("/data/announcements-events.json", {
+        next: { revalidate: 3600 }, // Cache for 1 hour
+      }).then((r) => r.json());
       const matchedEvents = (eventNotices as Announcement[]).filter(
         (a) =>
           a.title?.toLowerCase().includes(lowerQuery) ||
@@ -246,6 +247,7 @@ export async function searchAll(
     try {
       const campusNotices = await fetch(
         "/data/announcements-campus-life.json",
+        { next: { revalidate: 3600 } }, // Cache for 1 hour
       ).then((r) => r.json());
       const matchedCampus = (campusNotices as Announcement[]).filter(
         (a) =>

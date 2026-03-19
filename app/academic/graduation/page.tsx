@@ -1,5 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { MockDataAlert } from "@/app/components/MockDataAlert";
 
 export default function GraduationPage() {
   const requirements = [
@@ -31,6 +32,12 @@ export default function GraduationPage() {
         </h1>
         <p className="text-neutral-600">졸업 요건 체크리스트</p>
       </div>
+
+      <MockDataAlert
+        title="💡 안내"
+        message="이 페이지의 졸업요건 데이터는 Mock 데이터입니다. 정확한 졸업요건은 학사시스템에서 확인하시기 바랍니다."
+        type="info"
+      />
 
       <div className="space-y-4">
         {requirements.map((req) => (

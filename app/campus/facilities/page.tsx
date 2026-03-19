@@ -1,5 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { MockDataAlert } from "@/app/components/MockDataAlert";
 
 export default function FacilitiesPage() {
   const facilities = [
@@ -33,6 +34,12 @@ export default function FacilitiesPage() {
         </h1>
         <p className="text-neutral-600">캠퍼스 편의시설 위치</p>
       </div>
+
+      <MockDataAlert
+        title="🗺️ 개발 예정"
+        message="편의시설 위치 정보는 개발 중입니다. 정확한 위치는 캠퍼스 맵 서비스를 이용해주세요."
+        type="info"
+      />
 
       <div className="space-y-4">
         {facilities.map((facility) => (

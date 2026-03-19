@@ -1,5 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { MockDataAlert } from "@/app/components/MockDataAlert";
 
 export default function GymPage() {
   const facilities = [
@@ -37,6 +38,12 @@ export default function GymPage() {
         </h1>
         <p className="text-neutral-600">캠퍼스 운동 시설 안내</p>
       </div>
+
+      <MockDataAlert
+        title="⚠️ 안내"
+        message="실제 예약은 학사시스템 또는 직접 연락을 통해 진행하세요. 위의 시간과 요금은 참고용입니다."
+        type="warning"
+      />
 
       <div className="space-y-4">
         {facilities.map((facility) => (
