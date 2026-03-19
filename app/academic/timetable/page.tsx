@@ -94,9 +94,7 @@ export default function TimetableWizardPage() {
   // 시간 충돌 검사
   const hasConflict = (newCourse: Course): boolean => {
     return selectedCourses.some((selected) => {
-      const sharedDays = newCourse.day.filter((d) =>
-        selected.day.includes(d),
-      );
+      const sharedDays = newCourse.day.filter((d) => selected.day.includes(d));
       if (sharedDays.length === 0) return false;
 
       // 시간이 겹치는지 확인
@@ -131,7 +129,9 @@ export default function TimetableWizardPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           시간표 짜기
         </h1>
-        <p className="text-neutral-600">원하는 과목을 선택하여 시간표를 작성하세요</p>
+        <p className="text-neutral-600">
+          원하는 과목을 선택하여 시간표를 작성하세요
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -217,17 +217,17 @@ export default function TimetableWizardPage() {
               </div>
               <div className="flex justify-between">
                 <span>총 학점:</span>
-                <span className={`font-bold ${
-                  totalCredits > 18 ? "text-red-600" : "text-blue-600"
-                }`}>
+                <span
+                  className={`font-bold ${
+                    totalCredits > 18 ? "text-red-600" : "text-blue-600"
+                  }`}
+                >
                   {totalCredits}/18
                 </span>
               </div>
               {totalCredits > 3 && totalCredits <= 18 && (
                 <div className="pt-2 border-t border-blue-200">
-                  <p className="text-xs text-blue-800">
-                    ✅ 최소 학점 충족
-                  </p>
+                  <p className="text-xs text-blue-800">✅ 최소 학점 충족</p>
                 </div>
               )}
             </div>
@@ -273,7 +273,9 @@ export default function TimetableWizardPage() {
             </h3>
             <div className="space-y-2">
               {availableCourses
-                .filter((course) => !selectedCourses.some((s) => s.id === course.id))
+                .filter(
+                  (course) => !selectedCourses.some((s) => s.id === course.id),
+                )
                 .map((course) => {
                   const conflict = hasConflict(course);
                   const creditExceeds = totalCredits + course.credit > 18;

@@ -106,29 +106,110 @@ export async function fetchAnnouncementById(
   }
 }
 
-// 학식 API
+// 학식 API - 크롤링된 실제 데이터 사용
 export async function fetchCafeteriaMenu(
   date?: string,
 ): Promise<CafeteriaMenu[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (date) {
-        resolve(
-          (cafeteriaMenu as CafeteriaMenu[]).filter((m) => m.date === date),
-        );
-      } else {
-        resolve(cafeteriaMenu as CafeteriaMenu[]);
-      }
-    }, 500);
-  });
+  try {
+    const response = await fetch("/data/cafeteria-menu.json", {
+      next: { revalidate: 3600 }, // Cache for 1 hour (매일 업데이트됨)
+    });
+    const data = (await response.json()) as unknown;
+    const cafeterias = Array.isArray(data) ? data : [];
+
+    if (!cafeterias || cafeterias.length === 0) {
+      throw new Error("No cafeteria data");
+    }
+
+    // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
+    const menus: CafeteriaMenu[] = [];
+    const cafeteriaData = cafeterias[0] as {
+      menus: Array<{ date: string; day: string; meals: { breakfast: string[]; lunch: string[]; dinner: string[] } }>;
+    };
+    const menuDays = cafeteriaData?.menus || [];
+
+    menuDays.forEach(
+      (menu, idx) => {
+        const breakfast =
+          menu.meals?.breakfast?.map((name) => ({ name })) || [];
+        const lunch =
+          menu.meals?.lunch?.map((name) => ({ name })) || [];
+        const dinner =
+          menu.meals?.dinner?.map((name) => ({ name })) || [];
+
+        menus.push({
+          id: `cafeteria-${menu.date}-${idx}`,
+          date: menu.date,
+          dayOfWeek: menu.day || "",
+          breakfast: breakfast,
+          lunch: lunch,
+          dinner: dinner,
+          location: "SU-Lounge",
+        });
+      },
+    );
+
+    if (date) {
+      return menus.filter((m) => m.date === date);
+    }
+
+    return menus;
+  } catch (error) {
+    console.error("Failed to fetch cafeteria menu:", error);
+    // fallback to mock data if file not found
+    if (date) {
+      return (cafeteriaMenu as CafeteriaMenu[]).filter((m) => m.date === date);
+    } else {
+      return cafeteriaMenu as CafeteriaMenu[];
+    }
+  }
 }
 
 export async function fetchWeeklyCafeteriaMenu(): Promise<CafeteriaMenu[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(cafeteriaMenu as CafeteriaMenu[]);
-    }, 500);
-  });
+  try {
+    const response = await fetch("/data/cafeteria-menu.json", {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    const data = (await response.json()) as unknown;
+    const cafeterias = Array.isArray(data) ? data : [];
+
+    if (!cafeterias || cafeterias.length === 0) {
+      throw new Error("No cafeteria data");
+    }
+
+    // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
+    const menus: CafeteriaMenu[] = [];
+    const cafeteriaData = cafeterias[0] as {
+      menus: Array<{ date: string; day: string; meals: { breakfast: string[]; lunch: string[]; dinner: string[] } }>;
+    };
+    const menuDays = cafeteriaData?.menus || [];
+
+    menuDays.forEach(
+      (menu, idx) => {
+        const breakfast =
+          menu.meals?.breakfast?.map((name) => ({ name })) || [];
+        const lunch =
+          menu.meals?.lunch?.map((name) => ({ name })) || [];
+        const dinner =
+          menu.meals?.dinner?.map((name) => ({ name })) || [];
+
+        menus.push({
+          id: `cafeteria-${menu.date}-${idx}`,
+          date: menu.date,
+          dayOfWeek: menu.day || "",
+          breakfast: breakfast,
+          lunch: lunch,
+          dinner: dinner,
+          location: "SU-Lounge",
+        });
+      },
+    );
+
+    return menus;
+  } catch (error) {
+    console.error("Failed to fetch weekly cafeteria menu:", error);
+    return cafeteriaMenu as CafeteriaMenu[];
+  }
 }
 
 // 학사일정 API - 크롤링된 실제 데이터 사용
@@ -160,26 +241,38 @@ export async function fetchAcademicSchedules(
   }
 }
 
-// 셔틀버스 API
+// 셔틀버스 API - 크롤링된 실제 데이터 사용
 export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(shuttleBuses as ShuttleBusSchedule[]);
-    }, 500);
-  });
+  try {
+    const response = await fetch("/data/shuttle-bus-schedule.json", {
+      next: { revalidate: 86400 }, // Cache for 24 hours
+    });
+    const schedules = await response.json();
+    return (schedules || []) as ShuttleBusSchedule[];
+  } catch (error) {
+    console.error("Failed to fetch shuttle buses:", error);
+    // fallback to mock data
+    return shuttleBuses as ShuttleBusSchedule[];
+  }
 }
 
 export async function fetchShuttleBusById(
   id: string,
 ): Promise<ShuttleBusSchedule | null> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const bus = (shuttleBuses as ShuttleBusSchedule[]).find(
-        (b) => b.id === id,
-      );
-      resolve(bus || null);
-    }, 300);
-  });
+  try {
+    const response = await fetch("/data/shuttle-bus-schedule.json", {
+      next: { revalidate: 86400 }, // Cache for 24 hours
+    });
+    const schedules = (await response.json()) as ShuttleBusSchedule[];
+    return schedules.find((b) => b.id === id) || null;
+  } catch (error) {
+    console.error("Failed to fetch shuttle bus:", error);
+    // fallback to mock data
+    const bus = (shuttleBuses as ShuttleBusSchedule[]).find(
+      (b) => b.id === id,
+    );
+    return bus || null;
+  }
 }
 
 // 장학금 API

@@ -1,0 +1,345 @@
+[
+  {
+    "id": "shuttle-1",
+    "routeName": "5분 간격",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-2",
+    "routeName": "20분 간격",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-3",
+    "routeName": "12:00",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-4",
+    "routeName": "12:25",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-5",
+    "routeName": "12:50",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-6",
+    "routeName": "13:15",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-7",
+    "routeName": "13:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-8",
+    "routeName": "14:05",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-9",
+    "routeName": "14:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-10",
+    "routeName": "15:00",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-11",
+    "routeName": "15:20",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-12",
+    "routeName": "15:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-13",
+    "routeName": "18:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-14",
+    "routeName": "19:00",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-15",
+    "routeName": "별내역 출발",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-16",
+    "routeName": "08:10",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-17",
+    "routeName": "08:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-18",
+    "routeName": "09:10",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-19",
+    "routeName": "09:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-20",
+    "routeName": "10:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-21",
+    "routeName": "11:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-22",
+    "routeName": "12:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-23",
+    "routeName": "14:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-24",
+    "routeName": "화랑대역(5번 출구) 출발",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-25",
+    "routeName": "8:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-26",
+    "routeName": "9:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-27",
+    "routeName": "10:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-28",
+    "routeName": "11:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-29",
+    "routeName": "12:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-30",
+    "routeName": "13:30",
+    "startLocation": "캠퍼스",
+    "endLocation": "목적지",
+    "schedules": {
+      "weekday": [],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  },
+  {
+    "id": "shuttle-31",
+    "routeName": "8:40",
+    "startLocation": "캠퍼스",
+    "endLocation": "8:20",
+    "schedules": {
+      "weekday": [
+        "8:40"
+      ],
+      "weekend": []
+    },
+    "lastUpdated": "2026-03-19"
+  }
+]
