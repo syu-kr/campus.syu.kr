@@ -92,7 +92,12 @@ async function crawlStaticPages() {
   console.log("📄 정적 페이지 크롤링 시작...\n");
 
   const results: Record<string, StaticContent> = {};
-  const dataPath = path.join(process.cwd(), "public", "data", "static-pages.json");
+  const dataPath = path.join(
+    process.cwd(),
+    "public",
+    "data",
+    "static-pages.json",
+  );
 
   for (const page of staticPages) {
     try {

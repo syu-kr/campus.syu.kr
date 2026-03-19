@@ -47,7 +47,9 @@ export async function fetchAnnouncements(
       data = [
         ...data,
         ...(mockData as Announcement[]).filter(
-          (a) => !a.category.includes("academic") && !a.category.includes("scholarship"),
+          (a) =>
+            !a.category.includes("academic") &&
+            !a.category.includes("scholarship"),
         ),
       ];
     }
@@ -76,30 +78,30 @@ export async function fetchAnnouncementById(
     const academic = await fetch("/data/announcements-academic.json").then(
       (r) => r.json(),
     );
-    let found = (academic as Announcement[]).find((a: Announcement) => a.id === id);
+    let found = (academic as Announcement[]).find(
+      (a: Announcement) => a.id === id,
+    );
     if (found) return found;
 
     const scholarship = await fetch(
       "/data/announcements-scholarship.json",
     ).then((r) => r.json());
-    found = (scholarship as Announcement[]).find((a: Announcement) => a.id === id);
+    found = (scholarship as Announcement[]).find(
+      (a: Announcement) => a.id === id,
+    );
     if (found) return { ...found, category: "scholarship" as const };
 
     // mock 데이터에서 검색
     const mockData = await import("@/data/announcements.json").then(
       (m) => m.default,
     );
-    return (
-      (mockData as Announcement[]).find((a) => a.id === id) || null
-    );
+    return (mockData as Announcement[]).find((a) => a.id === id) || null;
   } catch (error) {
     console.error("Failed to fetch announcement:", error);
     const mockData = await import("@/data/announcements.json").then(
       (m) => m.default,
     );
-    return (
-      (mockData as Announcement[]).find((a) => a.id === id) || null
-    );
+    return (mockData as Announcement[]).find((a) => a.id === id) || null;
   }
 }
 
@@ -250,6 +252,84 @@ export async function searchAll(
       resolve(results);
     }, 800);
   });
+}
+
+// 행사공지 API
+export async function fetchEventNotices(): Promise<Announcement[]> {
+  try {
+    const events = await fetch("/data/announcements-events.json").then((r) =>
+      r.json(),
+    );
+    return (events as Announcement[]).slice(0, 50);
+  } catch (error) {
+    console.error("Failed to fetch event notices:", error);
+    return [];
+  }
+}
+
+// 생활공지 API
+export async function fetchCampusNotices(): Promise<Announcement[]> {
+  try {
+    const notices = await fetch("/data/announcements-campus-life.json").then(
+      (r) => r.json(),
+    );
+    return (notices as Announcement[]).slice(0, 50);
+  } catch (error) {
+    console.error("Failed to fetch campus notices:", error);
+    return [];
+  }
+}
+
+// 캠퍼스맵 API
+export async function fetchCampusMap(): Promise<
+  { building: string; location: string; description?: string }[]
+> {
+  try {
+    const map = await fetch("/data/campus-map.json").then((r) => r.json());
+    return map;
+  } catch (error) {
+    console.error("Failed to fetch campus map:", error);
+    return [];
+  }
+}
+
+// 수강신청 안내 API
+export async function fetchRegistrationGuide(): Promise<
+  {
+    period: string;
+    startDate: string;
+    endDate: string;
+    description: string;
+    targetGrade?: string;
+  }[]
+> {
+  try {
+    const guide = await fetch("/data/registration-guide.json").then((r) =>
+      r.json(),
+    );
+    return guide;
+  } catch (error) {
+    console.error("Failed to fetch registration guide:", error);
+    return [];
+  }
+}
+
+// 동아리 API
+export async function fetchClubs(
+  category?: "general" | "startup" | "employment",
+): Promise<{ id: string; name: string; category: string; url: string }[]> {
+  try {
+    const clubs = await fetch("/data/clubs.json").then((r) => r.json());
+    if (category) {
+      return (
+        clubs as { id: string; name: string; category: string; url: string }[]
+      ).filter((c) => c.category === category);
+    }
+    return clubs;
+  } catch (error) {
+    console.error("Failed to fetch clubs:", error);
+    return [];
+  }
 }
 
 // TODO: 추후 실제 백엔드와 연동 시 다음과 같이 fetch를 사용하면 됨

@@ -43,9 +43,9 @@ export default function TermsPage() {
             제1조 목적
           </h2>
           <p className="text-neutral-700 leading-relaxed">
-            이 약관은 삼육대학교(이하 &quot;학교&quot;)가 제공하는 SYU
-            CAMPUS(이하 &quot;서비스&quot;)의 이용과 관련하여 학교와 이용자의
-            권리 및 의무를 정하는 것을 목적으로 합니다.
+            이 약관은 SYU KR(이하 &quot;서비스팀&quot;)가 제공하는 SYU
+            CAMPUS(이하 &quot;서비스&quot;)의 이용과 관련하여 서비스팀과
+            이용자의 권리 및 의무를 정하는 것을 목적으로 합니다.
           </p>
         </Card>
 
@@ -57,22 +57,22 @@ export default function TermsPage() {
             <div>
               <p className="font-semibold mb-1">1. 서비스</p>
               <p className="text-sm text-neutral-600">
-                학교가 제공하는 학사정보, 캠퍼스정보, 공지사항 등을 포함한 모든
-                통합 정보 플랫폼을 의미합니다.
+                서비스팀이 제공하는 학사정보, 캠퍼스정보, 공지사항 등을 포함한
+                모든 통합 정보 플랫폼을 의미합니다.
               </p>
             </div>
             <div>
               <p className="font-semibold mb-1">2. 이용자</p>
               <p className="text-sm text-neutral-600">
-                이 약관에 동의하고 서비스를 이용하는 삼육대학교 재학생, 교직원,
-                동문을 포함한 모든 사용자를 의미합니다.
+                이 약관에 동의하고 서비스를 이용하는 서비스팀의 사용자를
+                의미합니다.
               </p>
             </div>
             <div>
               <p className="font-semibold mb-1">3. 회원</p>
               <p className="text-sm text-neutral-600">
-                서비스를 통해 학교에 가입하고, 서비스 이용 계약을 체결한 개인
-                또는 단체를 의미합니다.
+                서비스를 통해 서비스팀에 가입하고, 서비스 이용 계약을 체결한
+                개인 또는 단체를 의미합니다.
               </p>
             </div>
           </div>
@@ -84,17 +84,17 @@ export default function TermsPage() {
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              <span className="font-semibold">1.</span> 학교는 이용자에게 다음의
-              서비스를 제공합니다:
+              <span className="font-semibold">1.</span> 서비스팀은 이용자에게
+              다음의 서비스를 제공합니다:
             </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               <li>학사일정, 공지사항, 학점 조회 등 학사정보</li>
               <li>학식, 셔틀버스, 시설정보 등 캠퍼스정보</li>
               <li>등록금 일정, 장학금 정보 등 맞춤 서비스</li>
-              <li>기타 학교에서 제공하는 정보</li>
+              <li>기타 서비스팀에서 제공하는 정보</li>
             </ul>
             <p className="text-sm mt-3">
-              <span className="font-semibold">2.</span> 학교는 운영상 필요시
+              <span className="font-semibold">2.</span> 서비스팀은 운영상 필요시
               사전 공지 후 서비스의 내용을 변경하거나 일시 중단할 수 있습니다.
             </p>
           </div>
@@ -124,16 +124,16 @@ export default function TermsPage() {
           <div className="space-y-3 text-neutral-700">
             <p>
               <span className="font-semibold">1.</span> 서비스에 포함된 모든
-              컨텐츠의 저작권 및 지적재산권은 학교에 귀속됩니다.
+              컨텐츠의 저작권 및 지적재산권은 서비스팀에 귀속됩니다.
             </p>
             <p>
-              <span className="font-semibold">2.</span> 이용자는 학교의 사전
+              <span className="font-semibold">2.</span> 이용자는 서비스팀의 사전
               승인 없이 이 컨텐츠를 복제, 배포, 전시, 전송할 수 없습니다.
             </p>
             <p>
               <span className="font-semibold">3.</span> 이용자가 작성한 컨텐츠의
-              저작권은 이용자에게 귀속되며, 학교는 이를 자유롭게 이용할 수 있는
-              라이선스를 부여받습니다.
+              저작권은 이용자에게 귀속되며, 서비스팀은 이를 자유롭게 이용할 수
+              있는 라이선스를 부여받습니다.
             </p>
           </div>
         </Card>
@@ -144,14 +144,16 @@ export default function TermsPage() {
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              학교는 다음의 경우 서비스로 인해 발생한 손해에 대해 책임을 지지
-              않습니다:
+              서비스팀은 다음의 경우 서비스로 인해 발생한 손해에 대해 책임을
+              지지 않습니다:
             </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               <li>이용자의 부주의 또는 오용으로 인한 손해</li>
               <li>천재지변 등 불가소항력으로 인한 손해</li>
-              <li>제3자의 불법 행위로 인한 손해 (학교의 과실이 없는 경우)</li>
-              <li>기타 학교의 합리적 통제 범위 밖의 원인</li>
+              <li>
+                제3자의 불법 행위로 인한 손해 (서비스팀의 과실이 없는 경우)
+              </li>
+              <li>기타 서비스팀의 합리적 통제 범위 밖의 원인</li>
             </ul>
           </div>
         </Card>
@@ -162,8 +164,8 @@ export default function TermsPage() {
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              <span className="font-semibold">1.</span> 학교는 필요한 경우 이
-              약관을 변경할 수 있습니다.
+              <span className="font-semibold">1.</span> 서비스팀은 필요한 경우
+              이 약관을 변경할 수 있습니다.
             </p>
             <p>
               <span className="font-semibold">2.</span> 약관 변경 시 변경 사유

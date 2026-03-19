@@ -55,7 +55,8 @@ async function crawlAcademicNotice() {
         const views = parseInt($row.find("td:nth-child(5)").text().trim()) || 0;
 
         // "[공지]" 또는 "[중요]" 텍스트 확인
-        const isImportant = title.includes("[공지]") || title.includes("[중요]");
+        const isImportant =
+          title.includes("[공지]") || title.includes("[중요]");
 
         if (title) {
           announcements.push({
@@ -78,7 +79,7 @@ async function crawlAcademicNotice() {
       process.cwd(),
       "public",
       "data",
-      "announcements-academic.json"
+      "announcements-academic.json",
     );
 
     // 디렉토리 생성
@@ -86,9 +87,7 @@ async function crawlAcademicNotice() {
 
     fs.writeFileSync(dataPath, JSON.stringify(announcements, null, 2), "utf-8");
 
-    console.log(
-      `✅ 학사공지 ${announcements.length}개 저장 완료: ${dataPath}`
-    );
+    console.log(`✅ 학사공지 ${announcements.length}개 저장 완료: ${dataPath}`);
   } catch (error) {
     console.error("❌ 학사공지 크롤링 실패:", error);
     throw error;

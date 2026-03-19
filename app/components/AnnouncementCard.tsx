@@ -16,12 +16,14 @@ interface AnnouncementCardProps {
   announcement: Announcement;
   href?: string;
   clickable?: boolean;
+  external?: boolean;
 }
 
 export function AnnouncementCard({
   announcement,
   href,
   clickable = true,
+  external = false,
 }: AnnouncementCardProps) {
   const content = (
     <Card
@@ -48,7 +50,7 @@ export function AnnouncementCard({
             {getFirstLine(announcement.content)}
           </p>
           <div className="flex items-center gap-4 mt-3 text-xs text-neutral-500">
-            <span>{announcement.author}</span>
+            <span>{announcement.author || "삼육대학교"}</span>
             <span>{formatDate(announcement.date)}</span>
             <span>조회 {announcement.views.toLocaleString()}</span>
           </div>
@@ -58,6 +60,13 @@ export function AnnouncementCard({
   );
 
   if (href) {
+    if (external) {
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          {content}
+        </a>
+      );
+    }
     return <Link href={href}>{content}</Link>;
   }
 

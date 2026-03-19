@@ -71,13 +71,23 @@ export default function AnnouncementsPage() {
         )}
         {!isLoading &&
           announcements &&
-          announcements.map((announcement) => (
-            <AnnouncementCard
-              key={announcement.id}
-              announcement={announcement}
-              href={`/announcements/${announcement.id}`}
-            />
-          ))}
+          announcements.map((announcement) => {
+            // 크롤링된 데이터는 URL이 있으면 외부 링크, 없으면 내부 링크
+            const isExternal =
+              !!announcement.url && announcement.url.includes("syu.ac.kr");
+            const href = isExternal
+              ? announcement.url
+              : `/announcements/${announcement.id}`;
+
+            return (
+              <AnnouncementCard
+                key={announcement.id}
+                announcement={announcement}
+                href={href}
+                external={isExternal}
+              />
+            );
+          })}
       </div>
     </Container>
   );

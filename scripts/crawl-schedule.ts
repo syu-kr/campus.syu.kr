@@ -35,7 +35,7 @@ async function crawlSchedule() {
     const $ = cheerio.load(response.data);
 
     // 일정 추출
-      $('table tbody tr').each((index, element) => {
+    $("table tbody tr").each((index, element) => {
       const $row = $(element);
       const cells = $row.find("td");
 
@@ -65,7 +65,7 @@ async function crawlSchedule() {
       process.cwd(),
       "public",
       "data",
-      "schedules-major.json"
+      "schedules-major.json",
     );
 
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });

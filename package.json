@@ -13,7 +13,12 @@
     "crawl:scholarship": "ts-node scripts/crawl-scholarships.ts",
     "crawl:schedule": "ts-node scripts/crawl-schedule.ts",
     "crawl:phone": "ts-node scripts/crawl-phone.ts",
-    "crawl:static": "ts-node scripts/crawl-static.ts"
+    "crawl:static": "ts-node scripts/crawl-static.ts",
+    "crawl:events": "ts-node scripts/crawl-events.ts",
+    "crawl:campus": "ts-node scripts/crawl-campus.ts",
+    "crawl:campus-map": "ts-node scripts/crawl-campus-map.ts",
+    "crawl:registration": "ts-node scripts/crawl-registration.ts",
+    "crawl:clubs": "ts-node scripts/crawl-clubs.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",

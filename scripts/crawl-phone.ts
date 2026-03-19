@@ -71,7 +71,7 @@ async function crawlPhoneNumbers() {
       process.cwd(),
       "public",
       "data",
-      "phone-numbers.json"
+      "phone-numbers.json",
     );
 
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });

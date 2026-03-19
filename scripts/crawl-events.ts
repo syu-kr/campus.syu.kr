@@ -1,7 +1,7 @@
 /**
- * 장학공지 크롤링 스크립트
+ * 행사공지 크롤링 스크립트
  * 매일 00시에 실행됨
- * https://www.syu.ac.kr/academic/scholarship-information/scholarship-notice/page/1 - /page/226
+ * https://www.syu.ac.kr/university-square/notice/event/page/1 ~
  */
 
 import axios from "axios";
@@ -9,27 +9,26 @@ import * as cheerio from "cheerio";
 import * as fs from "fs";
 import * as path from "path";
 
-interface ScholarshipNotice {
+interface EventNotice {
   id: string;
   title: string;
   date: string;
   author: string;
   views: number;
-  category: "scholarship";
+  category: "event";
   content: string;
   url: string;
   isImportant: boolean;
 }
 
-async function crawlScholarshipNotice() {
-  const notices: ScholarshipNotice[] = [];
-  const baseUrl =
-    "https://www.syu.ac.kr/academic/scholarship-information/scholarship-notice/page";
+async function crawlEventNotices() {
+  const events: EventNotice[] = [];
+  const baseUrl = "https://www.syu.ac.kr/university-square/notice/event/page";
 
-  console.log("🎓 장학공지 크롤링 시작...");
+  console.log("🎉 행사공지 크롤링 시작...");
 
   try {
-    // 첫 5페이지만 크롤링 (테스트용)
+    // 첫 5페이지 크롤링 (테스트용)
     for (let page = 1; page <= 5; page++) {
       console.log(`  페이지 ${page} 크롤링 중...`);
 
@@ -55,16 +54,16 @@ async function crawlScholarshipNotice() {
         const views = parseInt($row.find("td:nth-child(5)").text().trim()) || 0;
 
         const isImportant =
-          title.includes("[공지]") || title.includes("[필독]");
+          title.includes("[중요]") || title.includes("[공지]");
 
         if (title) {
-          notices.push({
-            id: `scholarship-${Date.now()}-${index}`,
-            title: title.replace(/\[공지\]|\[필독\]/g, "").trim(),
+          events.push({
+            id: `event-${Date.now()}-${index}`,
+            title: title.replace(/\[중요\]|\[공지\]/g, "").trim(),
             date: dateText,
-            author: author || "장학팀",
+            author: author || "행사팀",
             views: views,
-            category: "scholarship",
+            category: "event",
             content: "",
             url: url,
             isImportant: isImportant,
@@ -77,17 +76,17 @@ async function crawlScholarshipNotice() {
       process.cwd(),
       "public",
       "data",
-      "announcements-scholarship.json",
+      "announcements-events.json",
     );
 
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-    fs.writeFileSync(dataPath, JSON.stringify(notices, null, 2), "utf-8");
+    fs.writeFileSync(dataPath, JSON.stringify(events, null, 2), "utf-8");
 
-    console.log(`✅ 장학공지 ${notices.length}개 저장 완료: ${dataPath}`);
+    console.log(`✅ 행사공지 ${events.length}개 저장 완료: ${dataPath}`);
   } catch (error) {
-    console.error("❌ 장학공지 크롤링 실패:", error);
+    console.error("❌ 행사공지 크롤링 실패:", error);
     throw error;
   }
 }
 
-crawlScholarshipNotice();
+crawlEventNotices();
