@@ -21,7 +21,15 @@ export default function AnnouncementsPage() {
 
   const { data: announcements, isLoading } = useQuery({
     queryKey: ["announcements", selectedCategory],
-    queryFn: () => fetchAnnouncements(selectedCategory as any),
+    queryFn: () =>
+      fetchAnnouncements(
+        selectedCategory as
+          | "academic"
+          | "campus"
+          | "admin"
+          | "activity"
+          | undefined,
+      ),
     staleTime: 5 * 60 * 1000,
   });
 

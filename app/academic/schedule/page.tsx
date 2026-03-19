@@ -1,6 +1,5 @@
 "use client";
 
-import { Metadata } from "next";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";

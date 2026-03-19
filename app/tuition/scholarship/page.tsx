@@ -16,7 +16,7 @@ export default function ScholarshipPage() {
 
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
-    queryFn: fetchScholarships,
+    queryFn: () => fetchScholarships(),
     staleTime: 5 * 60 * 1000,
   });
 

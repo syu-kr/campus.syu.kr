@@ -10,7 +10,7 @@ import { fetchCafeteriaMenu } from "@/lib/api";
 export default function CafeteriaPage() {
   const { data: menus, isLoading } = useQuery({
     queryKey: ["cafeteria-weekly"],
-    queryFn: fetchCafeteriaMenu,
+    queryFn: () => fetchCafeteriaMenu(),
     staleTime: 5 * 60 * 1000,
   });
 

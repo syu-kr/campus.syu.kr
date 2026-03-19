@@ -43,9 +43,9 @@ export default function TermsPage() {
             제1조 목적
           </h2>
           <p className="text-neutral-700 leading-relaxed">
-            이 약관은 삼육대학교(이하 "학교")가 제공하는 SYU CAMPUS(이하
-            "서비스")의 이용과 관련하여 학교와 이용자의 권리 및 의무를 정하는
-            것을 목적으로 합니다.
+            이 약관은 삼육대학교(이하 &quot;학교&quot;)가 제공하는 SYU
+            CAMPUS(이하 &quot;서비스&quot;)의 이용과 관련하여 학교와 이용자의
+            권리 및 의무를 정하는 것을 목적으로 합니다.
           </p>
         </Card>
 

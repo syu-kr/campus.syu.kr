@@ -15,7 +15,8 @@ import {
   fetchAcademicSchedules,
   searchAll,
 } from "@/lib/api";
-import { formatDate, getCategoryColor, getCategoryLabel } from "@/lib/utils";
+import { formatDate, getCategoryLabel } from "@/lib/utils";
+import type { Announcement } from "@/types";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
@@ -45,14 +46,22 @@ export default function Home() {
   // 공지사항 조회
   const { data: announcements, isLoading: announcementsLoading } = useQuery({
     queryKey: ["announcements", selectedCategory],
-    queryFn: () => fetchAnnouncements(selectedCategory as any),
+    queryFn: () =>
+      fetchAnnouncements(
+        selectedCategory as
+          | "academic"
+          | "campus"
+          | "admin"
+          | "activity"
+          | undefined,
+      ),
     staleTime: 5 * 60 * 1000,
   });
 
   // 학식 조회
   const { data: cafeteria, isLoading: cafeteriaLoading } = useQuery({
     queryKey: ["cafeteria"],
-    queryFn: fetchCafeteriaMenu,
+    queryFn: () => fetchCafeteriaMenu(),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -122,7 +131,7 @@ export default function Home() {
               {searchResults.map((result) => (
                 <AnnouncementCard
                   key={result.id}
-                  announcement={result as any}
+                  announcement={result as Announcement}
                   href={`/announcements/${result.id}`}
                 />
               ))}
