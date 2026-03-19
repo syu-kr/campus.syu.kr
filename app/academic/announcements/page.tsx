@@ -73,7 +73,7 @@ export default function AcademicAnnouncementsPage() {
         </div>
       )}
 
-      <div className="space-y-3 mb-6">
+      <div className="space-y-4 mb-6">
         {isLoading && <Skeleton count={5} />}
         {!isLoading && paginatedAnnouncements.length === 0 && (
           <div className="py-8 text-center text-neutral-500">
@@ -85,6 +85,8 @@ export default function AcademicAnnouncementsPage() {
             <AnnouncementCard
               key={announcement.id}
               announcement={announcement}
+              href={announcement.url}
+              external={true}
             />
           ))}
       </div>

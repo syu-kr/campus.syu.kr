@@ -121,13 +121,8 @@ export async function fetchCafeteriaMenu(
             (menu.meals.lunch as { a_corner?: string[] }).a_corner || [];
           const bCorner =
             (menu.meals.lunch as { b_corner?: string[] }).b_corner || [];
+          // 각 코너의 항목들을 그냥 추가 (코너 라벨 없이)
           lunch = [
-            ...(aCorner.length > 0
-              ? [{ name: `A코너: ${aCorner.join(", ")}` }]
-              : []),
-            ...(bCorner.length > 0
-              ? [{ name: `B코너: ${bCorner.join(", ")}` }]
-              : []),
             ...aCorner.map((name) => ({ name })),
             ...bCorner.map((name) => ({ name })),
           ];
@@ -267,7 +262,7 @@ export async function fetchScholarships(
     // API에서 실제 데이터 가져오기
     const response = await fetch("/data/announcements-scholarship.json");
     const notices = await response.json();
-    
+
     const scholarshipData: Scholarship[] = (notices as Announcement[])
       .filter((notice) => {
         if (type === "internal") {

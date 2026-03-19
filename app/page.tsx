@@ -68,7 +68,7 @@ export default function Home() {
   // 학사일정 조회
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ["schedules"],
-    queryFn: () => fetchAcademicSchedules("exam"),
+    queryFn: () => fetchAcademicSchedules(),
     staleTime: 5 * 60 * 1000,
   });
 

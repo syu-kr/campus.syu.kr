@@ -2,7 +2,7 @@
  * 학사주요일정 크롤링 스크립트
  * 월 1회 실행됨
  * https://www.syu.ac.kr/academic/major-schedule/
- * 
+ *
  * HTML 구조분석:
  * - .md_gray_textcalendar 내부에 달별 일정이 있음
  * - 각 year/month는 dt 하위의 div로 구성
@@ -47,23 +47,23 @@ async function crawlSchedule() {
     // 모든 dl을 순회하면서 year/month를 추적
     calendarBoxes.each((_boxIdx, calendarBox) => {
       const $calendar = $(calendarBox);
-      
+
       // 모든 dl 선택자 순회 (연도와 월별로 구분된 구조)
       $calendar.find("dl").each((_dlIdx, dlElement) => {
         const $dl = $(dlElement);
-        
+
         // dt에서 year와 month 추출 (구조: dt > div.year/month)
         const yearElem = $dl.find("dt .year").text().trim();
         const monthElem = $dl.find("dt .month").text().trim();
-        
+
         let currentYear = yearElem;
         let currentMonth = monthElem;
-        
+
         // year/month가 없으면 이전 값 사용 (같은 연도/월 그룹 계속 유지)
         if (!currentYear && !currentMonth) {
           return; // 이 이상한 경우는 스킵
         }
-        
+
         // ul > li > dl 구조에서 개별 일정 추출
         $dl.find("ul li").each((_liIdx, liElement) => {
           const $li = $(liElement);
@@ -136,7 +136,9 @@ async function crawlSchedule() {
 
     console.log(`✅ 학사일정 ${schedules.length}개 저장 완료: ${dataPath}`);
     if (schedules.length > 0) {
-      console.log(`📝 샘플 일정: ${schedules[0].title} (${schedules[0].startDate})`);
+      console.log(
+        `📝 샘플 일정: ${schedules[0].title} (${schedules[0].startDate})`,
+      );
     }
   } catch (error) {
     console.error("❌ 학사일정 크롤링 실패:", error);
