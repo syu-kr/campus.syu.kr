@@ -10,6 +10,7 @@ import { useState } from "react";
 const categoryFilters = [
   { id: "all", label: "전체", value: undefined },
   { id: "academic", label: "학사", value: "academic" },
+  { id: "scholarship", label: "장학", value: "scholarship" },
   { id: "campus", label: "캠퍼스", value: "campus" },
   { id: "admin", label: "행정", value: "admin" },
 ];
@@ -25,6 +26,7 @@ export default function AnnouncementsPage() {
       fetchAnnouncements(
         selectedCategory as
           | "academic"
+          | "scholarship"
           | "campus"
           | "admin"
           | "activity"

@@ -12,36 +12,95 @@ import schedules from "@/data/schedule.json";
 import shuttleBuses from "@/data/shuttle-bus.json";
 import scholarships from "@/data/scholarships.json";
 
-// 공지사항 API
+// 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
   category?: string,
 ): Promise<Announcement[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (category) {
-        resolve(
-          (announcements as Announcement[]).filter(
-            (a) => a.category === category,
-          ),
-        );
-      } else {
-        resolve(announcements as Announcement[]);
-      }
-    }, 500);
-  });
+  try {
+    let data: Announcement[] = [];
+
+    if (!category || category === "academic") {
+      const academic = await fetch("/data/announcements-academic.json").then(
+        (r) => r.json(),
+      );
+      data = [...data, ...(academic as Announcement[])];
+    }
+
+    if (!category || category === "scholarship") {
+      const scholarship = await fetch(
+        "/data/announcements-scholarship.json",
+      ).then((r) => r.json());
+      data = [
+        ...data,
+        ...(scholarship as Announcement[]).map((item: Announcement) => ({
+          ...item,
+          category: "scholarship" as const,
+        })),
+      ];
+    }
+
+    // mock 데이터도 유지 (legacy support)
+    if (!category) {
+      const mockData = await import("@/data/announcements.json").then(
+        (m) => m.default,
+      );
+      data = [
+        ...data,
+        ...(mockData as Announcement[]).filter(
+          (a) => !a.category.includes("academic") && !a.category.includes("scholarship"),
+        ),
+      ];
+    }
+
+    return data.slice(0, 100); // 최대 100개로 제한
+  } catch (error) {
+    console.error("Failed to fetch announcements:", error);
+    // fallback to mock data
+    const announcements = await import("@/data/announcements.json").then(
+      (m) => m.default,
+    );
+    if (category) {
+      return (announcements as Announcement[]).filter(
+        (a) => a.category === category,
+      );
+    }
+    return announcements as Announcement[];
+  }
 }
 
 export async function fetchAnnouncementById(
   id: string,
 ): Promise<Announcement | null> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const announcement = (announcements as Announcement[]).find(
-        (a) => a.id === id,
-      );
-      resolve(announcement || null);
-    }, 300);
-  });
+  try {
+    // 크롤링된 데이터에서 검색
+    const academic = await fetch("/data/announcements-academic.json").then(
+      (r) => r.json(),
+    );
+    let found = (academic as Announcement[]).find((a: Announcement) => a.id === id);
+    if (found) return found;
+
+    const scholarship = await fetch(
+      "/data/announcements-scholarship.json",
+    ).then((r) => r.json());
+    found = (scholarship as Announcement[]).find((a: Announcement) => a.id === id);
+    if (found) return { ...found, category: "scholarship" as const };
+
+    // mock 데이터에서 검색
+    const mockData = await import("@/data/announcements.json").then(
+      (m) => m.default,
+    );
+    return (
+      (mockData as Announcement[]).find((a) => a.id === id) || null
+    );
+  } catch (error) {
+    console.error("Failed to fetch announcement:", error);
+    const mockData = await import("@/data/announcements.json").then(
+      (m) => m.default,
+    );
+    return (
+      (mockData as Announcement[]).find((a) => a.id === id) || null
+    );
+  }
 }
 
 // 학식 API
@@ -69,23 +128,33 @@ export async function fetchWeeklyCafeteriaMenu(): Promise<CafeteriaMenu[]> {
   });
 }
 
-// 학사일정 API
+// 학사일정 API - 크롤링된 실제 데이터 사용
 export async function fetchAcademicSchedules(
   category?: string,
 ): Promise<AcademicSchedule[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (category) {
-        resolve(
-          (schedules as AcademicSchedule[]).filter(
-            (s) => s.category === category,
-          ),
-        );
-      } else {
-        resolve(schedules as AcademicSchedule[]);
-      }
-    }, 500);
-  });
+  try {
+    const schedules = await fetch("/data/schedules-major.json").then((r) =>
+      r.json(),
+    );
+    if (category) {
+      return (schedules as AcademicSchedule[]).filter(
+        (s) => s.category === category,
+      );
+    }
+    return schedules as AcademicSchedule[];
+  } catch (error) {
+    console.error("Failed to fetch academic schedules:", error);
+    // fallback to mock data
+    const mockSchedules = await import("@/data/schedule.json").then(
+      (m) => m.default,
+    );
+    if (category) {
+      return (mockSchedules as AcademicSchedule[]).filter(
+        (s) => s.category === category,
+      );
+    }
+    return mockSchedules as AcademicSchedule[];
+  }
 }
 
 // 셔틀버스 API

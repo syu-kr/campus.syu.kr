@@ -3,11 +3,12 @@ export interface Announcement {
   id: string;
   title: string;
   content: string;
-  category: "academic" | "campus" | "admin" | "activity";
+  category: "academic" | "campus" | "admin" | "activity" | "scholarship";
   date: string;
   author: string;
   views: number;
   isImportant: boolean;
+  url?: string;
 }
 
 // 학식

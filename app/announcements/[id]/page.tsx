@@ -61,6 +61,7 @@ export default async function AnnouncementDetail({
     {
       all: "전체",
       academic: "학사",
+      scholarship: "장학",
       campus: "캠퍼스",
       admin: "행정",
       activity: "행사",

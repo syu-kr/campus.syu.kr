@@ -1,0 +1,39 @@
+name: Daily Crawl - Academic & Scholarship Notices
+
+on:
+  schedule:
+    # 매일 00시(UTC + 0) 실행 = KST 09시
+    - cron: "0 0 * * *"
+  workflow_dispatch: # 수동 실행 option
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run academic notices crawler
+        run: npm run crawl:academic
+
+      - name: Run scholarship notices crawler
+        run: npm run crawl:scholarships
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add public/data/announcements-*.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update daily notices crawl data"
+
+      - name: Push changes
+        run: git push
