@@ -45,13 +45,19 @@ async function crawlAcademicNotice() {
       $("table tbody tr").each((index, element) => {
         const $row = $(element);
 
-        // 필드 추출
+        // 필드 추출 - 테이블 열 순서 확인
         const titleElem = $row.find("td:nth-child(2) a");
         const title = titleElem.text().trim();
         const url = titleElem.attr("href") || "";
 
+        // 테이블 구조: 번호 | 제목 | 날짜 | 작성자 | 조회수
+        // nth-child(1): 번호
+        // nth-child(2): 제목
+        // nth-child(3): 날짜
+        // nth-child(4): 작성자
+        // nth-child(5): 조회수
         const dateText = $row.find("td:nth-child(3)").text().trim();
-        const author = $row.find("td:nth-child(4)").text().trim();
+        const authorText = $row.find("td:nth-child(4)").text().trim();
         const views = parseInt($row.find("td:nth-child(5)").text().trim()) || 0;
 
         // "[공지]" 또는 "[중요]" 텍스트 확인
@@ -62,9 +68,9 @@ async function crawlAcademicNotice() {
           announcements.push({
             id: `academic-${Date.now()}-${index}`,
             title: title.replace(/\[공지\]|\[중요\]/g, "").trim(),
-            date: dateText,
-            author: author || "삼육대학교",
-            views: views,
+            date: dateText || new Date().toISOString().split("T")[0],
+            author: authorText || "삼육대학교",
+            views: isNaN(views) ? 0 : views,
             category: "academic",
             content: "", // 상세 페이지 크롤링은 별도 처리
             url: url,

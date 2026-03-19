@@ -57,14 +57,12 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-neutral-900 mb-3">문의</h4>
+            <h4 className="font-semibold text-neutral-900 mb-3">
+              서비스 문의 및 제안
+            </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
-              <li>서비스 문의 및 제안</li>
               <li className="font-medium text-primary-600">
                 support_team@syu.kr
-              </li>
-              <li className="text-xs text-neutral-500 mt-3">
-                평일 09:00~18:00
               </li>
             </ul>
           </div>
@@ -81,18 +79,6 @@ export function Footer() {
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 이용약관
-              </a>
-              <a
-                href="/privacy"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                개인정보처리방침
-              </a>
-              <a
-                href="mailto:support_team@syu.kr"
-                className="text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                문의
               </a>
             </div>
           </div>

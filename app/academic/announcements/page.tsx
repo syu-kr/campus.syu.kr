@@ -5,6 +5,9 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAnnouncements } from "@/lib/api";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
+import { useState, useMemo } from "react";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AcademicAnnouncementsPage() {
   const { data: announcements, isLoading } = useQuery({
@@ -12,6 +15,35 @@ export default function AcademicAnnouncementsPage() {
     queryFn: () => fetchAnnouncements("academic"),
     staleTime: 5 * 60 * 1000,
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // 검색 필터링
+  const filteredAnnouncements = useMemo(() => {
+    if (!announcements) return [];
+    if (!searchQuery.trim()) return announcements;
+
+    const lowerQuery = searchQuery.toLowerCase();
+    return announcements.filter(
+      (a) =>
+        a.title.toLowerCase().includes(lowerQuery) ||
+        a.author.toLowerCase().includes(lowerQuery),
+    );
+  }, [announcements, searchQuery]);
+
+  // 페이지네이션
+  const totalPages = Math.ceil(filteredAnnouncements.length / ITEMS_PER_PAGE);
+  const paginatedAnnouncements = filteredAnnouncements.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  // 검색 결과가 변경되면 첫 페이지로
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
   return (
     <Container className="py-6 sm:py-8">
@@ -22,22 +54,77 @@ export default function AcademicAnnouncementsPage() {
         <p className="text-neutral-600">학사 관련 주요 공지사항을 확인하세요</p>
       </div>
 
-      <div className="space-y-3">
+      {/* 검색 바 */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="제목 또는 작성자로 검색..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
+      </div>
+
+      {/* 결과 수 표시 */}
+      {!isLoading && (
+        <div className="mb-4 text-sm text-neutral-600">
+          {filteredAnnouncements.length}개 항목 찾음
+          {searchQuery && ` (검색어: "${searchQuery}")`}
+        </div>
+      )}
+
+      <div className="space-y-3 mb-6">
         {isLoading && <Skeleton count={5} />}
+        {!isLoading && paginatedAnnouncements.length === 0 && (
+          <div className="py-8 text-center text-neutral-500">
+            검색 결과가 없습니다.
+          </div>
+        )}
         {!isLoading &&
-          announcements &&
-          announcements.map((announcement) => (
+          paginatedAnnouncements.map((announcement) => (
             <AnnouncementCard
               key={announcement.id}
               announcement={announcement}
-              href={`/announcements/${announcement.id}`}
             />
           ))}
       </div>
 
-      {!isLoading && announcements?.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-neutral-600">공지사항이 없습니다</p>
+      {/* 페이지네이션 */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.max(1, p - 1))
+            }
+            disabled={currentPage === 1}
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+          >
+            이전
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-2 rounded-lg ${
+                currentPage === page
+                  ? "bg-primary-600 text-white"
+                  : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            onClick={() =>
+              setCurrentPage((p) => Math.min(totalPages, p + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+          >
+            다음
+          </button>
         </div>
       )}
     </Container>

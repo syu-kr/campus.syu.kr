@@ -70,33 +70,6 @@ export default function AcademicPage() {
           </Link>
         ))}
       </div>
-
-      {/* 학사 정보 요약 */}
-      <div className="mt-8">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-4">
-          학적 현황
-        </h2>
-        <Card>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-xs text-neutral-600 mb-1">학적상태</p>
-              <p className="font-bold text-primary-600">정상</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-neutral-600 mb-1">GPA</p>
-              <p className="font-bold text-primary-600">3.85</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-neutral-600 mb-1">이수학점</p>
-              <p className="font-bold text-primary-600">115 / 130</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-neutral-600 mb-1">졸업예정</p>
-              <p className="font-bold text-primary-600">2025년 2월</p>
-            </div>
-          </div>
-        </Card>
-      </div>
     </Container>
   );
 }
