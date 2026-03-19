@@ -1,6 +1,15 @@
 /**
  * SU-Lounge 식단표 크롤링 스크립트 (매일 실행)
- * https://www.syu.ac.kr/school-life/facility-information/cafeteria/?week_start=20260316
+ * https://www.syu.ac.kr/school-life/facility-information/cafeteria/
+ * 
+ * HTML 구조:
+ * - .weekly-menu-table 테이블
+ * - thead: 헤더 (날짜: 3월 16일(월), 3월 17일(화) 등)
+ * - tbody:
+ *   - 행 0: 중식 (각 날짜별 5셀)
+ *   - 행 1: A코너 (6셀 - 구분 + 각 날짜별)
+ *   - 행 2: B코너 (6셀 - 구분 + 각 날짜별)
+ *   - 행 3: 석식 (5셀)
  */
 
 import axios from "axios";
@@ -29,52 +38,43 @@ interface CafeteriaMenu {
   lastUpdated: string;
 }
 
-// 날짜 파싱 함수
 function parseKoreanDate(dateStr: string): { date: string; day: string } {
-  // "2026.03.19 (목)" 형식에서 파싱
-  const match = dateStr.match(/(\d{4})\.(\d{2})\.(\d{2})\s*\((.)\)/);
+  // "3월 16일 (월)" 형식 파싱
+  const match = dateStr.match(/(\d{1,2})월\s*(\d{1,2})일\s*\((.)\)/);
   if (match) {
-    const [, year, month, date, day] = match;
-    return {
-      date: `${year}-${month}-${date}`,
-      day: day,
-    };
-  }
-
-  // "03.19 (목)" 형식
-  const match2 = dateStr.match(/(\d{2})\.(\d{2})\s*\((.)\)/);
-  if (match2) {
-    const [, month, date, day] = match2;
+    const [, month, day, dayOfWeek] = match;
     const today = new Date();
     const year = today.getFullYear();
     return {
-      date: `${year}-${month}-${date}`,
-      day: day,
+      date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+      day: dayOfWeek,
     };
   }
-
   return { date: new Date().toISOString().split("T")[0], day: "" };
+}
+
+function parseMenuItems(html: string): string[] {
+  return html
+    .split(/<br\s*\/?>/i)
+    .map((item) => {
+      const cleaned = item
+        .trim()
+        .replace(/<[^>]*>/g, "")
+        .replace(/&nbsp;/g, "")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .trim();
+      return cleaned;
+    })
+    .filter((item) => item.length > 0);
 }
 
 async function crawlCafeteriaMenu() {
   const menus: MenuDay[] = [];
-
-  // 현재 주의 월요일을 기준으로 week_start 계산
-  const today = new Date();
-  const dayOfWeek = today.getDay() || 7; // 일요일은 0 -> 7로 변환
-  const daysToMonday = dayOfWeek === 1 ? 0 : dayOfWeek - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - daysToMonday);
-
-  const year = monday.getFullYear();
-  const month = String(monday.getMonth() + 1).padStart(2, "0");
-  const date = String(monday.getDate()).padStart(2, "0");
-  const weekStartParam = `${year}${month}${date}`;
-
-  const baseUrl = `https://www.syu.ac.kr/school-life/facility-information/cafeteria/?week_start=${weekStartParam}`;
+  const baseUrl = "https://www.syu.ac.kr/school-life/facility-information/cafeteria/";
 
   console.log("🍜 SU-Lounge 식단표 크롤링 시작...");
-  console.log(`   주간 시작일: ${year}-${month}-${date}`);
 
   try {
     const response = await axios.get(baseUrl, {
@@ -86,95 +86,112 @@ async function crawlCafeteriaMenu() {
 
     const $ = cheerio.load(response.data);
 
-    // 메인 식단표 테이블 찾기
-    $("table").each((_tableIdx, tableElement) => {
-      const $table = $(tableElement);
+    // 주간 메뉴 테이블 찾기
+    const table = $(".weekly-menu-table");
+    if (table.length === 0) {
+      console.log("⚠️ weekly-menu-table을 찾을 수 없습니다.");
+      throw new Error("Table not found");
+    }
 
-      // 테이블의 각 열이 하루의 데이터
-      $table.find("tbody tr").each((_rowIdx, trElement) => {
-        const $row = $(trElement);
-        const cells = $row.find("td");
+    // 헤더에서 날짜 추출
+    const headerCells = table.find("thead th");
+    const dates: { date: string; day: string }[] = [];
 
-        if (cells.length === 0) return; // 빈 행 스킵
+    for (let i = 1; i < headerCells.length; i++) {
+      // 첫 셀(구분)은 스킵
+      const dateStr = $(headerCells[i]).text().trim();
+      if (dateStr) {
+        const parsed = parseKoreanDate(dateStr);
+        dates.push(parsed);
+      }
+    }
 
-        // 첫 번째 셀: 날짜 (보통 "2026.03.19 (목)" 형식)
-        const dateCell = $(cells[0]).text().trim();
+    console.log(`📊 발견된 날짜: ${dates.length}개`);
+    dates.forEach((d) => console.log(`   - ${d.date} (${d.day})`));
 
-        if (dateCell && /\d{4}\.\d{2}\.\d{2}/.test(dateCell)) {
-          const { date: parsedDate, day } = parseKoreanDate(dateCell);
+    // 테이블 body 행 처리
+    const bodyRows = table.find("tbody tr");
+    console.log(`📋 Body 행: ${bodyRows.length}개`);
 
-          // 두 번째 이후 셀: 식사별 메뉴
-          const meals = {
-            breakfast: [] as string[],
-            lunch: {
-              a_corner: [] as string[],
-              b_corner: [] as string[],
-            },
-            dinner: [] as string[],
-          };
+    // 행 0: 중식 (각 날짜별)
+    const lunchRow = bodyRows.eq(0);
+    const lunchCells = lunchRow.find("td");
 
-          // 각 식사 시간별로 메뉴 추출
-          if (cells.length > 1) {
-            const breakfastText = $(cells[1]).html() || "";
-            meals.breakfast = breakfastText
-              .split(/<br\s*\/?>/i)
-              .map((item) => item.trim().replace(/<[^>]*>/g, ""))
-              .filter((item) => item.length > 0 && !item.includes("&nbsp;"))
-              .slice(0, 5); // 최대 5개
-          }
+    // 행 1: A코너
+    const aCornerRow = bodyRows.eq(1);
+    const aCornerCells = aCornerRow.find("td").slice(1); // 첫 셀(구분) 제외
 
-          if (cells.length > 2) {
-            const lunchText = $(cells[2]).html() || "";
-            const lunchItems = lunchText
-              .split(/<br\s*\/?>/i)
-              .map((item) => item.trim().replace(/<[^>]*>/g, ""))
-              .filter((item) => item.length > 0 && !item.includes("&nbsp;"));
+    // 행 2: B코너
+    const bCornerRow = bodyRows.eq(2);
+    const bCornerCells = bCornerRow.find("td").slice(1); // 첫 셀(구분) 제외
 
-            // A/B 코너 분리
-            let currentCorner = "a_corner";
-            lunchItems.forEach((item) => {
-              if (item.includes("A") && item.includes("코너")) {
-                currentCorner = "a_corner";
-              } else if (item.includes("B") && item.includes("코너")) {
-                currentCorner = "b_corner";
-              } else if (item.length > 0) {
-                meals.lunch[currentCorner as "a_corner" | "b_corner"].push(
-                  item,
-                );
-              }
-            });
+    // 행 3: 석식 (각 날짜별, 1~5번 셀)
+    const dinnerRow = bodyRows.eq(3);
+    const dinnerCells = dinnerRow.find("td");
 
-            // 한쪽이 비어있으면 반대쪽에서 복사
-            if (
-              meals.lunch.a_corner.length === 0 &&
-              meals.lunch.b_corner.length > 0
-            ) {
-              meals.lunch.a_corner = meals.lunch.b_corner;
-            } else if (
-              meals.lunch.b_corner.length === 0 &&
-              meals.lunch.a_corner.length > 0
-            ) {
-              meals.lunch.b_corner = meals.lunch.a_corner;
-            }
-          }
+    console.log(`\nA코너 셀: ${aCornerCells.length}개`);
+    console.log(`B코너 셀: ${bCornerCells.length}개`);
 
-          if (cells.length > 3) {
-            const dinnerText = $(cells[3]).html() || "";
-            meals.dinner = dinnerText
-              .split(/<br\s*\/?>/i)
-              .map((item) => item.trim().replace(/<[^>]*>/g, ""))
-              .filter((item) => item.length > 0 && !item.includes("&nbsp;"))
-              .slice(0, 5);
-          }
+    // 각 날짜별로 메뉴 구성
+    for (let dateIdx = 0; dateIdx < dates.length; dateIdx++) {
+      const { date, day } = dates[dateIdx];
+      const cellIdx = dateIdx + 1; // 헤더에서 1번부터 시작
 
-          menus.push({
-            date: parsedDate,
-            day: day,
-            meals: meals,
-          });
-        }
-      });
-    });
+      const meals = {
+        breakfast: [] as string[], // 아침은 없음
+        lunch: {
+          a_corner: [] as string[],
+          b_corner: [] as string[],
+        },
+        dinner: [] as string[],
+      };
+
+      // 중식
+      const lunchCell = lunchCells.eq(cellIdx);
+      if (lunchCell.length > 0) {
+        // 중식은 A/B 코너 구분 전 통합 메뉴
+        const lunchText = lunchCell.html() || "";
+        const lunchItems = parseMenuItems(lunchText);
+        // A/B 모두에 추가
+        meals.lunch.a_corner = lunchItems.slice();
+        meals.lunch.b_corner = lunchItems.slice();
+      }
+
+      // A코너 (재정의 - 있으면)
+      const aCell = aCornerCells.eq(dateIdx);
+      if (aCell.length > 0) {
+        const aText = aCell.html() || "";
+        meals.lunch.a_corner = parseMenuItems(aText);
+      }
+
+      // B코너 (재정의 - 있으면)
+      const bCell = bCornerCells.eq(dateIdx);
+      if (bCell.length > 0) {
+        const bText = bCell.html() || "";
+        meals.lunch.b_corner = parseMenuItems(bText);
+      }
+
+      // 석식
+      const dinnerCell = dinnerCells.eq(cellIdx);
+      if (dinnerCell.length > 0) {
+        const dinnerText = dinnerCell.html() || "";
+        meals.dinner = parseMenuItems(dinnerText);
+      }
+
+      // 유효한 메뉴가 있으면 추가
+      if (
+        meals.lunch.a_corner.length > 0 ||
+        meals.lunch.b_corner.length > 0 ||
+        meals.dinner.length > 0
+      ) {
+        menus.push({
+          date,
+          day,
+          meals,
+        });
+        console.log(`   ✓ ${date} (${day}): 중${meals.lunch.a_corner.length} A${meals.lunch.a_corner.length} B${meals.lunch.b_corner.length} 석${meals.dinner.length}`);
+      }
+    }
 
     // JSON 파일로 저장
     const dataPath = path.join(
@@ -184,10 +201,12 @@ async function crawlCafeteriaMenu() {
       "cafeteria-menu.json",
     );
 
+    const weekStartDate = dates[0]?.date || new Date().toISOString().split("T")[0];
+
     const menuData: CafeteriaMenu = {
       id: "su-lounge-001",
       name: "SU-Lounge",
-      weekStart: `${year}-${month}-${date}`,
+      weekStart: weekStartDate,
       menus: menus,
       lastUpdated: new Date().toISOString(),
     };
@@ -195,9 +214,13 @@ async function crawlCafeteriaMenu() {
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });
     fs.writeFileSync(dataPath, JSON.stringify([menuData], null, 2), "utf-8");
 
-    console.log(
-      `✅ SU-Lounge 식단표 ${menus.length}일분 저장 완료: ${dataPath}`,
-    );
+    if (menus.length > 0) {
+      console.log(
+        `\n✅ SU-Lounge 식단표 ${menus.length}일분 저장 완료: ${dataPath}`,
+      );
+    } else {
+      console.log(`\n⚠️ 추출된 데이터가 없습니다.`);
+    }
   } catch (error) {
     console.error("❌ SU-Lounge 식단표 크롤링 실패:", error);
     throw error;
