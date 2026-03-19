@@ -185,7 +185,7 @@ export default function Home() {
       </Card>
 
       {/* 공지사항 섹션 */}
-      <div>
+      <div className="pb-4 sm:pb-6 border-b border-neutral-200">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-neutral-900">공지사항</h2>
           <Link

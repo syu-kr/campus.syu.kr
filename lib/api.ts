@@ -152,10 +152,10 @@ export async function fetchCafeteriaMenu(
           lunch = menu.meals.lunch.map((name) => ({ name }));
         } else if (typeof menu.meals.lunch === "object") {
           // A/B 코너가 분리된 경우
-          const aCorner = (menu.meals.lunch as { a_corner?: string[] })
-            .a_corner || [];
-          const bCorner = (menu.meals.lunch as { b_corner?: string[] })
-            .b_corner || [];
+          const aCorner =
+            (menu.meals.lunch as { a_corner?: string[] }).a_corner || [];
+          const bCorner =
+            (menu.meals.lunch as { b_corner?: string[] }).b_corner || [];
           lunch = [
             ...(aCorner.length > 0
               ? [{ name: `A코너: ${aCorner.join(", ")}` }]
@@ -169,9 +169,10 @@ export async function fetchCafeteriaMenu(
         }
       }
 
-      const breakfast = menu.meals?.breakfast?.map((name) => ({
-        name,
-      })) || [];
+      const breakfast =
+        menu.meals?.breakfast?.map((name) => ({
+          name,
+        })) || [];
       const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
 
       menus.push({
