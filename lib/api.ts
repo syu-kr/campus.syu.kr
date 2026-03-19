@@ -114,27 +114,64 @@ export async function fetchCafeteriaMenu(
     const response = await fetch("/data/cafeteria-menu.json", {
       next: { revalidate: 3600 }, // Cache for 1 hour (매일 업데이트됨)
     });
-    const data = (await response.json()) as unknown;
-    const cafeterias = Array.isArray(data) ? data : [];
+    const data = (await response.json()) as
+      | Array<{ menus?: unknown[] }>
+      | { menus?: unknown[] };
 
-    if (!cafeterias || cafeterias.length === 0) {
+    // 데이터 구조 확인
+    let cafeteriaData: { menus?: unknown[] };
+    if (Array.isArray(data) && data.length > 0) {
+      cafeteriaData = data[0];
+    } else if (data && typeof data === "object" && "menus" in data) {
+      cafeteriaData = data;
+    } else {
+      throw new Error("Invalid cafeteria data structure");
+    }
+
+    if (!cafeteriaData?.menus || !Array.isArray(cafeteriaData.menus)) {
       throw new Error("No cafeteria data");
     }
 
     // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
     const menus: CafeteriaMenu[] = [];
-    const cafeteriaData = cafeterias[0] as {
-      menus: Array<{
-        date: string;
-        day: string;
-        meals: { breakfast: string[]; lunch: string[]; dinner: string[] };
-      }>;
-    };
-    const menuDays = cafeteriaData?.menus || [];
+    const menuDays = cafeteriaData.menus as Array<{
+      date: string;
+      day: string;
+      meals?: {
+        breakfast?: string[];
+        lunch?: string[] | { a_corner?: string[]; b_corner?: string[] };
+        dinner?: string[];
+      };
+    }>;
 
     menuDays.forEach((menu, idx) => {
-      const breakfast = menu.meals?.breakfast?.map((name) => ({ name })) || [];
-      const lunch = menu.meals?.lunch?.map((name) => ({ name })) || [];
+      // 중식 처리 - A/B 코너가 있는 경우와 없는 경우 모두 처리
+      let lunch: Array<{ name: string }> = [];
+      if (menu.meals?.lunch) {
+        if (Array.isArray(menu.meals.lunch)) {
+          lunch = menu.meals.lunch.map((name) => ({ name }));
+        } else if (typeof menu.meals.lunch === "object") {
+          // A/B 코너가 분리된 경우
+          const aCorner = (menu.meals.lunch as { a_corner?: string[] })
+            .a_corner || [];
+          const bCorner = (menu.meals.lunch as { b_corner?: string[] })
+            .b_corner || [];
+          lunch = [
+            ...(aCorner.length > 0
+              ? [{ name: `A코너: ${aCorner.join(", ")}` }]
+              : []),
+            ...(bCorner.length > 0
+              ? [{ name: `B코너: ${bCorner.join(", ")}` }]
+              : []),
+            ...aCorner.map((name) => ({ name })),
+            ...bCorner.map((name) => ({ name })),
+          ];
+        }
+      }
+
+      const breakfast = menu.meals?.breakfast?.map((name) => ({
+        name,
+      })) || [];
       const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
 
       menus.push({

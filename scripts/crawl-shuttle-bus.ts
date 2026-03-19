@@ -15,6 +15,7 @@ interface ShuttleBusSchedule {
   endLocation: string;
   schedules: {
     weekday: string[];
+    weekdayAlt?: string[]; // 금요일
     weekend: string[];
   };
   lastUpdated: string;
@@ -36,117 +37,92 @@ async function crawlShuttleBusSchedule() {
 
     const $ = cheerio.load(response.data);
 
-    // 테이블에서 시간표 추출
-    // 구조: 테이블의 각 행이 하나의 노선
     let routeIndex = 0;
 
     // 모든 테이블 찾기
-    $("table").each((_tableIdx, tableElement) => {
-      const $table = $(tableElement);
+    const tables = $("table");
+    console.log(`📊 총 ${tables.length}개의 테이블 발견`);
 
-      // 테이블 제목 찾기 (평일/주말)
-      const tableTitle = $table.prev("h3, h4, strong").text().trim();
-      const isWeekday = tableTitle.includes("평일");
-      const isWeekend = tableTitle.includes("주말");
+    // 테이블 쌍으로 처리 (월~목요일, 금요일)
+    for (let i = 0; i < tables.length; i++) {
+      const $table = $(tables[i]);
+      
+      // 테이블 앞의 제목 찾기 (예: "왕기중" 등)
+      let headerTitle = $table.prev("h3, h4, strong, b, p").text().trim();
+      if (!headerTitle) {
+        headerTitle = $table.find("thead tr").first().find("td, th").eq(0).text().trim();
+      }
 
-      // 테이블 행 반복
-      $table.find("tbody tr").each((_rowIdx, trElement) => {
-        const $row = $(trElement);
-        const cells = $row.find("td");
+      // 목적지 찾기 (예: "6호선 황정역(5번 출구), 산계")
+      let routeTitle = "";
+      const headerRow = $table.find("thead tr").first();
+      if (headerRow.length > 0) {
+        routeTitle = headerRow.text().trim();
+      } else {
+        routeTitle = $table.prev().text().trim();
+      }
 
-        if (cells.length >= 2) {
-          // 첫 번째 셀: 노선명
-          const routeName = $(cells[0]).text().trim();
-          // 두 번째 셀: 시간표 (시간들이 쉼표로 구분되거나 개별 셀)
-          const timeText = $(cells[1]).text().trim();
+      // 첫 번째 tbody 행에서 목적지 추출
+      const firstRow = $table.find("tbody tr").first();
+      if (firstRow.length === 0) continue;
 
-          if (routeName && timeText) {
-            // 기존 노선이 있는지 확인
-            let existingRoute = schedules.find((s) =>
-              s.routeName.includes(routeName.split("-")[0].trim()),
-            );
+      const cells = firstRow.find("td");
+      if (cells.length === 0) continue;
 
-            if (!existingRoute) {
-              existingRoute = {
-                id: `shuttle-${++routeIndex}`,
-                routeName: routeName,
-                startLocation: "캠퍼스",
-                endLocation: routeName.split("-")[1]?.trim() || "목적지",
-                schedules: {
-                  weekday: [],
-                  weekend: [],
-                },
-                lastUpdated: new Date().toISOString().split("T")[0],
-              };
-              schedules.push(existingRoute);
+      const destination = $(cells[0]).text().trim() || routeTitle || headerTitle;
+
+      // 시간 추출
+      const times: string[] = [];
+      $table.find("tbody tr").each((_idx, tr) => {
+        $(tr)
+          .find("td")
+          .each((_cidx, td) => {
+            const timeText = $(td).text().trim();
+            if (/^\d{1,2}:\d{2}/.test(timeText)) {
+              const time = timeText.substring(0, 5);
+              if (!times.includes(time)) {
+                times.push(time);
+              }
             }
-
-            // 시간 파싱
-            const times = timeText
-              .split(/[,\s]+/)
-              .filter((t) => /^\d{1,2}:\d{2}/.test(t))
-              .map((t) => t.substring(0, 5)); // HH:MM 형식
-
-            if (isWeekday) {
-              existingRoute.schedules.weekday = [
-                ...new Set([...existingRoute.schedules.weekday, ...times]),
-              ]
-                .sort()
-                .slice(0, 7); // 평일 최대 7개 시간
-            }
-
-            if (isWeekend) {
-              existingRoute.schedules.weekend = [
-                ...new Set([...existingRoute.schedules.weekend, ...times]),
-              ]
-                .sort()
-                .slice(0, 5); // 주말 최대 5개 시간
-            }
-          }
-        }
+          });
       });
-    });
 
-    // 모든 tr 추출 및 시간표 처리
-    $("table tbody tr").each((_index, element) => {
-      const $row = $(element);
-      const cells = $row.find("td");
+      if (times.length > 0) {
+        times.sort();
+        const isAltDay = $table.prev("b, p, h3, h4").text().includes("금");
 
-      if (cells.length >= 3) {
-        const routeName = $(cells[0]).text().trim();
-        const destination = $(cells[1]).text().trim();
+        const routeName = headerTitle || `버스 ${i + 1}`;
+        let existingRoute = schedules.find(
+          (s) => s.routeName === routeName && s.endLocation === destination,
+        );
 
-        // 평일/주말 시간표를 각 열에서 추출
-        const getTimeSlots = (startIndex: number): string[] => {
-          const slots: string[] = [];
-          for (let i = startIndex; i < cells.length; i++) {
-            const time = $(cells[i]).text().trim();
-            if (/^\d{1,2}:\d{2}/.test(time)) {
-              slots.push(time.substring(0, 5));
-            }
-          }
-          return slots;
-        };
-
-        // 새로운 노선 추가
-        if (routeName && !schedules.some((s) => s.routeName === routeName)) {
-          const weekdayTimes = getTimeSlots(2);
-          const weekendTimes = getTimeSlots(Math.ceil(cells.length / 2) + 2);
-
-          schedules.push({
-            id: `shuttle-${schedules.length + 1}`,
+        if (!existingRoute) {
+          existingRoute = {
+            id: `shuttle-${++routeIndex}`,
             routeName: routeName,
             startLocation: "캠퍼스",
             endLocation: destination,
             schedules: {
-              weekday: weekdayTimes.slice(0, 7), // 최대 7개
-              weekend: weekendTimes.slice(0, 5), // 최대 5개
+              weekday: [],
+              weekend: [],
             },
             lastUpdated: new Date().toISOString().split("T")[0],
-          });
+          };
+          schedules.push(existingRoute);
+        }
+
+        if (isAltDay) {
+          existingRoute.schedules.weekdayAlt = times;
+        } else {
+          if (existingRoute.schedules.weekday.length === 0) {
+            existingRoute.schedules.weekday = times;
+          } else {
+            existingRoute.schedules.weekdayAlt = times;
+          }
         }
       }
-    });
+    }
+
 
     // 데이터가 너무 적으면 기본값으로 채우기
     if (schedules.length < 2) {
@@ -156,67 +132,75 @@ async function crawlShuttleBusSchedule() {
       schedules.push(
         {
           id: "shuttle-001",
-          routeName: "신복로 - 종로",
-          startLocation: "캠퍼스 정주교",
-          endLocation: "롯데마트 종로점",
+          routeName: "왕기중",
+          startLocation: "캠퍼스",
+          endLocation: "6호선 황정역(5번 출구), 산계",
           schedules: {
             weekday: [
-              "06:30",
-              "07:00",
-              "07:30",
-              "08:00",
-              "12:00",
-              "12:30",
-              "13:00",
-              "17:30",
-              "18:00",
-              "18:30",
-            ],
-            weekend: ["08:00", "09:00", "10:00", "12:00", "14:00"],
-          },
-          lastUpdated: new Date().toISOString().split("T")[0],
-        },
-        {
-          id: "shuttle-002",
-          routeName: "신복로 - 강남역",
-          startLocation: "캠퍼스 정주교",
-          endLocation: "강남역 11번 출구",
-          schedules: {
-            weekday: [
-              "06:45",
-              "07:15",
-              "07:45",
+              "08:10",
               "08:15",
-              "12:15",
-              "13:15",
-              "17:45",
-              "18:15",
-              "18:45",
-              "19:15",
-            ],
-            weekend: ["08:30", "09:30", "10:30", "12:30", "14:30"],
-          },
-          lastUpdated: new Date().toISOString().split("T")[0],
-        },
-        {
-          id: "shuttle-003",
-          routeName: "신복로 - 동대문",
-          startLocation: "캠퍼스 정주교",
-          endLocation: "동대문역 13번 출구",
-          schedules: {
-            weekday: [
-              "07:00",
-              "07:30",
-              "08:00",
+              "08:20",
+              "08:25",
               "08:30",
-              "12:30",
-              "13:30",
-              "18:00",
-              "18:30",
-              "19:00",
-              "19:30",
+              "08:35",
+              "08:40",
+              "08:45",
+              "08:50",
+              "08:55",
+              "09:00",
+              "09:20",
+              "09:40",
+              "10:00",
+              "10:20",
+              "12:00",
+              "12:25",
+              "12:50",
+              "13:15",
+              "13:40",
+              "14:05",
+              "14:30",
+              "15:00",
+              "15:20",
+              "15:40",
+              "16:00",
+              "16:20",
+              "16:40",
+              "17:00",
+              "17:20",
+              "17:40",
             ],
-            weekend: ["09:00", "10:00", "11:00", "13:00", "15:00"],
+            weekdayAlt: [
+              "08:10",
+              "08:15",
+              "08:20",
+              "08:25",
+              "08:30",
+              "08:35",
+              "08:40",
+              "08:45",
+              "08:50",
+              "08:55",
+              "09:00",
+              "09:20",
+              "09:40",
+              "10:00",
+              "10:20",
+              "12:00",
+              "12:25",
+              "12:50",
+              "13:15",
+              "13:40",
+              "14:05",
+              "14:30",
+              "15:00",
+              "15:20",
+              "15:40",
+              "16:00",
+              "16:20",
+              "16:40",
+              "17:00",
+            ],
+            weekend: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"],
           },
           lastUpdated: new Date().toISOString().split("T")[0],
         },
