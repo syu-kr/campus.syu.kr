@@ -26,19 +26,11 @@ const academicMenus = [
     color: "from-purple-400 to-purple-600",
   },
   {
-    id: "grades",
-    title: "학점조회",
-    description: "수강과목 및 성적 확인",
-    icon: "📊",
-    href: "/academic/grades",
-    color: "from-green-400 to-green-600",
-  },
-  {
-    id: "registration",
-    title: "수강신청",
-    description: "거짓 수강신청 시뮬레이터",
-    icon: "✍️",
-    href: "/academic/registration",
+    id: "timetable",
+    title: "시간표 짜기",
+    description: "학기 시간표 작성 마법사",
+    icon: "⏰",
+    href: "/academic/timetable",
     color: "from-pink-400 to-pink-600",
   },
   {
@@ -48,14 +40,6 @@ const academicMenus = [
     icon: "🎓",
     href: "/academic/graduation",
     color: "from-orange-400 to-orange-600",
-  },
-  {
-    id: "leave",
-    title: "학적신청",
-    description: "휴학 및 복학 신청",
-    icon: "📝",
-    href: "/academic/leave-application",
-    color: "from-red-400 to-red-600",
   },
 ];
 

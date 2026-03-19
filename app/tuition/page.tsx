@@ -10,36 +10,12 @@ export const metadata: Metadata = {
 
 const tuitionMenus = [
   {
-    id: "schedule",
-    title: "등록금 일정",
-    description: "등록금 납부 기간 안내",
-    icon: "📅",
-    href: "/tuition/schedule",
-    color: "from-blue-400 to-blue-600",
-  },
-  {
     id: "scholarship",
     title: "장학금",
     description: "교내/외 장학금 정보",
     icon: "🎓",
     href: "/tuition/scholarship",
     color: "from-green-400 to-green-600",
-  },
-  {
-    id: "loan",
-    title: "학자금 대출",
-    description: "학생 대출 및 이자 정보",
-    icon: "💳",
-    href: "/tuition/loan",
-    color: "from-purple-400 to-purple-600",
-  },
-  {
-    id: "refund",
-    title: "환급 안내",
-    description: "수강포기 및 환급 정책",
-    icon: "💰",
-    href: "/tuition/refund",
-    color: "from-orange-400 to-orange-600",
   },
 ];
 

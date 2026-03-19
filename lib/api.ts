@@ -211,47 +211,97 @@ export async function fetchAcademicInfo(): Promise<AcademicInfo> {
   });
 }
 
-// 검색 API
+// 검색 API - 개선됨 (전체 데이터 통합 검색)
 export async function searchAll(
   query: string,
 ): Promise<(Announcement | AcademicSchedule | CafeteriaMenu | Scholarship)[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const lowerQuery = query.toLowerCase();
-      const results: (
-        | Announcement
-        | AcademicSchedule
-        | CafeteriaMenu
-        | Scholarship
-      )[] = [];
+  if (!query.trim()) {
+    return [];
+  }
 
-      // 공지사항 검색
-      const matchedAnnouncements = (announcements as Announcement[]).filter(
+  const lowerQuery = query.toLowerCase();
+  const results: (
+    | Announcement
+    | AcademicSchedule
+    | CafeteriaMenu
+    | Scholarship
+  )[] = [];
+
+  try {
+    // 1. 크롤링된 공지사항 검색
+    try {
+      const eventNotices = await fetch("/data/announcements-events.json").then(
+        (r) => r.json(),
+      );
+      const matchedEvents = (eventNotices as Announcement[]).filter(
         (a) =>
-          a.title.toLowerCase().includes(lowerQuery) ||
-          a.content.toLowerCase().includes(lowerQuery),
+          a.title?.toLowerCase().includes(lowerQuery) ||
+          a.content?.toLowerCase().includes(lowerQuery),
       );
-      results.push(...matchedAnnouncements);
+      results.push(...matchedEvents);
+    } catch {
+      // handle silently
+    }
 
-      // 학사일정 검색
-      const matchedSchedules = (schedules as AcademicSchedule[]).filter(
-        (s) =>
-          s.title.toLowerCase().includes(lowerQuery) ||
-          s.description?.toLowerCase().includes(lowerQuery),
+    try {
+      const campusNotices = await fetch(
+        "/data/announcements-campus-life.json",
+      ).then((r) => r.json());
+      const matchedCampus = (campusNotices as Announcement[]).filter(
+        (a) =>
+          a.title?.toLowerCase().includes(lowerQuery) ||
+          a.content?.toLowerCase().includes(lowerQuery),
       );
-      results.push(...matchedSchedules);
+      results.push(...matchedCampus);
+    } catch {
+      // handle silently
+    }
 
-      // 장학금 검색
-      const matchedScholarships = (scholarships as Scholarship[]).filter(
-        (s) =>
-          s.name.toLowerCase().includes(lowerQuery) ||
-          s.description.toLowerCase().includes(lowerQuery),
-      );
-      results.push(...matchedScholarships);
+    // 2. Mock 공지사항 검색 (legacy)
+    const mockAnnouncements = (announcements as Announcement[]).filter(
+      (a) =>
+        a.title.toLowerCase().includes(lowerQuery) ||
+        a.content.toLowerCase().includes(lowerQuery),
+    );
+    results.push(...mockAnnouncements);
 
-      resolve(results);
-    }, 800);
-  });
+    // 3. 학사일정 검색
+    const matchedSchedules = (schedules as AcademicSchedule[]).filter(
+      (s) =>
+        s.title.toLowerCase().includes(lowerQuery) ||
+        s.description?.toLowerCase().includes(lowerQuery),
+    );
+    results.push(...matchedSchedules);
+
+    // 4. 장학금 검색
+    const matchedScholarships = (scholarships as Scholarship[]).filter(
+      (s) =>
+        s.name.toLowerCase().includes(lowerQuery) ||
+        s.description.toLowerCase().includes(lowerQuery),
+    );
+    results.push(...matchedScholarships);
+
+    // 중복 제거 (ID 기반)
+    const uniqueResults = Array.from(
+      new Map(results.map((item) => [item.id, item])).values(),
+    );
+
+    return uniqueResults.slice(0, 100); // 최대 100개로 제한
+  } catch (error) {
+    console.error("Search failed:", error);
+    // Fallback: mock 데이터만이라도 검색
+    const mockAnnouncements = (announcements as Announcement[]).filter(
+      (a) =>
+        a.title.toLowerCase().includes(lowerQuery) ||
+        a.content.toLowerCase().includes(lowerQuery),
+    );
+    const mockSchedules = (schedules as AcademicSchedule[]).filter(
+      (s) =>
+        s.title.toLowerCase().includes(lowerQuery) ||
+        s.description?.toLowerCase().includes(lowerQuery),
+    );
+    return [...mockAnnouncements, ...mockSchedules];
+  }
 }
 
 // 행사공지 API
