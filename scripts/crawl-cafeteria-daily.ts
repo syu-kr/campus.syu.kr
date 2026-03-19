@@ -176,35 +176,6 @@ async function crawlCafeteriaMenu() {
       });
     });
 
-    // 데이터가 없으면 기본값 사용
-    if (menus.length === 0) {
-      console.log("📌 페이지에서 식단표를 찾지 못했습니다.");
-      console.log("   기본 예시 데이터로 저장합니다.");
-
-      const days = ["월", "화", "수", "목", "금", "토", "일"];
-      const baseDate = new Date(`${year}-${month}-${date.padStart(2, "0")}`);
-
-      days.forEach((day, idx) => {
-        const currentDate = new Date(baseDate);
-        currentDate.setDate(baseDate.getDate() + idx);
-
-        const dateStr = currentDate.toISOString().split("T")[0];
-
-        menus.push({
-          date: dateStr,
-          day: day,
-          meals: {
-            breakfast: ["밥", "계란말이", "미역국", "깍두기", "버터롤"],
-            lunch: {
-              a_corner: ["소불고기덮밥", "우동", "미니카레"],
-              b_corner: ["돈카츠", "카레라이스", "볶음밥"],
-            },
-            dinner: ["등갈비", "라면", "계란곤약무침", "절임배추", "라이스"],
-          },
-        });
-      });
-    }
-
     // JSON 파일로 저장
     const dataPath = path.join(
       process.cwd(),

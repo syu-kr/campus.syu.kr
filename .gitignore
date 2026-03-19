@@ -28,5 +28,10 @@ build/
 
 # OS
 Thumbs.db
+
+# Temporary/Testing files
+parse_schedule.py
+schedule-page.html
+test-schedule.js
 .DS_Store
 .next

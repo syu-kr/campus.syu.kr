@@ -29,7 +29,7 @@ async function crawlAcademicNotice() {
 
   try {
     // 첫 5페이지만 크롤링 (테스트용)
-    for (let page = 1; page <= 5; page++) {
+    for (let page = 1; page <= 128; page++) {
       console.log(`  페이지 ${page} 크롤링 중...`);
 
       const response = await axios.get(`${baseUrl}/${page}/`, {

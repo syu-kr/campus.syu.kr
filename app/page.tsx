@@ -214,7 +214,7 @@ export default function Home() {
         </div>
 
         {/* 공지사항 목록 */}
-        <div className="space-y-3">
+        <div className="space-y-5">
           {announcementsLoading && <Skeleton count={3} />}
           {!announcementsLoading &&
             announcements &&

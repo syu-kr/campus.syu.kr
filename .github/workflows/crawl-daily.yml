@@ -23,10 +23,10 @@ jobs:
         run: npm install
 
       - name: Run academic notices crawler
-        run: npm run crawl:academic
+        run: npm run crawl:announce
 
       - name: Run scholarship notices crawler
-        run: npm run crawl:scholarships
+        run: npm run crawl:scholarship
 
       - name: Commit changes
         run: |

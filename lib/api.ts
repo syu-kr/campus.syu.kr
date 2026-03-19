@@ -6,11 +6,6 @@ import {
   Scholarship,
   AcademicInfo,
 } from "@/types";
-import announcements from "@/data/announcements.json";
-import cafeteriaMenu from "@/data/cafeteria.json";
-import schedules from "@/data/schedule.json";
-import shuttleBuses from "@/data/shuttle-bus.json";
-import scholarships from "@/data/scholarships.json";
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
@@ -40,34 +35,11 @@ export async function fetchAnnouncements(
       ];
     }
 
-    // mock 데이터도 유지 (legacy support)
-    if (!category) {
-      const mockData = await import("@/data/announcements.json").then(
-        (m) => m.default,
-      );
-      data = [
-        ...data,
-        ...(mockData as Announcement[]).filter(
-          (a) =>
-            !a.category.includes("academic") &&
-            !a.category.includes("scholarship"),
-        ),
-      ];
-    }
-
     return data.slice(0, 100); // 최대 100개로 제한
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
-    // fallback to mock data
-    const announcements = await import("@/data/announcements.json").then(
-      (m) => m.default,
-    );
-    if (category) {
-      return (announcements as Announcement[]).filter(
-        (a) => a.category === category,
-      );
-    }
-    return announcements as Announcement[];
+    // Return empty array if fetch fails
+    return [];
   }
 }
 
@@ -92,17 +64,10 @@ export async function fetchAnnouncementById(
     );
     if (found) return { ...found, category: "scholarship" as const };
 
-    // mock 데이터에서 검색
-    const mockData = await import("@/data/announcements.json").then(
-      (m) => m.default,
-    );
-    return (mockData as Announcement[]).find((a) => a.id === id) || null;
+    return null;
   } catch (error) {
     console.error("Failed to fetch announcement:", error);
-    const mockData = await import("@/data/announcements.json").then(
-      (m) => m.default,
-    );
-    return (mockData as Announcement[]).find((a) => a.id === id) || null;
+    return null;
   }
 }
 
@@ -193,12 +158,7 @@ export async function fetchCafeteriaMenu(
     return menus;
   } catch (error) {
     console.error("Failed to fetch cafeteria menu:", error);
-    // fallback to mock data if file not found
-    if (date) {
-      return (cafeteriaMenu as CafeteriaMenu[]).filter((m) => m.date === date);
-    } else {
-      return cafeteriaMenu as CafeteriaMenu[];
-    }
+    return [];
   }
 }
 
@@ -244,7 +204,7 @@ export async function fetchWeeklyCafeteriaMenu(): Promise<CafeteriaMenu[]> {
     return menus;
   } catch (error) {
     console.error("Failed to fetch weekly cafeteria menu:", error);
-    return cafeteriaMenu as CafeteriaMenu[];
+    return [];
   }
 }
 
@@ -256,24 +216,17 @@ export async function fetchAcademicSchedules(
     const schedules = await fetch("/data/schedules-major.json", {
       next: { revalidate: 86400 }, // Cache for 24 hours
     }).then((r) => r.json());
+
+    const parsedSchedules = (schedules || []) as AcademicSchedule[];
+
     if (category) {
-      return (schedules as AcademicSchedule[]).filter(
-        (s) => s.category === category,
-      );
+      return parsedSchedules.filter((s) => s.category === category);
     }
-    return schedules as AcademicSchedule[];
+    return parsedSchedules;
   } catch (error) {
     console.error("Failed to fetch academic schedules:", error);
-    // fallback to mock data
-    const mockSchedules = await import("@/data/schedule.json").then(
-      (m) => m.default,
-    );
-    if (category) {
-      return (mockSchedules as AcademicSchedule[]).filter(
-        (s) => s.category === category,
-      );
-    }
-    return mockSchedules as AcademicSchedule[];
+    // Return empty array instead of mock data
+    return [];
   }
 }
 
@@ -287,8 +240,7 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
     return (schedules || []) as ShuttleBusSchedule[];
   } catch (error) {
     console.error("Failed to fetch shuttle buses:", error);
-    // fallback to mock data
-    return shuttleBuses as ShuttleBusSchedule[];
+    return [];
   }
 }
 
@@ -303,9 +255,7 @@ export async function fetchShuttleBusById(
     return schedules.find((b) => b.id === id) || null;
   } catch (error) {
     console.error("Failed to fetch shuttle bus:", error);
-    // fallback to mock data
-    const bus = (shuttleBuses as ShuttleBusSchedule[]).find((b) => b.id === id);
-    return bus || null;
+    return null;
   }
 }
 
@@ -313,15 +263,35 @@ export async function fetchShuttleBusById(
 export async function fetchScholarships(
   type?: "internal" | "external",
 ): Promise<Scholarship[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      if (type) {
-        resolve((scholarships as Scholarship[]).filter((s) => s.type === type));
-      } else {
-        resolve(scholarships as Scholarship[]);
-      }
-    }, 500);
-  });
+  try {
+    // API에서 실제 데이터 가져오기
+    const response = await fetch("/data/announcements-scholarship.json");
+    const notices = await response.json();
+    
+    const scholarshipData: Scholarship[] = (notices as Announcement[])
+      .filter((notice) => {
+        if (type === "internal") {
+          return notice.title.includes("국내") || notice.title.includes("교내");
+        } else if (type === "external") {
+          return notice.title.includes("국외") || notice.title.includes("교외");
+        }
+        return true;
+      })
+      .map((notice) => ({
+        id: notice.id,
+        name: notice.title,
+        type: (type || "internal") as "internal" | "external",
+        description: notice.content || "",
+        amount: 0,
+        deadline: notice.date,
+        eligibility: "", // 공지사항에서 직접 추출 불가
+      }));
+
+    return scholarshipData.slice(0, 50);
+  } catch (error) {
+    console.error("Failed to fetch scholarships:", error);
+    return [];
+  }
 }
 
 // 학사정보 API (Mock)
@@ -386,30 +356,6 @@ export async function searchAll(
       // handle silently
     }
 
-    // 2. Mock 공지사항 검색 (legacy)
-    const mockAnnouncements = (announcements as Announcement[]).filter(
-      (a) =>
-        a.title.toLowerCase().includes(lowerQuery) ||
-        a.content.toLowerCase().includes(lowerQuery),
-    );
-    results.push(...mockAnnouncements);
-
-    // 3. 학사일정 검색
-    const matchedSchedules = (schedules as AcademicSchedule[]).filter(
-      (s) =>
-        s.title.toLowerCase().includes(lowerQuery) ||
-        s.description?.toLowerCase().includes(lowerQuery),
-    );
-    results.push(...matchedSchedules);
-
-    // 4. 장학금 검색
-    const matchedScholarships = (scholarships as Scholarship[]).filter(
-      (s) =>
-        s.name.toLowerCase().includes(lowerQuery) ||
-        s.description.toLowerCase().includes(lowerQuery),
-    );
-    results.push(...matchedScholarships);
-
     // 중복 제거 (ID 기반)
     const uniqueResults = Array.from(
       new Map(results.map((item) => [item.id, item])).values(),
@@ -418,18 +364,7 @@ export async function searchAll(
     return uniqueResults.slice(0, 100); // 최대 100개로 제한
   } catch (error) {
     console.error("Search failed:", error);
-    // Fallback: mock 데이터만이라도 검색
-    const mockAnnouncements = (announcements as Announcement[]).filter(
-      (a) =>
-        a.title.toLowerCase().includes(lowerQuery) ||
-        a.content.toLowerCase().includes(lowerQuery),
-    );
-    const mockSchedules = (schedules as AcademicSchedule[]).filter(
-      (s) =>
-        s.title.toLowerCase().includes(lowerQuery) ||
-        s.description?.toLowerCase().includes(lowerQuery),
-    );
-    return [...mockAnnouncements, ...mockSchedules];
+    return [];
   }
 }
 
