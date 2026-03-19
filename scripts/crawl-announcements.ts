@@ -48,7 +48,11 @@ async function crawlAcademicNotice() {
         // 필드 추출 - 테이블 열 순서 확인
         const titleElem = $row.find("td:nth-child(2) a");
         const title = titleElem.text().trim();
-        const url = titleElem.attr("href") || "";
+        let url = titleElem.attr("href") || "";
+        // 상대 경로를 절대 경로로 변환
+        if (url && !url.startsWith("http")) {
+          url = "https://www.syu.ac.kr" + url;
+        }
 
         // 테이블 구조: 번호 | 제목 | 날짜 | 작성자 | 조회수
         // nth-child(1): 번호

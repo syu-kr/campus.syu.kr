@@ -13,7 +13,10 @@ interface MenuDay {
   day: string; // 월~일
   meals: {
     breakfast: string[];
-    lunch: string[];
+    lunch: {
+      a_corner: string[];
+      b_corner: string[];
+    };
     dinner: string[];
   };
 }
@@ -103,7 +106,10 @@ async function crawlCafeteriaMenu() {
           // 두 번째 이후 셀: 식사별 메뉴
           const meals = {
             breakfast: [] as string[],
-            lunch: [] as string[],
+            lunch: {
+              a_corner: [] as string[],
+              b_corner: [] as string[],
+            },
             dinner: [] as string[],
           };
 
@@ -119,11 +125,37 @@ async function crawlCafeteriaMenu() {
 
           if (cells.length > 2) {
             const lunchText = $(cells[2]).html() || "";
-            meals.lunch = lunchText
+            const lunchItems = lunchText
               .split(/<br\s*\/?>/i)
               .map((item) => item.trim().replace(/<[^>]*>/g, ""))
-              .filter((item) => item.length > 0 && !item.includes("&nbsp;"))
-              .slice(0, 5);
+              .filter((item) => item.length > 0 && !item.includes("&nbsp;"));
+
+            // A/B 코너 분리
+            let currentCorner = "a_corner";
+            lunchItems.forEach((item) => {
+              if (item.includes("A") && item.includes("코너")) {
+                currentCorner = "a_corner";
+              } else if (item.includes("B") && item.includes("코너")) {
+                currentCorner = "b_corner";
+              } else if (item.length > 0) {
+                meals.lunch[currentCorner as "a_corner" | "b_corner"].push(
+                  item,
+                );
+              }
+            });
+
+            // 한쪽이 비어있으면 반대쪽에서 복사
+            if (
+              meals.lunch.a_corner.length === 0 &&
+              meals.lunch.b_corner.length > 0
+            ) {
+              meals.lunch.a_corner = meals.lunch.b_corner;
+            } else if (
+              meals.lunch.b_corner.length === 0 &&
+              meals.lunch.a_corner.length > 0
+            ) {
+              meals.lunch.b_corner = meals.lunch.a_corner;
+            }
           }
 
           if (cells.length > 3) {
@@ -150,9 +182,7 @@ async function crawlCafeteriaMenu() {
       console.log("   기본 예시 데이터로 저장합니다.");
 
       const days = ["월", "화", "수", "목", "금", "토", "일"];
-      const baseDate = new Date(
-        `${year}-${month}-${date.padStart(2, "0")}`,
-      );
+      const baseDate = new Date(`${year}-${month}-${date.padStart(2, "0")}`);
 
       days.forEach((day, idx) => {
         const currentDate = new Date(baseDate);
@@ -164,27 +194,12 @@ async function crawlCafeteriaMenu() {
           date: dateStr,
           day: day,
           meals: {
-            breakfast: [
-              "밥",
-              "계란말이",
-              "미역국",
-              "깍두기",
-              "버터롤",
-            ],
-            lunch: [
-              "소불고기덮밥",
-              "우동",
-              "미니카레",
-              "깍두기",
-              "샐러드바",
-            ],
-            dinner: [
-              "등갈비",
-              "라면",
-              "계란곤약무침",
-              "절임배추",
-              "라이스",
-            ],
+            breakfast: ["밥", "계란말이", "미역국", "깍두기", "버터롤"],
+            lunch: {
+              a_corner: ["소불고기덮밥", "우동", "미니카레"],
+              b_corner: ["돈카츠", "카레라이스", "볶음밥"],
+            },
+            dinner: ["등갈비", "라면", "계란곤약무침", "절임배추", "라이스"],
           },
         });
       });

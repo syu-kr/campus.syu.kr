@@ -89,20 +89,18 @@ async function crawlShuttleBusSchedule() {
 
             if (isWeekday) {
               existingRoute.schedules.weekday = [
-                ...new Set([
-                  ...existingRoute.schedules.weekday,
-                  ...times,
-                ]),
-              ].sort();
+                ...new Set([...existingRoute.schedules.weekday, ...times]),
+              ]
+                .sort()
+                .slice(0, 7); // 평일 최대 7개 시간
             }
 
             if (isWeekend) {
               existingRoute.schedules.weekend = [
-                ...new Set([
-                  ...existingRoute.schedules.weekend,
-                  ...times,
-                ]),
-              ].sort();
+                ...new Set([...existingRoute.schedules.weekend, ...times]),
+              ]
+                .sort()
+                .slice(0, 5); // 주말 최대 5개 시간
             }
           }
         }
@@ -141,8 +139,8 @@ async function crawlShuttleBusSchedule() {
             startLocation: "캠퍼스",
             endLocation: destination,
             schedules: {
-              weekday: weekdayTimes.slice(0, 10), // 최대 10개
-              weekend: weekendTimes.slice(0, 10),
+              weekday: weekdayTimes.slice(0, 7), // 최대 7개
+              weekend: weekendTimes.slice(0, 5),  // 최대 5개
             },
             lastUpdated: new Date().toISOString().split("T")[0],
           });

@@ -124,30 +124,29 @@ export async function fetchCafeteriaMenu(
     // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
     const menus: CafeteriaMenu[] = [];
     const cafeteriaData = cafeterias[0] as {
-      menus: Array<{ date: string; day: string; meals: { breakfast: string[]; lunch: string[]; dinner: string[] } }>;
+      menus: Array<{
+        date: string;
+        day: string;
+        meals: { breakfast: string[]; lunch: string[]; dinner: string[] };
+      }>;
     };
     const menuDays = cafeteriaData?.menus || [];
 
-    menuDays.forEach(
-      (menu, idx) => {
-        const breakfast =
-          menu.meals?.breakfast?.map((name) => ({ name })) || [];
-        const lunch =
-          menu.meals?.lunch?.map((name) => ({ name })) || [];
-        const dinner =
-          menu.meals?.dinner?.map((name) => ({ name })) || [];
+    menuDays.forEach((menu, idx) => {
+      const breakfast = menu.meals?.breakfast?.map((name) => ({ name })) || [];
+      const lunch = menu.meals?.lunch?.map((name) => ({ name })) || [];
+      const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
 
-        menus.push({
-          id: `cafeteria-${menu.date}-${idx}`,
-          date: menu.date,
-          dayOfWeek: menu.day || "",
-          breakfast: breakfast,
-          lunch: lunch,
-          dinner: dinner,
-          location: "SU-Lounge",
-        });
-      },
-    );
+      menus.push({
+        id: `cafeteria-${menu.date}-${idx}`,
+        date: menu.date,
+        dayOfWeek: menu.day || "",
+        breakfast: breakfast,
+        lunch: lunch,
+        dinner: dinner,
+        location: "SU-Lounge",
+      });
+    });
 
     if (date) {
       return menus.filter((m) => m.date === date);
@@ -180,30 +179,29 @@ export async function fetchWeeklyCafeteriaMenu(): Promise<CafeteriaMenu[]> {
     // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
     const menus: CafeteriaMenu[] = [];
     const cafeteriaData = cafeterias[0] as {
-      menus: Array<{ date: string; day: string; meals: { breakfast: string[]; lunch: string[]; dinner: string[] } }>;
+      menus: Array<{
+        date: string;
+        day: string;
+        meals: { breakfast: string[]; lunch: string[]; dinner: string[] };
+      }>;
     };
     const menuDays = cafeteriaData?.menus || [];
 
-    menuDays.forEach(
-      (menu, idx) => {
-        const breakfast =
-          menu.meals?.breakfast?.map((name) => ({ name })) || [];
-        const lunch =
-          menu.meals?.lunch?.map((name) => ({ name })) || [];
-        const dinner =
-          menu.meals?.dinner?.map((name) => ({ name })) || [];
+    menuDays.forEach((menu, idx) => {
+      const breakfast = menu.meals?.breakfast?.map((name) => ({ name })) || [];
+      const lunch = menu.meals?.lunch?.map((name) => ({ name })) || [];
+      const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
 
-        menus.push({
-          id: `cafeteria-${menu.date}-${idx}`,
-          date: menu.date,
-          dayOfWeek: menu.day || "",
-          breakfast: breakfast,
-          lunch: lunch,
-          dinner: dinner,
-          location: "SU-Lounge",
-        });
-      },
-    );
+      menus.push({
+        id: `cafeteria-${menu.date}-${idx}`,
+        date: menu.date,
+        dayOfWeek: menu.day || "",
+        breakfast: breakfast,
+        lunch: lunch,
+        dinner: dinner,
+        location: "SU-Lounge",
+      });
+    });
 
     return menus;
   } catch (error) {
@@ -268,9 +266,7 @@ export async function fetchShuttleBusById(
   } catch (error) {
     console.error("Failed to fetch shuttle bus:", error);
     // fallback to mock data
-    const bus = (shuttleBuses as ShuttleBusSchedule[]).find(
-      (b) => b.id === id,
-    );
+    const bus = (shuttleBuses as ShuttleBusSchedule[]).find((b) => b.id === id);
     return bus || null;
   }
 }
