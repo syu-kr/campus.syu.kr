@@ -140,7 +140,7 @@ async function crawlShuttleBusSchedule() {
             endLocation: destination,
             schedules: {
               weekday: weekdayTimes.slice(0, 7), // 최대 7개
-              weekend: weekendTimes.slice(0, 5),  // 최대 5개
+              weekend: weekendTimes.slice(0, 5), // 최대 5개
             },
             lastUpdated: new Date().toISOString().split("T")[0],
           });

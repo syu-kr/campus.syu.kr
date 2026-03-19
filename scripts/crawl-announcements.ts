@@ -54,14 +54,14 @@ async function crawlAcademicNotice() {
           url = "https://www.syu.ac.kr" + url;
         }
 
-        // 테이블 구조: 번호 | 제목 | 날짜 | 작성자 | 조회수
+        // 테이블 구조: 번호 | 제목 | 작성자 | 날짜 | 조회수
         // nth-child(1): 번호
         // nth-child(2): 제목
-        // nth-child(3): 날짜
-        // nth-child(4): 작성자
+        // nth-child(3): 작성자
+        // nth-child(4): 날짜
         // nth-child(5): 조회수
-        const dateText = $row.find("td:nth-child(3)").text().trim();
-        const authorText = $row.find("td:nth-child(4)").text().trim();
+        const authorText = $row.find("td:nth-child(3)").text().trim();
+        const dateText = $row.find("td:nth-child(4)").text().trim();
         const views = parseInt($row.find("td:nth-child(5)").text().trim()) || 0;
 
         // "[공지]" 또는 "[중요]" 텍스트 확인
