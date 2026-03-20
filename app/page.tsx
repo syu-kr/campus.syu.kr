@@ -20,7 +20,12 @@ import type { Announcement } from "@/types";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
-  { id: "1", icon: "📚", label: "수강신청", path: "/academic/registration" },
+  {
+    id: "1",
+    icon: "📚",
+    label: "모의 수강신청",
+    path: "https://sugang.syu.kr/testLogin",
+  },
   { id: "2", icon: "📖", label: "학사일정", path: "/academic/schedule" },
   { id: "3", icon: "🍽️", label: "학식", path: "/campus/cafeteria" },
   { id: "4", icon: "🚌", label: "셔틀버스", path: "/campus/shuttle" },
@@ -31,9 +36,9 @@ const frequentMenus = [
 // 공지 카테고리 필터
 const categoryFilters = [
   { id: "all", label: "전체", value: undefined },
-  { id: "academic", label: "학사", value: "academic" },
+  { id: "academic", label: "학사공지", value: "academic" },
+  { id: "scholarship", label: "장학금", value: "scholarship" },
   { id: "campus", label: "캠퍼스", value: "campus" },
-  { id: "admin", label: "행정", value: "admin" },
 ];
 
 export default function Home() {
@@ -127,13 +132,15 @@ export default function Home() {
             <p className="text-sm text-neutral-600 mb-4">
               검색 결과 {searchResults.length}개
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {searchResults.map((result) => (
-                <AnnouncementCard
-                  key={result.id}
-                  announcement={result as Announcement}
-                  href={`/announcements/${result.id}`}
-                />
+                <div key={result.id} className="mb-2">
+                  <AnnouncementCard
+                    announcement={result as Announcement}
+                    href={(result as Announcement).url}
+                    external={!!(result as Announcement).url}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -189,7 +196,13 @@ export default function Home() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-neutral-900">공지사항</h2>
           <Link
-            href="/announcements"
+            href={
+              selectedCategory === "scholarship"
+                ? "/tuition/scholarship"
+                : selectedCategory === "campus"
+                  ? "/campus/announcements"
+                  : "/academic/announcements"
+            }
             className="text-xs text-primary-600 hover:text-primary-700"
           >
             전체보기 →
@@ -214,19 +227,19 @@ export default function Home() {
         </div>
 
         {/* 공지사항 목록 */}
-        <div className="space-y-5">
+        <div className="space-y-2">
           {announcementsLoading && <Skeleton count={3} />}
           {!announcementsLoading &&
             announcements &&
-            announcements
-              .slice(0, 3)
-              .map((announcement) => (
+            announcements.slice(0, 3).map((announcement) => (
+              <div key={announcement.id} className="mb-2">
                 <AnnouncementCard
-                  key={announcement.id}
                   announcement={announcement}
-                  href={`/announcements/${announcement.id}`}
+                  href={announcement.url}
+                  external={true}
                 />
-              ))}
+              </div>
+            ))}
         </div>
       </div>
 

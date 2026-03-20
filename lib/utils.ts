@@ -15,6 +15,21 @@ export function formatDate(dateString: string): string {
 }
 
 /**
+ * 날짜 포맷팅 (YYYY-MM-DD to YYYY.MM.DD)
+ */
+export function formatDateWithYear(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  } catch {
+    return dateString;
+  }
+}
+
+/**
  * 날짜 한글 포맷팅 (2024년 1월 15일)
  */
 export function formatDateKorean(dateString: string): string {
@@ -71,6 +86,7 @@ export function formatNumber(num: number): string {
 export function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
     academic: "학사공지",
+    scholarship: "장학금",
     campus: "캠퍼스",
     admin: "행정",
     activity: "학생활동",
@@ -93,6 +109,7 @@ export function getCategoryColor(
   const colors: Record<string, "blue" | "red" | "green" | "yellow" | "purple"> =
     {
       academic: "blue",
+      scholarship: "yellow",
       campus: "green",
       admin: "purple",
       activity: "yellow",

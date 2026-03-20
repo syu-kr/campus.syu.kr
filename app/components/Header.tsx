@@ -14,7 +14,7 @@ interface HeaderProps {
 const navItems = [
   { label: "학사", href: "/academic" },
   { label: "캠퍼스", href: "/campus" },
-  { label: "등록금", href: "/tuition" },
+  { label: "장학금", href: "/tuition" },
   { label: "더보기", href: "/more" },
 ];
 

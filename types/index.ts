@@ -74,6 +74,7 @@ export interface Scholarship {
   eligibility: string;
   deadline: string;
   description: string;
+  url?: string;
 }
 
 // 학사정보

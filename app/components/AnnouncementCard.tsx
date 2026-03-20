@@ -8,8 +8,7 @@ import { Badge } from "./Badge";
 import {
   getCategoryLabel,
   getCategoryColor,
-  formatDate,
-  getFirstLine,
+  formatDateWithYear,
 } from "@/lib/utils";
 
 interface AnnouncementCardProps {
@@ -31,29 +30,23 @@ export function AnnouncementCard({
       clickable={clickable}
       className={href ? "hover:shadow-card-hover" : ""}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge color={getCategoryColor(announcement.category)} size="sm">
-              {getCategoryLabel(announcement.category)}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <Badge color={getCategoryColor(announcement.category)} size="sm">
+            {getCategoryLabel(announcement.category)}
+          </Badge>
+          {announcement.isImportant && (
+            <Badge color="red" size="sm">
+              공지
             </Badge>
-            {announcement.isImportant && (
-              <Badge color="red" size="sm">
-                공지
-              </Badge>
-            )}
-          </div>
-          <h3 className="font-semibold text-neutral-900 mb-1 line-clamp-2">
-            {announcement.title}
-          </h3>
-          <p className="text-sm text-neutral-600 line-clamp-1">
-            {getFirstLine(announcement.content)}
-          </p>
-          <div className="flex items-center gap-4 mt-3 text-xs text-neutral-500">
-            <span>{announcement.author || "삼육대학교"}</span>
-            <span>{formatDate(announcement.date)}</span>
-            <span>조회 {announcement.views.toLocaleString()}</span>
-          </div>
+          )}
+        </div>
+        <h3 className="font-semibold text-neutral-900 line-clamp-2">
+          {announcement.title}
+        </h3>
+        <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">
+          <span>{formatDateWithYear(announcement.date)}</span>
+          <span>{announcement.author || "삼육대학교"}</span>
         </div>
       </div>
     </Card>

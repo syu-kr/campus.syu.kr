@@ -9,10 +9,10 @@ import { useState, useMemo } from "react";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function AcademicAnnouncementsPage() {
+export default function CampusAnnouncementsPage() {
   const { data: announcements, isLoading } = useQuery({
-    queryKey: ["announcements", "academic"],
-    queryFn: () => fetchAnnouncements("academic"),
+    queryKey: ["announcements", "campus"],
+    queryFn: () => fetchAnnouncements("campus"),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -49,9 +49,11 @@ export default function AcademicAnnouncementsPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          학사공지
+          캠퍼스공지
         </h1>
-        <p className="text-neutral-600">학사 관련 주요 공지사항을 확인하세요</p>
+        <p className="text-neutral-600">
+          캠퍼스 생활 및 주요 공지사항을 확인하세요
+        </p>
       </div>
 
       {/* 검색 바 */}

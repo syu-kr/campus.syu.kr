@@ -2,17 +2,16 @@
 
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScholarships } from "@/lib/api";
-import { formatNumber, formatDateKorean } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function ScholarshipPage() {
-  const [selectedType, setSelectedType] = useState<
-    "internal" | "external" | "all"
-  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
@@ -20,9 +19,31 @@ export default function ScholarshipPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const scholarships = allScholarships?.filter(
-    (s) => selectedType === "all" || s.type === selectedType,
+  // 검색 필터링
+  const filteredScholarships = useMemo(() => {
+    if (!allScholarships) return [];
+    if (!searchQuery.trim()) return allScholarships;
+
+    const lowerQuery = searchQuery.toLowerCase();
+    return allScholarships.filter(
+      (s) =>
+        s.name.toLowerCase().includes(lowerQuery) ||
+        s.description.toLowerCase().includes(lowerQuery),
+    );
+  }, [allScholarships, searchQuery]);
+
+  // 페이지네이션
+  const totalPages = Math.ceil(filteredScholarships.length / ITEMS_PER_PAGE);
+  const paginatedScholarships = filteredScholarships.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
   );
+
+  // 검색 결과가 변경되면 첫 페이지로
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
   return (
     <Container className="py-6 sm:py-8">
@@ -33,106 +54,111 @@ export default function ScholarshipPage() {
         <p className="text-neutral-600">교내/외 장학금 정보를 확인하세요</p>
       </div>
 
-      {/* 필터 */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        <button
-          onClick={() => setSelectedType("all")}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            selectedType === "all"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          전체
-        </button>
-        <button
-          onClick={() => setSelectedType("internal")}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            selectedType === "internal"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          교내 장학금
-        </button>
-        <button
-          onClick={() => setSelectedType("external")}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            selectedType === "external"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          교외 장학금
-        </button>
+      {/* 검색 바 */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="장학금 이름 또는 설명으로 검색..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+        />
       </div>
 
+      {/* 결과 수 표시 */}
+      {!isLoading && (
+        <div className="mb-4 text-sm text-neutral-600">
+          {filteredScholarships.length}개 항목 찾음
+          {searchQuery && ` (검색어: "${searchQuery}")`}
+        </div>
+      )}
+
       {/* 장학금 목록 */}
-      <div className="space-y-4">
+      <div className="space-y-4 mb-6">
         {isLoading && <Skeleton count={4} height="150px" />}
 
+        {!isLoading && paginatedScholarships.length === 0 && (
+          <div className="py-8 text-center text-neutral-500">
+            {filteredScholarships.length === 0
+              ? "검색 결과가 없습니다."
+              : "해당하는 장학금이 없습니다"}
+          </div>
+        )}
+
         {!isLoading &&
-          scholarships &&
-          scholarships.map((scholarship) => (
+          paginatedScholarships &&
+          paginatedScholarships.map((scholarship) => (
             <Card key={scholarship.id}>
               <div className="flex items-start justify-between gap-4 mb-3">
-                <div>
+                <div className="flex-1">
                   <h2 className="text-lg font-bold text-neutral-900 mb-2">
                     {scholarship.name}
                   </h2>
-                  <Badge
-                    color={scholarship.type === "internal" ? "blue" : "green"}
-                    size="sm"
-                  >
-                    {scholarship.type === "internal" ? "교내" : "교외"} 장학금
-                  </Badge>
                 </div>
                 <span className="text-2xl">🎓</span>
               </div>
 
               <div className="space-y-3 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-neutral-600 mb-1">장학금액</p>
-                    <p className="font-bold text-primary-600">
-                      {formatNumber(scholarship.amount)} 원
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-neutral-600 mb-1">신청 마감일</p>
-                    <p className="font-semibold text-neutral-900">
-                      {formatDateKorean(scholarship.deadline)}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs text-neutral-600 mb-1">지원 자격</p>
-                  <p className="text-sm text-neutral-700">
-                    {scholarship.eligibility}
-                  </p>
-                </div>
-
                 <div>
                   <p className="text-xs text-neutral-600 mb-1">설명</p>
                   <p className="text-sm text-neutral-700">
-                    {scholarship.description}
+                    {scholarship.description ||
+                      "자세한 내용은 링크를 통해 확인하세요."}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-neutral-200">
-                  <button className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors w-full">
-                    신청하기
-                  </button>
+                <div className="pt-3 border-t border-neutral-200 flex items-center justify-between">
+                  <span className="text-xs text-neutral-500">
+                    {scholarship.deadline}
+                  </span>
+                  {scholarship.url && (
+                    <a
+                      href={scholarship.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                    >
+                      자세히 알아보기
+                    </a>
+                  )}
                 </div>
               </div>
             </Card>
           ))}
       </div>
 
-      {!isLoading && scholarships?.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-neutral-600">해당하는 장학금이 없습니다</p>
+      {/* 페이지네이션 */}
+      {!isLoading && totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+          >
+            이전
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-2 rounded-lg ${
+                currentPage === page
+                  ? "bg-primary-600 text-white"
+                  : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+          >
+            다음
+          </button>
         </div>
       )}
 

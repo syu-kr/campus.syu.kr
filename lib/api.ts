@@ -35,6 +35,24 @@ export async function fetchAnnouncements(
       ];
     }
 
+    if (!category || category === "campus") {
+      try {
+        const campus = await fetch(
+          "/data/announcements-campus-life.json",
+          { next: { revalidate: 3600 } }, // Cache for 1 hour
+        ).then((r) => r.json());
+        data = [
+          ...data,
+          ...(campus as Announcement[]).map((item: Announcement) => ({
+            ...item,
+            category: "campus" as const,
+          })),
+        ];
+      } catch {
+        // handle silently
+      }
+    }
+
     return data.slice(0, 100); // 최대 100개로 제한
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
@@ -278,8 +296,9 @@ export async function fetchScholarships(
         type: (type || "internal") as "internal" | "external",
         description: notice.content || "",
         amount: 0,
-        deadline: notice.date,
+        deadline: notice.author || notice.date, // author 필드에 실제 작성 날짜가 있음
         eligibility: "", // 공지사항에서 직접 추출 불가
+        url: notice.url, // 외부 링크 추가
       }));
 
     return scholarshipData.slice(0, 50);
@@ -322,6 +341,43 @@ export async function searchAll(
 
   try {
     // 1. 크롤링된 공지사항 검색
+
+    // 학사공지
+    try {
+      const academicNotices = await fetch("/data/announcements-academic.json", {
+        next: { revalidate: 3600 },
+      }).then((r) => r.json());
+      const matchedAcademic = (academicNotices as Announcement[]).filter(
+        (a) =>
+          a.title?.toLowerCase().includes(lowerQuery) ||
+          a.content?.toLowerCase().includes(lowerQuery),
+      );
+      results.push(...matchedAcademic);
+    } catch {
+      // handle silently
+    }
+
+    // 장학금
+    try {
+      const scholarshipNotices = await fetch(
+        "/data/announcements-scholarship.json",
+        { next: { revalidate: 3600 } },
+      ).then((r) => r.json());
+      const matchedScholarship = (scholarshipNotices as Announcement[]).filter(
+        (a) =>
+          a.title?.toLowerCase().includes(lowerQuery) ||
+          a.content?.toLowerCase().includes(lowerQuery),
+      );
+      const withCategory = matchedScholarship.map((item) => ({
+        ...item,
+        category: "scholarship" as const,
+      }));
+      results.push(...withCategory);
+    } catch {
+      // handle silently
+    }
+
+    // 행사공지
     try {
       const eventNotices = await fetch("/data/announcements-events.json", {
         next: { revalidate: 3600 }, // Cache for 1 hour
@@ -336,6 +392,7 @@ export async function searchAll(
       // handle silently
     }
 
+    // 캠퍼스공지
     try {
       const campusNotices = await fetch(
         "/data/announcements-campus-life.json",
@@ -346,7 +403,11 @@ export async function searchAll(
           a.title?.toLowerCase().includes(lowerQuery) ||
           a.content?.toLowerCase().includes(lowerQuery),
       );
-      results.push(...matchedCampus);
+      const withCategory = matchedCampus.map((item) => ({
+        ...item,
+        category: "campus" as const,
+      }));
+      results.push(...withCategory);
     } catch {
       // handle silently
     }

@@ -62,7 +62,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li className="font-medium text-primary-600">
-                support_team@syu.kr
+                <a href="mailto:support_team@syu.kr">support_team@syu.kr</a>
               </li>
             </ul>
           </div>

@@ -10,6 +10,14 @@ export const metadata: Metadata = {
 
 const campusMenus = [
   {
+    id: "announcements",
+    title: "캠퍼스공지",
+    description: "캠퍼스 생활 공지사항",
+    icon: "📢",
+    href: "/campus/announcements",
+    color: "from-indigo-400 to-indigo-600",
+  },
+  {
     id: "cafeteria",
     title: "학식",
     description: "주간 식단 및 영양정보",
