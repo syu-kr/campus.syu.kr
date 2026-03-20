@@ -27,19 +27,11 @@ const academicMenus = [
   },
   {
     id: "timetable",
-    title: "시간표 짜기",
+    title: "시간표 짜기(미완성)",
     description: "학기 시간표 작성 마법사",
     icon: "⏰",
     href: "/academic/timetable",
     color: "from-pink-400 to-pink-600",
-  },
-  {
-    id: "graduation",
-    title: "졸업요건",
-    description: "졸업 요건 및 체크리스트",
-    icon: "🎓",
-    href: "/academic/graduation",
-    color: "from-orange-400 to-orange-600",
   },
 ];
 
