@@ -17,7 +17,10 @@ export interface CafeteriaMenu {
   date: string;
   dayOfWeek: string;
   breakfast: MenuItem[];
-  lunch: MenuItem[];
+  lunch: {
+    a?: MenuItem[];
+    b?: MenuItem[];
+  };
   dinner: MenuItem[];
   location: string;
 }

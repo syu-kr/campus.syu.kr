@@ -55,14 +55,26 @@ export default function AcademicAnnouncementsPage() {
       </div>
 
       {/* 검색 바 */}
-      <div className="mb-6">
+      <div className="mb-6 relative">
         <input
           type="text"
           placeholder="제목 또는 작성자로 검색..."
           value={searchQuery}
           onChange={handleSearch}
-          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
+        {searchQuery && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setCurrentPage(1);
+            }}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+            aria-label="검색 초기화"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* 결과 수 표시 */}
@@ -94,35 +106,25 @@ export default function AcademicAnnouncementsPage() {
 
       {/* 페이지네이션 */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-8">
+        <div className="flex justify-center items-center gap-4 mt-8">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+            className="px-4 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
-            이전
+            ← 이전
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 rounded-lg ${
-                currentPage === page
-                  ? "bg-primary-600 text-white"
-                  : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+          <div className="text-sm text-neutral-600">
+            {currentPage} / {totalPages}
+          </div>
 
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+            className="px-4 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
-            다음
+            다음 →
           </button>
         </div>
       )}

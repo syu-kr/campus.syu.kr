@@ -4,7 +4,6 @@ import {
   AcademicSchedule,
   ShuttleBusSchedule,
   Scholarship,
-  AcademicInfo,
 } from "@/types";
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
@@ -53,7 +52,7 @@ export async function fetchAnnouncements(
       }
     }
 
-    return data.slice(0, 100); // 최대 100개로 제한
+    return data;
   } catch (error) {
     console.error("Failed to fetch announcements:", error);
     // Return empty array if fetch fails
@@ -129,21 +128,21 @@ export async function fetchCafeteriaMenu(
 
     menuDays.forEach((menu, idx) => {
       // 중식 처리 - A/B 코너가 있는 경우와 없는 경우 모두 처리
-      let lunch: Array<{ name: string }> = [];
+      const lunch: {
+        a?: Array<{ name: string }>;
+        b?: Array<{ name: string }>;
+      } = {};
       if (menu.meals?.lunch) {
         if (Array.isArray(menu.meals.lunch)) {
-          lunch = menu.meals.lunch.map((name) => ({ name }));
+          lunch.a = menu.meals.lunch.map((name) => ({ name }));
         } else if (typeof menu.meals.lunch === "object") {
           // A/B 코너가 분리된 경우
           const aCorner =
             (menu.meals.lunch as { a_corner?: string[] }).a_corner || [];
           const bCorner =
             (menu.meals.lunch as { b_corner?: string[] }).b_corner || [];
-          // 각 코너의 항목들을 그냥 추가 (코너 라벨 없이)
-          lunch = [
-            ...aCorner.map((name) => ({ name })),
-            ...bCorner.map((name) => ({ name })),
-          ];
+          lunch.a = aCorner.map((name) => ({ name }));
+          lunch.b = bCorner.map((name) => ({ name }));
         }
       }
 
@@ -171,52 +170,6 @@ export async function fetchCafeteriaMenu(
     return menus;
   } catch (error) {
     console.error("Failed to fetch cafeteria menu:", error);
-    return [];
-  }
-}
-
-export async function fetchWeeklyCafeteriaMenu(): Promise<CafeteriaMenu[]> {
-  try {
-    const response = await fetch("/data/cafeteria-menu.json", {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
-    const data = (await response.json()) as unknown;
-    const cafeterias = Array.isArray(data) ? data : [];
-
-    if (!cafeterias || cafeterias.length === 0) {
-      throw new Error("No cafeteria data");
-    }
-
-    // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
-    const menus: CafeteriaMenu[] = [];
-    const cafeteriaData = cafeterias[0] as {
-      menus: Array<{
-        date: string;
-        day: string;
-        meals: { breakfast: string[]; lunch: string[]; dinner: string[] };
-      }>;
-    };
-    const menuDays = cafeteriaData?.menus || [];
-
-    menuDays.forEach((menu, idx) => {
-      const breakfast = menu.meals?.breakfast?.map((name) => ({ name })) || [];
-      const lunch = menu.meals?.lunch?.map((name) => ({ name })) || [];
-      const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
-
-      menus.push({
-        id: `cafeteria-${menu.date}-${idx}`,
-        date: menu.date,
-        dayOfWeek: menu.day || "",
-        breakfast: breakfast,
-        lunch: lunch,
-        dinner: dinner,
-        location: "SU-Lounge",
-      });
-    });
-
-    return menus;
-  } catch (error) {
-    console.error("Failed to fetch weekly cafeteria menu:", error);
     return [];
   }
 }
@@ -257,21 +210,6 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
   }
 }
 
-export async function fetchShuttleBusById(
-  id: string,
-): Promise<ShuttleBusSchedule | null> {
-  try {
-    const response = await fetch("/data/shuttle-bus-schedule.json", {
-      next: { revalidate: 86400 }, // Cache for 24 hours
-    });
-    const schedules = (await response.json()) as ShuttleBusSchedule[];
-    return schedules.find((b) => b.id === id) || null;
-  } catch (error) {
-    console.error("Failed to fetch shuttle bus:", error);
-    return null;
-  }
-}
-
 // 장학금 API
 export async function fetchScholarships(
   type?: "internal" | "external",
@@ -306,21 +244,6 @@ export async function fetchScholarships(
     console.error("Failed to fetch scholarships:", error);
     return [];
   }
-}
-
-// 학사정보 API (Mock)
-export async function fetchAcademicInfo(): Promise<AcademicInfo> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        gpa: 3.85,
-        totalCredits: 130,
-        completedCredits: 115,
-        status: "normal",
-        graduationDate: "2025-02-14",
-      });
-    }, 500);
-  });
 }
 
 // 검색 API - 개선됨 (전체 데이터 통합 검색)
@@ -423,88 +346,3 @@ export async function searchAll(
     return [];
   }
 }
-
-// 행사공지 API
-export async function fetchEventNotices(): Promise<Announcement[]> {
-  try {
-    const events = await fetch("/data/announcements-events.json").then((r) =>
-      r.json(),
-    );
-    return (events as Announcement[]).slice(0, 50);
-  } catch (error) {
-    console.error("Failed to fetch event notices:", error);
-    return [];
-  }
-}
-
-// 생활공지 API
-export async function fetchCampusNotices(): Promise<Announcement[]> {
-  try {
-    const notices = await fetch("/data/announcements-campus-life.json").then(
-      (r) => r.json(),
-    );
-    return (notices as Announcement[]).slice(0, 50);
-  } catch (error) {
-    console.error("Failed to fetch campus notices:", error);
-    return [];
-  }
-}
-
-// 캠퍼스맵 API
-export async function fetchCampusMap(): Promise<
-  { building: string; location: string; description?: string }[]
-> {
-  try {
-    const map = await fetch("/data/campus-map.json").then((r) => r.json());
-    return map;
-  } catch (error) {
-    console.error("Failed to fetch campus map:", error);
-    return [];
-  }
-}
-
-// 수강신청 안내 API
-export async function fetchRegistrationGuide(): Promise<
-  {
-    period: string;
-    startDate: string;
-    endDate: string;
-    description: string;
-    targetGrade?: string;
-  }[]
-> {
-  try {
-    const guide = await fetch("/data/registration-guide.json").then((r) =>
-      r.json(),
-    );
-    return guide;
-  } catch (error) {
-    console.error("Failed to fetch registration guide:", error);
-    return [];
-  }
-}
-
-// 동아리 API
-export async function fetchClubs(
-  category?: "general" | "startup" | "employment",
-): Promise<{ id: string; name: string; category: string; url: string }[]> {
-  try {
-    const clubs = await fetch("/data/clubs.json").then((r) => r.json());
-    if (category) {
-      return (
-        clubs as { id: string; name: string; category: string; url: string }[]
-      ).filter((c) => c.category === category);
-    }
-    return clubs;
-  } catch (error) {
-    console.error("Failed to fetch clubs:", error);
-    return [];
-  }
-}
-
-// TODO: 추후 실제 백엔드와 연동 시 다음과 같이 fetch를 사용하면 됨
-// export async function fetchAnnouncements(category?: string) {
-//   const response = await fetch(`/api/announcements?category=${category || ''}`);
-//   if (!response.ok) throw new Error('Failed to fetch announcements');
-//   return response.json();
-// }

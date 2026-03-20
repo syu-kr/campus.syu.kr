@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Card } from "./components/Card";
 import { Container } from "./components/Container";
@@ -94,6 +94,22 @@ export default function Home() {
     setSearchQuery("");
     setShowSearchResults(false);
   }, []);
+
+  // 오늘 날짜와 요일 계산
+  const todayInfo = useMemo(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0: 일요일, 6: 토요일
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const dateStringDot = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`; // YYYY.MM.DD (학사일정)
+    const dateStringDash = today.toISOString().split("T")[0]; // YYYY-MM-DD (카페테리아)
+    return { dateStringDot, dateStringDash, isWeekend, dayOfWeek };
+  }, []);
+
+  // 오늘 식단 찾기
+  const todayMenu = useMemo(() => {
+    if (!cafeteria) return null;
+    return cafeteria.find((menu) => menu.date === todayInfo.dateStringDash);
+  }, [cafeteria, todayInfo]);
 
   // 검색 결과 화면
   if (showSearchResults) {
@@ -256,22 +272,33 @@ export default function Home() {
         </div>
         <div className="space-y-3">
           {cafeteriaLoading && <Skeleton count={2} />}
-          {!cafeteriaLoading && cafeteria && cafeteria[0] && (
+
+          {!cafeteriaLoading && todayInfo.isWeekend && (
+            <Card className="bg-neutral-100">
+              <div className="text-center py-4">
+                <p className="text-sm text-neutral-600">
+                  주말입니다. 카페테리아는 운영하지 않습니다.
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {!cafeteriaLoading && !todayInfo.isWeekend && todayMenu && (
             <Link href="/campus/cafeteria">
-              <Card className="cursor-pointer hover:shadow-card-hover">
+              <Card className="cursor-pointer hover:shadow-card-hover bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <div className="text-sm text-neutral-600 mb-1">
-                      {cafeteria[0].dayOfWeek}요일
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-green-700 mb-1">
+                      🌟 오늘의 메뉴
                     </div>
                     <h3 className="font-semibold text-neutral-900 mb-2">
-                      {cafeteria[0].location}
+                      {todayMenu.location}
                     </h3>
                     <div className="space-y-2">
                       <div>
                         <p className="text-xs text-neutral-500 mb-1">조식</p>
                         <p className="text-sm text-neutral-700">
-                          {cafeteria[0].breakfast
+                          {todayMenu.breakfast
                             .slice(0, 2)
                             .map((m) => m.name)
                             .join(", ")}{" "}
@@ -280,8 +307,41 @@ export default function Home() {
                       </div>
                       <div>
                         <p className="text-xs text-neutral-500 mb-1">중식</p>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          {todayMenu.lunch.a && (
+                            <div>
+                              <p className="text-xs font-medium text-green-700 mb-1">
+                                A 코너
+                              </p>
+                              <p className="text-neutral-700">
+                                {todayMenu.lunch.a
+                                  .slice(0, 1)
+                                  .map((m) => m.name)
+                                  .join(", ")}{" "}
+                                외
+                              </p>
+                            </div>
+                          )}
+                          {todayMenu.lunch.b && (
+                            <div>
+                              <p className="text-xs font-medium text-green-700 mb-1">
+                                B 코너
+                              </p>
+                              <p className="text-neutral-700">
+                                {todayMenu.lunch.b
+                                  .slice(0, 1)
+                                  .map((m) => m.name)
+                                  .join(", ")}{" "}
+                                외
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-neutral-500 mb-1">석식</p>
                         <p className="text-sm text-neutral-700">
-                          {cafeteria[0].lunch
+                          {todayMenu.dinner
                             .slice(0, 2)
                             .map((m) => m.name)
                             .join(", ")}{" "}
@@ -298,10 +358,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 시험 일정 */}
+      {/* 오늘의 일정 */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-neutral-900">시험 일정</h2>
+          <h2 className="text-lg font-semibold text-neutral-900">
+            오늘의 일정
+          </h2>
           <Link
             href="/academic/schedule"
             className="text-xs text-primary-600 hover:text-primary-700"
@@ -311,32 +373,58 @@ export default function Home() {
         </div>
         <div className="space-y-2">
           {schedulesLoading && <Skeleton count={2} />}
-          {!schedulesLoading &&
-            schedules &&
-            schedules.slice(0, 2).map((schedule) => (
-              <Link key={schedule.id} href="/academic/schedule">
-                <Card className="cursor-pointer hover:shadow-card-hover">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Badge
-                        color={schedule.category === "exam" ? "red" : "blue"}
-                        size="sm"
-                      >
-                        {getCategoryLabel(schedule.category)}
-                      </Badge>
-                      <h3 className="font-semibold text-neutral-900 mt-2">
-                        {schedule.title}
-                      </h3>
-                      <p className="text-xs text-neutral-600 mt-1">
-                        {formatDate(schedule.startDate)} ~{" "}
-                        {formatDate(schedule.endDate)}
-                      </p>
-                    </div>
-                    <span className="text-2xl">📅</span>
-                  </div>
-                </Card>
-              </Link>
-            ))}
+          {!schedulesLoading && schedules && (
+            <>
+              {schedules.filter((schedule) => {
+                const isToday =
+                  schedule.startDate === todayInfo.dateStringDot ||
+                  (todayInfo.dateStringDot >= schedule.startDate &&
+                    todayInfo.dateStringDot <= schedule.endDate);
+                return isToday;
+              }).length === 0 ? (
+                <div className="py-4 text-center text-neutral-600 text-sm">
+                  오늘 일정이 없습니다.
+                </div>
+              ) : (
+                schedules
+                  .filter((schedule) => {
+                    const isToday =
+                      schedule.startDate === todayInfo.dateStringDot ||
+                      (todayInfo.dateStringDot >= schedule.startDate &&
+                        todayInfo.dateStringDot <= schedule.endDate);
+                    return isToday;
+                  })
+                  .map((schedule) => (
+                    <Link key={schedule.id} href="/academic/schedule">
+                      <Card className="cursor-pointer hover:shadow-card-hover">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Badge
+                              color={
+                                schedule.category === "exam" ? "red" : "blue"
+                              }
+                              size="sm"
+                            >
+                              {getCategoryLabel(schedule.category)}
+                            </Badge>
+                            <h3 className="font-semibold text-neutral-900 mt-2">
+                              {schedule.title}
+                            </h3>
+                            <p className="text-xs text-neutral-600 mt-1">
+                              {formatDate(schedule.startDate)} ~{" "}
+                              {formatDate(schedule.endDate)}
+                            </p>
+                          </div>
+                          <span className="text-2xl">
+                            {schedule.category === "exam" ? "📝" : "📅"}
+                          </span>
+                        </div>
+                      </Card>
+                    </Link>
+                  ))
+              )}
+            </>
+          )}
         </div>
       </div>
     </Container>
