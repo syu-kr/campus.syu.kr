@@ -1,6 +1,7 @@
 /**
- * 학사주요일정 크롤링 스크립트
+ * 학사주요일정 크롤링 스크립트 (증분 크롤링)
  * 월 1회 실행됨
+ * 기존 데이터는 유지하고 중복되지 않는 새 일정만 추가
  * https://www.syu.ac.kr/academic/major-schedule/
  *
  * HTML 구조분석:
@@ -25,8 +26,32 @@ interface Schedule {
 }
 
 async function crawlSchedule() {
-  const schedules: Schedule[] = [];
+  const newSchedules: Schedule[] = [];
   const url = "https://www.syu.ac.kr/academic/major-schedule/";
+
+  const dataPath = path.join(
+    process.cwd(),
+    "public",
+    "data",
+    "schedules-major.json",
+  );
+
+  // 기존 데이터 로드
+  let existingSchedules: Schedule[] = [];
+  const existingTitles = new Set<string>(); // 중복 검사용
+
+  if (fs.existsSync(dataPath)) {
+    try {
+      const data = fs.readFileSync(dataPath, "utf-8");
+      existingSchedules = JSON.parse(data);
+      existingSchedules.forEach((s) => {
+        existingTitles.add(`${s.title}|${s.startDate}|${s.endDate}`);
+      });
+      console.log(`📌 기존 일정 ${existingSchedules.length}개 로드`);
+    } catch (error) {
+      console.log("⚠️ 기존 데이터 로드 실패, 새로 시작합니다.");
+    }
+  }
 
   console.log("📅 학사주요일정 크롤링 시작...");
 
@@ -110,48 +135,51 @@ async function crawlSchedule() {
 
             // 유효한 날짜만 저장
             if (startDate && endDate) {
-              schedules.push({
-                id: `schedule-${currentYear}-${dateText.replace(/\s|~/g, "-")}-${_liIdx}`,
-                title: eventText,
-                startDate: startDate,
-                endDate: endDate,
-                category: "event", // 학사일정 분류
-                description: eventText,
-              });
+              const uniqueKey = `${eventText}|${startDate}|${endDate}`;
+
+              // 기존 데이터에 없으면 신규 추가
+              if (!existingTitles.has(uniqueKey)) {
+                newSchedules.push({
+                  id: `schedule-${currentYear}-${dateText.replace(/\s|~/g, "-")}-${_liIdx}`,
+                  title: eventText,
+                  startDate: startDate,
+                  endDate: endDate,
+                  category: "event", // 학사일정 분류
+                  description: eventText,
+                });
+              }
             }
           }
         });
       });
     });
 
-    const dataPath = path.join(
-      process.cwd(),
-      "public",
-      "data",
-      "schedules-major.json",
-    );
+    // 새 일정과 기존 일정 합치기 (새것이 앞에 옴)
+    const allSchedules = [...newSchedules, ...existingSchedules];
 
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-    fs.writeFileSync(dataPath, JSON.stringify(schedules, null, 2), "utf-8");
+    fs.writeFileSync(dataPath, JSON.stringify(allSchedules, null, 2), "utf-8");
 
-    console.log(`✅ 학사일정 ${schedules.length}개 저장 완료: ${dataPath}`);
-    if (schedules.length > 0) {
-      console.log(
-        `📝 샘플 일정: ${schedules[0].title} (${schedules[0].startDate})`,
-      );
+    console.log(
+      `✅ 학사일정 ${newSchedules.length}개 신규 추가, 총 ${allSchedules.length}개 저장 완료`,
+    );
+    if (newSchedules.length > 0) {
+      console.log(`📝 신규 일정 샘플: ${newSchedules[0].title} (${newSchedules[0].startDate})`);
     }
   } catch (error) {
     console.error("❌ 학사일정 크롤링 실패:", error);
-    // 빈 배열 저장
-    const dataPath = path.join(
-      process.cwd(),
-      "public",
-      "data",
-      "schedules-major.json",
-    );
-    fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-    fs.writeFileSync(dataPath, JSON.stringify([], null, 2), "utf-8");
-    console.log(`⚠️ 빈 학사일정 저장: ${dataPath}`);
+    // 기존 데이터 유지
+    if (existingSchedules.length > 0) {
+      fs.mkdirSync(path.dirname(dataPath), { recursive: true });
+      fs.writeFileSync(
+        dataPath,
+        JSON.stringify(existingSchedules, null, 2),
+        "utf-8",
+      );
+      console.log(
+        `⚠️ 크롤링 실패, 기존 데이터 ${existingSchedules.length}개 유지`,
+      );
+    }
   }
 }
 

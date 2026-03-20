@@ -1,7 +1,7 @@
 /**
  * SU-Lounge 식단표 크롤링 스크립트 (매일 실행)
  * https://www.syu.ac.kr/school-life/facility-information/cafeteria/
- * 
+ *
  * HTML 구조:
  * - .weekly-menu-table 테이블
  * - thead: 헤더 (날짜: 3월 16일(월), 3월 17일(화) 등)
@@ -72,7 +72,8 @@ function parseMenuItems(html: string): string[] {
 
 async function crawlCafeteriaMenu() {
   const menus: MenuDay[] = [];
-  const baseUrl = "https://www.syu.ac.kr/school-life/facility-information/cafeteria/";
+  const baseUrl =
+    "https://www.syu.ac.kr/school-life/facility-information/cafeteria/";
 
   console.log("🍜 SU-Lounge 식단표 크롤링 시작...");
 
@@ -189,7 +190,9 @@ async function crawlCafeteriaMenu() {
           day,
           meals,
         });
-        console.log(`   ✓ ${date} (${day}): 중${meals.lunch.a_corner.length} A${meals.lunch.a_corner.length} B${meals.lunch.b_corner.length} 석${meals.dinner.length}`);
+        console.log(
+          `   ✓ ${date} (${day}): 중${meals.lunch.a_corner.length} A${meals.lunch.a_corner.length} B${meals.lunch.b_corner.length} 석${meals.dinner.length}`,
+        );
       }
     }
 
@@ -201,7 +204,8 @@ async function crawlCafeteriaMenu() {
       "cafeteria-menu.json",
     );
 
-    const weekStartDate = dates[0]?.date || new Date().toISOString().split("T")[0];
+    const weekStartDate =
+      dates[0]?.date || new Date().toISOString().split("T")[0];
 
     const menuData: CafeteriaMenu = {
       id: "su-lounge-001",

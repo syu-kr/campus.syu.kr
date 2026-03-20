@@ -1,7 +1,8 @@
 /**
- * 학사공지 크롤링 스크립트
+ * 학사공지 크롤링 스크립트 (증분 크롤링)
  * 매일 00시에 실행됨
- * https://www.syu.ac.kr/academic/academic-notice/page/1 - /page/127
+ * 기존 데이터는 유지하고 새로운 글만 추가
+ * https://www.syu.ac.kr/academic/academic-notice/page/1
  */
 
 import axios from "axios";
@@ -22,13 +23,37 @@ interface Announcement {
 }
 
 async function crawlAcademicNotice() {
-  const announcements: Announcement[] = [];
+  const dataPath = path.join(
+    process.cwd(),
+    "public",
+    "data",
+    "announcements-academic.json",
+  );
+
+  // 기존 데이터 로드
+  let existingAnnouncements: Announcement[] = [];
+  let latestTitle = "";
+
+  if (fs.existsSync(dataPath)) {
+    try {
+      const data = fs.readFileSync(dataPath, "utf-8");
+      existingAnnouncements = JSON.parse(data);
+      if (existingAnnouncements.length > 0) {
+        latestTitle = existingAnnouncements[0].title;
+        console.log(`📌 최신 글: "${latestTitle}"`);
+      }
+    } catch (error) {
+      console.log("⚠️ 기존 데이터 로드 실패, 새로 시작합니다.");
+    }
+  }
+
+  const newAnnouncements: Announcement[] = [];
   const baseUrl = "https://www.syu.ac.kr/academic/academic-notice/page";
 
   console.log("📚 학사공지 크롤링 시작...");
 
   try {
-    // 첫 5페이지만 크롤링 (테스트용)
+    // 최신 글을 찾을 때까지 페이지 순회
     for (let page = 1; page <= 128; page++) {
       console.log(`  페이지 ${page} 크롤링 중...`);
 
@@ -40,12 +65,15 @@ async function crawlAcademicNotice() {
       });
 
       const $ = cheerio.load(response.data);
+      let foundLatest = false;
 
       // 공지사항 목록 추출
-      $("table tbody tr").each((index, element) => {
+      $("table tbody tr").each((_index, element) => {
+        if (foundLatest) return; // 최신 글 찾으면 이후는 스킵
+
         const $row = $(element);
 
-        // 필드 추출 - 테이블 열 순서 확인
+        // 필드 추출
         const titleElem = $row.find("td:nth-child(2) a");
         const title = titleElem.text().trim();
         let url = titleElem.attr("href") || "";
@@ -54,12 +82,6 @@ async function crawlAcademicNotice() {
           url = "https://www.syu.ac.kr" + url;
         }
 
-        // 테이블 구조: 번호 | 제목 | 작성자 | 날짜 | 조회수
-        // nth-child(1): 번호
-        // nth-child(2): 제목
-        // nth-child(3): 작성자
-        // nth-child(4): 날짜
-        // nth-child(5): 조회수
         const authorText = $row.find("td:nth-child(3)").text().trim();
         const dateText = $row.find("td:nth-child(4)").text().trim();
         const views = parseInt($row.find("td:nth-child(5)").text().trim()) || 0;
@@ -67,37 +89,47 @@ async function crawlAcademicNotice() {
         // "[공지]" 또는 "[중요]" 텍스트 확인
         const isImportant =
           title.includes("[공지]") || title.includes("[중요]");
+        const cleanTitle = title.replace(/\[공지\]|\[중요\]/g, "").trim();
+
+        // 최신 글과 같은 글을 찾았으면 중지
+        if (cleanTitle === latestTitle) {
+          console.log(`  ✓ 최신 글 "${latestTitle}" 발견, 크롤링 중지`);
+          foundLatest = true;
+          return;
+        }
 
         if (title) {
-          announcements.push({
-            id: `academic-${Date.now()}-${index}`,
-            title: title.replace(/\[공지\]|\[중요\]/g, "").trim(),
+          newAnnouncements.push({
+            id: `academic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            title: cleanTitle,
             date: dateText || new Date().toISOString().split("T")[0],
             author: authorText || "삼육대학교",
             views: isNaN(views) ? 0 : views,
             category: "academic",
-            content: "", // 상세 페이지 크롤링은 별도 처리
+            content: "",
             url: url,
             isImportant: isImportant,
           });
         }
       });
+
+      if (foundLatest) break; // 최신 글 찾으면 페이지 순회 중지
     }
 
+    // 새로운 글과 기존 글 합치기 (새 글이 앞에 옴)
+    const allAnnouncements = [...newAnnouncements, ...existingAnnouncements];
+
     // JSON 파일로 저장
-    const dataPath = path.join(
-      process.cwd(),
-      "public",
-      "data",
-      "announcements-academic.json",
+    fs.mkdirSync(path.dirname(dataPath), { recursive: true });
+    fs.writeFileSync(
+      dataPath,
+      JSON.stringify(allAnnouncements, null, 2),
+      "utf-8",
     );
 
-    // 디렉토리 생성
-    fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-
-    fs.writeFileSync(dataPath, JSON.stringify(announcements, null, 2), "utf-8");
-
-    console.log(`✅ 학사공지 ${announcements.length}개 저장 완료: ${dataPath}`);
+    console.log(
+      `✅ 학사공지 ${newAnnouncements.length}개 신규 추가, 총 ${allAnnouncements.length}개 저장 완료`,
+    );
   } catch (error) {
     console.error("❌ 학사공지 크롤링 실패:", error);
     throw error;
