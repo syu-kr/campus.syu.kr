@@ -4,12 +4,12 @@
  *
  * HTML 구조:
  * - .weekly-menu-table 테이블
- * - thead: 헤더 (날짜: 3월 16일(월), 3월 17일(화) 등)
- * - tbody:
- *   - 행 0: 중식 (각 날짜별 5셀)
- *   - 행 1: A코너 (6셀 - 구분 + 각 날짜별)
- *   - 행 2: B코너 (6셀 - 구분 + 각 날짜별)
- *   - 행 3: 석식 (5셀)
+ * - thead: 헤더 (날짜: 3월 16일(월), 3월 17일(화) 등, colspan=2 포함)
+ * - tbody (4개 행):
+ *   - 행 0: 조식 (08:00~09:30) - 5개 td 셀 (월~금)
+ *   - 행 1: 중식 A코너 - 첫 셀은 라벨, 1~5번 셀이 월~금
+ *   - 행 2: 중식 B코너 - 첫 셀은 라벨, 1~5번 셀이 월~금
+ *   - 행 3: 석식 - 5개 td 셀 (월~금)
  */
 
 import axios from "axios";
@@ -98,8 +98,9 @@ async function crawlCafeteriaMenu() {
     const headerCells = table.find("thead th");
     const dates: { date: string; day: string }[] = [];
 
+    // thead th는 colspan=2, colspan=1 등으로 섞여있음
+    // 실제 데이터 열은 월~금 5개
     for (let i = 1; i < headerCells.length; i++) {
-      // 첫 셀(구분)은 스킵
       const dateStr = $(headerCells[i]).text().trim();
       if (dateStr) {
         const parsed = parseKoreanDate(dateStr);
@@ -114,32 +115,39 @@ async function crawlCafeteriaMenu() {
     const bodyRows = table.find("tbody tr");
     console.log(`📋 Body 행: ${bodyRows.length}개`);
 
-    // 행 0: 중식 (각 날짜별)
-    const lunchRow = bodyRows.eq(0);
-    const lunchCells = lunchRow.find("td");
+    // 행 분석
+    if (bodyRows.length < 4) {
+      console.log("⚠️ 예상되는 4개 행이 없습니다.");
+      throw new Error("Invalid table structure");
+    }
 
-    // 행 1: A코너
+    // 행 0: 조식 (5개 셀)
+    const breakfastRow = bodyRows.eq(0);
+    const breakfastCells = breakfastRow.find("td");
+
+    // 행 1: 중식 A코너 (6개 셀 - 첫 셀은 라벨, 1~5가 월~금)
     const aCornerRow = bodyRows.eq(1);
-    const aCornerCells = aCornerRow.find("td").slice(1); // 첫 셀(구분) 제외
+    const aCornerCells = aCornerRow.find("td");
 
-    // 행 2: B코너
+    // 행 2: 중식 B코너 (6개 셀 - 첫 셀은 라벨, 1~5가 월~금)
     const bCornerRow = bodyRows.eq(2);
-    const bCornerCells = bCornerRow.find("td").slice(1); // 첫 셀(구분) 제외
+    const bCornerCells = bCornerRow.find("td");
 
-    // 행 3: 석식 (각 날짜별, 1~5번 셀)
+    // 행 3: 석식 (5개 셀)
     const dinnerRow = bodyRows.eq(3);
     const dinnerCells = dinnerRow.find("td");
 
-    console.log(`\nA코너 셀: ${aCornerCells.length}개`);
+    console.log(`\n조식 셀: ${breakfastCells.length}개`);
+    console.log(`A코너 셀: ${aCornerCells.length}개`);
     console.log(`B코너 셀: ${bCornerCells.length}개`);
+    console.log(`석식 셀: ${dinnerCells.length}개\n`);
 
     // 각 날짜별로 메뉴 구성
     for (let dateIdx = 0; dateIdx < dates.length; dateIdx++) {
       const { date, day } = dates[dateIdx];
-      const cellIdx = dateIdx + 1; // 헤더에서 1번부터 시작
 
       const meals = {
-        breakfast: [] as string[], // 아침은 없음
+        breakfast: [] as string[],
         lunch: {
           a_corner: [] as string[],
           b_corner: [] as string[],
@@ -147,33 +155,31 @@ async function crawlCafeteriaMenu() {
         dinner: [] as string[],
       };
 
-      // 중식
-      const lunchCell = lunchCells.eq(cellIdx);
-      if (lunchCell.length > 0) {
-        // 중식은 A/B 코너 구분 전 통합 메뉴
-        const lunchText = lunchCell.html() || "";
-        const lunchItems = parseMenuItems(lunchText);
-        // A/B 모두에 추가
-        meals.lunch.a_corner = lunchItems.slice();
-        meals.lunch.b_corner = lunchItems.slice();
+      // 조식: 행 0의 셀 0~4가 월~금
+      const breakfastCell = breakfastCells.eq(dateIdx);
+      if (breakfastCell.length > 0) {
+        const breakfastText = breakfastCell.html() || "";
+        meals.breakfast = parseMenuItems(breakfastText);
       }
 
-      // A코너 (재정의 - 있으면)
-      const aCell = aCornerCells.eq(dateIdx);
+      // A코너: 행 1의 셀 1~5가 월~금 (셀 0은 라벨 제외)
+      const aCellIdx = dateIdx + 1;
+      const aCell = aCornerCells.eq(aCellIdx);
       if (aCell.length > 0) {
         const aText = aCell.html() || "";
         meals.lunch.a_corner = parseMenuItems(aText);
       }
 
-      // B코너 (재정의 - 있으면)
-      const bCell = bCornerCells.eq(dateIdx);
+      // B코너: 행 2의 셀 1~5가 월~금 (셀 0은 라벨 제외)
+      const bCellIdx = dateIdx + 1;
+      const bCell = bCornerCells.eq(bCellIdx);
       if (bCell.length > 0) {
         const bText = bCell.html() || "";
         meals.lunch.b_corner = parseMenuItems(bText);
       }
 
-      // 석식
-      const dinnerCell = dinnerCells.eq(cellIdx);
+      // 석식: 행 3의 셀 0~4가 월~금
+      const dinnerCell = dinnerCells.eq(dateIdx);
       if (dinnerCell.length > 0) {
         const dinnerText = dinnerCell.html() || "";
         meals.dinner = parseMenuItems(dinnerText);
@@ -181,6 +187,7 @@ async function crawlCafeteriaMenu() {
 
       // 유효한 메뉴가 있으면 추가
       if (
+        meals.breakfast.length > 0 ||
         meals.lunch.a_corner.length > 0 ||
         meals.lunch.b_corner.length > 0 ||
         meals.dinner.length > 0
@@ -191,7 +198,7 @@ async function crawlCafeteriaMenu() {
           meals,
         });
         console.log(
-          `   ✓ ${date} (${day}): 중${meals.lunch.a_corner.length} A${meals.lunch.a_corner.length} B${meals.lunch.b_corner.length} 석${meals.dinner.length}`,
+          `   ✓ ${date} (${day}): 조${meals.breakfast.length} A${meals.lunch.a_corner.length} B${meals.lunch.b_corner.length} 석${meals.dinner.length}`,
         );
       }
     }

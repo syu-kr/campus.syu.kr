@@ -164,7 +164,9 @@ async function crawlSchedule() {
       `✅ 학사일정 ${newSchedules.length}개 신규 추가, 총 ${allSchedules.length}개 저장 완료`,
     );
     if (newSchedules.length > 0) {
-      console.log(`📝 신규 일정 샘플: ${newSchedules[0].title} (${newSchedules[0].startDate})`);
+      console.log(
+        `📝 신규 일정 샘플: ${newSchedules[0].title} (${newSchedules[0].startDate})`,
+      );
     }
   } catch (error) {
     console.error("❌ 학사일정 크롤링 실패:", error);

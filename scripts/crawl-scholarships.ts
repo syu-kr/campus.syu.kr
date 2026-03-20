@@ -120,11 +120,7 @@ async function crawlScholarshipNotice() {
 
     // JSON 파일로 저장
     fs.mkdirSync(path.dirname(dataPath), { recursive: true });
-    fs.writeFileSync(
-      dataPath,
-      JSON.stringify(allNotices, null, 2),
-      "utf-8",
-    );
+    fs.writeFileSync(dataPath, JSON.stringify(allNotices, null, 2), "utf-8");
 
     console.log(
       `✅ 장학공지 ${newNotices.length}개 신규 추가, 총 ${allNotices.length}개 저장 완료`,
