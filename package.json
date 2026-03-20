@@ -9,16 +9,16 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "crawl:announce": "ts-node scripts/crawl-announcements.ts",
-    "crawl:scholarship": "ts-node scripts/crawl-scholarships.ts",
-    "crawl:schedule": "ts-node scripts/crawl-schedule.ts",
-    "crawl:phone": "ts-node scripts/crawl-phone.ts",
-    "crawl:static": "ts-node scripts/crawl-static.ts",
-    "crawl:events": "ts-node scripts/crawl-events.ts",
-    "crawl:campus": "ts-node scripts/crawl-campus.ts",
-    "crawl:campus-map": "ts-node scripts/crawl-campus-map.ts",
-    "crawl:registration": "ts-node scripts/crawl-registration.ts",
-    "crawl:clubs": "ts-node scripts/crawl-clubs.ts"
+    "crawl:announce": "tsx scripts/crawl-announcements.ts",
+    "crawl:scholarship": "tsx scripts/crawl-scholarships.ts",
+    "crawl:schedule": "tsx scripts/crawl-schedule.ts",
+    "crawl:phone": "tsx scripts/crawl-phone.ts",
+    "crawl:static": "tsx scripts/crawl-static.ts",
+    "crawl:events": "tsx scripts/crawl-events.ts",
+    "crawl:campus": "tsx scripts/crawl-campus.ts",
+    "crawl:campus-map": "tsx scripts/crawl-campus-map.ts",
+    "crawl:registration": "tsx scripts/crawl-registration.ts",
+    "crawl:clubs": "tsx scripts/crawl-clubs.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
@@ -35,12 +35,13 @@
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.17",
     "axios": "^1.13.6",
-    "cheerio": "^1.2.0",
+    "cheerio": "^1.0.0-rc.12",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.1.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
 }
