@@ -33,8 +33,18 @@ export default function TermsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-neutral-900 mb-2">이용약관</h1>
         <p className="text-neutral-600">
-          SYU CAMPUS 서비스 이용약관입니다. 2025년 4월 1일 시행
+          SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 21일 시행
         </p>
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-900 font-semibold mb-2">
+            ⚠️ 중요 공지
+          </p>
+          <p className="text-sm text-red-800">
+            본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 제공되는 모든
+            자료는 참고용이며, 정확한 정보는 학교 공식 웹사이트를 참고하시기
+            바랍니다.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-6 mb-8">
@@ -43,9 +53,10 @@ export default function TermsPage() {
             제1조 목적
           </h2>
           <p className="text-neutral-700 leading-relaxed">
-            이 약관은 SYU KR(이하 &quot;서비스팀&quot;)가 제공하는 SYU
-            CAMPUS(이하 &quot;서비스&quot;)의 이용과 관련하여 서비스팀과
-            이용자의 권리 및 의무를 정하는 것을 목적으로 합니다.
+            이 약관은 삼육대학교 학생들을 위해 제공되는 &quot;SYU CAMPUS&quot;
+            (이하 &quot;서비스&quot;)의 이용과 관련하여 SYU KR(이하
+            &quot;제공자&quot;)과 이용자의 권리 및 의무를 정하는 것을 목적으로
+            합니다.
           </p>
         </Card>
 
@@ -57,22 +68,21 @@ export default function TermsPage() {
             <div>
               <p className="font-semibold mb-1">1. 서비스</p>
               <p className="text-sm text-neutral-600">
-                서비스팀이 제공하는 학사정보, 캠퍼스정보, 공지사항 등을 포함한
-                모든 통합 정보 플랫폼을 의미합니다.
+                삼육대학교 학생들이 학사정보, 캠퍼스 생활 정보, 공지사항을
+                통합적으로 확인할 수 있는 웹 플랫폼을 의미합니다.
               </p>
             </div>
             <div>
               <p className="font-semibold mb-1">2. 이용자</p>
               <p className="text-sm text-neutral-600">
-                이 약관에 동의하고 서비스를 이용하는 서비스팀의 사용자를
+                이 약관에 동의하고 서비스를 이용하는 삼육대학교 학생을
                 의미합니다.
               </p>
             </div>
             <div>
-              <p className="font-semibold mb-1">3. 회원</p>
+              <p className="font-semibold mb-1">3. 제공자</p>
               <p className="text-sm text-neutral-600">
-                서비스를 통해 서비스팀에 가입하고, 서비스 이용 계약을 체결한
-                개인 또는 단체를 의미합니다.
+                SYU CAMPUS 서비스를 개발, 운영, 관리하는 SYU KR을 의미합니다.
               </p>
             </div>
           </div>
@@ -80,38 +90,74 @@ export default function TermsPage() {
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제3조 서비스의 제공
+            제3조 서비스의 내용
           </h2>
           <div className="space-y-3 text-neutral-700">
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded mb-3">
+              <p className="text-sm text-orange-900 font-semibold">
+                📌 참고용 자료
+              </p>
+              <p className="text-xs text-orange-800 mt-1">
+                본 서비스의 모든 자료(공지사항, 시간표, 학식 정보 등)는
+                참고용입니다. 정확한 정보는 반드시 삼육대학교 공식 웹사이트를
+                확인하시기 바랍니다.
+              </p>
+            </div>
             <p>
-              <span className="font-semibold">1.</span> 서비스팀은 이용자에게
-              다음의 서비스를 제공합니다:
+              <span className="font-semibold">1.</span> 서비스는 다음의 기능을
+              제공합니다:
             </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
-              <li>학사일정, 공지사항, 학점 조회 등 학사정보</li>
-              <li>학식, 셔틀버스, 시설정보 등 캠퍼스정보</li>
-              <li>등록금 일정, 장학금 정보 등 맞춤 서비스</li>
-              <li>기타 서비스팀에서 제공하는 정보</li>
+              <li>
+                <strong>학사정보</strong>: 학사공지, 학사일정, 학과공지,
+                행사정보
+              </li>
+              <li>
+                <strong>캠퍼스정보</strong>: 셔틀버스 시간표, 학식 정보, 도서관
+                열람실 현황
+              </li>
+              <li>
+                <strong>재정정보</strong>: 등록금 일정, 장학금 안내, 캠퍼스공지
+              </li>
+              <li>
+                <strong>통합검색</strong>: 모든 공지사항, 일정, 연락처를 통합
+                검색
+              </li>
+              <li>
+                <strong>기타서비스</strong>: PWA 지원으로 앱처럼 사용 가능
+              </li>
             </ul>
             <p className="text-sm mt-3">
-              <span className="font-semibold">2.</span> 서비스팀은 운영상 필요시
+              <span className="font-semibold">2.</span> 제공되는 정보는 공개된
+              학교 공식 정보를 크롤링하거나 JSON 데이터 형태로 관리됩니다.
+            </p>
+            <p className="text-sm mt-3">
+              <span className="font-semibold">3.</span> 제공자는 운영상 필요시
               사전 공지 후 서비스의 내용을 변경하거나 일시 중단할 수 있습니다.
+            </p>
+            <p className="text-sm mt-3">
+              <span className="font-semibold">4.</span> 본 서비스는 삼육대학교의
+              공식 서비스가 아니며, SYU KR에 의해 개발되었습니다. 서비스 이용 시
+              발생하는 모든 문제 또는 손해에 대해 제공자는 책임을 지지 않습니다.
             </p>
           </div>
         </Card>
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제4조 회원의 의무
+            제4조 사용자의 책임
           </h2>
           <div className="space-y-2 text-neutral-700">
             <p>이용자는 서비스 이용 시 다음 행위를 하여서는 안 됩니다:</p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
-              <li>불법적인 컨텐츠의 게시, 배포, 공유</li>
+              <li>불법적인 콘텐츠의 게시, 배포, 공유</li>
               <li>타인의 개인정보 침해 행위</li>
               <li>서비스의 정상적 기능을 방해하는 행위</li>
-              <li>악의적인 목적의 정보 수집 및 이용</li>
-              <li>부정한 접근, 해킹, 시스템 구축물 침해</li>
+              <li>크롤링, 스크래핑 등 악의적인 정보 수집</li>
+              <li>
+                자동화 도구/봇을 이용한 서버 부하 행위 (개인적 서버 테스트 제외)
+              </li>
+              <li>부정한 접근, 해킹, 시스템 침해</li>
               <li>기타 불법적 또는 부당한 행위</li>
             </ul>
           </div>
@@ -119,53 +165,76 @@ export default function TermsPage() {
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제5조 지적재산권
+            제5조 데이터 및 개인정보
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              <span className="font-semibold">1.</span> 서비스에 포함된 모든
-              컨텐츠의 저작권 및 지적재산권은 서비스팀에 귀속됩니다.
+              <span className="font-semibold">1.</span> 서비스는 로컬 스토리지를
+              이용하여 기본적인 사용자 설정 정보를 저장할 수 있습니다.
             </p>
             <p>
-              <span className="font-semibold">2.</span> 이용자는 서비스팀의 사전
-              승인 없이 이 컨텐츠를 복제, 배포, 전시, 전송할 수 없습니다.
+              <span className="font-semibold">2.</span> 서버에는 개인정보가
+              저장되지 않으며, 모든 데이터는 클라이언트(사용자 기기)에서만
+              처리됩니다.
             </p>
             <p>
-              <span className="font-semibold">3.</span> 이용자가 작성한 컨텐츠의
-              저작권은 이용자에게 귀속되며, 서비스팀은 이를 자유롭게 이용할 수
-              있는 라이선스를 부여받습니다.
+              <span className="font-semibold">3.</span> 서비스의 성능 개선을
+              위해 Vercel Analytics를 통해 사용 패턴을 익명으로 수집할 수
+              있습니다.
             </p>
           </div>
         </Card>
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제6조 책임의 제한
+            제6조 서비스 제공의 제한 및 종료
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              서비스팀은 다음의 경우 서비스로 인해 발생한 손해에 대해 책임을
-              지지 않습니다:
+              <span className="font-semibold">1.</span> 이용자가 본 약관을
+              위반하는 경우, 제공자는 사전 통지 없이 서비스 이용을 제한하거나
+              중단할 수 있습니다.
+            </p>
+            <p>
+              <span className="font-semibold">2.</span> 서비스의 보안 문제, 학교
+              정책 변경, 기술적 문제 등으로 인해 일시 중단될 수 있습니다.
+            </p>
+            <p>
+              <span className="font-semibold">3.</span> 제공자의 판단에 따라
+              서비스를 영구 종료할 수 있습니다. 이 경우 최소 30일 전에
+              공지합니다.
+            </p>
+          </div>
+        </Card>
+
+        <Card>
+          <h2 className="text-xl font-bold text-neutral-900 mb-4">
+            제7조 책임의 제한
+          </h2>
+          <div className="space-y-3 text-neutral-700">
+            <p>
+              제공자는 다음의 경우 서비스로 인해 발생한 손해에 대해 책임을 지지
+              않습니다:
             </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               <li>이용자의 부주의 또는 오용으로 인한 손해</li>
-              <li>천재지변 등 불가소항력으로 인한 손해</li>
-              <li>
-                제3자의 불법 행위로 인한 손해 (서비스팀의 과실이 없는 경우)
-              </li>
-              <li>기타 서비스팀의 합리적 통제 범위 밖의 원인</li>
+              <li>네트워크 지연, 시스템 과부하 등 기술적 문제</li>
+              <li>학교 서버 점검 또는 학교 전산 정책 변경</li>
+              <li>제3자의 불법 행위로 인한 손해</li>
+              <li>데이터의 정확성, 완전성, 최신성을 보장하지 않음</li>
+              <li>기타 제공자의 합리적 통제 범위 밖의 원인</li>
             </ul>
           </div>
         </Card>
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제7조 약관의 변경
+            제8조 약관의 변경
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
-              <span className="font-semibold">1.</span> 서비스팀은 필요한 경우
-              이 약관을 변경할 수 있습니다.
+              <span className="font-semibold">1.</span> 제공자는 필요한 경우 이
+              약관을 변경할 수 있습니다.
             </p>
             <p>
               <span className="font-semibold">2.</span> 약관 변경 시 변경 사유
@@ -180,7 +249,7 @@ export default function TermsPage() {
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제8조 기타
+            제9조 준거법 및 관할
           </h2>
           <div className="space-y-3 text-neutral-700">
             <p>
@@ -188,20 +257,11 @@ export default function TermsPage() {
               대한민국의 법을 적용합니다.
             </p>
             <p>
-              <span className="font-semibold">2.</span> 분쟁 발생 시 서울의
+              <span className="font-semibold">2.</span> 분쟁 발생 시 대한민국의
               일반법원에 제소할 수 있습니다.
-            </p>
-            <p>
-              <span className="font-semibold">3.</span> 기타 문의사항은
-              support_team@syu.kr로 연락 바랍니다.
             </p>
           </div>
         </Card>
-
-        <div className="text-center text-sm text-neutral-600 mt-8 pt-6 border-t border-neutral-200">
-          <p>이용약관 시행일: 2025년 4월 1일</p>
-          <p>최종 수정일: 2025년 4월 1일</p>
-        </div>
       </div>
     </Container>
   );
