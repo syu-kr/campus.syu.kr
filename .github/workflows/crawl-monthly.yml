@@ -33,12 +33,17 @@ jobs:
       - name: Run academic schedule crawler
         run: python scripts/crawl_schedule.py
 
-      - name: Commit changes
+      - name: Commit and Push changes
         run: |
           git config --local user.email "singhic@outlook.kr"
           git config --local user.name "singhic"
           git add public/data/phone-*.json public/data/schedules-*.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update monthly reference data"
 
-      - name: Push changes
-        run: git push
+          # Check if there are changes to commit
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update monthly reference data"
+            git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git HEAD:main
+            echo "✅ Changes pushed successfully"
+          else
+            echo "ℹ️ No changes to commit - skipping push"
+          fi
