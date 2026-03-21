@@ -1,7 +1,8 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/react";
+import { ReactNode, useEffect } from "react";
 
 // QueryClient를 싱글톤으로 관리
 let clientSingleton: QueryClient | undefined;
@@ -39,7 +40,24 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
 
+  // Service Worker 등록
+  useEffect(() => {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then(() => {
+          console.log("✓ Service Worker 등록 완료");
+        })
+        .catch((error) => {
+          console.error("✗ Service Worker 등록 실패:", error);
+        });
+    }
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <Analytics />
+      {children}
+    </QueryClientProvider>
   );
 }
