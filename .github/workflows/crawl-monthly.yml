@@ -2,8 +2,8 @@ name: Monthly Crawl - Phone & Schedule
 
 on:
   schedule:
-    # 매월 1일 00시(UTC + 0) 실행 = KST 09시
-    - cron: "0 0 1 * *"
+    # 매월 1일 15시(UTC) 실행 = KST 자정(00:00)
+    - cron: "0 15 1 * *"
   workflow_dispatch: # 수동 실행 option
 
 jobs:
@@ -11,22 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set timezone to KST
+        run: |
+          sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+          echo "Timezone set to KST: $(date)"
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: "18"
+          python-version: "3.11"
 
       - name: Install dependencies
-        run: npm install
+        run: pip install -r requirements.txt
 
       - name: Run phone directory crawler
-        run: npm run crawl:phone
+        run: python scripts/crawl_phone.py
 
       - name: Run academic schedule crawler
-        run: npm run crawl:schedule
+        run: python scripts/crawl_schedule.py
 
       - name: Commit changes
         run: |

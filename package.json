@@ -9,16 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "crawl:announce": "tsx scripts/crawl-announcements.ts",
-    "crawl:scholarship": "tsx scripts/crawl-scholarships.ts",
-    "crawl:schedule": "tsx scripts/crawl-schedule.ts",
-    "crawl:phone": "tsx scripts/crawl-phone.ts",
-    "crawl:static": "tsx scripts/crawl-static.ts",
     "crawl:events": "tsx scripts/crawl-events.ts",
-    "crawl:campus": "tsx scripts/crawl-campus.ts",
-    "crawl:campus-map": "tsx scripts/crawl-campus-map.ts",
-    "crawl:registration": "tsx scripts/crawl-registration.ts",
-    "crawl:clubs": "tsx scripts/crawl-clubs.ts"
+    "crawl:campus": "tsx scripts/crawl-campus.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
