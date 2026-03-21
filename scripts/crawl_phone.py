@@ -14,7 +14,21 @@ import json
 import os
 
 def crawl_phone_numbers():
-    """전화번호 크롤링"""
+    """전화번호 크롤링 (증분 업데이트)"""
+    data_path = "public/data/phone-numbers.json"
+    
+    # 기존 데이터 로드
+    existing_phones = {}
+    if os.path.exists(data_path):
+        try:
+            with open(data_path, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+                for phone_info in existing_data:
+                    existing_phones[phone_info['department']] = phone_info
+                print(f"📌 기존 부서 {len(existing_phones)}개 로드됨")
+        except Exception as e:
+            print(f"⚠️  기존 데이터 로드 실패: {e}")
+    
     phones = []
     url = "https://www.syu.ac.kr/about-sahmyook/phone-number-information/"
     headers = {
@@ -65,14 +79,33 @@ def crawl_phone_numbers():
                             "phone": phone
                         })
         
+        # 기존 데이터와 비교하여 변경사항 감지
+        new_phones = []
+        updated_count = 0
+        
+        for phone_info in phones:
+            dept = phone_info['department']
+            if dept in existing_phones:
+                # 기존 부서 - 번호가 달라졌으면 업데이트
+                if existing_phones[dept]['phone'] != phone_info['phone']:
+                    print(f"  🔄 {dept}: {existing_phones[dept]['phone']} → {phone_info['phone']}")
+                    updated_count += 1
+                    new_phones.append(phone_info)
+                else:
+                    # 번호가 같으면 기존 데이터 유지
+                    new_phones.append(existing_phones[dept])
+            else:
+                # 새로운 부서
+                print(f"  ✨ 신규 부서: {dept}")
+                new_phones.append(phone_info)
+        
         # JsonL로 저장
-        data_path = "public/data/phone-numbers.json"
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         
         with open(data_path, 'w', encoding='utf-8') as f:
-            json.dump(phones, f, ensure_ascii=False, indent=2)
+            json.dump(new_phones, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 전화번호 {len(phones)}개 저장 완료: {data_path}")
+        print(f"✅ 전화번호 {len(new_phones)}개 저장 (신규/변경: {len(phones) - len(existing_phones) + updated_count}개)")
     
     except Exception as e:
         print(f"❌ 전화번호 크롤링 실패: {e}")

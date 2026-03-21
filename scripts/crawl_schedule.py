@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import os
 
 def crawl_schedule():
-    """POST 요청으로 학사일정 크롤링"""
+    """학사일정 크롤링 (증분 업데이트)"""
     
     url = "https://www.syu.ac.kr/academic/major-schedule/"
     
@@ -13,8 +18,24 @@ def crawl_schedule():
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    print("Calendar schedule crawling started...")
-    print(f"URL: {url}")
+    print("📅 학사일정 크롤링 시작...")
+    
+    # 기존 데이터 로드
+    output_path = "public/data/schedules-major.json"
+    existing_schedules = {}
+    existing_keys = set()
+    
+    if os.path.exists(output_path):
+        try:
+            with open(output_path, 'r', encoding='utf-8') as f:
+                existing_data = json.load(f)
+                for schedule in existing_data:
+                    key = f"{schedule['title']}|{schedule['startDate']}|{schedule['endDate']}"
+                    existing_schedules[key] = schedule
+                    existing_keys.add(key)
+                print(f"📌 기존 일정 {len(existing_schedules)}개 로드됨")
+        except Exception as e:
+            print(f"⚠️  기존 데이터 로드 실패: {e}")
     
     try:
         # POST request
@@ -25,17 +46,18 @@ def crawl_schedule():
             print(f"Request failed: {response.status_code}")
             return
         
-        print(f"Request successful (status: {response.status_code})")
+        print(f"✓ Request successful (status: {response.status_code})")
         
         # Parse HTML
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # Find all calendar boxes
         calendars = soup.find_all("div", {"class": "md_textcalendar"})
-        print(f"Calendar boxes found: {len(calendars)}")
+        print(f"📍 Calendar boxes found: {len(calendars)}")
         
-        schedules = []
+        new_schedules = []
         processed_keys = set()
+        new_count = 0
         
         for calendar_idx, calendar in enumerate(calendars):
             # Find DL element
@@ -53,11 +75,11 @@ def crawl_schedule():
             year = year_elem.text.strip()
             month = month_elem.text.strip()
             
-            print(f"\n  Processing {year}-{month}:")
+            print(f"\n  📍 {year}-{month}:")
             
             # Find schedule items
             li_items = dl.find_all("li")
-            print(f"  Items: {len(li_items)}")
+            print(f"    Items: {len(li_items)}")
             
             for li_idx, li in enumerate(li_items):
                 inner_dl = li.find("dl")
@@ -99,12 +121,17 @@ def crawl_schedule():
                     start_date = f"{year}.{date_text}"
                     end_date = start_date
                 
-                # Check for duplicates
+                # Check for duplicates within current session
                 unique_key = f"{event_text}|{start_date}|{end_date}"
                 if unique_key in processed_keys:
                     continue
                 
                 processed_keys.add(unique_key)
+                
+                # Check if this schedule is new
+                if unique_key not in existing_keys:
+                    print(f"    ✨ NEW: {event_text} ({start_date} ~ {end_date})")
+                    new_count += 1
                 
                 # Determine category
                 category = "event"
@@ -120,21 +147,22 @@ def crawl_schedule():
                     "description": event_text
                 }
                 
-                schedules.append(schedule)
-                print(f"    {event_text} ({start_date} ~ {end_date})")
+                new_schedules.append(schedule)
         
-        print(f"\nTotal schedules collected: {len(schedules)}")
+        # 기존 일정 + 새 일정 합치기
+        all_schedules = list(existing_schedules.values()) + [s for s in new_schedules if f"{s['title']}|{s['startDate']}|{s['endDate']}" not in existing_keys]
         
         # Save JSON
-        output_path = "public/data/schedules-major.json"
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(schedules, f, ensure_ascii=False, indent=2)
+            json.dump(all_schedules, f, ensure_ascii=False, indent=2)
         
-        print(f"Saved: {output_path}")
+        print(f"\n✅ 학사일정 저장 완료")
+        print(f"   기존: {len(existing_schedules)}개, 신규: {new_count}개, 총: {len(all_schedules)}개")
         
         # Statistics
         categories = {}
-        for s in schedules:
+        for s in all_schedules:
             cat = s["category"]
             categories[cat] = categories.get(cat, 0) + 1
         

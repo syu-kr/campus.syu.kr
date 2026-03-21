@@ -1,4 +1,4 @@
-name: Daily Crawl - Academic & Scholarship Notices
+name: Daily Crawl - Academic, Scholarship, Events, Campus & Cafeteria Notices
 
 on:
   schedule:
@@ -33,12 +33,21 @@ jobs:
       - name: Run scholarship notices crawler
         run: python scripts/crawl_scholarships.py
 
+      - name: Run event notices crawler
+        run: python scripts/crawl_events.py
+
+      - name: Run campus life notices crawler
+        run: python scripts/crawl_campus.py
+
+      - name: Run cafeteria menu crawler
+        run: python scripts/crawl_cafeteria.py
+
       - name: Commit changes
         run: |
           git config --local user.email "singhic@outlook.kr"
           git config --local user.name "singhic"
-          git add public/data/announcements-*.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update daily notices crawl data"
+          git add public/data/
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update daily crawl data (notices & cafeteria menu)"
 
       - name: Push changes
         run: git push

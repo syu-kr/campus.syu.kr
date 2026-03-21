@@ -8,9 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit",
-    "crawl:events": "tsx scripts/crawl-events.ts",
-    "crawl:campus": "tsx scripts/crawl-campus.ts"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
