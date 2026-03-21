@@ -42,8 +42,11 @@ jobs:
           # Check if there are changes to commit
           if ! git diff --cached --quiet; then
             git commit -m "chore: update monthly reference data"
-            git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git HEAD:main
+            git push origin main || git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
             echo "✅ Changes pushed successfully"
           else
             echo "ℹ️ No changes to commit - skipping push"
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
