@@ -3,7 +3,7 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface ReadingRoom {
   strRoomNm: string;

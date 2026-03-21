@@ -2,7 +2,6 @@
 
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { Skeleton } from "@/app/components/Skeleton";
 import { useState, useMemo } from "react";
 
 export default function DirectoryPage() {
@@ -29,7 +28,7 @@ export default function DirectoryPage() {
         item.department.toLowerCase().includes(lowerQuery) ||
         item.phone.includes(searchQuery),
     );
-  }, [searchQuery]);
+  }, [searchQuery, phoneData]);
 
   return (
     <Container className="py-6 sm:py-8">

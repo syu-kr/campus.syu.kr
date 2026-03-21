@@ -205,6 +205,13 @@ def parse_table_2(table):
     
     return routes
 
+def parse_route_name(routeName):
+    """routeName에서 startLocation과 endLocation 추출"""
+    if '→' in routeName:
+        parts = routeName.split('→')
+        return parts[0].strip(), parts[1].strip()
+    return routeName, routeName
+
 def crawl_shuttle_bus():
     """셔틀버스 시간표 크롤링 - 모든 표를 파싱"""
     data_path = "public/data/shuttle-bus-schedule.json"
@@ -227,6 +234,7 @@ def crawl_shuttle_bus():
         print(f"📊 총 {len(tables)}개의 테이블 발견")
         
         all_routes = []
+        route_id = 0
         
         # 각 표를 처리
         for table_idx, table in enumerate(tables):
@@ -245,7 +253,22 @@ def crawl_shuttle_bus():
                 
                 for route in routes:
                     if route.get('weekday') or route.get('friday'):
-                        all_routes.append(route)
+                        startLocation, endLocation = parse_route_name(route['routeName'])
+                        
+                        # TypeScript 타입에 맞게 변환
+                        formatted_route = {
+                            "id": f"shuttle-{route_id}",
+                            "routeName": route['routeName'],
+                            "startLocation": startLocation,
+                            "endLocation": endLocation,
+                            "schedules": {
+                                "weekday": route.get('weekday', []),
+                                "weekend": route.get('friday', [])  # 금요일 데이터를 weekend로 사용
+                            },
+                            "lastUpdated": datetime.now().strftime("%Y-%m-%d")
+                        }
+                        all_routes.append(formatted_route)
+                        route_id += 1
             
             except Exception as e:
                 print(f"  ⚠️  표 {table_idx} 파싱 오류: {e}")
@@ -260,8 +283,9 @@ def crawl_shuttle_bus():
         
         # 저장된 경로 출력
         for route in all_routes:
-            print(f"  📍 {route['routeName']} ({route.get('period', 'N/A')})")
-            print(f"     평일: {len(route.get('weekday', []))}개, 금요일: {len(route.get('friday', []))}개")
+            print(f"  📍 {route['routeName']}")
+            print(f"     {route['startLocation']} → {route['endLocation']}")
+            print(f"     평일: {len(route['schedules'].get('weekday', []))}개, 주말: {len(route['schedules'].get('weekend', []))}개")
     
     except Exception as e:
         print(f"❌ 크롤링 실패: {e}")
