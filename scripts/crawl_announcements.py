@@ -43,7 +43,8 @@ def crawl_academic_notice():
     print("📚 학사공지 크롤링 시작...")
     
     try:
-        # 최신 글을 찾을 때까지 페이지 순회
+        # 최신 글을 찾을 때까지 페이지 순회 (최대 128페이지)
+        consecutive_failures = 0
         for page in range(1, 129):
             print(f"  페이지 {page} 크롤링 중...")
             
@@ -52,13 +53,21 @@ def crawl_academic_notice():
                 response.encoding = 'utf-8'
                 
                 if response.status_code != 200:
-                    break
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        print(f"  ❌ {consecutive_failures}회 연속 요청 실패, 크롤링 중지")
+                        break
+                    continue
                 
+                consecutive_failures = 0
                 soup = BeautifulSoup(response.text, 'html.parser')
                 found_latest = False
                 
                 # 공지사항 목록 추출
                 table_rows = soup.select("table tbody tr")
+                if not table_rows:
+                    print(f"  페이지 {page}에서 데이터 없음, 크롤링 종료")
+                    break
                 
                 for row in table_rows:
                     if found_latest:
@@ -122,10 +131,19 @@ def crawl_academic_notice():
         # 새로운 글과 기존 글 합치기 (새 글이 앞에 옴)
         all_announcements = new_announcements + existing_announcements
         
+        # 중복 제거 (제목+날짜 기준)
+        seen_keys = set()
+        unique_announcements = []
+        for announcement in all_announcements:
+            key = f"{announcement['title']}|{announcement['date']}"
+            if key not in seen_keys:
+                seen_keys.add(key)
+                unique_announcements.append(announcement)
+        
         # 디렉토리 생성 및 JSON 파일로 저장
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         with open(data_path, 'w', encoding='utf-8') as f:
-            json.dump(all_announcements, f, ensure_ascii=False, indent=2)
+            json.dump(unique_announcements, f, ensure_ascii=False, indent=2)
         
         print(f"✅ 학사공지 {len(new_announcements)}개 신규 추가, 총 {len(all_announcements)}개 저장 완료")
     

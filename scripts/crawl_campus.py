@@ -29,6 +29,7 @@ def crawl_campus_notices():
     
     try:
         # 모든 페이지를 순회 (최대 100페이지)
+        consecutive_failures = 0
         for page in range(1, 101):
             print(f"  페이지 {page} 크롤링 중...")
             
@@ -37,9 +38,13 @@ def crawl_campus_notices():
                 response.encoding = 'utf-8'
                 
                 if response.status_code != 200:
-                    print(f"  페이지 {page}에서 응답 없음, 크롤링 종료")
-                    break
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        print(f"  ❌ {consecutive_failures}회 연속 요청 실패, 크롤링 중지")
+                        break
+                    continue
                 
+                consecutive_failures = 0
                 soup = BeautifulSoup(response.text, 'html.parser')
                 
                 # 공지사항 목록 추출
