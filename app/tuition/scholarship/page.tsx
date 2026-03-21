@@ -39,6 +39,12 @@ export default function ScholarshipPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  // 페이지 범위: 현재 페이지 기준으로 최대 10개 페이지 표시
+  const pageRange = 10;
+  const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
+  const endPage = Math.min(totalPages, startPage + pageRange - 1);
+  const adjustedStartPage = Math.max(1, endPage - pageRange + 1);
+
   // 검색 결과가 변경되면 첫 페이지로
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -55,14 +61,26 @@ export default function ScholarshipPage() {
       </div>
 
       {/* 검색 바 */}
-      <div className="mb-6">
+      <div className="mb-6 relative">
         <input
           type="text"
           placeholder="장학금 이름 또는 설명으로 검색..."
           value={searchQuery}
           onChange={handleSearch}
-          className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
+        {searchQuery && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setCurrentPage(1);
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-1"
+            aria-label="검색 초기화"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* 결과 수 표시 */}
@@ -133,16 +151,19 @@ export default function ScholarshipPage() {
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
             이전
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          {Array.from(
+            { length: Math.min(pageRange, endPage - adjustedStartPage + 1) },
+            (_, i) => adjustedStartPage + i,
+          ).map((page) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 rounded-lg ${
+              className={`px-3 py-2 rounded-lg transition-colors ${
                 currentPage === page
                   ? "bg-primary-600 text-white"
                   : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
@@ -155,7 +176,7 @@ export default function ScholarshipPage() {
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300"
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
             다음
           </button>

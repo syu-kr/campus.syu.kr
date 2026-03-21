@@ -16,35 +16,20 @@ from datetime import datetime
 import uuid
 
 def crawl_campus_notices():
-    """캠퍼스 생활공지 증분 크롤링"""
+    """캠퍼스 생활공지 전체 크롤링 (모든 페이지 수집)"""
     data_path = "public/data/announcements-campus-life.json"
     
-    # 기존 데이터 로드
-    existing_notices = []
-    latest_title = ""
-    
-    if os.path.exists(data_path):
-        try:
-            with open(data_path, 'r', encoding='utf-8') as f:
-                existing_notices = json.load(f)
-                if existing_notices:
-                    latest_title = existing_notices[0]['title']
-                    print(f"📌 최신 글: \"{latest_title}\"")
-        except Exception as e:
-            print(f"⚠️  기존 데이터 로드 실패: {e}")
-            print("새로 시작합니다.")
-    
-    new_notices = []
+    all_notices = []
     base_url = "https://www.syu.ac.kr/university-square/notice/campus-notice/page"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     }
     
-    print("🏫 캠퍼스 생활공지 크롤링 시작...")
+    print("🏫 캠퍼스 생활공지 크롤링 시작 (전체 수집)...")
     
     try:
-        # 최신 글을 찾을 때까지 페이지 순회
-        for page in range(1, 100):
+        # 모든 페이지를 순회 (최대 100페이지)
+        for page in range(1, 101):
             print(f"  페이지 {page} 크롤링 중...")
             
             try:
@@ -52,21 +37,24 @@ def crawl_campus_notices():
                 response.encoding = 'utf-8'
                 
                 if response.status_code != 200:
+                    print(f"  페이지 {page}에서 응답 없음, 크롤링 종료")
                     break
                 
                 soup = BeautifulSoup(response.text, 'html.parser')
-                found_latest = False
                 
                 # 공지사항 목록 추출
                 table_rows = soup.select("table tbody tr")
                 
+                if not table_rows:
+                    print(f"  페이지 {page}에서 데이터 없음, 크롤링 종료")
+                    break
+                
+                page_count = 0
                 for idx, row in enumerate(table_rows):
-                    if found_latest:
-                        break
                     
                     try:
                         # 필드 추출
-                        title_elem = row.select_one("td:nth-of-type(2) a")
+                        title_elem = row.select_one("td:nth-of-type(1) a")
                         if not title_elem:
                             continue
                         
@@ -78,7 +66,7 @@ def crawl_campus_notices():
                             url = "https://www.syu.ac.kr" + url
                         
                         date_text = row.select_one("td:nth-of-type(3)").get_text(strip=True) if row.select_one("td:nth-of-type(3)") else ""
-                        author = row.select_one("td:nth-of-type(4)").get_text(strip=True) if row.select_one("td:nth-of-type(4)") else ""
+                        author = row.select_one("td:nth-of-type(2)").get_text(strip=True) if row.select_one("td:nth-of-type(2)") else ""
                         views_text = row.select_one("td:nth-of-type(5)").get_text(strip=True) if row.select_one("td:nth-of-type(5)") else "0"
                         
                         try:
@@ -90,14 +78,8 @@ def crawl_campus_notices():
                         is_important = "[공지]" in title or "[중요]" in title
                         clean_title = title.replace("[공지]", "").replace("[중요]", "").strip()
                         
-                        # 최신 글과 같은 글을 찾았으면 중지
-                        if clean_title == latest_title:
-                            print(f"  ✓ 최신 글 \"{latest_title}\" 발견, 크롤링 중지")
-                            found_latest = True
-                            break
-                        
                         if title:
-                            new_notices.append({
+                            all_notices.append({
                                 "id": f"campus-{datetime.now().timestamp()}-{str(uuid.uuid4())[:8]}",
                                 "title": clean_title,
                                 "date": date_text or datetime.now().strftime("%Y-%m-%d"),
@@ -108,26 +90,31 @@ def crawl_campus_notices():
                                 "url": url,
                                 "isImportant": is_important
                             })
+                            page_count += 1
                     except Exception as e:
                         print(f"  ⚠️  행 파싱 오류: {e}")
                         continue
                 
-                if found_latest:
-                    break
+                print(f"  페이지 {page}에서 {page_count}개 수집")
             
             except requests.RequestException as e:
                 print(f"  ❌ 페이지 요청 실패: {e}")
                 break
         
-        # 새로운 글과 기존 글 합치기 (새 글이 앞에 옴)
-        all_notices = new_notices + existing_notices
+        # 중복 제거 (ID 기준)
+        seen_ids = set()
+        unique_notices = []
+        for notice in all_notices:
+            if notice['title'] not in seen_ids:
+                seen_ids.add(notice['title'])
+                unique_notices.append(notice)
         
         # 디렉토리 생성 및 JSON 파일로 저장
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         with open(data_path, 'w', encoding='utf-8') as f:
-            json.dump(all_notices, f, ensure_ascii=False, indent=2)
+            json.dump(unique_notices, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 캠퍼스 생활공지 {len(new_notices)}개 신규 추가, 총 {len(all_notices)}개 저장 완료")
+        print(f"✅ 캠퍼스 생활공지 총 {len(unique_notices)}개 수집 및 저장 완료")
     
     except Exception as e:
         print(f"❌ 캠퍼스 생활공지 크롤링 실패: {e}")

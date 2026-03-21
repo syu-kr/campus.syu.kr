@@ -6,23 +6,43 @@ export default function FacilitiesPage() {
   const facilities = [
     {
       name: "ATM",
-      locations: ["학생회관 1F", "중앙도서관 1F"],
+      locations: ["바울관 1층", "학생회관 1층", "백주년기념관 1층"],
       icon: "🏧",
     },
     {
-      name: "편의점",
-      locations: ["학생회관 B1", "기숙사 로비"],
+      name: "CU편의점",
+      locations: ["학생회관 1층"],
       icon: "🛒",
     },
     {
-      name: "카페",
-      locations: ["학생회관 2F", "중앙도서관 2F"],
-      icon: "☕",
+      name: "SU Lounge (학생식당)",
+      locations: ["학생회관 1층"],
+      icon: "🍽️",
     },
     {
-      name: "세탁소",
-      locations: ["기숙사 지하"],
-      icon: "👕",
+      name: "안경점",
+      locations: ["학생회관 2층"],
+      icon: "👓",
+    },
+    {
+      name: "복사실",
+      locations: ["바울관 지하1층 (문구점 내)"],
+      icon: "📋",
+    },
+    {
+      name: "서점",
+      locations: ["바울관 지하1층"],
+      icon: "📚",
+    },
+    {
+      name: "우리은행 (삼육대점)",
+      locations: ["도서관 1층"],
+      icon: "🏦",
+    },
+    {
+      name: "우체국 (삼육대점)",
+      locations: ["제3과학관 지하1층"],
+      icon: "📮",
     },
   ];
 

@@ -43,9 +43,9 @@ def crawl_event_notices():
     print("🎉 행사공지 크롤링 시작...")
     
     try:
-        # 최신 글을 찾을 때까지 페이지 순회
-        for page in range(1, 100):
-            print(f"  페이지 {page} 크롤링 중...")
+        # 최신 글을 찾을 때까지 페이지 순회 (최대 1000페이지)
+        for page in range(1, 1001):
+            print(f"  페이지 {page} 크롤링 중...") 
             
             try:
                 response = requests.get(f"{base_url}/{page}/", headers=headers, timeout=10)

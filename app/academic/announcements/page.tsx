@@ -39,6 +39,12 @@ export default function AcademicAnnouncementsPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  // 페이지 범위: 현재 페이지 기준으로 앞뒤 5개씩, 최소 1-10
+  const pageRange = 10;
+  const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
+  const endPage = Math.min(totalPages, startPage + pageRange - 1);
+  const adjustedStartPage = Math.max(1, endPage - pageRange + 1);
+
   // 검색 결과가 변경되면 첫 페이지로
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -106,25 +112,38 @@ export default function AcademicAnnouncementsPage() {
 
       {/* 페이지네이션 */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-8">
+        <div className="flex justify-center items-center gap-2 mt-8">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
-            ← 이전
+            이전
           </button>
 
-          <div className="text-sm text-neutral-600">
-            {currentPage} / {totalPages}
-          </div>
+          {Array.from(
+            { length: Math.min(pageRange, endPage - adjustedStartPage + 1) },
+            (_, i) => adjustedStartPage + i,
+          ).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-2 rounded-lg transition-colors ${
+                currentPage === page
+                  ? "bg-primary-600 text-white"
+                  : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
 
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
+            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
           >
-            다음 →
+            다음
           </button>
         </div>
       )}

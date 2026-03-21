@@ -5,39 +5,9 @@ export default function MorePage() {
   const moreMenus = [
     {
       id: "1",
-      title: "도서관",
-      icon: "📚",
-      href: "#",
-    },
-    {
-      id: "2",
-      title: "증명서 발급",
-      icon: "📃",
-      href: "#",
-    },
-    {
-      id: "3",
-      title: "학생ID 재발급",
-      icon: "🆔",
-      href: "#",
-    },
-    {
-      id: "4",
       title: "연락처 검색",
       icon: "☎️",
-      href: "#",
-    },
-    {
-      id: "5",
-      title: "학생회",
-      icon: "👥",
-      href: "#",
-    },
-    {
-      id: "6",
-      title: "동아리",
-      icon: "🎭",
-      href: "#",
+      href: "/admin/directory",
     },
   ];
 

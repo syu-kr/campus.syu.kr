@@ -239,7 +239,7 @@ export async function fetchScholarships(
         url: notice.url, // 외부 링크 추가
       }));
 
-    return scholarshipData.slice(0, 50);
+    return scholarshipData;
   } catch (error) {
     console.error("Failed to fetch scholarships:", error);
     return [];
