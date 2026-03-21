@@ -2,24 +2,23 @@
 
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { Skeleton } from "@/app/components/Skeleton";
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPhoneNumbers } from "@/lib/api";
 
 export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 전화번호 데이터 - 정적 데이터
-  const phoneData = [
-    { department: "학생생활팀", phone: "02-3708-1111" },
-    { department: "교무처", phone: "02-3708-2222" },
-    { department: "학생지원팀", phone: "02-3708-2333" },
-    { department: "도서관", phone: "02-3708-1000" },
-    { department: "학생식당", phone: "02-3708-3100" },
-    { department: "학생회관", phone: "02-3708-2500" },
-    { department: "캠퍼스 안내소", phone: "02-3708-9999" },
-  ];
+  const { data: phoneData, isLoading } = useQuery({
+    queryKey: ["phone-numbers"],
+    queryFn: () => fetchPhoneNumbers(),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
 
   // 검색 필터링
   const filteredDirectory = useMemo(() => {
+    if (!phoneData) return [];
     if (!searchQuery.trim()) return phoneData;
 
     const lowerQuery = searchQuery.toLowerCase();
@@ -60,20 +59,24 @@ export default function DirectoryPage() {
       </div>
 
       {/* 결과 수 표시 */}
-      <div className="mb-4 text-sm text-neutral-600">
-        {filteredDirectory.length}개 항목 찾음
-        {searchQuery && ` (검색어: "${searchQuery}")`}
-      </div>
+      {!isLoading && (
+        <div className="mb-4 text-sm text-neutral-600">
+          {filteredDirectory.length}개 항목 찾음
+          {searchQuery && ` (검색어: "${searchQuery}")`}
+        </div>
+      )}
 
       {/* 연락처 목록 */}
       <div className="space-y-3">
-        {filteredDirectory.length === 0 ? (
+        {isLoading && <Skeleton count={5} />}
+        {!isLoading && filteredDirectory.length === 0 ? (
           <Card>
             <div className="py-8 text-center text-neutral-500">
               검색 결과가 없습니다.
             </div>
           </Card>
         ) : (
+          !isLoading &&
           filteredDirectory.map((item) => (
             <Card key={item.phone}>
               <div className="flex items-center justify-between gap-4">

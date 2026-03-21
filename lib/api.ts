@@ -4,6 +4,7 @@ import {
   AcademicSchedule,
   ShuttleBusSchedule,
   Scholarship,
+  PhoneNumber,
 } from "@/types";
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
@@ -249,7 +250,7 @@ export async function fetchScholarships(
 // 검색 API - 개선됨 (전체 데이터 통합 검색)
 export async function searchAll(
   query: string,
-): Promise<(Announcement | AcademicSchedule | CafeteriaMenu | Scholarship)[]> {
+): Promise<(Announcement | AcademicSchedule | Scholarship | PhoneNumber)[]> {
   if (!query.trim()) {
     return [];
   }
@@ -258,12 +259,27 @@ export async function searchAll(
   const results: (
     | Announcement
     | AcademicSchedule
-    | CafeteriaMenu
     | Scholarship
+    | PhoneNumber
   )[] = [];
 
   try {
-    // 1. 크롤링된 공지사항 검색
+    // 1. 학사일정 검색
+    try {
+      const schedules = await fetch("/data/schedules-major.json", {
+        next: { revalidate: 3600 },
+      }).then((r) => r.json());
+      const matchedSchedules = (schedules as AcademicSchedule[]).filter(
+        (s) =>
+          s.title?.toLowerCase().includes(lowerQuery) ||
+          s.description?.toLowerCase().includes(lowerQuery),
+      );
+      results.push(...matchedSchedules);
+    } catch {
+      // handle silently
+    }
+
+    // 2. 크롤링된 공지사항 검색
 
     // 학사공지
     try {
@@ -335,14 +351,53 @@ export async function searchAll(
       // handle silently
     }
 
-    // 중복 제거 (ID 기반)
+    // 3. 전화번호 검색
+    try {
+      const phoneNumbers = await fetch("/data/phone-numbers.json", {
+        next: { revalidate: 86400 },
+      }).then((r) => r.json());
+      const matchedPhones = (phoneNumbers as PhoneNumber[]).filter(
+        (p) =>
+          p.department?.toLowerCase().includes(lowerQuery) ||
+          p.phone?.includes(query),
+      );
+      results.push(...matchedPhones);
+    } catch {
+      // handle silently
+    }
+
+    // 중복 제거 (ID 또는 phone/department 기반)
     const uniqueResults = Array.from(
-      new Map(results.map((item) => [item.id, item])).values(),
+      new Map<
+        string,
+        Announcement | AcademicSchedule | Scholarship | PhoneNumber
+      >(
+        results.map((item) => {
+          if ("phone" in item) {
+            return [item.phone, item];
+          }
+          return [item.id, item];
+        }),
+      ).values(),
     );
 
     return uniqueResults.slice(0, 100); // 최대 100개로 제한
   } catch (error) {
     console.error("Search failed:", error);
+    return [];
+  }
+}
+
+// 전화번호 API
+export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
+  try {
+    const response = await fetch("/data/phone-numbers.json", {
+      next: { revalidate: 86400 }, // Cache for 24 hours
+    });
+    const phoneData = await response.json();
+    return (phoneData || []) as PhoneNumber[];
+  } catch (error) {
+    console.error("Failed to fetch phone numbers:", error);
     return [];
   }
 }

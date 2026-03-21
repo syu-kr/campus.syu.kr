@@ -48,8 +48,10 @@ export interface ShuttleBusSchedule {
   startLocation: string;
   endLocation: string;
   schedules: {
-    weekday: string[];
-    weekend: string[];
+    mondayToThursday: string[];
+    friday: string[];
+    mondayToThursdayVacation: string[];
+    fridayVacation: string[];
   };
   lastUpdated: string;
 }
@@ -96,6 +98,12 @@ export interface UserProfile {
   department: string;
   grade: number;
   entryYear: number;
+}
+
+// 전화번호
+export interface PhoneNumber {
+  department: string;
+  phone: string;
 }
 
 // 자주 사용하는 메뉴

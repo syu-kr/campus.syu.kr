@@ -16,7 +16,7 @@ import {
   searchAll,
 } from "@/lib/api";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import type { Announcement } from "@/types";
+import type { Announcement, AcademicSchedule, PhoneNumber } from "@/types";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
@@ -30,7 +30,7 @@ const frequentMenus = [
   { id: "3", icon: "🍽️", label: "학식", path: "/campus/cafeteria" },
   { id: "4", icon: "🚌", label: "셔틀버스", path: "/campus/shuttle" },
   { id: "5", icon: "🎓", label: "장학금", path: "/tuition/scholarship" },
-  { id: "6", icon: "📃", label: "증명서", path: "/admin/certificate" },
+  { id: "6", icon: "📞", label: "연락처", path: "/admin/directory" },
 ];
 
 // 공지 카테고리 필터
@@ -111,6 +111,74 @@ export default function Home() {
     return cafeteria.find((menu) => menu.date === todayInfo.dateStringDash);
   }, [cafeteria, todayInfo]);
 
+  // 검색 결과를 카테고리별로 분류 (Hook의 규칙을 지키기 위해 조건 밖에서 호출)
+  const categorizedResults = useMemo(() => {
+    if (!showSearchResults || !searchResults) return {};
+
+    type CategoryType = Announcement | AcademicSchedule | PhoneNumber;
+
+    const categories: {
+      [key: string]: {
+        label: string;
+        items: CategoryType[];
+        linkPath?: string;
+        icon?: string;
+      };
+    } = {
+      academicSchedule: {
+        label: "📖 학사일정",
+        items: [],
+        linkPath: "/academic/schedule",
+        icon: "📖",
+      },
+      academicAnnouncement: {
+        label: "📝 학사공지",
+        items: [],
+        linkPath: "/academic/announcements",
+        icon: "📝",
+      },
+      campusAnnouncement: {
+        label: "🏫 캠퍼스공지",
+        items: [],
+        linkPath: "/campus/announcements",
+        icon: "🏫",
+      },
+      scholarship: {
+        label: "🎓 장학금",
+        items: [],
+        linkPath: "/tuition/scholarship",
+        icon: "🎓",
+      },
+      phoneNumbers: {
+        label: "📞 연락처",
+        items: [],
+        linkPath: "/admin/directory",
+        icon: "📞",
+      },
+    };
+
+    searchResults.forEach((result) => {
+      if ("phone" in result && "department" in result) {
+        // PhoneNumber
+        categories.phoneNumbers.items.push(result as PhoneNumber);
+      } else if ("startDate" in result) {
+        // AcademicSchedule
+        categories.academicSchedule.items.push(result as AcademicSchedule);
+      } else if ("category" in result) {
+        const announcement = result as Announcement;
+        if (announcement.category === "academic") {
+          categories.academicAnnouncement.items.push(announcement);
+        } else if (announcement.category === "campus") {
+          categories.campusAnnouncement.items.push(announcement);
+        } else if (announcement.category === "scholarship") {
+          categories.scholarship.items.push(announcement);
+        }
+      }
+    });
+
+    return categories;
+  }, [showSearchResults, searchResults]);
+
   // 검색 결과 화면
   if (showSearchResults) {
     return (
@@ -127,13 +195,15 @@ export default function Home() {
           </div>
         )}
 
-        {!searchLoading && searchResults && searchResults.length === 0 && (
+        {!searchLoading && (!searchResults || searchResults.length === 0) && (
           <div className="text-center py-16">
             <div className="text-4xl mb-4">🔍</div>
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
               검색 결과가 없습니다
             </h3>
-            <p className="text-neutral-600 mb-6">다른 키워드로 검색해보세요</p>
+            <p className="text-neutral-600 mb-6">
+              {`검색 결과: "${searchQuery}"`}
+            </p>
             <button
               onClick={handleSearchClear}
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -144,21 +214,103 @@ export default function Home() {
         )}
 
         {!searchLoading && searchResults && searchResults.length > 0 && (
-          <div>
-            <p className="text-sm text-neutral-600 mb-4">
-              검색 결과 {searchResults.length}개
-            </p>
-            <div className="space-y-2">
-              {searchResults.map((result) => (
-                <div key={result.id} className="mb-2">
-                  <AnnouncementCard
-                    announcement={result as Announcement}
-                    href={(result as Announcement).url}
-                    external={!!(result as Announcement).url}
-                  />
+          <div className="space-y-6">
+            {Object.entries(categorizedResults)
+              .filter(([, category]) => category.items.length > 0)
+              .map(([key, category]) => (
+                <div key={key} className="pb-4 border-b border-neutral-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-neutral-900">
+                      {category.label}
+                    </h3>
+                    {category.items.length > 3 && (
+                      <Link
+                        href={{
+                          pathname: category.linkPath,
+                          query:
+                            key === "academicAnnouncement" ||
+                            key === "campusAnnouncement" ||
+                            key === "scholarship"
+                              ? { search: searchQuery }
+                              : undefined,
+                        }}
+                        className="text-xs text-primary-600 hover:text-primary-700"
+                      >
+                        전체보기 →
+                      </Link>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    {category.items.slice(0, 3).map((item) => {
+                      if ("phone" in item && "department" in item) {
+                        // PhoneNumber
+                        const phone = item as PhoneNumber;
+                        return (
+                          <Card key={phone.phone}>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-neutral-900">
+                                  {phone.department}
+                                </h4>
+                                <p className="text-sm text-primary-600 font-semibold mt-1">
+                                  {phone.phone}
+                                </p>
+                              </div>
+                              <a
+                                href={`tel:${phone.phone}`}
+                                className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors"
+                              >
+                                전화
+                              </a>
+                            </div>
+                          </Card>
+                        );
+                      } else if ("startDate" in item) {
+                        // AcademicSchedule
+                        return (
+                          <Card key={item.id}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-neutral-900">
+                                  {item.title}
+                                </h4>
+                                <p className="text-xs text-neutral-600 mt-1">
+                                  {item.startDate}
+                                  {item.startDate !== item.endDate
+                                    ? ` ~ ${item.endDate}`
+                                    : ""}
+                                </p>
+                              </div>
+                              <Badge color="gray" size="sm">
+                                {item.category === "exam"
+                                  ? "시험"
+                                  : item.category === "registration"
+                                    ? "수강신청"
+                                    : item.category === "holiday"
+                                      ? "휴일"
+                                      : "행사"}
+                              </Badge>
+                            </div>
+                          </Card>
+                        );
+                      } else {
+                        // Announcement
+                        const announcement = item as Announcement;
+                        return (
+                          <div key={item.id}>
+                            <AnnouncementCard
+                              announcement={announcement}
+                              href={announcement.url}
+                              external={true}
+                            />
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
                 </div>
               ))}
-            </div>
           </div>
         )}
       </Container>
@@ -276,8 +428,9 @@ export default function Home() {
           {!cafeteriaLoading && todayInfo.isWeekend && (
             <Card className="bg-neutral-100">
               <div className="text-center py-4">
+                <p className="text-sm text-neutral-600">오늘은 주말입니다.</p>
                 <p className="text-sm text-neutral-600">
-                  주말입니다. 카페테리아는 운영하지 않습니다.
+                  주말을 알차게 보내보는건 어떨까요? 😊
                 </p>
               </div>
             </Card>

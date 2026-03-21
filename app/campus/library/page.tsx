@@ -124,16 +124,6 @@ export default function LibraryPage() {
           <p>• 빨간색: 2/3 이상</p>
         </div>
       </Card>
-
-      <button className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors">
-        좌석 예약하기
-      </button>
-
-      <Card className="mt-8 bg-blue-50 border border-blue-200">
-        <p className="text-sm text-blue-900">
-          📚 <strong>연락처:</strong> 02-3708-1000
-        </p>
-      </Card>
     </Container>
   );
 }

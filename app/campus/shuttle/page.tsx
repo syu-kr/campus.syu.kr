@@ -5,7 +5,7 @@ import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchShuttleBuses } from "@/lib/api";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function ShuttlePage() {
   const { data: buses, isLoading } = useQuery({
@@ -14,9 +14,22 @@ export default function ShuttlePage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const [selectedType, setSelectedType] = useState<"weekday" | "weekend">(
-    "weekday",
-  );
+  const [selectedType, setSelectedType] = useState<
+    | "mondayToThursday"
+    | "friday"
+    | "mondayToThursdayVacation"
+    | "fridayVacation"
+  >("mondayToThursday");
+
+  // 현재 시간보다 늦은 첫 번째 버스 인덱스 계산
+  const nextBusIndex = useMemo(() => {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+    return (times: string[]) => {
+      return times.findIndex((time) => time >= currentTime);
+    };
+  }, []);
 
   return (
     <Container className="py-6 sm:py-8">
@@ -28,26 +41,46 @@ export default function ShuttlePage() {
       </div>
 
       {/* 요일 선택 */}
-      <div className="flex gap-2 mb-6">
+      <div className="grid grid-cols-2 gap-2 mb-6">
         <button
-          onClick={() => setSelectedType("weekday")}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            selectedType === "weekday"
+          onClick={() => setSelectedType("mondayToThursday")}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            selectedType === "mondayToThursday"
               ? "bg-primary-600 text-white"
               : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
           }`}
         >
-          평일
+          월요일-목요일
         </button>
         <button
-          onClick={() => setSelectedType("weekend")}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            selectedType === "weekend"
+          onClick={() => setSelectedType("friday")}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            selectedType === "friday"
               ? "bg-primary-600 text-white"
               : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
           }`}
         >
-          주말
+          금요일
+        </button>
+        <button
+          onClick={() => setSelectedType("mondayToThursdayVacation")}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            selectedType === "mondayToThursdayVacation"
+              ? "bg-primary-600 text-white"
+              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+          }`}
+        >
+          방학(월요일-목요일)
+        </button>
+        <button
+          onClick={() => setSelectedType("fridayVacation")}
+          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            selectedType === "fridayVacation"
+              ? "bg-primary-600 text-white"
+              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+          }`}
+        >
+          방학(금요일)
         </button>
       </div>
 
@@ -56,38 +89,55 @@ export default function ShuttlePage() {
 
         {!isLoading &&
           buses &&
-          buses.map((bus) => (
-            <Card key={bus.id}>
-              <div className="mb-4">
-                <h2 className="text-lg font-bold text-neutral-900 mb-1">
-                  {bus.routeName}
-                </h2>
-                <p className="text-sm text-neutral-600">
-                  {bus.startLocation} → {bus.endLocation}
-                </p>
-              </div>
+          buses.map((bus) => {
+            const times = bus.schedules[selectedType];
+            const upcomingIndex = nextBusIndex(times);
 
-              <div>
-                <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
-                  운행 시간
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {bus.schedules[selectedType].map((time, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-primary-50 border border-primary-200 rounded-lg px-3 py-2 text-center text-sm font-medium text-primary-700"
-                    >
-                      {time}
-                    </div>
-                  ))}
+            return (
+              <Card key={bus.id}>
+                <div className="mb-4">
+                  <h2 className="text-lg font-bold text-neutral-900 mb-1">
+                    {bus.routeName}
+                  </h2>
+                  <p className="text-sm text-neutral-600">
+                    {bus.startLocation} → {bus.endLocation}
+                  </p>
                 </div>
-              </div>
 
-              <p className="text-xs text-neutral-500 mt-3">
-                최종 업데이트: {bus.lastUpdated}
-              </p>
-            </Card>
-          ))}
+                <div>
+                  <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
+                    운행 시간
+                  </p>
+                  {times.length === 0 ? (
+                    <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
+                      <p className="text-sm text-neutral-600 font-medium">
+                        버스가 운행되지 않는 날입니다.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {times.map((time, idx) => (
+                        <div
+                          key={idx}
+                          className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
+                            idx === upcomingIndex && upcomingIndex !== -1
+                              ? "bg-red-100 border border-red-400 text-red-700 ring-2 ring-red-300"
+                              : "bg-primary-50 border border-primary-200 text-primary-700"
+                          }`}
+                        >
+                          {time}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-xs text-neutral-500 mt-3">
+                  최종 업데이트: {bus.lastUpdated}
+                </p>
+              </Card>
+            );
+          })}
       </div>
 
       {/* 안내 */}

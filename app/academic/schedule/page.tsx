@@ -120,7 +120,7 @@ export default function SchedulePage() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
-    const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
     // 요일 헤더
     days.push(

@@ -67,10 +67,10 @@ export default function CafeteriaPage() {
         <Card className="mb-8 bg-neutral-100 border border-neutral-300">
           <div className="text-center py-6">
             <p className="text-lg font-semibold text-neutral-900 mb-1">
-              주말입니다
+              오늘은 주말입니다.
             </p>
             <p className="text-sm text-neutral-600">
-              오늘은 카페테리아가 운영하지 않습니다.
+              주말을 알차게 보내보는건 어떨까요? 😊
             </p>
           </div>
         </Card>
