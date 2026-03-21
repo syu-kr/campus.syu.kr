@@ -41,7 +41,7 @@ jobs:
 
       - name: Commit and Push changes
         run: |
-          git config --local user.email "singhic@outlook.kr"
+          git config --local user.email "ssb50800@gmail.com"
           git config --local user.name "singhic"
           git config --global --add safe.directory "$PWD"
           git add public/data/phone-*.json public/data/schedules-*.json
