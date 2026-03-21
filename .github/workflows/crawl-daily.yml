@@ -18,6 +18,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -46,12 +48,15 @@ jobs:
         run: |
           git config --local user.email "singhic@outlook.kr"
           git config --local user.name "singhic"
+          git config --global --add safe.directory "$PWD"
           git add public/data/
 
-          # Check if there are changes to commit
           if ! git diff --cached --quiet; then
             git commit -m "chore: update daily crawl data (notices & cafeteria menu)"
-            git push origin main || git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+            if ! git push origin main 2>&1; then
+              echo "First push failed, trying with explicit token..."
+              git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
+            fi
             echo "✅ Changes pushed successfully"
           else
             echo "ℹ️ No changes to commit - skipping push"
