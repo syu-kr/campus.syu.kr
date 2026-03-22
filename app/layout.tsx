@@ -54,10 +54,6 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
-        <script
-          src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.11/pwacompat.js"
-          async
-        />
         {/* Kakao Maps SDK - 동기 로딩 필수 (레거시 라이브러리) */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
