@@ -1,0 +1,1361 @@
+{
+  "buildings": [
+    {
+      "id": "baekjuyeon",
+      "name": "백주년기념관",
+      "lat": "37.64288122674409",
+      "lng": "127.10534611912826",
+      "category": "사무",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "총무과(건축·구매팀, 인사팀) / 입학처 / 대학원 / 재무처 / 우편물취급소",
+          "facilities": [
+            { "name": "총무과(건축·구매팀, 인사팀)", "category": "사무" },
+            { "name": "입학처", "category": "사무" },
+            { "name": "대학원", "category": "사무" },
+            { "name": "재무처", "category": "사무" },
+            { "name": "우편물취급소", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "총장실 / 부총장실 / 기획처 / 사무처 / 교수실 / 기획처 / 소회의실",
+          "facilities": [
+            { "name": "총장실", "category": "사무" },
+            { "name": "부총장실", "category": "사무" },
+            { "name": "기획처", "category": "사무" },
+            { "name": "사무처", "category": "사무" },
+            { "name": "교수실", "category": "학습" },
+            { "name": "소회의실", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "대외협력처 / 대회의실 / 국제교육관 연결통로",
+          "facilities": [
+            { "name": "대외협력처", "category": "사무" },
+            { "name": "대회의실", "category": "사무" },
+            { "name": "국제교육관 연결통로", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "SU-MVP강의실 / 홍보팀(401호) / 산학협력단 / 연구처 / 문서보관실",
+          "facilities": [
+            { "name": "SU-MVP강의실", "category": "학습" },
+            { "name": "홍보팀(401호)", "category": "사무" },
+            { "name": "산학협력단", "category": "사무" },
+            { "name": "연구처", "category": "사무" },
+            { "name": "문서보관실", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "theology",
+      "name": "신학관",
+      "lat": "37.64225586464221",
+      "lng": "127.10442180130784",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "침례예식장 / 세탁실 / 강의실",
+          "facilities": [
+            { "name": "침례예식장", "category": "학습" },
+            { "name": "세탁실", "category": "편의" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "신학과 사무실(108호) / 대학원 교학팀 / 세계복지지원단 / 신학과학문제연구소 / 대학원 세미나실 / 수업행동분석실",
+          "facilities": [
+            { "name": "신학과 사무실(108호)", "category": "사무" },
+            { "name": "대학원 교학팀", "category": "사무" },
+            { "name": "세계복지지원단", "category": "사무" },
+            { "name": "신학과학문제연구소", "category": "연구" },
+            { "name": "대학원 세미나실", "category": "학습" },
+            { "name": "수업행동분석실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "신학과 학회실 / 동문회 사무실",
+          "facilities": [
+            { "name": "신학과 학회실", "category": "학습" },
+            { "name": "동문회 사무실", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "선교사회연구소 / 신학연구소",
+          "facilities": [
+            { "name": "선교사회연구소", "category": "연구" },
+            { "name": "신학연구소", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "예언의신연구원 / 목회연구소 / 대학원 세미나실 / 코이노니아룸 / 신학대학원 원우회실 / 배창현 기념채플 영성훈련실",
+          "facilities": [
+            { "name": "예언의신연구원", "category": "연구" },
+            { "name": "목회연구소", "category": "연구" },
+            { "name": "대학원 세미나실", "category": "학습" },
+            { "name": "코이노니아룸", "category": "학습" },
+            { "name": "신학대학원 원우회실", "category": "학습" },
+            { "name": "배창현 기념채플 영성훈련실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "smith",
+      "name": "스미스관",
+      "lat": "37.642530844745664",
+      "lng": "127.10421823668817",
+      "category": "사무",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "시설관리과 / 고시반",
+          "facilities": [
+            { "name": "시설관리과", "category": "사무" },
+            { "name": "고시반", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "international-education",
+      "name": "국제교육관",
+      "lat": "37.643205464097306",
+      "lng": "127.1054768792721",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "강의실 / 상담심리학과 사무실(102호)",
+          "facilities": [
+            { "name": "강의실", "category": "학습" },
+            { "name": "상담심리학과 사무실(102호)", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "강의실",
+          "facilities": [{ "name": "강의실", "category": "학습" }]
+        },
+        {
+          "floor": 3,
+          "description": "장근청홀(입구)",
+          "facilities": [{ "name": "장근청홀(입구)", "category": "학습" }]
+        },
+        {
+          "floor": 4,
+          "description": "장근청홀",
+          "facilities": [{ "name": "장근청홀", "category": "학습" }]
+        }
+      ]
+    },
+    {
+      "id": "samuel",
+      "name": "사무엘관",
+      "lat": "37.64319349149201",
+      "lng": "127.1037376106741",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "강의실 / 사회복지학과 사무실(106호)",
+          "facilities": [
+            { "name": "강의실", "category": "학습" },
+            { "name": "사회복지학과 사무실(106호)", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "강의실",
+          "facilities": [{ "name": "강의실", "category": "학습" }]
+        },
+        {
+          "floor": 3,
+          "description": "영어영문학부 사무실(306호) / 강의실 / 영어영문학부 멀티미디어룸 / LAB TOEFL CENTER",
+          "facilities": [
+            { "name": "영어영문학부 사무실(306호)", "category": "사무" },
+            { "name": "강의실", "category": "학습" },
+            { "name": "영어영문학부 멀티미디어룸", "category": "학습" },
+            { "name": "LAB TOEFL CENTER", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eden",
+      "name": "에덴관(여학생생활관)",
+      "lat": "37.64304569199379",
+      "lng": "127.10275164229388",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "foreign-professor-residence",
+      "name": "외국인교수사택",
+      "lat": "37.64238857444711",
+      "lng": "127.10205957622593",
+      "category": "숙박",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "rodem",
+      "name": "로뎀관",
+      "lat": "37.64308232144144",
+      "lng": "127.10207185596218",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "beniuel",
+      "name": "브니엘관(대학원생생활관)",
+      "lat": "37.64359125898511",
+      "lng": "127.10220852062841",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "multipurpose",
+      "name": "다목적관",
+      "lat": "37.64364014301583",
+      "lng": "127.1029790750568",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "이종순 기념홀 / SAY",
+          "facilities": [
+            { "name": "이종순 기념홀", "category": "학습" },
+            { "name": "SAY", "category": "식당" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "대학교회 / 교회사무실 / 목회실 / Lesson실 / 연습실",
+          "facilities": [
+            { "name": "대학교회", "category": "학습" },
+            { "name": "교회사무실", "category": "사무" },
+            { "name": "목회실", "category": "학습" },
+            { "name": "Lesson실", "category": "학습" },
+            { "name": "연습실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "university-church",
+      "name": "대학교회",
+      "lat": "37.64383409627596",
+      "lng": "127.10270173998869",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "교회 / 목회실",
+          "facilities": [
+            { "name": "교회", "category": "학습" },
+            { "name": "목회실", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "salem",
+      "name": "살렘관",
+      "lat": "37.64441498313152",
+      "lng": "127.1029858101333",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "manna-house",
+      "name": "만나의집(생활관식당/교직원식당)",
+      "lat": "37.64403155470269",
+      "lng": "127.10356881477024",
+      "category": "식당",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "생활관식당",
+          "facilities": [{ "name": "생활관식당", "category": "식당" }]
+        },
+        {
+          "floor": 2,
+          "description": "교직원식당",
+          "facilities": [{ "name": "교직원식당", "category": "식당" }]
+        }
+      ]
+    },
+    {
+      "id": "zion",
+      "name": "시온관(남학생생활관)",
+      "lat": "37.644134568924734",
+      "lng": "127.1042488041623",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "music",
+      "name": "음악관",
+      "lat": "37.64365664175731",
+      "lng": "127.10470702961156",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "음악학과 사무실(108호) / 멀티미디어강의실 / 합창합주실 / 타악기실 / 피아노앙상블실",
+          "facilities": [
+            { "name": "음악학과 사무실(108호)", "category": "사무" },
+            { "name": "멀티미디어강의실", "category": "학습" },
+            { "name": "합창합주실", "category": "학습" },
+            { "name": "타악기실", "category": "학습" },
+            { "name": "피아노앙상블실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "실내악실 / 피아노듀오실 / 컴퓨터음악강의실",
+          "facilities": [
+            { "name": "실내악실", "category": "학습" },
+            { "name": "피아노듀오실", "category": "학습" },
+            { "name": "컴퓨터음악강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "레슨실 / 강의실",
+          "facilities": [
+            { "name": "레슨실", "category": "학습" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand-auditorium",
+      "name": "대강당(선교 70주년기념관)",
+      "lat": "37.643885589414076",
+      "lng": "127.10560814439361",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "음악학과 연습실 / 악기실 / 작곡실 / 첼로실 / 관현악실 / 렛슨실",
+          "facilities": [
+            { "name": "음악학과 연습실", "category": "학습" },
+            { "name": "악기실", "category": "학습" },
+            { "name": "작곡실", "category": "학습" },
+            { "name": "첼로실", "category": "학습" },
+            { "name": "관현악실", "category": "학습" },
+            { "name": "렛슨실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "강당무대 / 강당홀 / 컨서바토리 / 영상선교팀",
+          "facilities": [
+            { "name": "강당무대", "category": "학습" },
+            { "name": "강당홀", "category": "학습" },
+            { "name": "컨서바토리", "category": "학습" },
+            { "name": "영상선교팀", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "강당홀 / VOS방송실 / 편집실 / 영상선교팀",
+          "facilities": [
+            { "name": "강당홀", "category": "학습" },
+            { "name": "VOS방송실", "category": "사무" },
+            { "name": "편집실", "category": "사무" },
+            { "name": "영상선교팀", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "practice-center-1",
+      "name": "제1실습관/창업보육센터",
+      "lat": "37.644408280921766",
+      "lng": "127.1054729146241",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "자동차구조엔진실습실 / 변전실 / 새시다이나모검사실 / 역학실험실 / 마케트로닉스실험실 / 종합제작실 / 차체실습실 / 엔진다이나모실 / CAD, CAM LAB",
+          "facilities": [
+            { "name": "자동차구조엔진실습실", "category": "연구" },
+            { "name": "변전실", "category": "연구" },
+            { "name": "새시다이나모검사실", "category": "연구" },
+            { "name": "역학실험실", "category": "연구" },
+            { "name": "마케트로닉스실험실", "category": "연구" },
+            { "name": "종합제작실", "category": "연구" },
+            { "name": "차체실습실", "category": "연구" },
+            { "name": "엔진다이나모실", "category": "연구" },
+            { "name": "CAD, CAM LAB", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "카메카트로닉스학과 사무실 / 피아노실 / 전기저자기초실습실 / 카메카트로닉스응용실습실 / 안전관리팀 / 영선팀 / 환경미화팀",
+          "facilities": [
+            { "name": "카메카트로닉스학과 사무실", "category": "사무" },
+            { "name": "피아노실", "category": "학습" },
+            { "name": "전기저자기초실습실", "category": "연구" },
+            { "name": "카메카트로닉스응용실습실", "category": "연구" },
+            { "name": "안전관리팀", "category": "사무" },
+            { "name": "영선팀", "category": "사무" },
+            { "name": "환경미화팀", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "전산교육실 운영 사무실 / 전산교육실 (308~310호) / 과학, 창작미술실 / 유아교육과 사무실 / 유아영양실습실",
+          "facilities": [
+            { "name": "전산교육실 운영 사무실", "category": "사무" },
+            { "name": "전산교육실 (308~310호)", "category": "학습" },
+            { "name": "과학, 창작미술실", "category": "학습" },
+            { "name": "유아교육과 사무실", "category": "사무" },
+            { "name": "유아영양실습실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "컴퓨터학부 사무실(401호) / 컴퓨터학부서버실습실 / 디지털 광고시스템실 / 인쇄영상광고 시스템실 / 컴퓨터학부 프로그래밍 실습실 / 컴퓨터학부 프로젝트 실습실",
+          "facilities": [
+            { "name": "컴퓨터학부 사무실(401호)", "category": "사무" },
+            { "name": "컴퓨터학부서버실습실", "category": "연구" },
+            { "name": "디지털 광고시스템실", "category": "연구" },
+            { "name": "인쇄영상광고 시스템실", "category": "연구" },
+            { "name": "컴퓨터학부 프로그래밍 실습실", "category": "연구" },
+            { "name": "컴퓨터학부 프로젝트 실습실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 5,
+          "description": "에이엠디 랩 / (주)위엔테크 / 씨드런 / 중앙이앤씨 / 애몰라이트 / 누림온 / 그라피코스 / (주)브라보라이프 / (주)알앤에프 / 오픈버스(주) / nmpartners / Rfcookie / (주)레독스테크 / (주)누리그림 / (주)케이크테라피 / (주)엔엠웍스 / 에이치텍 / 에쓰씨테크",
+          "facilities": [
+            { "name": "에이엠디 랩", "category": "연구" },
+            { "name": "(주)위엔테크", "category": "사무" },
+            { "name": "씨드런", "category": "사무" },
+            { "name": "중앙이앤씨", "category": "사무" },
+            { "name": "애몰라이트", "category": "사무" },
+            { "name": "누림온", "category": "사무" },
+            { "name": "그라피코스", "category": "사무" },
+            { "name": "(주)브라보라이프", "category": "사무" },
+            { "name": "(주)알앤에프", "category": "사무" },
+            { "name": "오픈버스(주)", "category": "사무" },
+            { "name": "nmpartners", "category": "사무" },
+            { "name": "Rfcookie", "category": "사무" },
+            { "name": "(주)레독스테크", "category": "사무" },
+            { "name": "(주)누리그림", "category": "사무" },
+            { "name": "(주)케이크테라피", "category": "사무" },
+            { "name": "(주)엔엠웍스", "category": "사무" },
+            { "name": "에이치텍", "category": "사무" },
+            { "name": "에쓰씨테크", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "design",
+      "name": "디자인관",
+      "lat": "37.644452801819696",
+      "lng": "127.1060621802634",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "도예실 / 신체표현실 / 드림케팅 / Think-factory's room / 경영학과 고시반 / 유통마케팅 트랙실 / 경영회계 트랙실 / 경영정보 트랙실",
+          "facilities": [
+            { "name": "도예실", "category": "학습" },
+            { "name": "신체표현실", "category": "학습" },
+            { "name": "드림케팅", "category": "사무" },
+            { "name": "Think-factory's room", "category": "학습" },
+            { "name": "경영학과 고시반", "category": "학습" },
+            { "name": "유통마케팅 트랙실", "category": "학습" },
+            { "name": "경영회계 트랙실", "category": "학습" },
+            { "name": "경영정보 트랙실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "커뮤니케이션디자인학과 사무실(101호) / 건축설계스튜디오 / 포토스튜디오 / 일러스트스튜디오 / 시각디자인작업실 / 컴퓨터크래픽디자인실 / 캐릭터디자인실",
+          "facilities": [
+            {
+              "name": "커뮤니케이션디자인학과 사무실(101호)",
+              "category": "사무"
+            },
+            { "name": "건축설계스튜디오", "category": "학습" },
+            { "name": "포토스튜디오", "category": "학습" },
+            { "name": "일러스트스튜디오", "category": "학습" },
+            { "name": "시각디자인작업실", "category": "학습" },
+            { "name": "컴퓨터크래픽디자인실", "category": "학습" },
+            { "name": "캐릭터디자인실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "건축설계스튜디오 / 건축모형실 / 건축자율실기실 / 건축CAD실 / 건축의장실 / 건축기자재준비실 / 건축학과 사무실(202호) / 건축연구소",
+          "facilities": [
+            { "name": "건축설계스튜디오", "category": "학습" },
+            { "name": "건축모형실", "category": "학습" },
+            { "name": "건축자율실기실", "category": "학습" },
+            { "name": "건축CAD실", "category": "학습" },
+            { "name": "건축의장실", "category": "학습" },
+            { "name": "건축기자재준비실", "category": "사무" },
+            { "name": "건축학과 사무실(202호)", "category": "사무" },
+            { "name": "건축연구소", "category": "연구" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "experimental-animal",
+      "name": "실험동물실",
+      "lat": "37.64478152789596",
+      "lng": "127.10620994898673",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "woodworking",
+      "name": "목공실습실",
+      "lat": "37.64475868658887",
+      "lng": "127.10656117335206",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "greenhouse",
+      "name": "온실",
+      "lat": "37.644443255703976",
+      "lng": "127.10665703471071",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "art-design",
+      "name": "아트&디자인관",
+      "lat": "37.644173446300094",
+      "lng": "127.10611843695737",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "미술컨텐츠학과 강의실",
+          "facilities": [
+            { "name": "미술컨텐츠학과 강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "미술컨텐츠학과 사무실(205호) / 교환실(전기·통신팀) / 강의실 / 미술컨텐츠학과실습실",
+          "facilities": [
+            { "name": "미술컨텐츠학과 사무실(205호)", "category": "사무" },
+            { "name": "교환실(전기·통신팀)", "category": "사무" },
+            { "name": "강의실", "category": "학습" },
+            { "name": "미술컨텐츠학과실습실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "미술컨텐츠학과 실습실",
+          "facilities": [
+            { "name": "미술컨텐츠학과 실습실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "central-library",
+      "name": "중앙도서관",
+      "lat": "37.64314141269908",
+      "lng": "127.10657019370416",
+      "category": "도서관",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "제1열람실 / 제2열람실 / 스터디룸 / 박물관 / STAIRCASE",
+          "facilities": [
+            { "name": "제1열람실", "category": "도서관" },
+            { "name": "제2열람실", "category": "도서관" },
+            { "name": "스터디룸", "category": "학습" },
+            { "name": "박물관", "category": "학습" },
+            { "name": "STAIRCASE", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "연속간행물실 / 정보검색참고자료실 / 보건복지자료실 / 수서정리실 / 도서관장실 / 우리은행 삼육대출장소",
+          "facilities": [
+            { "name": "연속간행물실", "category": "도서관" },
+            { "name": "정보검색참고자료실", "category": "도서관" },
+            { "name": "보건복지자료실", "category": "도서관" },
+            { "name": "수서정리실", "category": "사무" },
+            { "name": "도서관장실", "category": "사무" },
+            { "name": "우리은행 삼육대출장소", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "자료실 / 멀티미디어실 / 열람실 / 휴게실",
+          "facilities": [
+            { "name": "자료실", "category": "도서관" },
+            { "name": "멀티미디어실", "category": "학습" },
+            { "name": "열람실", "category": "도서관" },
+            { "name": "휴게실", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "자료실 / 학술정보검색실",
+          "facilities": [
+            { "name": "자료실", "category": "도서관" },
+            { "name": "학술정보검색실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "esra",
+      "name": "에스라관",
+      "lat": "37.64357348436213",
+      "lng": "127.10701270776835",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "강의실",
+          "facilities": [{ "name": "강의실", "category": "학습" }]
+        },
+        {
+          "floor": 1,
+          "description": "교양대학 사무실(111호) / 자유전공학부 사무실(103호) / 사회봉사단 / 강의실",
+          "facilities": [
+            { "name": "교양대학 사무실(111호)", "category": "사무" },
+            { "name": "자유전공학부 사무실(103호)", "category": "사무" },
+            { "name": "사회봉사단", "category": "사무" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "e-learning 강의실",
+          "facilities": [{ "name": "e-learning 강의실", "category": "학습" }]
+        },
+        {
+          "floor": 3,
+          "description": "보건관리학과 사무실(304호) / 실험실습실 / 사회봉사단 / 강의실",
+          "facilities": [
+            { "name": "보건관리학과 사무실(304호)", "category": "사무" },
+            { "name": "실험실습실", "category": "연구" },
+            { "name": "사회봉사단", "category": "사무" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "강의실",
+          "facilities": [{ "name": "강의실", "category": "학습" }]
+        }
+      ]
+    },
+    {
+      "id": "science-1",
+      "name": "제1과학관",
+      "lat": "37.64404205693319",
+      "lng": "127.10694539541407",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "식품영양학과 조리실습실 / 다량조리실 / 식품영양학과 시식실 / 생물학과 표본실 / 조리실습실 / 고체화학연구실",
+          "facilities": [
+            { "name": "식품영양학과 조리실습실", "category": "연구" },
+            { "name": "다량조리실", "category": "연구" },
+            { "name": "식품영양학과 시식실", "category": "연구" },
+            { "name": "생물학과 표본실", "category": "연구" },
+            { "name": "조리실습실", "category": "연구" },
+            { "name": "고체화학연구실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "위드바이오 / 식품영양학과 실험실 / 영양생화학 실험실 / 식품여양학과 사무실 / 식영과 조교실 / 공통실험실",
+          "facilities": [
+            { "name": "위드바이오", "category": "사무" },
+            { "name": "식품영양학과 실험실", "category": "연구" },
+            { "name": "영양생화학 실험실", "category": "연구" },
+            { "name": "식품여양학과 사무실", "category": "사무" },
+            { "name": "식영과 조교실", "category": "사무" },
+            { "name": "공통실험실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "일반화학 실험실 / 고분자화학연구실 / 분석화학, 물리화학 실험실 / 무기화학연구실 / 유기화학 실험실 / 유기,무기화학 실험실 / 분석화학 연구실 / 물리, 환경화학 실험실",
+          "facilities": [
+            { "name": "일반화학 실험실", "category": "연구" },
+            { "name": "고분자화학연구실", "category": "연구" },
+            { "name": "분석화학, 물리화학 실험실", "category": "연구" },
+            { "name": "무기화학연구실", "category": "연구" },
+            { "name": "유기화학 실험실", "category": "연구" },
+            { "name": "유기,무기화학 실험실", "category": "연구" },
+            { "name": "분석화학 연구실", "category": "연구" },
+            { "name": "물리, 환경화학 실험실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "의명신경과학연구소 / 기초의약과학과사무실 / 보건관리학과 교육실 / 기초의약과학과 / SPF동물실 / 동물사육연구실 / 행동과학연구실",
+          "facilities": [
+            { "name": "의명신경과학연구소", "category": "연구" },
+            { "name": "기초의약과학과사무실", "category": "사무" },
+            { "name": "보건관리학과 교육실", "category": "학습" },
+            { "name": "기초의약과학과", "category": "학습" },
+            { "name": "SPF동물실", "category": "연구" },
+            { "name": "동물사육연구실", "category": "연구" },
+            { "name": "행동과학연구실", "category": "연구" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "science-2",
+      "name": "제2과학관",
+      "lat": "37.64351889983561",
+      "lng": "127.10759049409056",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "동물자원학전공 사무실(104호) / AMC한국연합회미디어센터 / 수치료실 / 국제세미나실",
+          "facilities": [
+            { "name": "동물자원학전공 사무실(104호)", "category": "사무" },
+            { "name": "AMC한국연합회미디어센터", "category": "사무" },
+            { "name": "수치료실", "category": "의료" },
+            { "name": "국제세미나실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "동물번식학실 / 동물유전자원연구센터 / (주)뮤보다 / 가축영양사료분석실 / 유가공학실험실 / 발생공학실험실 / 동물생명공학전공 사무실(209호)",
+          "facilities": [
+            { "name": "동물번식학실", "category": "연구" },
+            { "name": "동물유전자원연구센터", "category": "연구" },
+            { "name": "(주)뮤보다", "category": "사무" },
+            { "name": "가축영양사료분석실", "category": "연구" },
+            { "name": "유가공학실험실", "category": "연구" },
+            { "name": "발생공학실험실", "category": "연구" },
+            { "name": "동물생명공학전공 사무실(209호)", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "일반생물학 실험실 / 공통과학기기실 / 일반생물학 사무실 / 조경제도실 / 잔디토양분석실",
+          "facilities": [
+            { "name": "일반생물학 실험실", "category": "연구" },
+            { "name": "공통과학기기실", "category": "연구" },
+            { "name": "일반생물학 사무실", "category": "사무" },
+            { "name": "조경제도실", "category": "학습" },
+            { "name": "잔디토양분석실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "생명과학실험실 / 대학원 실험실 / 제1연구실 / 제2연구실 / 제3연구실 / 제4연구실 / 생명과학과 사무실(407호)",
+          "facilities": [
+            { "name": "생명과학실험실", "category": "연구" },
+            { "name": "대학원 실험실", "category": "연구" },
+            { "name": "제1연구실", "category": "연구" },
+            { "name": "제2연구실", "category": "연구" },
+            { "name": "제3연구실", "category": "연구" },
+            { "name": "제4연구실", "category": "연구" },
+            { "name": "생명과학과 사무실(407호)", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 5,
+          "description": "온실 / 환경디자인원예학과 사무실(505호) / 환경디자인원예학과 실습실 / 컴퓨터실",
+          "facilities": [
+            { "name": "온실", "category": "연구" },
+            { "name": "환경디자인원예학과 사무실(505호)", "category": "사무" },
+            { "name": "환경디자인원예학과 실습실", "category": "학습" },
+            { "name": "컴퓨터실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "childcare-arum",
+      "name": "어린이집(아름동)",
+      "lat": "37.643572471932636",
+      "lng": "127.10812311364728",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "food-nutrition-room",
+      "name": "식품영양학과 실습실",
+      "lat": "37.64374828806041",
+      "lng": "127.10798739991712",
+      "category": "연구",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "counseling-center",
+      "name": "학생상담센터",
+      "lat": "37.64375259572299",
+      "lng": "127.1082026897259",
+      "category": "사무",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "childcare-daeum",
+      "name": "어린이집(다움동)",
+      "lat": "37.6436533212356",
+      "lng": "127.10838383691618",
+      "category": "생활관",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "정보가 없습니다",
+          "facilities": []
+        }
+      ]
+    },
+    {
+      "id": "lifelong-education",
+      "name": "평생교육원/유치원",
+      "lat": "37.64310384669778",
+      "lng": "127.10824707118941",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "유치원",
+          "facilities": [{ "name": "유치원", "category": "학습" }]
+        },
+        {
+          "floor": 2,
+          "description": "평생교육원",
+          "facilities": [{ "name": "평생교육원", "category": "학습" }]
+        }
+      ]
+    },
+    {
+      "id": "science-3",
+      "name": "제3과학관",
+      "lat": "37.64280164255498",
+      "lng": "127.10865453319005",
+      "category": "의료",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "우체국 / 주차장",
+          "facilities": [
+            { "name": "우체국", "category": "편의" },
+            { "name": "주차장", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "물리치료학과 사무실 / 물리치료실습실(신경, 기본, 노인, 근골격) / 조경미화 / 대학원공통실험실 / 대학원연구실 / 근전도 및 보행분석실 / 생역학실험실 / 심폐 및 TMJ실험실",
+          "facilities": [
+            { "name": "물리치료학과 사무실", "category": "사무" },
+            {
+              "name": "물리치료실습실(신경, 기본, 노인, 근골격)",
+              "category": "의료"
+            },
+            { "name": "조경미화", "category": "편의" },
+            { "name": "대학원공통실험실", "category": "연구" },
+            { "name": "대학원연구실", "category": "연구" },
+            { "name": "근전도 및 보행분석실", "category": "연구" },
+            { "name": "생역학실험실", "category": "연구" },
+            { "name": "심폐 및 TMJ실험실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "간호학과 사무실 / 멀티미디어 자율학습실 / 문제중심학습실 / 기초과학실 / 간호학실습실 / 시뮬레이션학습실",
+          "facilities": [
+            { "name": "간호학과 사무실", "category": "사무" },
+            { "name": "멀티미디어 자율학습실", "category": "학습" },
+            { "name": "문제중심학습실", "category": "학습" },
+            { "name": "기초과학실", "category": "학습" },
+            { "name": "간호학실습실", "category": "의료" },
+            { "name": "시뮬레이션학습실", "category": "의료" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "천연물화학연구실 / 공통실험실 / 표본실 / 증류수실 / 국시실 / 임상약학연구실 / 생약학연구실 / 약학과 사무실",
+          "facilities": [
+            { "name": "천연물화학연구실", "category": "연구" },
+            { "name": "공통실험실", "category": "연구" },
+            { "name": "표본실", "category": "연구" },
+            { "name": "증류수실", "category": "연구" },
+            { "name": "국시실", "category": "학습" },
+            { "name": "임상약학연구실", "category": "연구" },
+            { "name": "생약학연구실", "category": "연구" },
+            { "name": "약학과 사무실", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "생화학연구실 / 역제학연구실 / 병태생리학연구실 / 면역학연구실 / 세포배양실 / 실습약국 / 미생물학연구실 / 약품분석화학연구실 / 생물약제학연구실 / 예방약학연구실 / 미생물학대학원연구실",
+          "facilities": [
+            { "name": "생화학연구실", "category": "연구" },
+            { "name": "역제학연구실", "category": "연구" },
+            { "name": "병태생리학연구실", "category": "연구" },
+            { "name": "면역학연구실", "category": "연구" },
+            { "name": "세포배양실", "category": "연구" },
+            { "name": "실습약국", "category": "의료" },
+            { "name": "미생물학연구실", "category": "연구" },
+            { "name": "약품분석화학연구실", "category": "연구" },
+            { "name": "생물약제학연구실", "category": "연구" },
+            { "name": "예방약학연구실", "category": "연구" },
+            { "name": "미생물학대학원연구실", "category": "연구" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "newstart-center",
+      "name": "뉴스타트센터",
+      "lat": "37.641719798477226",
+      "lng": "127.10937243826206",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "인성교육원",
+          "facilities": [{ "name": "인성교육원", "category": "학습" }]
+        },
+        {
+          "floor": 2,
+          "description": "학생공간 / 세미나실",
+          "facilities": [
+            { "name": "학생공간", "category": "편의" },
+            { "name": "세미나실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "학생공간 / 세미나실",
+          "facilities": [
+            { "name": "학생공간", "category": "편의" },
+            { "name": "세미나실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "daniel",
+      "name": "다니엘관",
+      "lat": "37.642514164589876",
+      "lng": "127.10774200711433",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -2,
+          "description": "주차장",
+          "facilities": [{ "name": "주차장", "category": "편의" }]
+        },
+        {
+          "floor": -1,
+          "description": "대강의실 / 주차장",
+          "facilities": [
+            { "name": "대강의실", "category": "학습" },
+            { "name": "주차장", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "국제문화교육원 / 소강의실 / 외국인교수연구실",
+          "facilities": [
+            { "name": "국제문화교육원", "category": "학습" },
+            { "name": "소강의실", "category": "학습" },
+            { "name": "외국인교수연구실", "category": "연구" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "교육혁신팀 / 소강의실 / 대강의실",
+          "facilities": [
+            { "name": "교육혁신팀", "category": "사무" },
+            { "name": "소강의실", "category": "학습" },
+            { "name": "대강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "중강의실 / 대강의실",
+          "facilities": [
+            { "name": "중강의실", "category": "학습" },
+            { "name": "대강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "중강의실 / 대강의실",
+          "facilities": [
+            { "name": "중강의실", "category": "학습" },
+            { "name": "대강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 5,
+          "description": "교수학습개발센터 / 중강의실 / 세계선교센터 / 미디어선교센터 / 외래교수실 / 명예교수실",
+          "facilities": [
+            { "name": "교수학습개발센터", "category": "학습" },
+            { "name": "중강의실", "category": "학습" },
+            { "name": "세계선교센터", "category": "사무" },
+            { "name": "미디어선교센터", "category": "사무" },
+            { "name": "외래교수실", "category": "사무" },
+            { "name": "명예교수실", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "john",
+      "name": "요한관",
+      "lat": "37.642266161246305",
+      "lng": "127.10799658492743",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "홍명기홀",
+          "facilities": [{ "name": "홍명기홀", "category": "학습" }]
+        },
+        {
+          "floor": 1,
+          "description": "ICEC원장실 / 소강의실",
+          "facilities": [
+            { "name": "ICEC원장실", "category": "사무" },
+            { "name": "소강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "중강의실 / 교육미디어지원팀",
+          "facilities": [
+            { "name": "중강의실", "category": "학습" },
+            { "name": "교육미디어지원팀", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "소강의실 / 중강의실 / 외국인학생 휴게실",
+          "facilities": [
+            { "name": "소강의실", "category": "학습" },
+            { "name": "중강의실", "category": "학습" },
+            { "name": "외국인학생 휴게실", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "소강의실 / 대강의실",
+          "facilities": [
+            { "name": "소강의실", "category": "학습" },
+            { "name": "대강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 5,
+          "description": "교수연구실, 커뮤니티센터",
+          "facilities": [
+            { "name": "교수연구실, 커뮤니티센터", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "museum",
+      "name": "박물관",
+      "lat": "37.64216738964957",
+      "lng": "127.10762820154696",
+      "category": "학습",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "기획전시실 / 세미나실",
+          "facilities": [
+            { "name": "기획전시실", "category": "학습" },
+            { "name": "세미나실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "학예연구실",
+          "facilities": [{ "name": "학예연구실", "category": "연구" }]
+        },
+        {
+          "floor": 2,
+          "description": "박물관 - 기증유물실",
+          "facilities": [{ "name": "박물관 - 기증유물실", "category": "학습" }]
+        },
+        {
+          "floor": 3,
+          "description": "박물관 - 성경자료실",
+          "facilities": [{ "name": "박물관 - 성경자료실", "category": "학습" }]
+        },
+        {
+          "floor": 4,
+          "description": "박물관 - 성경고고학자료실",
+          "facilities": [
+            { "name": "박물관 - 성경고고학자료실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 5,
+          "description": "박물관 - 특별전시실",
+          "facilities": [{ "name": "박물관 - 특별전시실", "category": "학습" }]
+        }
+      ]
+    },
+    {
+      "id": "paul",
+      "name": "바울관",
+      "lat": "37.64269044425527",
+      "lng": "127.10709642018364",
+      "category": "사무",
+      "floors": [
+        {
+          "floor": -1,
+          "description": "구내서점 / 문구점 / 프랜들리(식당) / 빵집 / 꽃집",
+          "facilities": [
+            { "name": "구내서점", "category": "편의" },
+            { "name": "문구점", "category": "편의" },
+            { "name": "프랜들리(식당)", "category": "식당" },
+            { "name": "빵집", "category": "식당" },
+            { "name": "꽃집", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 1,
+          "description": "학생지원처 / 학사지원실 / 상담지원팀 / 취업진로지원센터 / 모의면접실 / 상담실 / 장애학생휴게실",
+          "facilities": [
+            { "name": "학생지원처", "category": "사무" },
+            { "name": "학사지원실", "category": "사무" },
+            { "name": "상담지원팀", "category": "사무" },
+            { "name": "취업진로지원센터", "category": "사무" },
+            { "name": "모의면접실", "category": "학습" },
+            { "name": "상담실", "category": "사무" },
+            { "name": "장애학생휴게실", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "경영학과 사무실(201호) / 경영정보학과 사무실(201호) / 강의실",
+          "facilities": [
+            { "name": "경영학과 사무실(201호)", "category": "사무" },
+            { "name": "경영정보학과 사무실(201호)", "category": "사무" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "중국어학실 / 유비쿼터스실 / 강의실",
+          "facilities": [
+            { "name": "중국어학실", "category": "학습" },
+            { "name": "유비쿼터스실", "category": "학습" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "중국어학과 사무실(406호) / 일본어학과 사무실(406호) / 실습실 / 강의실",
+          "facilities": [
+            { "name": "중국어학과 사무실(406호)", "category": "사무" },
+            { "name": "일본어학과 사무실(406호)", "category": "사무" },
+            { "name": "실습실", "category": "학습" },
+            { "name": "강의실", "category": "학습" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "student-association",
+      "name": "학생회관/대학일자리본부",
+      "lat": "37.642158890139164",
+      "lng": "127.1070673309022",
+      "category": "사무",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "매점(CU편의점) / SU Lounge(학생식당) / 우리은행 현금인출기",
+          "facilities": [
+            { "name": "매점(CU편의점)", "category": "편의" },
+            { "name": "SU Lounge(학생식당)", "category": "식당" },
+            { "name": "우리은행 현금인출기", "category": "편의" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "대학총학생회 / 취업지원팀 / 예비군대대 / 여학생수면실 / 학생휴게실 / 안경점 / 여학생부장실",
+          "facilities": [
+            { "name": "대학총학생회", "category": "사무" },
+            { "name": "취업지원팀", "category": "사무" },
+            { "name": "예비군대대", "category": "사무" },
+            { "name": "여학생수면실", "category": "편의" },
+            { "name": "학생휴게실", "category": "편의" },
+            { "name": "안경점", "category": "편의" },
+            { "name": "여학생부장실", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "총대의원회 / 졸업준비위원회 / 학회연합회 / 영자신문사 / 신문사 / 각 동아리방",
+          "facilities": [
+            { "name": "총대의원회", "category": "사무" },
+            { "name": "졸업준비위원회", "category": "사무" },
+            { "name": "학회연합회", "category": "사무" },
+            { "name": "영자신문사", "category": "사무" },
+            { "name": "신문사", "category": "사무" },
+            { "name": "각 동아리방", "category": "사무" }
+          ]
+        },
+        {
+          "floor": 4,
+          "description": "동아리연합회 / 각 동아리방",
+          "facilities": [
+            { "name": "동아리연합회", "category": "사무" },
+            { "name": "각 동아리방", "category": "사무" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sports-center",
+      "name": "체육관(스포츠센터)",
+      "lat": "37.64137085861277",
+      "lng": "127.10670362865103",
+      "category": "체육",
+      "floors": [
+        {
+          "floor": 1,
+          "description": "수영장 (길이 25m, 넓이 10m, 5레인) / 남ㆍ여 탈의실 및 샤워실 / 체력측정실 / 운동처방실 / 체력관리실 / 시청각실 / 탁구장 / 무도관",
+          "facilities": [
+            {
+              "name": "수영장 (길이 25m, 넓이 10m, 5레인)",
+              "category": "체육"
+            },
+            { "name": "남ㆍ여 탈의실 및 샤워실", "category": "체육" },
+            { "name": "체력측정실", "category": "체육" },
+            { "name": "운동처방실", "category": "체육" },
+            { "name": "체력관리실", "category": "체육" },
+            { "name": "시청각실", "category": "학습" },
+            { "name": "탁구장", "category": "체육" },
+            { "name": "무도관", "category": "체육" }
+          ]
+        },
+        {
+          "floor": 2,
+          "description": "주경기장 (농구코트 1면, 배구코트 1면, 배드민턴코트 4면) / 스쿼시장 (코트 3면) / 남ㆍ여 탈의실 및 샤워실 / 등록실 / 관리지원실 / 보건소",
+          "facilities": [
+            {
+              "name": "주경기장 (농구코트 1면, 배구코트 1면, 배드민턴코트 4면)",
+              "category": "체육"
+            },
+            { "name": "스쿼시장 (코트 3면)", "category": "체육" },
+            { "name": "남ㆍ여 탈의실 및 샤워실", "category": "체육" },
+            { "name": "등록실", "category": "사무" },
+            { "name": "관리지원실", "category": "사무" },
+            { "name": "보건소", "category": "의료" }
+          ]
+        },
+        {
+          "floor": 3,
+          "description": "주경기장 관람석 (370석)",
+          "facilities": [
+            { "name": "주경기장 관람석 (370석)", "category": "체육" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import {
   Dumbbell,
   BookOpen,
   Stethoscope,
+  Map,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -73,6 +74,14 @@ const campusMenus = [
     icon: Stethoscope,
     href: "/campus/health-center",
     color: "from-pink-400 to-pink-600",
+  },
+  {
+    id: "map",
+    title: "캠퍼스 지도",
+    description: "건물 위치 및 시설 안내",
+    icon: Map,
+    href: "/campus/map",
+    color: "from-cyan-400 to-blue-600",
   },
 ];
 

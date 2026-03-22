@@ -55,9 +55,42 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
         <script
-          async
           src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.11/pwacompat.js"
-        ></script>
+          async
+        />
+        {/* Kakao Maps SDK - 스트릭트 로딩 순서 */}
+        <script
+          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services,drawing`}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // 즉시 SDK 준비 확인
+              console.log('[layout] SDK check:', { 
+                kakao: typeof window.kakao,
+                maps: typeof window.kakao?.maps,
+                LatLng: typeof window.kakao?.maps?.LatLng
+              });
+              
+              window.kakaoMapsReady = new Promise((resolve) => {
+                let attempts = 0;
+                const check = () => {
+                  attempts++;
+                  if (window.kakao?.maps?.LatLng) {
+                    console.log('✓ [layout] SDK ready after', attempts, 'checks');
+                    resolve(true);
+                  } else if (attempts < 50) {
+                    setTimeout(check, 100);
+                  } else {
+                    console.log('✗ [layout] SDK failed after', attempts, 'checks');
+                    resolve(false);
+                  }
+                };
+                check();
+              });
+            `,
+          }}
+        />
       </head>
       <body>
         <Providers>
