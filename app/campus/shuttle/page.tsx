@@ -145,9 +145,6 @@ export default function ShuttlePage() {
         <p className="text-sm text-blue-900 mb-2">
           ℹ️ <strong>안내:</strong> 셔틀버스 시간은 변경될 수 있습니다.
         </p>
-        <p className="text-xs text-blue-800">
-          정확한 운행 시간은 캠퍼스 안내소에 문의하세요.
-        </p>
       </Card>
     </Container>
   );

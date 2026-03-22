@@ -19,8 +19,8 @@ export const metadata: Metadata = {
     title: "삼육대 캠퍼스",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/images/syu-kr-logo.png",
+    apple: "/images/syu-kr-logo.png",
   },
   manifest: "/manifest.json",
 };
