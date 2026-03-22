@@ -127,14 +127,6 @@ export default function DirectoryPage() {
           {/* 페이지 번호 */}
           <div className="flex flex-wrap justify-center gap-2">
             <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-              className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="첫 페이지"
-            >
-              처음
-            </button>
-            <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
@@ -174,14 +166,6 @@ export default function DirectoryPage() {
               aria-label="다음 페이지"
             >
               다음
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="마지막 페이지"
-            >
-              마지막
             </button>
           </div>
 

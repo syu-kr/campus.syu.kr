@@ -6,7 +6,6 @@ import {
   Megaphone,
   Utensils,
   Bus,
-  ShoppingBag,
   Dumbbell,
   BookOpen,
   Stethoscope,
@@ -42,14 +41,6 @@ const campusMenus = [
     icon: Bus,
     href: "/campus/shuttle",
     color: "from-blue-400 to-blue-600",
-  },
-  {
-    id: "facilities",
-    title: "편의시설",
-    description: "ATM, 편의점, 카페 위치",
-    icon: ShoppingBag,
-    href: "/campus/facilities",
-    color: "from-green-400 to-green-600",
   },
   {
     id: "gym",
