@@ -179,8 +179,8 @@ export default function TermsPage() {
             </p>
             <p>
               <span className="font-semibold">3.</span> 서비스의 검색 노출
-              최적화를 위해 Google Search Console을 통해 사이트 데이터를
-              수집할 수 있습니다.
+              최적화를 위해 Google Search Console을 통해 사이트 데이터를 수집할
+              수 있습니다.
             </p>
           </div>
         </Card>

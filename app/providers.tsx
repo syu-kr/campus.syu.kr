@@ -41,11 +41,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
 
-
-
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 }
