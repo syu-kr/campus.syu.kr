@@ -1,33 +1,86 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { MockDataAlert } from "@/app/components/MockDataAlert";
 
 export default function GymPage() {
-  const facilities = [
+  const gym1f = [
     {
-      name: "체육관 헬스장",
-      hours: "06:00 - 22:00",
-      fee: "월 50,000원",
-      contact: "02-3708-1234",
+      name: "수영장",
+      description: "성인풀 25m × 5레인, 유아풀",
+      specs: "수심: 성인 1.2~1.5m, 유아 0.7m",
+      icon: "🏊",
+    },
+    {
+      name: "헬스장",
+      description: "83평 규모",
+      specs: "런닝머신 외 49종 기구, 체력측정실 운영",
+      icon: "💪",
+    },
+    {
+      name: "골프연습장",
+      description: "실내 골프 연습",
+      specs: "일반타석 6대(좌타석 1대), 스크린타석 2대",
+      icon: "⛳",
+    },
+    {
+      name: "탁구장",
+      description: "34평 규모",
+      specs: "탁구대 5대 설치",
+      icon: "🏓",
+    },
+    {
+      name: "무도관",
+      description: "64평 규모",
+      specs: "필라테스, 한국무용, 어린이발레 강습",
+      icon: "🩰",
+    },
+  ];
+
+  const gym2f = [
+    {
+      name: "주경기장",
+      description: "324평 규모",
+      specs: "농구코트 1면, 배구코트 1면, 배드민턴코트 4면",
+      icon: "🏀",
     },
     {
       name: "스쿼시장",
-      hours: "06:00 - 21:00",
-      fee: "예약 필수",
-      contact: "02-3708-1235",
+      description: "83평 규모",
+      specs: "스쿼시 코트",
+      icon: "🎾",
+    },
+  ];
+
+  const compound = [
+    {
+      name: "인조잔디축구장",
+      description: "실외 축구 경기",
+      specs: "국제 규격 축구장",
+      icon: "⚽",
     },
     {
-      name: "배드민턴장",
-      hours: "09:00 - 22:00",
-      fee: "시간당 20,000원",
-      contact: "02-3708-1236",
+      name: "농구장",
+      description: "실외 농구 경기",
+      specs: "표준 농구 코트",
+      icon: "🏀",
     },
     {
-      name: "수영장",
-      hours: "09:00 - 20:00",
-      fee: "월 100,000원",
-      contact: "02-3708-1237",
+      name: "배구장/족구장",
+      description: "실외 네트 스포츠",
+      specs: "배구 및 족구 경기용",
+      icon: "🏐",
     },
+    {
+      name: "육상트랙",
+      description: "실외 육상 시설",
+      specs: "370m 트랙",
+      icon: "🏃",
+    },
+  ];
+
+  const contactInfo = [
+    { title: "고객센터", phone: "02-3399-3711" },
+    { title: "대관 문의", phone: "02-3399-3713" },
+    { title: "등록 문의", phone: "02-3399-3715" },
   ];
 
   return (
@@ -36,50 +89,175 @@ export default function GymPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           체육시설
         </h1>
-        <p className="text-neutral-600">캠퍼스 운동 시설 안내</p>
+        <p className="text-neutral-600">건강한 신체에 건강한 정신이 깃듭니다</p>
       </div>
 
-      <MockDataAlert
-        title="⚠️ 안내"
-        message="실제 예약은 학사시스템 또는 직접 연락을 통해 진행하세요. 위의 시간과 요금은 참고용입니다."
-        type="warning"
-      />
-
-      <div className="space-y-4">
-        {facilities.map((facility) => (
-          <Card key={facility.name}>
-            <div className="mb-3">
-              <h3 className="text-lg font-bold text-neutral-900 mb-3">
-                {facility.name}
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-neutral-600 w-16">운영시간</span>
-                  <strong className="text-neutral-900">{facility.hours}</strong>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-neutral-600 w-16">이용료</span>
-                  <strong className="text-neutral-900">{facility.fee}</strong>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-neutral-600 w-16">연락처</span>
-                  <strong className="text-neutral-900">
-                    {facility.contact}
-                  </strong>
-                </div>
+      {/* 위치 및 연락처 */}
+      <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
+        <h2 className="text-lg font-bold text-blue-900 mb-4">
+          📍 위치 및 연락처
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <p className="font-semibold text-blue-900">위치</p>
+            <p className="text-blue-800">삼육대학교 체육문화센터</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-blue-200">
+            {contactInfo.map((info) => (
+              <div key={info.title}>
+                <p className="text-xs font-medium text-blue-700 mb-1">
+                  {info.title}
+                </p>
+                <a
+                  href={`tel:${info.phone.replace(/-/g, "")}`}
+                  className="text-blue-600 hover:underline font-semibold"
+                >
+                  {info.phone}
+                </a>
               </div>
-            </div>
-            <button className="w-full px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors">
-              예약하기
-            </button>
-          </Card>
-        ))}
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* 체육관 1층 */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
+          🏋️ 체육관 1층
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {gym1f.map((facility) => (
+            <Card key={facility.name}>
+              <div className="mb-3">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-bold text-neutral-900">
+                    {facility.name}
+                  </h3>
+                  <span className="text-2xl">{facility.icon}</span>
+                </div>
+                <p className="text-sm text-neutral-600 mb-2">
+                  {facility.description}
+                </p>
+                <p className="text-xs text-neutral-500">{facility.specs}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
 
-      <Card className="mt-8 bg-yellow-50 border border-yellow-200">
-        <p className="text-sm text-yellow-900">
-          ⚠️ <strong>주의:</strong> 예약은 학사시스템을 통해 진행하세요.
+      {/* 체육관 2층 */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
+          🎯 체육관 2층
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {gym2f.map((facility) => (
+            <Card key={facility.name}>
+              <div className="mb-3">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-bold text-neutral-900">
+                    {facility.name}
+                  </h3>
+                  <span className="text-2xl">{facility.icon}</span>
+                </div>
+                <p className="text-sm text-neutral-600 mb-2">
+                  {facility.description}
+                </p>
+                <p className="text-xs text-neutral-500">{facility.specs}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* 종합운동장 */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
+          ⚽ 종합운동장
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {compound.map((facility) => (
+            <Card key={facility.name}>
+              <div className="mb-3">
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-bold text-neutral-900">
+                    {facility.name}
+                  </h3>
+                  <span className="text-2xl">{facility.icon}</span>
+                </div>
+                <p className="text-sm text-neutral-600 mb-2">
+                  {facility.description}
+                </p>
+                <p className="text-xs text-neutral-500">{facility.specs}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* 이용안내 */}
+      <Card className="mb-6 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200">
+        <h2 className="text-lg font-bold text-amber-900 mb-4">📋 이용안내</h2>
+        <div className="space-y-4 text-sm">
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-2">▪️ 등록 안내</h3>
+            <ul className="text-amber-800 space-y-1 ml-4 list-disc">
+              <li>기존회원: 매월 20일부터 등록</li>
+              <li>신규회원: 매월 25일부터 (선착순 마감)</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-2">▪️ 등록시간</h3>
+            <ul className="text-amber-800 space-y-1 ml-4 list-disc">
+              <li>월~목: 06:30 ~ 07:30</li>
+              <li>금: 06:30 ~ 11:50</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-2">▪️ 환불정책</h3>
+            <ul className="text-amber-800 space-y-1 ml-4 list-disc">
+              <li>접수 후 개강 전: 10% 위약금 공제</li>
+              <li>개강 후 환불: 위약금 + 강좌일수 공제</li>
+              <li>환불 신청: 매월 15일까지</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-2">▪️ 반 변경</h3>
+            <ul className="text-amber-800 space-y-1 ml-4 list-disc">
+              <li>동일 종목 내 시간대 변경만 가능</li>
+              <li>신청: 매월 7일까지</li>
+              <li>정원 허락 범위 내에서 가능</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
+      {/* 상세정보 안내 */}
+      <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+        <h2 className="text-lg font-bold text-green-900 mb-3">
+          ℹ️ 프로그램 및 자세한 정보
+        </h2>
+        <p className="text-green-800 text-sm mb-4">
+          다양한 체육 프로그램과 상세한 이용 정보는 아래 버튼을 눌러 확인하세요.
         </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <a
+            href="https://www.syu.ac.kr/sportscenter/program/program-guide/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+          >
+            프로그램 보기 →
+          </a>
+          <a
+            href="https://www.syu.ac.kr/sportscenter/facilities/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+          >
+            시설 상세정보 →
+          </a>
+        </div>
       </Card>
     </Container>
   );
