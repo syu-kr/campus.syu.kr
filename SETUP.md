@@ -155,12 +155,13 @@ syu-campus/
 │   │   └── leave-application/           # 학적신청
 │   ├── campus/                          # 캠퍼스 섹션
 │   │   ├── page.tsx                     # 캠퍼스 메뉴
+│   │   ├── map/                         # 📍 캠퍼스 지도 (Kakao Maps)
 │   │   ├── cafeteria/                   # 학식
 │   │   ├── shuttle/                     # 셔틀버스
-│   │   ├── facilities/                  # 편의시설
-│   │   ├── gym/                         # 체육시설
 │   │   ├── library/                     # 도서관
-│   │   └── health-center/               # 보건소
+│   │   ├── gym/                         # 체육시설
+│   │   ├── health-center/               # 보건소
+│   │   └── announcements/               # 캠퍼스공지
 │   ├── tuition/                         # 등록금 섹션
 │   │   ├── page.tsx                     # 등록금 메뉴
 │   │   ├── schedule/                    # 등록금 일정
@@ -184,7 +185,6 @@ syu-campus/
 │
 ├── public/                              # 정적 파일
 │   ├── manifest.json                    # PWA 매니페스트
-│   ├── sw.js                            # 서비스 워커
 │   └── images/                          # 아이콘 디렉토리
 │
 ├── package.json                         # 프로젝트 의존성

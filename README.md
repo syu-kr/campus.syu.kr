@@ -72,6 +72,7 @@ syu-campus/
 │   │   └── announcements/         # 학사공지
 │   ├── campus/                    # 캠퍼스 섹션
 │   │   ├── page.tsx
+│   │   ├── map/                   # 📍 캠퍼스 지도 (Kakao Maps)
 │   │   ├── cafeteria/             # 학식
 │   │   ├── shuttle/               # 셔틀버스
 │   │   ├── library/               # 도서관 열람실
@@ -100,8 +101,7 @@ syu-campus/
 │   │   ├── cafeteria-menu.json
 │   │   └── library-reading-rooms.json
 │   ├── images/                   # 앱 아이콘
-│   ├── manifest.json             # PWA 메니페스트
-│   └── sw.js                     # Service Worker
+│   └── manifest.json             # PWA 메니페스트
 ├── package.json
 ├── next.config.js
 ├── tsconfig.json
@@ -154,7 +154,7 @@ npm run type-check
 
 ### 🏠 홈 대시보드
 
-- 자주 사용하는 메뉴 (모의 수강신청, 학사일정, 학식 등)
+- 자주 사용하는 메뉴 (캠퍼스 지도, 학사일정, 학식 등)
 - 오늘의 학식 정보
 - 최신 공지사항 요약
 
@@ -166,6 +166,9 @@ npm run type-check
 
 ### 🏫 캠퍼스 정보
 
+- **📍 캠퍼스 지도**: Kakao Maps 기반, 40+ 건물 정보 및 시설 검색
+  - 건물 위치, 층별 시설 정보
+  - 검색 기능으로 빠른 시설 찾기
 - **학식**: 주간 메뉴, 영양정보
 - **셔틀버스**: 4개 탭 (평일 월-목, 금요일, 방학 평일, 방학 금요일)
   - 실시간 다음 버스 강조 표시
@@ -189,7 +192,7 @@ npm run type-check
 - 학사일정
 - 캠퍼스공지
 - 장학금
-- 캠퍼스공지
+- 건물 정보
 - 전화번호
 
 각 카테고리별로 구분선과 아이콘으로 명확히 표시

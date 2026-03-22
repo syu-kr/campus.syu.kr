@@ -41,7 +41,12 @@ src/
 │   │   ├── SearchBar.tsx       # 검색바
 │   │   └── Skeleton.tsx        # 로딩 상태
 │   ├── features/               # 기능별 컴포넌트 (추후 확장)
-│   └── [route]/                # 동적 라우트
+│   └── campus/                 # 캠퍼스 정보
+│       ├── page.tsx           # 캠퍼스 허브
+│       ├── map/               # 📍 Kakao Maps 기반 캠퍼스 지도
+│       ├── cafeteria/
+│       ├── shuttle/
+│       └── library/
 │
 ├── lib/                        # 유틸리티
 │   ├── api.ts                  # API 함수 (Mock & Real)
@@ -59,7 +64,6 @@ src/
 │
 ├── public/                     # 정적 파일
 │   ├── manifest.json           # PWA 매니페스트
-│   ├── sw.js                   # 서비스 워커
 │   ├── favicon.ico
 │   └── images/                 # 아이콘 및 이미지
 │

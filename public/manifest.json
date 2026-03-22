@@ -57,6 +57,19 @@
           "type": "image/png"
         }
       ]
+    },
+    {
+      "name": "캠퍼스 지도",
+      "short_name": "지도",
+      "description": "캠퍼스 건물 및 시설 위치 확인",
+      "url": "/campus/map",
+      "icons": [
+        {
+          "src": "/images/syu-kr-logo.png",
+          "sizes": "any",
+          "type": "image/png"
+        }
+      ]
     }
   ],
   "share_target": {
