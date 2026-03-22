@@ -57,6 +57,7 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: update daily crawl data (notices & cafeteria menu)"
+            git pull --rebase origin main
             if ! git push origin main 2>&1; then
               echo "First push failed, trying with explicit token..."
               git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
