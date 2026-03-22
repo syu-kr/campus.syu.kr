@@ -18,7 +18,7 @@
 - **⚡ 초고속 성능**: Next.js 14 + 최적화된 번들
 - **🔍 강력한 통합검색**: 학사공지, 학사일정, 장학금, 캠퍼스공지, 연락처 한번에 검색
 - **📲 PWA 지원**: 앱처럼 설치 가능, 오프라인 구동
-- **📊 실시간 분석**: Vercel Analytics로 사용 패턴 추적
+- **� SEO 최적화**: Google Search Console로 검색 노출 최적화
 - **🛡️ 프라이버시 중심**: 로컬 스토리지만 사용, 서버 저장 없음
 
 ## 🛠 기술 스택
@@ -29,7 +29,7 @@
 - **Language**: TypeScript 5.3
 - **Styling**: Tailwind CSS 3.4
 - **상태관리**: TanStack React Query 5.28
-- **분석**: Vercel Analytics
+- **SEO**: Google Search Console, Sitemap
 - **UI Components**: Custom built components
 
 ### Core Libraries
@@ -53,7 +53,7 @@
 ```
 syu-campus/
 ├── app/
-│   ├── layout.tsx                 # Root layout (PWA, Analytics)
+│   ├── layout.tsx                 # Root layout (PWA, SEO)
 │   ├── page.tsx                   # 메인 대시보드
 │   ├── globals.css                # 전역 스타일
 │   ├── providers.tsx              # React Query + Service Worker
@@ -287,13 +287,13 @@ export async function fetchAnnouncements(category?: string) {
 // 매니페스트/SW: 항상 최신 버전
 ```
 
-## 📊 분석
+## � SEO & 검색
 
-### Vercel Analytics
+### Google Search Console
 
-- 자동 성능 측정 (Core Web Vitals)
-- 사용자 상호작용 추적
-- 대시보드: https://vercel.com/analytics
+- 사이트 소유권 최적화
+- 검색 주소 노출 추적
+- 대시보드: https://search.google.com/search-console
 
 ### 로컬 데이터
 
@@ -323,7 +323,7 @@ export async function fetchAnnouncements(category?: string) {
 - ✅ 통합 검색 (5개 카테고리)
 - ✅ 반응형 디자인
 - ✅ PWA 및 Service Worker
-- ✅ Vercel Analytics
+- ✅ Google Search Console 연동
 - ✅ 페이지네이션 (최대 10페이지)
 - ✅ 이용약관 및 개인정보처리방침
 

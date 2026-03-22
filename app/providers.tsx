@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Analytics } from "@vercel/analytics/react";
 import { ReactNode } from "react";
 
 // QueryClient를 싱글톤으로 관리
@@ -46,7 +45,6 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Analytics />
       {children}
     </QueryClientProvider>
   );

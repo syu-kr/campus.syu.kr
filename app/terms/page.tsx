@@ -178,9 +178,9 @@ export default function TermsPage() {
               처리됩니다.
             </p>
             <p>
-              <span className="font-semibold">3.</span> 서비스의 성능 개선을
-              위해 Vercel Analytics를 통해 사용 패턴을 익명으로 수집할 수
-              있습니다.
+              <span className="font-semibold">3.</span> 서비스의 검색 노출
+              최적화를 위해 Google Search Console을 통해 사이트 데이터를
+              수집할 수 있습니다.
             </p>
           </div>
         </Card>
