@@ -57,36 +57,6 @@ export default function ShuttlePage() {
     return hours * 60 + minutes;
   };
 
-  // 가장 가까운 버스 찾기 (모든 버스에서)
-  const closestBusTime = useMemo((): {
-    time: string;
-    minutesUntil: number;
-  } | null => {
-    if (!buses || buses.length === 0 || dateInfo.isWeekend) return null;
-
-    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
-    let closestTime: { time: string; minutesUntil: number } | null = null;
-    let minMinutesUntil = Infinity;
-
-    buses.forEach((bus) => {
-      const times = bus.schedules[selectedType];
-      times.forEach((time) => {
-        const timeMinutes = timeToMinutes(time);
-        const minutesUntil = timeMinutes - currentMinutes;
-
-        if (minutesUntil > 0 && minutesUntil < minMinutesUntil) {
-          minMinutesUntil = minutesUntil;
-          closestTime = {
-            time,
-            minutesUntil,
-          };
-        }
-      });
-    });
-
-    return closestTime;
-  }, [buses, dateInfo, selectedType]);
-
   // 30분 이내의 모든 버스들 (상단에 표시)
   const nextBusesWithin30Min = useMemo((): Array<{
     routeName: string;
@@ -174,12 +144,12 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 다음 버스 정보 (30분 이내) */}
+      {/* 다음 버스 정보 */}
       {nextBusesWithin30Min.length > 0 && !dateInfo.isWeekend ? (
         <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400">
           <div className="mb-3">
             <p className="text-xs text-green-700 font-semibold mb-2">
-              곧 오는 버스 (30분 이내)
+              곧 오는 버스
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
