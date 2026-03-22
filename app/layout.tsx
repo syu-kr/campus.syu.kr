@@ -5,6 +5,9 @@ import { BottomNav } from "./components/BottomNav";
 import { Providers } from "./providers";
 import "./globals.css";
 
+// Pretendard 폰트 import
+import "@fontsource/pretendard";
+
 export const metadata: Metadata = {
   title: {
     template: "%s | 삼육대 캠퍼스",

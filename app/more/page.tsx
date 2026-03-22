@@ -10,9 +10,7 @@ export default function MorePage() {
       description: "장학금 공지 및 신청",
       icon: "🎓",
       href: "/more/scholarship",
-      bgColor: "from-blue-50 to-blue-100",
-      borderColor: "border-blue-300",
-      textColor: "text-blue-900",
+      color: "from-blue-400 to-blue-600",
     },
     {
       id: "2",
@@ -20,9 +18,7 @@ export default function MorePage() {
       description: "SYU CAMPUS 서비스 공지",
       icon: "📢",
       href: "/service/notices",
-      bgColor: "from-green-50 to-green-100",
-      borderColor: "border-green-300",
-      textColor: "text-green-900",
+      color: "from-green-400 to-green-600",
     },
     {
       id: "3",
@@ -30,9 +26,7 @@ export default function MorePage() {
       description: "부서 및 담당자 연락처",
       icon: "☎️",
       href: "/more/phone",
-      bgColor: "from-purple-50 to-purple-100",
-      borderColor: "border-purple-300",
-      textColor: "text-purple-900",
+      color: "from-purple-400 to-purple-600",
     },
   ];
 
@@ -45,25 +39,18 @@ export default function MorePage() {
         <p className="text-neutral-600">추가 기능을 확인하세요</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {moreMenus.map((menu) => (
           <Link key={menu.id} href={menu.href}>
             <Card
-              className={`cursor-pointer hover:shadow-card-hover h-full bg-gradient-to-br ${menu.bgColor} border-2 ${menu.borderColor}`}
+              className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
             >
-              <div className="flex items-start gap-4">
-                <span className="text-4xl flex-shrink-0">{menu.icon}</span>
-                <div className="flex-1">
-                  <h3 className={`font-semibold ${menu.textColor} text-lg`}>
-                    {menu.title}
-                  </h3>
-                  <p className={`text-sm ${menu.textColor} opacity-75 mt-1`}>
-                    {menu.description}
-                  </p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
+                  <p className="text-sm opacity-90">{menu.description}</p>
                 </div>
-                <span className={`text-lg ${menu.textColor} flex-shrink-0`}>
-                  →
-                </span>
+                <span className="text-4xl">{menu.icon}</span>
               </div>
             </Card>
           </Link>

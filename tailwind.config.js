@@ -46,6 +46,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "Pretendard",
           "-apple-system",
           "BlinkMacSystemFont",
           '"Segoe UI"',
