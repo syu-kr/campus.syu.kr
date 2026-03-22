@@ -29,38 +29,40 @@ export default async function ServiceNoticesPage() {
           <div className="space-y-3">
             {notices.map((notice) => (
               <Link key={notice.slug} href={`/service/notices/${notice.slug}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base md:text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">
-                        {notice.title}
-                      </h3>
-                      <p className="text-sm text-neutral-600 mb-3 line-clamp-2">
-                        {notice.excerpt}
-                      </p>
-                      <div className="flex items-center gap-3 text-xs text-neutral-500">
-                        <span>{notice.author}</span>
-                        <span>•</span>
-                        <span>
-                          {new Date(notice.date).toLocaleDateString("ko-KR")}
-                        </span>
+                <div className="mb-2">
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer border border-neutral-200">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base md:text-lg font-semibold text-neutral-900 mb-2 line-clamp-2">
+                          {notice.title}
+                        </h3>
+                        <p className="text-sm text-neutral-600 mb-3 line-clamp-2">
+                          {notice.excerpt}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-neutral-500">
+                          <span>{notice.author}</span>
+                          <span>•</span>
+                          <span>
+                            {new Date(notice.date).toLocaleDateString("ko-KR")}
+                          </span>
+                        </div>
                       </div>
+                      <svg
+                        className="w-5 h-5 flex-shrink-0 text-neutral-400 mt-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </div>
-                    <svg
-                      className="w-5 h-5 flex-shrink-0 text-neutral-400 mt-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </Link>
             ))}
           </div>

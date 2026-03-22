@@ -423,7 +423,7 @@ export default function Home() {
         </div>
 
         {/* 공지사항 목록 */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           {selectedCategory === "service" ? (
             // 서비스 공지만 표시
             <>
@@ -432,31 +432,30 @@ export default function Home() {
               serviceNotices &&
               serviceNotices.length > 0 ? (
                 serviceNotices.slice(0, 3).map((notice) => (
-                  <Link
-                    key={notice.slug}
-                    href={`/service/notices/${notice.slug}`}
-                  >
-                    <Card className="cursor-pointer hover:shadow-card-hover">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-neutral-900 mb-2">
-                            {notice.title}
-                          </h3>
-                          <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
-                            {notice.excerpt || ""}
-                          </p>
-                          <div className="text-xs text-neutral-500">
-                            {notice.author} · {notice.date}
+                  <div key={notice.slug} className="mb-2">
+                    <Link href={`/service/notices/${notice.slug}`}>
+                      <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-neutral-900 mb-2">
+                              {notice.title}
+                            </h3>
+                            <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
+                              {notice.excerpt || ""}
+                            </p>
+                            <div className="text-xs text-neutral-500">
+                              {notice.author} · {notice.date}
+                            </div>
                           </div>
+                          <Megaphone
+                            size={20}
+                            className="flex-shrink-0 text-neutral-600"
+                            strokeWidth={1.5}
+                          />
                         </div>
-                        <Megaphone
-                          size={20}
-                          className="flex-shrink-0 text-neutral-600"
-                          strokeWidth={1.5}
-                        />
-                      </div>
-                    </Card>
-                  </Link>
+                      </Card>
+                    </Link>
+                  </div>
                 ))
               ) : (
                 <div className="text-center py-4">
@@ -521,29 +520,28 @@ export default function Home() {
                       if (item.type === "service") {
                         const notice = item.data as ServiceNotice;
                         return (
-                          <Link
-                            key={notice.slug}
-                            href={`/service/notices/${notice.slug}`}
-                          >
-                            <Card className="cursor-pointer hover:shadow-card-hover">
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1">
-                                  <h3 className="font-semibold text-neutral-900 mb-2">
-                                    {notice.title}
-                                  </h3>
-                                  <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
-                                    {notice.excerpt || ""}
-                                  </p>
-                                  <div className="text-xs text-neutral-500">
-                                    {notice.author} · {notice.date}
+                          <div key={notice.slug} className="mb-2">
+                            <Link href={`/service/notices/${notice.slug}`}>
+                              <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-neutral-900 mb-2">
+                                      {notice.title}
+                                    </h3>
+                                    <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
+                                      {notice.excerpt || ""}
+                                    </p>
+                                    <div className="text-xs text-neutral-500">
+                                      {notice.author} · {notice.date}
+                                    </div>
                                   </div>
+                                  <span className="text-lg flex-shrink-0">
+                                    📢
+                                  </span>
                                 </div>
-                                <span className="text-lg flex-shrink-0">
-                                  📢
-                                </span>
-                              </div>
-                            </Card>
-                          </Link>
+                              </Card>
+                            </Link>
+                          </div>
                         );
                       } else {
                         const announcement = item.data as Announcement;
