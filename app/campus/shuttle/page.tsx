@@ -58,7 +58,10 @@ export default function ShuttlePage() {
   };
 
   // 가장 가까운 버스 찾기 (모든 버스에서)
-  const closestBusTime = useMemo((): { time: string; minutesUntil: number } | null => {
+  const closestBusTime = useMemo((): {
+    time: string;
+    minutesUntil: number;
+  } | null => {
     if (!buses || buses.length === 0 || dateInfo.isWeekend) return null;
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
@@ -162,7 +165,7 @@ export default function ShuttlePage() {
       {dateInfo.isWeekend && (
         <Card className="mb-6 bg-orange-50 border border-orange-300">
           <p className="text-sm text-orange-900">
-            🚌 <strong>안내:</strong> 오늘은 주말입니다. 셔틀버스가 운행되지
+            <strong>안내:</strong> 오늘은 주말입니다. 셔틀버스가 운행되지
             않습니다.
           </p>
         </Card>
@@ -174,7 +177,7 @@ export default function ShuttlePage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs text-green-700 font-semibold mb-1">
-                🚌 다음 출발 버스
+                다음 출발 버스
               </p>
               <h3 className="text-2xl font-bold text-green-900 mb-2">
                 {nextBusInfo.routeName}
@@ -188,7 +191,7 @@ export default function ShuttlePage() {
                 </p>
               </div>
             </div>
-            <div className="text-5xl">⏰</div>
+            <div className="text-right">다음 버스</div>
           </div>
         </Card>
       ) : null}
@@ -218,18 +221,18 @@ export default function ShuttlePage() {
       {/* 운행 안내 */}
       {selectedType === "mondayToThursday" && !dateInfo.isWeekend && (
         <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
-          <p>📅 평일(월-금 정규학기) 시간표입니다.</p>
+          <p>평일(월-금 정규학기) 시간표입니다.</p>
         </Card>
       )}
       {selectedType === "friday" && dateInfo.isFriday && (
         <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
-          <p>📅 금요일 시간표입니다.</p>
+          <p>금요일 시간표입니다.</p>
         </Card>
       )}
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
         <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
-          <p>📅 방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.</p>
+          <p>방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.</p>
         </Card>
       )}
 
@@ -252,7 +255,7 @@ export default function ShuttlePage() {
           <Card className="border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-cyan-50">
             <div className="mb-4">
               <h2 className="text-lg font-bold text-blue-900 mb-2">
-                📋 전체 운행시간표
+                전체 운행시간표
               </h2>
               <p className="text-sm text-blue-700">
                 모든 버스의 운행 시간 (가장 가까운 버스는 빨간색)
@@ -345,7 +348,7 @@ export default function ShuttlePage() {
 
                 <div>
                   <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
-                    📍 운행 시간
+                    운행 시간
                   </p>
                   {times.length === 0 ? (
                     <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
@@ -363,7 +366,7 @@ export default function ShuttlePage() {
                           timeMinutes > currentMinutes &&
                           selectedType === defaultType &&
                           !dateInfo.isWeekend;
-                        const isPassed = 
+                        const isPassed =
                           timeMinutes <= currentMinutes &&
                           selectedType === defaultType;
                         const isClosest =
@@ -404,8 +407,8 @@ export default function ShuttlePage() {
       {/* 안내 */}
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900 mb-2">
-          ℹ️ <strong>안내:</strong> 셔틀버스 운행 시간은 학기와 계절에 따라
-          변경될 수 있습니다.
+          <strong>안내:</strong> 셔틀버스 운행 시간은 학기와 계절에 따라 변경될
+          수 있습니다.
         </p>
         <p className="text-xs text-blue-800">
           정확한 정보는 캠퍼스 공지사항을 확인해주세요.

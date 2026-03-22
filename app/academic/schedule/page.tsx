@@ -269,8 +269,8 @@ export default function SchedulePage() {
                         key={schedule.id}
                         className="text-sm text-neutral-700 flex items-start gap-2"
                       >
-                        <span className="text-lg mt-1">
-                          {schedule.category === "exam" ? "📝" : "📅"}
+                        <span className="text-xs font-semibold text-primary-600 mt-1 px-2 py-1 rounded bg-primary-50">
+                          {schedule.category === "exam" ? "시험" : "일정"}
                         </span>
                         <div>
                           <p className="font-medium">{schedule.title}</p>
@@ -376,8 +376,8 @@ export default function SchedulePage() {
                                     )}
                                   </p>
                                 </div>
-                                <div className="text-lg">
-                                  {schedule.category === "exam" ? "📝" : "📅"}
+                                <div className="text-xs font-semibold text-neutral-600">
+                                  {schedule.category === "exam" ? "시험" : "일정"}
                                 </div>
                               </div>
                             </Card>
@@ -428,8 +428,8 @@ export default function SchedulePage() {
                               </p>
                             )}
                           </div>
-                          <div className="text-2xl">
-                            {schedule.category === "exam" ? "📝" : "📅"}
+                          <div className="text-xs font-semibold text-neutral-600">
+                            {schedule.category === "exam" ? "시험" : "일정"}
                           </div>
                         </div>
                       </Card>

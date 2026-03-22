@@ -7,42 +7,34 @@ export default function FacilitiesPage() {
     {
       name: "ATM",
       locations: ["바울관 1층", "학생회관 1층", "백주년기념관 1층"],
-      icon: "🏧",
     },
     {
       name: "CU편의점",
       locations: ["학생회관 1층"],
-      icon: "🛒",
     },
     {
       name: "SU Lounge (학생식당)",
       locations: ["학생회관 1층"],
-      icon: "🍽️",
     },
     {
       name: "안경점",
       locations: ["학생회관 2층"],
-      icon: "👓",
     },
     {
       name: "복사실",
       locations: ["바울관 지하1층 (문구점 내)"],
-      icon: "📋",
     },
     {
       name: "서점",
       locations: ["바울관 지하1층"],
-      icon: "📚",
     },
     {
       name: "우리은행 (삼육대점)",
       locations: ["도서관 1층"],
-      icon: "🏦",
     },
     {
       name: "우체국 (삼육대점)",
       locations: ["제3과학관 지하1층"],
-      icon: "📮",
     },
   ];
 
@@ -56,7 +48,7 @@ export default function FacilitiesPage() {
       </div>
 
       <MockDataAlert
-        title="🗺️ 개발 예정"
+        title="개발 예정"
         message="편의시설 위치 정보는 개발 중입니다. 정확한 위치는 캠퍼스 맵 서비스를 이용해주세요."
         type="info"
       />
@@ -77,7 +69,6 @@ export default function FacilitiesPage() {
                   ))}
                 </div>
               </div>
-              <span className="text-3xl">{facility.icon}</span>
             </div>
           </Card>
         ))}
@@ -85,7 +76,7 @@ export default function FacilitiesPage() {
 
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900">
-          🗺️ <strong>개발 예정:</strong> 인터랙티브 캠퍼스 맵 서비스
+          <strong>개발 예정:</strong> 인터랙티브 캠퍼스 맵 서비스
         </p>
       </Card>
     </Container>

@@ -1,5 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -36,9 +37,7 @@ export default function TermsPage() {
           SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 21일 시행
         </p>
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-900 font-semibold mb-2">
-            ⚠️ 중요 공지
-          </p>
+          <p className="text-sm text-red-900 font-semibold mb-2">중요 공지</p>
           <p className="text-sm text-red-800">
             본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 제공되는 모든
             자료는 참고용이며, 정확한 정보는 학교 공식 웹사이트를 참고하시기
@@ -94,8 +93,9 @@ export default function TermsPage() {
           </h2>
           <div className="space-y-3 text-neutral-700">
             <div className="p-3 bg-orange-50 border border-orange-200 rounded mb-3">
-              <p className="text-sm text-orange-900 font-semibold">
-                📌 참고용 자료
+              <p className="text-sm text-orange-900 font-semibold flex items-center gap-2">
+                <AlertCircle size={16} className="flex-shrink-0" />
+                참고용 자료
               </p>
               <p className="text-xs text-orange-800 mt-1">
                 본 서비스의 모든 자료(공지사항, 시간표, 학식 정보 등)는

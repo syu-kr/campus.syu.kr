@@ -108,13 +108,12 @@ export default function ScholarshipPage() {
           paginatedScholarships &&
           paginatedScholarships.map((scholarship) => (
             <Card key={scholarship.id}>
-              <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="mb-3">
                 <div className="flex-1">
                   <h2 className="text-lg font-bold text-neutral-900 mb-2">
                     {scholarship.name}
                   </h2>
                 </div>
-                <span className="text-2xl">🎓</span>
               </div>
 
               <div className="space-y-3 mt-4">
@@ -205,7 +204,7 @@ export default function ScholarshipPage() {
       {/* 주의사항 */}
       <Card className="mt-8 bg-yellow-50 border border-yellow-200">
         <p className="text-sm text-yellow-900 mb-2">
-          💡 <strong>중요:</strong> 장학금 신청 기간과 자격요건을 반드시
+          <strong>중요:</strong> 장학금 신청 기간과 자격요건을 반드시
           확인하세요.
         </p>
         <p className="text-xs text-yellow-800">

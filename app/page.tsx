@@ -17,6 +17,7 @@ import {
 } from "@/lib/api";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { Announcement, AcademicSchedule, PhoneNumber } from "@/types";
+import { BookOpen, Calendar, Utensils, Bus, Award, Phone, Megaphone } from "lucide-react";
 
 export interface ServiceNotice {
   id: string;
@@ -31,15 +32,15 @@ export interface ServiceNotice {
 const frequentMenus = [
   {
     id: "1",
-    icon: "📚",
+    icon: BookOpen,
     label: "모의 수강신청",
     path: "https://sugang.syu.kr/testLogin",
   },
-  { id: "2", icon: "📖", label: "학사일정", path: "/academic/schedule" },
-  { id: "3", icon: "🍽️", label: "학식", path: "/campus/cafeteria" },
-  { id: "4", icon: "🚌", label: "셔틀버스", path: "/campus/shuttle" },
-  { id: "5", icon: "🎓", label: "장학금", path: "/more/scholarship" },
-  { id: "6", icon: "📞", label: "연락처", path: "/more/phone" },
+  { id: "2", icon: Calendar, label: "학사일정", path: "/academic/schedule" },
+  { id: "3", icon: Utensils, label: "학식", path: "/campus/cafeteria" },
+  { id: "4", icon: Bus, label: "셔틀버스", path: "/campus/shuttle" },
+  { id: "5", icon: Award, label: "장학금", path: "/more/scholarship" },
+  { id: "6", icon: Phone, label: "연락처", path: "/more/phone" },
 ];
 
 // 공지 카테고리 필터
@@ -146,34 +147,29 @@ export default function Home() {
       };
     } = {
       academicSchedule: {
-        label: "📖 학사일정",
+        label: "학사일정",
         items: [],
         linkPath: "/academic/schedule",
-        icon: "📖",
       },
       academicAnnouncement: {
-        label: "📝 학사공지",
+        label: "학사공지",
         items: [],
         linkPath: "/academic/announcements",
-        icon: "📝",
       },
       campusAnnouncement: {
-        label: "🏫 캠퍼스공지",
+        label: "캠퍼스공지",
         items: [],
         linkPath: "/campus/announcements",
-        icon: "🏫",
       },
       scholarship: {
-        label: "🎓 장학금",
+        label: "장학금",
         items: [],
         linkPath: "/more/scholarship",
-        icon: "🎓",
       },
       phoneNumbers: {
-        label: "📞 연락처",
+        label: "연락처",
         items: [],
         linkPath: "/more/phone",
-        icon: "📞",
       },
     };
 
@@ -217,7 +213,6 @@ export default function Home() {
 
         {!searchLoading && (!searchResults || searchResults.length === 0) && (
           <div className="text-center py-16">
-            <div className="text-4xl mb-4">🔍</div>
             <h3 className="text-lg font-semibold text-neutral-900 mb-2">
               검색 결과가 없습니다
             </h3>
@@ -349,18 +344,21 @@ export default function Home() {
           자주 사용하는 메뉴
         </h2>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {frequentMenus.map((menu) => (
-            <Link
-              key={menu.id}
-              href={menu.path}
-              className="flex flex-col items-center justify-center py-4 rounded-lg hover:bg-primary-50 transition-colors"
-            >
-              <span className="text-3xl mb-2">{menu.icon}</span>
-              <span className="text-xs font-medium text-center text-neutral-900">
-                {menu.label}
-              </span>
-            </Link>
-          ))}
+          {frequentMenus.map((menu) => {
+            const IconComponent = menu.icon;
+            return (
+              <Link
+                key={menu.id}
+                href={menu.path}
+                className="flex flex-col items-center justify-center py-4 rounded-lg hover:bg-primary-50 transition-colors"
+              >
+                <IconComponent size={32} className="mb-2 text-primary-600" />
+                <span className="text-xs font-medium text-center text-neutral-900">
+                  {menu.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -443,7 +441,7 @@ export default function Home() {
                             {notice.author} · {notice.date}
                           </div>
                         </div>
-                        <span className="text-lg flex-shrink-0">📢</span>
+                        <Megaphone size={20} className="flex-shrink-0 text-neutral-600" strokeWidth={1.5} />
                       </div>
                     </Card>
                   </Link>
@@ -648,7 +646,6 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <span className="text-2xl">🍽️</span>
                 </div>
               </Card>
             </Link>
@@ -713,8 +710,8 @@ export default function Home() {
                               {formatDate(schedule.endDate)}
                             </p>
                           </div>
-                          <span className="text-2xl">
-                            {schedule.category === "exam" ? "📝" : "📅"}
+                          <span className="text-xs font-semibold text-neutral-600">
+                            {schedule.category === "exam" ? "시험" : "일정"}
                           </span>
                         </div>
                       </Card>

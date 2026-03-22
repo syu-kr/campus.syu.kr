@@ -4,6 +4,7 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { BarChart3 } from "lucide-react";
 
 interface Course {
   id: string;
@@ -267,7 +268,7 @@ export default function TimetableWizardPage() {
         <Card className="max-w-md w-full mx-4 p-8">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-              ⏰ 시간표 마법사
+              시간표 마법사
             </h2>
             <p className="text-neutral-600 mb-6">
               현재 시간표 자동 생성 기능은 준비 중입니다.
@@ -379,8 +380,9 @@ export default function TimetableWizardPage() {
           <div className="space-y-4">
             {/* 선택 현황 */}
             <Card className="bg-blue-50 border border-blue-200">
-              <h3 className="font-semibold text-neutral-900 mb-3">
-                📊 선택 현황
+              <h3 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                <BarChart3 size={20} className="text-blue-600" />
+                선택 현황
               </h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -492,7 +494,7 @@ export default function TimetableWizardPage() {
                           </p>
                           {conflicts && conflicts.length > 0 && (
                             <p className="text-xs text-red-600 mt-1">
-                              ⚠️ {conflicts.join(", ")}과 시간 겹침
+                              {conflicts.join(", ")}과 시간 겹침
                             </p>
                           )}
                         </div>
@@ -512,7 +514,7 @@ export default function TimetableWizardPage() {
             {/* 강의 목록 */}
             <Card>
               <h3 className="font-semibold text-neutral-900 mb-3">
-                📚 강의 목록
+                강의 목록
               </h3>
 
               {/* 검색창 */}
@@ -557,13 +559,13 @@ export default function TimetableWizardPage() {
                         </p>
                         {hasConflicts && (
                           <p className="text-xs text-red-600 mt-1">
-                            ⚠️ {conflicting.map((c) => c.name).join(", ")}과
+                            {conflicting.map((c) => c.name).join(", ")}과
                             시간 충돌
                           </p>
                         )}
                         {creditExceeds && (
                           <p className="text-xs text-orange-600">
-                            ⚠️ 학점 초과
+                            학점 초과
                           </p>
                         )}
                       </button>

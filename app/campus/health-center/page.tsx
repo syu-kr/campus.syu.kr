@@ -1,37 +1,32 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { Lightbulb } from "lucide-react";
 
 export default function HealthCenterPage() {
   const services = [
     {
       title: "외상처치",
       description: "상처 및 외상 응급처치 제공",
-      icon: "🩹",
     },
     {
       title: "의약품 제공",
       description: "일반의약품 제공 및 투약 교육",
-      icon: "💊",
     },
     {
       title: "건강 측정",
       description: "혈압, 혈당, 체온 측정",
-      icon: "🌡️",
     },
     {
       title: "신체 계측",
       description: "키, 몸무게 계측",
-      icon: "📏",
     },
     {
       title: "안정실",
       description: "남녀 안정실 각 3침상",
-      icon: "🛏️",
     },
     {
       title: "심장제세동기",
       description: "AED 비치 및 응급 대비",
-      icon: "❤️",
     },
   ];
 
@@ -56,7 +51,7 @@ export default function HealthCenterPage() {
       {/* 위치 및 연락처 */}
       <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
         <h2 className="text-lg font-bold text-blue-900 mb-4">
-          📍 위치 및 연락처
+          위치 및 연락처
         </h2>
         <div className="space-y-4">
           <div>
@@ -81,7 +76,7 @@ export default function HealthCenterPage() {
 
       {/* 운영시간 */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-neutral-900 mb-4">🕐 운영시간</h2>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">운영시간</h2>
         <Card>
           <div className="space-y-3">
             {schedule.map((item, idx) => (
@@ -101,7 +96,7 @@ export default function HealthCenterPage() {
       {/* 제공 서비스 */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">
-          🏥 제공 서비스
+          제공 서비스
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {services.map((service, idx) => (
@@ -110,7 +105,6 @@ export default function HealthCenterPage() {
               className="hover:shadow-card-hover transition-shadow"
             >
               <div className="text-center">
-                <span className="text-3xl block mb-2">{service.icon}</span>
                 <h3 className="font-semibold text-neutral-900 text-sm mb-1">
                   {service.title}
                 </h3>
@@ -125,7 +119,7 @@ export default function HealthCenterPage() {
 
       {/* 이용절차 */}
       <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-        <h2 className="text-lg font-bold text-green-900 mb-4">📋 이용절차</h2>
+        <h2 className="text-lg font-bold text-green-900 mb-4">이용절차</h2>
         <div className="grid grid-cols-4 gap-4">
           {[
             { num: "01", title: "방문", desc: "보건실 방문" },
@@ -148,14 +142,15 @@ export default function HealthCenterPage() {
 
       {/* 주요 안내 */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-neutral-900 mb-4">
-          💡 주요 안내
+        <h2 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
+          <Lightbulb size={24} className="text-amber-500" />
+          주요 안내
         </h2>
         <Card>
           <div className="space-y-4">
             <div>
               <h3 className="font-semibold text-neutral-900 mb-2">
-                ▪️ 보건증 발급
+                보건증 발급
               </h3>
               <p className="text-sm text-neutral-600">
                 보건증은 시, 군, 구에서 운영하는 보건소에서 검사 후 발급받을 수
@@ -168,7 +163,7 @@ export default function HealthCenterPage() {
             </div>
             <div>
               <h3 className="font-semibold text-neutral-900 mb-2">
-                ▪️ 안정실 운영
+                안정실 운영
               </h3>
               <p className="text-sm text-neutral-600">
                 남녀 안정실을 각각 3침상으로 운영합니다.
@@ -180,7 +175,7 @@ export default function HealthCenterPage() {
             </div>
             <div>
               <h3 className="font-semibold text-neutral-900 mb-2">
-                ▪️ 구급약품낭 대여
+                구급약품낭 대여
               </h3>
               <p className="text-sm text-neutral-600">
                 교직원행사나 학교주최행사에서 대여 가능합니다.
@@ -192,7 +187,7 @@ export default function HealthCenterPage() {
             </div>
             <div>
               <h3 className="font-semibold text-neutral-900 mb-2">
-                ▪️ 심장자동제세동기(AED)
+                심장자동제세동기(AED)
               </h3>
               <p className="text-sm text-neutral-600">
                 보건실에 AED가 비치되어 있습니다. 누구든지 사용 가능합니다.

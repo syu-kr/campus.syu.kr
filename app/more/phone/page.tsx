@@ -145,10 +145,7 @@ export default function DirectoryPage() {
 
             {/* 페이지 번호 표시 */}
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const startPage = Math.max(
-                1,
-                currentPage - Math.floor(5 / 2)
-              );
+              const startPage = Math.max(1, currentPage - Math.floor(5 / 2));
               const pageNum = startPage + i;
               return pageNum <= totalPages ? pageNum : null;
             }).map(
@@ -165,11 +162,13 @@ export default function DirectoryPage() {
                   >
                     {pageNum}
                   </button>
-                )
+                ),
             )}
 
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               disabled={currentPage === totalPages}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
               aria-label="다음 페이지"
@@ -195,8 +194,7 @@ export default function DirectoryPage() {
 
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900">
-          📞 <strong>안내:</strong> 더 많은 전화번호는 학교 홈페이지를
-          참고하세요.
+          안내: 더 많은 전화번호는 학교 홈페이지를 참고하세요.
         </p>
       </Card>
     </Container>

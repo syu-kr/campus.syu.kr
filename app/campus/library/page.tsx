@@ -321,7 +321,7 @@ export default function LibraryPage() {
       {/* 열람실 현황 */}
       <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-neutral-900">📊 열람실 현황</h2>
+          <h2 className="text-lg font-bold text-neutral-900">열람실 현황</h2>
           {lastUpdate && (
             <span className="text-xs text-neutral-500">
               마지막 업데이트: {lastUpdate}
@@ -376,7 +376,7 @@ export default function LibraryPage() {
       {/* 운영시간 */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-neutral-900">🕐 운영시간</h2>
+          <h2 className="text-lg font-bold text-neutral-900">운영시간</h2>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedSeason("semester")}
@@ -440,7 +440,7 @@ export default function LibraryPage() {
                     </div>
                     {room.note && (
                       <p className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
-                        💡 {room.note}
+                        {room.note}
                       </p>
                     )}
                   </div>
@@ -452,7 +452,7 @@ export default function LibraryPage() {
 
         {/* 주의사항 */}
         <Card className="mt-6 bg-neutral-50 border border-neutral-300">
-          <h3 className="font-semibold text-neutral-900 mb-3">📌 주의사항</h3>
+          <h3 className="font-semibold text-neutral-900 mb-3">주의사항</h3>
           <ul className="text-sm text-neutral-700 space-y-1">
             <li>• 법정 공휴일, 토요일은 폐관합니다.</li>
             <li>• 스터디룸 이용 시 이용규정을 꼭 확인하시기 바랍니다.</li>
@@ -467,31 +467,25 @@ export default function LibraryPage() {
       {/* 편의시설 및 서비스 */}
       <Card className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">
-          🎯 편의시설 및 서비스
+          편의시설 및 서비스
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">📚</span>
             <span className="text-sm">도서 대출/반납</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">💻</span>
             <span className="text-sm">학습 PC</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">📖</span>
             <span className="text-sm">학술 데이터베이스</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🖨️</span>
             <span className="text-sm">인쇄/스캔</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">☕</span>
             <span className="text-sm">휴게실</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-2xl">🚻</span>
             <span className="text-sm">화장실</span>
           </div>
         </div>
@@ -499,7 +493,7 @@ export default function LibraryPage() {
 
       {/* 이용 안내 */}
       <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">📋 이용 안내</h2>
+        <h2 className="text-lg font-bold text-blue-900 mb-4">이용 안내</h2>
         <div className="space-y-3 text-sm">
           <div>
             <h3 className="font-semibold text-blue-900 mb-1">도서 대출</h3>
