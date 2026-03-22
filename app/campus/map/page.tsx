@@ -42,8 +42,10 @@ export default function MapPage() {
       </div>
 
       {/* 검색바 */}
-      <div className="mb-6 max-w-2xl">
-        <FacilitySearch onSelect={handleFacilitySelect} />
+      <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="lg:col-span-2">
+          <FacilitySearch onSelect={handleFacilitySelect} />
+        </div>
       </div>
 
       {/* 메인 레이아웃 */}

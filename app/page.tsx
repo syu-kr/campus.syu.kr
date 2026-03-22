@@ -17,7 +17,15 @@ import {
 } from "@/lib/api";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { Announcement, AcademicSchedule, PhoneNumber } from "@/types";
-import { BookOpen, Calendar, Utensils, Bus, Award, Phone, Megaphone } from "lucide-react";
+import {
+  Map,
+  Calendar,
+  Utensils,
+  Bus,
+  Award,
+  Phone,
+  Megaphone,
+} from "lucide-react";
 
 export interface ServiceNotice {
   id: string;
@@ -32,9 +40,9 @@ export interface ServiceNotice {
 const frequentMenus = [
   {
     id: "1",
-    icon: BookOpen,
-    label: "모의 수강신청",
-    path: "https://sugang.syu.kr/testLogin",
+    icon: Map,
+    label: "캠퍼스 지도",
+    path: "/campus/map",
   },
   { id: "2", icon: Calendar, label: "학사일정", path: "/academic/schedule" },
   { id: "3", icon: Utensils, label: "학식", path: "/campus/cafeteria" },
@@ -441,7 +449,11 @@ export default function Home() {
                             {notice.author} · {notice.date}
                           </div>
                         </div>
-                        <Megaphone size={20} className="flex-shrink-0 text-neutral-600" strokeWidth={1.5} />
+                        <Megaphone
+                          size={20}
+                          className="flex-shrink-0 text-neutral-600"
+                          strokeWidth={1.5}
+                        />
                       </div>
                     </Card>
                   </Link>
