@@ -10,8 +10,7 @@ print("=" * 90 + "\n")
 # 공지사항 파일들
 announcements = {
     "📚 학사공지": "public/data/announcements-academic.json",
-    "🎉 행사공지": "public/data/announcements-events.json",
-    "🎓 장학공지": "public/data/announcements-scholarship.json",
+    " 장학공지": "public/data/announcements-scholarship.json",
     "🏫 캠퍼스공지": "public/data/announcements-campus-life.json",
 }
 

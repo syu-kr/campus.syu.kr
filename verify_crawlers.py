@@ -4,7 +4,6 @@ import sys
 from collections import Counter
 
 files = {
-    "행사공지": "public/data/announcements-events.json",
     "학사공지": "public/data/announcements-academic.json",
     "장학공지": "public/data/announcements-scholarship.json",
     "캠퍼스공지": "public/data/announcements-campus-life.json",

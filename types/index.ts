@@ -56,19 +56,7 @@ export interface ShuttleBusSchedule {
   lastUpdated: string;
 }
 
-// 학과 정보
-export interface DepartmentInfo {
-  id: string;
-  name: string;
-  building: string;
-  phone: string;
-  email: string;
-  professors: {
-    name: string;
-    title: string;
-    office: string;
-  }[];
-}
+// 학과 정보 (미사용 - 제거됨)
 
 // 장학금
 export interface Scholarship {
@@ -82,23 +70,9 @@ export interface Scholarship {
   url?: string;
 }
 
-// 학사정보
-export interface AcademicInfo {
-  gpa: number;
-  totalCredits: number;
-  completedCredits: number;
-  status: "normal" | "leave" | "return";
-  graduationDate?: string;
-}
+// 학사정보 (미사용 - 제거됨)
 
-// 사용자 프로필
-export interface UserProfile {
-  studentId: string;
-  name: string;
-  department: string;
-  grade: number;
-  entryYear: number;
-}
+// 사용자 프로필 (미사용 - 제거됨)
 
 // 전화번호
 export interface PhoneNumber {

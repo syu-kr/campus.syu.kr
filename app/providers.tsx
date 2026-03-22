@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 
 // QueryClient를 싱글톤으로 관리
 let clientSingleton: QueryClient | undefined;

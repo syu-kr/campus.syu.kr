@@ -58,7 +58,7 @@ export default function ShuttlePage() {
   };
 
   // 가장 가까운 버스 찾기 (모든 버스에서)
-  const closestBusTime = useMemo(() => {
+  const closestBusTime = useMemo((): { time: string; minutesUntil: number } | null => {
     if (!buses || buses.length === 0 || dateInfo.isWeekend) return null;
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
@@ -85,7 +85,12 @@ export default function ShuttlePage() {
   }, [buses, dateInfo, selectedType]);
 
   // 다음 버스 계산
-  const nextBusInfo = useMemo(() => {
+  const nextBusInfo = useMemo((): {
+    routeName: string;
+    time: string;
+    minutesUntil: number;
+    busId: string;
+  } | null => {
     if (!buses || buses.length === 0) return null;
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;

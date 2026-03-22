@@ -45,8 +45,7 @@ src/
 │
 ├── lib/                        # 유틸리티
 │   ├── api.ts                  # API 함수 (Mock & Real)
-│   ├── utils.ts                # 헬퍼 함수
-│   └── design-system.ts        # 디자인 시스템
+│   └── utils.ts                # 헬퍼 함수
 │
 ├── data/                       # Mock 데이터
 │   ├── announcements.json      # 공지사항

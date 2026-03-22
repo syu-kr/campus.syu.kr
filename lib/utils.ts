@@ -124,43 +124,6 @@ export function getCategoryColor(
 }
 
 /**
- * 텍스트 잘라내기
- */
-export function truncateText(text: string, length: number): string {
-  if (text.length <= length) return text;
-  return text.substring(0, length) + "...";
-}
-
-/**
- * 첫 번째 줄만 가져오기
- */
-export function getFirstLine(text: string): string {
-  return text.split("\n")[0];
-}
-
-/**
- * 요일 이름 가져오기
- */
-export function getDayName(date: Date | string): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  return days[d.getDay()];
-}
-
-/**
- * 오늘 날짜 체크
- */
-export function isToday(dateString: string): boolean {
-  const date = new Date(dateString);
-  const today = new Date();
-  return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
-  );
-}
-
-/**
  * 날짜 범위 바꾸기
  */
 export function formatDateRange(start: string, end: string): string {

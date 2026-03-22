@@ -316,21 +316,6 @@ export async function searchAll(
       // handle silently
     }
 
-    // 행사공지
-    try {
-      const eventNotices = await fetch("/data/announcements-events.json", {
-        next: { revalidate: 86400 }, // Cache for 24 hours
-      }).then((r) => r.json());
-      const matchedEvents = (eventNotices as Announcement[]).filter(
-        (a) =>
-          a.title?.toLowerCase().includes(lowerQuery) ||
-          a.content?.toLowerCase().includes(lowerQuery),
-      );
-      results.push(...matchedEvents);
-    } catch {
-      // handle silently
-    }
-
     // 캠퍼스공지
     try {
       const campusNotices = await fetch(

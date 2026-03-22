@@ -94,7 +94,6 @@ syu-campus/
 │   │   ├── announcements-academic.json
 │   │   ├── announcements-scholarship.json
 │   │   ├── announcements-campus-life.json
-│   │   ├── announcements-events.json
 │   │   ├── schedules-major.json
 │   │   ├── phone-numbers.json
 │   │   ├── shuttle-bus-schedule.json
