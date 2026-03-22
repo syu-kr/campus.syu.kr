@@ -78,6 +78,17 @@ export default function CafeteriaPage() {
         <Card className="mb-8 bg-green-50 border border-green-200">
           <Skeleton height="150px" />
         </Card>
+      ) : todayInfo.dayOfWeek === 1 && !todayMenu ? (
+        <Card className="mb-8 bg-yellow-50 border-2 border-yellow-400">
+          <div className="text-center py-8">
+            <p className="text-lg font-semibold text-yellow-900 mb-2">
+              현재 최신화 작업 중입니다
+            </p>
+            <p className="text-sm text-yellow-700">
+              데이터가 준비되고 있습니다. 잠시만 기다려주세요.
+            </p>
+          </div>
+        </Card>
       ) : todayMenu ? (
         <Card className="mb-8 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400">
           <div className="mb-4">
@@ -108,7 +119,8 @@ export default function CafeteriaPage() {
                     )}
                     {item.allergens && (
                       <p className="text-xs text-red-600 flex items-center">
-                        <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                        <AlertCircle size={14} className="mr-1 flex-shrink-0" />
+                        {item.allergens.join(", ")}
                       </p>
                     )}
                   </div>
@@ -143,7 +155,11 @@ export default function CafeteriaPage() {
                           )}
                           {item.allergens && (
                             <p className="text-xs text-red-600 flex items-center">
-                              <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                              <AlertCircle
+                                size={14}
+                                className="mr-1 flex-shrink-0"
+                              />
+                              {item.allergens.join(", ")}
                             </p>
                           )}
                         </div>
@@ -170,7 +186,11 @@ export default function CafeteriaPage() {
                           )}
                           {item.allergens && (
                             <p className="text-xs text-red-600 flex items-center">
-                              <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                              <AlertCircle
+                                size={14}
+                                className="mr-1 flex-shrink-0"
+                              />
+                              {item.allergens.join(", ")}
                             </p>
                           )}
                         </div>
@@ -199,7 +219,8 @@ export default function CafeteriaPage() {
                     )}
                     {item.allergens && (
                       <p className="text-xs text-red-600 flex items-center">
-                        <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                        <AlertCircle size={14} className="mr-1 flex-shrink-0" />
+                        {item.allergens.join(", ")}
                       </p>
                     )}
                   </div>
@@ -208,7 +229,18 @@ export default function CafeteriaPage() {
             </div>
           </div>
         </Card>
-      ) : null}
+      ) : (
+        <Card className="mb-8 bg-red-50 border-2 border-red-400">
+          <div className="text-center py-8">
+            <p className="text-lg font-semibold text-red-900 mb-2">
+              ❌ 데이터를 불러올 수 없습니다
+            </p>
+            <p className="text-sm text-red-700">
+              일시적인 오류가 발생했습니다. 나중에 다시 시도해주세요.
+            </p>
+          </div>
+        </Card>
+      )}
 
       <div className="space-y-6">
         {isLoading && <Skeleton count={3} height="200px" />}
@@ -245,7 +277,11 @@ export default function CafeteriaPage() {
                         )}
                         {item.allergens && (
                           <p className="text-xs text-red-600 flex items-center">
-                            <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                            <AlertCircle
+                              size={14}
+                              className="mr-1 flex-shrink-0"
+                            />
+                            {item.allergens.join(", ")}
                           </p>
                         )}
                       </div>
@@ -280,7 +316,11 @@ export default function CafeteriaPage() {
                               )}
                               {item.allergens && (
                                 <p className="text-xs text-red-600 flex items-center">
-                                  <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                                  <AlertCircle
+                                    size={14}
+                                    className="mr-1 flex-shrink-0"
+                                  />
+                                  {item.allergens.join(", ")}
                                 </p>
                               )}
                             </div>
@@ -307,7 +347,11 @@ export default function CafeteriaPage() {
                               )}
                               {item.allergens && (
                                 <p className="text-xs text-red-600 flex items-center">
-                                  <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                                  <AlertCircle
+                                    size={14}
+                                    className="mr-1 flex-shrink-0"
+                                  />
+                                  {item.allergens.join(", ")}
                                 </p>
                               )}
                             </div>
@@ -338,7 +382,11 @@ export default function CafeteriaPage() {
                         )}
                         {item.allergens && (
                           <p className="text-xs text-red-600 flex items-center">
-                            <AlertCircle size={14} className="mr-1 flex-shrink-0" />{item.allergens.join(", ")}
+                            <AlertCircle
+                              size={14}
+                              className="mr-1 flex-shrink-0"
+                            />
+                            {item.allergens.join(", ")}
                           </p>
                         )}
                       </div>
@@ -353,8 +401,12 @@ export default function CafeteriaPage() {
       {/* 알레르기 정보 */}
       <Card className="mt-8 bg-yellow-50 border border-yellow-200">
         <p className="text-sm text-yellow-900 flex items-center">
-          <AlertCircle size={16} className="mr-2 flex-shrink-0 text-yellow-700" /><strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된
-          참고하여 식사를 선택하세요.
+          <AlertCircle
+            size={16}
+            className="mr-2 flex-shrink-0 text-yellow-700"
+          />
+          <strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된 참고하여
+          식사를 선택하세요.
         </p>
       </Card>
     </Container>

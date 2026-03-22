@@ -660,6 +660,29 @@ export default function Home() {
               </Card>
             </Link>
           )}
+
+          {!cafeteriaLoading &&
+            !todayInfo.isWeekend &&
+            todayInfo.dayOfWeek === 1 &&
+            !todayMenu && (
+              <Link href="/campus/cafeteria">
+                <Card className="cursor-pointer hover:shadow-card-hover bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-400">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-yellow-700 mb-1">
+                        오늘의 메뉴
+                      </div>
+                      <h3 className="font-semibold text-neutral-900 mb-2">
+                        최신화 작업 중입니다
+                      </h3>
+                      <p className="text-sm text-yellow-700">
+                        데이터가 준비되고 있습니다. 잠시만 기다려주세요.
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            )}
         </div>
       </div>
 

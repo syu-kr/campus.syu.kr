@@ -87,23 +87,26 @@ export default function ShuttlePage() {
     return closestTime;
   }, [buses, dateInfo, selectedType]);
 
-  // 다음 버스 계산
-  const nextBusInfo = useMemo((): {
+  // 30분 이내의 모든 버스들 (상단에 표시)
+  const nextBusesWithin30Min = useMemo((): Array<{
     routeName: string;
     time: string;
     minutesUntil: number;
-    busId: string;
-  } | null => {
-    if (!buses || buses.length === 0) return null;
+  }> => {
+    if (
+      !buses ||
+      buses.length === 0 ||
+      dateInfo.isWeekend ||
+      selectedType !== defaultType
+    )
+      return [];
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
-    let nextBus: {
+    const busesList: Array<{
       routeName: string;
       time: string;
       minutesUntil: number;
-      busId: string;
-    } | null = null;
-    let minMinutesUntil = Infinity;
+    }> = [];
 
     buses.forEach((bus) => {
       const times = bus.schedules[selectedType];
@@ -111,20 +114,20 @@ export default function ShuttlePage() {
         const timeMinutes = timeToMinutes(time);
         const minutesUntil = timeMinutes - currentMinutes;
 
-        if (minutesUntil > 0 && minutesUntil < minMinutesUntil) {
-          minMinutesUntil = minutesUntil;
-          nextBus = {
+        if (minutesUntil > 0 && minutesUntil <= 30) {
+          busesList.push({
             routeName: bus.routeName,
             time,
             minutesUntil,
-            busId: bus.id,
-          };
+          });
         }
       });
     });
 
-    return nextBus;
-  }, [buses, dateInfo, selectedType]);
+    // 시간순으로 정렬
+    busesList.sort((a, b) => a.minutesUntil - b.minutesUntil);
+    return busesList;
+  }, [buses, dateInfo, selectedType, defaultType]);
 
   // 요일 버튼 클릭 시
   const dayButtons = [
@@ -171,27 +174,33 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 다음 버스 정보 */}
-      {nextBusInfo && !dateInfo.isWeekend ? (
+      {/* 다음 버스 정보 (30분 이내) */}
+      {nextBusesWithin30Min.length > 0 && !dateInfo.isWeekend ? (
         <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs text-green-700 font-semibold mb-1">
-                다음 출발 버스
-              </p>
-              <h3 className="text-2xl font-bold text-green-900 mb-2">
-                {nextBusInfo.routeName}
-              </h3>
-              <div className="space-y-1">
-                <p className="text-sm text-green-800">
-                  <strong>{nextBusInfo.time}</strong> 출발
-                </p>
-                <p className="text-lg font-bold text-green-600">
-                  {nextBusInfo.minutesUntil}분 후 도착
-                </p>
+          <div className="mb-3">
+            <p className="text-xs text-green-700 font-semibold mb-2">
+              곧 오는 버스 (30분 이내)
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {nextBusesWithin30Min.map((bus, idx) => (
+              <div
+                key={idx}
+                className="bg-white border-2 border-green-300 rounded-lg p-3"
+              >
+                <h3 className="text-base font-bold text-green-900 mb-1">
+                  {bus.routeName}
+                </h3>
+                <div className="space-y-1">
+                  <p className="text-sm text-green-800">
+                    <strong>{bus.time}</strong> 출발
+                  </p>
+                  <p className="text-sm font-semibold text-green-600">
+                    {bus.minutesUntil}분 후 도착
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="text-right">다음 버스</div>
+            ))}
           </div>
         </Card>
       ) : null}
@@ -250,86 +259,6 @@ export default function ShuttlePage() {
           </Card>
         )}
 
-        {/* 전체 운행시간표 */}
-        {!isLoading && buses && buses.length > 0 && !dateInfo.isWeekend && (
-          <Card className="border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-cyan-50">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold text-blue-900 mb-2">
-                전체 운행시간표
-              </h2>
-              <p className="text-sm text-blue-700">
-                모든 버스의 운행 시간 (가장 가까운 버스는 빨간색)
-              </p>
-            </div>
-
-            <div>
-              {(() => {
-                const allTimes: Array<{
-                  time: string;
-                  routes: string[];
-                }> = [];
-
-                buses.forEach((bus) => {
-                  const times = bus.schedules[selectedType];
-                  times.forEach((time) => {
-                    const existing = allTimes.find((t) => t.time === time);
-                    if (existing) {
-                      existing.routes.push(bus.routeName);
-                    } else {
-                      allTimes.push({
-                        time,
-                        routes: [bus.routeName],
-                      });
-                    }
-                  });
-                });
-
-                // 시간순으로 정렬
-                allTimes.sort(
-                  (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time),
-                );
-
-                return (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {allTimes.map((item, idx) => {
-                      const timeMinutes = timeToMinutes(item.time);
-                      const currentMinutes =
-                        dateInfo.hour * 60 + dateInfo.minute;
-                      const isClosest =
-                        closestBusTime &&
-                        closestBusTime.time === item.time &&
-                        selectedType === defaultType;
-                      const isPassed = timeMinutes <= currentMinutes;
-
-                      return (
-                        <div key={idx}>
-                          <div
-                            className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors cursor-help group relative ${
-                              isClosest
-                                ? "bg-red-100 border-2 border-red-500 text-red-700 font-bold"
-                                : isPassed
-                                  ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
-                                  : "bg-blue-100 border border-blue-300 text-blue-700"
-                            }`}
-                            title={item.routes.join(", ")}
-                          >
-                            {item.time}
-                          </div>
-                          <p className="text-xs text-blue-600 mt-1 truncate">
-                            {item.routes.length === 1
-                              ? item.routes[0]
-                              : `${item.routes.length}노선`}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
-          </Card>
-        )}
-
         {!isLoading &&
           buses &&
           buses.map((bus) => {
@@ -362,30 +291,25 @@ export default function ShuttlePage() {
                         const timeMinutes = timeToMinutes(time);
                         const currentMinutes =
                           dateInfo.hour * 60 + dateInfo.minute;
-                        const isNext =
-                          timeMinutes > currentMinutes &&
+                        const minutesUntil = timeMinutes - currentMinutes;
+                        const isWithin30Min =
+                          minutesUntil > 0 &&
+                          minutesUntil <= 30 &&
                           selectedType === defaultType &&
                           !dateInfo.isWeekend;
                         const isPassed =
                           timeMinutes <= currentMinutes &&
                           selectedType === defaultType;
-                        const isClosest =
-                          closestBusTime &&
-                          closestBusTime.time === time &&
-                          selectedType === defaultType &&
-                          !dateInfo.isWeekend;
 
                         return (
                           <div
                             key={idx}
                             className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
-                              isClosest
-                                ? "bg-red-100 border-2 border-red-500 text-red-700 font-bold"
-                                : isNext
-                                  ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
-                                  : isPassed
-                                    ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
-                                    : "bg-primary-50 border border-primary-200 text-primary-700"
+                              isWithin30Min
+                                ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                : isPassed
+                                  ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
+                                  : "bg-primary-50 border border-primary-200 text-primary-700"
                             }`}
                           >
                             {time}
