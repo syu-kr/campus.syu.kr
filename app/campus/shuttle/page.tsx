@@ -197,17 +197,7 @@ export default function ShuttlePage() {
         ))}
       </div>
 
-      {/* 운행 안내 */}
-      {selectedType === "mondayToThursday" && !dateInfo.isWeekend && (
-        <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
-          <p>평일(월-금 정규학기) 시간표입니다.</p>
-        </Card>
-      )}
-      {selectedType === "friday" && dateInfo.isFriday && (
-        <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
-          <p>금요일 시간표입니다.</p>
-        </Card>
-      )}
+      {/* 방학 운행 안내 */}
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
         <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
@@ -301,8 +291,8 @@ export default function ShuttlePage() {
       {/* 안내 */}
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900 mb-2">
-          <strong>안내:</strong> 셔틀버스 운행 시간은 학기와 계절에 따라 변경될
-          수 있습니다.
+          <strong>안내:</strong> 셔틀버스 운행 시간은 학기 또는 행사에 따라
+          변경될 수 있습니다.
         </p>
         <p className="text-xs text-blue-800">
           정확한 정보는 캠퍼스 공지사항을 확인해주세요.
