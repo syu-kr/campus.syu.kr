@@ -34,7 +34,7 @@ export default function TermsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-neutral-900 mb-2">이용약관</h1>
         <p className="text-neutral-600">
-          SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 21일 시행
+          SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 22일 시행
         </p>
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-900 font-semibold mb-2">중요 공지</p>
@@ -113,15 +113,15 @@ export default function TermsPage() {
                 행사정보
               </li>
               <li>
-                <strong>캠퍼스정보</strong>: 셔틀버스 시간표, 학식 정보, 도서관
-                열람실 현황
+                <strong>캠퍼스정보</strong>: 캠퍼스 지도, 셔틀버스 시간표, 학식
+                정보, 도서관 열람실 현황
               </li>
               <li>
                 <strong>재정정보</strong>: 등록금 일정, 장학금 안내, 캠퍼스공지
               </li>
               <li>
-                <strong>통합검색</strong>: 모든 공지사항, 일정, 연락처를 통합
-                검색
+                <strong>통합검색</strong>: 모든 공지사항, 일정, 연락처, 건물
+                정보를 통합 검색
               </li>
               <li>
                 <strong>기타서비스</strong>: PWA 지원으로 앱처럼 사용 가능
