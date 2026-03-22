@@ -39,8 +39,9 @@ export default function AcademicAnnouncementsPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  // 페이지 범위: 현재 페이지 기준으로 앞뒤 5개씩, 최소 1-10
-  const pageRange = 10;
+  // 페이지 범위: 모바일은 5개, 데스크톱은 10개
+  const pageRange =
+    typeof window !== "undefined" && window.innerWidth < 768 ? 5 : 10;
   const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
   const endPage = Math.min(totalPages, startPage + pageRange - 1);
   const adjustedStartPage = Math.max(1, endPage - pageRange + 1);
@@ -112,15 +113,16 @@ export default function AcademicAnnouncementsPage() {
 
       {/* 페이지네이션 */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-8">
+        <div className="flex justify-center items-center gap-1 md:gap-2 mt-8 flex-wrap">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
+            className="px-2 md:px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors text-sm"
           >
             이전
           </button>
 
+          {/* 모바일: 5개, 데스크톱: 10개 페이지 표시 */}
           {Array.from(
             { length: Math.min(pageRange, endPage - adjustedStartPage + 1) },
             (_, i) => adjustedStartPage + i,
@@ -128,7 +130,7 @@ export default function AcademicAnnouncementsPage() {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 rounded-lg transition-colors ${
+              className={`px-2 md:px-3 py-2 rounded-lg transition-colors text-sm ${
                 currentPage === page
                   ? "bg-primary-600 text-white"
                   : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
@@ -138,10 +140,27 @@ export default function AcademicAnnouncementsPage() {
             </button>
           ))}
 
+          {/* 더 많은 페이지가 있으면 드롭다운 */}
+          {totalPages > pageRange && endPage < totalPages && (
+            <select
+              value={currentPage}
+              onChange={(e) => setCurrentPage(parseInt(e.target.value))}
+              className="px-2 md:px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 text-sm border-0 focus:ring-2 focus:ring-primary-500"
+            >
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .slice(endPage)
+                .map((page) => (
+                  <option key={page} value={page}>
+                    {page}
+                  </option>
+                ))}
+            </select>
+          )}
+
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors"
+            className="px-2 md:px-3 py-2 rounded-lg bg-neutral-200 text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-300 transition-colors text-sm"
           >
             다음
           </button>

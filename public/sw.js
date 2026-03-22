@@ -4,12 +4,7 @@ const CACHE_VERSION = "v1";
 const CACHE_NAME = `syu-campus-${CACHE_VERSION}`;
 
 // 캐시할 기본 파일들
-const URL_TO_CACHE = [
-  "/",
-  "/offline.html",
-  "/images/icon-192x192.png",
-  "/images/icon-512x512.png",
-];
+const URL_TO_CACHE = ["/", "/offline.html", "/images/syu-kr-logo.png"];
 
 // 설치 이벤트
 self.addEventListener("install", (event) => {
@@ -91,8 +86,8 @@ async function syncAnnouncements() {
 self.addEventListener("push", (event) => {
   const options = {
     body: event.data ? event.data.text() : "New notification",
-    icon: "/images/icon-192x192.png",
-    badge: "/images/icon-96x96.png",
+    icon: "/images/syu-kr-logo.png",
+    badge: "/images/syu-kr-logo.png",
     vibrate: [200, 100, 200],
   };
 

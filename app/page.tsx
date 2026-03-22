@@ -18,6 +18,15 @@ import {
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { Announcement, AcademicSchedule, PhoneNumber } from "@/types";
 
+export interface ServiceNotice {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  excerpt?: string;
+}
+
 // 자주 사용하는 메뉴
 const frequentMenus = [
   {
@@ -39,6 +48,7 @@ const categoryFilters = [
   { id: "academic", label: "학사공지", value: "academic" },
   { id: "scholarship", label: "장학금", value: "scholarship" },
   { id: "campus", label: "캠퍼스", value: "campus" },
+  { id: "service", label: "서비스공지", value: "service" },
 ];
 
 export default function Home() {
@@ -60,6 +70,16 @@ export default function Home() {
           | "activity"
           | undefined,
       ),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // 서비스 공지 조회
+  const { data: serviceNotices, isLoading: serviceNoticesLoading } = useQuery({
+    queryKey: ["serviceNotices"],
+    queryFn: async () => {
+      const response = await fetch("/api/service-notices");
+      return (await response.json()) as ServiceNotice[];
+    },
     staleTime: 5 * 60 * 1000,
   });
 
@@ -344,16 +364,16 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 오늘의 정보 위젯 */}
+      {/* 서비스 공지 위젯 */}
       <Card className="bg-gradient-to-br from-primary-500 to-primary-600 text-white">
         <div className="space-y-4">
           <div>
-            <p className="text-xs opacity-90 mb-1">오늘의 일정</p>
-            <h3 className="text-lg font-semibold">학사일정을 확인하세요</h3>
+            <p className="text-xs opacity-90 mb-1">서비스 공지</p>
+            <h3 className="text-lg font-semibold">서비스 공지를 확인하세요</h3>
           </div>
-          <Link href="/academic/schedule" className="inline-block">
+          <Link href="/service/notices" className="inline-block">
             <button className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-all text-sm font-medium">
-              전체 일정 보기 →
+              전체 공지 보기 →
             </button>
           </Link>
         </div>
@@ -369,7 +389,9 @@ export default function Home() {
                 ? "/tuition/scholarship"
                 : selectedCategory === "campus"
                   ? "/campus/announcements"
-                  : "/academic/announcements"
+                  : selectedCategory === "service"
+                    ? "/service/notices"
+                    : "/academic/announcements"
             }
             className="text-xs text-primary-600 hover:text-primary-700"
           >
@@ -396,18 +418,133 @@ export default function Home() {
 
         {/* 공지사항 목록 */}
         <div className="space-y-2">
-          {announcementsLoading && <Skeleton count={3} />}
-          {!announcementsLoading &&
-            announcements &&
-            announcements.slice(0, 3).map((announcement) => (
-              <div key={announcement.id} className="mb-2">
-                <AnnouncementCard
-                  announcement={announcement}
-                  href={announcement.url}
-                  external={true}
-                />
-              </div>
-            ))}
+          {selectedCategory === "service" ? (
+            // 서비스 공지만 표시
+            <>
+              {serviceNoticesLoading && <Skeleton count={3} />}
+              {!serviceNoticesLoading && serviceNotices && serviceNotices.length > 0 ? (
+                serviceNotices.slice(0, 3).map((notice) => (
+                  <Link key={notice.slug} href={`/service/notices/${notice.slug}`}>
+                    <Card className="cursor-pointer hover:shadow-card-hover">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-neutral-900 mb-2">
+                            {notice.title}
+                          </h3>
+                          <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
+                            {notice.excerpt || ""}
+                          </p>
+                          <div className="text-xs text-neutral-500">
+                            {notice.author} · {notice.date}
+                          </div>
+                        </div>
+                        <span className="text-lg flex-shrink-0">📢</span>
+                      </div>
+                    </Card>
+                  </Link>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-neutral-600">서비스 공지가 없습니다.</p>
+                </div>
+              )}
+            </>
+          ) : (
+            // 일반 공지 + 서비스 공지 혼합 표시
+            <>
+              {(announcementsLoading || serviceNoticesLoading) && <Skeleton count={3} />}
+              {!announcementsLoading && !serviceNoticesLoading && (
+                <>
+                  {(() => {
+                    // 공지와 서비스 공지를 혼합해서 정렬 (최대 3개)
+                    const combined: Array<{
+                      type: "announcement" | "service";
+                      data: Announcement | ServiceNotice;
+                    }> = [];
+
+                    if (announcements) {
+                      announcements.forEach((a) => {
+                        combined.push({ type: "announcement", data: a });
+                      });
+                    }
+
+                    if (serviceNotices) {
+                      serviceNotices.forEach((s) => {
+                        combined.push({ type: "service", data: s });
+                      });
+                    }
+
+                    // 날짜로 정렬 (최신순)
+                    combined.sort((a, b) => {
+                      const dateA =
+                        a.type === "announcement"
+                          ? new Date(
+                              (a.data as Announcement).date,
+                            ).getTime()
+                          : new Date((a.data as ServiceNotice).date).getTime();
+                      const dateB =
+                        b.type === "announcement"
+                          ? new Date(
+                              (b.data as Announcement).date,
+                            ).getTime()
+                          : new Date((b.data as ServiceNotice).date).getTime();
+                      return dateB - dateA;
+                    });
+
+                    if (combined.length === 0) {
+                      return (
+                        <div className="text-center py-4">
+                          <p className="text-sm text-neutral-600">
+                            공지사항이 없습니다.
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return combined.slice(0, 3).map((item) => {
+                      if (item.type === "service") {
+                        const notice = item.data as ServiceNotice;
+                        return (
+                          <Link
+                            key={notice.slug}
+                            href={`/service/notices/${notice.slug}`}
+                          >
+                            <Card className="cursor-pointer hover:shadow-card-hover">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <h3 className="font-semibold text-neutral-900 mb-2">
+                                    {notice.title}
+                                  </h3>
+                                  <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
+                                    {notice.excerpt || ""}
+                                  </p>
+                                  <div className="text-xs text-neutral-500">
+                                    {notice.author} · {notice.date}
+                                  </div>
+                                </div>
+                                <span className="text-lg flex-shrink-0">📢</span>
+                              </div>
+                            </Card>
+                          </Link>
+                        );
+                      } else {
+                        const announcement = item.data as Announcement;
+                        return (
+                          <div key={announcement.id} className="mb-2">
+                            <AnnouncementCard
+                              announcement={announcement}
+                              href={announcement.url}
+                              external={true}
+                            />
+                          </div>
+                        );
+                      }
+                    });
+                  })()}
+                </>
+              )}
+            </>
+          )}
         </div>
       </div>
 

@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 interface HeaderProps {
-  title?: string;
   showBack?: boolean;
   onBackClick?: () => void;
 }
@@ -18,11 +18,7 @@ const navItems = [
   { label: "더보기", href: "/more" },
 ];
 
-export function Header({
-  title = "SYU CAMPUS",
-  showBack = false,
-  onBackClick,
-}: HeaderProps) {
+export function Header({ showBack = false, onBackClick }: HeaderProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -58,7 +54,16 @@ export function Header({
             </button>
           )}
           <Link href="/" className="flex items-center gap-2">
-            <div className="font-bold text-lg text-primary-600">{title}</div>
+            <Image
+              src="/images/syu-kr-logo.png"
+              alt="SYU CAMPUS Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+            <span className="font-bold text-lg text-primary-600">
+              SYU CAMPUS
+            </span>
           </Link>
         </div>
 

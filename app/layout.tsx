@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
   description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
   keywords: "삼육대, 캠퍼스, 공지사항, 학식, 학사일정",
-  authors: [{ name: "Sangmyung University" }],
+  authors: [{ name: "SYU KR" }],
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -49,6 +49,7 @@ export default function RootLayout({
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
+        <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
         <script
           async

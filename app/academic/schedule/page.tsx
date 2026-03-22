@@ -6,7 +6,7 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 export default function SchedulePage() {
   const { data: schedules, isLoading } = useQuery({
@@ -17,6 +17,15 @@ export default function SchedulePage() {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // 2026년 3월부터 시작
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // 페이지 로드 시 오늘 날짜 자동 선택
+  useEffect(() => {
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
+    setSelectedDate(todayStr);
+    setCurrentMonth(new Date(today.getFullYear(), today.getMonth()));
+  }, []);
 
   // 월별 그룹화
   const groupedByMonth = useMemo(() => {
@@ -246,39 +255,141 @@ export default function SchedulePage() {
 
           {/* 선택된 날짜의 일정 */}
           {selectedDate && (
-            <Card className="p-6 bg-blue-50 border border-blue-200">
-              <h3 className="font-semibold text-neutral-900 mb-3">
-                {selectedDate}의 일정
-              </h3>
-              {selectedDateSchedules.length === 0 ? (
-                <p className="text-sm text-neutral-600">일정이 없습니다.</p>
-              ) : (
-                <div className="space-y-2">
-                  {selectedDateSchedules.map((schedule) => (
-                    <div
-                      key={schedule.id}
-                      className="text-sm text-neutral-700 flex items-start gap-2"
-                    >
-                      <span className="text-lg mt-1">
-                        {schedule.category === "exam" ? "📝" : "📅"}
-                      </span>
-                      <div>
-                        <p className="font-medium">{schedule.title}</p>
-                        <p className="text-xs text-neutral-600">
-                          {formatDateRange(
-                            schedule.startDate,
-                            schedule.endDate,
-                          )}
-                        </p>
+            <>
+              <Card className="p-6 bg-blue-50 border border-blue-200">
+                <h3 className="font-semibold text-neutral-900 mb-3">
+                  {selectedDate}의 일정
+                </h3>
+                {selectedDateSchedules.length === 0 ? (
+                  <p className="text-sm text-neutral-600">일정이 없습니다.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedDateSchedules.map((schedule) => (
+                      <div
+                        key={schedule.id}
+                        className="text-sm text-neutral-700 flex items-start gap-2"
+                      >
+                        <span className="text-lg mt-1">
+                          {schedule.category === "exam" ? "📝" : "📅"}
+                        </span>
+                        <div>
+                          <p className="font-medium">{schedule.title}</p>
+                          <p className="text-xs text-neutral-600">
+                            {formatDateRange(
+                              schedule.startDate,
+                              schedule.endDate,
+                            )}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
+                    ))}
+                  </div>
+                )}
+              </Card>
+              <div className="border-b border-neutral-300"></div>
+            </>
           )}
 
-          {/* 월별 전체 일정 */}
+          {/* 일정 검색 */}
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <input
+                type="text"
+                placeholder="일정 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="px-3 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
+                  title="검색 초기화"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* 검색 결과 - 월별로 분류 */}
+            {searchQuery.trim().length > 0 && (
+              <div className="space-y-6 mt-4">
+                {(() => {
+                  const filteredSchedules = schedules
+                    ? schedules.filter((schedule) =>
+                        schedule.title
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()),
+                      )
+                    : [];
+
+                  if (filteredSchedules.length === 0) {
+                    return (
+                      <div className="text-center py-6">
+                        <p className="text-sm text-neutral-600">
+                          검색 결과가 없습니다.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  // 월별로 그룹화
+                  const searchGroupedByMonth: Record<string, typeof schedules> =
+                    {};
+                  filteredSchedules.forEach((schedule) => {
+                    const monthKey = schedule.startDate.substring(0, 7); // YYYY.MM
+                    if (!searchGroupedByMonth[monthKey]) {
+                      searchGroupedByMonth[monthKey] = [];
+                    }
+                    searchGroupedByMonth[monthKey].push(schedule);
+                  });
+
+                  return Object.entries(searchGroupedByMonth)
+                    .sort()
+                    .map(([month, items]) => (
+                      <div key={month}>
+                        <div className="flex items-center gap-3 mb-3 pb-2 border-b border-neutral-200">
+                          <h3 className="text-sm font-semibold text-neutral-900">
+                            {month}
+                          </h3>
+                          <span className="text-xs text-neutral-600">
+                            ({items?.length || 0}개)
+                          </span>
+                        </div>
+                        <div className="space-y-2">
+                          {items?.map((schedule) => (
+                            <Card key={schedule.id} className="p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    {schedule.category === "exam" && (
+                                      <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+                                    )}
+                                    <h4 className="font-medium text-sm text-neutral-900">
+                                      {schedule.title}
+                                    </h4>
+                                  </div>
+                                  <p className="text-xs text-neutral-600">
+                                    {formatDateRange(
+                                      schedule.startDate,
+                                      schedule.endDate,
+                                    )}
+                                  </p>
+                                </div>
+                                <div className="text-lg">
+                                  {schedule.category === "exam" ? "📝" : "📅"}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    ));
+                })()}
+              </div>
+            )}
+          </Card>
+
           <div className="space-y-6">
             {Object.entries(groupedByMonth)
               .sort()
