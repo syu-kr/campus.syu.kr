@@ -28,7 +28,7 @@ export function MapView({
     (async () => {
       try {
         // Wait for the SDK promise from layout script
-        const sdkLoaded = await (window as any).kakaoMapsLoadedPromise;
+        const sdkLoaded = await (window as any).kakaoMapsReady;
 
         if (sdkLoaded) {
           setSdkReady(true);
@@ -40,7 +40,7 @@ export function MapView({
 
           const poll = () => {
             attempts++;
-            const ready = !!window.kakao?.maps?.LatLng;
+            const ready = !!(window as any).kakao?.maps?.LatLng;
 
             if (ready) {
               setSdkReady(true);
@@ -51,12 +51,12 @@ export function MapView({
 
           poll();
         }
-      } catch (error) {
+      } catch {
         // Fallback to direct polling
         let attempts = 0;
         const fallbackPoll = () => {
           attempts++;
-          if (window.kakao?.maps?.LatLng) {
+          if ((window as any).kakao?.maps?.LatLng) {
             setSdkReady(true);
           } else if (attempts < 300) {
             timeout = setTimeout(fallbackPoll, 100);
@@ -79,16 +79,19 @@ export function MapView({
     try {
       const container = mapContainer.current;
       const options = {
-        center: new (window.kakao!.maps.LatLng as any)(
+        center: new ((window as any).kakao.maps.LatLng as any)(
           37.643016227336034,
           127.1055106035126,
         ),
         level: 4,
       };
 
-      const newMap = new (window.kakao!.maps.Map as any)(container, options);
+      const newMap = new ((window as any).kakao.maps.Map as any)(
+        container,
+        options,
+      );
       setMap(newMap);
-    } catch (error) {
+    } catch {
       // Handle map initialization error
     }
   }, [sdkReady]);
@@ -98,7 +101,7 @@ export function MapView({
 
     const building = buildings.find((b) => b.id === selectedBuilding);
     if (building) {
-      const moveLatLng = new (window.kakao!.maps.LatLng as any)(
+      const moveLatLng = new ((window as any).kakao.maps.LatLng as any)(
         building.lat,
         building.lng,
       );

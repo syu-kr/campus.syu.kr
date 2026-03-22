@@ -58,31 +58,27 @@ export default function RootLayout({
           src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.11/pwacompat.js"
           async
         />
-        {/* Kakao Maps SDK - 스트릭트 로딩 순서 */}
+        {/* Kakao Maps SDK - 동기 로딩 필수 (레거시 라이브러리) */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
           src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services,drawing`}
+          suppressHydrationWarning
         />
+        {/* Promise 초기화 - defer로 SDK 이후 실행 */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // 즉시 SDK 준비 확인
-              console.log('[layout] SDK check:', { 
-                kakao: typeof window.kakao,
-                maps: typeof window.kakao?.maps,
-                LatLng: typeof window.kakao?.maps?.LatLng
-              });
-              
               window.kakaoMapsReady = new Promise((resolve) => {
                 let attempts = 0;
                 const check = () => {
                   attempts++;
                   if (window.kakao?.maps?.LatLng) {
-                    console.log('✓ [layout] SDK ready after', attempts, 'checks');
+                    console.log('✓ [layout] SDK ready after', attempts, 'attempts');
                     resolve(true);
-                  } else if (attempts < 50) {
-                    setTimeout(check, 100);
+                  } else if (attempts < 20) {
+                    setTimeout(check, 50);
                   } else {
-                    console.log('✗ [layout] SDK failed after', attempts, 'checks');
+                    console.log('✗ [layout] SDK failed after', attempts, 'attempts');
                     resolve(false);
                   }
                 };
@@ -90,6 +86,7 @@ export default function RootLayout({
               });
             `,
           }}
+          defer
         />
       </head>
       <body>

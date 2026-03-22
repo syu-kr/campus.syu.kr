@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Building, categoryColors } from "../lib/mapData";
+import { Building } from "../lib/mapData";
 import { useEffect, useRef } from "react";
 
 interface BuildingMarkerProps {
@@ -23,16 +23,19 @@ export function BuildingMarker({
   const infoWindowRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!map || !window.kakao?.maps) {
+    if (!map || !(window as any).kakao?.maps) {
       return;
     }
 
     try {
       // Step 1: LatLng 생성
-      const position = new window.kakao.maps.LatLng(building.lat, building.lng);
+      const position = new (window as any).kakao.maps.LatLng(
+        building.lat,
+        building.lng,
+      );
 
       // Step 2: 마커 생성
-      const marker = new window.kakao.maps.Marker({
+      const marker = new (window as any).kakao.maps.Marker({
         position: position,
         map: map as any,
         title: building.name,
@@ -48,7 +51,7 @@ export function BuildingMarker({
         </div>
       `;
 
-      const infoWindow = new window.kakao.maps.InfoWindow({
+      const infoWindow = new (window as any).kakao.maps.InfoWindow({
         content: content,
         removable: true,
         zIndex: 100,
@@ -57,7 +60,7 @@ export function BuildingMarker({
       infoWindowRef.current = infoWindow;
 
       // 마커 클릭 이벤트
-      window.kakao.maps.event.addListener(marker, "click", () => {
+      (window as any).kakao.maps.event.addListener(marker, "click", () => {
         // 이전에 열린 팝업을 닫고 새로운 팝업 열기
         infoWindow.open(map as any, marker);
         if (onInfoWindowOpen) {
@@ -65,7 +68,7 @@ export function BuildingMarker({
         }
         if (onClick) onClick(building.id);
       });
-    } catch (error) {
+    } catch {
       // Handle marker creation error
     }
 

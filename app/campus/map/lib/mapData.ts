@@ -17,14 +17,15 @@ export interface Facility {
 
 export interface Floor {
   floor: number;
+  description?: string;
   facilities: Facility[];
 }
 
 export interface Building {
   id: string;
   name: string;
-  lat: number;
-  lng: number;
+  lat: string | number;
+  lng: string | number;
   category: string;
   floors: Floor[];
   image?: string;
