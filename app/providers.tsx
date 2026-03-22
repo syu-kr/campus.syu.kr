@@ -13,7 +13,8 @@ function getQueryClient() {
     return new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 60 * 1000, // 1분
+          staleTime: 10 * 60 * 1000, // 10분
+          gcTime: 60 * 60 * 1000, // 1시간 (이전 cacheTime)
         },
       },
     });
@@ -24,7 +25,8 @@ function getQueryClient() {
     clientSingleton = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 60 * 1000,
+          staleTime: 10 * 60 * 1000, // 10분
+          gcTime: 60 * 60 * 1000, // 1시간
         },
       },
     });
@@ -40,19 +42,7 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
 
-  // Service Worker 등록
-  useEffect(() => {
-    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then(() => {
-          console.log("✓ Service Worker 등록 완료");
-        })
-        .catch((error) => {
-          console.error("✗ Service Worker 등록 실패:", error);
-        });
-    }
-  }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>

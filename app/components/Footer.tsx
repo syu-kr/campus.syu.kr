@@ -39,14 +39,6 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="/tuition"
-                  className="text-neutral-600 hover:text-neutral-900 transition-colors"
-                >
-                  등록금
-                </a>
-              </li>
-              <li>
-                <a
                   href="/more"
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >

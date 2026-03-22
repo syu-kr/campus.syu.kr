@@ -38,8 +38,8 @@ const frequentMenus = [
   { id: "2", icon: "📖", label: "학사일정", path: "/academic/schedule" },
   { id: "3", icon: "🍽️", label: "학식", path: "/campus/cafeteria" },
   { id: "4", icon: "🚌", label: "셔틀버스", path: "/campus/shuttle" },
-  { id: "5", icon: "🎓", label: "장학금", path: "/tuition/scholarship" },
-  { id: "6", icon: "📞", label: "연락처", path: "/admin/directory" },
+  { id: "5", icon: "🎓", label: "장학금", path: "/more/scholarship" },
+  { id: "6", icon: "📞", label: "연락처", path: "/more/phone" },
 ];
 
 // 공지 카테고리 필터
@@ -166,13 +166,13 @@ export default function Home() {
       scholarship: {
         label: "🎓 장학금",
         items: [],
-        linkPath: "/tuition/scholarship",
+        linkPath: "/more/scholarship",
         icon: "🎓",
       },
       phoneNumbers: {
         label: "📞 연락처",
         items: [],
-        linkPath: "/admin/directory",
+        linkPath: "/more/phone",
         icon: "📞",
       },
     };
@@ -386,7 +386,7 @@ export default function Home() {
           <Link
             href={
               selectedCategory === "scholarship"
-                ? "/tuition/scholarship"
+                ? "/more/scholarship"
                 : selectedCategory === "campus"
                   ? "/campus/announcements"
                   : selectedCategory === "service"
@@ -422,9 +422,14 @@ export default function Home() {
             // 서비스 공지만 표시
             <>
               {serviceNoticesLoading && <Skeleton count={3} />}
-              {!serviceNoticesLoading && serviceNotices && serviceNotices.length > 0 ? (
+              {!serviceNoticesLoading &&
+              serviceNotices &&
+              serviceNotices.length > 0 ? (
                 serviceNotices.slice(0, 3).map((notice) => (
-                  <Link key={notice.slug} href={`/service/notices/${notice.slug}`}>
+                  <Link
+                    key={notice.slug}
+                    href={`/service/notices/${notice.slug}`}
+                  >
                     <Card className="cursor-pointer hover:shadow-card-hover">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
@@ -445,14 +450,18 @@ export default function Home() {
                 ))
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-sm text-neutral-600">서비스 공지가 없습니다.</p>
+                  <p className="text-sm text-neutral-600">
+                    서비스 공지가 없습니다.
+                  </p>
                 </div>
               )}
             </>
           ) : (
             // 일반 공지 + 서비스 공지 혼합 표시
             <>
-              {(announcementsLoading || serviceNoticesLoading) && <Skeleton count={3} />}
+              {(announcementsLoading || serviceNoticesLoading) && (
+                <Skeleton count={3} />
+              )}
               {!announcementsLoading && !serviceNoticesLoading && (
                 <>
                   {(() => {
@@ -468,7 +477,8 @@ export default function Home() {
                       });
                     }
 
-                    if (serviceNotices) {
+                    // 전체(undefined) 카테고리일 때만 서비스 공지 포함
+                    if (selectedCategory === undefined && serviceNotices) {
                       serviceNotices.forEach((s) => {
                         combined.push({ type: "service", data: s });
                       });
@@ -478,15 +488,11 @@ export default function Home() {
                     combined.sort((a, b) => {
                       const dateA =
                         a.type === "announcement"
-                          ? new Date(
-                              (a.data as Announcement).date,
-                            ).getTime()
+                          ? new Date((a.data as Announcement).date).getTime()
                           : new Date((a.data as ServiceNotice).date).getTime();
                       const dateB =
                         b.type === "announcement"
-                          ? new Date(
-                              (b.data as Announcement).date,
-                            ).getTime()
+                          ? new Date((b.data as Announcement).date).getTime()
                           : new Date((b.data as ServiceNotice).date).getTime();
                       return dateB - dateA;
                     });
@@ -522,7 +528,9 @@ export default function Home() {
                                     {notice.author} · {notice.date}
                                   </div>
                                 </div>
-                                <span className="text-lg flex-shrink-0">📢</span>
+                                <span className="text-lg flex-shrink-0">
+                                  📢
+                                </span>
                               </div>
                             </Card>
                           </Link>

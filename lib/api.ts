@@ -16,7 +16,7 @@ export async function fetchAnnouncements(
 
     if (!category || category === "academic") {
       const academic = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        next: { revalidate: 86400 }, // Cache for 24 hours
       }).then((r) => r.json());
       data = [...data, ...(academic as Announcement[])];
     }
@@ -24,7 +24,7 @@ export async function fetchAnnouncements(
     if (!category || category === "scholarship") {
       const scholarship = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 3600 } }, // Cache for 1 hour
+        { next: { revalidate: 86400 } }, // Cache for 24 hours
       ).then((r) => r.json());
       data = [
         ...data,
@@ -39,7 +39,7 @@ export async function fetchAnnouncements(
       try {
         const campus = await fetch(
           "/data/announcements-campus-life.json",
-          { next: { revalidate: 3600 } }, // Cache for 1 hour
+          { next: { revalidate: 86400 } }, // Cache for 24 hours
         ).then((r) => r.json());
         data = [
           ...data,
@@ -95,7 +95,7 @@ export async function fetchCafeteriaMenu(
 ): Promise<CafeteriaMenu[]> {
   try {
     const response = await fetch("/data/cafeteria-menu.json", {
-      next: { revalidate: 3600 }, // Cache for 1 hour (매일 업데이트됨)
+      next: { revalidate: 86400 }, // Cache for 24 hours (매일 업데이트됨)
     });
     const data = (await response.json()) as
       | Array<{ menus?: unknown[] }>
@@ -181,7 +181,7 @@ export async function fetchAcademicSchedules(
 ): Promise<AcademicSchedule[]> {
   try {
     const schedules = await fetch("/data/schedules-major.json", {
-      next: { revalidate: 86400 }, // Cache for 24 hours
+      next: { revalidate: 604800 }, // Cache for 7 days
     }).then((r) => r.json());
 
     const parsedSchedules = (schedules || []) as AcademicSchedule[];
@@ -201,7 +201,7 @@ export async function fetchAcademicSchedules(
 export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
   try {
     const response = await fetch("/data/shuttle-bus-schedule.json", {
-      next: { revalidate: 86400 }, // Cache for 24 hours
+      next: { revalidate: 604800 }, // Cache for 7 days
     });
     const schedules = await response.json();
     return (schedules || []) as ShuttleBusSchedule[];
@@ -267,7 +267,7 @@ export async function searchAll(
     // 1. 학사일정 검색
     try {
       const schedules = await fetch("/data/schedules-major.json", {
-        next: { revalidate: 3600 },
+        next: { revalidate: 604800 },
       }).then((r) => r.json());
       const matchedSchedules = (schedules as AcademicSchedule[]).filter(
         (s) =>
@@ -284,7 +284,7 @@ export async function searchAll(
     // 학사공지
     try {
       const academicNotices = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 3600 },
+        next: { revalidate: 86400 },
       }).then((r) => r.json());
       const matchedAcademic = (academicNotices as Announcement[]).filter(
         (a) =>
@@ -300,7 +300,7 @@ export async function searchAll(
     try {
       const scholarshipNotices = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 3600 } },
+        { next: { revalidate: 86400 } },
       ).then((r) => r.json());
       const matchedScholarship = (scholarshipNotices as Announcement[]).filter(
         (a) =>
@@ -319,7 +319,7 @@ export async function searchAll(
     // 행사공지
     try {
       const eventNotices = await fetch("/data/announcements-events.json", {
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        next: { revalidate: 86400 }, // Cache for 24 hours
       }).then((r) => r.json());
       const matchedEvents = (eventNotices as Announcement[]).filter(
         (a) =>
@@ -335,7 +335,7 @@ export async function searchAll(
     try {
       const campusNotices = await fetch(
         "/data/announcements-campus-life.json",
-        { next: { revalidate: 3600 } }, // Cache for 1 hour
+        { next: { revalidate: 86400 } }, // Cache for 24 hours
       ).then((r) => r.json());
       const matchedCampus = (campusNotices as Announcement[]).filter(
         (a) =>
@@ -354,7 +354,7 @@ export async function searchAll(
     // 3. 전화번호 검색
     try {
       const phoneNumbers = await fetch("/data/phone-numbers.json", {
-        next: { revalidate: 86400 },
+        next: { revalidate: 604800 },
       }).then((r) => r.json());
       const matchedPhones = (phoneNumbers as PhoneNumber[]).filter(
         (p) =>
@@ -392,7 +392,7 @@ export async function searchAll(
 export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
   try {
     const response = await fetch("/data/phone-numbers.json", {
-      next: { revalidate: 86400 }, // Cache for 24 hours
+      next: { revalidate: 604800 }, // Cache for 7 days
     });
     const phoneData = await response.json();
     return (phoneData || []) as PhoneNumber[];

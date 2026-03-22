@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 
 interface Course {
   id: string;
@@ -130,6 +131,7 @@ const AVAILABLE_COURSES: Course[] = [
 ];
 
 export default function TimetableWizardPage() {
+  const router = useRouter();
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filterCategories, setFilterCategories] = useState<Set<string>>(
@@ -260,187 +262,290 @@ export default function TimetableWizardPage() {
 
   return (
     <Container className="py-6 sm:py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          시간표 짜기
-        </h1>
-        <p className="text-neutral-600">
-          원하는 과목을 선택하여 시간표를 작성하세요
-        </p>
-      </div>
+      {/* 모달 - 항상 표시됨 */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <Card className="max-w-md w-full mx-4 p-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+              ⏰ 시간표 마법사
+            </h2>
+            <p className="text-neutral-600 mb-6">
+              현재 시간표 자동 생성 기능은 준비 중입니다.
+            </p>
+            <p className="text-sm text-neutral-500 mb-6">
+              SYU KR의 기존 서비스를 통해 편리하게 시간표를 작성해보세요!
+            </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 왼쪽: 시간표 */}
-        <div className="lg:col-span-2">
-          <Card className="p-0 overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-neutral-300">
-                  <th className="p-2 text-left text-sm font-semibold bg-neutral-100 w-16">
-                    시간
-                  </th>
-                  {days.map((day) => (
-                    <th
-                      key={day}
-                      className="p-2 text-center text-sm font-semibold bg-neutral-100 flex-1"
-                    >
-                      {day}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {hours.map((hour) => (
-                  <tr key={hour} className="border-b border-neutral-200">
-                    <td className="p-2 text-center text-xs font-semibold text-neutral-600">
-                      {hour}:00
-                    </td>
-                    {days.map((day) => {
-                      const coursesAtSlot = selectedCourses.filter(
-                        (course) =>
-                          course.day.includes(day) &&
-                          course.startTime <= hour &&
-                          hour < course.endTime,
-                      );
-
-                      return (
-                        <td
-                          key={`${day}-${hour}`}
-                          className="p-1 text-center text-xs border-l border-neutral-200 relative h-12"
-                        >
-                          {coursesAtSlot.map((course) => (
-                            <div
-                              key={course.id}
-                              className={`p-1 rounded text-xs font-semibold h-full flex items-center justify-center border ${course.color}`}
-                            >
-                              {course.name}
-                            </div>
-                          ))}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-
-          {/* 범례 */}
-          <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-yellow-300 rounded"></div>
-              <span>충돌 없음</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-300 rounded"></div>
-              <span>시간 충돌</span>
+            <div className="space-y-3">
+              <a
+                href="https://lecture.syu.kr/timetable"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
+              >
+                시간표 마법사 바로가기 →
+              </a>
+              <button
+                onClick={() => router.back()}
+                className="w-full py-3 bg-neutral-200 text-neutral-900 font-semibold rounded-lg hover:bg-neutral-300 transition-colors"
+              >
+                ← 되돌아가기
+              </button>
             </div>
           </div>
+        </Card>
+      </div>
+
+      <div className="blur-sm opacity-50 pointer-events-none">
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
+            시간표 짜기
+          </h1>
+          <p className="text-neutral-600 mb-4">
+            원하는 과목을 선택하여 시간표를 작성하세요
+          </p>
         </div>
 
-        {/* 오른쪽: 과목 목록 및 선택 현황 */}
-        <div className="space-y-4">
-          {/* 선택 현황 */}
-          <Card className="bg-blue-50 border border-blue-200">
-            <h3 className="font-semibold text-neutral-900 mb-3">
-              📊 선택 현황
-            </h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span>총 학점:</span>
-                <span
-                  className={`font-bold ${
-                    totalCredits > 18 ? "text-red-600" : "text-blue-600"
-                  }`}
-                >
-                  {totalCredits}학점
-                </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 왼쪽: 시간표 */}
+          <div className="lg:col-span-2">
+            <Card className="p-0 overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-neutral-300">
+                    <th className="p-2 text-left text-sm font-semibold bg-neutral-100 w-16">
+                      시간
+                    </th>
+                    {days.map((day) => (
+                      <th
+                        key={day}
+                        className="p-2 text-center text-sm font-semibold bg-neutral-100 flex-1"
+                      >
+                        {day}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {hours.map((hour) => (
+                    <tr key={hour} className="border-b border-neutral-200">
+                      <td className="p-2 text-center text-xs font-semibold text-neutral-600">
+                        {hour}:00
+                      </td>
+                      {days.map((day) => {
+                        const coursesAtSlot = selectedCourses.filter(
+                          (course) =>
+                            course.day.includes(day) &&
+                            course.startTime <= hour &&
+                            hour < course.endTime,
+                        );
+
+                        return (
+                          <td
+                            key={`${day}-${hour}`}
+                            className="p-1 text-center text-xs border-l border-neutral-200 relative h-12"
+                          >
+                            {coursesAtSlot.map((course) => (
+                              <div
+                                key={course.id}
+                                className={`p-1 rounded text-xs font-semibold h-full flex items-center justify-center border ${course.color}`}
+                              >
+                                {course.name}
+                              </div>
+                            ))}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+
+            {/* 범례 */}
+            <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-300 rounded"></div>
+                <span>충돌 없음</span>
               </div>
-
-              {/* 카테고리별 학점 */}
-              <div className="pt-2 border-t border-blue-200 space-y-1">
-                <p className="text-xs font-semibold text-neutral-700">
-                  카테고리별:
-                </p>
-                {(
-                  [
-                    "major-required",
-                    "major-elective",
-                    "liberal-required",
-                    "liberal-elective",
-                  ] as const
-                ).map((category) => {
-                  const count = categoryStats[category];
-                  const credits = creditsByCategory[category];
-                  return (
-                    <div
-                      key={category}
-                      className="text-xs text-neutral-600 flex justify-between"
-                    >
-                      <span>{getCategoryLabel(category)}:</span>
-                      <span className="font-semibold">
-                        {credits}학점 ({count}개)
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {totalCredits > 3 && totalCredits <= 18 && (
-                <div className="pt-2 border-t border-blue-200">
-                  <p className="text-xs text-blue-800">✅ 최소 학점 충족</p>
-                </div>
-              )}
-            </div>
-
-            {/* 필터 버튼 */}
-            <div className="mt-4 pt-4 border-t border-blue-200">
-              <p className="text-xs font-semibold text-neutral-700 mb-2">
-                필터:
-              </p>
-              <div className="space-y-2">
-                {(
-                  [
-                    "major-required",
-                    "major-elective",
-                    "liberal-required",
-                    "liberal-elective",
-                  ] as const
-                ).map((category) => (
-                  <label
-                    key={category}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={filterCategories.has(category)}
-                      onChange={() => toggleFilter(category)}
-                      className="w-4 h-4 rounded border-neutral-300"
-                    />
-                    <span className="text-sm text-neutral-700">
-                      {getCategoryLabel(category)}
-                    </span>
-                  </label>
-                ))}
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-300 rounded"></div>
+                <span>시간 충돌</span>
               </div>
             </div>
-          </Card>
+          </div>
 
-          {/* 선택된 과목 목록 */}
-          {selectedCourses.length > 0 && (
-            <Card className="bg-green-50 border border-green-200">
+          {/* 오른쪽: 과목 목록 및 선택 현황 */}
+          <div className="space-y-4">
+            {/* 선택 현황 */}
+            <Card className="bg-blue-50 border border-blue-200">
               <h3 className="font-semibold text-neutral-900 mb-3">
-                선택된 과목 ({selectedCourses.length})
+                📊 선택 현황
               </h3>
-              <div className="space-y-2">
-                {selectedCourses.map((course) => {
-                  const conflicts = getTimeConflicts[course.id];
-                  return (
-                    <div
-                      key={course.id}
-                      className="flex items-start justify-between p-2 bg-white rounded border border-green-200"
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span>총 학점:</span>
+                  <span
+                    className={`font-bold ${
+                      totalCredits > 18 ? "text-red-600" : "text-blue-600"
+                    }`}
+                  >
+                    {totalCredits}학점
+                  </span>
+                </div>
+
+                {/* 카테고리별 학점 */}
+                <div className="pt-2 border-t border-blue-200 space-y-1">
+                  <p className="text-xs font-semibold text-neutral-700">
+                    카테고리별:
+                  </p>
+                  {(
+                    [
+                      "major-required",
+                      "major-elective",
+                      "liberal-required",
+                      "liberal-elective",
+                    ] as const
+                  ).map((category) => {
+                    const count = categoryStats[category];
+                    const credits = creditsByCategory[category];
+                    return (
+                      <div
+                        key={category}
+                        className="text-xs text-neutral-600 flex justify-between"
+                      >
+                        <span>{getCategoryLabel(category)}:</span>
+                        <span className="font-semibold">
+                          {credits}학점 ({count}개)
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {totalCredits > 3 && totalCredits <= 18 && (
+                  <div className="pt-2 border-t border-blue-200">
+                    <p className="text-xs text-blue-800">✅ 최소 학점 충족</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 필터 버튼 */}
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <p className="text-xs font-semibold text-neutral-700 mb-2">
+                  필터:
+                </p>
+                <div className="space-y-2">
+                  {(
+                    [
+                      "major-required",
+                      "major-elective",
+                      "liberal-required",
+                      "liberal-elective",
+                    ] as const
+                  ).map((category) => (
+                    <label
+                      key={category}
+                      className="flex items-center gap-2 cursor-pointer"
                     >
-                      <div className="flex-1">
+                      <input
+                        type="checkbox"
+                        checked={filterCategories.has(category)}
+                        onChange={() => toggleFilter(category)}
+                        className="w-4 h-4 rounded border-neutral-300"
+                      />
+                      <span className="text-sm text-neutral-700">
+                        {getCategoryLabel(category)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
+            {/* 선택된 과목 목록 */}
+            {selectedCourses.length > 0 && (
+              <Card className="bg-green-50 border border-green-200">
+                <h3 className="font-semibold text-neutral-900 mb-3">
+                  선택된 과목 ({selectedCourses.length})
+                </h3>
+                <div className="space-y-2">
+                  {selectedCourses.map((course) => {
+                    const conflicts = getTimeConflicts[course.id];
+                    return (
+                      <div
+                        key={course.id}
+                        className="flex items-start justify-between p-2 bg-white rounded border border-green-200"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-neutral-900">
+                            {course.name}
+                          </p>
+                          <p className="text-xs text-neutral-600">
+                            {course.professor} | {course.credit}학점
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {course.time}
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {getCategoryLabel(course.category)}
+                          </p>
+                          {conflicts && conflicts.length > 0 && (
+                            <p className="text-xs text-red-600 mt-1">
+                              ⚠️ {conflicts.join(", ")}과 시간 겹침
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleRemoveCourse(course.id)}
+                          className="text-red-600 hover:text-red-700 font-bold text-lg ml-2"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            )}
+
+            {/* 강의 목록 */}
+            <Card>
+              <h3 className="font-semibold text-neutral-900 mb-3">
+                📚 강의 목록
+              </h3>
+
+              {/* 검색창 */}
+              <input
+                type="text"
+                placeholder="과목명 또는 교수명으로 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-3 py-2 mb-3 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
+
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {filteredCourses
+                  .filter(
+                    (course) =>
+                      !selectedCourses.some((s) => s.id === course.id),
+                  )
+                  .map((course) => {
+                    const conflicting = getConflictingCourses(course);
+                    const creditExceeds = totalCredits + course.credit > 18;
+                    const hasConflicts = conflicting.length > 0;
+
+                    return (
+                      <button
+                        key={course.id}
+                        onClick={() => handleAddCourse(course)}
+                        disabled={hasConflicts || creditExceeds}
+                        className={`w-full p-2 rounded border text-left transition ${
+                          hasConflicts || creditExceeds
+                            ? "opacity-50 cursor-not-allowed bg-neutral-100 border-neutral-300"
+                            : "hover:bg-neutral-50 border-neutral-300"
+                        }`}
+                      >
                         <p className="text-sm font-semibold text-neutral-900">
                           {course.name}
                         </p>
@@ -448,89 +553,25 @@ export default function TimetableWizardPage() {
                           {course.professor} | {course.credit}학점
                         </p>
                         <p className="text-xs text-neutral-500">
-                          {course.time}
-                        </p>
-                        <p className="text-xs text-neutral-500">
                           {getCategoryLabel(course.category)}
                         </p>
-                        {conflicts && conflicts.length > 0 && (
+                        {hasConflicts && (
                           <p className="text-xs text-red-600 mt-1">
-                            ⚠️ {conflicts.join(", ")}과 시간 겹침
+                            ⚠️ {conflicting.map((c) => c.name).join(", ")}과
+                            시간 충돌
                           </p>
                         )}
-                      </div>
-                      <button
-                        onClick={() => handleRemoveCourse(course.id)}
-                        className="text-red-600 hover:text-red-700 font-bold text-lg ml-2"
-                      >
-                        ×
+                        {creditExceeds && (
+                          <p className="text-xs text-orange-600">
+                            ⚠️ 학점 초과
+                          </p>
+                        )}
                       </button>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </Card>
-          )}
-
-          {/* 강의 목록 */}
-          <Card>
-            <h3 className="font-semibold text-neutral-900 mb-3">
-              📚 강의 목록
-            </h3>
-
-            {/* 검색창 */}
-            <input
-              type="text"
-              placeholder="과목명 또는 교수명으로 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 mb-3 border border-neutral-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            />
-
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {filteredCourses
-                .filter(
-                  (course) => !selectedCourses.some((s) => s.id === course.id),
-                )
-                .map((course) => {
-                  const conflicting = getConflictingCourses(course);
-                  const creditExceeds = totalCredits + course.credit > 18;
-                  const hasConflicts = conflicting.length > 0;
-
-                  return (
-                    <button
-                      key={course.id}
-                      onClick={() => handleAddCourse(course)}
-                      disabled={hasConflicts || creditExceeds}
-                      className={`w-full p-2 rounded border text-left transition ${
-                        hasConflicts || creditExceeds
-                          ? "opacity-50 cursor-not-allowed bg-neutral-100 border-neutral-300"
-                          : "hover:bg-neutral-50 border-neutral-300"
-                      }`}
-                    >
-                      <p className="text-sm font-semibold text-neutral-900">
-                        {course.name}
-                      </p>
-                      <p className="text-xs text-neutral-600">
-                        {course.professor} | {course.credit}학점
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {getCategoryLabel(course.category)}
-                      </p>
-                      {hasConflicts && (
-                        <p className="text-xs text-red-600 mt-1">
-                          ⚠️ {conflicting.map((c) => c.name).join(", ")}과 시간
-                          충돌
-                        </p>
-                      )}
-                      {creditExceeds && (
-                        <p className="text-xs text-orange-600">⚠️ 학점 초과</p>
-                      )}
-                    </button>
-                  );
-                })}
-            </div>
-          </Card>
+          </div>
         </div>
       </div>
     </Container>

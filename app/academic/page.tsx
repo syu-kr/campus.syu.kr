@@ -27,7 +27,7 @@ const academicMenus = [
   },
   {
     id: "timetable",
-    title: "시간표 짜기(미완성)",
+    title: "시간표 짜기",
     description: "학기 시간표 작성 마법사",
     icon: "⏰",
     href: "/academic/timetable",

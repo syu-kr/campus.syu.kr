@@ -14,22 +14,133 @@ export default function ShuttlePage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // 현재 날짜/시간 정보
+  const dateInfo = useMemo(() => {
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0: 일, 1: 월, ..., 6: 토
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const isFriday = dayOfWeek === 5;
+    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+
+    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+
+    return {
+      dayOfWeek,
+      isWeekend,
+      isFriday,
+      currentTime,
+      hour,
+      minute,
+      dayName: dayNames[dayOfWeek],
+    };
+  }, []);
+
+  // 초기 선택 상태 (현재 요일에 따라)
+  const defaultType = useMemo(() => {
+    if (dateInfo.isWeekend) return "mondayToThursday"; // 주말이면 월요일 시간표 표시
+    if (dateInfo.isFriday) return "friday";
+    return "mondayToThursday";
+  }, [dateInfo]);
+
   const [selectedType, setSelectedType] = useState<
     | "mondayToThursday"
     | "friday"
     | "mondayToThursdayVacation"
     | "fridayVacation"
-  >("mondayToThursday");
+  >(defaultType);
 
-  // 현재 시간보다 늦은 첫 번째 버스 인덱스 계산
-  const nextBusIndex = useMemo(() => {
-    const now = new Date();
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  // 시간 문자열을 분 단위로 변환
+  const timeToMinutes = (timeStr: string): number => {
+    const [hours, minutes] = timeStr.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
 
-    return (times: string[]) => {
-      return times.findIndex((time) => time >= currentTime);
-    };
-  }, []);
+  // 가장 가까운 버스 찾기 (모든 버스에서)
+  const closestBusTime = useMemo(() => {
+    if (!buses || buses.length === 0 || dateInfo.isWeekend) return null;
+
+    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
+    let closestTime: { time: string; minutesUntil: number } | null = null;
+    let minMinutesUntil = Infinity;
+
+    buses.forEach((bus) => {
+      const times = bus.schedules[selectedType];
+      times.forEach((time) => {
+        const timeMinutes = timeToMinutes(time);
+        const minutesUntil = timeMinutes - currentMinutes;
+
+        if (minutesUntil > 0 && minutesUntil < minMinutesUntil) {
+          minMinutesUntil = minutesUntil;
+          closestTime = {
+            time,
+            minutesUntil,
+          };
+        }
+      });
+    });
+
+    return closestTime;
+  }, [buses, dateInfo, selectedType]);
+
+  // 다음 버스 계산
+  const nextBusInfo = useMemo(() => {
+    if (!buses || buses.length === 0) return null;
+
+    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
+    let nextBus: {
+      routeName: string;
+      time: string;
+      minutesUntil: number;
+      busId: string;
+    } | null = null;
+    let minMinutesUntil = Infinity;
+
+    buses.forEach((bus) => {
+      const times = bus.schedules[selectedType];
+      times.forEach((time) => {
+        const timeMinutes = timeToMinutes(time);
+        const minutesUntil = timeMinutes - currentMinutes;
+
+        if (minutesUntil > 0 && minutesUntil < minMinutesUntil) {
+          minMinutesUntil = minutesUntil;
+          nextBus = {
+            routeName: bus.routeName,
+            time,
+            minutesUntil,
+            busId: bus.id,
+          };
+        }
+      });
+    });
+
+    return nextBus;
+  }, [buses, dateInfo, selectedType]);
+
+  // 요일 버튼 클릭 시
+  const dayButtons = [
+    {
+      type: "mondayToThursday" as const,
+      label: "학기(월-목)",
+      isActive: !dateInfo.isWeekend && !dateInfo.isFriday ? "현재" : "",
+    },
+    {
+      type: "friday" as const,
+      label: "학기(금)",
+      isActive: dateInfo.isFriday ? "현재" : "",
+    },
+    {
+      type: "mondayToThursdayVacation" as const,
+      label: "방학(월-목)",
+      isActive: "",
+    },
+    {
+      type: "fridayVacation" as const,
+      label: "방학(금)",
+      isActive: "",
+    },
+  ];
 
   return (
     <Container className="py-6 sm:py-8">
@@ -37,61 +148,184 @@ export default function ShuttlePage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           셔틀버스
         </h1>
-        <p className="text-neutral-600">캠퍼스 셔틀버스 운행 시간표</p>
+        <p className="text-neutral-600">
+          캠퍼스 셔틀버스 운행 시간표 (오늘: {dateInfo.dayName}요일)
+        </p>
       </div>
+
+      {/* 주말 안내 */}
+      {dateInfo.isWeekend && (
+        <Card className="mb-6 bg-orange-50 border border-orange-300">
+          <p className="text-sm text-orange-900">
+            🚌 <strong>안내:</strong> 오늘은 주말입니다. 셔틀버스가 운행되지
+            않습니다.
+          </p>
+        </Card>
+      )}
+
+      {/* 다음 버스 정보 */}
+      {nextBusInfo && !dateInfo.isWeekend ? (
+        <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs text-green-700 font-semibold mb-1">
+                🚌 다음 출발 버스
+              </p>
+              <h3 className="text-2xl font-bold text-green-900 mb-2">
+                {nextBusInfo.routeName}
+              </h3>
+              <div className="space-y-1">
+                <p className="text-sm text-green-800">
+                  <strong>{nextBusInfo.time}</strong> 출발
+                </p>
+                <p className="text-lg font-bold text-green-600">
+                  {nextBusInfo.minutesUntil}분 후 도착
+                </p>
+              </div>
+            </div>
+            <div className="text-5xl">⏰</div>
+          </div>
+        </Card>
+      ) : null}
 
       {/* 요일 선택 */}
       <div className="grid grid-cols-2 gap-2 mb-6">
-        <button
-          onClick={() => setSelectedType("mondayToThursday")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-            selectedType === "mondayToThursday"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          월요일-목요일
-        </button>
-        <button
-          onClick={() => setSelectedType("friday")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-            selectedType === "friday"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          금요일
-        </button>
-        <button
-          onClick={() => setSelectedType("mondayToThursdayVacation")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-            selectedType === "mondayToThursdayVacation"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          방학(월요일-목요일)
-        </button>
-        <button
-          onClick={() => setSelectedType("fridayVacation")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-            selectedType === "fridayVacation"
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-          }`}
-        >
-          방학(금요일)
-        </button>
+        {dayButtons.map((btn) => (
+          <button
+            key={btn.type}
+            onClick={() => setSelectedType(btn.type)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+              selectedType === btn.type
+                ? "bg-primary-600 text-white"
+                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+            }`}
+          >
+            {btn.label}
+            {btn.isActive && (
+              <span className="ml-1 text-xs bg-green-600 px-2 py-0.5 rounded-full">
+                {btn.isActive}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
+      {/* 운행 안내 */}
+      {selectedType === "mondayToThursday" && !dateInfo.isWeekend && (
+        <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
+          <p>📅 평일(월-금 정규학기) 시간표입니다.</p>
+        </Card>
+      )}
+      {selectedType === "friday" && dateInfo.isFriday && (
+        <Card className="mb-4 bg-blue-50 border border-blue-200 text-sm text-blue-900">
+          <p>📅 금요일 시간표입니다.</p>
+        </Card>
+      )}
+      {(selectedType === "mondayToThursdayVacation" ||
+        selectedType === "fridayVacation") && (
+        <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
+          <p>📅 방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.</p>
+        </Card>
+      )}
+
+      {/* 운행 시간표 */}
       <div className="space-y-4">
         {isLoading && <Skeleton count={3} height="150px" />}
+
+        {!isLoading && buses && buses.length === 0 && (
+          <Card>
+            <div className="py-8 text-center">
+              <p className="text-neutral-600">
+                버스 정보를 불러올 수 없습니다.
+              </p>
+            </div>
+          </Card>
+        )}
+
+        {/* 전체 운행시간표 */}
+        {!isLoading && buses && buses.length > 0 && !dateInfo.isWeekend && (
+          <Card className="border-2 border-blue-300 bg-gradient-to-r from-blue-50 to-cyan-50">
+            <div className="mb-4">
+              <h2 className="text-lg font-bold text-blue-900 mb-2">
+                📋 전체 운행시간표
+              </h2>
+              <p className="text-sm text-blue-700">
+                모든 버스의 운행 시간 (가장 가까운 버스는 빨간색)
+              </p>
+            </div>
+
+            <div>
+              {(() => {
+                const allTimes: Array<{
+                  time: string;
+                  routes: string[];
+                }> = [];
+
+                buses.forEach((bus) => {
+                  const times = bus.schedules[selectedType];
+                  times.forEach((time) => {
+                    const existing = allTimes.find((t) => t.time === time);
+                    if (existing) {
+                      existing.routes.push(bus.routeName);
+                    } else {
+                      allTimes.push({
+                        time,
+                        routes: [bus.routeName],
+                      });
+                    }
+                  });
+                });
+
+                // 시간순으로 정렬
+                allTimes.sort(
+                  (a, b) => timeToMinutes(a.time) - timeToMinutes(b.time),
+                );
+
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {allTimes.map((item, idx) => {
+                      const timeMinutes = timeToMinutes(item.time);
+                      const currentMinutes =
+                        dateInfo.hour * 60 + dateInfo.minute;
+                      const isClosest =
+                        closestBusTime &&
+                        closestBusTime.time === item.time &&
+                        selectedType === defaultType;
+                      const isPassed = timeMinutes <= currentMinutes;
+
+                      return (
+                        <div key={idx}>
+                          <div
+                            className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors cursor-help group relative ${
+                              isClosest
+                                ? "bg-red-100 border-2 border-red-500 text-red-700 font-bold"
+                                : isPassed
+                                  ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
+                                  : "bg-blue-100 border border-blue-300 text-blue-700"
+                            }`}
+                            title={item.routes.join(", ")}
+                          >
+                            {item.time}
+                          </div>
+                          <p className="text-xs text-blue-600 mt-1 truncate">
+                            {item.routes.length === 1
+                              ? item.routes[0]
+                              : `${item.routes.length}노선`}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </Card>
+        )}
 
         {!isLoading &&
           buses &&
           buses.map((bus) => {
             const times = bus.schedules[selectedType];
-            const upcomingIndex = nextBusIndex(times);
 
             return (
               <Card key={bus.id}>
@@ -106,28 +340,50 @@ export default function ShuttlePage() {
 
                 <div>
                   <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
-                    운행 시간
+                    📍 운행 시간
                   </p>
                   {times.length === 0 ? (
                     <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
                       <p className="text-sm text-neutral-600 font-medium">
-                        버스가 운행되지 않는 날입니다.
+                        이 날짜에는 운행되지 않습니다.
                       </p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {times.map((time, idx) => (
-                        <div
-                          key={idx}
-                          className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
-                            idx === upcomingIndex && upcomingIndex !== -1
-                              ? "bg-red-100 border border-red-400 text-red-700 ring-2 ring-red-300"
-                              : "bg-primary-50 border border-primary-200 text-primary-700"
-                          }`}
-                        >
-                          {time}
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      {times.map((time, idx) => {
+                        const timeMinutes = timeToMinutes(time);
+                        const currentMinutes =
+                          dateInfo.hour * 60 + dateInfo.minute;
+                        const isNext =
+                          timeMinutes > currentMinutes &&
+                          selectedType === defaultType &&
+                          !dateInfo.isWeekend;
+                        const isPassed = 
+                          timeMinutes <= currentMinutes &&
+                          selectedType === defaultType;
+                        const isClosest =
+                          closestBusTime &&
+                          closestBusTime.time === time &&
+                          selectedType === defaultType &&
+                          !dateInfo.isWeekend;
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
+                              isClosest
+                                ? "bg-red-100 border-2 border-red-500 text-red-700 font-bold"
+                                : isNext
+                                  ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                  : isPassed
+                                    ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
+                                    : "bg-primary-50 border border-primary-200 text-primary-700"
+                            }`}
+                          >
+                            {time}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -143,7 +399,11 @@ export default function ShuttlePage() {
       {/* 안내 */}
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900 mb-2">
-          ℹ️ <strong>안내:</strong> 셔틀버스 시간은 변경될 수 있습니다.
+          ℹ️ <strong>안내:</strong> 셔틀버스 운행 시간은 학기와 계절에 따라
+          변경될 수 있습니다.
+        </p>
+        <p className="text-xs text-blue-800">
+          정확한 정보는 캠퍼스 공지사항을 확인해주세요.
         </p>
       </Card>
     </Container>
