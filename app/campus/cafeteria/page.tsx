@@ -43,8 +43,7 @@ export default function CafeteriaPage() {
       {/* 만나의집 정보 */}
       <Card className="mt-8 bg-yellow-50 border border-yellow-200">
         <p className="text-sm text-yellow-900">
-          <strong>만나의 집:</strong> 현재 만나의 집의 경우는 구현되어있지
-          않습니다.
+          <strong>안내:</strong> 현재 만나의 집의 경우는 구현되어있지 않습니다.
         </p>
       </Card>
 
