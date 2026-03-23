@@ -11,6 +11,16 @@ export interface Announcement {
   url?: string;
 }
 
+// 서비스 공지
+export interface ServiceNotice {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  excerpt?: string;
+}
+
 // 학식
 export interface CafeteriaMenu {
   id: string;

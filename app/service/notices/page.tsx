@@ -1,8 +1,14 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+
+export const metadata: Metadata = {
+  title: "공지사항",
+  description: "SYU CAMPUS 서비스 공지사항",
+};
 
 export default async function ServiceNoticesPage() {
   const notices = await getAllServiceNotices();

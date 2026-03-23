@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getServiceNoticeBySlug } from "@/lib/serviceNotices";
 import { Container } from "@/app/components/Container";
@@ -9,6 +10,18 @@ interface ServiceNoticeDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ServiceNoticeDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const notice = await getServiceNoticeBySlug(slug);
+
+  return {
+    title: notice?.title || "공지사항",
+    description: notice?.content || "공지사항 상세",
+  };
 }
 
 export default async function ServiceNoticeDetailPage({

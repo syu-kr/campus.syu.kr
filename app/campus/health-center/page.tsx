@@ -50,17 +50,11 @@ export default function HealthCenterPage() {
 
       {/* 위치 및 연락처 */}
       <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">
-          위치 및 연락처
-        </h2>
+        <h2 className="text-lg font-bold text-blue-900 mb-4">위치 및 연락처</h2>
         <div className="space-y-4">
           <div>
             <p className="font-semibold text-blue-900">위치</p>
             <p className="text-blue-800">체육문화센터 1층 로비</p>
-          </div>
-          <div>
-            <p className="font-semibold text-blue-900">담당자</p>
-            <p className="text-blue-800">김연희 간호사</p>
           </div>
           <div>
             <p className="font-semibold text-blue-900">전화</p>
@@ -95,9 +89,7 @@ export default function HealthCenterPage() {
 
       {/* 제공 서비스 */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-neutral-900 mb-4">
-          제공 서비스
-        </h2>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">제공 서비스</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {services.map((service, idx) => (
             <Card

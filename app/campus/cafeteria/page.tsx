@@ -56,7 +56,7 @@ export default function CafeteriaPage() {
             <div className="space-y-1 text-sm text-blue-800">
               <p>조식: 08:00 ~ 09:30</p>
               <p>중식: 11:30 ~ 14:00 (A/B 코너 운영)</p>
-              <p>석식: 17:30 ~ 18:30</p>
+              <p>석식: 17:30 ~ 18:30 (금요일 휴무)</p>
             </div>
           </div>
         </div>

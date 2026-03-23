@@ -16,7 +16,12 @@ import {
   searchAll,
 } from "@/lib/api";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import type { Announcement, AcademicSchedule, PhoneNumber } from "@/types";
+import type {
+  Announcement,
+  AcademicSchedule,
+  PhoneNumber,
+  ServiceNotice,
+} from "@/types";
 import {
   Map,
   Calendar,
@@ -26,15 +31,6 @@ import {
   Phone,
   Megaphone,
 } from "lucide-react";
-
-export interface ServiceNotice {
-  id: string;
-  slug: string;
-  title: string;
-  date: string;
-  author: string;
-  excerpt?: string;
-}
 
 // 자주 사용하는 메뉴
 const frequentMenus = [

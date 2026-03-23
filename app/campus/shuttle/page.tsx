@@ -57,7 +57,7 @@ export default function ShuttlePage() {
     return hours * 60 + minutes;
   };
 
-  // 30분 이내의 모든 버스들 (상단에 표시)
+  // 노선별 가장 빨리 출발하는 버스 (30분 이내인 경우만)
   const nextBusesWithin30Min = useMemo((): Array<{
     routeName: string;
     time: string;
@@ -72,31 +72,70 @@ export default function ShuttlePage() {
       return [];
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
-    const busesList: Array<{
-      routeName: string;
-      time: string;
-      minutesUntil: number;
-    }> = [];
+    const busesByRoute = new Map<
+      string,
+      { time: string; minutesUntil: number }
+    >();
 
+    // 각 노선별로 첫 번째 버스(가장 빨리 출발)를 찾기
     buses.forEach((bus) => {
       const times = bus.schedules[selectedType];
-      times.forEach((time) => {
+
+      for (const time of times) {
         const timeMinutes = timeToMinutes(time);
         const minutesUntil = timeMinutes - currentMinutes;
 
-        if (minutesUntil > 0 && minutesUntil <= 30) {
-          busesList.push({
-            routeName: bus.routeName,
-            time,
-            minutesUntil,
-          });
+        // 첫 번째 다음 버스를 찾으면 저장하고 다음 노선으로
+        if (minutesUntil > 0) {
+          busesByRoute.set(bus.routeName, { time, minutesUntil });
+          break;
         }
-      });
+      }
     });
 
-    // 시간순으로 정렬
-    busesList.sort((a, b) => a.minutesUntil - b.minutesUntil);
-    return busesList;
+    // Map을 배열로 변환하고, 30분 이내인 것만 필터링
+    const result = Array.from(busesByRoute.entries())
+      .filter(([, { minutesUntil }]) => minutesUntil <= 30)
+      .map(([routeName, { time, minutesUntil }]) => ({
+        routeName,
+        time,
+        minutesUntil,
+      }))
+      // 시간순으로 정렬
+      .sort((a, b) => a.minutesUntil - b.minutesUntil);
+
+    return result;
+  }, [buses, dateInfo, selectedType, defaultType]);
+
+  // 노선별 가장 빨리 오는 버스 시간 (하이라이트용)
+  const nextBusTimeByRoute = useMemo((): Map<string, string> => {
+    if (
+      !buses ||
+      buses.length === 0 ||
+      dateInfo.isWeekend ||
+      selectedType !== defaultType
+    )
+      return new Map();
+
+    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
+    const timeByRoute = new Map<string, string>();
+
+    buses.forEach((bus) => {
+      const times = bus.schedules[selectedType];
+
+      // 각 노선별로 첫 번째 다음 버스 찾기
+      for (const time of times) {
+        const timeMinutes = timeToMinutes(time);
+        const minutesUntil = timeMinutes - currentMinutes;
+
+        if (minutesUntil > 0) {
+          timeByRoute.set(bus.routeName, time);
+          break;
+        }
+      }
+    });
+
+    return timeByRoute;
   }, [buses, dateInfo, selectedType, defaultType]);
 
   // 요일 버튼 클릭 시
@@ -252,11 +291,18 @@ export default function ShuttlePage() {
                         const currentMinutes =
                           dateInfo.hour * 60 + dateInfo.minute;
                         const minutesUntil = timeMinutes - currentMinutes;
+
+                        // 이 노선의 가장 빨리 오는 버스인지 확인
+                        const nextBusTime = nextBusTimeByRoute.get(
+                          bus.routeName,
+                        );
+                        const isNextBus = nextBusTime === time;
                         const isWithin30Min =
-                          minutesUntil > 0 &&
+                          isNextBus &&
                           minutesUntil <= 30 &&
                           selectedType === defaultType &&
                           !dateInfo.isWeekend;
+
                         const isPassed =
                           timeMinutes <= currentMinutes &&
                           selectedType === defaultType;
