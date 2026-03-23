@@ -3,6 +3,7 @@ import {
   CafeteriaMenu,
   AcademicSchedule,
   ShuttleBusSchedule,
+  BusLocation,
   Scholarship,
   PhoneNumber,
 } from "@/types";
@@ -383,6 +384,38 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
     return (phoneData || []) as PhoneNumber[];
   } catch (error) {
     console.error("Failed to fetch phone numbers:", error);
+    return [];
+  }
+}
+
+// 버스 실시간 위치 API
+export async function fetchBusLocations(): Promise<BusLocation[]> {
+  try {
+    // 내부 API 라우트를 통해 CORS 문제 해결
+    const response = await fetch("/api/bus/locations", {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.returnCode === "200" && data.data) {
+      // 운행 중인 버스만 필터링 (status: 1 = 학교→역, 2 = 역→출발)
+      return (data.data as BusLocation[])
+        .filter((bus) => bus.status !== 0)
+        .map((bus) => ({
+          ...bus,
+          routeid: Number(bus.routeid) as 1 | 2 | 3,
+          status: Number(bus.status) as 0 | 1 | 2,
+        }));
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Failed to fetch bus locations:", error);
     return [];
   }
 }

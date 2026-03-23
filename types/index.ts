@@ -66,6 +66,16 @@ export interface ShuttleBusSchedule {
   lastUpdated: string;
 }
 
+// 버스 실시간 위치
+export interface BusLocation {
+  id: string;
+  name: string;
+  lat: string;
+  lon: string;
+  status: 0 | 1 | 2; // 0: 운행 안함, 1: 학교→역, 2: 역→출발
+  routeid: 1 | 2 | 3; // 1: 화랑대역, 2: 석계역, 3: 별내역
+}
+
 // 학과 정보 (미사용 - 제거됨)
 
 // 장학금

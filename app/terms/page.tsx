@@ -113,8 +113,8 @@ export default function TermsPage() {
                 행사정보
               </li>
               <li>
-                <strong>캠퍼스정보</strong>: 캠퍼스 지도, 셔틀버스 시간표, 학식
-                정보, 도서관 열람실 현황
+                <strong>캠퍼스정보</strong>: 캠퍼스 지도, 셔틀버스 시간표,
+                실시간 버스 위치 조회, 학식 정보, 도서관 열람실 현황
               </li>
               <li>
                 <strong>재정정보</strong>: 등록금 일정, 장학금 안내, 캠퍼스공지

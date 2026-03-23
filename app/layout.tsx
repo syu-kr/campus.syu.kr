@@ -67,6 +67,8 @@ export default function RootLayout({
         />
         {/* Promise 초기화 - defer로 SDK 이후 실행 */}
         <script
+          suppressHydrationWarning
+          defer
           dangerouslySetInnerHTML={{
             __html: `
               window.kakaoMapsReady = new Promise((resolve) => {
@@ -87,7 +89,6 @@ export default function RootLayout({
               });
             `,
           }}
-          defer
         />
         {/* Google Analytics */}
         <Script
