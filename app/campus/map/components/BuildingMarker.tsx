@@ -34,12 +34,39 @@ export function BuildingMarker({
         building.lng,
       );
 
-      // Step 2: 마커 생성
+      // Step 2: 커스텀 SVG 마커 생성 (고유 ID 사용)
+      const uniqueId = `marker-${building.id}-${Date.now()}`;
+      const svgMarker = `
+        <svg width="40" height="48" viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="grad-${uniqueId}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+            </linearGradient>
+            <filter id="shadow-${uniqueId}" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3" />
+            </filter>
+          </defs>
+          <path d="M20 0C9 0 0 9 0 20c0 15 20 28 20 28s20-13 20-28c0-11-9-20-20-20z" fill="url(#grad-${uniqueId})" filter="url(#shadow-${uniqueId})"/>
+          <circle cx="20" cy="19" r="7" fill="white" opacity="0.95"/>
+          <circle cx="20" cy="19" r="3" fill="#4f46e5"/>
+        </svg>
+      `;
+
+      const markerImage = new (window as any).kakao.maps.MarkerImage(
+        `data:image/svg+xml;base64,${btoa(svgMarker)}`,
+        new (window as any).kakao.maps.Size(40, 48),
+        { offset: new (window as any).kakao.maps.Point(20, 48) },
+      );
+
+      // Step 3: 마커 생성
       const marker = new (window as any).kakao.maps.Marker({
         position: position,
-        map: map as any,
+        image: markerImage,
         title: building.name,
       } as any);
+
+      marker.setMap(map as any);
 
       markerRef.current = marker;
 

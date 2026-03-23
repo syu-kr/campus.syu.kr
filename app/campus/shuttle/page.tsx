@@ -626,16 +626,16 @@ const MapComponent = forwardRef(
           const markerPosition = new kakao.maps.LatLng(lat, lon);
 
           const svgMarker = `
-            <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 0C9 0 0 9 0 20c0 15 20 30 20 30s20-15 20-30c0-11-9-20-20-20z" fill="${color}"/>
-              <circle cx="20" cy="20" r="8" fill="white"/>
+            <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 0C7 0 0 7 0 15c0 11 15 22 15 22s15-11 15-22c0-8-7-15-15-15z" fill="${color}"/>
+              <circle cx="15" cy="15" r="6" fill="white"/>
             </svg>
           `;
 
           const markerImage = new kakao.maps.MarkerImage(
             `data:image/svg+xml;base64,${btoa(svgMarker)}`,
-            new kakao.maps.Size(40, 50),
-            { offset: new kakao.maps.Point(20, 50) },
+            new kakao.maps.Size(30, 37),
+            { offset: new kakao.maps.Point(15, 37) },
           );
 
           const marker = new kakao.maps.Marker({

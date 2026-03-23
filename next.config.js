@@ -2,6 +2,17 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Localhost 개발 서버에서 external API 프록싱
+  rewrites: async () => {
+    return {
+      beforeFiles: [
+        {
+          source: "/bus/busStatusList.php",
+          destination: "http://nexmotion.co.kr/bus/busStatusList.php",
+        },
+      ],
+    };
+  },
   // 캐싱 설정
   headers: async () => {
     return [
