@@ -2,59 +2,41 @@ export const runtime = "nodejs";
 
 export async function POST() {
   try {
-    let response;
-    let lastError: Error | null = null;
+    console.log(
+      "[1] Attempting HTTP request to http://nexmotion.co.kr/bus/busStatusList.php",
+    );
 
-    // Try HTTP first
-    try {
-      console.log(
-        "[1] Attempting HTTP request to http://nexmotion.co.kr/bus/busStatusList.php",
-      );
-      response = await fetch("http://nexmotion.co.kr/bus/busStatusList.php", {
+    const response = await fetch(
+      "http://nexmotion.co.kr/bus/busStatusList.php",
+      {
         method: "POST",
-      });
-      console.log("[2] HTTP response status:", response.status);
-      console.log(
-        "[3] HTTP response headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
-    } catch (httpError) {
-      lastError = httpError as Error;
-      console.error("[!] HTTP failed:", lastError.message);
-      console.log("[4] Attempting HTTPS fallback...");
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      },
+    );
 
-      try {
-        response = await fetch(
-          "https://nexmotion.co.kr/bus/busStatusList.php",
-          {
-            method: "POST",
-          },
-        );
-        console.log("[5] HTTPS response status:", response.status);
-        console.log(
-          "[6] HTTPS response headers:",
-          Object.fromEntries(response.headers.entries()),
-        );
-      } catch (httpsError) {
-        lastError = httpsError as Error;
-        console.error("[!] HTTPS also failed:", lastError.message);
-        throw lastError;
-      }
-    }
+    console.log("[2] HTTP response status:", response.status);
+    console.log(
+      "[3] HTTP response headers:",
+      Object.fromEntries(response.headers.entries()),
+    );
 
-    // Check if response is ok
-    if (!response!.ok) {
-      const responseText = await response!.text();
+    if (!response.ok) {
+      const responseText = await response.text();
       console.error(
         "[!] Response not OK. Status:",
-        response!.status,
+        response.status,
         "Body:",
         responseText,
       );
       return new Response(
         JSON.stringify({
           error: "API returned error",
-          status: response!.status,
+          status: response.status,
           details: responseText,
         }),
         {
@@ -64,18 +46,18 @@ export async function POST() {
       );
     }
 
-    const contentType = response!.headers.get("content-type");
-    console.log("[7] Content-Type:", contentType);
+    const contentType = response.headers.get("content-type");
+    console.log("[4] Content-Type:", contentType);
 
     let data;
     try {
-      data = await response!.json();
+      data = await response.json();
       console.log(
-        "[8] ✓ Successfully parsed JSON, got",
+        "[5] ✓ Successfully parsed JSON, got",
         Array.isArray(data.data) ? data.data.length : "response",
       );
     } catch (parseError) {
-      const responseText = await response!.text();
+      const responseText = await response.text();
       console.error("[!] Failed to parse JSON. Response text:", responseText);
       throw new Error(`Failed to parse JSON: ${parseError}`);
     }
