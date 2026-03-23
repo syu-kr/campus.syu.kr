@@ -404,11 +404,14 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
 
       return busArray
         .filter((bus: Record<string, unknown>) => bus && bus.status !== 0)
-        .map((bus: Record<string, unknown>) => ({
-          ...bus,
-          routeid: Number(bus.routeid) as 1 | 2 | 3,
-          status: Number(bus.status) as 0 | 1 | 2,
-        } as BusLocation));
+        .map(
+          (bus: Record<string, unknown>) =>
+            ({
+              ...bus,
+              routeid: Number(bus.routeid) as 1 | 2 | 3,
+              status: Number(bus.status) as 0 | 1 | 2,
+            }) as BusLocation,
+        );
     }
 
     return [];
