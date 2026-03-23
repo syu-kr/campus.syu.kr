@@ -395,6 +395,16 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
       method: "POST",
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error(
+        "API error:",
+        response.status,
+        errorData.details || errorData.error,
+      );
+      return [];
+    }
+
     const data = await response.json();
 
     // returnCode === "200" 또는 배열 데이터 직접 확인
