@@ -72,7 +72,7 @@ export interface BusLocation {
   name: string;
   lat: string;
   lon: string;
-  status: 0 | 1 | 2; // 0: 운행 안함, 1: 학교→역, 2: 역→출발
+  status: 0 | 1 | 2; // 0: 운행 안함, 1: 학교→역, 2: 역→학교
   routeid: 1 | 2 | 3; // 1: 화랑대역, 2: 석계역, 3: 별내역
 }
 

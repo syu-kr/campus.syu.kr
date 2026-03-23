@@ -419,7 +419,7 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
     }
 
     return [];
-  } catch (error) {
+  } catch {
     return [];
   }
 }

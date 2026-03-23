@@ -42,7 +42,7 @@ export default function ShuttlePage() {
       try {
         const locations = await fetchBusLocations();
         setBusLocations(locations);
-      } catch (error) {
+      } catch {
         // Silently handle errors
       }
     };
@@ -328,7 +328,7 @@ export default function ShuttlePage() {
                     };
                     const statusLabels: Record<number, string> = {
                       1: "학교 → 역",
-                      2: "역 → 출발",
+                      2: "역 → 학교",
                     };
                     const statusColors: Record<number, string> = {
                       1: "bg-blue-100 text-blue-700",
@@ -573,7 +573,7 @@ const MapComponent = forwardRef(
 
         const map = new kakao.maps.Map(mapContainer, mapOptions);
         mapRef.current = map;
-      } catch (error) {
+      } catch {
         // Silently handle map initialization error
       }
     }, [mapLoaded]);
@@ -599,7 +599,7 @@ const MapComponent = forwardRef(
 
       const statusLabels: Record<number, string> = {
         1: "학교 → 역",
-        2: "역 → 출발",
+        2: "역 → 학교",
       };
 
       // 기존 마커 제거
