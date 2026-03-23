@@ -9,35 +9,60 @@ const corsHeaders = {
 };
 
 async function fetchBusData() {
-  try {
-    console.log("[API] Fetching from nexmotion...");
-    const response = await fetch(
-      "http://nexmotion.co.kr/bus/busStatusList.php",
-      {
+  // Vercel에서는 HTTPS를 먼저 시도, 로컬에서는 HTTP 사용
+  const urls = process.env.VERCEL
+    ? [
+        "https://nexmotion.co.kr/bus/busStatusList.php",
+        "http://nexmotion.co.kr/bus/busStatusList.php",
+      ]
+    : [
+        "http://nexmotion.co.kr/bus/busStatusList.php",
+        "https://nexmotion.co.kr/bus/busStatusList.php",
+      ];
+
+  for (const url of urls) {
+    try {
+      console.log(`[API] Trying ${url}...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-      },
-    );
+        signal: controller.signal,
+      });
 
-    console.log(`[API] Status: ${response.status}`);
+      clearTimeout(timeoutId);
+      console.log(`[API] Response from ${url}: ${response.status}`);
 
-    const data = await response.json();
-    console.log("[API] Got data:", data);
+      if (response.ok) {
+        const text = await response.text();
+        console.log(`[API] Response length: ${text.length}`);
 
-    // returnCode === "200" 체크
-    if (data && data.returnCode === "200" && Array.isArray(data.data)) {
-      console.log(`[API] Success with ${data.data.length} items`);
-      return data;
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error(`[API] JSON parse error from ${url}:`, e);
+          continue;
+        }
+
+        console.log(`[API] ✅ Success from ${url}`);
+        return data;
+      }
+      console.warn(`[API] Not OK from ${url}: ${response.status}`);
+    } catch (error) {
+      console.error(
+        `[API] Failed to fetch from ${url}:`,
+        error instanceof Error ? error.message : String(error),
+      );
     }
-
-    console.log("[API] Invalid response format");
-    return data || { data: [] };
-  } catch (error) {
-    console.error("[API] Fetch error:", error);
-    return { data: [] };
   }
+
+  console.error("[API] ❌ All URLs failed");
+  return { data: [] };
 }
 
 export async function POST() {
