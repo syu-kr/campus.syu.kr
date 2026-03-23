@@ -1,6 +1,13 @@
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Content-Type": "application/json",
+};
+
 async function fetchBusData() {
   try {
     console.log("[API] Fetching from nexmotion...");
@@ -15,16 +22,16 @@ async function fetchBusData() {
     );
 
     console.log(`[API] Status: ${response.status}`);
-    
+
     const data = await response.json();
     console.log("[API] Got data:", data);
-    
+
     // returnCode === "200" 체크
     if (data && data.returnCode === "200" && Array.isArray(data.data)) {
       console.log(`[API] Success with ${data.data.length} items`);
       return data;
     }
-    
+
     console.log("[API] Invalid response format");
     return data || { data: [] };
   } catch (error) {
@@ -35,31 +42,23 @@ async function fetchBusData() {
 
 export async function POST() {
   const data = await fetchBusData();
-  return Response.json(data, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    },
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: corsHeaders,
   });
 }
 
 export async function GET() {
   const data = await fetchBusData();
-  return Response.json(data, {
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-    },
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: corsHeaders,
   });
 }
 
 export async function OPTIONS() {
   return new Response(null, {
     status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
+    headers: corsHeaders,
   });
 }
