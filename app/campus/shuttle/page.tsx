@@ -41,9 +41,10 @@ export default function ShuttlePage() {
     const fetchLocations = async () => {
       try {
         const locations = await fetchBusLocations();
+        console.log("✅ Bus locations fetched:", locations);
         setBusLocations(locations);
       } catch (error) {
-        console.error("Failed to fetch bus locations:", error);
+        console.error("❌ Failed to fetch bus locations:", error);
       }
     };
 
@@ -51,10 +52,18 @@ export default function ShuttlePage() {
     fetchLocations();
 
     // 5-10초 랜덤 간격으로 반복
-    const getRandomInterval = () => Math.random() * 5000 + 5000; // 5000~10000ms
-    const interval = setInterval(fetchLocations, getRandomInterval());
+    const scheduleNextFetch = () => {
+      const delay = Math.random() * 5000 + 5000; // 5000~10000ms
+      const timeout = setTimeout(() => {
+        fetchLocations();
+        scheduleNextFetch(); // 재귀적으로 다음 요청 스케줄
+      }, delay);
+      return timeout;
+    };
 
-    return () => clearInterval(interval);
+    const timeoutId = scheduleNextFetch();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // 현재 날짜/시간 정보
