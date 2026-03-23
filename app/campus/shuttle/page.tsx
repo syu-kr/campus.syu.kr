@@ -522,8 +522,8 @@ const MapComponent = forwardRef(
         return;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((window as any).kakao?.maps) {
-        // eslint-disable-line @typescript-eslint/no-explicit-any
         setMapLoaded(true);
         return;
       }
