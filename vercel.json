@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/bus/locations",
+      "destination": "http://nexmotion.co.kr/bus/busStatusList.php"
+    }
+  ]
+}

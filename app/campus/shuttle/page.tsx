@@ -248,7 +248,7 @@ export default function ShuttlePage() {
                       <strong>{bus.time}</strong> 출발
                     </p>
                     <p className="text-sm sm:text-base font-semibold text-green-600">
-                      {bus.minutesUntil}분 후 도착
+                      {bus.minutesUntil}분 후 출발
                     </p>
                   </div>
                 </div>
