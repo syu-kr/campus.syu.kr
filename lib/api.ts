@@ -396,7 +396,6 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
     });
 
     if (!response.ok) {
-      console.error("API error:", response.status);
       return [];
     }
 
@@ -421,7 +420,6 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
 
     return [];
   } catch (error) {
-    console.error("Failed to fetch bus locations:", error);
     return [];
   }
 }

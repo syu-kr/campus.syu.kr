@@ -41,10 +41,9 @@ export default function ShuttlePage() {
     const fetchLocations = async () => {
       try {
         const locations = await fetchBusLocations();
-        console.log("✅ Bus locations fetched:", locations);
         setBusLocations(locations);
       } catch (error) {
-        console.error("❌ Failed to fetch bus locations:", error);
+        // Silently handle errors
       }
     };
 
@@ -527,7 +526,6 @@ const MapComponent = forwardRef(
       const kakaoMapKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 
       if (!kakaoMapKey) {
-        console.error("Kakao Map API Key is not configured");
         return;
       }
 
@@ -542,12 +540,11 @@ const MapComponent = forwardRef(
       script.async = true;
 
       script.onload = () => {
-        console.log("Kakao Map API loaded successfully");
         setMapLoaded(true);
       };
 
       script.onerror = () => {
-        console.error("Failed to load Kakao Map API");
+        // Silently handle Kakao Map API loading error
       };
 
       document.head.appendChild(script);
@@ -576,9 +573,8 @@ const MapComponent = forwardRef(
 
         const map = new kakao.maps.Map(mapContainer, mapOptions);
         mapRef.current = map;
-        console.log("Map initialized once");
       } catch (error) {
-        console.error("Error initializing map:", error);
+        // Silently handle map initialization error
       }
     }, [mapLoaded]);
 
