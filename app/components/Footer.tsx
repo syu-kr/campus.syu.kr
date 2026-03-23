@@ -54,7 +54,7 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li className="font-medium text-primary-600">
-                <a href="mailto:support_team@syu.kr">support_team@syu.kr</a>
+                <a href="mailto:singhic@outlook.kr">singhic@outlook.kr</a>
               </li>
             </ul>
           </div>
@@ -63,7 +63,7 @@ export function Footer() {
         <div className="border-t border-neutral-200 pt-6">
           <div className="flex items-center justify-between">
             <p className="text-sm text-neutral-600">
-              © {currentYear} SYU KR. All rights reserved.
+              © {currentYear} SYU KR(Seo Sang Hyeok). All rights reserved.
             </p>
             <div className="flex gap-4 text-sm">
               <a
