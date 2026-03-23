@@ -4,16 +4,18 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
+import { AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCafeteriaMenu } from "@/lib/api";
 import { useMemo } from "react";
-import { AlertCircle } from "lucide-react";
 
 export default function CafeteriaPage() {
   const { data: menus, isLoading } = useQuery({
     queryKey: ["cafeteria-weekly"],
     queryFn: () => fetchCafeteriaMenu(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   // 오늘 날짜와 요일 계산
@@ -69,7 +71,7 @@ export default function CafeteriaPage() {
               오늘은 주말입니다.
             </p>
             <p className="text-sm text-neutral-600">
-              주말을 알차게 보내보는건 어떨까요? 😊
+              주말을 알차게 보내보는건 어떨까요?
             </p>
           </div>
         </Card>
@@ -92,9 +94,7 @@ export default function CafeteriaPage() {
         <Card className="mb-8 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold text-green-900">
-                🌟 오늘의 메뉴 🌟
-              </h2>
+              <h2 className="text-lg font-bold text-green-900">오늘의 메뉴</h2>
             </div>
             <p className="text-sm text-green-700 font-medium">
               {todayMenu.dayOfWeek}요일 ({todayMenu.date})
@@ -229,16 +229,12 @@ export default function CafeteriaPage() {
           </div>
         </Card>
       ) : (
-        <Card className="mb-8 bg-red-50 border-2 border-red-400">
-          <div className="text-center py-8">
-            <p className="text-lg font-semibold text-red-900 mb-2">
-              ❌ 데이터를 불러올 수 없습니다
-            </p>
-            <p className="text-sm text-red-700">
-              일시적인 오류가 발생했습니다. 나중에 다시 시도해주세요.
-            </p>
-          </div>
-        </Card>
+        <StateCard
+          type="error"
+          title="데이터를 불러올 수 없습니다"
+          message="일시적인 오류가 발생했습니다. 나중에 다시 시도해주세요."
+          className="mb-8"
+        />
       )}
 
       <div className="space-y-6">

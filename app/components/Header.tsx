@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,7 +17,7 @@ const navItems = [
   { label: "더보기", href: "/more" },
 ];
 
-export function Header({ showBack = false, onBackClick }: HeaderProps) {
+function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
@@ -87,5 +87,7 @@ export function Header({ showBack = false, onBackClick }: HeaderProps) {
     </header>
   );
 }
+
+export const Header = memo(HeaderComponent);
 
 export default Header;

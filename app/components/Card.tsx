@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -10,7 +10,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: "div" | "article" | "section";
 }
 
-export function Card({
+function CardComponent({
   children,
   hover = true,
   clickable = false,
@@ -32,5 +32,7 @@ export function Card({
     </Component>
   );
 }
+
+export const Card = memo(CardComponent);
 
 export default Card;

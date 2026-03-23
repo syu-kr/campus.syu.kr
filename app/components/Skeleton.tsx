@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
 
 interface SkeletonProps {
@@ -11,7 +11,7 @@ interface SkeletonProps {
   count?: number;
 }
 
-export function Skeleton({
+function SkeletonComponent({
   variant = "card",
   width,
   height,
@@ -42,5 +42,7 @@ export function Skeleton({
     </div>
   );
 }
+
+export const Skeleton = memo(SkeletonComponent);
 
 export default Skeleton;

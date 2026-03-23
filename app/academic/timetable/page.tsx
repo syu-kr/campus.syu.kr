@@ -427,7 +427,7 @@ export default function TimetableWizardPage() {
 
                 {totalCredits > 3 && totalCredits <= 18 && (
                   <div className="pt-2 border-t border-blue-200">
-                    <p className="text-xs text-blue-800">✅ 최소 학점 충족</p>
+                    <p className="text-xs text-blue-800">최소 학점 충족</p>
                   </div>
                 )}
               </div>
@@ -513,9 +513,7 @@ export default function TimetableWizardPage() {
 
             {/* 강의 목록 */}
             <Card>
-              <h3 className="font-semibold text-neutral-900 mb-3">
-                강의 목록
-              </h3>
+              <h3 className="font-semibold text-neutral-900 mb-3">강의 목록</h3>
 
               {/* 검색창 */}
               <input
@@ -559,14 +557,12 @@ export default function TimetableWizardPage() {
                         </p>
                         {hasConflicts && (
                           <p className="text-xs text-red-600 mt-1">
-                            {conflicting.map((c) => c.name).join(", ")}과
-                            시간 충돌
+                            {conflicting.map((c) => c.name).join(", ")}과 시간
+                            충돌
                           </p>
                         )}
                         {creditExceeds && (
-                          <p className="text-xs text-orange-600">
-                            학점 초과
-                          </p>
+                          <p className="text-xs text-orange-600">학점 초과</p>
                         )}
                       </button>
                     );

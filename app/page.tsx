@@ -31,6 +31,7 @@ import {
   Phone,
   Megaphone,
 } from "lucide-react";
+import { StateCard } from "./components/StateCard";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
@@ -75,7 +76,8 @@ export default function Home() {
           | "activity"
           | undefined,
       ),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   // 서비스 공지 조회
@@ -85,21 +87,24 @@ export default function Home() {
       const response = await fetch("/api/service-notices");
       return (await response.json()) as ServiceNotice[];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 15 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
   // 학식 조회
   const { data: cafeteria, isLoading: cafeteriaLoading } = useQuery({
     queryKey: ["cafeteria"],
     queryFn: () => fetchCafeteriaMenu(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   // 학사일정 조회
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   // 검색
@@ -107,7 +112,8 @@ export default function Home() {
     queryKey: ["search", searchQuery],
     queryFn: () => searchAll(searchQuery),
     enabled: showSearchResults && searchQuery.trim().length > 0,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
   });
 
   const handleSearch = useCallback((query: string) => {
@@ -216,20 +222,19 @@ export default function Home() {
         )}
 
         {!searchLoading && (!searchResults || searchResults.length === 0) && (
-          <div className="text-center py-16">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-              검색 결과가 없습니다
-            </h3>
-            <p className="text-neutral-600 mb-6">
-              {`검색 결과: "${searchQuery}"`}
-            </p>
-            <button
-              onClick={handleSearchClear}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              검색 취소
-            </button>
-          </div>
+          <StateCard
+            type="info"
+            title="검색 결과가 없습니다"
+            message={`검색 결과: "${searchQuery}"`}
+            action={
+              <button
+                onClick={handleSearchClear}
+                className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+              >
+                검색 취소
+              </button>
+            }
+          />
         )}
 
         {!searchLoading && searchResults && searchResults.length > 0 && (
@@ -531,9 +536,11 @@ export default function Home() {
                                       {notice.author} · {notice.date}
                                     </div>
                                   </div>
-                                  <span className="text-lg flex-shrink-0">
-                                    📢
-                                  </span>
+                                  <Megaphone
+                                    size={20}
+                                    className="flex-shrink-0 text-neutral-600"
+                                    strokeWidth={1.5}
+                                  />
                                 </div>
                               </Card>
                             </Link>
@@ -575,14 +582,10 @@ export default function Home() {
           {cafeteriaLoading && <Skeleton count={2} />}
 
           {!cafeteriaLoading && todayInfo.isWeekend && (
-            <Card className="bg-neutral-100">
-              <div className="text-center py-4">
-                <p className="text-sm text-neutral-600">오늘은 주말입니다.</p>
-                <p className="text-sm text-neutral-600">
-                  주말을 알차게 보내보는건 어떨까요? 😊
-                </p>
-              </div>
-            </Card>
+            <StateCard
+              type="info"
+              message="오늘은 주말입니다. 주말을 알차게 보내보는건 어떨까요?"
+            />
           )}
 
           {!cafeteriaLoading && !todayInfo.isWeekend && todayMenu && (
@@ -591,7 +594,7 @@ export default function Home() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="text-sm font-semibold text-green-700 mb-1">
-                      🌟 오늘의 메뉴
+                      오늘의 메뉴
                     </div>
                     <h3 className="font-semibold text-neutral-900 mb-2">
                       {todayMenu.location}

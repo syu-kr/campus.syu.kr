@@ -146,13 +146,13 @@ export default function NotFound() {
           {/* Fun Info Box */}
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 text-left">
             <p className="text-sm font-bold text-gray-800 mb-3">
-              🎯 혹시 이런 건 아닐까요?
+              혹시 이런 건 아닐까요?
             </p>
             <ul className="text-sm text-gray-700 space-y-2 font-medium">
               <li>✓ URL에 오타가 있을 수도 있어요</li>
               <li>✓ 페이지가 이전되었을 수도 있어요</li>
               <li>✓ 예정된 페이지일 수도 있어요</li>
-              <li>✓ 혹은... 우주의 신비일 수도? 🌌</li>
+              <li>✓ 혹은... 우주의 신비일 수도?</li>
             </ul>
           </div>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 
-export function Footer() {
+function FooterComponent() {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -79,5 +79,7 @@ export function Footer() {
     </footer>
   );
 }
+
+export const Footer = memo(FooterComponent);
 
 export default Footer;

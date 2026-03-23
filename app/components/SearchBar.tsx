@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, memo } from "react";
 import clsx from "clsx";
 
 interface SearchBarProps {
@@ -10,7 +10,7 @@ interface SearchBarProps {
   className?: string;
 }
 
-export function SearchBar({
+function SearchBarComponent({
   placeholder = "공지, 학식, 학사일정 검색...",
   onSearch,
   isLoading = false,
@@ -39,7 +39,7 @@ export function SearchBar({
   }, [onSearch]);
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={className} role="search">
       <div className="relative">
         <input
           type="text"
@@ -58,6 +58,7 @@ export function SearchBar({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -97,5 +98,7 @@ export function SearchBar({
     </form>
   );
 }
+
+export const SearchBar = memo(SearchBarComponent);
 
 export default SearchBar;

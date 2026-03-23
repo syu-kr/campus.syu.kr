@@ -32,22 +32,28 @@ export function BottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 md:hidden">
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 md:hidden"
+      aria-label="메인 내비게이션"
+    >
       <div className="grid grid-cols-4 gap-0">
         {navItems.map((item) => {
           const IconComponent = item.icon;
+          const active = isActive(item.href);
           return (
             <Link
               key={item.id}
               href={item.href}
               className={clsx(
-                "flex flex-col items-center justify-center py-3 px-2 transition-colors",
-                isActive(item.href)
+                "flex flex-col items-center justify-center py-3 px-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset",
+                active
                   ? "text-primary-600 font-semibold"
                   : "text-neutral-600 hover:text-neutral-900",
               )}
+              aria-current={active ? "page" : undefined}
+              title={item.label}
             >
-              <IconComponent size={24} />
+              <IconComponent size={24} aria-hidden="true" />
               <div className="text-xs mt-1">{item.label}</div>
             </Link>
           );

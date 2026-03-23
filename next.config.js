@@ -2,6 +2,26 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+
+  // 이미지 최적화
+  images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+
+  // 슬래시 제거로 성능 개선
+  trailingSlash: false,
+
+  // 압축 설정
+  compress: true,
+
+  // 폰트 최적화
+  optimizeFonts: true,
+
   // Localhost 개발 서버에서 external API 프록싱
   rewrites: async () => {
     return {
@@ -13,6 +33,7 @@ const nextConfig = {
       ],
     };
   },
+
   // 캐싱 설정
   headers: async () => {
     return [

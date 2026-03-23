@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import clsx from "clsx";
 
 interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -9,7 +9,7 @@ interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-export function Container({
+function ContainerComponent({
   children,
   size = "md",
   className,
@@ -31,5 +31,7 @@ export function Container({
     </div>
   );
 }
+
+export const Container = memo(ContainerComponent);
 
 export default Container;

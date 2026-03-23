@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo } from "react";
 import Link from "next/link";
 import { Announcement } from "@/types";
 import { Card } from "./Card";
@@ -18,7 +18,7 @@ interface AnnouncementCardProps {
   external?: boolean;
 }
 
-export function AnnouncementCard({
+function AnnouncementCardComponent({
   announcement,
   href,
   clickable = true,
@@ -65,5 +65,7 @@ export function AnnouncementCard({
 
   return content;
 }
+
+export const AnnouncementCard = memo(AnnouncementCardComponent);
 
 export default AnnouncementCard;

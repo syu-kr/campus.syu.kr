@@ -12,7 +12,8 @@ export default function SchedulePage() {
   const { data: schedules, isLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -377,7 +378,9 @@ export default function SchedulePage() {
                                   </p>
                                 </div>
                                 <div className="text-xs font-semibold text-neutral-600">
-                                  {schedule.category === "exam" ? "시험" : "일정"}
+                                  {schedule.category === "exam"
+                                    ? "시험"
+                                    : "일정"}
                                 </div>
                               </div>
                             </Card>
@@ -422,11 +425,6 @@ export default function SchedulePage() {
                                 schedule.endDate,
                               )}
                             </p>
-                            {schedule.description && (
-                              <p className="text-sm text-neutral-700">
-                                {schedule.description}
-                              </p>
-                            )}
                           </div>
                           <div className="text-xs font-semibold text-neutral-600">
                             {schedule.category === "exam" ? "시험" : "일정"}
