@@ -1,6 +1,5 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { Lightbulb } from "lucide-react";
 
 export default function HealthCenterPage() {
   const services = [
@@ -135,7 +134,6 @@ export default function HealthCenterPage() {
       {/* 주요 안내 */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
-          <Lightbulb size={24} className="text-amber-500" />
           주요 안내
         </h2>
         <Card>

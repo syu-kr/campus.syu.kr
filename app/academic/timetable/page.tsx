@@ -4,7 +4,7 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { BarChart3 } from "lucide-react";
+import { Icon } from "@/app/components/Icon";
 
 interface Course {
   id: string;
@@ -381,7 +381,7 @@ export default function TimetableWizardPage() {
             {/* 선택 현황 */}
             <Card className="bg-blue-50 border border-blue-200">
               <h3 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                <BarChart3 size={20} className="text-blue-600" />
+                <Icon name="bar-chart-3" size={20} color="rgb(37, 99, 235)" />
                 선택 현황
               </h3>
               <div className="space-y-3 text-sm">

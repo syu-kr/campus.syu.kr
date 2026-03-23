@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Home,
-  MapPin,
-  Utensils,
-  Search,
-  RotateCcw,
-  ChevronRight,
-} from "lucide-react";
+import { Icon } from "./components/Icon";
 import { useState, useEffect } from "react";
 
 const funMessages = [
@@ -98,9 +91,19 @@ export default function NotFound() {
               href="/"
               className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95 text-lg group"
             >
-              <Home className="w-6 h-6 group-hover:animate-bounce-x" />
+              <Icon
+                name="home"
+                size={24}
+                color="white"
+                className="group-hover:animate-bounce-x"
+              />
               <span>홈으로 돌아가기</span>
-              <ChevronRight className="w-5 h-5 ml-auto group-hover:translate-x-1 transition-transform" />
+              <Icon
+                name="chevron-right"
+                size={20}
+                color="white"
+                className="ml-auto group-hover:translate-x-1 transition-transform"
+              />
             </Link>
 
             {/* Grid of fun options */}
@@ -109,7 +112,12 @@ export default function NotFound() {
                 href="/academic/announcements"
                 className="group flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 text-orange-600 font-semibold py-4 px-3 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95"
               >
-                <Search className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                <Icon
+                  name="search"
+                  size={24}
+                  color="rgb(234, 88, 12)"
+                  className="group-hover:scale-110 transition-transform"
+                />
                 <span className="text-xs">공지사항</span>
               </Link>
 
@@ -117,7 +125,12 @@ export default function NotFound() {
                 href="/campus/map"
                 className="group flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 text-green-600 font-semibold py-4 px-3 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95"
               >
-                <MapPin className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                <Icon
+                  name="map-pin"
+                  size={24}
+                  color="rgb(34, 197, 94)"
+                  className="group-hover:scale-110 transition-transform"
+                />
                 <span className="text-xs">캠퍼스 지도</span>
               </Link>
 
@@ -125,7 +138,12 @@ export default function NotFound() {
                 href="/campus/cafeteria"
                 className="group flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 text-red-600 font-semibold py-4 px-3 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95"
               >
-                <Utensils className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                <Icon
+                  name="utensils"
+                  size={24}
+                  color="rgb(220, 38, 38)"
+                  className="group-hover:scale-110 transition-transform"
+                />
                 <span className="text-xs">학식 정보</span>
               </Link>
 
@@ -137,7 +155,12 @@ export default function NotFound() {
                 }}
                 className="group flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 text-purple-600 font-semibold py-4 px-3 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95"
               >
-                <RotateCcw className="w-6 h-6 group-hover:animate-spin-slow transition-transform" />
+                <Icon
+                  name="rotate-ccw"
+                  size={24}
+                  color="rgb(147, 51, 234)"
+                  className="group-hover:animate-spin-slow transition-transform"
+                />
                 <span className="text-xs">새로고침</span>
               </Link>
             </div>

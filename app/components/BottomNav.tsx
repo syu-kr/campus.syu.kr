@@ -4,21 +4,20 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Home, BookOpen, Building, MoreHorizontal } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Icon } from "./Icon";
 
 interface NavItem {
-  icon: LucideIcon;
+  iconName: string;
   label: string;
   href: string;
   id: string;
 }
 
 const navItems: NavItem[] = [
-  { id: "home", icon: Home, label: "홈", href: "/" },
-  { id: "academic", icon: BookOpen, label: "학사", href: "/academic" },
-  { id: "campus", icon: Building, label: "캠퍼스", href: "/campus" },
-  { id: "more", icon: MoreHorizontal, label: "더보기", href: "/more" },
+  { id: "home", iconName: "home", label: "홈", href: "/" },
+  { id: "academic", iconName: "book-open", label: "학사", href: "/academic" },
+  { id: "campus", iconName: "building", label: "캠퍼스", href: "/campus" },
+  { id: "more", iconName: "more-horizontal", label: "더보기", href: "/more" },
 ];
 
 export function BottomNav() {
@@ -38,7 +37,6 @@ export function BottomNav() {
     >
       <div className="grid grid-cols-4 gap-0">
         {navItems.map((item) => {
-          const IconComponent = item.icon;
           const active = isActive(item.href);
           return (
             <Link
@@ -53,7 +51,7 @@ export function BottomNav() {
               aria-current={active ? "page" : undefined}
               title={item.label}
             >
-              <IconComponent size={24} aria-hidden="true" />
+              <Icon name={item.iconName} size={24} color="currentColor" />
               <div className="text-xs mt-1">{item.label}</div>
             </Link>
           );

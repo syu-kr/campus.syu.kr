@@ -1,6 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { AlertCircle } from "lucide-react";
+import { Icon } from "@/app/components/Icon";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -94,7 +94,12 @@ export default function TermsPage() {
           <div className="space-y-3 text-neutral-700">
             <div className="p-3 bg-orange-50 border border-orange-200 rounded mb-3">
               <p className="text-sm text-orange-900 font-semibold flex items-center gap-2">
-                <AlertCircle size={16} className="flex-shrink-0" />
+                <Icon
+                  name="alert-circle"
+                  size={16}
+                  color="rgb(194, 65, 12)"
+                  className="flex-shrink-0"
+                />
                 참고용 자료
               </p>
               <p className="text-xs text-orange-800 mt-1">

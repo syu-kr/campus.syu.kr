@@ -2,15 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import {
-  Megaphone,
-  Utensils,
-  Bus,
-  Dumbbell,
-  BookOpen,
-  Stethoscope,
-  Map,
-} from "lucide-react";
+import { Icon } from "@/app/components/Icon";
 
 export const metadata: Metadata = {
   title: "캠퍼스",
@@ -22,7 +14,7 @@ const campusMenus = [
     id: "announcements",
     title: "캠퍼스공지",
     description: "캠퍼스 생활 공지사항",
-    icon: Megaphone,
+    icon: "megaphone",
     href: "/campus/announcements",
     color: "from-indigo-400 to-indigo-600",
   },
@@ -30,7 +22,7 @@ const campusMenus = [
     id: "cafeteria",
     title: "학식",
     description: "주간 식단 및 영양정보",
-    icon: Utensils,
+    icon: "utensils",
     href: "/campus/cafeteria",
     color: "from-orange-400 to-orange-600",
   },
@@ -38,7 +30,7 @@ const campusMenus = [
     id: "shuttle",
     title: "셔틀버스",
     description: "셔틀버스 운행 시간표",
-    icon: Bus,
+    icon: "bus",
     href: "/campus/shuttle",
     color: "from-blue-400 to-blue-600",
   },
@@ -46,7 +38,7 @@ const campusMenus = [
     id: "gym",
     title: "체육시설",
     description: "헬스장, 스포츠 센터 정보",
-    icon: Dumbbell,
+    icon: "dumbbell",
     href: "/campus/gym",
     color: "from-red-400 to-red-600",
   },
@@ -54,7 +46,7 @@ const campusMenus = [
     id: "library",
     title: "도서관",
     description: "중앙도서관 열람실 정보",
-    icon: BookOpen,
+    icon: "book-open",
     href: "/campus/library",
     color: "from-purple-400 to-purple-600",
   },
@@ -62,7 +54,7 @@ const campusMenus = [
     id: "health-center",
     title: "보건소",
     description: "학생 의료 서비스",
-    icon: Stethoscope,
+    icon: "stethoscope",
     href: "/campus/health-center",
     color: "from-pink-400 to-pink-600",
   },
@@ -70,7 +62,7 @@ const campusMenus = [
     id: "map",
     title: "캠퍼스 지도",
     description: "건물 위치 및 시설 안내",
-    icon: Map,
+    icon: "map",
     href: "/campus/map",
     color: "from-cyan-400 to-blue-600",
   },
@@ -90,7 +82,6 @@ export default function CampusPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {campusMenus.map((menu) => {
-          const IconComponent = menu.icon;
           return (
             <Link key={menu.id} href={menu.href}>
               <Card
@@ -101,7 +92,12 @@ export default function CampusPage() {
                     <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
                     <p className="text-sm opacity-90">{menu.description}</p>
                   </div>
-                  <IconComponent size={40} strokeWidth={1.5} />
+                  <Icon
+                    name={menu.icon}
+                    size={40}
+                    strokeWidth={1.5}
+                    color="white"
+                  />
                 </div>
               </Card>
             </Link>

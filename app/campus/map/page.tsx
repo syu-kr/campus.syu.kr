@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
 import { FacilitySearch } from "./components/FacilitySearch";
-import { Map } from "lucide-react";
+import { Icon } from "@/app/components/Icon";
 
 export default function MapPage() {
   const [selectedBuilding, setSelectedBuilding] = useState<string>();
@@ -31,7 +31,7 @@ export default function MapPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Map size={28} className="text-primary-600" />
+          <Icon name="map" size={28} color="rgb(37, 99, 235)" />
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
             캠퍼스 지도
           </h1>

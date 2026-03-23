@@ -3,8 +3,8 @@
 import { getBuildingById, categoryColors, formatFloor } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
-import { ChevronDown, MapPin } from "lucide-react";
 import { useState } from "react";
+import { Icon } from "@/app/components/Icon";
 
 interface FacilityPanelProps {
   buildingId?: string;
@@ -19,7 +19,9 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
   if (!building) {
     return (
       <Card className="p-6 text-center text-neutral-500">
-        <MapPin size={32} className="mx-auto mb-2 text-neutral-300" />
+        <div className="flex justify-center mb-2">
+          <Icon name="map-pin" size={32} color="rgb(209, 213, 219)" />
+        </div>
         <p className="text-sm">건물을 선택하여 시설 정보를 확인하세요</p>
       </Card>
     );
@@ -39,7 +41,12 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
     <div className="space-y-3">
       <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500">
         <div className="flex items-start gap-3">
-          <MapPin size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <Icon
+            name="map-pin"
+            size={20}
+            color="rgb(37, 99, 235)"
+            className="flex-shrink-0 mt-0.5"
+          />
           <div>
             <h2 className="font-bold text-neutral-900 text-lg">
               {building.name}
@@ -63,9 +70,11 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
               <h3 className="font-semibold text-neutral-900">
                 {formatFloor(floor.floor)}
               </h3>
-              <ChevronDown
+              <Icon
+                name="chevron-down"
                 size={18}
-                className={`text-neutral-400 transition-transform ${
+                color="rgb(156, 163, 175)"
+                className={`transition-transform ${
                   expandedFloors.has(floor.floor) ? "rotate-180" : ""
                 }`}
               />

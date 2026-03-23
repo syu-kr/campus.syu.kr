@@ -22,33 +22,29 @@ import type {
   PhoneNumber,
   ServiceNotice,
 } from "@/types";
-import {
-  Map,
-  Calendar,
-  Utensils,
-  Bus,
-  Award,
-  Phone,
-  Megaphone,
-} from "lucide-react";
+import { Icon } from "./components/Icon";
 import { StateCard } from "./components/StateCard";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
   {
     id: "1",
-    icon: Map,
+    iconName: "map",
     label: "캠퍼스 지도",
     path: "/campus/map",
   },
-  { id: "2", icon: Calendar, label: "학사일정", path: "/academic/schedule" },
-  { id: "3", icon: Utensils, label: "학식", path: "/campus/cafeteria" },
-  { id: "4", icon: Bus, label: "셔틀버스", path: "/campus/shuttle" },
-  { id: "5", icon: Award, label: "장학금", path: "/more/scholarship" },
-  { id: "6", icon: Phone, label: "연락처", path: "/more/phone" },
+  {
+    id: "2",
+    iconName: "calendar",
+    label: "학사일정",
+    path: "/academic/schedule",
+  },
+  { id: "3", iconName: "utensils", label: "학식", path: "/campus/cafeteria" },
+  { id: "4", iconName: "bus", label: "셔틀버스", path: "/campus/shuttle" },
+  { id: "5", iconName: "award", label: "장학금", path: "/more/scholarship" },
+  { id: "6", iconName: "phone", label: "연락처", path: "/more/phone" },
 ];
 
-// 공지 카테고리 필터
 const categoryFilters = [
   { id: "all", label: "전체", value: undefined },
   { id: "academic", label: "학사공지", value: "academic" },
@@ -353,21 +349,23 @@ export default function Home() {
           자주 사용하는 메뉴
         </h2>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-          {frequentMenus.map((menu) => {
-            const IconComponent = menu.icon;
-            return (
-              <Link
-                key={menu.id}
-                href={menu.path}
-                className="flex flex-col items-center justify-center py-4 rounded-lg hover:bg-primary-50 transition-colors"
-              >
-                <IconComponent size={32} className="mb-2 text-primary-600" />
-                <span className="text-xs font-medium text-center text-neutral-900">
-                  {menu.label}
-                </span>
-              </Link>
-            );
-          })}
+          {frequentMenus.map((menu) => (
+            <Link
+              key={menu.id}
+              href={menu.path}
+              className="flex flex-col items-center justify-center py-4 rounded-lg hover:bg-primary-50 transition-colors"
+            >
+              <Icon
+                name={menu.iconName}
+                size={32}
+                color="rgb(37, 99, 235)"
+                className="mb-2"
+              />
+              <span className="text-xs font-medium text-center text-neutral-900">
+                {menu.label}
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -448,9 +446,11 @@ export default function Home() {
                               {notice.author} · {notice.date}
                             </div>
                           </div>
-                          <Megaphone
+                          <Icon
+                            name="megaphone"
                             size={20}
-                            className="flex-shrink-0 text-neutral-600"
+                            className="flex-shrink-0"
+                            color="rgb(82, 82, 82)"
                             strokeWidth={1.5}
                           />
                         </div>
@@ -536,9 +536,11 @@ export default function Home() {
                                       {notice.author} · {notice.date}
                                     </div>
                                   </div>
-                                  <Megaphone
+                                  <Icon
+                                    name="megaphone"
                                     size={20}
-                                    className="flex-shrink-0 text-neutral-600"
+                                    className="flex-shrink-0"
+                                    color="rgb(82, 82, 82)"
                                     strokeWidth={1.5}
                                   />
                                 </div>

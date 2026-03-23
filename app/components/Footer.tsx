@@ -54,7 +54,7 @@ function FooterComponent() {
             </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li className="font-medium text-primary-600">
-                <a href="mailto:singhic@outlook.kr">singhic@outlook.kr</a>
+                <a href="mailto:singhic_dev@syu.kr">singhic_dev@syu.kr</a>
               </li>
             </ul>
           </div>

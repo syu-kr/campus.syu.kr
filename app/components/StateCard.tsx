@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { Icon } from "./Icon";
 
 interface StateCardProps {
   type: "error" | "warning" | "info";
@@ -20,7 +20,7 @@ export function StateCard({
     error: {
       bg: "bg-red-50",
       border: "border-red-300",
-      icon: AlertCircle,
+      iconName: "alert-circle",
       iconColor: "text-red-600",
       titleColor: "text-red-900",
       textColor: "text-red-700",
@@ -28,7 +28,7 @@ export function StateCard({
     warning: {
       bg: "bg-orange-50",
       border: "border-orange-300",
-      icon: AlertTriangle,
+      iconName: "alert-triangle",
       iconColor: "text-orange-600",
       titleColor: "text-orange-900",
       textColor: "text-orange-700",
@@ -36,7 +36,7 @@ export function StateCard({
     info: {
       bg: "bg-blue-50",
       border: "border-blue-300",
-      icon: Info,
+      iconName: "info",
       iconColor: "text-blue-600",
       titleColor: "text-blue-900",
       textColor: "text-blue-700",
@@ -44,7 +44,6 @@ export function StateCard({
   };
 
   const config = stateConfig[type];
-  const IconComponent = config.icon;
 
   return (
     <div
@@ -52,11 +51,9 @@ export function StateCard({
       role="alert"
     >
       <div className="flex gap-3">
-        <IconComponent
-          size={20}
-          className={`flex-shrink-0 mt-0.5 ${config.iconColor}`}
-          aria-hidden="true"
-        />
+        <div className={`flex-shrink-0 mt-0.5 ${config.iconColor}`}>
+          <Icon name={config.iconName} size={20} color="currentColor" />
+        </div>
         <div className="flex-1">
           {title && (
             <h3 className={`font-semibold mb-1 ${config.titleColor}`}>

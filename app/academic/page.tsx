@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import { Megaphone, Calendar, Clock } from "lucide-react";
+import { Icon } from "@/app/components/Icon";
 
 export const metadata: Metadata = {
   title: "학사",
@@ -14,7 +14,7 @@ const academicMenus = [
     id: "announcements",
     title: "학사공지",
     description: "학사 관련 공지사항",
-    icon: Megaphone,
+    icon: "megaphone",
     href: "/academic/announcements",
     color: "from-blue-400 to-blue-600",
   },
@@ -22,7 +22,7 @@ const academicMenus = [
     id: "schedule",
     title: "학사일정",
     description: "수강신청, 시험, 휴무 일정",
-    icon: Calendar,
+    icon: "calendar",
     href: "/academic/schedule",
     color: "from-purple-400 to-purple-600",
   },
@@ -30,7 +30,7 @@ const academicMenus = [
     id: "timetable",
     title: "시간표 짜기",
     description: "학기 시간표 작성 마법사",
-    icon: Clock,
+    icon: "clock",
     href: "/academic/timetable",
     color: "from-pink-400 to-pink-600",
   },
@@ -48,7 +48,6 @@ export default function AcademicPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {academicMenus.map((menu) => {
-          const IconComponent = menu.icon;
           return (
             <Link key={menu.id} href={menu.href}>
               <Card
@@ -59,7 +58,12 @@ export default function AcademicPage() {
                     <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
                     <p className="text-sm opacity-90">{menu.description}</p>
                   </div>
-                  <IconComponent size={40} strokeWidth={1.5} />
+                  <Icon
+                    name={menu.icon}
+                    size={40}
+                    strokeWidth={1.5}
+                    color="white"
+                  />
                 </div>
               </Card>
             </Link>
