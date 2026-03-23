@@ -1,26 +1,31 @@
 export const runtime = "nodejs";
-
-// 캐시 설정 (10초)
-export const revalidate = 10;
+export const maxDuration = 30;
 
 export async function POST() {
   try {
-    // 외부 API 호출 (서버에서 CORS 문제 없음)
-    const response = await fetch(
-      "http://nexmotion.co.kr/bus/busStatusList.php",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+    // Vercel에서는 https:// 사용
+    const apiUrl = process.env.VERCEL
+      ? "https://nexmotion.co.kr/bus/busStatusList.php"
+      : "http://nexmotion.co.kr/bus/busStatusList.php";
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error(`[API Route] Failed: ${response.status}`);
       return Response.json(
-        { error: "Failed to fetch bus locations" },
-        { status: response.status },
+        { data: [], error: `HTTP ${response.status}` },
+        { status: 200 },
       );
     }
 
@@ -32,12 +37,16 @@ export async function POST() {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "public, s-maxage=10, stale-while-revalidate=59",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
       },
     });
   } catch (error) {
     console.error("[API Route] Error:", error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
+    return Response.json(
+      { data: [], error: "Failed to fetch bus data" },
+      { status: 200 },
+    );
   }
 }
 

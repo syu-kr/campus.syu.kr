@@ -1,8 +1,8 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/bus/locations",
-      "destination": "http://nexmotion.co.kr/bus/busStatusList.php"
+  "functions": {
+    "app/api/bus/locations/route.ts": {
+      "maxDuration": 30,
+      "memory": 1024
     }
-  ]
+  }
 }
