@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 // 캐시 설정 (10초)
 export const revalidate = 10;
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     // 외부 API 호출 (서버에서 CORS 문제 없음)
     const response = await fetch(

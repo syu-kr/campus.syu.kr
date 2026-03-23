@@ -26,7 +26,7 @@ export default function ShuttlePage() {
   const [now, setNow] = useState(new Date());
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
-  const mapComponentRef = useRef<any>(null);
+  const mapComponentRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -52,7 +52,7 @@ export default function ShuttlePage() {
 
     // 5-10초 랜덤 간격으로 반복
     const getRandomInterval = () => Math.random() * 5000 + 5000; // 5000~10000ms
-    let interval = setInterval(fetchLocations, getRandomInterval());
+    const interval = setInterval(fetchLocations, getRandomInterval());
 
     return () => clearInterval(interval);
   }, []);
@@ -495,6 +495,7 @@ export default function ShuttlePage() {
 }
 
 // 카카오맵 지도 컴포넌트
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MapComponent = forwardRef(
   (
     {
@@ -504,12 +505,12 @@ const MapComponent = forwardRef(
       busLocations: BusLocation[];
       selectedBusId: string | null;
     },
-    ref: any,
+    ref: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) => {
-    const mapRef = useRef<any>(null);
-    const markersRef = useRef<Map<string, any>>(new Map());
-    const infowindowsRef = useRef<Map<string, any>>(new Map());
-    const currentInfoWindowRef = useRef<any>(null);
+    const mapRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const markersRef = useRef<Map<string, any>>(new Map()); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const infowindowsRef = useRef<Map<string, any>>(new Map()); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const currentInfoWindowRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [mapLoaded, setMapLoaded] = useState(false);
 
     // SDK 로드 (변경 없음)
@@ -522,6 +523,7 @@ const MapComponent = forwardRef(
       }
 
       if ((window as any).kakao?.maps) {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
         setMapLoaded(true);
         return;
       }
@@ -550,7 +552,7 @@ const MapComponent = forwardRef(
     useEffect(() => {
       if (!mapLoaded || mapRef.current) return;
 
-      const kakao = (window as any).kakao;
+      const kakao = (window as any).kakao; // eslint-disable-line @typescript-eslint/no-explicit-any
       if (!kakao?.maps) return;
 
       const mapContainer = document.getElementById("shuttle-map");
@@ -575,7 +577,7 @@ const MapComponent = forwardRef(
     useEffect(() => {
       if (!mapRef.current) return;
 
-      const kakao = (window as any).kakao;
+      const kakao = (window as any).kakao; // eslint-disable-line @typescript-eslint/no-explicit-any
       if (!kakao?.maps) return;
 
       const routeColors: Record<string | number, string> = {
