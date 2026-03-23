@@ -2,35 +2,35 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 
 async function fetchBusData() {
-  const urls = [
-    "https://nexmotion.co.kr/bus/busStatusList.php",
-    "http://nexmotion.co.kr/bus/busStatusList.php",
-  ];
-
-  for (const url of urls) {
-    try {
-      console.log(`[API] Trying ${url}...`);
-      const response = await fetch(url, {
+  try {
+    console.log("[API] Fetching from nexmotion...");
+    const response = await fetch(
+      "http://nexmotion.co.kr/bus/busStatusList.php",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        signal: AbortSignal.timeout(10000), // 10초 타임아웃
-      });
+      },
+    );
 
-      console.log(`[API] Response from ${url}: ${response.status}`);
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`[API] Success from ${url}`);
-        return data;
-      }
-    } catch (error) {
-      console.error(`[API] Failed to fetch from ${url}:`, String(error));
+    console.log(`[API] Status: ${response.status}`);
+    
+    const data = await response.json();
+    console.log("[API] Got data:", data);
+    
+    // returnCode === "200" 체크
+    if (data && data.returnCode === "200" && Array.isArray(data.data)) {
+      console.log(`[API] Success with ${data.data.length} items`);
+      return data;
     }
+    
+    console.log("[API] Invalid response format");
+    return data || { data: [] };
+  } catch (error) {
+    console.error("[API] Fetch error:", error);
+    return { data: [] };
   }
-
-  console.error("[API] All URLs failed");
-  return { data: [] };
 }
 
 export async function POST() {
