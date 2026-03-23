@@ -6,8 +6,11 @@ import { BottomNav } from "./components/BottomNav";
 import { Providers } from "./providers";
 import "./globals.css";
 
-// Pretendard 폰트 import
-import "@fontsource/pretendard";
+// Pretendard 폰트 import - 필요한 weight만 로드
+import "@fontsource/pretendard/400.css"; // Regular
+import "@fontsource/pretendard/500.css"; // Medium
+import "@fontsource/pretendard/600.css"; // Semibold
+import "@fontsource/pretendard/700.css"; // Bold
 
 export const metadata: Metadata = {
   title: {
@@ -59,6 +62,11 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
+
+        {/* Preconnect to Kakao resources for faster loading */}
+        <link rel="preconnect" href="https://dapi.kakao.com" />
+        <link rel="preconnect" href="https://t1.daumcdn.net" />
+
         {/* Kakao Maps SDK - 동기 로딩 필수 (레거시 라이브러리) */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script

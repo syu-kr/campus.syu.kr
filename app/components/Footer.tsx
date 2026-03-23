@@ -72,6 +72,12 @@ function FooterComponent() {
               >
                 이용약관
               </a>
+              <a
+                href="/privacy"
+                className="text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                개인정보처리방침
+              </a>
             </div>
           </div>
         </div>
