@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/bus/locations",
-      "destination": "https://nexmotion.co.kr/bus/busStatusList.php"
+      "source": "/bus/busStatusList.php",
+      "destination": "http://nexmotion.co.kr/bus/busStatusList.php"
     }
   ]
 }

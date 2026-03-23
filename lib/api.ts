@@ -391,17 +391,12 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
 // 버스 실시간 위치 API
 export async function fetchBusLocations(): Promise<BusLocation[]> {
   try {
-    const response = await fetch("/api/bus/locations", {
+    const response = await fetch("/bus/busStatusList.php", {
       method: "POST",
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error(
-        "API error:",
-        response.status,
-        errorData.details || errorData.error,
-      );
+      console.error("API error:", response.status);
       return [];
     }
 
