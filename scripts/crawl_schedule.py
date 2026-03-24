@@ -8,9 +8,16 @@ from bs4 import BeautifulSoup
 import json
 import re
 import os
+import hashlib
+
+def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
+    """제목+시작날짜+종료날짜 기반 안정적 ID 생성"""
+    key = f"{title}|{start_date}|{end_date}"
+    hash_value = hashlib.md5(key.encode()).hexdigest()[:12]
+    return f"schedule-{hash_value}"
 
 def crawl_schedule():
-    """학사일정 크롤링 (증분 업데이트)"""
+    """학사일정 크롤링 (증분 업데이트 - 개선)"""
     
     url = "https://www.syu.ac.kr/academic/major-schedule/"
     
@@ -23,7 +30,7 @@ def crawl_schedule():
     # 기존 데이터 로드
     output_path = "public/data/schedules-major.json"
     existing_schedules = {}
-    existing_keys = set()
+    existing_map = {}  # 안정적 ID 추적용
     
     if os.path.exists(output_path):
         try:
@@ -32,7 +39,7 @@ def crawl_schedule():
                 for schedule in existing_data:
                     key = f"{schedule['title']}|{schedule['startDate']}|{schedule['endDate']}"
                     existing_schedules[key] = schedule
-                    existing_keys.add(key)
+                    existing_map[key] = schedule['id']
                 print(f"📌 기존 일정 {len(existing_schedules)}개 로드됨")
         except Exception as e:
             print(f"⚠️  기존 데이터 로드 실패: {e}")
@@ -55,7 +62,7 @@ def crawl_schedule():
         calendars = soup.find_all("div", {"class": "md_textcalendar"})
         print(f"📍 Calendar boxes found: {len(calendars)}")
         
-        new_schedules = []
+        new_schedules_by_key = {}
         processed_keys = set()
         new_count = 0
         
@@ -128,18 +135,24 @@ def crawl_schedule():
                 
                 processed_keys.add(unique_key)
                 
-                # Check if this schedule is new
-                if unique_key not in existing_keys:
-                    print(f"    ✨ NEW: {event_text} ({start_date} ~ {end_date})")
-                    new_count += 1
-                
                 # Determine category
                 category = "event"
                 if "중간고사" in event_text or "기말고사" in event_text:
                     category = "exam"
                 
+                # Check if this schedule is new
+                is_new = unique_key not in existing_map
+                
+                # 기존 ID 있으면 사용, 없으면 새로 생성
+                if unique_key in existing_map:
+                    schedule_id = existing_map[unique_key]
+                else:
+                    schedule_id = generate_stable_id(event_text, start_date, end_date)
+                    print(f"    ✨ NEW: {event_text} ({start_date} ~ {end_date})")
+                    new_count += 1
+                
                 schedule = {
-                    "id": f"schedule-{year}-{date_text.replace('~', '').replace(' ', '-')}-{li_idx}",
+                    "id": schedule_id,
                     "title": event_text,
                     "startDate": start_date,
                     "endDate": end_date,
@@ -147,10 +160,15 @@ def crawl_schedule():
                     "description": event_text
                 }
                 
-                new_schedules.append(schedule)
+                new_schedules_by_key[unique_key] = schedule
         
-        # 기존 일정 + 새 일정 합치기
-        all_schedules = list(existing_schedules.values()) + [s for s in new_schedules if f"{s['title']}|{s['startDate']}|{s['endDate']}" not in existing_keys]
+        # 새 데이터와 기존 데이터 합치기
+        all_schedules = list(new_schedules_by_key.values())
+        
+        # 기존 데이터 중 새 데이터에 없는 항목 추가
+        for key, schedule in existing_schedules.items():
+            if key not in new_schedules_by_key:
+                all_schedules.append(schedule)
         
         # Save JSON
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
