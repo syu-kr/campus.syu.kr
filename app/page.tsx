@@ -405,7 +405,7 @@ export default function Home() {
         </div>
 
         {/* 카테고리 필터 */}
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide">
           {categoryFilters.map((cat) => (
             <button
               key={cat.id}

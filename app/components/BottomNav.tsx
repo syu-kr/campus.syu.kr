@@ -43,7 +43,7 @@ export function BottomNav() {
               key={item.id}
               href={item.href}
               className={clsx(
-                "flex flex-col items-center justify-center py-3 px-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset",
+                "flex flex-col items-center justify-center py-3 px-2 transition-colors",
                 active
                   ? "text-primary-600 font-semibold"
                   : "text-neutral-600 hover:text-neutral-900",
