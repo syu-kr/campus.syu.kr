@@ -21,7 +21,7 @@ def generate_stable_id(category: str, title: str, date: str, author: str) -> str
     hash_value = hashlib.md5(key.encode()).hexdigest()[:12]
     return f"{category}-{hash_value}"
 
-def extract_announcement_row(row):
+def extract_announcement_row(row, debug=False):
     """공지사항 행에서 정보 추출"""
     try:
         # 다양한 선택자 시도 (여러 HTML 구조 지원)
@@ -40,25 +40,12 @@ def extract_announcement_row(row):
         if url and not url.startswith('http'):
             url = "https://www.syu.ac.kr" + url
         
-        # 열 순서 동적 감지
-        tds = row.select("td")
-        no_text = ""
-        author_text = ""
-        date_text = ""
+        # CSS selector로 각 열을 정확하게 추출 (수정)
+        author_text = row.select_one("td:nth-of-type(2)").get_text(strip=True) if row.select_one("td:nth-of-type(2)") else ""
+        date_text = row.select_one("td:nth-of-type(3)").get_text(strip=True) if row.select_one("td:nth-of-type(3)") else ""
+        views_text = row.select_one("td:nth-of-type(4)").get_text(strip=True) if row.select_one("td:nth-of-type(4)") else "0"
         
-        if len(tds) >= 5:
-            # No 추출 (첫 번째 열, 숫자만)
-            no_raw = tds[0].get_text(strip=True) if tds[0] else ""
-            no_text = ''.join(c for c in no_raw if c.isdigit())  # 숫자만 추출
-            
-            author_text = tds[2].get_text(strip=True) if tds[2] else ""
-            date_text = tds[3].get_text(strip=True) if tds[3] else ""
-            views_text = tds[4].get_text(strip=True) if tds[4] else "0"
-        else:
-            no_text = ""
-            author_text = tds[1].get_text(strip=True) if len(tds) > 1 else ""
-            date_text = tds[2].get_text(strip=True) if len(tds) > 2 else ""
-            views_text = tds[3].get_text(strip=True) if len(tds) > 3 else "0"
+        no_text = ""
         
         try:
             views = int(views_text)
@@ -171,7 +158,8 @@ def crawl_academic_notice():
         need_crawl_all = False
         
         for idx, row in enumerate(table_rows[:20]):  # 첫 20개만 검증
-            row_data = extract_announcement_row(row)
+            debug_mode = idx < 3  # 첫 3개는 디버그 모드
+            row_data = extract_announcement_row(row, debug=debug_mode)
             if not row_data:
                 continue
             
@@ -212,8 +200,9 @@ def crawl_academic_notice():
                     print(f"  페이지 {page}에서 데이터 없음")
                     continue
                 
-                for row in table_rows:
-                    row_data = extract_announcement_row(row)
+                for idx, row in enumerate(table_rows):
+                    debug_mode = (page == 1 and idx < 3)  # 첫 페이지의 첫 3개는 디버그 모드
+                    row_data = extract_announcement_row(row, debug=debug_mode)
                     if not row_data:
                         continue
                     
