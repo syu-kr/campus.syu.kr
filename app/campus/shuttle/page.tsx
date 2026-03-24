@@ -236,7 +236,7 @@ export default function ShuttlePage() {
       {/* 다음 버스 정보 */}
       {nextBusesWithin30Min.length > 0 && !dateInfo.isWeekend ? (
         <>
-          <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400">
+          <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="mb-3">
               <p className="text-xs sm:text-sm text-green-700 font-semibold mb-2">
                 곧 출발하는 버스
@@ -244,10 +244,7 @@ export default function ShuttlePage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {nextBusesWithin30Min.map((bus, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white border-2 border-green-300 rounded-lg p-3 sm:p-4"
-                >
+                <div key={idx} className="bg-white rounded-lg p-3 sm:p-4">
                   <h3 className="text-base sm:text-lg font-bold text-green-900 mb-2">
                     {bus.routeName}
                   </h3>
@@ -330,10 +327,17 @@ export default function ShuttlePage() {
                       1: "학교 → 역",
                       2: "역 → 학교",
                     };
-                    const statusColors: Record<number, string> = {
+                    const routeColors: Record<string | number, string> = {
                       1: "bg-blue-100 text-blue-700",
-                      2: "bg-gray-200 text-gray-600",
+                      2: "bg-green-100 text-green-700",
+                      3: "bg-amber-100 text-amber-700",
                     };
+
+                    // status가 1일 때만 routeid 색 사용, status가 2일 때는 회색
+                    const bgColor =
+                      bus.status === 1
+                        ? routeColors[bus.routeid] || "bg-gray-100"
+                        : "bg-gray-100 text-gray-600";
 
                     return (
                       <div
@@ -342,7 +346,7 @@ export default function ShuttlePage() {
                           setSelectedBusId(bus.id);
                           mapComponentRef.current?.openMarker(bus.id);
                         }}
-                        className={`p-3 sm:p-4 rounded-lg border flex justify-between items-center gap-3 cursor-pointer transition-all hover:shadow-md ${statusColors[bus.status] || "bg-gray-100"}`}
+                        className={`p-3 sm:p-4 rounded-lg flex justify-between items-center gap-3 cursor-pointer transition-all hover:shadow-md ${bgColor}`}
                       >
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-sm sm:text-base truncate">
@@ -520,6 +524,7 @@ const MapComponent = forwardRef(
     const infowindowsRef = useRef<Map<string, any>>(new Map()); // eslint-disable-line @typescript-eslint/no-explicit-any
     const currentInfoWindowRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
     const [mapLoaded, setMapLoaded] = useState(false);
+    const markersCreatedRef = useRef(false);
 
     // SDK 로드 (변경 없음)
     useEffect(() => {
@@ -611,77 +616,74 @@ const MapComponent = forwardRef(
       currentInfoWindowRef.current = null;
 
       // 새 마커 추가
-      busLocations
-        .filter((bus) => bus.status !== 0)
-        .forEach((bus) => {
-          const lat = Number(bus.lat);
-          const lon = Number(bus.lon);
-          const color =
-            bus.status === 2
-              ? "#d0d0d0"
-              : routeColors[bus.routeid] || "#999999";
-          const routeName = routeNames[bus.routeid] || "알 수 없음";
-          const statusLabel = statusLabels[bus.status] || "알 수 없음";
+      const activeBuses = busLocations.filter((bus) => bus.status !== 0);
 
-          const markerPosition = new kakao.maps.LatLng(lat, lon);
+      activeBuses.forEach((bus) => {
+        const lat = Number(bus.lat);
+        const lon = Number(bus.lon);
+        const color =
+          bus.status === 2 ? "#d0d0d0" : routeColors[bus.routeid] || "#999999";
+        const routeName = routeNames[bus.routeid] || "알 수 없음";
+        const statusLabel = statusLabels[bus.status] || "알 수 없음";
 
-          const svgMarker = `
-            <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 0C7 0 0 7 0 15c0 11 15 22 15 22s15-11 15-22c0-8-7-15-15-15z" fill="${color}"/>
-              <circle cx="15" cy="15" r="6" fill="white"/>
-            </svg>
-          `;
+        const markerPosition = new kakao.maps.LatLng(lat, lon);
 
-          const markerImage = new kakao.maps.MarkerImage(
-            `data:image/svg+xml;base64,${btoa(svgMarker)}`,
-            new kakao.maps.Size(30, 37),
-            { offset: new kakao.maps.Point(15, 37) },
-          );
-
-          const marker = new kakao.maps.Marker({
-            position: markerPosition,
-            title: routeName,
-            image: markerImage,
-          });
-
-          marker.setMap(mapRef.current);
-
-          const infowindowContent = `
-          <div style="
-            width: 160px;
-            padding: 12px;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            font-size: 12px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-          ">
-            <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px; color: #000;">${routeName}</p>
-            <p style="margin: 0; color: #333;"><span style="font-weight: 600;">상태:</span> <span style="color: ${color}; font-weight: 500;">${statusLabel}</span></p>
-          </div>
+        const svgMarker = `
+          <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 0C7 0 0 7 0 15c0 11 15 22 15 22s15-11 15-22c0-8-7-15-15-15z" fill="${color}"/>
+            <circle cx="15" cy="15" r="6" fill="white"/>
+          </svg>
         `;
 
-          const infowindow = new kakao.maps.InfoWindow({
-            content: infowindowContent,
-            removable: true,
-            zIndex: 1,
-          });
+        const markerImage = new kakao.maps.MarkerImage(
+          `data:image/svg+xml;base64,${btoa(svgMarker)}`,
+          new kakao.maps.Size(30, 37),
+          { offset: new kakao.maps.Point(15, 37) },
+        );
 
-          kakao.maps.event.addListener(marker, "click", () => {
-            // 이전 InfoWindow 닫기
-            if (currentInfoWindowRef.current) {
-              currentInfoWindowRef.current.close();
-            }
-            infowindow.open(mapRef.current, marker);
-            currentInfoWindowRef.current = infowindow;
-          });
-
-          markersRef.current.set(bus.id, { marker, infowindow });
-          infowindowsRef.current.set(bus.id, infowindow);
+        const marker = new kakao.maps.Marker({
+          position: markerPosition,
+          title: routeName,
+          image: markerImage,
         });
 
+        marker.setMap(mapRef.current);
+
+        const infowindowContent = `
+        <div style="
+          width: 160px;
+          padding: 12px;
+          border-radius: 8px;
+          background: white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          font-size: 12px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
+        ">
+          <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px; color: #000;">${routeName}</p>
+          <p style="margin: 0; color: #333;"><span style="font-weight: 600;">상태:</span> <span style="color: ${color}; font-weight: 500;">${statusLabel}</span></p>
+        </div>
+      `;
+
+        const infowindow = new kakao.maps.InfoWindow({
+          content: infowindowContent,
+          removable: true,
+          zIndex: 1,
+        });
+
+        kakao.maps.event.addListener(marker, "click", () => {
+          // 이전 InfoWindow 닫기
+          if (currentInfoWindowRef.current) {
+            currentInfoWindowRef.current.close();
+          }
+          infowindow.open(mapRef.current, marker);
+          currentInfoWindowRef.current = infowindow;
+        });
+
+        markersRef.current.set(bus.id, { marker, infowindow });
+        infowindowsRef.current.set(bus.id, infowindow);
+      });
+
       // 지도 범위 설정
-      const activeBuses = busLocations.filter((bus) => bus.status !== 0);
       if (activeBuses.length > 0) {
         const bounds = new kakao.maps.LatLngBounds();
         activeBuses.forEach((bus) => {
@@ -691,6 +693,8 @@ const MapComponent = forwardRef(
         });
         mapRef.current.setBounds(bounds);
       }
+
+      markersCreatedRef.current = true;
     }, [busLocations]);
 
     // 선택된 버스 마커 열기
