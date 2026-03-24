@@ -17,7 +17,7 @@ export async function fetchAnnouncements(
 
     if (!category || category === "academic") {
       const academic = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 86400 }, // Cache for 24 hours
+        next: { revalidate: 3600 }, // Cache for 1 hour
       }).then((r) => r.json());
       data = [...data, ...(academic as Announcement[])];
     }
@@ -25,7 +25,7 @@ export async function fetchAnnouncements(
     if (!category || category === "scholarship") {
       const scholarship = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 86400 } }, // Cache for 24 hours
+        { next: { revalidate: 3600 } }, // Cache for 1 hour
       ).then((r) => r.json());
       data = [
         ...data,
@@ -40,7 +40,7 @@ export async function fetchAnnouncements(
       try {
         const campus = await fetch(
           "/data/announcements-campus-life.json",
-          { next: { revalidate: 86400 } }, // Cache for 24 hours
+          { next: { revalidate: 3600 } }, // Cache for 1 hour
         ).then((r) => r.json());
         data = [
           ...data,
@@ -96,7 +96,7 @@ export async function fetchCafeteriaMenu(
 ): Promise<CafeteriaMenu[]> {
   try {
     const response = await fetch("/data/cafeteria-menu.json", {
-      next: { revalidate: 86400 }, // Cache for 24 hours (매일 업데이트됨)
+      next: { revalidate: 3600 }, // Cache for 1 hour
     });
     const data = (await response.json()) as
       | Array<{ menus?: unknown[] }>
@@ -285,7 +285,7 @@ export async function searchAll(
     // 학사공지
     try {
       const academicNotices = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 86400 },
+        next: { revalidate: 3600 },
       }).then((r) => r.json());
       const matchedAcademic = (academicNotices as Announcement[]).filter(
         (a) =>
@@ -301,7 +301,7 @@ export async function searchAll(
     try {
       const scholarshipNotices = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 86400 } },
+        { next: { revalidate: 3600 } },
       ).then((r) => r.json());
       const matchedScholarship = (scholarshipNotices as Announcement[]).filter(
         (a) =>
@@ -321,7 +321,7 @@ export async function searchAll(
     try {
       const campusNotices = await fetch(
         "/data/announcements-campus-life.json",
-        { next: { revalidate: 86400 } }, // Cache for 24 hours
+        { next: { revalidate: 3600 } }, // Cache for 1 hour
       ).then((r) => r.json());
       const matchedCampus = (campusNotices as Announcement[]).filter(
         (a) =>
