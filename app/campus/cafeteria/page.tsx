@@ -58,15 +58,17 @@ export default function CafeteriaPage() {
 
       {/* 알레르기 정보 */}
       <Card className="mb-8 bg-amber-50 border border-amber-200">
-        <p className="text-sm text-amber-900 flex items-center">
+        <p className="text-sm text-amber-900 flex items-start gap-2">
           <Icon
             name="alert-circle"
             size={16}
-            className="mr-2 flex-shrink-0"
+            className="flex-shrink-0 mt-0.5"
             color="rgb(161, 98, 7)"
           />
-          <strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된 항목을
-          참고하여 식사를 선택하세요.
+          <span>
+            <strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된 항목을
+            참고하여 식사를 선택하세요.
+          </span>
         </p>
       </Card>
 

@@ -700,7 +700,7 @@ export default function Home() {
             전체보기 →
           </Link>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {schedulesLoading && <Skeleton count={2} />}
           {!schedulesLoading && schedules && (
             <>
@@ -724,32 +724,34 @@ export default function Home() {
                     return isToday;
                   })
                   .map((schedule) => (
-                    <Link key={schedule.id} href="/academic/schedule">
-                      <Card className="cursor-pointer hover:shadow-card-hover">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Badge
-                              color={
-                                schedule.category === "exam" ? "red" : "blue"
-                              }
-                              size="sm"
-                            >
-                              {getCategoryLabel(schedule.category)}
-                            </Badge>
-                            <h3 className="font-semibold text-neutral-900 mt-2">
-                              {schedule.title}
-                            </h3>
-                            <p className="text-xs text-neutral-600 mt-1">
-                              {formatDate(schedule.startDate)} ~{" "}
-                              {formatDate(schedule.endDate)}
-                            </p>
+                    <div key={schedule.id} className="mb-3">
+                      <Link href="/academic/schedule">
+                        <Card className="cursor-pointer hover:shadow-card-hover">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Badge
+                                color={
+                                  schedule.category === "exam" ? "red" : "blue"
+                                }
+                                size="sm"
+                              >
+                                {getCategoryLabel(schedule.category)}
+                              </Badge>
+                              <h3 className="font-semibold text-neutral-900 mt-2">
+                                {schedule.title}
+                              </h3>
+                              <p className="text-xs text-neutral-600 mt-1">
+                                {formatDate(schedule.startDate)} ~{" "}
+                                {formatDate(schedule.endDate)}
+                              </p>
+                            </div>
+                            <span className="text-xs font-semibold text-neutral-600">
+                              {schedule.category === "exam" ? "시험" : "일정"}
+                            </span>
                           </div>
-                          <span className="text-xs font-semibold text-neutral-600">
-                            {schedule.category === "exam" ? "시험" : "일정"}
-                          </span>
-                        </div>
-                      </Card>
-                    </Link>
+                        </Card>
+                      </Link>
+                    </div>
                   ))
               )}
             </>
