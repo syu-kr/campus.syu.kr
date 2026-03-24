@@ -8,4 +8,4 @@ Disallow: /private/
 Crawl-delay: 1
 
 # Sitemap
-Sitemap: https://syu-campus.vercel.app/sitemap.xml
+Sitemap: https://campus.syu.kr/sitemap.xml

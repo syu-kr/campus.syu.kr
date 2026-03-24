@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
   keywords: "삼육대, 캠퍼스, 공지사항, 학식, 학사일정",
   authors: [{ name: "SYU KR" }],
+  verification: {
+    google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
