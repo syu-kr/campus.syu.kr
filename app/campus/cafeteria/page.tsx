@@ -7,9 +7,28 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { Icon } from "@/app/components/Icon";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCafeteriaMenu } from "@/lib/api";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export default function CafeteriaPage() {
+  const [now, setNow] = useState<Date | null>(null);
+
+  // 매초 시간 업데이트 및 초기값 설정
+  useEffect(() => {
+    // 초기값 설정 (한국 시간대)
+    const koreaTime = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+    );
+    setNow(koreaTime);
+
+    const timer = setInterval(() => {
+      const koreaTime = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+      );
+      setNow(koreaTime);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   const { data: menus, isLoading } = useQuery({
     queryKey: ["cafeteria-weekly"],
     queryFn: () => fetchCafeteriaMenu(),
@@ -19,12 +38,18 @@ export default function CafeteriaPage() {
 
   // 오늘 날짜와 요일 계산
   const todayInfo = useMemo(() => {
-    const today = new Date();
+    if (!now) return { dateString: "", isWeekend: false, dayOfWeek: -1 };
+
+    const today = now;
     const dayOfWeek = today.getDay(); // 0: 일요일, 6: 토요일
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const dateString = today.toISOString().split("T")[0]; // YYYY-MM-DD
+    // 한국 시간 기준으로 YYYY-MM-DD 포맷 생성
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const date = String(today.getDate()).padStart(2, "0");
+    const dateString = `${year}-${month}-${date}`;
     return { dateString, isWeekend, dayOfWeek };
-  }, []);
+  }, [now]);
 
   return (
     <Container className="py-6 sm:py-8">

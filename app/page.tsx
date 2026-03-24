@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Card } from "./components/Card";
 import { Container } from "./components/Container";
@@ -59,6 +59,23 @@ export default function Home() {
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [now, setNow] = useState<Date | null>(null);
+
+  // 매초 한국 시간 업데이트
+  useEffect(() => {
+    const koreaTime = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+    );
+    setNow(koreaTime);
+
+    const timer = setInterval(() => {
+      const koreaTime = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+      );
+      setNow(koreaTime);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // 공지사항 조회
   const { data: announcements, isLoading: announcementsLoading } = useQuery({
@@ -111,7 +128,6 @@ export default function Home() {
     staleTime: 10 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
   });
-
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setShowSearchResults(query.trim().length > 0);
@@ -124,13 +140,24 @@ export default function Home() {
 
   // 오늘 날짜와 요일 계산
   const todayInfo = useMemo(() => {
-    const today = new Date();
+    if (!now)
+      return {
+        dateStringDot: "",
+        dateStringDash: "",
+        isWeekend: false,
+        dayOfWeek: -1,
+      };
+
+    const today = now;
     const dayOfWeek = today.getDay(); // 0: 일요일, 6: 토요일
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const dateStringDot = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`; // YYYY.MM.DD (학사일정)
-    const dateStringDash = today.toISOString().split("T")[0]; // YYYY-MM-DD (카페테리아)
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const date = String(today.getDate()).padStart(2, "0");
+    const dateStringDot = `${year}.${month}.${date}`; // YYYY.MM.DD (학사일정)
+    const dateStringDash = `${year}-${month}-${date}`; // YYYY-MM-DD (카페테리아)
     return { dateStringDot, dateStringDash, isWeekend, dayOfWeek };
-  }, []);
+  }, [now]);
 
   // 오늘 식단 찾기
   const todayMenu = useMemo(() => {
