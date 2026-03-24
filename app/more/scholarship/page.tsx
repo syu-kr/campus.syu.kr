@@ -16,8 +16,7 @@ export default function ScholarshipPage() {
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
     queryFn: () => fetchScholarships(),
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   // 검색 필터링

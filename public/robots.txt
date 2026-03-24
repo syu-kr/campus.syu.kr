@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /private/
+
+# Crawl delay
+Crawl-delay: 1
+
+# Sitemap
+Sitemap: https://syu-campus.vercel.app/sitemap.xml

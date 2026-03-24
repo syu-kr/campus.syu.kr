@@ -89,7 +89,7 @@ export default function PrivacyPage() {
               <div>
                 <p className="font-semibold text-sm mb-1">2. Kakao Maps 쿠키</p>
                 <p className="text-sm text-neutral-600">
-                  Kakao의 정책에 따라 관리되며, 일반적으로 수개월 보존됩니다.
+                  Kakao의 정책에 따라 관리됩니다.
                 </p>
               </div>
               <div>
@@ -295,9 +295,7 @@ export default function PrivacyPage() {
                 </p>
                 <p>
                   <span className="font-semibold">보존 기간:</span>
-                  <span className="text-neutral-600">
-                    Kakao의 정책에 따름 (일반적으로 수개월)
-                  </span>
+                  <span className="text-neutral-600">Kakao의 정책에 따름</span>
                 </p>
               </div>
 
@@ -357,7 +355,7 @@ export default function PrivacyPage() {
                   <span className="font-semibold">보존 기간:</span>
                   <span className="text-neutral-600">
                     {" "}
-                    Google의 정책에 따름 (일반적으로 수개월)
+                    Google의 정책에 따름
                   </span>
                 </p>
               </div>

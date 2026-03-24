@@ -367,7 +367,7 @@ export default function LibraryPage() {
         )}
 
         <div className="mt-4 text-xs text-neutral-500">
-          <p>• 초록색: 1/3 미만</p>
+          <p>• 파란색: 1/3 미만</p>
           <p>• 주황색: 1/3 ~ 2/3</p>
           <p>• 빨간색: 2/3 이상</p>
         </div>
