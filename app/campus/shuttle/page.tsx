@@ -201,43 +201,36 @@ export default function ShuttlePage() {
     return timeByRoute;
   }, [buses, dateInfo, selectedType, defaultType]);
 
-  // 첫차와 마지막차 시간 계산
-  const operationHours = useMemo(() => {
-    if (!buses || buses.length === 0) {
-      return null;
-    }
+  // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
+  const isWithinOperationHours = useMemo(() => {
+    if (!buses || buses.length === 0 || !now) return false;
 
+    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
     let firstTime = Infinity;
     let lastTime = -Infinity;
 
+    // 현재 요일의 모든 버스 시간에서 첫차와 마지막차 찾기
     buses.forEach((bus) => {
       const times = bus.schedules[selectedType];
-      times.forEach((time) => {
-        const timeMinutes = timeToMinutes(time);
-        firstTime = Math.min(firstTime, timeMinutes);
-        lastTime = Math.max(lastTime, timeMinutes);
-      });
+      if (times && times.length > 0) {
+        times.forEach((time) => {
+          const timeMinutes = timeToMinutes(time);
+          firstTime = Math.min(firstTime, timeMinutes);
+          lastTime = Math.max(lastTime, timeMinutes);
+        });
+      }
     });
 
     if (firstTime === Infinity || lastTime === -Infinity) {
-      return null;
+      return false;
     }
 
-    // 분을 시:분 형식으로 변환
-    const formatTime = (minutes: number) => {
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-    };
+    // 첫차 30분 전부터 마지막차 30분 후까지
+    const operationStart = Math.max(0, firstTime - 30);
+    const operationEnd = Math.min(24 * 60 - 1, lastTime + 30);
 
-    const operationStartTime = formatTime(Math.max(0, firstTime - 30));
-    const operationEndTime = formatTime(Math.min(24 * 60 - 1, lastTime + 30));
-
-    return {
-      operationStartTime,
-      operationEndTime,
-    };
-  }, [buses, selectedType]);
+    return currentMinutes >= operationStart && currentMinutes <= operationEnd;
+  }, [buses, dateInfo, now, selectedType]);
 
   // 요일 버튼 클릭 시
   const dayButtons = [
@@ -285,8 +278,9 @@ export default function ShuttlePage() {
       )}
 
       {/* 다음 버스 정보 */}
-      {nextBusesWithin30Min.length > 0 && !dateInfo.isWeekend ? (
-        <>
+      {!dateInfo.isWeekend &&
+        isWithinOperationHours &&
+        nextBusesWithin30Min.length > 0 && (
           <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="mb-3">
               <p className="text-xs sm:text-sm text-green-700 font-semibold mb-2">
@@ -311,51 +305,54 @@ export default function ShuttlePage() {
               ))}
             </div>
           </Card>
+        )}
 
-          {/* 실시간 버스 위치 지도 */}
-          {busLocations.length > 0 && (
-            <Card className="mb-6">
-              <div className="mb-4">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
-                  <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
-                    실시간 버스 위치
-                  </h2>
-                  <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: "#3b82f6" }}
-                      ></div>
-                      <span className="text-neutral-600">화랑대행</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: "#10b981" }}
-                      ></div>
-                      <span className="text-neutral-600">석계행</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: "#f59e0b" }}
-                      ></div>
-                      <span className="text-neutral-600">별내행</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: "#d0d0d0" }}
-                      ></div>
-                      <span className="text-neutral-600">캠퍼스행</span>
-                    </div>
-                  </div>
+      {/* 실시간 버스 위치 지도 */}
+      {!dateInfo.isWeekend && isWithinOperationHours && (
+        <Card className="mb-6">
+          <div className="mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
+              <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
+                실시간 버스 위치
+              </h2>
+              <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#3b82f6" }}
+                  ></div>
+                  <span className="text-neutral-600">화랑대행</span>
                 </div>
-                <p className="text-xs sm:text-sm text-neutral-600">
-                  5-10초마다 자동으로 업데이트됩니다
-                </p>
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#10b981" }}
+                  ></div>
+                  <span className="text-neutral-600">석계행</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#f59e0b" }}
+                  ></div>
+                  <span className="text-neutral-600">별내행</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#d0d0d0" }}
+                  ></div>
+                  <span className="text-neutral-600">캠퍼스행</span>
+                </div>
               </div>
+            </div>
+            <p className="text-xs sm:text-sm text-neutral-600">
+              5-10초마다 자동으로 업데이트됩니다
+            </p>
+          </div>
 
+          {busLocations.length > 0 ? (
+            <>
               {/* 카카오맵 지도 */}
               <div
                 id="shuttle-map"
@@ -418,24 +415,14 @@ export default function ShuttlePage() {
                 busLocations={busLocations}
                 selectedBusId={selectedBusId}
               />
-            </Card>
+            </>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-sm text-neutral-700 mb-3 font-medium">
+                현재 실시간 버스 위치 정보가 없습니다.
+              </p>
+            </div>
           )}
-        </>
-      ) : null}
-
-      {/* 실시간 버스 위치가 없을 때 안내 메시지 */}
-      {busLocations.length === 0 && operationHours && !dateInfo.isWeekend && (
-        <Card className="mb-6 bg-neutral-50 border border-neutral-300">
-          <div className="text-center py-6">
-            <p className="text-sm text-neutral-700 mb-3 font-medium">
-              현재 실시간 버스 위치 정보가 없습니다.
-            </p>
-            <p className="text-xs sm:text-sm text-neutral-600">
-              셔틀버스 위치는{" "}
-              <strong>{operationHours.operationStartTime}</strong> ~{" "}
-              <strong>{operationHours.operationEndTime}</strong>에 표시됩니다
-            </p>
-          </div>
         </Card>
       )}
 
