@@ -90,13 +90,13 @@
         "14:30"
       ]
     },
-    "lastUpdated": "2026-03-21"
+    "lastUpdated": "2026-03-25"
   },
   {
     "id": "shuttle-1",
-    "routeName": "학교 ↔ 석계역",
+    "routeName": "학교 ↔ 석계역(4번 출구)",
     "startLocation": "학교",
-    "endLocation": "석계역",
+    "endLocation": "석계역(4번 출구)",
     "schedules": {
       "mondayToThursday": [
         "12:00",
@@ -133,13 +133,13 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-21"
+    "lastUpdated": "2026-03-25"
   },
   {
     "id": "shuttle-2",
-    "routeName": "학교 ↔ 별내역",
+    "routeName": "학교 ↔ 별내역(3번 출구)",
     "startLocation": "학교",
-    "endLocation": "별내역",
+    "endLocation": "별내역(3번 출구)",
     "schedules": {
       "mondayToThursday": [
         "07:55",
@@ -170,12 +170,12 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-21"
+    "lastUpdated": "2026-03-25"
   },
   {
     "id": "shuttle-3",
-    "routeName": "별내역 ↔ 학교",
-    "startLocation": "별내역",
+    "routeName": "별내역(3번 출구) ↔ 학교",
+    "startLocation": "별내역(3번 출구)",
     "endLocation": "학교",
     "schedules": {
       "mondayToThursday": [
@@ -207,6 +207,6 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-21"
+    "lastUpdated": "2026-03-25"
   }
 ]
