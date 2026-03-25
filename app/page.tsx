@@ -27,20 +27,20 @@ import { StateCard } from "./components/StateCard";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
+  { id: "1", iconName: "utensils", label: "학식", path: "/campus/cafeteria" },
+  { id: "2", iconName: "bus", label: "셔틀버스", path: "/campus/shuttle" },
   {
-    id: "1",
+    id: "3",
     iconName: "map",
     label: "캠퍼스 지도",
     path: "/campus/map",
   },
   {
-    id: "2",
+    id: "4",
     iconName: "calendar",
     label: "학사일정",
     path: "/academic/schedule",
   },
-  { id: "3", iconName: "utensils", label: "학식", path: "/campus/cafeteria" },
-  { id: "4", iconName: "bus", label: "셔틀버스", path: "/campus/shuttle" },
   { id: "5", iconName: "award", label: "장학금", path: "/more/scholarship" },
   { id: "6", iconName: "phone", label: "연락처", path: "/more/phone" },
 ];
@@ -401,7 +401,9 @@ export default function Home() {
         <div className="space-y-4">
           <div>
             <p className="text-xs opacity-90 mb-1">서비스 공지</p>
-            <h3 className="text-lg font-semibold">서비스 공지를 확인하세요</h3>
+            <h3 className="text-lg font-semibold">
+              서비스 고도화를 위한 요청을 확인해주세요
+            </h3>
           </div>
           <Link href="/service/notices" className="inline-block">
             <button className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-all text-sm font-medium">
