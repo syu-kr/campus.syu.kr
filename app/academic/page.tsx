@@ -16,6 +16,7 @@ const academicMenus = [
     description: "학사 관련 공지사항",
     icon: "megaphone",
     href: "/academic/announcements",
+    isExternal: false,
     color: "from-blue-400 to-blue-600",
   },
   {
@@ -24,6 +25,7 @@ const academicMenus = [
     description: "수강신청, 시험, 휴무 일정",
     icon: "calendar",
     href: "/academic/schedule",
+    isExternal: false,
     color: "from-purple-400 to-purple-600",
   },
   {
@@ -31,8 +33,27 @@ const academicMenus = [
     title: "시간표 짜기",
     description: "학기 시간표 작성 마법사",
     icon: "clock",
-    href: "/academic/timetable",
+    href: "https://lecture.syu.kr/timetable",
+    isExternal: true,
     color: "from-pink-400 to-pink-600",
+  },
+  {
+    id: "mock-sugang",
+    title: "모의 수강신청",
+    description: "수강신청 미리 연습하기",
+    icon: "book-open",
+    href: "https://sugang.syu.kr/testLogin",
+    isExternal: true,
+    color: "from-orange-400 to-orange-600",
+  },
+  {
+    id: "basket-competition",
+    title: "수강신청 장바구니 경쟁률",
+    description: "강의 경쟁률 확인",
+    icon: "bar-chart-3",
+    href: "https://sugang.syu.kr/basket",
+    isExternal: true,
+    color: "from-green-400 to-green-600",
   },
 ];
 
@@ -48,24 +69,41 @@ export default function AcademicPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {academicMenus.map((menu) => {
+          const cardElement = (
+            <Card
+              className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
+                  <p className="text-sm opacity-90">{menu.description}</p>
+                </div>
+                <Icon
+                  name={menu.icon}
+                  size={40}
+                  strokeWidth={1.5}
+                  color="white"
+                />
+              </div>
+            </Card>
+          );
+
+          if (menu.isExternal) {
+            return (
+              <a
+                key={menu.id}
+                href={menu.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {cardElement}
+              </a>
+            );
+          }
+
           return (
             <Link key={menu.id} href={menu.href}>
-              <Card
-                className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
-                    <p className="text-sm opacity-90">{menu.description}</p>
-                  </div>
-                  <Icon
-                    name={menu.icon}
-                    size={40}
-                    strokeWidth={1.5}
-                    color="white"
-                  />
-                </div>
-              </Card>
+              {cardElement}
             </Link>
           );
         })}

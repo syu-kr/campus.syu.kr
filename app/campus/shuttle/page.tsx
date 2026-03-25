@@ -26,7 +26,20 @@ export default function ShuttlePage() {
   const [now, setNow] = useState(new Date());
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
+  const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
   const mapComponentRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  const toggleBusExpand = (busId: string) => {
+    setExpandedBuses((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(busId)) {
+        newSet.delete(busId);
+      } else {
+        newSet.add(busId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -187,6 +200,44 @@ export default function ShuttlePage() {
 
     return timeByRoute;
   }, [buses, dateInfo, selectedType, defaultType]);
+
+  // 첫차와 마지막차 시간 계산
+  const operationHours = useMemo(() => {
+    if (!buses || buses.length === 0) {
+      return null;
+    }
+
+    let firstTime = Infinity;
+    let lastTime = -Infinity;
+
+    buses.forEach((bus) => {
+      const times = bus.schedules[selectedType];
+      times.forEach((time) => {
+        const timeMinutes = timeToMinutes(time);
+        firstTime = Math.min(firstTime, timeMinutes);
+        lastTime = Math.max(lastTime, timeMinutes);
+      });
+    });
+
+    if (firstTime === Infinity || lastTime === -Infinity) {
+      return null;
+    }
+
+    // 분을 시:분 형식으로 변환
+    const formatTime = (minutes: number) => {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
+    };
+
+    const operationStartTime = formatTime(Math.max(0, firstTime - 30));
+    const operationEndTime = formatTime(Math.min(24 * 60 - 1, lastTime + 30));
+
+    return {
+      operationStartTime,
+      operationEndTime,
+    };
+  }, [buses, selectedType]);
 
   // 요일 버튼 클릭 시
   const dayButtons = [
@@ -372,6 +423,22 @@ export default function ShuttlePage() {
         </>
       ) : null}
 
+      {/* 실시간 버스 위치가 없을 때 안내 메시지 */}
+      {busLocations.length === 0 && operationHours && !dateInfo.isWeekend && (
+        <Card className="mb-6 bg-neutral-50 border border-neutral-300">
+          <div className="text-center py-6">
+            <p className="text-sm text-neutral-700 mb-3 font-medium">
+              현재 실시간 버스 위치 정보가 없습니다.
+            </p>
+            <p className="text-xs sm:text-sm text-neutral-600">
+              셔틀버스 위치는{" "}
+              <strong>{operationHours.operationStartTime}</strong> ~{" "}
+              <strong>{operationHours.operationEndTime}</strong>에 표시됩니다
+            </p>
+          </div>
+        </Card>
+      )}
+
       {/* 요일 선택 */}
       <div className="grid grid-cols-2 gap-2 mb-6">
         {dayButtons.map((btn) => (
@@ -422,71 +489,98 @@ export default function ShuttlePage() {
             const times = bus.schedules[selectedType];
 
             return (
-              <Card key={bus.id}>
-                <div className="mb-4">
-                  <h2 className="text-lg font-bold text-neutral-900 mb-1">
-                    {bus.routeName}
-                  </h2>
-                  <p className="text-sm text-neutral-600">
-                    {bus.startLocation} → {bus.endLocation}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
-                    운행 시간
-                  </p>
-                  {times.length === 0 ? (
-                    <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
-                      <p className="text-sm text-neutral-600 font-medium">
-                        이 날짜에는 운행되지 않습니다.
+              <Card key={bus.id} className="overflow-hidden">
+                <button
+                  onClick={() => toggleBusExpand(bus.id)}
+                  className="w-full text-left hover:bg-neutral-50 px-1 py-1 rounded-lg transition-all duration-200"
+                  aria-label="시간표 펼치기"
+                >
+                  <div className="flex items-center justify-between gap-3 p-3">
+                    <div className="flex-1">
+                      <h2 className="text-lg font-bold text-neutral-900 mb-1">
+                        {bus.routeName}
+                      </h2>
+                      <p className="text-sm text-neutral-600">
+                        {bus.startLocation} → {bus.endLocation}
                       </p>
                     </div>
-                  ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                      {times.map((time, idx) => {
-                        const timeMinutes = timeToMinutes(time);
-                        const currentMinutes =
-                          dateInfo.hour * 60 + dateInfo.minute;
-                        const minutesUntil = timeMinutes - currentMinutes;
-
-                        // 이 노선의 가장 빨리 오는 버스인지 확인
-                        const nextBusTime = nextBusTimeByRoute.get(
-                          bus.routeName,
-                        );
-                        const isNextBus = nextBusTime === time;
-                        const isWithin30Min =
-                          isNextBus &&
-                          minutesUntil <= 30 &&
-                          selectedType === defaultType &&
-                          !dateInfo.isWeekend;
-
-                        const isPassed =
-                          timeMinutes <= currentMinutes &&
-                          selectedType === defaultType;
-
-                        return (
-                          <div
-                            key={idx}
-                            className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
-                              isWithin30Min
-                                ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
-                                : isPassed
-                                  ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
-                                  : "bg-primary-50 border border-primary-200 text-primary-700"
-                            }`}
-                          >
-                            {time}
-                          </div>
-                        );
-                      })}
+                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-primary-50 rounded-lg">
+                      <svg
+                        className={`w-5 h-5 text-primary-600 transition-transform duration-300 ${
+                          expandedBuses.has(bus.id) ? "rotate-180" : ""
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                        />
+                      </svg>
                     </div>
-                  )}
-                </div>
+                  </div>
+                </button>
 
-                <p className="text-xs text-neutral-500 mt-3">
-                  최종 업데이트: {bus.lastUpdated}
-                </p>
+                {expandedBuses.has(bus.id) && (
+                  <div className="border-t border-neutral-200 pt-4 mt-4 animate-in fade-in duration-200">
+                    <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
+                      운행 시간
+                    </p>
+                    {times.length === 0 ? (
+                      <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
+                        <p className="text-sm text-neutral-600 font-medium">
+                          이 날짜에는 운행되지 않습니다.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {times.map((time, idx) => {
+                          const timeMinutes = timeToMinutes(time);
+                          const currentMinutes =
+                            dateInfo.hour * 60 + dateInfo.minute;
+                          const minutesUntil = timeMinutes - currentMinutes;
+
+                          // 이 노선의 가장 빨리 오는 버스인지 확인
+                          const nextBusTime = nextBusTimeByRoute.get(
+                            bus.routeName,
+                          );
+                          const isNextBus = nextBusTime === time;
+                          const isWithin30Min =
+                            isNextBus &&
+                            minutesUntil <= 30 &&
+                            selectedType === defaultType &&
+                            !dateInfo.isWeekend;
+
+                          const isPassed =
+                            timeMinutes <= currentMinutes &&
+                            selectedType === defaultType;
+
+                          return (
+                            <div
+                              key={idx}
+                              className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
+                                isWithin30Min
+                                  ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                  : isPassed
+                                    ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
+                                    : "bg-primary-50 border border-primary-200 text-primary-700"
+                              }`}
+                            >
+                              {time}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-neutral-500 mt-3">
+                      최종 업데이트: {bus.lastUpdated}
+                    </p>
+                  </div>
+                )}
               </Card>
             );
           })}

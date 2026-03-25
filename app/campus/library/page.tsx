@@ -25,6 +25,18 @@ export default function LibraryPage() {
   const [selectedSeason, setSelectedSeason] = useState<"semester" | "vacation">(
     "semester",
   );
+  const [seatMapUrl, setSeatMapUrl] = useState<string | null>(null);
+
+  // 열람실 좌석보기 URL 매핑 (배열 순서 기반)
+  const roomSeatMapUrls = [
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=6&searchGB=S", // 열람실
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=7&searchGB=S", // 제1자료실A
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=8&searchGB=S", // 제1자료실A (또는 B)
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=9&searchGB=S", // 채움실
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=10&searchGB=S", // 제2자료실A
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=11&searchGB=S", // 제2자료실B
+    "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=12&searchGB=S", // 집중실
+  ];
 
   // 운영시간 데이터 (사용자 제공 데이터로 업데이트)
   const operatingHours = {
@@ -344,9 +356,17 @@ export default function LibraryPage() {
               return (
                 <div key={idx}>
                   <div className="flex justify-between items-center mb-2">
-                    <strong className="text-neutral-900">
-                      {room.strRoomNm}
-                    </strong>
+                    <div className="flex items-center gap-2">
+                      <strong className="text-neutral-900">
+                        {room.strRoomNm}
+                      </strong>
+                      <button
+                        onClick={() => setSeatMapUrl(roomSeatMapUrls[idx])}
+                        className="px-2 py-1 text-xs font-medium rounded bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
+                      >
+                        좌석보기
+                      </button>
+                    </div>
                     <span className="text-sm font-semibold text-neutral-700">
                       {room.strUseSeat}/{room.strTotalSeat}
                       <span className="text-neutral-500 ml-1">
@@ -507,6 +527,28 @@ export default function LibraryPage() {
           </div>
         </div>
       </Card>
+
+      {/* 좌석보기 모달 */}
+      {seatMapUrl && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl h-[80vh] animate-in fade-in duration-200 flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b border-neutral-200">
+              <h3 className="text-lg font-bold text-neutral-900">좌석 현황</h3>
+              <button
+                onClick={() => setSeatMapUrl(null)}
+                className="px-3 py-1.5 text-sm font-medium bg-neutral-200 text-neutral-900 rounded-lg hover:bg-neutral-300 transition-colors"
+              >
+                닫기
+              </button>
+            </div>
+            <iframe
+              src={seatMapUrl}
+              className="flex-1 w-full border-0"
+              title="좌석 현황"
+            />
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
