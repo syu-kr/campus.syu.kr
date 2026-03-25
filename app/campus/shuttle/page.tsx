@@ -583,9 +583,9 @@ const MapComponent = forwardRef(
       }
     }, [mapLoaded]);
 
-    // 마커 업데이트 (busLocations 변경 시만)
+    // 마커 업데이트 (mapLoaded 후 busLocations 변경 시)
     useEffect(() => {
-      if (!mapRef.current) return;
+      if (!mapLoaded || !mapRef.current) return;
 
       const kakao = (window as any).kakao; // eslint-disable-line @typescript-eslint/no-explicit-any
       if (!kakao?.maps) return;
@@ -695,7 +695,7 @@ const MapComponent = forwardRef(
       }
 
       markersCreatedRef.current = true;
-    }, [busLocations]);
+    }, [busLocations, mapLoaded]);
 
     // 선택된 버스 마커 열기
     useEffect(() => {

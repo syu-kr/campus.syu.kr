@@ -23,7 +23,7 @@ author: "SYU CAMPUS Team"
 
 **모든 자료는 아래 이메일로 제출해주시기 바랍니다.**
 
-**이메일**: singhic_dev@syu.kr / 제목: [SYU CAMPUS]
+**이메일**: singhic_dev@syu.kr / 제목: [SYU CAMPUS]건물명
 
 **제출 파일명 형식**
 
