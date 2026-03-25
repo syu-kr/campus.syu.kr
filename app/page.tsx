@@ -42,7 +42,7 @@ const frequentMenus = [
     path: "/academic/schedule",
   },
   { id: "5", iconName: "award", label: "장학금", path: "/more/scholarship" },
-  { id: "6", iconName: "phone", label: "연락처", path: "/more/phone" },
+  { id: "6", iconName: "book-open", label: "도서관", path: "/campus/library" },
 ];
 
 const categoryFilters = [
