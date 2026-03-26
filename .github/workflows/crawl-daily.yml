@@ -3,7 +3,7 @@ name: Daily Crawl - Academic, Scholarship, Events, Campus & Cafeteria Notices
 on:
   schedule:
     # 매일 0시(UTC) 실행 = KST 자정(09:00)
-    - cron: "0 0 * * *"
+    - cron: "0 23 * * *"
   workflow_dispatch: # 수동 실행 option
 
 permissions:
