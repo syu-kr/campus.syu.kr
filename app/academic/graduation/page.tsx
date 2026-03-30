@@ -256,7 +256,7 @@ export default function GraduationPage() {
                       학번 (입학연도)
                     </label>
                     <p className="text-xs text-neutral-500 mt-1">
-                      4자리 숫자로 입렍하세요 (예: 2022)
+                      4자리 숫자로 입력하세요 (예: 2022)
                     </p>
                   </div>
                   <input
