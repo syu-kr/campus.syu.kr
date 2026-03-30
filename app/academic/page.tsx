@@ -55,6 +55,15 @@ const academicMenus = [
     isExternal: true,
     color: "from-green-400 to-green-600",
   },
+  {
+    id: "graduation-check",
+    title: "졸업요건 확인",
+    description: "내 상황에 맞는 졸업요건 체크",
+    icon: "check-circle",
+    href: "/academic/graduation",
+    isExternal: false,
+    color: "from-cyan-400 to-cyan-600",
+  },
 ];
 
 export default function AcademicPage() {
