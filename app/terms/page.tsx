@@ -115,7 +115,7 @@ export default function TermsPage() {
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               <li>
                 <strong>학사정보</strong>: 학사공지, 학사일정, 학과공지,
-                행사정보
+                졸업요건 간편확인
               </li>
               <li>
                 <strong>캠퍼스정보</strong>: 캠퍼스공지, 캠퍼스 지도, 셔틀버스

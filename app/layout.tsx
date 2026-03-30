@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "삼육대 캠퍼스",
+    title: "SYU CAMPUS",
   },
   icons: {
     icon: "/images/syu-kr-logo.png",

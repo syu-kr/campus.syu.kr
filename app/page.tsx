@@ -400,14 +400,20 @@ export default function Home() {
       <Card className="bg-gradient-to-br from-primary-500 to-primary-600 text-white">
         <div className="space-y-4">
           <div>
-            <p className="text-xs opacity-90 mb-1">서비스 공지</p>
+            <p className="text-xs opacity-90 mb-1">💡 팁</p>
             <h3 className="text-lg font-semibold">
-              서비스 고도화를 위한 요청을 확인해주세요
+              SYU CAMPUS를 앱처럼 설치하여 사용하세요!
             </h3>
+            <p className="text-xs opacity-80 mt-2">
+              PWA 설치로 더 빠르고 편리하게 접속 가능합니다
+            </p>
           </div>
-          <Link href="/service/notices" className="inline-block">
+          <Link
+            href="/service/notices/005-pwa-installation-guide"
+            className="inline-block"
+          >
             <button className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-all text-sm font-medium">
-              전체 공지 보기 →
+              설치 방법 보기 →
             </button>
           </Link>
         </div>
