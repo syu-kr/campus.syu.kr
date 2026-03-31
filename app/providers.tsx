@@ -149,6 +149,11 @@ async function requestNotificationPermission(
 
 async function saveFCMToken(token: string) {
   try {
+    console.log("[FCM] 토큰 저장 시작:", {
+      token_length: token.length,
+      token_preview: token.substring(0, 30) + "...",
+    });
+
     const response = await fetch("/api/notifications/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -156,14 +161,19 @@ async function saveFCMToken(token: string) {
     });
 
     if (response.ok) {
+      const data = await response.json();
       localStorage.setItem("fcm_token", token);
+      console.log("[FCM] 토큰 저장 성공:", data);
     } else {
-      console.warn(
-        "[FCM] 토큰 저장 실패:",
-        response.status,
-        response.statusText,
-      );
+      const errorText = await response.text();
+      console.warn("[FCM] 토큰 저장 실패:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
     }
+  } catch (error) {
+    console.warn("[FCM] 토큰 저장 예외:", error);
   } finally {
     // Error handling - silently fail
   }

@@ -52,7 +52,18 @@ export async function POST(req: NextRequest) {
       .where("active", "==", true)
       .get();
 
-    const tokens = snapshot.docs.map((doc) => doc.data().fcm_token);
+    const tokens = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      console.log("[API] 저장된 토큰 데이터:", {
+        id: doc.id,
+        token_length: data.fcm_token?.length,
+        token_preview: data.fcm_token?.substring(0, 20) + "...",
+        created_at: data.created_at,
+        active: data.active,
+      });
+      return data.fcm_token;
+    });
+    
     console.log(`[API] ${tokens.length}개의 활성 토큰 발견`);
 
     if (tokens.length === 0) {
