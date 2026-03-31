@@ -1,0 +1,263 @@
+{
+  "cf_business": {
+    "id": "cf_business",
+    "name": "경영학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 30,
+    "notes": "졸업요건: 총 130학점 이상, 전공 30학점 이상",
+    "url": "https://www.syu.ac.kr/doba/경영학과-졸업학점-안내-2/"
+  },
+  "cf_korean": {
+    "id": "cf_korean",
+    "name": "글로벌한국학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "notes": "졸업요건: 총 130학점 이상, 전공 36학점 이상",
+    "url": "https://www.syu.ac.kr/gks/curriculum/academic-credit-table/"
+  },
+  "nursing_nursing": {
+    "id": "nursing_nursing",
+    "name": "간호학과",
+    "college": "간호대학",
+    "hasExam": true,
+    "examName": "간호사 자격시험",
+    "totalCredits": 150,
+    "majorCredits": 60,
+    "notes": "간호사 자격시험 응시 자격 필수. 입학유형별로 졸업학점 상이",
+    "url": "https://www.syu.ac.kr/nursing/"
+  },
+  "pharmacy_pharm": {
+    "id": "pharmacy_pharm",
+    "name": "약학과",
+    "college": "약학대학",
+    "hasExam": true,
+    "examName": "약사 자격시험",
+    "totalCredits": 150,
+    "majorCredits": 120,
+    "notes": "약사 자격시험 응시 필수. 6년제 제도",
+    "url": "https://www.syu.ac.kr/pharmacy/"
+  },
+  "ff_computer": {
+    "id": "ff_computer",
+    "name": "컴퓨터공학부",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "majors": [
+      {
+        "id": "cs_cs",
+        "name": "컴퓨터공학전공",
+        "totalCredits": 140,
+        "majorCredits": 42
+      },
+      {
+        "id": "cs_sw",
+        "name": "소프트웨어전공",
+        "totalCredits": 140,
+        "majorCredits": 42
+      }
+    ],
+    "notes": "졸업요건: 총 140학점 이상, 전공 42학점 이상",
+    "url": "https://www.syu.ac.kr/cse/"
+  },
+  "ff_architecture": {
+    "id": "ff_architecture",
+    "name": "건축학과",
+    "college": "미래융합대학",
+    "hasExam": true,
+    "examName": "건축사 시험 (5년제)",
+    "majors": [
+      {
+        "id": "arch_4year",
+        "name": "4년제",
+        "totalCredits": 130,
+        "majorCredits": 54
+      },
+      {
+        "id": "arch_5year",
+        "name": "5년제",
+        "totalCredits": 160,
+        "majorCredits": 80
+      }
+    ],
+    "notes": "5년제는 건축사 시험 응시 자격 취득",
+    "url": "https://www.syu.ac.kr/arch/curriculum/academic-credit-table/"
+  },
+  "ff_ai": {
+    "id": "ff_ai",
+    "name": "인공지능융합학부",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "majors": [
+      {
+        "id": "ai_bis",
+        "name": "경영정보시스템전공",
+        "totalCredits": 140,
+        "majorCredits": 42
+      },
+      {
+        "id": "ai_eng",
+        "name": "인공지능공학전공",
+        "totalCredits": 140,
+        "majorCredits": 45
+      },
+      {
+        "id": "ai_semi",
+        "name": "지능형반도체전공",
+        "totalCredits": 140,
+        "majorCredits": 45
+      }
+    ],
+    "notes": "각 전공별로 졸업요건 상이",
+    "url": "https://www.syu.ac.kr/aice/curriculum/credits-for-graduation/"
+  },
+  "cf_socialwelfare": {
+    "name": "사회복지학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/sw/",
+    "id": "cf_socialwelfare"
+  },
+  "cf_counseling": {
+    "name": "상담심리학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/couns/",
+    "id": "cf_counseling"
+  },
+  "cf_artdesign": {
+    "name": "아트앤디자인학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/arts/",
+    "id": "cf_artdesign"
+  },
+  "cf_english": {
+    "name": "영어영문학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/english/",
+    "id": "cf_english"
+  },
+  "cf_earlychildhood": {
+    "name": "유아교육과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/ece/",
+    "id": "cf_earlychildhood"
+  },
+  "cf_music": {
+    "name": "음악학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 40,
+    "url": "https://www.syu.ac.kr/music/",
+    "id": "cf_music"
+  },
+  "cf_physical": {
+    "name": "체육학과",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/hhp/",
+    "id": "cf_physical"
+  },
+  "cf_aviation": {
+    "name": "항공관광외국어학부",
+    "college": "창의융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/atfl/",
+    "id": "cf_aviation"
+  },
+  "ff_animal": {
+    "name": "동물자원과학과",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/aas/",
+    "id": "ff_animal"
+  },
+  "ff_datacloud": {
+    "name": "데이터클라우드공학과",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "totalCredits": 140,
+    "majorCredits": 42,
+    "url": "https://www.syu.ac.kr/dce/",
+    "id": "ff_datacloud"
+  },
+  "ff_physicaltherapy": {
+    "name": "물리치료학과",
+    "college": "미래융합대학",
+    "hasExam": true,
+    "examName": "물리치료사 자격시험",
+    "totalCredits": 130,
+    "majorCredits": 45,
+    "url": "https://www.syu.ac.kr/pt/",
+    "id": "ff_physicaltherapy"
+  },
+  "ff_healthadmin": {
+    "name": "보건관리학과",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/syuhealth/",
+    "id": "ff_healthadmin"
+  },
+  "ff_foodnutrition": {
+    "name": "식품영양학과",
+    "college": "미래융합대학",
+    "hasExam": true,
+    "examName": "식품영양사 자격시험",
+    "totalCredits": 130,
+    "majorCredits": 45,
+    "url": "https://www.syu.ac.kr/fn/",
+    "id": "ff_foodnutrition"
+  },
+  "ff_chemistry": {
+    "name": "화학생명과학과",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/chem/",
+    "id": "ff_chemistry"
+  },
+  "ff_envdesign": {
+    "name": "환경디자인원예학과",
+    "college": "미래융합대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/envdh/",
+    "id": "ff_envdesign"
+  },
+  "theology_dept": {
+    "name": "신학과",
+    "college": "신학대학",
+    "hasExam": false,
+    "totalCredits": 130,
+    "majorCredits": 36,
+    "url": "https://www.syu.ac.kr/theo/",
+    "id": "theology_dept"
+  }
+}

@@ -1,28 +1,270 @@
 /**
- * 삼육대학교 졸업이수요건 데이터
+ * 삼육대학교 졸업이수요건 데이터 (2026년 기준)
  *
  * 공식 출처:
- *   https://www.syu.ac.kr/academic/academic-info/graduation/ (최종 수정: 2026.02.03)
+ *   https://www.syu.ac.kr/academic/academic-info/graduation/
+ *   각 학과별 공식 웹사이트 졸업요건 페이지
  *
- * 마지막 검수: 2026-03-30
+ * 마지막 검수: 2026-03-31
  *
- * 주요 업데이트:
- * - 신입생 교양: 기초(16학점) + 핵심교양I(8학점) + 영역별 선택(12학점) + 인성영역(3학점)
- * - 3학년 편입: 인성교양 2과목(6학점) 필수 (영역별 교양 면제)
- * - 4학년 편입: 인성교양 1과목(3학점) 필수
+ * 구조:
+ * - COLLEGES: 5개 대학
+ * - DEPARTMENTS: 학과 정보 (대학별)
+ * - MAJORS: 학과 내 전공 정보 (필요시)
+ * - GRADUATION_REQUIREMENTS: 학과별 졸업요건 상세
+ * - TRANSFER_STUDENT_CREDITS: 편입생/전과생 졸업학점
  */
 
 // ─────────────────────────────────────────────────────
 // 타입 정의
 // ─────────────────────────────────────────────────────
 
+export interface College {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  collegeId: string;
+  majors?: Major[];
+  url?: string;
+}
+
+export interface Major {
+  id: string;
+  name: string;
+  deptId: string;
+}
+
+// 새로운 구조 (향후 사용)
+export interface GraduationProfileV2 {
+  collegeId: string;
+  deptId: string;
+  majorId?: string;
+  admissionType: string; // 신입, 2학년편입, 3학년편입, 4학년편입, 전과-1학년, 전과-2학년, 전과-3학년, 전과-4학년
+  admissionYear: string;
+  hasDoubleMinor?: boolean;
+  hasTeachingCertificate?: boolean;
+}
+
+// 기존 구조 (호환성 유지)
 export interface GraduationProfile {
   admissionType: string;
   admissionYear: string;
   dept: string;
   majorType: string;
-  transferStudentTiming?: string; // 전과생의 경우 전과 시점 (1학년2학기, 2학년, 3학년, 4학년)
+  transferStudentTiming?: string;
 }
+
+// ─────────────────────────────────────────────────────
+// 1. 대학 (College) 정보
+// ─────────────────────────────────────────────────────
+
+export const COLLEGES: Record<string, College> = {
+  theology: {
+    id: "theology",
+    name: "신학대학",
+    description: "신학 및 종교 관련 학과",
+  },
+  nursing: {
+    id: "nursing",
+    name: "간호대학",
+    description: "간호학 및 보건 관련 학과",
+  },
+  pharmacy: {
+    id: "pharmacy",
+    name: "약학대학",
+    description: "약학 관련 학과",
+  },
+  creative_fusion: {
+    id: "creative_fusion",
+    name: "창의융합대학",
+    description: "인문, 사회과학, 예술 분야 학과",
+  },
+  future_fusion: {
+    id: "future_fusion",
+    name: "미래융합대학",
+    description: "공학, 과학, 기술 분야 학과",
+  },
+};
+
+// ─────────────────────────────────────────────────────
+// 2. 학과 (Department) 정보
+// ─────────────────────────────────────────────────────
+
+export const DEPARTMENTS_BY_COLLEGE: Record<string, Department> = {
+  // 신학대학
+  theology_dept: {
+    id: "theology_dept",
+    name: "신학과",
+    collegeId: "theology",
+    url: "https://www.syu.ac.kr/theo/",
+  },
+
+  // 간호대학
+  nursing_nursing: {
+    id: "nursing_nursing",
+    name: "간호학과",
+    collegeId: "nursing",
+    url: "https://www.syu.ac.kr/nursing/",
+  },
+
+  // 약학대학
+  pharmacy_pharm: {
+    id: "pharmacy_pharm",
+    name: "약학과",
+    collegeId: "pharmacy",
+    url: "https://www.syu.ac.kr/pharmacy/",
+  },
+
+  // 창의융합대학
+  cf_business: {
+    id: "cf_business",
+    name: "경영학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/doba/",
+  },
+  cf_korean: {
+    id: "cf_korean",
+    name: "글로벌한국학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/gks/",
+  },
+  cf_socialwelfare: {
+    id: "cf_socialwelfare",
+    name: "사회복지학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/sw/",
+  },
+  cf_counseling: {
+    id: "cf_counseling",
+    name: "상담심리학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/couns/",
+  },
+  cf_artdesign: {
+    id: "cf_artdesign",
+    name: "아트앤디자인학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/arts/",
+  },
+  cf_english: {
+    id: "cf_english",
+    name: "영어영문학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/english/",
+  },
+  cf_earlychildhood: {
+    id: "cf_earlychildhood",
+    name: "유아교육과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/ece/",
+  },
+  cf_music: {
+    id: "cf_music",
+    name: "음악학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/music/",
+  },
+  cf_physical: {
+    id: "cf_physical",
+    name: "체육학과",
+    collegeId: "creative_fusion",
+    url: "https://www.syu.ac.kr/hhp/",
+  },
+  cf_aviation: {
+    id: "cf_aviation",
+    name: "항공관광외국어학부",
+    collegeId: "creative_fusion",
+    majors: [
+      {
+        id: "aviation_oriental",
+        name: "동양어문화전공",
+        deptId: "cf_aviation",
+      },
+      { id: "aviation_tourism", name: "항공관광전공", deptId: "cf_aviation" },
+    ],
+    url: "https://www.syu.ac.kr/atfl/",
+  },
+
+  // 미래융합대학
+  ff_architecture: {
+    id: "ff_architecture",
+    name: "건축학과",
+    collegeId: "future_fusion",
+    majors: [
+      { id: "arch_4year", name: "4년제", deptId: "ff_architecture" },
+      { id: "arch_5year", name: "5년제", deptId: "ff_architecture" },
+    ],
+    url: "https://www.syu.ac.kr/arch/",
+  },
+  ff_animal: {
+    id: "ff_animal",
+    name: "동물자원과학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/aas/",
+  },
+  ff_datacloud: {
+    id: "ff_datacloud",
+    name: "데이터클라우드공학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/dce/",
+  },
+  ff_physicaltherapy: {
+    id: "ff_physicaltherapy",
+    name: "물리치료학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/pt/",
+  },
+  ff_healthadmin: {
+    id: "ff_healthadmin",
+    name: "보건관리학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/syuhealth/",
+  },
+  ff_foodnutrition: {
+    id: "ff_foodnutrition",
+    name: "식품영양학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/fn/",
+  },
+  ff_ai: {
+    id: "ff_ai",
+    name: "인공지능융합학부",
+    collegeId: "future_fusion",
+    majors: [
+      { id: "ai_bis", name: "경영정보시스템전공", deptId: "ff_ai" },
+      { id: "ai_eng", name: "인공지능공학전공", deptId: "ff_ai" },
+      { id: "ai_semi", name: "지능형반도체전공", deptId: "ff_ai" },
+    ],
+    url: "https://www.syu.ac.kr/aice/",
+  },
+  ff_computer: {
+    id: "ff_computer",
+    name: "컴퓨터공학부",
+    collegeId: "future_fusion",
+    majors: [
+      { id: "cs_cs", name: "컴퓨터공학전공", deptId: "ff_computer" },
+      { id: "cs_sw", name: "소프트웨어전공", deptId: "ff_computer" },
+    ],
+    url: "https://www.syu.ac.kr/cse/",
+  },
+  ff_chemistry: {
+    id: "ff_chemistry",
+    name: "화학생명과학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/chem/",
+  },
+  ff_envdesign: {
+    id: "ff_envdesign",
+    name: "환경디자인원예학과",
+    collegeId: "future_fusion",
+    url: "https://www.syu.ac.kr/envdh/",
+  },
+};
 
 export interface RequiredCredits {
   totalCredits: number;
@@ -214,6 +456,9 @@ export const NEW_STUDENT_CREDITS = {
   약학과: {
     단일전공: { 졸업: 240, 교필: 24, 영역필수: 15, 주전공: 201 },
   },
+  간호학과: {
+    단일전공: { 졸업: 150, 교필: 18, 영역필수: 12, 주전공: 120 },
+  },
 };
 
 // ─────────────────────────────────────────────────────
@@ -240,6 +485,9 @@ export const TRANSFER3_CREDITS = {
   "건축학과(5년제)": {
     단일전공: { 졸업: 102, 교필: 6, 주전공: 86 },
   },
+  간호학과: {
+    단일전공: { 졸업: 78, 교필: 6, 주전공: 72 },
+  },
 };
 
 // ─────────────────────────────────────────────────────
@@ -250,6 +498,9 @@ export const TRANSFER4_CREDITS = {
     단일전공: { 졸업: 34, 교필: 3, 주전공: 21 },
     복수전공: { 졸업: 34, 교필: 3, 주전공: 21, 복연: 36 },
     부전공: { 졸업: 34, 교필: 3, 주전공: 21, 부: 21 },
+  },
+  간호학과: {
+    단일전공: { 졸업: 42, 교필: 3, 주전공: 39 },
   },
 };
 
@@ -339,6 +590,12 @@ export const TRANSFER_STUDENT_CREDITS = {
     "3학년": { 단일: { 졸업: 158, 교필: 24, 주전공: 119 } },
     "4학년": { 단일: { 졸업: 158, 교필: 24, 주전공: 119 } },
   },
+  간호학과: {
+    "1학년2학기": { 단일: { 졸업: 150, 교필: 18, 주전공: 120 } },
+    "2학년": { 단일: { 졸업: 150, 교필: 18, 주전공: 108 } },
+    "3학년": { 단일: { 졸업: 150, 교필: 18, 주전공: 96 } },
+    "4학년": { 단일: { 졸업: 150, 교필: 18, 주전공: 96 } },
+  },
 };
 
 // ─────────────────────────────────────────────────────
@@ -349,10 +606,13 @@ export const TOTAL_CREDITS = {
   신입_컴퓨터공학부등: 140,
   신입_건축학과5년제: 158,
   신입_약학과6년제: 240,
+  신입_간호학과: 150,
   "3학년편입_일반": 68,
   "3학년편입_컴퓨터공학부등": 72,
   "3학년편입_건축학과5년제": 102,
+  "3학년편입_간호학과": 78,
   "4학년편입_일반": 34,
+  "4학년편입_간호학과": 42,
 };
 
 // ─────────────────────────────────────────────────────
@@ -380,7 +640,7 @@ export function getBasicLiberalCohort(admissionYear: number): string {
 /** 학과 그룹 분류: 호환성용 */
 function getDeptGroupCompat(
   dept: string,
-): "일반" | "컴퓨터공학부등" | "건축학과5년제" | "약학과6년제" {
+): "일반" | "컴퓨터공학부등" | "건축학과5년제" | "약학과6년제" | "간호학과" {
   const cseDepts = [
     "인공지능융합학부",
     "컴퓨터공학부",
@@ -389,6 +649,7 @@ function getDeptGroupCompat(
   if (cseDepts.includes(dept)) return "컴퓨터공학부등";
   if (dept === "건축학과(5년제)") return "건축학과5년제";
   if (dept === "약학과") return "약학과6년제";
+  if (dept === "간호학과") return "간호학과";
   return "일반";
 }
 
@@ -429,8 +690,12 @@ export function hasMajorType(
     );
   }
 
-  // 건축학과/약학과는 단일전공만 가능
-  if (deptGroup === "건축학과5년제" || deptGroup === "약학과6년제") {
+  // 건축학과/약학과/간호학과는 단일전공만 가능
+  if (
+    deptGroup === "건축학과5년제" ||
+    deptGroup === "약학과6년제" ||
+    deptGroup === "간호학과"
+  ) {
     return majorType === "단일전공";
   }
 
@@ -718,3 +983,532 @@ export const MAJOR_TYPES = [
   "교직",
   "평생교육사",
 ];
+
+// ─────────────────────────────────────────────────────
+// 9. 학과별 졸업요건 상세 정보 (웹 크롤링 기반)
+// ─────────────────────────────────────────────────────
+
+export interface GraduationRequirement {
+  id: string;
+  name: string;
+  college: string;
+  hasExam?: boolean;
+  examName?: string;
+  totalCredits: number;
+  majorCredits: number;
+  notes?: string;
+  url?: string;
+  majors?: {
+    id: string;
+    name: string;
+    totalCredits: number;
+    majorCredits: number;
+  }[];
+}
+
+/**
+ * 학과별 졸업요건 (2026년 기준)
+ * 출처: 각 대학/학과 공식 웹사이트
+ */
+export const GRADUATION_REQUIREMENTS: Record<string, GraduationRequirement> = {
+  // 신학대학
+  theology_dept: {
+    id: "theology_dept",
+    name: "신학과",
+    college: "신학대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 36,
+    notes: "졸업요건: 총 130학점 이상, 전공 36학점 이상",
+    url: "https://www.syu.ac.kr/theo/",
+  },
+
+  // 간호대학
+  nursing_nursing: {
+    id: "nursing_nursing",
+    name: "간호학과",
+    college: "간호대학",
+    hasExam: true,
+    examName: "간호사 자격시험",
+    totalCredits: 150,
+    majorCredits: 60,
+    notes: "간호사 자격시험 응시 자격 필수. 입학유형별로 졸업학점 상이",
+    url: "https://www.syu.ac.kr/nursing/",
+  },
+
+  // 약학대학
+  pharmacy_pharm: {
+    id: "pharmacy_pharm",
+    name: "약학과",
+    college: "약학대학",
+    hasExam: true,
+    examName: "약사 자격시험",
+    totalCredits: 150,
+    majorCredits: 120,
+    notes: "약사 자격시험 응시 필수. 6년제 제도",
+    url: "https://www.syu.ac.kr/pharmacy/",
+  },
+
+  // 창의융합대학
+  cf_business: {
+    id: "cf_business",
+    name: "경영학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 30,
+    notes: "졸업요건: 총 130학점 이상, 전공 30학점 이상",
+    url: "https://www.syu.ac.kr/doba/",
+  },
+
+  cf_korean: {
+    id: "cf_korean",
+    name: "글로벌한국학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 36,
+    notes: "졸업요건: 총 130학점 이상, 전공 36학점 이상",
+    url: "https://www.syu.ac.kr/gks/",
+  },
+
+  cf_socialwelfare: {
+    id: "cf_socialwelfare",
+    name: "사회복지학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/sw/",
+  },
+
+  cf_counseling: {
+    id: "cf_counseling",
+    name: "상담심리학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 39,
+    notes: "졸업요건: 총 130학점 이상, 전공 39학점 이상",
+    url: "https://www.syu.ac.kr/couns/",
+  },
+
+  cf_artdesign: {
+    id: "cf_artdesign",
+    name: "아트앤디자인학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/arts/",
+  },
+
+  cf_english: {
+    id: "cf_english",
+    name: "영어영문학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 36,
+    notes: "졸업요건: 총 130학점 이상, 전공 36학점 이상",
+    url: "https://www.syu.ac.kr/english/",
+  },
+
+  cf_earlychildhood: {
+    id: "cf_earlychildhood",
+    name: "유아교육과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 45,
+    notes: "졸업요건: 총 130학점 이상, 전공 45학점 이상, 현장실습 필수",
+    url: "https://www.syu.ac.kr/ece/",
+  },
+
+  cf_music: {
+    id: "cf_music",
+    name: "음악학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/music/",
+  },
+
+  cf_physical: {
+    id: "cf_physical",
+    name: "체육학과",
+    college: "창의융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/hhp/",
+  },
+
+  cf_aviation: {
+    id: "cf_aviation",
+    name: "항공관광외국어학부",
+    college: "창의융합대학",
+    hasExam: false,
+    majors: [
+      {
+        id: "aviation_oriental",
+        name: "동양어문화전공",
+        totalCredits: 130,
+        majorCredits: 42,
+      },
+      {
+        id: "aviation_tourism",
+        name: "항공관광전공",
+        totalCredits: 130,
+        majorCredits: 42,
+      },
+    ],
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/atfl/",
+  },
+
+  // 미래융합대학
+  ff_architecture: {
+    id: "ff_architecture",
+    name: "건축학과",
+    college: "미래융합대학",
+    hasExam: true,
+    examName: "건축사 시험",
+    majors: [
+      {
+        id: "arch_4year",
+        name: "4년제",
+        totalCredits: 130,
+        majorCredits: 54,
+      },
+      {
+        id: "arch_5year",
+        name: "5년제",
+        totalCredits: 160,
+        majorCredits: 80,
+      },
+    ],
+    totalCredits: 160,
+    majorCredits: 80,
+    notes: "5년제는 건축사 시험 응시 자격 취득",
+    url: "https://www.syu.ac.kr/arch/",
+  },
+
+  ff_animal: {
+    id: "ff_animal",
+    name: "동물자원과학과",
+    college: "미래융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/aas/",
+  },
+
+  ff_datacloud: {
+    id: "ff_datacloud",
+    name: "데이터클라우드공학과",
+    college: "미래융합대학",
+    hasExam: false,
+    totalCredits: 140,
+    majorCredits: 42,
+    notes: "졸업요건: 총 140학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/dce/",
+  },
+
+  ff_physicaltherapy: {
+    id: "ff_physicaltherapy",
+    name: "물리치료학과",
+    college: "미래융합대학",
+    hasExam: true,
+    examName: "물리치료사 자격시험",
+    totalCredits: 140,
+    majorCredits: 60,
+    notes: "졸업요건: 총 140학점 이상, 전공 60학점 이상",
+    url: "https://www.syu.ac.kr/pt/",
+  },
+
+  ff_healthadmin: {
+    id: "ff_healthadmin",
+    name: "보건관리학과",
+    college: "미래융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 39,
+    notes: "졸업요건: 총 130학점 이상, 전공 39학점 이상",
+    url: "https://www.syu.ac.kr/syuhealth/",
+  },
+
+  ff_foodnutrition: {
+    id: "ff_foodnutrition",
+    name: "식품영양학과",
+    college: "미래융합대학",
+    hasExam: true,
+    examName: "식품영양사 자격시험",
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/fn/",
+  },
+
+  ff_ai: {
+    id: "ff_ai",
+    name: "인공지능융합학부",
+    college: "미래융합대학",
+    hasExam: false,
+    majors: [
+      {
+        id: "ai_bis",
+        name: "경영정보시스템전공",
+        totalCredits: 140,
+        majorCredits: 42,
+      },
+      {
+        id: "ai_eng",
+        name: "인공지능공학전공",
+        totalCredits: 140,
+        majorCredits: 42,
+      },
+      {
+        id: "ai_semi",
+        name: "지능형반도체전공",
+        totalCredits: 140,
+        majorCredits: 45,
+      },
+    ],
+    totalCredits: 140,
+    majorCredits: 42,
+    notes: "졸업요건: 총 140학점 이상, 전공 42~45학점 이상",
+    url: "https://www.syu.ac.kr/aice/",
+  },
+
+  ff_computer: {
+    id: "ff_computer",
+    name: "컴퓨터공학부",
+    college: "미래융합대학",
+    hasExam: false,
+    majors: [
+      {
+        id: "cs_cs",
+        name: "컴퓨터공학전공",
+        totalCredits: 140,
+        majorCredits: 42,
+      },
+      {
+        id: "cs_sw",
+        name: "소프트웨어전공",
+        totalCredits: 140,
+        majorCredits: 42,
+      },
+    ],
+    totalCredits: 140,
+    majorCredits: 42,
+    notes: "졸업요건: 총 140학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/cse/",
+  },
+
+  ff_chemistry: {
+    id: "ff_chemistry",
+    name: "화학생명과학과",
+    college: "미래융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 40,
+    notes: "졸업요건: 총 130학점 이상, 전공 40학점 이상",
+    url: "https://www.syu.ac.kr/chem/",
+  },
+
+  ff_envdesign: {
+    id: "ff_envdesign",
+    name: "환경디자인원예학과",
+    college: "미래융합대학",
+    hasExam: false,
+    totalCredits: 130,
+    majorCredits: 42,
+    notes: "졸업요건: 총 130학점 이상, 전공 42학점 이상",
+    url: "https://www.syu.ac.kr/envdh/",
+  },
+};
+
+/**
+ * 대학 ID로 대학 정보 조회
+ */
+export function getCollegeById(collegeId: string): College | undefined {
+  return COLLEGES[collegeId];
+}
+
+/**
+ * 대학 ID로 해당 대학의 모든 학과 조회
+ */
+export function getDepartmentsByCollege(collegeId: string): Department[] {
+  return Object.values(DEPARTMENTS_BY_COLLEGE).filter(
+    (dept) => dept.collegeId === collegeId,
+  );
+}
+
+/**
+ * 학과 ID로 해당 학과의 전공 목록 조회 (없으면 undefined)
+ */
+export function getMajors(deptId: string): Major[] | undefined {
+  const dept = DEPARTMENTS_BY_COLLEGE[deptId];
+  return dept?.majors;
+}
+
+/**
+ * 학과 및 전공 ID로 졸업요건 정보 조회
+ */
+export function getGraduationRequirements(
+  deptId: string,
+  majorId?: string,
+):
+  | GraduationRequirement
+  | { totalCredits: number; majorCredits: number }
+  | undefined {
+  const req = GRADUATION_REQUIREMENTS[deptId];
+  if (!req) return undefined;
+
+  // 전공이 있는 학과 (ff_architecture, ff_ai, ff_computer, cf_aviation)
+  if (majorId && req.majors) {
+    const major = req.majors.find((m) => m.id === majorId);
+    if (major) {
+      return {
+        totalCredits: major.totalCredits,
+        majorCredits: major.majorCredits,
+      };
+    }
+  }
+
+  // 전공이 선택되지 않았거나 존재하지 않으면 학과 전체 정보 반환
+  return {
+    totalCredits: req.totalCredits,
+    majorCredits: req.majorCredits,
+    notes: req.notes,
+  };
+}
+
+/**
+ * admissionType에 따라 다른 졸업학점을 반영한 정보 조회
+ */
+export function getGraduationRequirementsWithAdmission(
+  deptId: string,
+  admissionType: string,
+  majorId?: string,
+): {
+  totalCredits: number;
+  majorCredits: number;
+  notes?: string;
+} | null {
+  const req = getGraduationRequirements(deptId, majorId);
+  if (!req) return null;
+
+  // 약학과는 신입생만 지원 (6년제 학사과정)
+  const deptName = DEPARTMENTS_BY_COLLEGE[deptId]?.name || "";
+  if (deptName === "약학과" && admissionType !== "신입생") {
+    return null; // 편입/전과는 불가능
+  }
+
+  // 기본값: 신입생 기준
+  const baseCredits = {
+    totalCredits: req.totalCredits,
+    majorCredits: req.majorCredits,
+    notes: "notes" in req ? req.notes : undefined,
+  };
+
+  // 편입생 학점 조정
+  if (admissionType === "2학년편입") {
+    const transfer2 =
+      TRANSFER3_CREDITS[deptName as keyof typeof TRANSFER3_CREDITS];
+    if (transfer2) {
+      return {
+        ...baseCredits,
+        totalCredits: transfer2["단일전공"]?.졸업 || baseCredits.totalCredits,
+        majorCredits: transfer2["단일전공"]?.주전공 || baseCredits.majorCredits,
+        notes: `2학년편입 기준: ${
+          transfer2["단일전공"]?.졸업 || baseCredits.totalCredits
+        }학점 이상 (전공 ${
+          transfer2["단일전공"]?.주전공 || baseCredits.majorCredits
+        }학점 이상)`,
+      };
+    }
+  } else if (admissionType === "3학년편입") {
+    const transfer3 =
+      TRANSFER3_CREDITS[deptName as keyof typeof TRANSFER3_CREDITS];
+    if (transfer3) {
+      return {
+        ...baseCredits,
+        totalCredits: transfer3["단일전공"]?.졸업 || baseCredits.totalCredits,
+        majorCredits: transfer3["단일전공"]?.주전공 || baseCredits.majorCredits,
+        notes: `3학년편입 기준: ${
+          transfer3["단일전공"]?.졸업 || baseCredits.totalCredits
+        }학점 이상 (전공 ${
+          transfer3["단일전공"]?.주전공 || baseCredits.majorCredits
+        }학점 이상)`,
+      };
+    }
+  } else if (admissionType === "4학년편입") {
+    const transfer4 =
+      TRANSFER4_CREDITS[deptName as keyof typeof TRANSFER4_CREDITS];
+    if (transfer4) {
+      return {
+        ...baseCredits,
+        totalCredits: transfer4["단일전공"]?.졸업 || baseCredits.totalCredits,
+        majorCredits: transfer4["단일전공"]?.주전공 || baseCredits.majorCredits,
+        notes: `4학년편입 기준: ${
+          transfer4["단일전공"]?.졸업 || baseCredits.totalCredits
+        }학점 이상 (전공 ${
+          transfer4["단일전공"]?.주전공 || baseCredits.majorCredits
+        }학점 이상)`,
+      };
+    }
+  } else if (admissionType.startsWith("전과")) {
+    // 전과생: 전과-1학년 -> "1학년2학기" 등으로 변환
+    let timingKey = "1학년2학기";
+    if (admissionType === "전과-2학년") timingKey = "2학년";
+    else if (admissionType === "전과-3학년") timingKey = "3학년";
+    else if (admissionType === "전과-4학년") timingKey = "4학년";
+
+    const transferStudentData =
+      TRANSFER_STUDENT_CREDITS[
+        deptName as keyof typeof TRANSFER_STUDENT_CREDITS
+      ];
+    if (transferStudentData) {
+      const timingData =
+        transferStudentData[timingKey as keyof typeof transferStudentData];
+      if (timingData) {
+        const creditData = timingData["단일" as keyof typeof timingData];
+        if (creditData) {
+          return {
+            ...baseCredits,
+            totalCredits: creditData.졸업,
+            majorCredits: creditData.주전공,
+            notes: `전과-${timingKey === "1학년2학기" ? "1학년" : timingKey.charAt(0) + "학년"} 기준: ${creditData.졸업}학점 이상 (전공 ${creditData.주전공}학점 이상)`,
+          };
+        }
+      }
+    }
+  }
+
+  return baseCredits;
+}
+
+/** 학과에서 선택 가능한 입학유형 목록 조회 */
+export function getAvailableAdmissionTypes(deptId: string): string[] {
+  const available: string[] = [];
+
+  // 모든 입학유형에 대해 졸업요건이 존재하는지 확인
+  ADMISSION_TYPES.forEach((type) => {
+    const req = getGraduationRequirementsWithAdmission(deptId, type);
+    if (req !== null) {
+      available.push(type);
+    }
+  });
+
+  return available;
+}
