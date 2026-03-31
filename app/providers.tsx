@@ -1,7 +1,8 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { NotificationModal } from "@/components/NotificationModal";
 
 // QueryClient를 싱글톤으로 관리
 let clientSingleton: QueryClient | undefined;
@@ -12,8 +13,8 @@ function getQueryClient() {
     return new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 10 * 60 * 1000, // 10분
-          gcTime: 60 * 60 * 1000, // 1시간 (이전 cacheTime)
+          staleTime: 10 * 60 * 1000,
+          gcTime: 60 * 60 * 1000,
         },
       },
     });
@@ -24,8 +25,8 @@ function getQueryClient() {
     clientSingleton = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 10 * 60 * 1000, // 10분
-          gcTime: 60 * 60 * 1000, // 1시간
+          staleTime: 10 * 60 * 1000,
+          gcTime: 60 * 60 * 1000,
         },
       },
     });
@@ -41,7 +42,139 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
 
+  useEffect(() => {
+    initializePushNotifications();
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <NotificationModal />
+      {children}
+    </QueryClientProvider>
   );
+}
+
+async function initializePushNotifications() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  let swRegistration: ServiceWorkerRegistration | null = null;
+  if ("serviceWorker" in navigator) {
+    try {
+      swRegistration = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+    } finally {
+      // Error handling - silently fail
+    }
+  } else {
+    return;
+  }
+
+  // Firebase 포그라운드 핸들러 설정
+  await setupForegroundNotifications();
+
+  const permission = Notification.permission;
+
+  if (permission === "granted") {
+    generateAndSaveFCMToken(swRegistration);
+  } else if (permission === "default") {
+    showPermissionRequest(swRegistration);
+  }
+}
+
+async function generateAndSaveFCMToken(
+  swRegistration: ServiceWorkerRegistration | null,
+) {
+  try {
+    const { getToken } = await import("firebase/messaging");
+    const { messaging } = await import("@/lib/firebase");
+
+    if (!messaging) {
+      return;
+    }
+
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+
+    const tokenOptions: {
+      serviceWorkerRegistration?: ServiceWorkerRegistration;
+      vapidKey?: string;
+    } = {};
+
+    if (swRegistration) {
+      tokenOptions.serviceWorkerRegistration = swRegistration;
+    }
+
+    if (vapidKey) {
+      tokenOptions.vapidKey = vapidKey;
+    }
+
+    const token = await getToken(messaging, tokenOptions);
+
+    if (token) {
+      await saveFCMToken(token);
+    }
+  } finally {
+    // Error handling - silently fail
+  }
+}
+
+function showPermissionRequest(
+  swRegistration: ServiceWorkerRegistration | null,
+) {
+  setTimeout(() => {
+    const userWantsNotification = confirm(
+      "새로운 공지사항을 놓치지 않으려면 알림을 켜시겠어요?",
+    );
+
+    if (userWantsNotification) {
+      requestNotificationPermission(swRegistration);
+    }
+  }, 500);
+}
+
+async function requestNotificationPermission(
+  swRegistration: ServiceWorkerRegistration | null,
+) {
+  try {
+    const permission = await Notification.requestPermission();
+
+    if (permission === "granted") {
+      generateAndSaveFCMToken(swRegistration);
+    }
+  } finally {
+    // Error handling - silently fail
+  }
+}
+
+async function saveFCMToken(token: string) {
+  try {
+    const response = await fetch("/api/notifications/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fcm_token: token }),
+    });
+
+    if (response.ok) {
+      localStorage.setItem("fcm_token", token);
+    } else {
+      console.warn(
+        "[FCM] 토큰 저장 실패:",
+        response.status,
+        response.statusText,
+      );
+    }
+  } finally {
+    // Error handling - silently fail
+  }
+}
+
+async function setupForegroundNotifications() {
+  try {
+    const { setupForegroundNotifications: setup } =
+      await import("@/lib/firebase");
+    setup();
+  } finally {
+    // Error handling - silently fail
+  }
 }

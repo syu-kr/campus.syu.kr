@@ -35,3 +35,6 @@ schedule-page.html
 test-schedule.js
 .DS_Store
 .next
+
+# Added by ggshield
+.cache_ggshield
