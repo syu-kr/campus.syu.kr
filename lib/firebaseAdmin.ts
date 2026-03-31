@@ -76,12 +76,13 @@ export async function sendFCMMessage(
         });
         successCount++;
         console.log(`✅ FCM 발송 성공 (${token.substring(0, 20)}...)`);
-      } catch (error: any) {
+      } catch (error: unknown) {
         failureCount++;
+        const err = error as Error & { code?: string; message?: string };
         console.error(`❌ 토큰 발송 실패 (${token.substring(0, 20)}...):`, {
-          code: error?.code,
-          message: error?.message,
-          details: error?.toString(),
+          code: err?.code,
+          message: err?.message,
+          details: err?.toString(),
         });
       }
     }
