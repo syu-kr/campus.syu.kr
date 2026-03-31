@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       });
       return data.fcm_token;
     });
-    
+
     console.log(`[API] ${tokens.length}개의 활성 토큰 발견`);
 
     if (tokens.length === 0) {

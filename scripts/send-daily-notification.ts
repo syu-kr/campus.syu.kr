@@ -206,23 +206,29 @@ async function sendNotification(stats: AnnouncementStats[]) {
 
   // API 호출
   try {
+    const requestBody = JSON.stringify({
+      title,
+      body,
+      category: "daily-summary",
+      url: "/academic/announcements",
+      timestamp: koreaTime,
+      stats: {
+        academic: academicCount,
+        scholarship: scholarshipCount,
+      },
+    });
+
+    // UTF-8 인코딩된 body의 정확한 길이 계산
+    const bodyBuffer = Buffer.from(requestBody, "utf-8");
+
     const response = await fetch(`${apiUrl}/api/notifications/send`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Length": bodyBuffer.length.toString(),
         "x-api-key": apiKey,
       },
-      body: JSON.stringify({
-        title,
-        body,
-        category: "daily-summary",
-        url: "/academic/announcements",
-        timestamp: koreaTime,
-        stats: {
-          academic: academicCount,
-          scholarship: scholarshipCount,
-        },
-      }),
+      body: requestBody,
     });
 
     if (!response.ok) {
