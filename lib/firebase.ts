@@ -6,13 +6,27 @@ import { getMessaging, onMessage, Messaging } from "firebase/messaging";
 import { setNotificationHandler } from "@/components/NotificationModal";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBEXjKbfeCBSRYgc7kHZuapaVpxD4YNXPk",
-  authDomain: "syu-campus.firebaseapp.com",
-  projectId: "syu-campus",
-  storageBucket: "syu-campus.firebasestorage.app",
-  messagingSenderId: "246764269895",
-  appId: "1:246764269895:web:ca165941a6348ee88f1c62",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
+
+// Firebase 설정 검증
+if (
+  !firebaseConfig.apiKey ||
+  !firebaseConfig.authDomain ||
+  !firebaseConfig.projectId
+) {
+  console.error("[Firebase] 필수 환경변수가 설정되지 않았습니다:", {
+    apiKey: !!firebaseConfig.apiKey,
+    authDomain: !!firebaseConfig.authDomain,
+    projectId: !!firebaseConfig.projectId,
+    messagingSenderId: !!firebaseConfig.messagingSenderId,
+  });
+}
 
 // Firebase 앱 초기화
 const app = initializeApp(firebaseConfig);
@@ -24,7 +38,9 @@ let messaging: Messaging | null = null;
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   try {
     messaging = getMessaging(app);
-  } finally {
+    console.log("[Firebase] Messaging 초기화 완료");
+  } catch (error) {
+    console.error("[Firebase] Messaging 초기화 실패:", error);
     // Error handling - silently fail
   }
 }

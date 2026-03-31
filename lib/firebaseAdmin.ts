@@ -3,11 +3,11 @@
 
 import * as admin from "firebase-admin";
 
-// Firebase Admin SDK 초기화 (한 번만 실행)
-let app: admin.app.App | null = null;
-
 export function initializeFirebaseAdmin() {
-  if (app) return app;
+  // 이미 초기화된 앱이 있으면 기존 앱 사용
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
 
   try {
     // 환경 변수에서 서비스 계정 JSON 읽기
@@ -21,25 +21,24 @@ export function initializeFirebaseAdmin() {
 
     const serviceAccount = JSON.parse(serviceAccountJson);
 
-    app = admin.initializeApp({
+    const app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
 
     console.log("✅ Firebase Admin 초기화 완료");
+    return app;
   } catch (error) {
     console.error("❌ Firebase Admin 초기화 실패:", error);
     throw error;
   }
-
-  return app;
 }
 
 // Messaging 인스턴스 가져오기
 export function getMessagingInstance(): admin.messaging.Messaging {
-  if (!app) {
+  if (admin.apps.length === 0) {
     initializeFirebaseAdmin();
   }
-  return admin.messaging(app!);
+  return admin.messaging();
 }
 
 // FCM 메시지 발송
