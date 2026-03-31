@@ -1,10 +1,19 @@
 // scripts/send-daily-notification.ts
 import * as admin from "firebase-admin";
+import * as fs from "fs";
+import * as path from "path";
 
 interface AnnouncementStats {
   category: string;
   count: number;
   titles: string[];
+}
+
+interface AnnouncementData {
+  title: string;
+  date: string;
+  category: string;
+  [key: string]: any;
 }
 
 async function initializeFirebase() {
@@ -26,8 +35,6 @@ async function initializeFirebase() {
 }
 
 async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
-  const db = await initializeFirebase();
-
   // 어제 자정 기준으로 새로운 공지사항 조회
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -43,7 +50,10 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
   );
 
   for (const category of categories) {
+    // Firestore 시도
+    let success = false;
     try {
+      const db = await initializeFirebase();
       const snapshot = await db
         .collection("announcements")
         .where("category", "==", category)
@@ -60,21 +70,82 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
       results.push({
         category,
         count: snapshot.size,
-        titles: titles.slice(0, 3), // 상위 3개만
+        titles: titles.slice(0, 3),
       });
 
-      console.log(`✅ ${category}: ${snapshot.size}개`);
+      console.log(`✅ ${category} (Firestore): ${snapshot.size}개`);
+      success = true;
     } catch (error) {
-      console.error(`❌ ${category} 조회 실패:`, error);
-      results.push({
+      console.warn(
+        `⚠️ ${category} Firestore 조회 실패. JSON 파일에서 로드 중...`,
+      );
+    }
+
+    // Firestore 실패 시 JSON 파일에서 로드
+    if (!success) {
+      const jsonData = await getAnnouncementStatsFromJSON(
         category,
-        count: 0,
-        titles: [],
-      });
+        yesterday,
+        today,
+      );
+      results.push(jsonData);
     }
   }
 
   return results;
+}
+
+async function getAnnouncementStatsFromJSON(
+  category: string,
+  yesterday: Date,
+  today: Date,
+): Promise<AnnouncementStats> {
+  const fileMap: { [key: string]: string } = {
+    academic: "announcements-academic.json",
+    scholarship: "announcements-scholarship.json",
+  };
+
+  const filename = fileMap[category];
+  if (!filename) {
+    return { category, count: 0, titles: [] };
+  }
+
+  try {
+    const filepath = path.join(process.cwd(), "public/data", filename);
+
+    if (!fs.existsSync(filepath)) {
+      console.warn(`⚠️ JSON 파일 없음: ${filepath}`);
+      return { category, count: 0, titles: [] };
+    }
+
+    const rawData = fs.readFileSync(filepath, "utf-8");
+    const announcements: AnnouncementData[] = JSON.parse(rawData);
+
+    // 날짜 문자열 "2026.03.31" 형식을 파싱
+    const filtered = announcements.filter((announcement) => {
+      const dateStr = announcement.date; // "2026.03.31"
+      const [year, month, day] = dateStr.split(".").map(Number);
+      const announcementDate = new Date(year, month - 1, day);
+      announcementDate.setHours(0, 0, 0, 0);
+
+      return announcementDate >= yesterday && announcementDate < today;
+    });
+
+    const titles = filtered.map((a) => a.title);
+
+    console.log(
+      `✅ ${category} (JSON): ${filtered.length}개 (전체: ${announcements.length}개 중)`,
+    );
+
+    return {
+      category,
+      count: filtered.length,
+      titles: titles.slice(0, 3), // 상위 3개만
+    };
+  } catch (error) {
+    console.error(`❌ ${category} JSON 파일 읽기 실패:`, error);
+    return { category, count: 0, titles: [] };
+  }
 }
 
 async function sendNotification(stats: AnnouncementStats[]) {
@@ -155,11 +226,27 @@ async function sendNotification(stats: AnnouncementStats[]) {
     });
 
     if (!response.ok) {
-      throw new Error(`API 응답: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`[Script] API 응답 오류:`, {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+      });
+      throw new Error(
+        `API 응답: ${response.status} ${response.statusText} - ${errorText}`,
+      );
     }
 
     const result = await response.json();
-    console.log("✅ 알림 발송 성공:", result);
+    console.log("✅ 알림 발송 성공:", JSON.stringify(result, null, 2));
+
+    // 실제 발송된 토큰 수 로깅
+    if (result.data) {
+      console.log(`   - 전체 토큰: ${result.data.tokensCount}`);
+      console.log(`   - 성공: ${result.data.successCount}`);
+      console.log(`   - 실패: ${result.data.failureCount}`);
+    }
+
     return result;
   } catch (error) {
     console.error("❌ 알림 발송 실패:", error);

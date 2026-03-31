@@ -75,9 +75,14 @@ export async function sendFCMMessage(
           },
         });
         successCount++;
-      } catch (error) {
+        console.log(`✅ FCM 발송 성공 (${token.substring(0, 20)}...)`);
+      } catch (error: any) {
         failureCount++;
-        console.warn(`토큰 발송 실패 (${token}):`, error);
+        console.error(`❌ 토큰 발송 실패 (${token.substring(0, 20)}...):`, {
+          code: error?.code,
+          message: error?.message,
+          details: error?.toString(),
+        });
       }
     }
 
