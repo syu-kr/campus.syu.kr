@@ -16,11 +16,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("[Subscribe] 토큰 저장 요청:", {
+      token_length: fcm_token.length,
+      token_preview: fcm_token.substring(0, 30) + "...",
+      token_full: fcm_token,
+    });
+
     try {
       initializeFirebaseAdmin();
       const db = admin.firestore();
       const userAgent = req.headers.get("user-agent") || "unknown";
       const docId = Buffer.from(fcm_token).toString("base64").slice(0, 20);
+
+      console.log("[Subscribe] Firestore에 저장할 문서:", {
+        docId,
+        token_length: fcm_token.length,
+        active: true,
+      });
 
       await db
         .collection("user_devices")
@@ -35,6 +47,8 @@ export async function POST(req: NextRequest) {
           },
           { merge: true },
         );
+
+      console.log("[Subscribe] 토큰 저장 성공:", docId);
 
       return NextResponse.json({
         success: true,

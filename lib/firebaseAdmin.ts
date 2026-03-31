@@ -52,12 +52,23 @@ export async function sendFCMMessage(
   try {
     const messaging = getMessagingInstance();
 
+    console.log("[FCM] 발송 시작:", {
+      tokens_count: tokens.length,
+      app_id: admin.app()?.name || "default",
+      project_id: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    });
+
     let successCount = 0;
     let failureCount = 0;
 
     // 각 토큰에 개별 발송
     for (const token of tokens) {
       try {
+        console.log("[FCM] 토큰 발송 시도:", {
+          token_preview: token.substring(0, 30) + "...",
+          token_length: token.length,
+        });
+
         await messaging.send({
           token,
           notification: {
@@ -79,15 +90,18 @@ export async function sendFCMMessage(
       } catch (error: unknown) {
         failureCount++;
         const err = error as Error & { code?: string; message?: string };
-        console.error(`❌ 토큰 발송 실패 (${token.substring(0, 20)}...):`, {
+        console.error(`❌ 토큰 발송 실패 (${token.substring(0, 30)}...):`, {
           code: err?.code,
           message: err?.message,
           details: err?.toString(),
+          token_full: token,
         });
       }
     }
 
-    console.log(`FCM 발송: ${successCount}명 성공, ${failureCount}명 실패`);
+    console.log(
+      `[FCM] 발송 완료: ${successCount}명 성공, ${failureCount}명 실패`,
+    );
 
     return { successCount, failureCount };
   } catch (error) {

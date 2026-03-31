@@ -152,6 +152,8 @@ async function saveFCMToken(token: string) {
     console.log("[FCM] 토큰 저장 시작:", {
       token_length: token.length,
       token_preview: token.substring(0, 30) + "...",
+      vapid_key:
+        process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.substring(0, 30) + "...",
     });
 
     const response = await fetch("/api/notifications/subscribe", {

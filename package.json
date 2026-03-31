@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "send-daily-notification": "ts-node --project tsconfig.json scripts/send-daily-notification.ts"
+    "send-daily-notification": "ts-node --project tsconfig.json scripts/send-daily-notification.ts",
+    "cleanup-tokens": "ts-node --project tsconfig.json scripts/cleanup_old_tokens.ts"
   },
   "dependencies": {
     "@fontsource/pretendard": "^5.2.5",
