@@ -185,8 +185,8 @@ async function setupForegroundNotifications() {
   try {
     const { setupForegroundNotifications: setup } =
       await import("@/lib/firebase");
-    setup();
-  } finally {
-    // Error handling - silently fail
+    await setup();
+  } catch (error) {
+    console.warn("[FCM] 포그라운드 알림 설정 실패:", error);
   }
 }
