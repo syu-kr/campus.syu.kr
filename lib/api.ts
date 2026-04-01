@@ -62,34 +62,6 @@ export async function fetchAnnouncements(
   }
 }
 
-export async function fetchAnnouncementById(
-  id: string,
-): Promise<Announcement | null> {
-  try {
-    // 크롤링된 데이터에서 검색
-    const academic = await fetch("/data/announcements-academic.json").then(
-      (r) => r.json(),
-    );
-    let found = (academic as Announcement[]).find(
-      (a: Announcement) => a.id === id,
-    );
-    if (found) return found;
-
-    const scholarship = await fetch(
-      "/data/announcements-scholarship.json",
-    ).then((r) => r.json());
-    found = (scholarship as Announcement[]).find(
-      (a: Announcement) => a.id === id,
-    );
-    if (found) return { ...found, category: "scholarship" as const };
-
-    return null;
-  } catch (error) {
-    console.error("Failed to fetch announcement:", error);
-    return null;
-  }
-}
-
 // 학식 API - 크롤링된 실제 데이터 사용
 export async function fetchCafeteriaMenu(
   date?: string,
@@ -393,6 +365,11 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
   try {
     const response = await fetch("/bus/busStatusList.php", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "",
+      credentials: "omit",
     });
 
     if (!response.ok) {

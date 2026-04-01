@@ -22,6 +22,20 @@ const nextConfig = {
   // 폰트 최적화
   optimizeFonts: true,
 
+  // 빌드 최적화: 개발 중 불필요한 source map 제거
+  productionBrowserSourceMaps: false,
+
+  // 온디맨드 페이지 생성 최적화
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000, // 60초
+    pagesBufferLength: 5,
+  },
+
+  // 빌드 캐시 활성화
+  experimental: {
+    optimizePackageImports: ["@tanstack/react-query"],
+  },
+
   // Localhost 개발 서버에서 external API 프록싱
   rewrites: async () => {
     return {

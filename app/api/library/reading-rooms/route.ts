@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 
+// 🚀 빌드 최적화: 이 라우트를 동적으로 처리 (빌드 시간 단축)
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const response = await fetch(
       "https://libmo.syu.ac.kr/mobile/PA/seatRoomStatusListXML.php",
-      { cache: "no-store" },
+      { cache: "no-store" }, // 항상 최신 데이터
     );
 
     if (!response.ok) {
