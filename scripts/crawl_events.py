@@ -64,6 +64,18 @@ def extract_event_row(row):
         except:
             views = 0
         
+        # Pin 여부 확인 (step1 th의 notice_icon span 확인)
+        step1_th = row.select_one("th.step1")
+        is_pinned = False
+        
+        if step1_th:
+            notice_icon_span = step1_th.find("span", class_="notice_icon")
+            if notice_icon_span:
+                is_pinned = True
+            else:
+                # notice_icon이 없으면 번호 추출
+                no_text = step1_th.get_text(strip=True)
+        
         is_important = "[중요]" in title or "[공지]" in title
         clean_title = title.replace("[중요]", "").replace("[공지]", "").strip()
         
@@ -74,7 +86,8 @@ def extract_event_row(row):
             "author": author or "행사팀",
             "views": views,
             "url": url,
-            "is_important": is_important
+            "is_important": is_important,
+            "is_pinned": is_pinned
         }
     except Exception as e:
         print(f"  ⚠️  행 파싱 오류: {e}")
@@ -223,7 +236,8 @@ def crawl_event_notices():
                         "category": "event",
                         "content": "",
                         "url": row_data['url'],
-                        "isImportant": row_data['is_important']
+                        "isImportant": row_data['is_important'],
+                        "isPinned": row_data['is_pinned']
                     }
             
             except Exception as e:

@@ -8,7 +8,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4%ec%b6%94%ea%b0%80/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": true
   },
   {
     "id": "campus-373a48637d81",
@@ -19,7 +20,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%95%eb%b3%b4%ea%b3%b5%ea%b0%9c-%ec%b2%ad%ea%b5%ac%ec%97%90-%eb%94%b0%eb%a5%b8-%ec%a0%95%eb%b3%b4%ea%b3%b5%ea%b0%9c%eb%aa%a9%eb%a1%9d/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": true
   },
   {
     "id": "campus-5158e2cd7dce",
@@ -30,7 +32,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-4%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7e01aaba01ca",
@@ -41,7 +44,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-%ec%a0%84%eb%b0%98%ea%b8%b0-%ec%a0%84%eb%ac%b8%ec%82%ac%ea%b4%80%ec%a0%84%ec%82%b0-%eb%b0%8f-%ec%82%ac%ec%96%b4%eb%b2%84%ed%8a%b9%ea%b8%b0-%ec%9e%a5%ea%b5%90-%ec%84%a0%eb%b0%9c/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0c54cba9450b",
@@ -52,7 +56,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-%ec%a0%84%eb%b0%98%ea%b8%b0-%ed%95%99%ec%82%ac%ec%9e%a5%ea%b5%90-%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7fe1ac9d5684",
@@ -63,7 +68,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%a0%81%eb%b3%80%eb%8f%99%ec%9e%90-%ed%86%b5%eb%b3%b4-%ea%b4%80%eb%a0%a8-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%a0%9c3%ec%9e%90-%ec%a0%9c%ea%b3%b5%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc-9/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-71db5dbbbe09",
@@ -74,7 +80,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84%eb%8f%84-%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ed%99%8d%eb%b3%b4-%ec%95%88%eb%82%b4%eb%ac%b82%ec%b0%a8/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-af9b2dbebd7b",
@@ -85,7 +92,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c220e405c51a",
@@ -96,7 +104,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84%eb%8f%84-%ec%9e%ac%eb%b3%91%ec%97%ad-%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d3c0ff224b7f",
@@ -107,7 +116,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%ed%95%99%eb%85%84%eb%8f%84-%ec%8b%a0-%ed%8e%b8%ec%9e%85%ec%83%9d-%ec%a0%95%eb%b3%b4%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%b4%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-cf6c4dd1625f",
@@ -118,7 +128,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ec%9d%bc%ec%a0%9526%eb%85%84-2%ec%9b%94/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1e456e037eb1",
@@ -129,7 +140,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-1%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0066e452fad7",
@@ -140,7 +152,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-%ea%b2%bd%ea%b8%b0%ed%91%b8%eb%a5%b8%eb%af%b8%eb%9e%98%ea%b4%80-%ec%9e%85%ec%82%ac%ec%83%9d-%ec%84%a0%eb%b0%9c-%ec%a7%80%ec%9b%90%ec%9e%90-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f317c749327a",
@@ -151,7 +164,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/25%eb%85%84-12%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f8d3ed3ab862",
@@ -162,7 +176,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%ec%b0%b8%ec%84%9d%ec%97%90-%eb%8c%80%ed%95%9c-%eb%b6%88%eb%a6%ac%ed%95%9c-%ec%b2%98%ec%9a%b0-%ea%b8%88%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-da2f94c6e744",
@@ -173,7 +188,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-%eb%8c%80%ed%95%99%ec%98%88%eb%b9%84%ea%b5%b0-%ed%9b%88%eb%a0%a8%ea%b3%84%ed%9a%8d-%ea%b3%b5%ec%a7%80/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f7cf600ef6d4",
@@ -184,7 +200,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025-2%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ba0d01d8b3c3",
@@ -195,7 +212,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%8a%b9%eb%b3%84%ec%9e%ac%eb%82%9c%ec%a7%80%ec%97%ad-%ec%84%a0%ed%8f%ac%ec%97%90-%eb%94%b0%eb%a5%b8-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%eb%a9%b4%ec%a0%9c-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6e21a4889a4a",
@@ -206,7 +224,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-8%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2eb7f43fd01e",
@@ -217,7 +236,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025-2%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ed%95%99%ec%8a%b5%eb%8f%84%ec%9a%b0%eb%af%b8-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4%ec%8b%9c%ea%b8%89-10030%ec%9b%90/?pageds=2&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6d783848fcdd",
@@ -228,7 +248,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-6%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-793aa4f92069",
@@ -239,7 +260,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%eb%b0%a9%ec%b9%98%ec%9e%90%ec%a0%84%ea%b1%b0-%ed%8f%90%ea%b8%b0-%ea%b3%b5%ea%b3%a0/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8b5590804e06",
@@ -250,7 +272,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/20%ec%84%b8-%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ed%9b%84-%ec%9e%85%ec%98%81-%ec%8b%a0%ec%b2%ad-%ec%a0%9c%eb%8f%84/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-133b8455cefa",
@@ -261,7 +284,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-%ea%b7%bc%eb%a1%9c%c2%b7%ec%9e%90%eb%85%80%ec%9e%a5%eb%a0%a4%ea%b8%88-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-60653c8fe413",
@@ -272,7 +296,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/25%eb%85%84-5%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f4a7705e88c4",
@@ -283,7 +308,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a3%bc%ec%9a%94-%ea%b3%b5%ec%a7%80-%ec%b9%b4%eb%93%9c%ed%95%99%ec%83%9d%ec%a6%9d-%eb%af%b8%eb%b0%9c%ea%b8%89%ed%95%99%ec%83%9d-%eb%b0%9c%ea%b8%89%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eeb3e070e1de",
@@ -294,7 +320,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8b%9c%ec%98%a8%ea%b4%80%eb%82%a8%ec%83%9d%ed%99%9c%ea%b4%80-%ec%98%b4-%ed%99%95%ec%a7%84%ec%9e%90-%eb%b0%9c%ec%83%9d%ec%97%90-%eb%94%b0%eb%a5%b8-%ea%b2%bd%ea%b3%bc-%eb%b3%b4%ea%b3%a0-%eb%b0%8f/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0cc29be430eb",
@@ -305,7 +332,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-%eb%8f%8c%eb%8b%a8-%ea%b5%90%ec%a7%80-%eb%ac%b8%ed%95%99%ec%83%81-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ec%a7%80/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f9bab24c5d70",
@@ -316,7 +344,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-4%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d-%ec%95%88%eb%82%b4/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d314813d8783",
@@ -327,7 +356,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84%eb%8f%84-%ec%9c%a1%ea%b5%b0-%ec%a0%84%ec%82%b0-%ec%a0%84%eb%b0%98%ea%b8%b0-%ec%a0%84%eb%ac%b8%ec%82%ac%ea%b4%80-%ec%84%a0%eb%b0%9c-%ea%b3%84%ed%9a%8d-%ec%95%88%eb%82%b4/?pageds=3&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5b1d9ea325c7",
@@ -338,7 +368,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%a0%81%eb%b3%80%eb%8f%99%ec%9e%90-%ed%86%b5%eb%b3%b4-%ea%b4%80%eb%a0%a8-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%a0%9c3%ec%9e%90-%ec%a0%9c%ea%b3%b5%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc-8/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ef4d6eea07c1",
@@ -349,7 +380,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%ed%95%99%eb%85%84%eb%8f%84-%ec%8b%a0-%ed%8e%b8%ec%9e%85%ec%83%9d-%ec%a0%95%eb%b3%b4%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%b4%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3e03b10502c7",
@@ -360,7 +392,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/25%eb%85%84-2%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b27e9f38aa97",
@@ -371,7 +404,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84%eb%8f%84-%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c3a2fbad7de8",
@@ -382,7 +416,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025-1%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ed%95%99%ec%8a%b5%eb%8f%84%ec%9a%b0%eb%af%b8-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4%ec%8b%9c%ea%b8%89-10030%ec%9b%90-2/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-75b6299b8de9",
@@ -393,7 +428,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84-1%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6dd810d5c58f",
@@ -404,7 +440,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2025%eb%85%84%eb%8f%84-%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f78f09ffbeba",
@@ -415,7 +452,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b0%b1%ec%95%94%eb%b3%b5%ec%a7%80%ec%9e%ac%eb%8b%a8-2025%eb%85%84%eb%8f%84-%eb%b0%b1%ec%95%94%eb%b3%b5%ec%a7%80%ec%9e%ac%eb%8b%a8-%ec%a3%bc%ea%b1%b0%ec%a7%80%ec%9b%90%ec%9e%a5%ed%95%99%ec%83%9d/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fa10c39e09be",
@@ -426,7 +464,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/24%eb%85%84-12%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-10c2d85abf46",
@@ -437,7 +476,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/24%eb%85%84-11%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=4&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8bf7a3092f1f",
@@ -448,7 +488,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%85%b8%ec%9b%90%ea%b8%b0%ec%b0%a8%eb%a7%88%ec%9d%84-%ed%99%94%eb%9e%91%eb%8c%80-%ec%b2%a0%eb%8f%84%ea%b3%b5%ec%9b%90-%ed%8c%8c%ed%8a%b8%ed%83%80%ec%9e%84%ec%95%84%eb%a5%b4%eb%b0%94%ec%9d%b4/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b2b6716084bf",
@@ -459,7 +500,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-10%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3ee6e0f79c28",
@@ -470,7 +512,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0-2024-%ec%a7%80%ec%97%ad%ec%82%ac%ed%9a%8c%eb%ac%b8%ec%a0%9c%ed%95%b4%ea%b2%b0-%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8-%ec%82%bc%ec%9c%a1%eb%a7%88%ec%9d%84-%eb%8b%a8/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e5c8310b2086",
@@ -481,7 +524,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/24%eb%85%84-9%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9f9319b8fc95",
@@ -492,7 +536,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%eb%a9%b4%ed%83%88-%ec%98%88%eb%b0%a9%ec%9d%84-%ec%9c%84%ed%95%9c-%ec%95%88%eb%82%b4/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a178f6f9791e",
@@ -503,7 +548,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024-2%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88-%eb%aa%a8%ec%a7%91/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-55b92f1da95b",
@@ -514,7 +560,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9c%a1%ea%b5%b0-%ed%95%99%ec%82%ac%ec%9e%a5%ea%b5%90-%ec%b6%94%ea%b0%80-%eb%aa%a8%ec%a7%91/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d4c540c20d53",
@@ -525,7 +572,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/24%eb%85%84-8%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ea%b3%84%ed%9a%8d/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-102aaa09e6a9",
@@ -536,7 +584,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-7%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ea%b3%84%ed%9a%8d/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-82e5c8cfc442",
@@ -547,7 +596,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024-%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ec%84%ac%eb%a8%b8-%ec%8a%a4%ec%bf%a8-%ec%a1%b0%ea%b5%90-%eb%aa%a8%ec%a7%91/?pageds=5&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4805247f34be",
@@ -558,7 +608,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%b4%eb%a5%b4%ec%8b%a0-%eb%8c%80%ed%95%99%ec%83%9d-%e3%80%8e%ec%a3%bc%ea%b1%b0%ea%b3%b5%ec%9c%a0%ed%95%9c-%ec%a7%80%eb%b6%95-%ec%84%b8%eb%8c%80%ea%b3%b5%ea%b0%90%ec%82%ac%ec%97%85%e3%80%8f-2/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8ba2504e665f",
@@ -569,7 +620,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-%ec%9c%a1%ea%b5%b0-%ed%9b%84%eb%b0%98%ea%b8%b0-%ec%a0%84%eb%ac%b8%ec%82%ac%ea%b4%80-%eb%aa%a8%ec%a7%91/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5cc6a9a20f57",
@@ -580,7 +632,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-%e3%80%8c%ea%b2%bd%ea%b8%b0%eb%8f%84-%ec%b2%ad%eb%85%84-%eb%85%b8%eb%8f%99%ec%9e%90-%ed%86%b5%ec%9e%a5%e3%80%8d-%ec%b0%b8%ec%97%ac%ec%9e%90-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a8d2a75b979c",
@@ -591,7 +644,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84%eb%8f%84-2%eb%b6%84%ea%b8%b0-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%eb%b3%b4%ed%98%b8-%ec%95%88%eb%82%b4/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-163ce82a37d6",
@@ -602,7 +656,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-6%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ea%b3%84%ed%9a%8d-%ec%95%88%eb%82%b4/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a01c6e049af9",
@@ -613,7 +668,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8c%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b0%9b%ec%9d%80-%ed%95%b4-%ec%9e%85%ec%98%81%ed%9d%ac%eb%a7%9d%ec%9e%902005%eb%85%84%ec%83%9d-%ed%98%84%ec%97%ad%eb%b3%91-%ec%9e%85/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-de728de66782",
@@ -624,7 +680,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b0%9b%ec%9d%80-%ed%95%b4-%ec%9e%85%ec%98%81%ed%9d%ac%eb%a7%9d%ec%9e%902005%eb%85%84%ec%83%9d-%ed%98%84%ec%97%ad%eb%b3%91-%ec%9e%85%ec%98%81/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3db616d3369b",
@@ -635,7 +692,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%eb%a9%b4%ed%83%88-%ec%a1%b0%ec%9e%a5%ec%a0%95%eb%b3%b4-%ea%b2%8c%ec%8b%9c%c2%b7%ec%9c%a0%ed%86%b5-%ec%98%88%eb%b0%a9%ec%9d%84-%ec%9c%84%ed%95%9c-%ec%95%88%eb%82%b4/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ead9940ed006",
@@ -646,7 +704,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ec%9d%bc%ec%a0%9524%eb%85%84-5%ec%9b%94/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c4fc44ea4571",
@@ -657,7 +716,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84%e3%80%8c1%ec%9d%b8%ea%b0%80%ea%b5%ac-%ea%b5%ac%ea%b0%95%ea%b1%b4%ea%b0%95%ea%b4%80%eb%a6%ac%ec%82%ac%ec%97%85%eb%ac%b4%eb%a3%8c-%ec%8a%a4%ec%bc%80%ec%9d%bc%eb%a7%81-%eb%93%b1-%ec%95%88/?pageds=6&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f6345b338289",
@@ -668,7 +728,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99%ec%83%9d-%eb%b0%8f-%ec%82%ac%ed%9a%8c%ec%b4%88%eb%85%84%ec%83%9d-%ec%a0%84%ec%84%b8%ec%82%ac%ea%b8%b0-%ed%94%bc%ed%95%b4-%ec%98%88%eb%b0%a9%ec%9d%84-%ec%9c%84%ed%95%9c-%ec%95%88/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2981a2bbe6f7",
@@ -679,7 +740,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84%e3%80%8c%ec%82%b0%eb%b6%88%ed%8a%b9%eb%b3%84%eb%8c%80%ec%b1%85%ea%b8%b0%ea%b0%84%e3%80%8d-%ea%b3%b5%ea%b3%a0-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-401b47faa420",
@@ -690,7 +752,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-%ec%b2%ad%eb%85%84-%eb%b6%80%eb%8f%99%ec%82%b0-%ec%a4%91%ea%b0%9c%eb%b3%b4%ec%88%98-%eb%b0%8f-%ec%9d%b4%ec%82%ac%eb%b9%84-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b86c2f16e672",
@@ -701,7 +764,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%b4%ea%b5%b0-%ec%a0%84%eb%ac%b8%ec%9d%98%eb%ac%b4%eb%b3%91-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f885403959cc",
@@ -712,7 +776,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1c486266ca32",
@@ -723,7 +788,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a3%bc%ec%9d%98-%ed%95%9c%ea%b5%ad%ea%b3%a0%ec%9a%a9%ec%a0%95%eb%b3%b4%ec%9b%90%ec%9d%84-%ec%82%ac%ec%b9%ad%ed%95%98%eb%8a%94-%ec%a0%84%ed%99%94%ec%97%90-%ec%a3%bc%ec%9d%98%ed%95%b4%ec%a3%bc/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-279644cc2856",
@@ -734,7 +800,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99%ec%83%9d-%ec%9b%94%ec%84%b8-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-mg%ed%9d%ac%eb%a7%9d%eb%82%98%eb%88%94-%eb%82%b4%ec%a7%91%ec%9e%a1%ea%b8%b0-7%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5e025741a119",
@@ -745,7 +812,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-4%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ea%b3%84%ed%9a%8d/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-079d6acbf92c",
@@ -756,7 +824,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-%ec%84%9c%ec%9a%b8%ec%b2%ad%eb%85%84%eb%ac%b8%ed%99%94%ed%8c%a8%ec%8a%a4-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a97b9062f505",
@@ -767,7 +836,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%aa%a8%eb%b0%94%ec%9d%bc-%ec%8b%a0%eb%b6%84%ec%a6%9d-%ec%9d%b4%ec%9a%a9-%ed%99%9c%ec%84%b1%ed%99%94%eb%a5%bc-%ec%95%88%eb%82%b4/?pageds=7&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-14b02984d55d",
@@ -778,7 +848,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%eb%b2%84-%ea%b0%80%ec%83%81%ed%99%94-%ea%b5%ac%ec%b6%95%ec%97%90-%eb%94%b0%eb%a5%b8-su-wings-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c-%ec%a4%91%eb%8b%a8-%ec%95%88%eb%82%b4-2/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7ed224c65ac8",
@@ -789,7 +860,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84%eb%8f%84-%eb%b3%91%ec%97%ad%eb%aa%85%eb%ac%b8%ea%b0%80%eb%a5%bc-%ec%b0%be%ec%8a%b5%eb%8b%88%eb%8b%a4/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fdc8bdce71fc",
@@ -800,7 +872,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ed%95%98%eb%b0%98%ea%b8%b0%eb%b6%84-%ea%b7%bc%eb%a1%9c%ec%9e%a5%eb%a0%a4%ea%b8%88-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-32967f76ae3a",
@@ -811,7 +884,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8b%a0%ed%95%99%ea%b8%b0-%ec%b6%9c%ed%8c%90%eb%ac%bc-%eb%b6%88%eb%b2%95%eb%b3%b5%ec%a0%9c-%ec%98%88%eb%b0%a9-%ed%99%9c%eb%8f%99-%ec%95%88%eb%82%b4/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-42c49654ca87",
@@ -822,7 +896,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-3%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5c115130c172",
@@ -833,7 +908,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%a0%81%eb%b3%80%eb%8f%99%ec%9e%90-%ed%86%b5%eb%b3%b4-%ea%b4%80%eb%a0%a8-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%a0%9c3%ec%9e%90-%ec%a0%9c%ea%b3%b5%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc-6/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-092cb1d6f0d9",
@@ -844,7 +920,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%ed%95%99%eb%85%84%eb%8f%84-%ec%8b%a0-%ed%8e%b8%ec%9e%85%ec%83%9d-%ec%a0%95%eb%b3%b4%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%b4%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6e2cea5aa21b",
@@ -855,7 +932,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%84%ed%99%94%ea%b8%88%ec%9c%b5%ec%82%ac%ea%b8%b0%eb%b3%b4%ec%9d%b4%ec%8a%a4%ed%94%bc%ec%8b%b1-%ec%98%88%eb%b0%a9-%ec%95%88%eb%82%b4/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-689b645c5a9a",
@@ -866,7 +944,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-2%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=8&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b97c4756f3f0",
@@ -877,7 +956,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84%eb%8f%84-%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-746712ef2b2a",
@@ -888,7 +968,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-%ec%97%ac%ec%84%b1%ec%b2%ad%ec%86%8c%eb%85%84-%ec%83%9d%eb%a6%ac%ec%9a%a9%ed%92%88-%eb%b0%94%ec%9a%b0%ec%b2%98-%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-18a3dc61511d",
@@ -899,7 +980,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4-3/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ca9345ec311b",
@@ -910,7 +992,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2024%eb%85%84-1%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ada8acb03a4b",
@@ -921,7 +1004,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%eb%b0%a9%ed%95%99-%ec%a4%91-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ec%9a%b4%ec%98%81-%ec%95%88%eb%82%b4-2/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-efa54c587397",
@@ -932,7 +1016,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b2%a8%ec%9a%b8%ec%b2%a0-%ec%97%90%eb%84%88%ec%a7%80%ec%a0%88%ec%95%bd-%eb%b0%8f-%eb%8f%84%ec%8b%9c%ea%b0%80%ec%8a%a4%ec%ba%90%ec%8b%9c%eb%b0%b1-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2ad4ad1f511c",
@@ -943,7 +1028,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%b2%98-2023-%eb%8f%99%ea%b3%84%eb%b0%a9%ed%95%99-%ec%a4%91-%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%ec%9a%b4%ec%98%81-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1fc15422be90",
@@ -954,7 +1040,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84%eb%8f%84-4%eb%b6%84%ea%b8%b0-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4%eb%b3%b4%ed%98%b8-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-51d133e9e6d0",
@@ -965,7 +1052,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b6%80%eb%8f%99%ec%82%b0-%ec%9e%84%eb%8c%80%ec%b0%a8%ea%b3%84%ec%95%bd-%ec%b2%ab%ea%b1%b8%ec%9d%8c%ec%a0%84%ec%84%b8%ec%82%ac%ea%b8%b0-%ec%98%88%eb%b0%a9-%ec%95%88%eb%82%b4/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c07d4d135f19",
@@ -976,7 +1064,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%95%84%eb%8f%99%c2%b7%ec%b2%ad%ec%86%8c%eb%85%84-%eb%94%94%ec%a7%80%ed%84%b8-%ec%9e%8a%ed%9e%90-%ea%b6%8c%eb%a6%ac-%ec%a7%80%ec%9b%90-%ec%84%9c%eb%b9%84%ec%8a%a4%ec%a7%80%ec%9a%b0%ea%b0%9c/?pageds=9&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a95bdd76cb9e",
@@ -987,7 +1076,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-11%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-df87e4327d17",
@@ -998,7 +1088,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%97%ac%ec%84%b1%ec%b2%ad%ec%86%8c%eb%85%84-%ec%83%9d%eb%a6%ac%ec%9a%a9%ed%92%88-%eb%b0%94%ec%9a%b0%ec%b2%98-%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4-2/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6cfde80fa529",
@@ -1009,7 +1100,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%98%81%ec%8b%a0-2023-%ec%82%bc%ec%9c%a1%eb%a7%88%ec%9d%84-%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8-%ec%89%ac%ec%9a%b4%ec%a0%95%eb%b3%b4%ec%a0%9c%ea%b3%b5-%ec%82%ac%ec%97%85_%ea%b0%80%ec%b9%98/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8e50682ebcec",
@@ -1020,7 +1112,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90-2%ec%b0%a8-%ec%b6%94%ea%b0%80%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-25c0bed05499",
@@ -1031,7 +1124,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-9%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d-%ec%95%88%eb%82%b4/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-53d0828846c5",
@@ -1042,7 +1136,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8cgh-%ea%b8%b0%ed%9a%8c%ec%88%98%eb%8f%84%ed%8c%8c%ed%8a%b8%eb%84%88%ec%8a%a4%eb%8f%84%eb%af%bc%ec%a3%bc%ec%a3%bc%eb%8b%a8%e3%80%8d-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2d5da9c03e1c",
@@ -1053,7 +1148,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%eb%85%84%ec%9d%98-%ea%b3%a0%eb%a6%bd%c2%b7%ec%9d%80%eb%91%94-%ec%8b%a4%ed%83%9c-%ec%a1%b0%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8afdb203c253",
@@ -1064,7 +1160,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%ba%a0%ed%8d%bc%ec%8a%a4-%ec%95%88%ec%8b%ac-%ec%86%8c%ec%8b%9d%ec%a7%80-%ec%95%88%eb%82%b4-2/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f65cf4c21e39",
@@ -1075,7 +1172,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%ec%9c%a1%eb%b6%80-%ec%b1%97gpt-%eb%93%b1-%ec%83%9d%ec%84%b1%ed%98%95-ai-%ed%99%9c%ec%9a%a9-%eb%b3%b4%ec%95%88-%ea%b0%80%ec%9d%b4%eb%93%9c%eb%9d%bc%ec%9d%b8/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-72b5b2d4edbd",
@@ -1086,7 +1184,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%ad%ed%86%a0%eb%b6%80-%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8-%ed%95%9c%ec%8b%9c-%ed%8a%b9%eb%b3%84%ec%a7%80%ec%9b%90-%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4/?pageds=10&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0af0956bae14",
@@ -1097,7 +1196,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%b4%eb%a5%b4%ec%8b%a0-%eb%8c%80%ed%95%99%ec%83%9d-%e3%80%8e%ec%a3%bc%ea%b1%b0%ea%b3%b5%ec%9c%a0%ed%95%9c-%ec%a7%80%eb%b6%95-%ec%84%b8%eb%8c%80%ea%b3%b5%ea%b0%90%ec%82%ac%ec%97%85%e3%80%8f/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3ed7feae5f67",
@@ -1108,7 +1208,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%e3%80%8c%ea%b2%bd%ea%b8%b0%eb%8f%84-%ec%b2%ad%eb%85%84-%eb%85%b8%eb%8f%99%ec%9e%90-%ed%86%b5%ec%9e%a5%e3%80%8d-%ec%b0%b8%ec%97%ac%ec%9e%90-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4ad0540bb3d3",
@@ -1119,7 +1220,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%b2%ad%eb%85%84-%eb%b6%80%eb%8f%99%ec%82%b0-%ec%a4%91%ea%b0%9c%eb%b3%b4%ec%88%98-%eb%b0%8f-%ec%9d%b4%ec%82%ac%eb%b9%84-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e7a5acd5e7a6",
@@ -1130,7 +1232,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8e%ea%b5%ad%eb%af%bc%ec%97%b0%ea%b8%88-%eb%b0%94%eb%a1%9c%ec%95%8c%ea%b8%b0%e3%80%8f-%ec%bd%98%ed%85%90%ec%b8%a0-%ec%95%88%eb%82%b4/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c2947ed4e06a",
@@ -1141,7 +1244,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%97%ac%ec%84%b1%ec%b2%ad%ec%86%8c%eb%85%84-%ec%83%9d%eb%a6%ac%ec%9a%a9%ed%92%88-%eb%b0%94%ec%9a%b0%ec%b2%98-%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2098a2d0774e",
@@ -1152,7 +1256,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/144193/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1012ee362c5b",
@@ -1163,7 +1268,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a6ed51b189a8",
@@ -1174,7 +1280,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8-%ed%95%9c%ec%8b%9c-%ed%8a%b9%eb%b3%84%ec%a7%80%ec%9b%90-%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4-2/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b26639c0ef75",
@@ -1185,7 +1292,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ec%9d%bc%ec%a0%9523%eb%85%84-5%ec%9b%94/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ae215b5ccaf4",
@@ -1196,7 +1304,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8c%eb%82%98%eb%9d%bc%ed%82%a4%ec%9b%80-%eb%82%a8%ec%96%91%ec%a3%bc%eb%b3%b5%ed%95%a9%ec%b2%ad%ec%82%ac%e3%80%8d-%ed%96%89%eb%b3%b5%ec%a3%bc%ed%83%9d-%ec%a0%9c2%ec%b0%a8-%ec%9e%85%ec%a3%bc/?pageds=11&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d23097ffe826",
@@ -1207,7 +1316,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%97%ac%ec%84%b1%ec%b2%ad%eb%85%84-%ec%95%88%ec%a0%84%ed%95%9c-%eb%82%b4%ec%a7%91%eb%a7%8c%eb%93%a4%ea%b8%b0-%ec%8b%a0%ec%b2%ad%ec%9e%90-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8f451053d5f1",
@@ -1218,7 +1328,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c93%ed%9a%8c-%ec%b6%98%ed%96%a5%ec%a0%9c-%ec%a0%84%ea%b5%ad%ec%b6%98%ed%96%a5%ec%84%a0%eb%b0%9c%eb%8c%80%ed%9a%8c-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b19394fdf0f1",
@@ -1229,7 +1340,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99%ea%b5%90%ec%9e%ac-%eb%b6%88%eb%b2%95%eb%b3%b5%ec%a0%9c-%ea%b4%80%eb%a0%a8-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-16e31e57021f",
@@ -1240,7 +1352,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84-%eb%8c%80%ec%a4%91%ea%b5%90%ed%86%b5%eb%b9%84-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%b0%b8%ec%97%ac%ec%9e%90-%eb%aa%a8%ec%a7%91-%ec%95%88/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-be611f8ac9f3",
@@ -1251,7 +1364,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-4%ec%9b%94-%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-30812bb1e615",
@@ -1262,7 +1376,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%eb%af%b8%eb%94%94%ec%96%b4-%ec%9e%90%ec%82%b4%ec%a0%95%eb%b3%b4-%eb%aa%a8%eb%8b%88%ed%84%b0%eb%a7%81%eb%8b%a8-%ec%a7%80%ec%bc%9c%ec%a4%8c%ec%9d%b8%e4%ba%ba-%eb%aa%a8%ec%a7%91/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b87d1be8d7bd",
@@ -1273,7 +1388,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%a0%95%ec%b1%85-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a7ea63404077",
@@ -1284,7 +1400,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8e2023-%ec%a0%9c1%ec%b0%a8-%eb%82%a8%eb%b6%81%ec%a0%91%ea%b2%bd%ec%a7%80%ec%97%ad-%ed%83%90%eb%b0%a9-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8%e3%80%8f-%ec%b0%b8%ea%b0%80-%ec%8b%a0%ec%b2%ad/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-33c21c9d23ee",
@@ -1295,7 +1412,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c8%ed%9a%8c-%ec%84%9c%ed%95%b4%ec%88%98%ed%98%b8%ec%9d%98-%eb%82%a0-%ed%96%89%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-41a5b54b01a5",
@@ -1306,7 +1424,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84%eb%8f%84-%ea%b5%ad%eb%b9%84%ec%9c%a0%ed%95%99%ec%97%b0%ec%88%98%ec%83%9d-%ec%84%a0%eb%b0%9c-%ea%b3%b5%ea%b3%a0-%ec%95%88%eb%82%b4/?pageds=12&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-116eb60620ec",
@@ -1317,7 +1436,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%86%8d%ec%96%b4%ec%b4%8c-%ec%9e%a5%ec%95%a0%ea%b0%80%ec%a0%95-%eb%8c%80%ed%95%99%ec%83%9d-%eb%8c%80%ec%83%81-%eb%85%b8%ed%8a%b8%eb%b6%81-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ad068a7d313c",
@@ -1328,7 +1448,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%ec%a0%84%eb%ac%b8%ea%b0%80%eb%a5%bc-%ec%b0%be%ec%8a%b5%eb%8b%88%eb%8b%a4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f5b5f8ec3718",
@@ -1339,7 +1460,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%ec%8b%9c-%ea%b0%80%ec%a1%b1%eb%8f%8c%eb%b4%84%ec%b2%ad%eb%85%84-%ec%8b%a4%ed%83%9c%ec%a1%b0%ec%82%ac/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0a5323cf4fef",
@@ -1350,7 +1472,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%ec%86%8c%eb%85%84%eb%b6%80%eb%aa%a8-%ec%95%84%eb%8f%99%ec%96%91%ec%9c%a1%eb%b9%84-%ec%a7%80%ec%9b%90-%ec%82%ac%ec%97%85-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7225e860c71e",
@@ -1361,7 +1484,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%a0%81%eb%b3%80%eb%8f%99%ec%9e%90-%ed%86%b5%eb%b3%b4-%ea%b4%80%eb%a0%a8-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%a0%9c3%ec%9e%90-%ec%a0%9c%ea%b3%b5%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc-4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6d51d0ddbbc0",
@@ -1372,7 +1496,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84-%ec%83%81%eb%b0%98%ea%b8%b0-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%b2%98%eb%a6%ac-%ec%9c%a0%ec%9d%98%ec%82%ac%ed%95%ad-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2b5a37924a63",
@@ -1383,7 +1508,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%9c%ec%9d%b8%ed%98%95-%ec%9d%b4%eb%8f%99%ec%9e%a5%ec%b9%98pm-%ec%95%88%ec%a0%84%ec%9d%b4%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a225fdb91422",
@@ -1394,7 +1520,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-%ed%95%98%eb%b0%98%ea%b8%b0-%ea%b7%bc%eb%a1%9c%ec%9e%a5%eb%a0%a4%ea%b8%88-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d934fea63ca9",
@@ -1405,7 +1532,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b6%9c%ed%8c%90%eb%ac%bc-%eb%b6%88%eb%b2%95%eb%b3%b5%ec%a0%9c-%ec%98%88%eb%b0%a9-%ec%95%88%eb%82%b4/?pageds=13&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7a979f94e92a",
@@ -1416,7 +1544,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%eb%aa%a8%eb%b0%94%ec%9d%bc-%ec%95%b1-%ec%88%98%ed%86%a1su-talk-%ec%84%a4%ec%b9%98-%eb%b0%8f-%eb%aa%a8%eb%b0%94%ec%9d%bc-%ed%95%99%ec%83%9d%ec%a6%9d/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a527ac04d3ad",
@@ -1427,7 +1556,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/ms-%ec%98%a4%ed%94%bc%ec%8a%a4-365-%ec%82%ac%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6312669ed6d9",
@@ -1438,7 +1568,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%eb%ac%b4%ec%84%a0-%ec%9d%b8%ed%84%b0%eb%84%b7-%ec%9d%b4%ec%9a%a9-%eb%b0%a9%eb%b2%95su-wifi/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-14b8d6f2f9d6",
@@ -1449,7 +1580,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023-1%ed%95%99%ea%b8%b0-%ea%b5%90%eb%82%b4%ec%84%9c%ec%a0%90%ed%98%84%eb%8c%80%ea%b8%80%eb%a7%88%eb%8b%b9-%ec%98%a8%eb%9d%bc%ec%9d%b8%ec%87%bc%ed%95%91%eb%aa%b0-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9a923ffc9bf7",
@@ -1460,7 +1592,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8-%ec%b2%ad%eb%85%84%ec%a0%95%ec%b1%85-%ed%99%8d%eb%b3%b4-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2c6e8b576bc2",
@@ -1471,7 +1604,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84%eb%8f%84-%ea%bf%88%ed%8b%80%eb%a9%98%ed%86%a0%eb%a7%81-%eb%8c%80%ed%95%99%ec%83%9d-%eb%a9%98%ed%86%a0-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3efbb873a428",
@@ -1482,7 +1616,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%ec%86%8c%eb%85%84%ed%95%9c%eb%b6%80%eb%aa%a8-%ec%95%84%eb%8f%99%ec%96%91%ec%9c%a1%eb%b9%84-%ec%a7%80%ec%9b%90-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e88e6061e49e",
@@ -1493,7 +1628,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8c%ec%a0%9c18%ea%b8%b0-%ec%a7%80%eb%b0%a9%ec%8b%9c%eb%8c%80-%eb%8c%80%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88%e3%80%8d%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-49325ba885e1",
@@ -1504,7 +1640,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ec%a7%80%ec%82%ac%ed%95%ad%ea%b3%b5%ec%9d%b5-%ec%8b%a0%ea%b3%a0%ec%99%80-%ec%8b%a0%ea%b3%a0%ec%9e%90-%eb%b3%b4%ed%98%b8-%ec%95%88%eb%82%b4-2/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b3630022af2e",
@@ -1515,7 +1652,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2023%eb%85%84%eb%8f%84-%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4/?pageds=14&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0e049bc5a54e",
@@ -1526,7 +1664,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%95%88%ec%8b%ac%ea%b7%80%ea%b0%80%ed%83%9d%ec%8b%9c-%ec%84%9c%eb%b9%84%ec%8a%a4-%eb%93%b1-%ec%8b%a0%ea%b7%9c%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d1abc35ff7ee",
@@ -1537,7 +1676,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8f%99%ec%a0%88%ea%b8%b0-%ec%bd%94%eb%a1%9c%eb%82%9819-%ec%b6%94%ea%b0%80%ec%a0%91%ec%a2%85-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0310241c97b4",
@@ -1548,7 +1688,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/lh-%ec%b2%ad%eb%85%84%ec%a3%bc%ea%b1%b0%eb%b3%b5%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e78ce48dcafa",
@@ -1559,7 +1700,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ea%b3%b5%ea%b8%b0%ec%88%99%ec%82%ac-%ec%8b%a0%ec%b2%ad%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-161aac25fb76",
@@ -1570,7 +1712,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-%ea%b5%ad%ec%a0%9c%ed%95%99%ec%83%9d%ec%a6%9d-%eb%b0%9c%ea%b8%89%eb%b9%84-%ec%a7%80%ec%9b%90-%ed%96%89%ec%82%ac-%ec%9d%bc%ec%a0%95%ec%a1%b0%ec%a0%95-%ec%9e%ac%ea%b3%b5%ec%a7%80-%ec%95%88/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fa9fc83ebc4a",
@@ -1581,7 +1724,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%9c%ec%9d%b8%ed%98%95-%ec%9d%b4%eb%8f%99%ec%9e%a5%ec%b9%98pm-%ec%95%88%ec%a0%84%ea%b4%80%eb%a6%ac%eb%a5%bc-%ec%9c%84%ed%95%9c-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9bd2ef12c49f",
@@ -1592,7 +1736,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-%ed%95%98%eb%b0%98%ea%b8%b0-%ea%b5%ad%ec%a0%9c%ed%95%99%ec%83%9d%ec%a6%9disic-%eb%b0%9c%ea%b8%89%eb%b9%84-%ec%a7%80%ec%9b%90-%ed%96%89%ec%82%ac-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4fc073a029ba",
@@ -1603,7 +1748,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84%eb%85%b8%ec%9b%90%eb%ac%b8%ed%99%94%ec%9e%ac%eb%8b%a8-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-49a7a2f2da45",
@@ -1614,7 +1760,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%ba%a0%ed%8d%bc%ec%8a%a4-%ec%95%88%ec%8b%ac-%ec%86%8c%ec%8b%9d%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f502f2955ad4",
@@ -1625,7 +1772,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e3%80%8c%ec%98%a8%eb%9d%bc%ec%9d%b8-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%84%9c%eb%b9%84%ec%8a%a4-%eb%b3%80%ea%b2%bd-%ec%95%88%eb%82%b4%e3%80%8d/?pageds=15&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-44e2d499e2bc",
@@ -1636,7 +1784,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%82%b4%ec%85%94%eb%84%90%ec%a7%80%ec%98%a4%ea%b7%b8%eb%9e%98%ed%94%bd-%ec%82%ac%ec%a7%84%ec%a0%84-%ec%a0%84%ec%8b%9c%ed%9a%8c-%ea%b3%b5%ec%a7%80/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d6d498da16bd",
@@ -1647,7 +1796,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%b6%ec%9d%98%ea%b8%b0%ec%88%a0-%eb%b0%b0%ec%9a%b0%ea%b8%b0-%ec%b2%ad%eb%85%84%eb%aa%a8%ec%9e%84-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ec%a7%80/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-016df3b362b3",
@@ -1658,7 +1808,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ea%b0%9c%ec%9d%b8%ec%83%81%eb%8b%b4-%eb%b0%8f-%ec%8b%ac%eb%a6%ac%ea%b2%80%ec%82%ac-%ec%8b%a0%ec%b2%ad%eb%b0%a9%eb%b2%95-%ec%95%88%eb%82%b4/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9a1ae257da94",
@@ -1669,7 +1820,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%85%b8%ec%9b%90%ea%b5%ac-1%ec%9d%b8-%ea%b0%80%ec%a1%b1-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%97%90%ec%bd%94%ec%8b%b1%ea%b8%80%ec%a6%88-%ed%99%98%ea%b2%bd-%ec%ba%a0%ed%8e%98%ec%9d%b8-%eb%8c%80/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f684886ce38a",
@@ -1680,7 +1832,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8f%99%ec%9e%91%ea%b5%ac-%ec%b2%ad%eb%85%84-%ec%b7%a8%ec%97%85%eb%8f%99%ec%95%84%eb%a6%ac-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-81f48162748a",
@@ -1691,7 +1844,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-%eb%8f%8c%eb%8b%a8-%ea%b5%90%ec%a7%80-%eb%ac%b8%ed%95%99%ec%83%81-%ea%b3%b5%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8e83be46c8e1",
@@ -1702,7 +1856,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9e%a5%ec%95%a0%ec%97%90-%eb%8c%80%ed%95%9c-%ec%82%ac%ea%b3%bc-%eb%a7%90%ec%94%80/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e58cb37960d9",
@@ -1713,7 +1868,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%83%9d%eb%8f%99%ec%84%b1-%ec%8b%9c%ed%97%98-%ec%b0%b8%ec%97%ac-%eb%aa%a8%ec%a7%91/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-087a5ae3aa2c",
@@ -1724,7 +1880,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%ed%95%99%eb%85%84%eb%8f%84-%ec%8b%a0%ec%9e%85%ec%83%9d-%ec%a0%95%eb%b3%b4%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%b4%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d5bd265bed6f",
@@ -1735,7 +1892,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ec%a7%80%ec%82%ac%ed%95%ad%ea%b3%b5%ec%9d%b5-%ec%8b%a0%ea%b3%a0%ec%99%80-%ec%8b%a0%ea%b3%a0%ec%9e%90-%eb%b3%b4%ed%98%b8-%ec%95%88%eb%82%b4/?pageds=16&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a472ddce289e",
@@ -1746,7 +1904,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-ktg%eb%b3%b5%ec%a7%80%ec%9e%ac%eb%8b%a8-%ec%95%84%eb%a6%84%eb%93%9c%eb%a6%ac-%ed%98%91%eb%a0%a5%eb%8f%99%ec%95%84%eb%a6%ac-%eb%aa%a8%ec%a7%91/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-62cbc895172a",
@@ -1757,7 +1916,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%95%84%ec%9d%b4%ed%8f%b0-%ec%82%ac%ec%9a%a9%ec%9e%90%eb%93%a4%ec%97%90-%eb%8c%80%ed%95%9c-su-talk-%ec%9e%a5%ec%95%a0%ed%95%b4%ea%b2%b0%eb%b0%a9%eb%b2%95/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-993457898565",
@@ -1768,7 +1928,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99%ec%83%9d-%ec%bd%94%eb%a1%9c%eb%82%9819-%eb%b0%b1%ec%8b%a0-%ec%a0%91%ec%a2%85-%ec%9e%ac%ec%95%88%eb%82%b4/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fad2caacbabe",
@@ -1779,7 +1940,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%ec%8b%9c-%eb%aa%a8%eb%b9%8c%eb%a6%ac%ed%8b%b0-%ed%97%88%eb%b8%8c-%ec%95%84%ec%9d%b4%eb%94%94%ec%96%b4-%ea%b3%b5%eb%aa%a8%ec%a0%84/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9e294db5de67",
@@ -1790,7 +1952,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%ec%a0%95%ec%83%81%ec%98%81%ec%97%85-%ec%95%88%eb%82%b4/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-652402599fe8",
@@ -1801,7 +1964,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ea%b5%90%eb%ac%b4%ec%b2%98-%ea%b5%90%ec%88%98%ec%a7%80%ec%9b%90%ed%8c%80-%ec%a7%81%ec%9b%90%ea%b3%84%ec%95%bd%ec%a7%81-%ec%b1%84%ec%9a%a9-%ec%9e%ac-2/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a417ff7ee506",
@@ -1812,7 +1976,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021-%eb%ac%b8%ed%99%94%ec%9d%b8%eb%a0%a5%ec%96%91%ec%84%b1-%ea%b5%90%ec%9c%a1%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ec%95%88%eb%82%b4/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8cf4252e29f0",
@@ -1823,7 +1988,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/1%ec%9d%b8%ea%b0%80%ea%b5%ac%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ea%b3%b5%ec%a7%80/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-266df945c6d4",
@@ -1834,7 +2000,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/ngo%eb%a5%bc-%eb%b0%b0%ec%9a%b0%eb%8a%94-%ec%8b%9c%ea%b0%84-%ea%b5%bf%eb%84%a4%ec%9d%b4%eb%b2%84%ec%8a%a4-ngo-traveler-5%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-831f5f9149b3",
@@ -1845,7 +2012,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4%ec%84%9c%ec%a0%90-%ed%98%84%eb%8c%80-%ea%b8%80%eb%a7%88%eb%8b%b9-%ec%82%ac%ec%9a%a9%ec%95%88%eb%82%b4-%ea%b3%b5%ec%a7%80/?pageds=17&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6fed7243d85c",
@@ -1856,7 +2024,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ea%b5%90%eb%82%b4%ec%84%9c%ec%a0%90%ed%98%84%eb%8c%80%ea%b8%80%eb%a7%88%eb%8b%b9-%ec%9d%b4%ec%9a%a9%ea%b3%b5%ec%a7%80/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0b9af3e4e449",
@@ -1867,7 +2036,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84%eb%8f%84-%ed%84%b0%eb%ac%b4%eb%8a%ac%ec%9e%88%eb%8a%94-%ed%9d%ac%eb%a7%9d%ec%95%84%ec%a7%80%ed%8a%b8-%ed%95%a8%ea%bb%98%ec%82%b4%ec%9d%b4-%ec%b2%ad%eb%85%84%ed%95%99%ea%b5%90-%ec%b0%b8/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-298d69a484da",
@@ -1878,7 +2048,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2022%eb%85%84-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%9e%90%ec%9c%a8%ec%98%88%ec%82%b0-%ec%a0%95%ec%b1%85%ea%b3%bc%ec%a0%9c-%ec%84%a0%ec%a0%95-%ec%98%a8%eb%9d%bc%ec%9d%b8-%ed%88%ac%ed%91%9c/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e3246fe257f5",
@@ -1889,7 +2060,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%b4%ec%96%91-%ed%95%99%ec%88%a0-%ec%84%b8%eb%af%b8%eb%82%98-%ea%b3%b5%ec%a7%80/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f326b099ce51",
@@ -1900,7 +2072,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%eb%9f%b0-%eb%a9%98%ed%86%a0%eb%8b%a8-%ed%99%9c%eb%8f%99-%ed%95%99%ec%83%9d-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ec%a7%80/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-641379764852",
@@ -1911,7 +2084,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9d%b8%eb%ac%b8%ed%95%99%eb%b6%81%ec%bd%98%ec%84%9c%ed%8a%b8-%ec%9d%b8%ec%a7%80%ed%95%98%ec%a7%80-%eb%aa%bb%ed%96%88%eb%8d%98-%ec%82%ac%ec%82%ac%eb%a1%9c%ec%9a%b4-%ea%b2%83%eb%93%a4-%ea%b3%b5/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e645813ad902",
@@ -1922,7 +2096,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%b0%ec%97%85%eb%b3%b4%ec%95%88-%ec%95%84%ec%9d%b4%eb%94%94%ec%96%b4-%ea%b3%b5%eb%aa%a8%ec%a0%84/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-45a3ceb7a583",
@@ -1933,7 +2108,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%f0%9f%92%97%eb%b3%b4%ea%b1%b4%ec%9d%98%eb%a3%8c%ed%86%b5%ed%95%a9%eb%b4%89%ec%82%ac%ed%9a%8c-2021-%ed%95%98%eb%b0%98%ea%b8%b0-%ec%a4%91%ec%95%99%eb%b3%b8%eb%b6%80%ec%9b%90-%eb%aa%a8%ec%a7%91/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-639a92f4bf9c",
@@ -1944,7 +2120,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%9c%ea%b5%ad%ea%b0%80%ec%9d%b4%eb%93%9c%ec%8a%a4%ed%83%80%ec%b1%84%eb%a6%ac%ed%8b%b0-%ec%97%90%eb%94%94%ed%84%b0-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ec%a7%80/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2315666bf832",
@@ -1955,7 +2132,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/21%eb%85%84-%eb%86%8d%ec%97%85%eb%86%8d%ec%b4%8c%ea%b5%90%ec%9c%a1%ed%9b%88%eb%a0%a8%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85/?pageds=18&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-90fc30d8b145",
@@ -1966,7 +2144,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99%ec%83%9d-%eb%8c%80%ec%99%b8%ed%99%9c%eb%8f%99_gs%ec%b9%bc%ed%85%8d%ec%8a%a4-%ec%b7%a8%ec%a4%80%eb%8f%99%ea%b3%a0%eb%8f%99%eb%9d%bd-%ea%b3%b5%ec%a7%80/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f41fa510babf",
@@ -1977,7 +2156,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84-%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d0563c7c4495",
@@ -1988,7 +2168,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%ea%b2%bd%ea%b8%b0%eb%8f%84%eb%af%bc%ed%9a%8c-%ec%9e%85%ec%82%ac%ec%83%9d%eb%82%a8%ec%9e%90-%ec%b6%94%ea%b0%80-%ec%84%a0%eb%b0%9c%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8de0f89a125a",
@@ -1999,7 +2180,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%8b%9d%eb%8b%b9%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%eb%b0%a9%ed%95%99-%ec%a4%91-%ed%9c%b4%ec%97%85-%ec%95%88%eb%82%b4/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e917c839e3a1",
@@ -2010,7 +2192,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%a7%90%eb%a0%88%ec%9d%b4%ec%8b%9c%ec%95%84%ed%95%ad%ea%b3%b5%ec%97%90%ec%84%9c%eb%8a%94-%eb%a7%8c18%ec%84%b8-26%ec%84%b8-%ec%82%ac%ec%9d%b4%ec%9d%98-%ed%95%99%ec%83%9d%eb%93%a4%ec%9d%84-%eb%8c%80/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5786906f6168",
@@ -2021,7 +2204,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%9c%ec%9d%b8%ed%98%95-%ec%9d%b4%eb%8f%99%ec%9e%a5%ec%b9%98pm-%ec%9d%b4%ec%9a%a9%eb%b2%95%ea%b7%9c-%eb%93%b1-%ed%99%8d%eb%b3%b4%ea%b5%90%ec%9c%a1/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d35686f62191",
@@ -2032,7 +2216,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%98%81%ec%8b%a0%ea%b5%90%ec%9c%a1%ed%98%81%ec%8b%a0%eb%8b%a8-%eb%af%b8%eb%9e%98%ed%98%95-%eb%8c%80%ed%95%99%ec%83%9d-%ed%95%b5%ec%8b%ac%ec%97%ad%eb%9f%89-%ec%a7%84%eb%8b%a8-%ec%98%a8%eb%9d%bc/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9372e488ca37",
@@ -2043,7 +2228,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%eb%9e%9c%eb%93%9c-%eb%8c%80%ed%95%99%ec%83%9d-%ed%8a%b9%eb%b3%84%ed%95%a0%ec%9d%b8-%ec%9d%b4%eb%b2%a4%ed%8a%b8/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a6f63d85cd1a",
@@ -2054,7 +2240,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%bf%eb%84%a4%ec%9d%b4%eb%b2%84%ec%8a%a4-%ed%9d%ac%eb%a7%9d%eb%82%98%eb%88%94%ed%95%99%ea%b5%90-%ec%9e%90%ec%9b%90%eb%b4%89%ec%82%ac%ec%9e%90-%eb%aa%a8%ec%a7%91/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9243ab99dcee",
@@ -2065,7 +2252,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%9d%ac%eb%a7%9d%ed%95%98%ec%9a%b0%ec%a7%95%ea%b3%b5%ea%b3%b5%ea%b8%b0%ec%88%99%ec%82%ac-%ec%9e%85%ec%a3%bc%ec%9e%90%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0/?pageds=19&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-21a7f31f2c38",
@@ -2076,7 +2264,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/ngo-traveler-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ea%b3%a0/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7a821b0779cf",
@@ -2087,7 +2276,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%ea%b0%9c%ec%9d%b8%ec%a0%84%ec%8b%9c%ed%9a%8c%ec%95%84%ed%8a%b8%ec%95%a4%eb%94%94%ec%9e%90%ec%9d%b8%ed%95%99%ea%b3%bc-%ec%84%9c%ec%a0%95%eb%af%b8%ea%b5%90%ec%88%98-%ea%bd%83%ec%b2%98/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-dd681046b4c6",
@@ -2098,7 +2288,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8b%9c%ec%8a%a4%ed%85%9c-%ec%97%85%ea%b7%b8%eb%a0%88%ec%9d%b4%eb%93%9c%eb%a1%9c-%ec%a3%bc%ec%9a%94-%ec%a0%95%eb%b3%b4%ed%99%94-%ec%84%9c%eb%b9%84%ec%8a%a4-%eb%a1%9c%ea%b7%b8%ec%9d%b8-%ec%84%9c/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ead860fc3197",
@@ -2109,7 +2300,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021-%eb%8f%8c%eb%8b%a8-%eb%ac%b8%ed%95%99%ec%83%81-%ea%b3%b5%eb%aa%a8%ec%a0%84-%ea%b0%9c%ec%b5%9c-%ec%95%88%eb%82%b4/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2c247816b9be",
@@ -2120,7 +2312,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%98%eb%82%a8%ec%8b%9c%ec%82%ac%ed%9a%8c%ec%a0%81%ea%b2%bd%ec%a0%9c%ec%a7%80%ec%9b%90%ec%84%bc%ed%84%b0-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-%ec%86%8c%ec%9d%b4%eb%8b%a8-1%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d42fc3c0cc1c",
@@ -2131,7 +2324,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%85%b8%ec%9b%90%ea%b5%ac%ea%b1%b4%ea%b0%95%ea%b0%80%ec%a0%95%eb%8b%a4%eb%ac%b8%ed%99%94%ea%b0%80%ec%a1%b1%ec%a7%80%ec%9b%90%ec%84%bc%ed%84%b0_1%ec%9d%b8%ea%b0%80%ea%b5%ac-%ec%a7%91%eb%8b%a8/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-bf296aeb2f3d",
@@ -2142,7 +2336,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c1%ea%b8%b0-syu-singers-%eb%82%a8%ec%84%b1%eb%8b%a8%ec%9b%90%ec%9d%84-%ec%b6%94%ea%b0%80-%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d003ed835dee",
@@ -2153,7 +2348,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%9c%ec%9d%b8%ec%95%88%ec%8b%ac%eb%b2%88%ed%98%b8-%ec%82%ac%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-257945796963",
@@ -2164,7 +2360,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%95%eb%b6%81%ea%b5%ac-%ec%b2%ad%eb%85%84-%ea%b3%b5%eb%8f%99%ec%b2%b4-%ec%a3%bc%ed%83%9d-15%ec%b0%a8-%ec%9e%85%ec%a3%bc%ec%9e%90-%eb%aa%a8%ec%a7%91/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-88ef890f9af4",
@@ -2175,7 +2372,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%eb%85%84%ec%9d%b8%ec%9e%ac-%ec%96%91%ec%84%b1-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ec%a7%80/?pageds=20&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eece951f6d51",
@@ -2186,7 +2384,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%ec%b6%98%eb%94%94%eb%94%a4%eb%8f%8c-%eb%b3%91%ec%97%ad%ec%a7%84%eb%a1%9c%ec%84%a4%ea%b3%84-%ec%a0%9c%eb%8f%84-%ec%95%88%eb%82%b4/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c5b2af84cf6a",
@@ -2197,7 +2396,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%eb%ac%b4%ec%84%a0%eb%9e%9csu_wifi-%ec%8a%a4%eb%a7%88%ed%8a%b8%ed%8f%b0-%ec%97%b0%ea%b2%b0%eb%b0%a9%eb%b2%95-%ec%95%88%eb%82%b4/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fcd88dd58065",
@@ -2208,7 +2408,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c3%ed%9a%8c-%ec%83%81%ec%83%9d%ec%97%b0%eb%8c%80-%eb%8c%80%ed%95%99-%eb%8f%99%ec%95%84%eb%a6%ac-%ec%a7%80%ec%9b%90-%ec%82%ac%ec%97%85/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b5de9c48ca25",
@@ -2219,7 +2420,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%a0%81%eb%b3%80%eb%8f%99%ec%9e%90-%ed%86%b5%eb%b3%b4-%ea%b4%80%eb%a0%a8-%ea%b0%9c%ec%9d%b8%ec%a0%95%eb%b3%b4-%ec%a0%9c3%ec%9e%90-%ec%a0%9c%ea%b3%b5%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc-2/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-448e24fe1447",
@@ -2230,7 +2432,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/su-talk-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%98%a4%eb%a5%98-%eb%b3%b5%ea%b5%ac-%ec%95%88%eb%82%b4-%ec%95%88%eb%93%9c%eb%a1%9c%ec%9d%b4%eb%93%9c-%ea%b3%84%ec%97%b4-%ec%8a%a4%eb%a7%88%ed%8a%b8%ed%8f%b0/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6a9fbde17f03",
@@ -2241,7 +2444,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%8b%9d%eb%8b%b9-%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%ec%9a%b4%ec%98%81-%ec%95%88%eb%82%b4/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-77044f772fd4",
@@ -2252,7 +2456,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ec%8b%9c%ed%96%89-%ec%95%88%eb%82%b4/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-27e4b1d53eaa",
@@ -2263,7 +2468,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%eb%b4%84%ec%b2%a0-%ec%82%b0%eb%b6%88%ec%a1%b0%ec%8b%ac%ea%b8%b0%ea%b0%84/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f6b2b99a5812",
@@ -2274,7 +2480,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c1%ea%b8%b0-syu-singers-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ea%b3%a0/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7baba5401e07",
@@ -2285,7 +2492,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84%eb%8f%84-%ea%b5%ad%ed%9a%8c-%eb%8c%80%ed%95%99%ec%9b%90%ec%83%9d-%ec%95%84%ec%b9%b4%eb%8d%b0%eb%af%b81%ec%b0%a8-%ea%b3%bc%ec%a0%95-%ec%8b%a4%ec%8b%9c-%ec%95%88%eb%82%b4/?pageds=21&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-315667a225f5",
@@ -2296,7 +2504,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020%eb%85%84-%ed%95%98%eb%b0%98%ea%b8%b0-%ec%9d%b8%ec%b2%9c%ec%8b%9c-%eb%8c%80%ed%95%99%ec%83%9d-%ed%95%99%ec%9e%90%ea%b8%88%eb%8c%80%ec%b6%9c-%ec%9d%b4%ec%9e%90-%ec%a7%80%ec%9b%90-%ed%99%8d%eb%b3%b4/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-75af25ff64d3",
@@ -2307,7 +2516,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%82%b4%eb%b0%9c%ec%82%b0%eb%8f%99-%ea%b3%b5%ea%b3%b5%ea%b8%b0%ec%88%99%ec%82%ac-%ec%9e%85%ec%a3%bc-%ed%99%8d%eb%b3%b4-%ec%9a%94%ec%b2%ad/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f0360145d141",
@@ -2318,7 +2528,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%eb%aa%85%eb%ac%b8%ea%b0%80%eb%a5%bc-%ec%b0%be%ec%8a%b5%eb%8b%88%eb%8b%a4-2/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-781f4eb2e4a7",
@@ -2329,7 +2540,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8f%99%ec%b2%9c-23%ea%b8%b0-%ec%a0%95%ea%b8%b0-%ed%94%84%eb%a1%9c%eb%b3%b4%eb%85%b8-%ec%96%b4%ec%8b%9c%ec%8a%a4%ed%84%b4%ed%8a%b8pa%eb%a5%bc-%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3b8cf8efb91f",
@@ -2340,7 +2552,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%b4%ea%b1%b4%ec%9d%98%eb%a3%8c-%ed%86%b5%ed%95%a9-%eb%b4%89%ec%82%ac%ed%9a%8c-%ed%99%8d%eb%b3%b4/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-011cbbee1cac",
@@ -2351,7 +2564,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%8b%9d%eb%8b%b9%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%ec%9e%84%ec%8b%9c-%ed%9c%b4%ec%a0%90-%ec%95%88%eb%82%b4/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b3c260761c98",
@@ -2362,7 +2576,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2021%eb%85%84-%ed%99%8d%ec%a0%9c%ed%96%89%eb%b3%b5%ea%b8%b0%ec%88%99%ec%82%ac-%ec%9e%85%ec%82%ac%ec%83%9d-%ec%84%a0%eb%b0%9c-%ea%b3%b5%ea%b3%a0/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-df699d4adfa1",
@@ -2373,7 +2588,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%a0%ec%9a%a9%ed%8c%a8%eb%84%90%ec%a1%b0%ec%82%ac-%ed%95%99%ec%88%a0%eb%8c%80%ed%9a%8c%e3%80%8f-%eb%85%bc%eb%ac%b8-%ea%b3%b5%eb%aa%a8-%ec%95%88%eb%82%b4/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eabae3f0371c",
@@ -2384,7 +2600,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/isic-%ea%b5%ad%ec%a0%9c%ed%95%99%ec%83%9d%ec%a6%9d-%ed%95%99%ec%83%9d%ec%a7%80%ec%9b%90-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c81fabc0b7e4",
@@ -2395,7 +2612,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a7%91%ec%bd%95%ec%9a%b4%eb%8f%99-%eb%bd%90%eb%82%b4%ea%b8%b0-%ea%b3%b5%eb%aa%a8%ec%9d%b4%eb%b2%a4%ed%8a%b8-2/?pageds=22&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ce44bfce8a47",
@@ -2406,7 +2624,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%b0%ec%a1%b4-%ec%95%a0%ed%94%8c-%ec%98%a8-%ec%ba%a0%ed%8d%bc%ec%8a%a4aoc-apple-on-campus-%ec%84%9c%eb%b9%84%ec%8a%a4-%eb%b3%80%ea%b2%bd%ec%97%90-%eb%8c%80%ed%95%9c-%ec%95%88%eb%82%b4/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b95acd313d8b",
@@ -2417,7 +2636,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%99%b8%ea%b5%ad%ec%9d%b8-%ec%9c%a0%ed%95%99%ec%83%9d-%ec%a0%81%ec%9d%91%ec%9d%84-%ec%9c%84%ed%95%9c-%ec%a7%80%ec%9b%90-%ec%84%9c%eb%b9%84%ec%8a%a4-%ea%b3%b5%ec%a7%80/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-41e608a9b7f6",
@@ -2428,7 +2648,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/su-talk-%eb%a9%94%ec%8b%9c%ec%a7%80-%ec%95%88%eb%b3%b4%ec%9d%b4%eb%8a%94-%ec%a6%9d%ec%83%81-%ed%95%b4%ea%b2%b0-%eb%b0%a9%eb%b2%95%ec%95%84%ec%9d%b4%ed%8f%b0-%ec%82%ac%ec%9a%a9%ec%9e%90/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2513ced8002a",
@@ -2439,7 +2660,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8a%a4%ed%83%ad%ec%8a%a4%ec%a3%bc-%ec%a0%95%ea%b7%9c%ec%a7%81-%ec%b1%84%ec%9a%a9-%ea%b3%b5%ea%b3%a0/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-14fbe91cb57a",
@@ -2450,7 +2672,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8a%a4%ed%83%ad%ec%8a%a4%ec%a3%bc-%ec%a0%95%ea%b7%9c%ec%a7%81-%ec%b1%84%ec%9a%a9%ea%b3%b5%ea%b3%a0/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e2eba2c27ea3",
@@ -2461,7 +2684,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%ac%eb%ac%b4%ec%8b%a4%ea%b3%b5%ec%a7%80-%ed%8e%ad-%ed%95%98-%ed%8e%ad%ec%88%98%ec%99%80-%ed%95%a8%ea%bb%98%ed%95%98%eb%8a%94-%ed%81%ac%eb%a6%ac%ec%8a%a4%eb%a7%88%ec%8a%a4-%ec%94%b0-%ed%8c%90/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f5c8ac71524c",
@@ -2472,7 +2696,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a4%91%eb%8f%84%ec%9e%85%ea%b5%ad%ec%b2%ad%ec%86%8c%eb%85%84-%ec%a7%80%ec%9b%90%ec%82%ac%ec%97%85-%ea%b3%b5%ec%a7%80/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fc7b745f56e1",
@@ -2483,7 +2708,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/88773/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ff3f44a2e0b4",
@@ -2494,7 +2720,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%8c%8c%ec%9d%b8%ed%95%98%ec%9a%b0%ec%8a%a4-%ec%9a%b4%ec%98%81%ec%95%88%eb%82%b4/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d5df6b5badd1",
@@ -2505,7 +2732,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%ac%ed%95%99%ec%83%9d-%ed%95%99%eb%b6%80%ea%b5%90%ec%9c%a1%ec%8b%a4%ed%83%9c%ec%a1%b0%ec%82%ack-nsse-%ec%84%a4%eb%ac%b8%ec%b0%b8%ec%97%ac-%ed%98%91%ec%a1%b0%ec%9a%94%ec%b2%ad/?pageds=23&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eb211cca8c19",
@@ -2516,7 +2744,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%bd%94%eb%a1%9c%eb%82%98-19-%ed%99%95%ec%82%b0%ec%97%90-%eb%94%b0%eb%a5%b8-%eb%8c%80%eb%a9%b4%ec%97%85%eb%ac%b4-%ec%b6%95%ec%86%8c%ec%9a%b4-2/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f5d1f732e23f",
@@ -2527,7 +2756,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%90%ec%82%b4%ec%98%88%eb%b0%a9%ed%99%8d%eb%b3%b4%eb%ac%bc-%ec%a4%91%ec%95%99%ec%9e%90%ec%82%b4%ec%98%88%eb%b0%a9%ec%84%bc%ed%84%b0-%ec%96%b4%eb%96%bb%ea%b2%8c-%ed%95%b4%ec%95%bc-%ed%95%a0/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4ca8d1cac70b",
@@ -2538,7 +2768,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%bd%94%eb%a1%9c%eb%82%98-19-%ed%99%95%ec%82%b0%ec%97%90-%eb%94%b0%eb%a5%b8-%eb%8c%80%eb%a9%b4%ec%97%85%eb%ac%b4-%ec%b6%95%ec%86%8c%ec%9a%b4/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-775770ed86cb",
@@ -2549,7 +2780,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b0%b0%ed%84%b0%eb%a6%ac%eb%aa%ac-%ec%84%a4%ec%b9%98-%ec%95%88%eb%82%b4-%ec%b6%a9%ec%a0%84%ec%8b%9c%ec%8a%a4%ed%85%9c/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-622c4d5689e5",
@@ -2560,7 +2792,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020%ed%95%99%eb%85%84%eb%8f%84-2%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ec%9e%85%ec%82%ac-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0ef1dd740db7",
@@ -2571,7 +2804,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%85%ec%98%81-%ec%a0%84-%eb%b3%91%ec%97%ad%ec%a7%84%eb%a1%9c%ec%84%a4%ea%b3%84-%ec%a0%9c%eb%8f%84-%ec%95%88%eb%82%b4/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-640f381ac272",
@@ -2582,7 +2816,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/22%ea%b8%b0-%ec%a0%95%ea%b8%b0-%ed%94%84%eb%a1%9c%eb%b3%b4%eb%85%b8-%ec%96%b4%ec%8b%9c%ec%8a%a4%ed%84%b4%ed%8a%b8pa%eb%a5%bc-%eb%aa%a8%ec%a7%91%ea%b3%b5%ea%b3%a0/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1c5a586a12c2",
@@ -2593,7 +2828,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ea%b5%90%ec%a7%81%ec%9b%90%ea%b3%bc-%ed%95%99%ec%83%9d%ec%9d%84-%ec%9c%84%ed%95%9c-%ec%95%88%ec%a0%84%ed%95%9c-m-%eb%9d%bc%ec%84%b9-%ea%b3%b5%ec%a7%80/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-344ac21f5740",
@@ -2604,7 +2840,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%ac%eb%a6%ac%eb%85%b8%ec%84%a0-%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ea%b8%b4%ea%b7%bc%ed%8e%b8%ec%84%b1-%ec%95%88%eb%82%b4%eb%ac%b8/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-07fac8a12d3a",
@@ -2615,7 +2852,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/80944/?pageds=24&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c3a06647b2f0",
@@ -2626,7 +2864,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%84%b1%ea%b7%b8%eb%a3%b9-2020-%ec%97%ac%eb%a6%84%eb%b0%a9%ed%95%99-%eb%8c%80%ec%99%b8-%ed%99%9c%eb%8f%99-%ec%95%88%eb%82%b4-%eb%b0%8f-%ec%a7%80%ec%9b%90%eb%b0%a9%eb%b2%95/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d9f81e720411",
@@ -2637,7 +2876,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020%ed%95%99%eb%85%84%eb%8f%84-1%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ea%b8%b0%eb%a7%90%ea%b3%a0%ec%82%ac-%ed%8a%b9%eb%b3%84%ec%9e%85%ec%82%ac-%ec%8b%a0%ec%b2%ad-%ec%95%88/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d3d7a90d236c",
@@ -2648,7 +2888,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8%ec%8b%9c-%ec%b2%ad%eb%85%84-%ec%9b%94%ec%84%b8%ec%a7%80%ec%9b%90-%eb%8c%80%ec%83%81%ec%9e%90%eb%aa%a8%ec%a7%91-%ea%b3%b5%ea%b3%a0%ec%95%88%eb%82%b4/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fa0c6dd8fc56",
@@ -2659,7 +2900,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/sutory_link_ot/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-cc68d7bc8989",
@@ -2670,7 +2912,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%eb%ac%b4%ec%b2%ad-%ec%b1%97%eb%b4%87-%ec%95%84%eb%9d%bc-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%8b%9c%ec%9e%91/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d5296a69eeea",
@@ -2681,7 +2924,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020%ed%95%99%eb%85%84%eb%8f%84-1%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ec%9e%85%ec%82%ac%ec%9d%bc%ec%a0%95-%eb%b3%80%ea%b2%bd-%ec%95%88%eb%82%b4%ec%b5%9c%ec%a2%85-2/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-dd386a2817da",
@@ -2692,7 +2936,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020%ed%95%99%eb%85%84%eb%8f%84-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ec%9e%85%ec%82%ac%ec%9d%bc%ec%a0%95-%eb%b3%80%ea%b2%bd%ec%95%88%eb%82%b4/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-595d9a213a5b",
@@ -2703,7 +2948,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8c%80%ed%95%99-%ec%a0%95%eb%ac%b8-%ec%a0%95%ec%82%b0%ec%86%8c-%eb%ac%b4%ec%9d%b8%ec%a0%95%ec%82%b0%ec%8b%9c%ec%8a%a4%ed%85%9c-%ec%8b%9c%ed%96%89-%ec%95%88%eb%82%b4/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-52005f68d1a8",
@@ -2714,7 +2960,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4-2/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9179991102d5",
@@ -2725,7 +2972,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%84%ea%b5%ad%ec%b2%ad%eb%85%84%eb%a7%a4%ec%9e%84%ec%9e%84%eb%8c%80-%ec%98%88%eb%b9%84%ec%9e%85%ec%a3%bc%ec%9e%90-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ea%b3%a0/?pageds=25&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4d3b859e54fa",
@@ -2736,7 +2984,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2020-1%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90%ec%83%9d%ed%99%9c%ea%b4%80-%ec%9e%85%ec%82%ac%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2ada06341451",
@@ -2747,7 +2996,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ea%b3%b5%ec%82%ac%eb%a1%9c-%ec%9d%b8%ed%95%9c-%ec%82%ac%eb%ac%b4%ec%8b%a4-%ec%9e%84%ec%8b%9c-%ec%9d%b4%ec%a0%84-%ec%95%88%eb%82%b4/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9ab9314546b8",
@@ -2758,7 +3008,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%b4%eb%a5%b4%ec%8b%a0-%eb%8c%80%ed%95%99%ec%83%9d-%ec%a3%bc%ea%b1%b0%ea%b3%b5%ec%9c%a0%eb%a3%b8%ec%85%b0%ec%96%b4%eb%a7%81-%ec%8b%a0%ec%b2%ad%ec%95%88%eb%82%b4/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d6844ebaaf12",
@@ -2769,7 +3020,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4-2/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-672b19771ad2",
@@ -2780,7 +3032,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%af%b8%eb%8b%88%eb%af%b8%ec%8a%a4%ed%8a%9c%eb%94%94%ec%98%a4-%ec%95%88%eb%82%b4/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9bbc06c1c5c2",
@@ -2791,7 +3044,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%eb%85%84-2%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ea%b4%80-%ec%9e%85%ec%82%ac%ec%95%88%eb%82%b4-%eb%b0%8f-%ec%84%a0%eb%b0%9c%ec%9e%90%eb%aa%85%eb%8b%a8/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-184cee7c2c02",
@@ -2802,7 +3056,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019-2%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ec%9e%85%ec%82%ac%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f4558705135b",
@@ -2813,7 +3068,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%91%ec%84%b1%ed%8f%89%eb%93%b1%ec%84%bc%ed%84%b0-%ec%96%91%ec%84%b1%ed%8f%89%eb%93%b1%ec%84%bc%ed%84%b0-%ec%86%8c%ea%b0%9c/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9bf953c00490",
@@ -2824,7 +3080,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9c%a4%ed%8f%b0%ed%8a%b8-%ec%82%ac%ec%9a%a9%ec%95%88%eb%82%b4%ea%b5%90%ec%a7%81%ec%9b%90-%ec%9e%ac%ed%95%99%ec%83%9d-%eb%8c%80%ec%83%81/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-954626132df1",
@@ -2835,7 +3092,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%eb%85%84-%ec%9c%a1%ea%b5%b0%ec%9e%a5%ea%b5%90%ea%b5%b0-%ea%b0%80%ec%82%b0%eb%b3%b5%eb%ac%b4-%ec%a7%80%ec%9b%90%ea%b8%88-%ec%a7%80%ea%b8%89-%eb%8c%80%ec%83%81%ec%9e%90%eb%aa%a8%ec%a7%91%ec%84%a0/?pageds=26&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-52d16e58d5e7",
@@ -2846,7 +3104,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%ed%95%99%eb%85%84%eb%8f%84-%ed%95%99%ec%83%9d%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac%eb%8b%a8-%ec%a0%9c14%ea%b8%b0-%ec%88%98%ec%95%b0%eb%b0%b0%ec%84%9c%eb%8d%94-%ec%b5%9c%ec%a2%85-%ed%95%a9%ea%b2%a9/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6fcbf45be397",
@@ -2857,7 +3116,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%ed%95%99%eb%85%84%eb%8f%84-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-%ec%a0%9c6%ea%b8%b0-su-love-%ec%b5%9c%ec%a2%85-%ed%95%a9%ea%b2%a9%ec%9e%90-%eb%b0%9c%ed%91%9c/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9e2a74501d3d",
@@ -2868,7 +3128,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/19%eb%85%84-%ed%95%b4%ea%b5%b0-%ea%b0%80%ec%82%b0%eb%b3%b5%eb%ac%b4-%ec%a7%80%ec%9b%90%ea%b8%88-%ec%a7%80%ea%b8%89%eb%8c%80%ec%83%81%ec%9e%90%ec%9e%a5%ea%b5%90-%eb%aa%a8%ec%a7%91%ec%9a%94%ea%b0%95/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a635ffefa98d",
@@ -2879,7 +3140,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ea%b5%b0-%ec%a0%9c143%ea%b8%b0-%ed%95%99%ec%82%ac%ec%82%ac%ea%b4%80%ed%9b%84%eb%b3%b4%ec%83%9d-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e7b2148d0930",
@@ -2890,7 +3152,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c4%ed%9a%8c-%ec%84%9c%ed%95%b4%ec%88%98%ed%98%b8%ec%9d%98-%eb%82%a0-%ea%b3%84%ea%b8%b0-%ed%96%89%ec%82%ac-%ea%b0%9c%ec%b5%9c-%ec%95%88%eb%82%b4/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1e6dbef1da3d",
@@ -2901,7 +3164,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%b4%ea%b5%b0-%ec%a0%9c127%ea%b8%b0-%ec%82%ac%ea%b4%80%ed%9b%84%eb%b3%b4%ec%83%9d-%eb%aa%a8%ec%a7%91%ec%9a%94%ea%b0%95-%ec%95%88%eb%82%b4/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6f4daa6fcb2e",
@@ -2912,7 +3176,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9c%a1%ea%b5%b0-%ec%a0%84%eb%ac%b8%ed%8a%b9%ea%b8%b0%eb%b3%91-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d-19%eb%85%84-3%ec%9b%94/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9ba4ab4f610d",
@@ -2923,7 +3188,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-287c8780227f",
@@ -2934,7 +3200,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/19%eb%85%84-23%ec%9b%94-%ea%b0%81-%ea%b5%b0-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d6%ec%9b%94-%ec%9e%85%ec%98%81-%ec%95%88%eb%82%b4/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eba6975243b2",
@@ -2945,7 +3212,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%eb%85%84-%ec%9c%a1%ea%b5%b0-%ec%a0%84%eb%b0%98%ea%b8%b0-%ec%9e%84%ea%b8%b0%ec%a0%9c%ea%b5%b0%eb%ac%b4%ec%9b%90-%ec%b1%84%ec%9a%a9-%ea%b3%b5%ea%b3%a0/?pageds=27&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eb02756711f1",
@@ -2956,7 +3224,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%ed%95%99%eb%85%84%eb%8f%84-1%ed%95%99%ea%b8%b0-%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ec%8b%9c%ea%b0%84-%ec%95%88%eb%82%b4%ec%88%98%ec%a0%95/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-531481bbf151",
@@ -2967,7 +3236,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%eb%8c%80%eb%8c%80-%ec%82%ac%eb%ac%b4%ec%8b%a4-%ec%9d%b4%ec%a0%84-%ec%95%8c%eb%a6%bc/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-dc0f3fd51ab2",
@@ -2978,7 +3248,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-su-love-6%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3984f36b7ed0",
@@ -2989,7 +3260,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019%ed%95%99%eb%85%84%eb%8f%84-%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ec%8b%9c%ea%b0%84-%ec%95%88%eb%82%b4/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4efb290620a0",
@@ -3000,7 +3272,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8b%a0%ec%9e%85%ec%83%9d-%eb%b0%8f-%ec%9e%ac%ed%95%99%ec%83%9d-%eb%8c%80%ec%83%81-%eb%b6%88%eb%b2%95-%eb%b0%a9%eb%ac%b8%ed%8c%90%eb%a7%a4-%ed%96%89%ec%9c%84-%ec%98%88%eb%b0%a9-%ec%95%88%eb%82%b4/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-42cda91c6ed2",
@@ -3011,7 +3284,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac%eb%8b%a8-%ec%a0%9c14%ea%b8%b0-%ec%88%98%ec%95%b0%eb%b0%b0%ec%84%9c%eb%8d%94-%ec%8b%a0%ec%9e%85-%eb%aa%a8%ec%a7%91/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3e003c010ddc",
@@ -3022,7 +3296,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2019-1%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ec%9b%90%ea%b8%b0%ec%88%99%ec%82%ac-%ec%9e%85%ec%82%ac%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4%eb%ac%b8%ed%95%84%eb%8f%85/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ea640d4ef99d",
@@ -3033,7 +3308,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e09054845148",
@@ -3044,7 +3320,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/59%eb%8c%80-%ec%b4%9d%ed%95%99%ec%83%9d%ed%9a%8c-%ec%9e%84%ec%9b%90%eb%aa%a8%ec%a7%91/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9a0a140dc895",
@@ -3055,7 +3332,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%91%ec%84%b1%ed%8f%89%eb%93%b1%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4-%ec%82%ac%ea%b1%b4%ec%a0%91%ec%88%98-%ec%95%88%eb%82%b4/?pageds=28&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a6716d7e9d0f",
@@ -3066,7 +3344,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%b0-%ed%9c%b4%ed%95%99%ec%9e%90%eb%a5%bc-%ec%9c%84%ed%95%9c/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9e3fb108dc5e",
@@ -3077,7 +3356,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ec%9d%bc%ec%a0%9510%ec%9b%94-2/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-06853dc79d11",
@@ -3088,7 +3368,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ea%b5%b0-%ec%a0%9c142%ea%b8%b0-%ed%95%99%ec%82%ac%ec%82%ac%ea%b4%80%ed%9b%84%eb%b3%b4%ec%83%9d-%eb%aa%a8%ec%a7%91%ea%b3%84%ed%9a%8d/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4c14c1641a51",
@@ -3099,7 +3380,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%b0-%eb%b3%b5%eb%ac%b4%eb%8b%a8%ec%b6%95%ea%b4%80%eb%a0%a8-%ec%95%88%eb%82%b4/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c08ca38e46a3",
@@ -3110,7 +3392,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%98%84%ec%97%ad%eb%b3%91-%ec%9e%85%ec%98%81%ec%9d%bc%ec%9e%90%ec%97%b0%ea%b8%b0-%ec%a0%9c%eb%8f%84-%ea%b0%9c%ec%a0%95%ec%82%ac%ed%95%ad-%ec%95%88%eb%82%b4/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9df005fa2a4c",
@@ -3121,7 +3404,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b49%ec%9b%94/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7380cea2ef7a",
@@ -3132,7 +3416,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%eb%8c%80%eb%8c%80-%ec%97%85%eb%ac%b4-%ec%9e%ac%ea%b0%9c-%ec%95%8c%eb%a6%bc-2/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-82ce21a881c9",
@@ -3143,7 +3428,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%81%ec%a3%bc%ea%b6%8c%ec%9e%90-%eb%93%b1-%ec%9e%85%ec%98%81%ed%9d%ac%eb%a7%9d%ec%9b%90%ec%a0%9c%eb%8f%84-%ec%95%88%eb%82%b4/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8941171c4971",
@@ -3154,7 +3440,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%eb%8c%80%eb%8c%80-%ec%97%85%eb%ac%b4-%ec%9e%84%ec%8b%9c-%ec%a4%91%eb%8b%a8-%ec%95%88%eb%82%b4-2/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-58a09d31bfd0",
@@ -3165,7 +3452,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%a8%ec%97%b4%ec%a7%88%ed%99%98-%eb%b0%8f-%ed%8f%ad%ec%97%bc%eb%8c%80%eb%b9%84-%ea%b1%b4%ea%b0%95%ec%88%98%ec%b9%99/?pageds=29&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-418612134b7e",
@@ -3176,7 +3464,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b48%ec%9b%94/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a86599b1588a",
@@ -3187,7 +3476,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c58%eb%8c%80-%ec%b4%9d%ed%95%99%ec%83%9d%ed%9a%8c-%ec%9e%84%ec%9b%90-%eb%aa%a8%ec%a7%91/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5ee679e94d77",
@@ -3198,7 +3488,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%eb%ac%b4%ec%84%a0%eb%9e%9csu_wifi-%ec%82%ac%ec%9a%a9-%ec%95%88%eb%82%b4/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6cec14f91b9e",
@@ -3209,7 +3500,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%90%ec%a0%84%ea%b1%b0-%eb%8c%80%ec%97%ac%ec%82%ac%ec%97%85-%ec%a2%85%eb%a3%8c-%ec%95%88%eb%82%b4/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e3fad69c7c11",
@@ -3220,7 +3512,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b0%95%eb%ac%bc%ea%b4%80-%ec%97%90%ec%bd%94%ed%8c%9c-%ec%82%b4%eb%a0%98%ea%b4%80-cctv-%ec%84%a4%ec%b9%98%ec%97%90-%eb%94%b0%eb%a5%b8-%ed%96%89%ec%a0%95%ec%98%88%ea%b3%a0/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-99eba2986c4d",
@@ -3231,7 +3524,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%b2%98-%eb%b6%84%ec%8b%a4%eb%ac%bc-%ec%b2%98%eb%a6%ac%ec%95%88%eb%82%b4/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8d571ba86688",
@@ -3242,7 +3536,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b45%ec%9b%94/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c702cfa0b0f1",
@@ -3253,7 +3548,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%9e%91%ec%97%85-%ea%b3%b5%ec%a7%80%ea%b8%b4%ea%b8%89-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c-%ec%a4%91%ec%a7%80/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-49e4c7bf337a",
@@ -3264,7 +3560,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c125%ea%b8%b0-%ec%82%ac%ea%b4%80%ed%9b%84%eb%b3%b4%ec%83%9d-%ea%b5%b0%ea%b0%80%ec%82%b0%eb%b3%b5%eb%ac%b4%ec%a7%80%ec%9b%90%ea%b8%88-%ec%a7%80%ea%b8%89%eb%8c%80%ec%83%81%ec%9e%90-%ec%9e%a5/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-41ffc1873dbd",
@@ -3275,7 +3572,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b44%ec%9b%94/?pageds=30&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8abe52a9a403",
@@ -3286,7 +3584,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%b1%ed%9d%ac%eb%a1%b1%ec%84%b1%ed%8f%ad%eb%a0%a5-%ec%8b%a0%ea%b3%a0%ec%84%bc%ed%84%b0-%ea%b0%9c%ec%84%a4-%ec%95%88%eb%82%b4/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1c5b3c2e18dd",
@@ -3297,7 +3596,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2018%ed%95%99%eb%85%84%eb%8f%84-%ed%95%99%ec%83%9d%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac%eb%8b%a8-%ec%a0%9c13%ea%b8%b0-%ec%88%98%ec%95%b0%eb%b0%b0%ec%84%9c%eb%8d%94-%ec%b5%9c%ec%a2%85-%ed%95%a9%ea%b2%a9/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8aa22d7c6096",
@@ -3308,7 +3608,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2018%ed%95%99%eb%85%84%eb%8f%84-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-%ec%a0%9c5%ea%b8%b0-su-love-%ec%b5%9c%ec%a2%85-%ed%95%a9%ea%b2%a9%ec%9e%90-%eb%b0%9c%ed%91%9c/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ce8f037cd039",
@@ -3319,7 +3620,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%9c%b4%ec%9d%bc-%eb%b0%8f-%ec%a0%84%ea%b5%ad%eb%8b%a8%ec%9c%84-%ed%9b%88%eb%a0%a8-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8d917aa7938e",
@@ -3330,7 +3632,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%ec%9c%a1%eb%b6%80-%ed%99%88%ed%8e%98%ec%9d%b4%ec%a7%80-%eb%82%b4-%ec%84%b1%ed%9d%ac%eb%a1%b1-%ec%84%b1%ed%8f%ad%eb%a0%a5-%ec%98%a8%eb%9d%bc%ec%9d%b8-%ec%8b%a0%ea%b3%a0%ec%84%bc%ed%84%b0/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-56eaf5d33207",
@@ -3341,7 +3644,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%ec%a0%84%ec%9e%85-%eb%b0%8f-%ed%9b%88%eb%a0%a8-%ed%99%95%ec%9d%b8-%ec%95%88%eb%82%b4-4/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-502de96d674e",
@@ -3352,7 +3656,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%96%91%ec%84%b1%ed%8f%89%eb%93%b1%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-56e7e7144e81",
@@ -3363,7 +3668,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4-3/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2d020b1728bd",
@@ -3374,7 +3680,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2018%eb%85%84-%ec%98%88%eb%b9%84%ea%b5%b0-%ed%9b%88%eb%a0%a8-%ec%9d%bc%ec%a0%95-%ea%b3%84%ed%9a%8d/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7817852631d8",
@@ -3385,7 +3692,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%ac%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ec%95%88%eb%82%b4/?pageds=31&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2dba7efe972f",
@@ -3396,7 +3704,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b3%91%ec%97%ad%eb%aa%85%eb%ac%b8%ea%b0%80%eb%a5%bc-%ec%b0%be%ec%8a%b5%eb%8b%88%eb%8b%a4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-85ed49e970ed",
@@ -3407,7 +3716,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2018%eb%85%84%eb%8f%84-%eb%b3%91%ec%97%ad%ed%8c%90%ec%a0%95%ea%b2%80%ec%82%ac-%ec%9d%bc%ec%9e%90-%eb%b0%8f-%ec%9e%a5%ec%86%8c-%eb%b3%b8%ec%9d%b8%ec%84%a0%ed%83%9d-%ed%99%8d%eb%b3%b4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-288c80e01591",
@@ -3418,7 +3728,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017-%ec%83%81%eb%8b%b4%ec%b2%b4%ed%97%98%ec%88%98%ea%b8%b0-%ea%b3%b5%eb%aa%a8%ec%a0%84-%ec%95%88%eb%82%b4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ae5463b8e54a",
@@ -3429,7 +3740,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%eb%b3%bc%eb%a7%81%ec%9e%a5-%ed%8f%90%ec%9e%a5-%ec%95%88%eb%82%b4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-25d821b8ac0a",
@@ -3440,7 +3752,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ea%b2%a8%ec%9a%b8%eb%b0%a9%ed%95%99-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8%ec%b6%94/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7e7318433725",
@@ -3451,7 +3764,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ea%b2%a8%ec%9a%b8%eb%b0%a9%ed%95%99-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f346a10cd456",
@@ -3462,7 +3776,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ec%b2%b4%ec%9c%a1%eb%ac%b8%ed%99%94%ec%84%bc%ed%84%b0-2017%eb%85%84-%ec%a2%85%ed%95%a9-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ec%95%88%eb%82%b4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d2ad72e61d00",
@@ -3473,7 +3788,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ec%b2%b4%ec%9c%a1%eb%ac%b8%ed%99%94%ec%84%bc%ed%84%b0-2017%eb%85%84-%ea%b2%a8%ec%9a%b8%eb%b0%a9%ed%95%99-%ed%8a%b9%ea%b0%95-%ed%94%84%eb%a1%9c%ea%b7%b8/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0ba072845c50",
@@ -3484,7 +3800,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2018%eb%85%84%eb%8f%84-%ec%82%ac%ed%9a%8c%eb%b3%b5%eb%ac%b4%ec%9a%94%ec%9b%90-%ec%9e%ac%ed%95%99%ec%83%9d%ec%9e%85%ec%98%81%ec%9b%90-%ec%a0%91%ec%88%98-%ec%95%88%eb%82%b4/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a81a94ae7d40",
@@ -3495,7 +3812,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017%eb%85%84-%ec%98%88%eb%b9%84%ea%b5%b0-%eb%b3%b4%ec%b6%a9%ed%9b%88%eb%a0%a8-%ec%9d%bc%ec%a0%95/?pageds=32&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6629d3ce6a56",
@@ -3506,7 +3824,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%a7%84%eb%a1%9c-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%eb%aa%a8%ec%a7%91-%ec%95%88/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-eb4d8906021a",
@@ -3517,7 +3836,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%ad%ec%a0%9c%ea%b5%90%ec%9c%a1%ec%9b%90-%ec%99%b8%ea%b5%ad%ec%9d%b8%ed%95%99%ec%83%9d-11-%eb%8f%84%ec%9a%b0%eb%af%b8-%ec%9e%90%ec%9b%90%eb%b4%89%ec%82%ac%ec%9e%90-%eb%aa%a8%ec%a7%91-2/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-34d0dcd39d65",
@@ -3528,7 +3848,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%bb%a4%ed%94%8c%ec%83%81%eb%8b%b4-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ec%95%88%eb%82%b4/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-60e77aa09647",
@@ -3539,7 +3860,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%b4%ea%b8%89%ea%b3%b5%ec%a7%80-%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%eb%b3%b4%ec%95%88-%ec%9e%a5%eb%b9%84-%ec%a0%90%ea%b2%80-%ec%95%88%eb%82%b4/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a8e7d4c8536f",
@@ -3550,7 +3872,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%ec%a0%84%ec%9e%85-%eb%b0%8f-%ed%9b%88%eb%a0%a8-%ec%95%88%eb%82%b4/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3a236434da90",
@@ -3561,7 +3884,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%eb%b3%b4%ec%b6%a9%ed%9b%88%eb%a0%a88%ec%9b%9417%ec%9d%bc-%ec%9d%bc%ec%a0%95/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2e1ddadec347",
@@ -3572,7 +3896,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-2017%eb%85%84%eb%8f%84-%ec%97%ac%eb%a6%84-%ea%b3%84%ec%a0%88%ed%95%99%ea%b8%b0-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4-%ec%95%88/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-47c4d28afadf",
@@ -3583,7 +3908,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%82%b4%ec%9d%bc5-31%eb%b6%80%ed%84%b0-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%ec%8b%a4%ec%8b%9c%ed%95%a9%eb%8b%88%eb%8b%a4-2/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3800d75b2da6",
@@ -3594,7 +3920,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%ed%86%b5%ec%a7%80%ec%84%9c-%ec%88%98%eb%a0%b9-%ed%86%b5%eb%b3%b4/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b76277700e92",
@@ -3605,7 +3932,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ea%b4%80-2017-%ec%97%ac%eb%a6%84%eb%b0%a9%ed%95%99%ea%b1%b0%ec%a3%bc%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=33&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1c5d9ea501e0",
@@ -3616,7 +3944,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ea%b4%80-2017-2-%ec%9e%ac%ec%9e%85%ec%82%ac-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4%ec%8b%9c%ec%98%a8%ea%b4%80/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8865b3a6887f",
@@ -3627,7 +3956,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c37%ed%9a%8c-%ec%8a%a4%ec%8a%b9%ec%9d%98-%eb%82%a0-%ec%9c%a0%ea%b3%b5-%ed%8f%ac%ec%83%81-%eb%8c%80%ec%83%81%ec%9e%90-%ec%82%ac%ec%a0%84%ea%b3%b5%ec%a7%80/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-81642ec782d1",
@@ -3638,7 +3968,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8%ec%a0%9c%eb%8f%84%ec%a0%84%ea%b5%ad%eb%8b%a8%ec%9c%84-%ed%9c%b4%ec%9d%bc-%ec%95%88%eb%82%b4/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e4d180d85545",
@@ -3649,7 +3980,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%99%b8%ea%b5%ad%ec%9d%b8%ed%95%99%ec%83%9d-11-%ed%95%9c%ea%b5%ad%ec%96%b4%ea%b3%bc%ec%a0%95-%ed%95%99%ec%8a%b5%eb%8f%84%ec%9a%b0%eb%af%b8-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8f3a1005ffce",
@@ -3660,7 +3992,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017%eb%85%84-%ed%95%99%ea%b3%bc%eb%b3%84-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b4/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-45ed8b85bbc3",
@@ -3671,7 +4004,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%ec%a0%84%ec%9e%85-%eb%b0%8f-%ed%9b%88%eb%a0%a8-%ed%99%95%ec%9d%b8-%ec%95%88%eb%82%b4-3/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f4c8611a69cf",
@@ -3682,7 +4016,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c4%ea%b8%b0-%ec%82%bc%ec%9c%a1%eb%8c%80-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-su-love-%ec%b5%9c%ec%a2%85%ed%95%a9%ea%b2%a9%ec%9e%90-%ea%b3%b5%ea%b3%a0/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-cf7e172f6192",
@@ -3693,7 +4028,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c4%ea%b8%b0-%ec%82%bc%ec%9c%a1%eb%8c%80-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-su-love-%ec%84%9c%eb%a5%98%ed%95%a9%ea%b2%a9%ec%9e%90-%ea%b3%b5%ea%b3%a0-%eb%b0%8f-%eb%a9%b4%ec%a0%91-%ec%95%88/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a3e3d93058a9",
@@ -3704,7 +4040,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/su-jpf%ec%b7%a8%ec%97%85%ec%a7%84%eb%a1%9c%ec%a0%95%eb%b3%b4%ec%8b%9c%ec%8a%a4%ed%85%9c-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1cb9ba8f026e",
@@ -3715,7 +4052,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4-2/?pageds=34&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-80f0a7fae65b",
@@ -3726,7 +4064,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-sns%ea%b8%b0%ec%9e%90%eb%8b%a8-su-love-4%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-cb54d5045746",
@@ -3737,7 +4076,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a4%91%ec%95%99%eb%8f%84%ec%84%9c%ea%b4%80-%ec%9d%b4%ec%9a%a9%ec%9e%90%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%a4%91%eb%8b%a8%ec%95%88%eb%82%b4/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-38e678071d25",
@@ -3748,7 +4088,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2%ec%9b%94-14%ec%9d%bc-%ec%98%a4%ec%a0%84-9%ec%8b%9c-%ec%98%a4%ed%9b%84-5%ec%8b%9c-%eb%8c%80%ec%b2%ad%ec%86%8c%eb%a1%9c%ec%9d%b8%ed%95%b4-%eb%b3%b4%ea%b1%b4%ec%8b%a4-%ec%9d%b4%ec%9a%a9%eb%b6%88/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-28852a7b740f",
@@ -3759,7 +4100,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017%ed%95%99%eb%85%84%eb%8f%84-%ed%95%99%ec%83%9d%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac%eb%8b%a8-%ec%88%98%ec%95%b0%eb%b0%b0%ec%84%9c%eb%8d%94-12%ea%b8%b0-%eb%aa%a8%ec%a7%91-%ea%b3%b5%ea%b3%a0/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8a49be1ee411",
@@ -3770,7 +4112,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ec%a7%80%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%eb%b3%b4%ec%95%88%ec%9e%a5%eb%b9%84-%ec%a0%90%ea%b2%80%ec%95%88%eb%82%b4-%ec%9d%b8%ed%84%b0%eb%84%b7-%ec%a4%91%eb%8b%a8/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9bd0b95b015f",
@@ -3781,7 +4124,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017%eb%85%84-1%ed%95%99%ea%b8%b0-%ec%83%9d%ed%99%9c%ea%b5%90%ec%9c%a1%ea%b4%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-53377d94678f",
@@ -3792,7 +4136,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ec%b6%9c%ed%8c%90%eb%b6%80-%ed%99%88%ed%8e%98%ec%9d%b4%ec%a7%80-%ec%98%a4%ed%94%88-%eb%b0%8f-%ec%a0%9c%ea%b3%b5-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%95%88/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3ae1e5fb28de",
@@ -3803,7 +4148,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ea%b2%a8%ec%9a%b8%eb%b0%a9%ed%95%99-%ea%b8%b0%ea%b0%84-%ec%a4%91-%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ec%9a%b4%ed%96%89%ec%8b%9c%ea%b0%84-%eb%b3%80%ea%b2%bd-%ec%95%88%eb%82%b4/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-4dbaf530f105",
@@ -3814,7 +4160,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%ec%9e%90%eb%8f%99%ec%8b%ac%ec%9e%a5-%ec%b6%a9%ea%b2%a9%ea%b8%b0-%ec%84%a4%ec%b9%98-%ec%9e%a5%ec%86%8c-%ec%99%80-%ec%8b%ac%ed%8f%90%ec%86%8c%ec%83%9d%ec%88%a0-%ec%95%88%eb%82%b4/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2f615939927c",
@@ -3825,7 +4172,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2017%eb%85%84-2%ec%9b%94%eb%a7%90-%ed%87%b4%ec%a7%81%ea%b5%90%ec%9b%90-%ec%a0%95%eb%b6%80%ed%8f%ac%ec%83%81-%eb%8c%80%ec%83%81%ec%9e%90-%ec%84%a0%ec%a0%95/?pageds=35&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e6d91028a17b",
@@ -3836,7 +4184,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%a8%eb%9d%bc%ec%9d%b8-%ec%8b%ac%eb%a6%ac%ec%83%81%eb%8b%b4-%ea%b2%8c%ec%8b%9c%ed%8c%90-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-5883d0ed3301",
@@ -3847,7 +4196,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b6%84%ec%8b%a4%eb%ac%bc-%ec%8a%b5%eb%93%9d%ea%b3%b5%ec%a7%80/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2eeba1e95aad",
@@ -3858,7 +4208,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/k-mooc-%ea%b0%95%ec%a2%8c-%ec%95%88%eb%82%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-09a53299bd6e",
@@ -3869,7 +4220,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%ac%b4%eb%a3%8c-%ea%b5%ac%ec%b6%a9%ec%a0%9c-%ec%a7%80%ea%b8%89-%ed%96%89%ec%82%ac-%ec%95%8c%eb%a6%bd%eb%8b%88%eb%8b%a4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-40855031fc5a",
@@ -3880,7 +4232,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/mvp%ec%a3%bc%ea%b0%84-2016%eb%85%84-10%ec%9b%94-24%ec%9d%bc21%ec%9d%bc-%ea%b8%b0%ea%b0%84-%ec%a4%91-%ed%86%b5%ed%95%99%eb%b2%84%ec%8a%a4-%ec%9a%b4%ed%96%89-%ec%95%88%eb%82%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a8329a8144c7",
@@ -3891,7 +4244,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%ed%83%81%ea%b8%88%ec%a7%80%eb%b2%95%ea%b9%80%ec%98%81%eb%9e%80%eb%b2%95-%ec%8b%9c%ed%96%89%ec%97%90-%eb%94%b0%eb%a5%b8-%ec%95%88%eb%82%b4%eb%ac%b8/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2e5a786e949f",
@@ -3902,7 +4256,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/su-jpf-%ec%98%a8%eb%9d%bc%ec%9d%b8-%ec%8b%ac%eb%a6%ac%ea%b2%80%ec%82%ac-%ec%8b%a4%ec%8b%9c-%ec%9d%b4%eb%b2%a4%ed%8a%b8-%ec%95%88%eb%82%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0e0a10875fb9",
@@ -3913,7 +4268,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/the-rest-%ec%89%bc-%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8-%ec%a7%80%ec%9b%90%ec%9e%90-%ed%99%8d%eb%b3%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b46a2c525b9f",
@@ -3924,7 +4280,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/the-rest-%ec%89%bc-%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8-%eb%a6%ac%eb%8d%94-%eb%aa%a8%ec%a7%91-%ed%99%8d%eb%b3%b4/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3562c1ae1aee",
@@ -3935,7 +4292,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%ad%ed%83%81%ea%b8%88%ec%a7%80%eb%b2%95-%ea%b3%b5%eb%ac%b4%ec%88%98%ed%96%89%ec%82%ac%ec%9d%b8-%ed%98%84%ed%99%a9-%ea%b3%b5%ea%b0%9c/?pageds=36&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-50f9cb1f2584",
@@ -3946,7 +4304,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8b%a0%ea%b7%9c%ec%84%9c%eb%b2%84%ec%84%a4%ec%b9%98%eb%a1%9c-%ec%9d%b8%ed%95%9c-%ed%95%99%ec%88%a0%ec%a0%95%eb%b3%b4%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%a4%91%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a9d00c03c177",
@@ -3957,7 +4316,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-2016%eb%85%84%eb%8f%84-2%ed%95%99%ea%b8%b0-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4-%ec%95%88%eb%82%b4/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6d7e2932365f",
@@ -3968,7 +4328,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%ac%b4%eb%a3%8c-%ec%9d%b8%eb%b0%94%eb%94%94-%ea%b2%80%ec%82%ac-%eb%b0%8f-%ec%b2%b4%eb%a0%a5%ec%b8%a1%ec%a0%95-%ec%95%88%eb%82%b4-%ec%82%ac%ec%a0%84%ec%98%88%ec%95%bd-%ed%95%84%ec%88%98/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6a908e4f7135",
@@ -3979,7 +4340,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-2%ed%95%99%ea%b8%b0-5%ec%9d%bc-%ea%b8%88%ec%97%b0%ed%95%99%ea%b5%90-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-89c88f70075b",
@@ -3990,7 +4352,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%eb%b3%b4%ec%b6%a9%ed%9b%88%eb%a0%a8-%ec%9d%bc%ec%a0%95-%ec%95%8c%eb%a6%bc/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-73a72af744ce",
@@ -4001,7 +4364,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0-%ec%a0%84%ec%9e%85-%eb%b0%8f-%ed%9b%88%eb%a0%a8-%ed%99%95%ec%9d%b8-%ec%95%88%eb%82%b4-2/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2f62778b3b08",
@@ -4012,7 +4376,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b2%b4%ec%9c%a1%ea%b4%80-%eb%8c%80%ec%b2%ad%ec%86%8c%eb%a1%9c%ec%9d%b8%ed%95%b4-8%ec%9b%94-23%ec%9d%bc-%eb%b3%b4%ea%b1%b4%ec%8b%a4-%ec%9d%b4%ec%9a%a9%ec%9d%b4-%ec%98%a4%ed%9b%84-4%ec%8b%9c%eb%b6%80/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0c015810ef1a",
@@ -4023,7 +4388,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%a7%80%ec%9b%90%ec%b2%98-%ec%b7%a8%ec%97%85%ec%a7%80%ec%9b%90%ec%84%bc%ed%84%b0-%eb%b0%94%eb%8b%a5%ec%b2%ad%ec%86%8c-%ec%95%88%eb%82%b4-8%ec%9b%94-11%ec%9d%bc-%eb%aa%a9/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1f54538b6d75",
@@ -4034,7 +4400,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/8%ec%9b%949%ec%9d%bc%ed%99%94-%eb%b0%b1%ec%a3%bc%eb%85%84%ea%b8%b0%eb%85%90%ea%b4%801%ec%b8%b5-%ec%9e%85%ed%95%99%ec%b2%98-%eb%b0%94%eb%8b%a5%ec%b2%ad%ec%86%8c-%ec%95%88%eb%82%b4/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-dd70ab66879d",
@@ -4045,7 +4412,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%8f%ad%ec%97%bc%eb%8c%80%eb%b9%84-%ea%b1%b4%ea%b0%95%ec%88%98%ec%b9%99/?pageds=37&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-926b7631217c",
@@ -4056,7 +4424,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b2%b0%ed%95%b5-%ec%a6%9d%ec%83%81%eb%b0%8f-%ec%98%88%eb%b0%a9%eb%b2%95/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-03fd158ae132",
@@ -4067,7 +4436,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/8%ec%9b%94-17%ec%9d%bc-%eb%b0%b1%ec%a3%bc%eb%85%84%ea%b8%b0%eb%85%90%ea%b4%80-4%ec%b8%b5-%eb%8c%80%ec%b2%ad%ec%86%8c-%ec%95%88%eb%82%b4/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0ea7e246407d",
@@ -4078,7 +4448,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/7%ec%9b%94-28%ec%9d%bc-%ea%b1%b4%ea%b0%95%ea%b3%bc%ed%95%99%ec%a4%91%eb%8f%85%ed%8a%b9%ec%84%b1%ed%99%94%ec%82%ac%ec%97%85%eb%8b%a8-%eb%8c%80%ec%b2%ad%ec%86%8c-%ec%95%88%eb%82%b4/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c0ffddae942e",
@@ -4089,7 +4460,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/7%ec%9b%94-20%ec%9d%bc-%eb%8b%a4%eb%8b%88%ec%97%98%ea%b4%80-5%ec%b8%b5-%eb%8c%80%ec%b2%ad%ec%86%8c%ec%97%90-%eb%94%b0%eb%a5%b8-%ea%b5%90%ec%88%98%ed%95%99%ec%8a%b5%ea%b0%9c%eb%b0%9c%ec%84%bc/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-89a665ac8453",
@@ -4100,7 +4472,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%b8%ec%a2%85%eb%a1%9c%ec%b6%9c%ec%9e%a5%ec%86%8c-%ea%b4%80%ed%95%a0-%ec%9c%a0%ed%95%99%ec%83%9d-%eb%b9%84%ec%9e%90-%ec%97%85%eb%ac%b4-%ec%95%88%eb%82%b4%eb%ac%b8/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-1c85a1dedb71",
@@ -4111,7 +4484,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ed%95%98%ea%b3%84-%eb%8c%80%ed%95%99%ec%83%9d-%ec%a7%80%ec%8b%9d%eb%b4%89%ec%82%ac%ec%ba%a0%ed%94%84%ec%82%ac%ec%97%85-%ea%b5%ad%ea%b0%80%ec%9e%a5%ed%95%99%ea%b8%88-%ec%a7%80%ec%8b%9d/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9ae5357e9b53",
@@ -4122,7 +4496,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%97%ac%eb%a6%84%eb%b0%a9%ed%95%99-%ec%a7%91%eb%8b%a8%ec%83%81%eb%8b%b4%ec%95%88%eb%82%b4/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-497517300505",
@@ -4133,7 +4508,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b0%a9%ed%95%99-%ec%a4%91-%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6fca8143f155",
@@ -4144,7 +4520,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%b0%eb%a7%90%ea%b3%a0%ec%82%ac%ea%b8%b0%ea%b0%84-%eb%b9%84%ed%83%80%eb%af%bc-%ec%a7%80%ea%b8%89/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9b48cdcc3b49",
@@ -4155,7 +4532,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b4%89%ec%82%ac-2016%ed%95%99%eb%85%84%eb%8f%84-%ed%95%98%ea%b3%84-%ea%b5%ad%eb%82%b4%eb%b4%89%ec%82%ac%eb%8c%80-%ec%b6%94%ea%b0%80-%eb%aa%a8%ec%a7%916-10%ea%b9%8c%ec%a7%80/?pageds=38&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-c5c37d3aa582",
@@ -4166,7 +4544,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%88%98%ec%a0%95-%e3%80%8e2016%eb%85%84-%ec%a0%9c13%ea%b8%b0%ed%95%98%ea%b3%84%eb%b0%a9%ed%95%99-%eb%8c%80%ed%95%99%ec%83%9d-%ec%a7%80%ec%8b%9d%eb%b4%89%ec%82%ac%ec%82%ac%ec%97%85%ea%b5%ac/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a3d58c4f6d0c",
@@ -4177,7 +4556,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%b8%ea%b3%84-%ea%b8%88%ec%97%b0%ec%9d%98-%eb%82%a0-%eb%a7%9e%ec%9d%b4-%ec%82%bc%ec%9c%a1%eb%8c%80%ed%95%99%ea%b5%90-%ea%b8%88%ec%97%b0-%ec%ba%a0%ed%8e%98%ec%9d%b8-2%ed%96%89%ec%8b%9c-4/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2b4492a42593",
@@ -4188,7 +4568,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-8%ec%9b%94%eb%a7%90-%ed%87%b4%ec%a7%81%ea%b5%90%ec%9b%90-%ec%a0%95%eb%b6%80%ed%8f%ac%ec%83%81-%eb%8c%80%ec%83%81%ec%9e%90-%ec%84%a0%ec%a0%95/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-335e681647cc",
@@ -4199,7 +4580,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c61%ed%9a%8c-%ed%98%84%ec%b6%a9%ec%9d%bc-%eb%82%98%eb%9d%bc%ec%82%ac%eb%9e%91-%ed%83%9c%ea%b7%b9%ea%b8%b0-%eb%8b%ac%ea%b8%b0-%ec%9a%b4%eb%8f%99/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-47e081d3269b",
@@ -4210,7 +4592,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%84%a4%eb%ac%b8-%ed%98%91%ec%a1%b0%ec%95%88%eb%82%b4/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-86603b7d20fd",
@@ -4221,7 +4604,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/su-wings-%ea%b8%b4%ea%b8%89-%ec%9e%91%ec%97%85-%ea%b3%b5%ec%a7%80/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-21f8b68f0439",
@@ -4232,7 +4616,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%eb%aa%a8-%ea%b5%ad%eb%82%b4%eb%b4%89%ec%82%ac%eb%8c%80-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8-%ea%b0%9c%eb%b0%9c-%ea%b3%b5%eb%aa%a8-%ec%95%88%eb%82%b45-29%ea%b9%8c%ec%a7%80/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-cc9d87b82178",
@@ -4243,7 +4628,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%b4%eb%a0%98%ea%b4%80%ec%98%86-%ec%a0%88%ea%b0%9c%ec%a7%80-%ec%a0%91%ea%b7%bc%ea%b8%88%ec%a7%80-%ec%95%88%eb%82%b4/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-afd9ebdcd327",
@@ -4254,7 +4640,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9c%a0%ed%95%99%ec%83%9d%ec%9d%84-%ec%9c%84%ed%95%9c-%ed%95%9c%ea%b5%ad-%eb%ac%b8%ed%99%94%ec%b2%b4%ed%97%98-%ed%94%84%eb%a1%9c%ea%b7%b8%eb%9e%a8%ea%b5%ad%ec%a0%9c%ec%b2%ad%eb%85%84%ec%84%bc/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f8d96b69fc8c",
@@ -4265,7 +4652,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/lifestyle-%ec%a6%9d%ec%a7%84%ec%9d%84-%ec%9c%84%ed%95%9c-%eb%a6%ac%eb%8d%94-%ea%b5%90%ec%9c%a1-2/?pageds=39&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-3c7c095c3ec1",
@@ -4276,7 +4664,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b0%81-%ea%b5%b0-%ed%98%84%ec%97%ad%eb%b3%91-%eb%aa%a8%ec%a7%91%ec%9d%bc%ec%a0%955%ec%9b%94-%ec%95%88%eb%82%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2e60fd3a33f6",
@@ -4287,7 +4676,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8%ed%86%b5%ec%a7%80%ec%84%9c-%ec%88%98%eb%a0%b9-%ec%95%88%eb%82%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-0da43aeb1419",
@@ -4298,7 +4688,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%b0%ec%97%85%ea%b8%b0%eb%8a%a5%ec%9a%94%ec%9b%90-%ec%a0%9c%eb%8f%84-%ec%95%88%eb%82%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8e42670d487e",
@@ -4309,7 +4700,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%eb%b6%80%ea%b3%bc/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e7a26985691d",
@@ -4320,7 +4712,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a7%84%eb%a1%9c%ec%a0%81%ec%84%b1-%ec%a2%85%ed%95%a9%ec%8b%ac%eb%a6%ac-%ec%a7%81%ec%97%85%ea%b8%b0%ec%b4%88%ec%97%ad%eb%9f%89%ea%b2%80%ec%82%ac-%ec%8b%a4%ec%8b%9c-%ec%95%88%eb%82%b4%eb%ac%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9aa908d95649",
@@ -4331,7 +4724,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b4%89%ec%82%ac-%eb%8c%80%ec%82%ac%ed%98%91-32%ea%b8%b0-%ec%9b%94%eb%93%9c%ed%94%84%eb%a0%8c%ec%a6%88-%ec%b2%ad%eb%85%84%eb%b4%89%ec%82%ac%eb%8b%a8%ec%9b%90-%eb%aa%a8%ec%a7%914-22%ea%b9%8c/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7030f4ca9621",
@@ -4342,7 +4736,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84%eb%8f%84-%ed%99%b4%ec%bd%94%ec%9d%bc-%ec%b2%ad%ec%86%8c%ec%9e%91%ec%97%85-%ec%9d%bc%ec%a0%95%ec%95%88%eb%82%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2bc4623181ef",
@@ -4353,7 +4748,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%9d%b4%ec%9a%a9%ec%95%88%eb%82%b4/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-324a6c56abe2",
@@ -4364,7 +4760,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ea%b5%b0-%ec%a0%9c137%ea%b8%b0-%ed%95%99%ec%82%ac%ec%82%ac%ea%b4%80%ed%9b%84%eb%b3%b4%ec%83%9d-%eb%aa%a8%ec%a7%91/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b30aa2d03614",
@@ -4375,7 +4772,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b4%89%ec%82%ac-2016%eb%85%84-3%ea%b8%b0-%ec%9b%94%eb%93%9c%ed%94%84%eb%a0%8c%ec%a6%88-%ec%b2%ad%eb%85%84-%ec%a4%91%ea%b8%b0%eb%b4%89%ec%82%ac%eb%8b%a8-%eb%8b%a8%ec%9b%90-%eb%aa%a8%ec%a7%914-28/?pageds=40&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a599874f6183",
@@ -4386,7 +4784,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b4%89%ec%82%ac-2016%eb%85%84-%ec%82%ac%eb%9e%8c-%ec%82%ac%eb%9e%91%eb%b4%89%ec%82%ac%eb%8b%a8-4%ea%b8%b0-%eb%aa%a8%ec%a7%914-8%ea%b9%8c%ec%a7%80/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d93c50514838",
@@ -4397,7 +4796,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8f%84%eb%b4%89%ec%9a%b4%ec%a0%84%eb%a9%b4%ed%97%88%ec%8b%9c%ed%97%98%ec%9e%a5-%ec%9a%b4%ec%a0%84%eb%a9%b4%ed%97%88-%ec%b7%a8%eb%93%9d%ec%a7%80%ec%9b%90-%ed%9d%ac%eb%a7%9d%ed%94%84%eb%a1%9c/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b1f374c86f58",
@@ -4408,7 +4808,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c35%ed%9a%8c-%ec%8a%a4%ec%8a%b9%ec%9d%98-%eb%82%a0-%ec%a0%95%eb%b6%80%ed%8f%ac%ec%83%81-%eb%8c%80%ec%83%81%ec%9e%90-%ec%82%ac%ec%a0%84%ea%b3%b5%ec%a7%80/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7622df8c646d",
@@ -4419,7 +4820,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%88%ec%97%b0%ea%b8%88%ec%a3%bc%ed%81%b4%eb%a6%ac%eb%8b%89-5%ec%9d%bc%ea%b8%88%ec%97%b0%ed%95%99%ea%b5%90-%ec%95%88%eb%82%b4-%eb%b0%8f-%ec%9d%b4%eb%b2%a4%ed%8a%b8/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6ee89cd36d93",
@@ -4430,7 +4832,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ed%95%99%ec%83%9d%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac%eb%8b%a8-%ec%b5%9c%ec%a2%85-%ed%95%a9%ea%b2%a9%ec%9e%90-%ea%b3%b5%ea%b3%a0/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d83c7b299abe",
@@ -4441,7 +4844,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%b0%bd%ec%97%85%ed%8a%b9%ea%b0%95_-%ec%b0%bd%ec%97%85-%ec%95%88-%ed%95%b4%eb%8f%84-%eb%90%98%eb%8a%94-%ec%9e%ac%eb%b0%8c%eb%8a%94-%ec%b0%bd%ec%97%85%ea%b5%90%ec%8b%a4-a-to-z-by-seedlean/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8128abf23911",
@@ -4452,7 +4856,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-%ec%b0%bd%ec%97%85%eb%8f%99%ec%95%84%eb%a6%ac-%eb%aa%a8%ec%a7%91/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-b18a31e80e1c",
@@ -4463,7 +4868,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%96%89%ec%82%ac-2016%eb%85%84-%eb%8c%80%ed%95%99%ec%b0%bd%ec%9d%98%eb%b0%9c%eb%aa%85%eb%8c%80%ed%9a%8c/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-71e02110d60b",
@@ -4474,7 +4880,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%ed%95%99%ea%b3%bc%eb%b3%84-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b4/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-21f2c2f5d530",
@@ -4485,7 +4892,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%88%98%ea%b0%95%eb%a3%8c-%ed%99%98%ea%b8%89-%ea%b5%90%eb%82%b4-%ed%86%a0%ec%9d%b5%ec%82%ac%ea%b4%80%ed%95%99%ea%b5%90-%eb%8b%a8%ea%b8%b0-toeic-%ea%b3%bc%ec%a0%95-%ed%94%84%eb%a1%9c%ea%b7%b8/?pageds=41&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-22d83818313f",
@@ -4496,7 +4904,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%a5%ed%95%99%ea%b8%88%ec%a7%80%ec%9b%90-150%eb%aa%85%ed%95%9c%ec%a0%9516%eb%85%84-%ec%8b%a0%ec%9e%85%ec%83%9d-%ea%b5%90%eb%82%b4-%ed%86%a0%ec%9d%b5%ec%82%ac%ea%b4%80%ed%95%99%ea%b5%90-2/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-29636307280f",
@@ -4507,7 +4916,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%ed%95%99%eb%85%84%eb%8f%84-1%ed%95%99%ea%b8%b0-%ec%99%b8%ea%b5%ad%ec%9d%b8%ed%95%99%ec%83%9d-11-%eb%8f%84%ec%9a%b0%eb%af%b8-%ec%9e%90%ec%9b%90%eb%b4%89%ec%82%ac%ec%9e%90-%eb%aa%a8%ec%a7%91/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-ae6f8b18564a",
@@ -4518,7 +4928,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-1-%ea%b5%90%eb%82%b4%ea%b7%bc%eb%a1%9c-%ec%b6%94%ea%b0%80%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4-2/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-6654d1753bb4",
@@ -4529,7 +4940,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%843%ec%9b%943%ec%9d%bc%eb%aa%a9-%eb%8b%a4%eb%8b%88%ec%97%98%ea%b4%80-%eb%b0%8f-%ec%a0%9c3%ea%b3%bc%ed%95%99%ea%b4%80-%ec%a3%bc%ec%b0%a8%ec%9e%a5-%ec%a3%bc%ec%b0%a8-%ed%98%91%ec%a1%b0/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7c98afd1318f",
@@ -4540,7 +4952,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%83%9d%ed%99%9c%ec%83%81%eb%8b%b4%ec%84%bc%ed%84%b0-%ec%9e%a5%ec%86%8c%ec%9d%b4%ec%a0%84-%ec%95%88%eb%82%b4-2/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a90858a86572",
@@ -4551,7 +4964,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%ac%ed%9a%8c%eb%b4%89%ec%82%ac%eb%8b%a8-%eb%8c%80%ec%b2%ad%ec%86%8c%eb%a1%9c%ec%9d%b8%ed%95%9c-%ec%97%85%eb%ac%b4%ec%a1%b0%ec%a0%95-%ec%95%88%eb%82%b42%ec%9b%9425%ec%9d%bc-%eb%aa%a9%ec%9a%94/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f66fe95f765f",
@@ -4562,7 +4976,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%8f%84%ec%9b%80%ec%9d%b4-%ea%b8%89%ed%9e%88-%ed%95%84%ec%9a%94%ed%95%9c-%eb%8f%99%eb%ac%b8%ec%9d%b4-%ec%9e%88%ec%96%b4-%eb%8f%84%ec%9b%80%ec%9d%84-%ec%9a%94%ec%b2%ad%ed%95%a9%eb%8b%88%eb%8b%a4/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-57ee6b0c112b",
@@ -4573,7 +4988,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/be-a-coding-hero-1%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7db4ca33a413",
@@ -4584,7 +5000,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2%ec%9b%94-23%ec%9d%bc-%eb%b0%b1%ec%a3%bc%eb%85%84%ea%b8%b0%eb%85%90%ea%b4%80-4%ec%b8%b5-%eb%8c%80%ec%b2%ad%ec%86%8c%ec%97%90-%eb%94%b0%eb%a5%b8-%ec%a0%95%eb%b3%b4%ec%a0%84%ec%82%b0%ec%9b%90/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d7f97e154d20",
@@ -4595,7 +5012,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/kcoc-%eb%9d%bc%ec%98%a4%ec%8a%a4-%ed%8c%8c%ea%b2%ac%ec%9e%90-%eb%aa%a8%ec%a7%91%ea%b3%84%ec%95%bd%ec%a7%81-%ec%b1%84%ec%9a%a9-2/?pageds=42&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2b9f7db05361",
@@ -4606,7 +5024,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%82%b0%ed%95%99%ed%98%91%eb%a0%a5%eb%8b%a8-%ec%97%b0%ea%b5%ac%ec%b2%98-%eb%8c%80%ec%b2%ad%ec%86%8c-%ec%95%88%eb%82%b4/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8059245add8a",
@@ -4617,7 +5036,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ed%95%99%ec%83%9d%ec%a7%80%ec%9b%90%ec%b2%98-%eb%8c%80%ec%b2%ad%ec%86%8c%eb%a1%9c-%ec%9d%b8%ed%95%9c-%ec%97%85%eb%ac%b4%ec%8b%9c%ea%b0%84-%ec%a1%b0%ec%a0%95%ec%95%88%eb%82%b42%ec%9b%94-15%ec%9d%bc/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-67f74ba786e0",
@@ -4628,7 +5048,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%80%ec%93%b0%ea%b8%b0-%ed%81%b4%eb%a6%ac%eb%8b%89-%ec%a0%9c4%ed%9a%8c-%ec%9a%b0%ec%88%98-%eb%a6%ac%ed%8f%ac%ed%8a%b8-%ea%b3%b5%eb%aa%a8%ec%a0%84-%ec%88%98%ec%83%81%ec%9e%90-%eb%b0%9c%ed%91%9c/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-9b7a1175b871",
@@ -4639,7 +5060,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b3%b5%ec%a7%80%ea%b5%90%eb%82%b4-%ec%9d%b8%ed%84%b0%eb%84%b7-%eb%b0%8f-%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%a4%91%eb%8b%a8-%ec%95%88%eb%82%b4/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-d1f4b34c38c7",
@@ -4650,7 +5072,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%e2%98%85%e2%98%85%e2%98%85-%ed%99%88%ed%8e%98%ec%9d%b4%ec%a7%80-%ea%b5%90%ec%88%98-%ed%94%84%eb%a1%9c%ed%95%84-%eb%93%b1%eb%a1%9d-%ec%88%98%ec%a0%95-%ec%8b%a0%ec%b2%ad%ec%84%9c-%eb%8b%a4%ec%9a%b4/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-99ab32bec09c",
@@ -4661,7 +5084,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/west-%eb%98%90-%ed%95%98%eb%82%98%ec%9d%98-%ea%bf%88%ec%9d%84-%ed%96%a5%ed%95%b4-%ec%88%98%ea%b8%b0%ec%a7%91-%eb%ac%b4%eb%a3%8c-%eb%b0%b0%ed%8f%ac/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e943dbdb1245",
@@ -4672,7 +5096,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%9e%a5%ed%95%99%ea%b8%88%ec%a7%80%ec%9b%90-150%eb%aa%85%ed%95%9c%ec%a0%9516%eb%85%84-%ec%8b%a0%ec%9e%85%ec%83%9d-%ea%b5%90%eb%82%b4-%ed%86%a0%ec%9d%b5%ec%82%ac%ea%b4%80%ed%95%99%ea%b5%90/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-fd0091449980",
@@ -4683,7 +5108,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%a0%9c5%ec%b0%a8-%ea%b5%ad%eb%af%bc%ed%86%b5%ed%95%a9%ec%9d%84-%ec%9c%84%ed%95%9c-%eb%b2%95%eb%a0%b9%ec%a0%9c%eb%8f%84-%eb%b0%9c%ea%b5%b4-%ea%b5%ad%eb%af%bc%ec%a0%9c%ec%95%88-%ea%b3%b5%eb%aa%a8/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-f27eaee6e104",
@@ -4694,7 +5120,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84%eb%8f%84-%ec%97%b4%eb%a6%b0%ea%b5%ad%ed%9a%8c-%ec%8b%9c%eb%af%bc%ec%95%84%ec%b9%b4%eb%8d%b0%eb%af%b8-%e6%98%a5%ed%85%8c%eb%a7%88-%ec%8b%a4%ec%8b%9c-%ec%95%88%eb%82%b4/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-a7ac531a95d1",
@@ -4705,7 +5132,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%88%98%ea%b0%95%ec%8b%a0%ec%b2%ad-%ed%85%8c%ec%8a%a4%ed%8a%b8%eb%a1%9c-%ec%9d%b8%ed%95%9c-%ea%b5%90%eb%82%b4-%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c/?pageds=43&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-e5fd1b49f96b",
@@ -4716,7 +5144,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%82%b4-%eb%84%a4%ed%8a%b8%ec%9b%8c%ed%81%ac-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c-%ec%a4%91%ec%a7%80-%ec%95%88%eb%82%b41%ec%9b%94-27%ec%9d%bc/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-7b93740233f3",
@@ -4727,7 +5156,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016%eb%85%84-%ea%b5%ad%ec%99%b8%ec%b2%b4%eb%a5%98%ec%9e%90%ec%9d%98-%ec%98%88%eb%b9%84%ea%b5%b0%ed%9b%88%eb%a0%a8-%eb%b3%80%ea%b2%bd%ec%82%ac%ed%95%ad-%ec%95%8c%eb%a6%bc/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-2f85a766bc5d",
@@ -4738,7 +5168,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ea%b8%80%ec%93%b0%ea%b8%b0-%ed%81%b4%eb%a6%ac%eb%8b%89-%ec%a0%9c6%ed%9a%8c-%ec%82%bc%ec%9c%a1-%ec%98%a8%eb%9d%bc%ec%9d%b8-%eb%b0%b1%ec%9d%bc%ec%9e%a5/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-146d7ab034de",
@@ -4749,7 +5180,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%9c%ec%9a%b8-%ea%b7%b8%eb%a6%b0%ec%ba%a0%ed%8d%bc%ec%8a%a4-%eb%8c%80%ed%95%99%ec%83%9d-%ed%99%8d%eb%b3%b4%eb%8c%80%ec%82%ac-3%ea%b8%b0-%eb%aa%a8%ec%a7%91/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-8b69e3235213",
@@ -4760,7 +5192,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%eb%b9%84%ec%83%81%ec%8b%9c-%ea%b5%ad%eb%af%bc-%ed%96%89%eb%8f%99-%ec%9a%94%eb%a0%b9-%ec%95%88%eb%82%b4/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-22633f7f99c6",
@@ -4771,7 +5204,8 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-1%ed%95%99%ea%b8%b0-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%8b%ac%ec%95%bc%ec%9e%91%ec%97%85%ec%8b%a0%ec%b2%ad-%ec%a7%91%ed%9a%8c%ed%97%88%ea%b0%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4-2/?pageds=44&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   },
   {
     "id": "campus-af3f14cdfa8c",
@@ -4782,6 +5216,7 @@
     "category": "campus",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%ec%9e%a5%ec%95%a0%ed%95%99%ec%83%9d-%ec%84%9c%ed%8f%ac%ed%84%b0%ec%a6%88-%eb%aa%a8%ec%a7%91-%ec%95%88%eb%82%b4%ec%b6%94%ea%b0%80/?pageds=1&k=&t=&c=",
-    "isImportant": false
+    "isImportant": false,
+    "isPinned": false
   }
 ]

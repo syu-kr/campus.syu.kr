@@ -45,7 +45,18 @@ def extract_announcement_row(row, debug=False):
         date_text = row.select_one("td:nth-of-type(3)").get_text(strip=True) if row.select_one("td:nth-of-type(3)") else ""
         views_text = row.select_one("td:nth-of-type(4)").get_text(strip=True) if row.select_one("td:nth-of-type(4)") else "0"
         
+        # Pin 여부 확인 (step1 th의 notice_icon span 확인)
+        step1_th = row.select_one("th.step1")
+        is_pinned = False
         no_text = ""
+        
+        if step1_th:
+            notice_icon_span = step1_th.find("span", class_="notice_icon")
+            if notice_icon_span:
+                is_pinned = True
+            else:
+                # notice_icon이 없으면 번호 추출
+                no_text = step1_th.get_text(strip=True)
         
         try:
             views = int(views_text)
@@ -63,7 +74,8 @@ def extract_announcement_row(row, debug=False):
             "author": author_text or "삼육대학교",
             "views": views,
             "url": url,
-            "is_important": is_important
+            "is_important": is_important,
+            "is_pinned": is_pinned
         }
     except Exception as e:
         print(f"  ⚠️  행 파싱 오류: {e}")
@@ -225,7 +237,8 @@ def crawl_academic_notice():
                         "category": "academic",
                         "content": "",
                         "url": row_data['url'],
-                        "isImportant": row_data['is_important']
+                        "isImportant": row_data['is_important'],
+                        "isPinned": row_data['is_pinned']
                     }
             
             except Exception as e:

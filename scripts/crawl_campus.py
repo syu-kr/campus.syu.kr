@@ -58,6 +58,19 @@ def extract_campus_row(row):
         except:
             views = 0
         
+        # Pin 여부 확인 (step1 th의 notice_icon span 확인)
+        step1_th = row.select_one("th.step1")
+        is_pinned = False
+        no_text = ""
+        
+        if step1_th:
+            notice_icon_span = step1_th.find("span", class_="notice_icon")
+            if notice_icon_span:
+                is_pinned = True
+            else:
+                # notice_icon이 없으면 번호 추출
+                no_text = step1_th.get_text(strip=True)
+        
         is_important = "[공지]" in title or "[중요]" in title
         clean_title = title.replace("[공지]", "").replace("[중요]", "").strip()
         
@@ -67,7 +80,9 @@ def extract_campus_row(row):
             "author": author or "학생생활팀",
             "views": views,
             "url": url,
-            "is_important": is_important
+            "is_important": is_important,
+            "is_pinned": is_pinned,
+            "no": no_text
         }
     except Exception as e:
         print(f"  ⚠️  행 파싱 오류: {e}")
@@ -214,7 +229,9 @@ def crawl_campus_notices():
                         "category": "campus",
                         "content": "",
                         "url": row_data['url'],
-                        "isImportant": row_data['is_important']
+                        "isImportant": row_data['is_important'],
+                        "isPinned": row_data['is_pinned'],
+                        "no": row_data['no']
                     }
             
             except Exception as e:

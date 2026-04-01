@@ -31,10 +31,15 @@ function AnnouncementCardComponent({
       className={href ? "hover:shadow-card-hover" : ""}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge color={getCategoryColor(announcement.category)} size="sm">
             {getCategoryLabel(announcement.category)}
           </Badge>
+          {announcement.isPinned && (
+            <Badge color="red" size="sm">
+              고정글
+            </Badge>
+          )}
           {announcement.isImportant && (
             <Badge color="red" size="sm">
               공지

@@ -8,6 +8,7 @@ export interface Announcement {
   author: string;
   views: number;
   isImportant: boolean;
+  isPinned?: boolean;
   url?: string;
 }
 
