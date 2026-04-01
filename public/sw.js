@@ -99,6 +99,15 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // 공지사항 JSON은 항상 최신 데이터를 가져와야 함 - 캐시 안 함
+  if (
+    url.pathname.includes("/data/announcements-") ||
+    url.pathname.includes("/data/announcements-campus-life")
+  ) {
+    console.log("[SW] 공지사항 JSON - 캐시 사용 안함:", url.pathname);
+    return; // Network를 직접 사용 (캐싱 안함)
+  }
+
   // GET 요청만 캐싱
   if (event.request.method !== "GET") {
     return;

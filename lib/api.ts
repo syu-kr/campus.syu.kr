@@ -17,7 +17,7 @@ export async function fetchAnnouncements(
 
     if (!category || category === "academic") {
       const academic = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 3600 }, // Cache for 1 hour
+        next: { revalidate: 0 }, // ❌ No cache - always fetch fresh data
       }).then((r) => r.json());
       data = [...data, ...(academic as Announcement[])];
     }
@@ -25,7 +25,7 @@ export async function fetchAnnouncements(
     if (!category || category === "scholarship") {
       const scholarship = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 3600 } }, // Cache for 1 hour
+        { next: { revalidate: 0 } }, // ❌ No cache - always fetch fresh data
       ).then((r) => r.json());
       data = [
         ...data,
@@ -40,7 +40,7 @@ export async function fetchAnnouncements(
       try {
         const campus = await fetch(
           "/data/announcements-campus-life.json",
-          { next: { revalidate: 3600 } }, // Cache for 1 hour
+          { next: { revalidate: 0 } }, // ❌ No cache - always fetch fresh data
         ).then((r) => r.json());
         data = [
           ...data,

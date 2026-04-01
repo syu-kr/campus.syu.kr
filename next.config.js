@@ -46,6 +46,24 @@ const nextConfig = {
           },
         ],
       },
+      // 공지사항 JSON - 항상 최신 데이터 필요! 캐싱 금지
+      {
+        source: "/data/announcements-:category*.json",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Pragma",
+            value: "no-cache",
+          },
+          {
+            key: "Expires",
+            value: "0",
+          },
+        ],
+      },
       // 정적 이미지, 폰트 등 - 5일(432000초) 캐싱
       {
         source: "/images/:path*",
