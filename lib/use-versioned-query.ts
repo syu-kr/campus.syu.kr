@@ -43,7 +43,7 @@ export function useVersionedQuery<TData, TError = Error>(
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
-        console.warn("[useVersionedQuery] 버전 초기화 실패");
+        // Version initialization failed silently
       }
     }
 
@@ -59,21 +59,14 @@ export function useVersionedQuery<TData, TError = Error>(
           .join("-")
           .substring(0, 10);
 
-        // 버전이 변경되었으면 경고 및 refetch 트리거
+        // 버전이 변경되었으면 refetch 트리거
         if (initialVersionRef.current && hash !== initialVersionRef.current) {
-          console.log(
-            "[useVersionedQuery] 데이터 버전 변경 감지, 캐시 무효화",
-            {
-              old: initialVersionRef.current,
-              new: hash,
-            },
-          );
           initialVersionRef.current = hash;
           setVersionHash(hash); // queryKey가 변경되어 자동으로 refetch
         }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_error) {
-        console.warn("[useVersionedQuery] 버전 체크 실패");
+        // Version check failed silently
       }
     }, 30000); // 30초마다 확인
 

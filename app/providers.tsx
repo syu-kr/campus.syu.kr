@@ -149,13 +149,6 @@ async function requestNotificationPermission(
 
 async function saveFCMToken(token: string) {
   try {
-    console.log("[FCM] 토큰 저장 시작:", {
-      token_length: token.length,
-      token_preview: token.substring(0, 30) + "...",
-      vapid_key:
-        process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.substring(0, 30) + "...",
-    });
-
     const response = await fetch("/api/notifications/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -163,19 +156,11 @@ async function saveFCMToken(token: string) {
     });
 
     if (response.ok) {
-      const data = await response.json();
       localStorage.setItem("fcm_token", token);
-      console.log("[FCM] 토큰 저장 성공:", data);
-    } else {
-      const errorText = await response.text();
-      console.warn("[FCM] 토큰 저장 실패:", {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
     }
-  } catch (error) {
-    console.warn("[FCM] 토큰 저장 예외:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
+    // Error handling - silently fail
   } finally {
     // Error handling - silently fail
   }
@@ -186,7 +171,8 @@ async function setupForegroundNotifications() {
     const { setupForegroundNotifications: setup } =
       await import("@/lib/firebase");
     await setup();
-  } catch (error) {
-    console.warn("[FCM] 포그라운드 알림 설정 실패:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
+    // Error handling - silently fail
   }
 }

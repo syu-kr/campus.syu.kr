@@ -56,8 +56,8 @@ export async function fetchAnnouncements(
     }
 
     return data;
-  } catch (error) {
-    console.error("Failed to fetch announcements:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     // Return empty array if fetch fails
     return [];
   }
@@ -144,8 +144,8 @@ export async function fetchCafeteriaMenu(
     }
 
     return menus;
-  } catch (error) {
-    console.error("Failed to fetch cafeteria menu:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }
@@ -166,9 +166,8 @@ export async function fetchAcademicSchedules(
       return parsedSchedules.filter((s) => s.category === category);
     }
     return parsedSchedules;
-  } catch (error) {
-    console.error("Failed to fetch academic schedules:", error);
-    // Return empty array instead of mock data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }
@@ -182,8 +181,8 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
     });
     const schedules = await response.json();
     return (schedules || []) as ShuttleBusSchedule[];
-  } catch (error) {
-    console.error("Failed to fetch shuttle buses:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }
@@ -221,8 +220,8 @@ export async function fetchScholarships(
       }));
 
     return scholarshipData;
-  } catch (error) {
-    console.error("Failed to fetch scholarships:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }
@@ -355,8 +354,8 @@ export async function searchAll(
     );
 
     return uniqueResults.slice(0, 100); // 최대 100개로 제한
-  } catch (error) {
-    console.error("Search failed:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }
@@ -370,8 +369,8 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
     });
     const phoneData = await response.json();
     return (phoneData || []) as PhoneNumber[];
-  } catch (error) {
-    console.error("Failed to fetch phone numbers:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return [];
   }
 }

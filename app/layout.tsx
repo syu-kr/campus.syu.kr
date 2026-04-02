@@ -87,12 +87,10 @@ export default function RootLayout({
                 const check = () => {
                   attempts++;
                   if (window.kakao?.maps?.LatLng) {
-                    console.log('✓ [layout] SDK ready after', attempts, 'attempts');
                     resolve(true);
                   } else if (attempts < 20) {
                     setTimeout(check, 50);
                   } else {
-                    console.log('✗ [layout] SDK failed after', attempts, 'attempts');
                     resolve(false);
                   }
                 };

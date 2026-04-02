@@ -104,7 +104,6 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes("/data/announcements-") ||
     url.pathname.includes("/data/announcements-campus-life")
   ) {
-    console.log("[SW] 공지사항 JSON - 캐시 사용 안함:", url.pathname);
     return; // Network를 직접 사용 (캐싱 안함)
   }
 

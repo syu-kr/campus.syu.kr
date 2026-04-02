@@ -45,10 +45,6 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
   const categories = ["academic", "scholarship"];
   const results: AnnouncementStats[] = [];
 
-  console.log(
-    `📊 조회 기간: ${yesterday.toISOString()} ~ ${today.toISOString()}`,
-  );
-
   for (const category of categories) {
     // Firestore 시도
     let success = false;
@@ -73,13 +69,8 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
         titles: titles.slice(0, 3),
       });
 
-      console.log(`✅ ${category} (Firestore): ${snapshot.size}개`);
       success = true;
-    } catch (error) {
-      console.warn(
-        `⚠️ ${category} Firestore 조회 실패. JSON 파일에서 로드 중...`,
-      );
-    }
+    } catch (error) {}
 
     // Firestore 실패 시 JSON 파일에서 로드
     if (!success) {
@@ -114,7 +105,6 @@ async function getAnnouncementStatsFromJSON(
     const filepath = path.join(process.cwd(), "public/data", filename);
 
     if (!fs.existsSync(filepath)) {
-      console.warn(`⚠️ JSON 파일 없음: ${filepath}`);
       return { category, count: 0, titles: [] };
     }
 
@@ -133,17 +123,12 @@ async function getAnnouncementStatsFromJSON(
 
     const titles = filtered.map((a) => a.title);
 
-    console.log(
-      `✅ ${category} (JSON): ${filtered.length}개 (전체: ${announcements.length}개 중)`,
-    );
-
     return {
       category,
       count: filtered.length,
       titles: titles.slice(0, 3), // 상위 3개만
     };
   } catch (error) {
-    console.error(`❌ ${category} JSON 파일 읽기 실패:`, error);
     return { category, count: 0, titles: [] };
   }
 }
@@ -198,11 +183,6 @@ async function sendNotification(stats: AnnouncementStats[]) {
   }
 
   const body = bodyParts.join(" | ");
-
-  console.log("\n📤 발송할 알림:");
-  console.log(`   제목: ${title}`);
-  console.log(`   내용: ${body}`);
-  console.log(`   시간: ${koreaTime} KST\n`);
 
   // API 호출
   try {

@@ -51,7 +51,6 @@ export async function GET() {
     );
 
     if (!response.ok) {
-      console.error("[Weather API] 기상청 응답 오류:", response.status);
       return NextResponse.json(
         { error: "기상청 API 오류" },
         { status: response.status },
@@ -61,7 +60,6 @@ export async function GET() {
     const data = await response.json();
 
     if (!data.response?.body?.items?.item) {
-      console.warn("[Weather API] 유효한 데이터 없음");
       return NextResponse.json(
         { error: "유효한 데이터 없음" },
         { status: 500 },
@@ -106,11 +104,9 @@ export async function GET() {
       gridY: ny,
     };
 
-    console.log("[Weather API] 날씨 정보 조회 성공:", weatherData);
-
     return NextResponse.json(weatherData);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.error("[Weather API] 오류:", error);
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다" },
       { status: 500 },

@@ -23,8 +23,8 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
         } else {
           setError("날씨 정보를 불러올 수 없습니다");
         }
-      } catch (err) {
-        console.error("[WeatherWidget] 에러:", err);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_err) {
         setError("날씨 조회 중 오류가 발생했습니다");
       } finally {
         setLoading(false);

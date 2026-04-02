@@ -20,12 +20,7 @@ if (
   !firebaseConfig.authDomain ||
   !firebaseConfig.projectId
 ) {
-  console.error("[Firebase] 필수 환경변수가 설정되지 않았습니다:", {
-    apiKey: !!firebaseConfig.apiKey,
-    authDomain: !!firebaseConfig.authDomain,
-    projectId: !!firebaseConfig.projectId,
-    messagingSenderId: !!firebaseConfig.messagingSenderId,
-  });
+  // Firebase config validation failed
 }
 
 // Firebase 앱 초기화
@@ -39,10 +34,9 @@ let foregroundListenerRegistered = false;
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   try {
     messaging = getMessaging(app);
-    console.log("[Firebase] Messaging 초기화 완료");
-  } catch (error) {
-    console.error("[Firebase] Messaging 초기화 실패:", error);
-    // Error handling - silently fail
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
+    // Messaging initialization failed silently
   }
 }
 
@@ -54,18 +48,10 @@ export function setupForegroundNotifications() {
 
   // 이미 리스너가 등록되었으면 중복 등록 방지
   if (foregroundListenerRegistered) {
-    console.log("[FCM] 포그라운드 리스너 이미 등록됨");
     return;
   }
 
-  console.log("[FCM] 포그라운드 리스너 등록 시작");
-
   onMessage(messaging, (payload) => {
-    console.log("[FCM] 포그라운드 메시지 수신:", {
-      title: payload.notification?.title,
-      body: payload.notification?.body,
-    });
-
     if (payload.notification) {
       const notification = {
         title: payload.notification.title || "",
@@ -78,5 +64,4 @@ export function setupForegroundNotifications() {
   });
 
   foregroundListenerRegistered = true;
-  console.log("[FCM] 포그라운드 리스너 등록 완료");
 }

@@ -22,21 +22,18 @@ export async function fetchWeather(): Promise<WeatherData | null> {
     });
 
     if (!response.ok) {
-      console.error("[Weather] API 응답 오류:", response.status);
       return null;
     }
 
     const data = await response.json();
 
     if (!data || data.error) {
-      console.error("[Weather] API 에러:", data.error);
       return null;
     }
 
-    console.log("[Weather] 날씨 정보 조회 성공:", data);
     return data as WeatherData;
-  } catch (error) {
-    console.error("[Weather] 날씨 조회 중 오류:", error);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
     return null;
   }
 }

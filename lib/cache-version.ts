@@ -40,7 +40,6 @@ export async function getDataVersions(): Promise<DataVersions> {
     });
 
     if (!response.ok) {
-      console.warn("[Versions] API 호출 실패, 임시 데이터 사용");
       return {
         versions: cachedVersions || {},
         timestamp: versionCacheTime,
@@ -54,7 +53,6 @@ export async function getDataVersions(): Promise<DataVersions> {
     return data;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.error("[Versions] 조회 중 오류이 발생했습니다");
     return {
       versions: cachedVersions || {},
       timestamp: versionCacheTime,
@@ -78,7 +76,6 @@ export async function getQueryKeyWithVersion(
     return [...baseKey, `v${versionHash}`];
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    console.warn("[QueryKey] 버전 생성 실패, 기본 키 사용");
     return baseKey;
   }
 }
