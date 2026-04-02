@@ -12,8 +12,8 @@ export default function SchedulePage() {
   const { data: schedules, isLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

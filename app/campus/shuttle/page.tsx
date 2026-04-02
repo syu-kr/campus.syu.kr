@@ -19,7 +19,7 @@ export default function ShuttlePage() {
   const { data: buses, isLoading } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 
   // 현재 시간을 매초 업데이트

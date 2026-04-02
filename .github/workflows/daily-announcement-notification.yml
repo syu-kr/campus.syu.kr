@@ -2,8 +2,8 @@ name: 📢 Daily Announcement Notification
 
 on:
   schedule:
-    # 매일 23:00 UTC (한국 시간 08:00)
-    - cron: "0 23 * * *"
+    # 평일 23:00 UTC (한국 시간 08:00) - 월-금만 실행
+    - cron: "0 23 * * 1-5"
   # 수동 테스트용
   workflow_dispatch:
 

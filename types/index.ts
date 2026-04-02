@@ -89,6 +89,7 @@ export interface Scholarship {
   deadline: string;
   description: string;
   url?: string;
+  isPinned?: boolean;
 }
 
 // 학사정보 (미사용 - 제거됨)

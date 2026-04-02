@@ -15,7 +15,7 @@ export default function DirectoryPage() {
   const { data: phoneData, isLoading } = useQuery({
     queryKey: ["phone-numbers"],
     queryFn: () => fetchPhoneNumbers(),
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+    staleTime: 0,
   });
 
   // 검색 필터링

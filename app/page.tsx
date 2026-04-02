@@ -89,35 +89,37 @@ export default function Home() {
           | "activity"
           | undefined,
       ),
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 
   // 서비스 공지 조회
   const { data: serviceNotices, isLoading: serviceNoticesLoading } = useQuery({
     queryKey: ["serviceNotices"],
     queryFn: async () => {
-      const response = await fetch("/api/service-notices");
+      const response = await fetch("/api/service-notices", {
+        cache: "no-store",
+      });
       return (await response.json()) as ServiceNotice[];
     },
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 
   // 학식 조회
   const { data: cafeteria, isLoading: cafeteriaLoading } = useQuery({
     queryKey: ["cafeteria"],
     queryFn: () => fetchCafeteriaMenu(),
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 
   // 학사일정 조회
   const { data: schedules, isLoading: schedulesLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
 
   // 검색
@@ -125,8 +127,8 @@ export default function Home() {
     queryKey: ["search", searchQuery],
     queryFn: () => searchAll(searchQuery),
     enabled: showSearchResults && searchQuery.trim().length > 0,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 20 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
   });
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);

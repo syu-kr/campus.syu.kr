@@ -17,16 +17,17 @@ export async function fetchAnnouncements(
 
     if (!category || category === "academic") {
       const academic = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 0 }, // ❌ No cache - always fetch fresh data
+        cache: "no-store",
+        next: { revalidate: 0 },
       }).then((r) => r.json());
       data = [...data, ...(academic as Announcement[])];
     }
 
     if (!category || category === "scholarship") {
-      const scholarship = await fetch(
-        "/data/announcements-scholarship.json",
-        { next: { revalidate: 0 } }, // ❌ No cache - always fetch fresh data
-      ).then((r) => r.json());
+      const scholarship = await fetch("/data/announcements-scholarship.json", {
+        cache: "no-store",
+        next: { revalidate: 0 },
+      }).then((r) => r.json());
       data = [
         ...data,
         ...(scholarship as Announcement[]).map((item: Announcement) => ({
@@ -38,10 +39,10 @@ export async function fetchAnnouncements(
 
     if (!category || category === "campus") {
       try {
-        const campus = await fetch(
-          "/data/announcements-campus-life.json",
-          { next: { revalidate: 0 } }, // ❌ No cache - always fetch fresh data
-        ).then((r) => r.json());
+        const campus = await fetch("/data/announcements-campus-life.json", {
+          cache: "no-store",
+          next: { revalidate: 0 },
+        }).then((r) => r.json());
         data = [
           ...data,
           ...(campus as Announcement[]).map((item: Announcement) => ({
@@ -68,7 +69,8 @@ export async function fetchCafeteriaMenu(
 ): Promise<CafeteriaMenu[]> {
   try {
     const response = await fetch("/data/cafeteria-menu.json", {
-      next: { revalidate: 3600 }, // Cache for 1 hour
+      cache: "no-store",
+      next: { revalidate: 0 },
     });
     const data = (await response.json()) as
       | Array<{ menus?: unknown[] }>
@@ -154,7 +156,8 @@ export async function fetchAcademicSchedules(
 ): Promise<AcademicSchedule[]> {
   try {
     const schedules = await fetch("/data/schedules-major.json", {
-      next: { revalidate: 604800 }, // Cache for 7 days
+      cache: "no-store",
+      next: { revalidate: 0 },
     }).then((r) => r.json());
 
     const parsedSchedules = (schedules || []) as AcademicSchedule[];
@@ -174,7 +177,8 @@ export async function fetchAcademicSchedules(
 export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
   try {
     const response = await fetch("/data/shuttle-bus-schedule.json", {
-      next: { revalidate: 604800 }, // Cache for 7 days
+      cache: "no-store",
+      next: { revalidate: 0 },
     });
     const schedules = await response.json();
     return (schedules || []) as ShuttleBusSchedule[];
@@ -190,7 +194,10 @@ export async function fetchScholarships(
 ): Promise<Scholarship[]> {
   try {
     // API에서 실제 데이터 가져오기
-    const response = await fetch("/data/announcements-scholarship.json");
+    const response = await fetch("/data/announcements-scholarship.json", {
+      cache: "no-store",
+      next: { revalidate: 0 },
+    });
     const notices = await response.json();
 
     const scholarshipData: Scholarship[] = (notices as Announcement[])
@@ -240,7 +247,8 @@ export async function searchAll(
     // 1. 학사일정 검색
     try {
       const schedules = await fetch("/data/schedules-major.json", {
-        next: { revalidate: 604800 },
+        cache: "no-store",
+        next: { revalidate: 0 },
       }).then((r) => r.json());
       const matchedSchedules = (schedules as AcademicSchedule[]).filter(
         (s) =>
@@ -257,7 +265,8 @@ export async function searchAll(
     // 학사공지
     try {
       const academicNotices = await fetch("/data/announcements-academic.json", {
-        next: { revalidate: 3600 },
+        cache: "no-store",
+        next: { revalidate: 0 },
       }).then((r) => r.json());
       const matchedAcademic = (academicNotices as Announcement[]).filter(
         (a) =>
@@ -273,7 +282,10 @@ export async function searchAll(
     try {
       const scholarshipNotices = await fetch(
         "/data/announcements-scholarship.json",
-        { next: { revalidate: 3600 } },
+        {
+          cache: "no-store",
+          next: { revalidate: 0 },
+        },
       ).then((r) => r.json());
       const matchedScholarship = (scholarshipNotices as Announcement[]).filter(
         (a) =>
@@ -293,7 +305,10 @@ export async function searchAll(
     try {
       const campusNotices = await fetch(
         "/data/announcements-campus-life.json",
-        { next: { revalidate: 3600 } }, // Cache for 1 hour
+        {
+          cache: "no-store",
+          next: { revalidate: 0 },
+        },
       ).then((r) => r.json());
       const matchedCampus = (campusNotices as Announcement[]).filter(
         (a) =>
@@ -350,7 +365,8 @@ export async function searchAll(
 export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
   try {
     const response = await fetch("/data/phone-numbers.json", {
-      next: { revalidate: 604800 }, // Cache for 7 days
+      cache: "no-store",
+      next: { revalidate: 0 },
     });
     const phoneData = await response.json();
     return (phoneData || []) as PhoneNumber[];

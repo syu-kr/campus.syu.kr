@@ -2,6 +2,7 @@
 
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScholarships } from "@/lib/api";
@@ -16,7 +17,7 @@ export default function ScholarshipPage() {
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
     queryFn: () => fetchScholarships(),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 
   // 검색 필터링
@@ -108,8 +109,15 @@ export default function ScholarshipPage() {
           paginatedScholarships &&
           paginatedScholarships.map((scholarship) => (
             <Card key={scholarship.id}>
-              <div className="mb-3">
+              <div className="mb-3 flex items-start gap-2">
                 <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    {scholarship.isPinned && (
+                      <Badge color="red" size="sm">
+                        고정글
+                      </Badge>
+                    )}
+                  </div>
                   <h2 className="text-lg font-bold text-neutral-900 mb-2">
                     {scholarship.name}
                   </h2>
