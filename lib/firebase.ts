@@ -33,6 +33,7 @@ const app = initializeApp(firebaseConfig);
 
 // 클라이언트에서만 Messaging 사용 가능
 let messaging: Messaging | null = null;
+let foregroundListenerRegistered = false;
 
 // 브라우저 환경에서만 Messaging 초기화
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -51,7 +52,20 @@ export { messaging };
 export function setupForegroundNotifications() {
   if (!messaging) return;
 
+  // 이미 리스너가 등록되었으면 중복 등록 방지
+  if (foregroundListenerRegistered) {
+    console.log("[FCM] 포그라운드 리스너 이미 등록됨");
+    return;
+  }
+
+  console.log("[FCM] 포그라운드 리스너 등록 시작");
+
   onMessage(messaging, (payload) => {
+    console.log("[FCM] 포그라운드 메시지 수신:", {
+      title: payload.notification?.title,
+      body: payload.notification?.body,
+    });
+
     if (payload.notification) {
       const notification = {
         title: payload.notification.title || "",
@@ -62,4 +76,7 @@ export function setupForegroundNotifications() {
       setNotificationHandler(notification);
     }
   });
+
+  foregroundListenerRegistered = true;
+  console.log("[FCM] 포그라운드 리스너 등록 완료");
 }
