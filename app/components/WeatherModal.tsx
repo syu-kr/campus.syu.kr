@@ -99,7 +99,8 @@ function WeatherModalComponent({
                 {weather.temperature}°C
               </div>
               <div className="text-blue-50 text-lg">
-                {getSkyConditionDetail(weather.skyCondition)}
+                현재 날씨는 {getSkyConditionDetail(weather.skyCondition)}{" "}
+                입니다.
               </div>
             </div>
           </div>

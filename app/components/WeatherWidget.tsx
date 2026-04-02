@@ -33,8 +33,8 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
 
     loadWeather();
 
-    // 1시간마다 갱신
-    const interval = setInterval(loadWeather, 60 * 60 * 1000);
+    // 1분마다 확인 (캐시 만료나 시간 변경 감지용)
+    const interval = setInterval(loadWeather, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

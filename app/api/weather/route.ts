@@ -19,17 +19,19 @@ export async function GET() {
     const nx = 61; // 격자 X
     const ny = 128; // 격자 Y
 
-    // 현재 시간 기준 (초단기실황은 실시간 관측 데이터)
+    // 한국 시간(KST, UTC+9) 기준으로 현재 시간 계산
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+    const year = kstTime.getUTCFullYear();
+    const month = String(kstTime.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(kstTime.getUTCDate()).padStart(2, "0");
     const baseDate = `${year}${month}${day}`;
 
     // 초단기실황은 현재 시각의 정각 또는 1시간 전 데이터 사용
     // (API는 약 40분 지연, 예: 12시 50분이면 12시 데이터를 요청)
-    let baseHour = now.getHours();
-    if (now.getMinutes() < 10) {
+    let baseHour = kstTime.getUTCHours();
+    if (kstTime.getUTCMinutes() < 10) {
       baseHour = baseHour === 0 ? 23 : baseHour - 1;
     }
     const baseTime = String(baseHour).padStart(2, "0") + "00";
@@ -45,19 +47,19 @@ export async function GET() {
       ny: ny.toString(),
     });
 
-    const response = await fetch(
+    const apiResponse = await fetch(
       `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?${params}`,
       { cache: "no-store" },
     );
 
-    if (!response.ok) {
+    if (!apiResponse.ok) {
       return NextResponse.json(
         { error: "기상청 API 오류" },
-        { status: response.status },
+        { status: apiResponse.status },
       );
     }
 
-    const data = await response.json();
+    const data = await apiResponse.json();
 
     if (!data.response?.body?.items?.item) {
       return NextResponse.json(
@@ -104,7 +106,11 @@ export async function GET() {
       gridY: ny,
     };
 
-    return NextResponse.json(weatherData);
+    const response = NextResponse.json(weatherData);
+    // 1분 캐싱 설정
+    response.headers.set("Cache-Control", "public, max-age=60");
+    response.headers.set("CDN-Cache-Control", "max-age=60");
+    return response;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return NextResponse.json(

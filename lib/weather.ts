@@ -12,13 +12,40 @@ export interface WeatherData {
   gridY: number;
 }
 
+// 1분 캐싱을 위한 메모리 저장소
+let cachedWeather: WeatherData | null = null;
+let cachedTime: number = 0;
+let cachedHour: number = -1; // 마지막 캐시된 시간의 hour
+const CACHE_DURATION = 60 * 1000; // 1분
+
+/**
+ * 한국 시간(KST) 기준 현재 hour 반환
+ */
+function getCurrentKSTHour(): number {
+  const now = new Date();
+  const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kstTime.getUTCHours();
+}
+
 /**
  * API 라우트를 통해 날씨 정보 조회
  */
 export async function fetchWeather(): Promise<WeatherData | null> {
   try {
+    const now = Date.now();
+    const currentHour = getCurrentKSTHour();
+
+    // 1분 캐시 확인 + hour 변경 확인
+    if (
+      cachedWeather &&
+      now - cachedTime < CACHE_DURATION &&
+      currentHour === cachedHour
+    ) {
+      return cachedWeather;
+    }
+
     const response = await fetch("/api/weather", {
-      cache: "no-store",
+      cache: "force-cache", // 서버 캐시 활용 (max-age=60)
     });
 
     if (!response.ok) {
@@ -30,6 +57,11 @@ export async function fetchWeather(): Promise<WeatherData | null> {
     if (!data || data.error) {
       return null;
     }
+
+    // 캐시 업데이트
+    cachedWeather = data as WeatherData;
+    cachedTime = now;
+    cachedHour = currentHour;
 
     return data as WeatherData;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
