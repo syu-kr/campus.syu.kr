@@ -63,7 +63,7 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 // 일반적인 SW 캐싱 로직
-const CACHE_NAME = "syu-campus-v2";
+const CACHE_NAME = "syu-campus-cache";
 // HTML은 캐시하지 않음 (네트워크 우선)
 const urlsToCache = ["/manifest.json"];
 
