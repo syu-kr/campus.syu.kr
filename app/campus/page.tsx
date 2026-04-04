@@ -35,14 +35,6 @@ const campusMenus = [
     color: "from-blue-400 to-blue-600",
   },
   {
-    id: "gym",
-    title: "체육시설",
-    description: "헬스장, 스포츠 센터 정보",
-    icon: "dumbbell",
-    href: "/campus/gym",
-    color: "from-red-400 to-red-600",
-  },
-  {
     id: "library",
     title: "도서관",
     description: "중앙도서관 열람실 정보",
@@ -51,20 +43,28 @@ const campusMenus = [
     color: "from-purple-400 to-purple-600",
   },
   {
-    id: "health-center",
-    title: "보건소",
-    description: "학생 의료 서비스",
-    icon: "stethoscope",
-    href: "/campus/health-center",
-    color: "from-pink-400 to-pink-600",
-  },
-  {
     id: "map",
     title: "캠퍼스 지도",
     description: "건물 위치 및 시설 안내",
     icon: "map",
     href: "/campus/map",
     color: "from-cyan-400 to-blue-600",
+  },
+  {
+    id: "gym",
+    title: "체육시설",
+    description: "헬스장, 스포츠 센터 정보",
+    icon: "dumbbell",
+    href: "/campus/gym",
+    color: "from-red-400 to-red-600",
+  },
+  {
+    id: "health-center",
+    title: "보건소",
+    description: "학생 의료 서비스",
+    icon: "stethoscope",
+    href: "/campus/health-center",
+    color: "from-pink-400 to-pink-600",
   },
 ];
 

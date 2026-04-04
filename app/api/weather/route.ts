@@ -21,17 +21,19 @@ export async function GET() {
 
     // 한국 시간(KST, UTC+9) 기준으로 현재 시간 계산
     const now = new Date();
-    const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const kstTime = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+    );
 
-    const year = kstTime.getUTCFullYear();
-    const month = String(kstTime.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(kstTime.getUTCDate()).padStart(2, "0");
+    const year = kstTime.getFullYear();
+    const month = String(kstTime.getMonth() + 1).padStart(2, "0");
+    const day = String(kstTime.getDate()).padStart(2, "0");
     const baseDate = `${year}${month}${day}`;
 
     // 초단기실황은 현재 시각의 정각 또는 1시간 전 데이터 사용
     // (API는 약 40분 지연, 예: 12시 50분이면 12시 데이터를 요청)
-    let baseHour = kstTime.getUTCHours();
-    if (kstTime.getUTCMinutes() < 10) {
+    let baseHour = kstTime.getHours();
+    if (kstTime.getMinutes() < 10) {
       baseHour = baseHour === 0 ? 23 : baseHour - 1;
     }
     const baseTime = String(baseHour).padStart(2, "0") + "00";

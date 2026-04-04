@@ -29,6 +29,15 @@ const academicMenus = [
     color: "from-purple-400 to-purple-600",
   },
   {
+    id: "graduation-check",
+    title: "졸업요건 확인",
+    description: "내 상황에 맞는 졸업요건 체크",
+    icon: "check-circle",
+    href: "/academic/graduation",
+    isExternal: false,
+    color: "from-cyan-400 to-cyan-600",
+  },
+  {
     id: "timetable",
     title: "시간표 짜기",
     description: "학기 시간표 작성 마법사",
@@ -54,15 +63,6 @@ const academicMenus = [
     href: "https://sugang.syu.kr/basket",
     isExternal: true,
     color: "from-green-400 to-green-600",
-  },
-  {
-    id: "graduation-check",
-    title: "졸업요건 확인",
-    description: "내 상황에 맞는 졸업요건 체크",
-    icon: "check-circle",
-    href: "/academic/graduation",
-    isExternal: false,
-    color: "from-cyan-400 to-cyan-600",
   },
 ];
 
