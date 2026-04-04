@@ -63,8 +63,9 @@ self.addEventListener("notificationclick", (event) => {
 });
 
 // 일반적인 SW 캐싱 로직
-const CACHE_NAME = "syu-campus-v1";
-const urlsToCache = ["/", "/manifest.json"];
+const CACHE_NAME = "syu-campus-v2";
+// HTML은 캐시하지 않음 (네트워크 우선)
+const urlsToCache = ["/manifest.json"];
 
 // 설치 이벤트
 self.addEventListener("install", (event) => {
@@ -117,34 +118,58 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-      return fetch(event.request)
+  // HTML 페이지: 네트워크 우선 전략 (항상 최신 버전 제공)
+  const isHtml = url.pathname === "/" || url.pathname.endsWith(".html");
+
+  if (isHtml) {
+    // 네트워크 우선: 네트워크 요청 → 실패시 캐시
+    event.respondWith(
+      fetch(event.request)
         .then((response) => {
           if (!response || response.status !== 200) {
             return response;
           }
-
-          // 캐시 저장 시도
+          // 성공한 응답은 캐시 업데이트
           try {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache).catch(() => {
-                // 캐싱 실패는 무시
-              });
+              cache.put(event.request, responseToCache).catch(() => {});
             });
-          } catch (error) {
-            // 에러 무시
-          }
-
+          } catch (error) {}
           return response;
         })
         .catch(() => {
-          return caches.match("/");
-        });
-    }),
-  );
+          // 네트워크 실패시 캐시 사용
+          return caches.match(event.request);
+        }),
+    );
+  } else {
+    // 비-HTML 리소스: 캐시 우선 전략 (JS, CSS, 이미지 등)
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request)
+          .then((response) => {
+            if (!response || response.status !== 200) {
+              return response;
+            }
+
+            // 캐시 저장 시도
+            try {
+              const responseToCache = response.clone();
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseToCache).catch(() => {});
+              });
+            } catch (error) {}
+
+            return response;
+          })
+          .catch(() => {
+            return caches.match("/");
+          });
+      }),
+    );
+  }
 });
