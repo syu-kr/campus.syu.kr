@@ -27,11 +27,11 @@ const campusMenus = [
     color: "from-orange-400 to-orange-600",
   },
   {
-    id: "shuttle",
-    title: "셔틀버스",
-    description: "셔틀버스 운행 시간표",
+    id: "bus-info",
+    title: "버스 정보",
+    description: "셔틀버스와 대중교통 안내",
     icon: "bus",
-    href: "/campus/shuttle",
+    href: "/campus/bus-info",
     color: "from-blue-400 to-blue-600",
   },
   {

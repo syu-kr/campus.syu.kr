@@ -28,7 +28,7 @@ import { StateCard } from "./components/StateCard";
 // 자주 사용하는 메뉴
 const frequentMenus = [
   { id: "1", iconName: "utensils", label: "학식", path: "/campus/cafeteria" },
-  { id: "2", iconName: "bus", label: "셔틀버스", path: "/campus/shuttle" },
+  { id: "2", iconName: "bus", label: "버스 정보", path: "/campus/bus-info" },
   {
     id: "3",
     iconName: "map",

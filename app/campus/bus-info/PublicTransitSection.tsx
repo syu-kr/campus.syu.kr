@@ -1,0 +1,335 @@
+"use client";
+
+import { Card } from "@/app/components/Card";
+import { Container } from "@/app/components/Container";
+import { useQuery } from "@tanstack/react-query";
+import { BusArrivalsAtStop, BusArrival } from "@/types";
+import { useState, useMemo } from "react";
+import clsx from "clsx";
+import BusDetailModal from "./BusDetailModal";
+
+interface EnrichedBusArrival extends BusArrival {
+  minArrivalTime: number; // 첫번째 도착까지 초 단위
+}
+
+interface CachedData {
+  data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
+  convertedAt: Date;
+}
+
+export default function PublicTransitSection() {
+  const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
+  const [cachedData, setCachedData] = useState<CachedData | null>(null);
+  const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
+  const [selectedBusDirection, setSelectedBusDirection] = useState<
+    "up" | "down" | null
+  >(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 10초마다 자동 갱신
+  const {
+    data: arrivals = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["public-transit-arrivals"],
+    queryFn: async () => {
+      const response = await fetch("/api/bus/public-transit");
+      if (!response.ok) {
+        throw new Error("Failed to fetch public transit data");
+      }
+      const json = (await response.json()) as {
+        success: boolean;
+        data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
+      };
+
+      // 데이터를 한 번만 변환하고 캐싱
+      const converted = (json.data || []).map((item) => ({
+        ...item,
+        lastUpdated: new Date(item.lastUpdated),
+      }));
+
+      setCachedData({
+        data: json.data || [],
+        convertedAt: new Date(),
+      });
+
+      return converted;
+    },
+    staleTime: 10000,
+    gcTime: 30000,
+    refetchInterval: 10000,
+  });
+
+  // 캐시된 데이터 사용 (변환 반복 방지)
+  const displayArrivals = useMemo(() => {
+    if (cachedData) {
+      return cachedData.data.map((item) => ({
+        ...item,
+        lastUpdated: cachedData.convertedAt,
+      }));
+    }
+    return arrivals;
+  }, [cachedData, arrivals]);
+
+  const selectedStop = displayArrivals.find((s) => {
+    const stopId = s.stop.id;
+    return selectedStopId === "jungmun-up"
+      ? stopId.includes("jungmun") && s.stop.direction === "up"
+      : selectedStopId === "jungmun-down"
+        ? stopId.includes("jungmun") && s.stop.direction === "down"
+        : selectedStopId === "humun-up"
+          ? stopId.includes("humun") && s.stop.direction === "up"
+          : selectedStopId === "humun-down"
+            ? stopId.includes("humun") && s.stop.direction === "down"
+            : false;
+  });
+
+  // 도착 시간순으로 정렬된 버스들 (운행 중인 버스 우선, 정보 없음은 마지막)
+  const sortedArrivals: EnrichedBusArrival[] = (selectedStop?.arrivals || [])
+    .map((arrival) => ({
+      ...arrival,
+      minArrivalTime:
+        arrival.predictTime1 && arrival.predictTime1 > 0
+          ? arrival.predictTime1
+          : Infinity,
+    }))
+    .sort((a, b) => a.minArrivalTime - b.minArrivalTime);
+
+  const stops = [
+    { id: "jungmun-up", label: "정문 상행" },
+    { id: "jungmun-down", label: "정문 하행" },
+    { id: "humun-up", label: "후문 상행" },
+    { id: "humun-down", label: "후문 하행" },
+  ];
+
+  return (
+    <Container className="py-4 sm:py-8">
+      {/* 헤더 - 개선된 디자인 */}
+      <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 sm:p-6 border border-blue-100">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
+              대중교통 안내
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-600 mb-3">
+              삼육대 주변 버스 실시간 도착 정보
+            </p>
+            <div className="text-xs text-neutral-500 flex items-center gap-1">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              마지막 업데이트:{" "}
+              {cachedData?.convertedAt.toLocaleTimeString("ko-KR")}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 오류 상태 */}
+      {error && (
+        <Card className="bg-red-50 border border-red-200 mb-6">
+          <div className="text-red-700 text-sm font-medium">
+            <strong>정보를 가져올 수 없습니다</strong>
+            <p className="mt-1">
+              API 키가 설정되지 않았거나 일시적 오류가 발생했습니다.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-3 px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
+            >
+              재시도
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {/* 정류장 선택 토글 - 모바일 개선 */}
+      {!isLoading && (
+        <div className="mb-4 -mx-4 px-4 overflow-x-auto">
+          <div className="flex gap-2 min-w-max pb-2">
+            {stops.map((stop) => (
+              <button
+                key={stop.id}
+                onClick={() => setSelectedStopId(stop.id)}
+                className={clsx(
+                  "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
+                  selectedStopId === stop.id
+                    ? "bg-blue-500 text-white shadow-md scale-100"
+                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
+                )}
+              >
+                {stop.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 버스 도착 정보 */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <div className="bg-neutral-200 h-16 rounded animate-pulse" />
+            </Card>
+          ))}
+        </div>
+      ) : sortedArrivals.length === 0 ? (
+        <Card className="bg-neutral-50 border border-neutral-200">
+          <div className="text-center py-8 text-neutral-600">
+            <p>현재 운행중인 버스가 없습니다</p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {sortedArrivals.map((arrival, idx) => {
+            // 운행 정보 확인
+            const isNoInfo =
+              !arrival.predictTime1 ||
+              arrival.predictTime1 <= 0 ||
+              arrival.arrivalMsg1 === "정보 없음";
+
+            // 좌석 혼잡도
+            const seatStatus =
+              arrival.crowded1 === undefined || arrival.crowded1 < 0
+                ? { label: "정보 없음", color: "bg-gray-100 text-gray-700" }
+                : arrival.crowded1 === 0
+                  ? { label: "여유", color: "bg-green-100 text-green-700" }
+                  : arrival.crowded1 === 1
+                    ? { label: "보통", color: "bg-yellow-100 text-yellow-700" }
+                    : { label: "혼잡", color: "bg-red-100 text-red-700" };
+
+            // 방향에 따른 고정 행선지
+            const fixedDestination =
+              selectedStop?.stop.direction === "up"
+                ? "담터고개 행"
+                : selectedStop?.stop.direction === "down"
+                  ? "태릉국제스케이트장 방면"
+                  : "";
+
+            return (
+              <Card
+                key={`${arrival.routeId}-${idx}`}
+                onClick={() => {
+                  setSelectedBus(arrival);
+                  setSelectedBusDirection(
+                    selectedStop?.stop.direction as "up" | "down",
+                  );
+                  setIsModalOpen(true);
+                }}
+                className={clsx(
+                  "p-3 sm:p-4 hover:shadow-card-hover transition-shadow border-l-4 cursor-pointer",
+                  isNoInfo
+                    ? "border-l-gray-300 hover:bg-gray-50"
+                    : arrival.locationNo1 === 1
+                      ? "border-l-red-500 hover:bg-red-50"
+                      : "border-l-blue-500 hover:bg-blue-50",
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    {/* 노선명 [저상여부] */}
+                    <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                      <p
+                        className={clsx(
+                          "font-bold text-base sm:text-lg",
+                          isNoInfo ? "text-neutral-500" : "text-neutral-900",
+                        )}
+                      >
+                        {arrival.routeName}
+                      </p>
+                      {arrival.isLow1 && !isNoInfo && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
+                          저상
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 행선지 */}
+                    <p
+                      className={clsx(
+                        "text-xs sm:text-sm mb-2 truncate",
+                        isNoInfo ? "text-neutral-400" : "text-neutral-600",
+                      )}
+                    >
+                      {fixedDestination}
+                    </p>
+
+                    {/* 도착 정보 */}
+                    {isNoInfo ? (
+                      <p className="text-xs sm:text-sm text-neutral-500 font-medium">
+                        도착 예정 정보 없음
+                      </p>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs sm:text-sm text-blue-600 font-semibold">
+                            {arrival.locationNo1 && arrival.locationNo1 > 0
+                              ? `${arrival.locationNo1}정거장 전 | `
+                              : ""}
+                            {Math.ceil(arrival.predictTime1 || 0)}분 후
+                          </p>
+                        </div>
+
+                        {/* 두번째 버스 정보 */}
+                        {arrival.predictTime2 &&
+                          arrival.predictTime2 > 0 &&
+                          arrival.predictTime2 < Infinity && (
+                            <p className="text-xs text-neutral-500 mt-1">
+                              다음:{" "}
+                              {arrival.locationNo2 && arrival.locationNo2 > 0
+                                ? `${arrival.locationNo2}정거장 전 | `
+                                : ""}
+                              {Math.ceil(arrival.predictTime2)}분 후
+                            </p>
+                          )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* 좌석 상태 배지 */}
+                  {!isNoInfo && (
+                    <div className="ml-2 flex-shrink-0">
+                      <span
+                        className={clsx(
+                          "px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap",
+                          seatStatus.color,
+                        )}
+                      >
+                        {seatStatus.label}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 안내 메시지 - 개선된 디자인 */}
+      <div className="mt-6 p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+        <div className="space-y-2">
+          <p className="text-xs sm:text-sm text-green-900 font-medium flex items-center gap-2">
+            정보는 10초마다 자동으로 새로고침됩니다
+          </p>
+          <p className="text-xs text-green-700">
+            데이터 출처: 경기도 공공데이터포털
+          </p>
+        </div>
+      </div>
+
+      {/* 버스 상세 정보 모달 */}
+      <BusDetailModal
+        bus={selectedBus}
+        direction={selectedBusDirection}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedBus(null);
+          setSelectedBusDirection(null);
+        }}
+      />
+    </Container>
+  );
+}

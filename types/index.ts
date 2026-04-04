@@ -96,6 +96,55 @@ export interface Scholarship {
 
 // 사용자 프로필 (미사용 - 제거됨)
 
+// 대중교통 정류장
+export interface BusStop {
+  id: string; // 고유 ID (정문상행, 정문하행, 후문상행, 후문하행)
+  name: string; // 정류소명
+  region: "seoul" | "gyeonggi"; // 지역
+  seoulArsId?: string; // 서울 정류소 고유번호
+  gyeonggiStationIds?: string[]; // 경기도 정류소 ID 배열
+  lat: number; // 위도
+  lon: number; // 경도
+  direction: "up" | "down"; // 상행/하행
+}
+
+// 버스 도착 정보
+export interface BusArrival {
+  routeId: string; // 노선 ID
+  routeName: string; // 노선명 (예: "100번")
+  arrivalMsg1: string; // 첫번째 도착 메시지 (예: "2분")
+  arrivalMsg2: string; // 두번째 도착 메시지
+  isLow1: boolean; // 첫번째 저상버스 여부
+  isLow2: boolean; // 두번째 저상버스 여부
+  crowded1?: number; // 첫번째 버스 혼잡도 (0=여유, 1=보통, 2=혼잡)
+  crowded2?: number; // 두번째 버스 혼잡도
+  locationNo1?: number; // 첫번째 버스까지 정거장 수
+  locationNo2?: number; // 두번째 버스까지 정거장 수
+  nextStation1?: string; // 첫번째 다음 정류소
+  nextStation2?: string; // 두번째 다음 정류소
+  predictTime1?: number; // 첫번째 도착까지 초 단위 시간
+  predictTime2?: number; // 두번째 도착까지 초 단위 시간
+  remainSeat1?: number; // 첫번째 버스 빈자리 (경기도만, 미사용)
+  remainSeat2?: number; // 두번째 버스 빈자리
+}
+
+// 정류소별 도착 정보
+export interface BusArrivalsAtStop {
+  stop: BusStop;
+  arrivals: BusArrival[];
+  lastUpdated: Date;
+}
+
+// 버스 위치 정보
+export interface BusLocationInfo {
+  vehId: string; // 차량 ID
+  routeId: string; // 노선 ID
+  routeName: string; // 노선명
+  lat: number; // 위도
+  lon: number; // 경도
+  nextStationName: string; // 다음 정류소명
+}
+
 // 전화번호
 export interface PhoneNumber {
   department: string;

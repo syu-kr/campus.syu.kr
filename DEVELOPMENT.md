@@ -163,6 +163,7 @@ syu-campus/
 ### 기술 스택
 
 **프론트엔드**
+
 - Next.js 14 (App Router)
 - TypeScript 5.3
 - React 18.3
@@ -171,16 +172,19 @@ syu-campus/
 - Firebase SDK 12.11
 
 **백엔드 및 서비스**
+
 - Next.js API Routes
 - Firebase 실시간 데이터베이스
 - Firebase Cloud Messaging
 - Firebase Admin SDK 13.7
 
 **외부 API**
+
 - 기상청 날씨 API
 - Kakao Maps API
 
 **DevOps**
+
 - Vercel (호스팅)
 - GitHub Actions (CI/CD)
 - Firebase (백엔드 서비스)
@@ -223,8 +227,8 @@ API Routes (Next.js API)
 # Kakao Maps
 NEXT_PUBLIC_KAKAO_MAP_KEY=카카오_맵_API_키
 
-# 날씨 API
-NEXT_PUBLIC_WEATHER_API_KEY=날씨_API_키
+# 공공데이터포털 (날씨, 버스 등)
+NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY=공공데이터포털_서비스_키
 
 # Firebase (클라이언트)
 NEXT_PUBLIC_FIREBASE_API_KEY=파이어베이스_API_키
@@ -251,16 +255,17 @@ FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
 ```typescript
 // lib/weather.ts
 interface WeatherData {
-  temp: number;          // 섭씨 온도
-  sky: string;          // 하늘 상태
-  pty: number;          // 강수 형태
-  updateTime: string;   // 업데이트 시간 (HH:MM 형식)
+  temp: number; // 섭씨 온도
+  sky: string; // 하늘 상태
+  pty: number; // 강수 형태
+  updateTime: string; // 업데이트 시간 (HH:MM 형식)
 }
 
-export async function fetchWeather(): Promise<WeatherData>
+export async function fetchWeather(): Promise<WeatherData>;
 ```
 
 **주요 고려사항**:
+
 - UTC 경계에서 매시간 업데이트
 - 한국 시간(UTC+9)으로 변환해서 표시
 - 최대 55초 캐시, 시간 변경시 수동 무효화
@@ -284,6 +289,7 @@ interface MapMarker {
 ```
 
 **기능**:
+
 - 건물 검색 기능
 - 층별 시설 정보
 - 실시간 버스 위치 마커
@@ -302,14 +308,15 @@ interface BusLocation {
   name: string;
   lat: string;
   lon: string;
-  status: number;    // 0: 미운영, 1: 학교→역, 2: 역→학교
-  routeid: number;   // 1, 2, 또는 3
+  status: number; // 0: 미운영, 1: 학교→역, 2: 역→학교
+  routeid: number; // 1, 2, 또는 3
 }
 ```
 
 **폴링**: 5-10초 (랜덤 간격)
 
 **노선 ID 매핑**:
+
 - 1: 화랑대역 (파란색)
 - 2: 석계역 (초록색)
 - 3: 별내역 (주황색)
@@ -317,16 +324,19 @@ interface BusLocation {
 #### 4. Firebase 서비스
 
 **실시간 데이터베이스**:
+
 - 알림
 - 사용자 설정
 - 임시 데이터
 
 **Cloud Messaging**:
+
 - 푸시 알림
 - 일일 공지사항
 - 긴급 알림
 
 **인증**:
+
 - 익명 로그인 (추적용)
 - 이메일/비밀번호 (향후)
 
@@ -334,17 +344,14 @@ interface BusLocation {
 
 ```typescript
 // app/api/example/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     // 로직 작성
     return NextResponse.json({ data: [] });
   } catch (error) {
-    return NextResponse.json(
-      { error: '내부 서버 오류' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "내부 서버 오류" }, { status: 500 });
   }
 }
 ```
@@ -418,10 +425,11 @@ export function MyComponent() {
 ```yaml
 # .github/workflows/daily-announcement-notification.yml
 schedule:
-  - cron: '0 23 * * *'  # 08:00 KST (23:00 UTC)
+  - cron: "0 23 * * *" # 08:00 KST (23:00 UTC)
 ```
 
 **필요한 Secrets**:
+
 - `FIREBASE_SERVICE_ACCOUNT`
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
@@ -431,11 +439,13 @@ schedule:
 ### 성능 최적화
 
 **이미지 최적화**
+
 - Next.js Image 컴포넌트 사용
 - 자동 형식 변환 (WebP)
 - 반응형 이미지 제공
 
 **코드 분할**
+
 ```typescript
 import dynamic from 'next/dynamic';
 
@@ -445,6 +455,7 @@ const Modal = dynamic(() => import('./Modal'), {
 ```
 
 **번들 분석**
+
 ```bash
 npm install -D @next/bundle-analyzer
 # next.config.js에서 설정
@@ -455,21 +466,25 @@ npm install -D @next/bundle-analyzer
 ### 코드 스타일
 
 **TypeScript**
+
 - Strict 모드 활성화
 - 완전한 타입 주석 필수
 - `any` 타입 금지 (필요시 `unknown` 사용)
 
 **React 컴포넌트**
+
 - 훅을 사용한 함수형 컴포넌트
 - Props 인터페이스 정의 필수
 - PropTypes 또는 TS 인터페이스 필수
 
 **스타일링**
+
 - Tailwind CSS 유틸리티만 사용
 - 필요한 경우 제외하고 CSS-in-JS 미사용
 - 디자인 토큰 사용 (색상, 간격)
 
 **Git**
+
 - 기능 브랜치: `feature/설명`
 - 버그 수정: `fix/설명`
 - 형식: `타입/짧은-설명`
@@ -501,6 +516,7 @@ npm install -D @next/bundle-analyzer
 ### 흔한 문제
 
 **1. Service Worker가 등록되지 않음**
+
 ```
 해결책:
 - HTTPS 연결 확인 (localhost는 가능)
@@ -510,6 +526,7 @@ npm install -D @next/bundle-analyzer
 ```
 
 **2. Firebase 초기화 오류**
+
 ```
 해결책:
 - 모든 FIREBASE_* 환경변수 확인
@@ -519,6 +536,7 @@ npm install -D @next/bundle-analyzer
 ```
 
 **3. 날씨 API 레이트 제한**
+
 ```
 해결책:
 - 적절한 캐싱 구현 (55초)
@@ -528,6 +546,7 @@ npm install -D @next/bundle-analyzer
 ```
 
 **4. 빌드 실패**
+
 ```
 해결책:
 npm run type-check  # TypeScript 오류 찾기

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
     if (!apiKey) {
       return NextResponse.json(
         { error: "API 키가 설정되지 않았습니다" },

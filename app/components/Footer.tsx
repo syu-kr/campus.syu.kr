@@ -61,11 +61,11 @@ function FooterComponent() {
         </div>
 
         <div className="border-t border-neutral-200 pt-6">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-neutral-600">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <p className="text-xs sm:text-sm text-neutral-600">
               © {currentYear} SYU KR(Seo Sang Hyeok). All rights reserved.
             </p>
-            <div className="flex gap-4 text-sm">
+            <div className="flex gap-4 text-xs sm:text-sm">
               <a
                 href="/terms"
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"

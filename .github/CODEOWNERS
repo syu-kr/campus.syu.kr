@@ -1,22 +1,28 @@
 # This file defines code owners for the syu-campus repository
+
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owners for everything in the repo
-* @singhic
+
+- @singhic
 
 # Frontend components
+
 /app/components/ @singhic
 /components/ @singhic
 
 # Backend and APIs
+
 /app/api/ @singhic
 /lib/ @singhic
 
 # Configuration and build
+
 /scripts/ @singhic
 /.github/ @singhic
 
 # Documentation
+
 /README.md @singhic
 /DEVELOPMENT.md @singhic
 /LICENSE @singhic
