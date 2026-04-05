@@ -7,6 +7,7 @@ import clsx from "clsx";
 interface BusDetailModalProps {
   bus: BusArrival | null;
   direction: "up" | "down" | null;
+  stopId: string | undefined;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -34,6 +35,7 @@ function getSeatStatus(crowded: number | undefined): {
 export default function BusDetailModal({
   bus,
   direction,
+  stopId,
   isOpen,
   onClose,
 }: BusDetailModalProps) {
@@ -69,11 +71,15 @@ export default function BusDetailModal({
             <div>
               <h2 className="text-2xl font-bold">{bus.routeName}</h2>
               <p className="text-blue-100 text-sm mt-1">
-                {direction === "up"
+                {stopId?.includes("jungmun") && direction === "up"
                   ? "담터고개 행"
-                  : direction === "down"
-                    ? "태릉국제스케이트장 방면"
-                    : "목적지"}
+                  : stopId?.includes("jungmun") && direction === "down"
+                    ? "태릉국제스케이트장 행"
+                    : stopId?.includes("humun") && direction === "up"
+                      ? "미리내마을4-2단지.한별초등학교 행"
+                      : stopId?.includes("humun") && direction === "down"
+                        ? "태릉국제스케이트장 행"
+                        : "목적지"}
               </p>
             </div>
             <button

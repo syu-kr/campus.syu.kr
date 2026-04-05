@@ -201,11 +201,19 @@ export default function PublicTransitSection() {
 
             // 방향에 따른 고정 행선지
             const fixedDestination =
+              selectedStop?.stop.id.includes("jungmun") &&
               selectedStop?.stop.direction === "up"
                 ? "담터고개 행"
-                : selectedStop?.stop.direction === "down"
-                  ? "태릉국제스케이트장 방면"
-                  : "";
+                : selectedStop?.stop.id.includes("jungmun") &&
+                    selectedStop?.stop.direction === "down"
+                  ? "태릉국제스케이트장 행"
+                  : selectedStop?.stop.id.includes("humun") &&
+                      selectedStop?.stop.direction === "up"
+                    ? "미리내마을4-2단지.한별초등학교 행"
+                    : selectedStop?.stop.id.includes("humun") &&
+                        selectedStop?.stop.direction === "down"
+                      ? "태릉국제스케이트장 행"
+                      : "";
 
             return (
               <Card
@@ -323,6 +331,7 @@ export default function PublicTransitSection() {
       <BusDetailModal
         bus={selectedBus}
         direction={selectedBusDirection}
+        stopId={selectedStop?.stop.id}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
