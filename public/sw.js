@@ -75,7 +75,9 @@ self.addEventListener("activate", (event) => {
   // 모든 기존 캐시 삭제
   event.waitUntil(
     caches.keys().then((cacheNames) => {
-      return Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      return Promise.all(
+        cacheNames.map((cacheName) => caches.delete(cacheName)),
+      );
     }),
   );
   self.clients.claim();

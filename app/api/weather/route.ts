@@ -21,19 +21,22 @@ export async function GET() {
 
     // 한국 시간(KST, UTC+9) 기준으로 현재 시간 계산
     const now = new Date();
-    const kstTime = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-    );
+    const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
 
-    const year = kstTime.getFullYear();
-    const month = String(kstTime.getMonth() + 1).padStart(2, "0");
-    const day = String(kstTime.getDate()).padStart(2, "0");
+    // 밀리초 기준으로 직접 계산 (더 정확함)
+    const hours = Math.floor((kstMs / 1000 / 60 / 60) % 24);
+    const minutes = Math.floor((kstMs / 1000 / 60) % 60);
+    const kstDate = new Date(kstMs);
+
+    const year = kstDate.getUTCFullYear();
+    const month = String(kstDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(kstDate.getUTCDate()).padStart(2, "0");
     const baseDate = `${year}${month}${day}`;
 
     // 초단기실황은 현재 시각의 정각 또는 1시간 전 데이터 사용
     // (API는 약 40분 지연, 예: 12시 50분이면 12시 데이터를 요청)
-    let baseHour = kstTime.getHours();
-    if (kstTime.getMinutes() < 10) {
+    let baseHour = hours;
+    if (minutes < 10) {
       baseHour = baseHour === 0 ? 23 : baseHour - 1;
     }
     const baseTime = String(baseHour).padStart(2, "0") + "00";
@@ -109,9 +112,11 @@ export async function GET() {
     };
 
     const response = NextResponse.json(weatherData);
-    // 1분 캐싱 설정
-    response.headers.set("Cache-Control", "public, max-age=60");
-    response.headers.set("CDN-Cache-Control", "max-age=60");
+    // 캐싱 제거
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate, max-age=0",
+    );
     return response;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
