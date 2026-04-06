@@ -90,7 +90,7 @@ export default function Home() {
           | undefined,
       ),
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 
   // 서비스 공지 조회
@@ -103,7 +103,7 @@ export default function Home() {
       return (await response.json()) as ServiceNotice[];
     },
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 
   // 학식 조회
@@ -111,7 +111,7 @@ export default function Home() {
     queryKey: ["cafeteria"],
     queryFn: () => fetchCafeteriaMenu(),
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 
   // 학사일정 조회
@@ -119,7 +119,7 @@ export default function Home() {
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 
   // 검색
@@ -128,7 +128,7 @@ export default function Home() {
     queryFn: () => searchAll(searchQuery),
     enabled: showSearchResults && searchQuery.trim().length > 0,
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);

@@ -13,7 +13,7 @@ export default function SchedulePage() {
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     staleTime: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: 0,
   });
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

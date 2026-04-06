@@ -44,7 +44,7 @@ export default function PublicTransitSection() {
         data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
       };
 
-      // 데이터를 한 번만 변환하고 캐싱
+      // 데이터를 한 번만 변환
       const converted = (json.data || []).map((item) => ({
         ...item,
         lastUpdated: new Date(item.lastUpdated),
@@ -57,9 +57,9 @@ export default function PublicTransitSection() {
 
       return converted;
     },
-    staleTime: 10000,
-    gcTime: 30000,
-    refetchInterval: 10000,
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 0,
   });
 
   // 캐시된 데이터 사용 (변환 반복 방지)

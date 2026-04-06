@@ -14,7 +14,7 @@ function getQueryClient() {
       defaultOptions: {
         queries: {
           staleTime: 0,
-          gcTime: 5 * 60 * 1000,
+          gcTime: 0,
         },
       },
     });
@@ -26,7 +26,7 @@ function getQueryClient() {
       defaultOptions: {
         queries: {
           staleTime: 0,
-          gcTime: 5 * 60 * 1000,
+          gcTime: 0,
         },
       },
     });

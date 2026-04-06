@@ -13,8 +13,8 @@ export default function AcademicAnnouncementsPage() {
   const { data: announcements, isLoading } = useQuery({
     queryKey: ["announcements", "academic"],
     queryFn: () => fetchAnnouncements("academic"),
-    staleTime: 15 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const [searchQuery, setSearchQuery] = useState("");
