@@ -3,6 +3,7 @@
 ## 📊 번들 크기 분석
 
 ### 현재 상태 (Task 6 완료)
+
 - **First Load JS**: 87.4 kB ✅ (우수)
 - **페이지 평균 크기**: 90-103 kB (캠퍼스 지도 최대)
 - **Shared JS Chunks**: 85.3 kB (2개 청크)
@@ -11,20 +12,24 @@
 ### 분석 방법
 
 #### 1️⃣ 번들 분석 보고서 생성
+
 ```bash
 npm run build:analyze
 ```
 
 이 명령어는 Next.js 프로젝트의 JavaScript 번들 구성을 시각적으로 보여주는 HTML 보고서를 생성합니다.
+
 - 브라우저에서 자동으로 열립니다
 - 각 라이브러리의 크기와 의존성 구조 확인 가능
 
 #### 2️⃣ 정적 분석 결과
+
 ```bash
 npm run build
 ```
 
 빌드 로그에서 다음 정보 확인:
+
 - 페이지별 크기 (정적, 동적 페이지 구분)
 - 공유 청크 크기
 - 최적화된 라이브러리 목록
@@ -36,31 +41,37 @@ npm run build
 ### ✅ 이미 적용된 최적화
 
 #### 1. 이미지 최적화
+
 - **Next.js Image 컴포넌트 사용**: AVIF, WebP 자동 변환
 - **Lazy Loading**: `loading="lazy"` 속성 설정
 - **캐싱**: 1년 TTL (변경 없을 때)
 
 #### 2. 번들 코드 분할
+
 - **자동 Code Splitting**: 페이지별 필요한 코드만 로드
 - **Shared Chunks**: 공통 라이브러리 분리 (31.7 kB + 53.6 kB)
 - **Tree Shaking**: 사용하지 않는 코드 제거
 
 #### 3. 라이브러리 최적화
+
 ```javascript
 // experimental.optimizePackageImports
-optimizePackageImports: ["@tanstack/react-query"]
+optimizePackageImports: ["@tanstack/react-query"];
 ```
+
 - React Query의 필요한 부분만 번들에 포함
 
 #### 4. 폰트 최적화
+
 - **@fontsource/pretendard**: 서브셋 폰트 사용
 - **Font 최적화**: CSS-in-JS 대신 정적 폰트
 
 #### 5. 캐싱 전략
-| 대상 | 캐시 정책 | TTL |
-|------|---------|-----|
-| `/data/*.json` | no-cache | - |
-| `/images/*` | immutable | 432000s (5일) |
+
+| 대상              | 캐시 정책 | TTL           |
+| ----------------- | --------- | ------------- |
+| `/data/*.json`    | no-cache  | -             |
+| `/images/*`       | immutable | 432000s (5일) |
 | `/_next/static/*` | immutable | 432000s (5일) |
 
 ---
@@ -70,9 +81,11 @@ optimizePackageImports: ["@tanstack/react-query"]
 ### 우선순위 1: 의존성 검토
 
 1. **Firebase 크기 확인**
+
    ```bash
    npm ls firebase firebase-admin
    ```
+
    - Firebase는 상당한 크기이므로 필요한 기능만 import 확인
    - 브라우저/서버 환경에 맞는 import 사용
 
@@ -83,6 +96,7 @@ optimizePackageImports: ["@tanstack/react-query"]
 ### 우선순위 2: 코드 최적화
 
 1. **동적 Import 활용**
+
    ```typescript
    // 무거운 컴포넌트는 동적 로드
    import dynamic from "next/dynamic";

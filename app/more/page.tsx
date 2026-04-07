@@ -67,7 +67,9 @@ export default function MorePage() {
 
       {/* 관련 정보 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
-        <h3 className="text-base font-semibold text-neutral-900 mb-4">자주 가는 메뉴</h3>
+        <h3 className="text-base font-semibold text-neutral-900 mb-4">
+          자주 가는 메뉴
+        </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Link
             href="/campus/cafeteria"

@@ -85,9 +85,7 @@ export default function GymPage() {
 
       {/* 위치 및 연락처 */}
       <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">
-          위치 및 연락처
-        </h2>
+        <h2 className="text-lg font-bold text-blue-900 mb-4">위치 및 연락처</h2>
         <div className="space-y-4">
           <div>
             <p className="font-semibold text-blue-900">위치</p>

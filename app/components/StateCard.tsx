@@ -52,11 +52,13 @@ export function StateCard({
     >
       <div className="flex gap-3">
         <div className={`flex-shrink-0 mt-0.5 ${config.iconColor}`}>
-          <Icon 
-            name={config.iconName} 
-            size={20} 
-            color="currentColor" 
-            title={type === "error" ? "오류" : type === "warning" ? "경고" : "정보"}
+          <Icon
+            name={config.iconName}
+            size={20}
+            color="currentColor"
+            title={
+              type === "error" ? "오류" : type === "warning" ? "경고" : "정보"
+            }
           />
         </div>
         <div className="flex-1">
