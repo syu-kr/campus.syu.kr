@@ -327,7 +327,7 @@ export default function LibraryPage() {
           도서관
         </h1>
         <p className="text-neutral-600">
-          삼육대 중앙도서관 정보 및 열람실 현황
+          삼육대학교 중앙도서관 정보 및 열람실 현황
         </p>
       </div>
 

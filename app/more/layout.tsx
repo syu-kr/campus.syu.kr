@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "더보기",
+  title: "더보기 | SYU CAMPUS",
   description: "장학금, 연락처, 서비스 공지 등",
 };
 

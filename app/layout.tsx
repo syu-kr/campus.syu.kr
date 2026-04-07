@@ -14,11 +14,11 @@ import "@fontsource/pretendard/700.css"; // Bold
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | SYU CAMPUS",
-    default: "삼육대 캠퍼스 - 학생 통합 정보 플랫폼",
+    template: "%s",
+    default: "SYU CAMPUS - 학생 통합 정보 플랫폼",
   },
   description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
-  keywords: "삼육대, 캠퍼스, 공지사항, 학식, 학사일정",
+  keywords: "삼육대, 삼육대학교, 캠퍼스, 공지사항, 학식, 학사일정",
   authors: [{ name: "SYU KR" }],
   verification: {
     google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
@@ -124,7 +124,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "삼육대 캠퍼스",
+              name: "SYU CAMPUS",
               url: "https://campus.syu.kr",
               logo: "https://campus.syu.kr/images/syu-kr-logo.png",
               description:

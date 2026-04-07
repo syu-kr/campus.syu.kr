@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "캠퍼스 지도 | 삼육대 캠퍼스",
+  title: "캠퍼스 지도 | SYU CAMPUS",
   description: "캠퍼스 지도",
 };
 

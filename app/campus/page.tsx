@@ -5,12 +5,12 @@ import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 
 export const metadata: Metadata = {
-  title: "캠퍼스 정보 | 삼육대 캠퍼스",
+  title: "캠퍼스 정보 | SYU CAMPUS",
   description:
     "삼육대학교 캠퍼스 정보 센터. 학식, 동아리, 식당, 도서관, 체육관, 보건센터, 셔틀버스 및 실내 스포츠 시설 정보를 한 방에 다른 정보를 제공합니다.",
   keywords: "캠퍼스,동아리,식당,도서관,셔틀버스,캠퍼스 지도",
   openGraph: {
-    title: "캠퍼스 정보 | 삼육대 캠퍼스",
+    title: "캠퍼스 정보 | SYU CAMPUS",
     description: "캠퍼스 내 모든 정보를 한눈에 확인할 수 있는 캠퍼스 정보",
     type: "website",
     url: "https://campus.syu.kr/campus",

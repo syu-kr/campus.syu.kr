@@ -114,7 +114,7 @@ export default function PublicTransitSection() {
               대중교통 안내
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600 mb-3">
-              삼육대 주변 버스 실시간 도착 정보
+              삼육대학교 주변 버스 실시간 도착 정보
             </p>
             <div className="text-xs text-neutral-500 flex items-center gap-1">
               <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>

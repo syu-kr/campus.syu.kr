@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "졸업요건 | 삼육대 캠퍼스",
+  title: "졸업요건 | SYU CAMPUS",
   description: "졸업요건 간편 확인",
 };
 

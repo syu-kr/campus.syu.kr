@@ -221,6 +221,7 @@ export async function fetchScholarships(
         deadline: notice.author || notice.date, // author 필드에 실제 작성 날짜가 있음
         eligibility: "", // 공지사항에서 직접 추출 불가
         url: notice.url, // 외부 링크 추가
+        isPinned: notice.isPinned || false, // 고정글 여부 추가
       }));
 
     return scholarshipData;

@@ -20,17 +20,30 @@ export default function AcademicAnnouncementsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 검색 필터링
+  // 검색 필터링 + 고정글 상단 정렬
   const filteredAnnouncements = useMemo(() => {
     if (!announcements) return [];
-    if (!searchQuery.trim()) return announcements;
 
-    const lowerQuery = searchQuery.toLowerCase();
-    return announcements.filter(
-      (a) =>
-        a.title.toLowerCase().includes(lowerQuery) ||
-        a.author.toLowerCase().includes(lowerQuery),
-    );
+    let filtered = announcements;
+
+    // 검색어가 있으면 필터링
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      filtered = announcements.filter(
+        (a) =>
+          a.title.toLowerCase().includes(lowerQuery) ||
+          a.author.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    // 고정글을 상단에 정렬 (isPinned가 true인 것이 먼저, 그 다음 isImportant)
+    return filtered.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      if (a.isImportant && !b.isImportant) return -1;
+      if (!a.isImportant && b.isImportant) return 1;
+      return 0;
+    });
   }, [announcements, searchQuery]);
 
   // 페이지네이션
