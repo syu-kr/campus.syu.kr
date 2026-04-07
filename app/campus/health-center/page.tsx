@@ -1,5 +1,7 @@
-import { Container } from "@/app/components/Container";
+"use client";
+
 import { Card } from "@/app/components/Card";
+import { Container } from "@/app/components/Container";
 
 export default function HealthCenterPage() {
   const services = [

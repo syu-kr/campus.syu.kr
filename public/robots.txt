@@ -1,11 +1,47 @@
+# Robots.txt for campus.syu.kr
+# Allow all crawlers with reasonable crawl delay
+
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_next/
 Disallow: /private/
+Disallow: *.json$
 
-# Crawl delay
+# Crawl delay to avoid overload
+Crawl-delay: 1
+Request-rate: 30/60
+
+# Specific rules for Google Bot
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Crawl-delay: 0
+
+# Specific rules for Naver Bot
+User-agent: Yeti
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
 Crawl-delay: 1
 
-# Sitemap
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemap URL - this helps search engines discover all pages
 Sitemap: https://campus.syu.kr/sitemap.xml

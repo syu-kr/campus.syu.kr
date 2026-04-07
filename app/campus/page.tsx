@@ -5,8 +5,16 @@ import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 
 export const metadata: Metadata = {
-  title: "캠퍼스",
-  description: "학식, 셔틀버스, 시설 정보 등",
+  title: "캠퍼스 정보 | 삼육대 캠퍼스",
+  description:
+    "삼육대학교 캠퍼스 정보 센터. 학식, 동아리, 식당, 도서관, 체육관, 보건센터, 셔틀버스 및 실내 스포츠 시설 정보를 한 방에 다른 정보를 제공합니다.",
+  keywords: "캠퍼스,동아리,식당,도서관,셔틀버스,캠퍼스 지도",
+  openGraph: {
+    title: "캠퍼스 정보 | 삼육대 캠퍼스",
+    description: "캠퍼스 내 모든 정보를 한눈에 확인할 수 있는 캠퍼스 정보",
+    type: "website",
+    url: "https://campus.syu.kr/campus",
+  },
 };
 
 const campusMenus = [
@@ -97,12 +105,42 @@ export default function CampusPage() {
                     size={40}
                     strokeWidth={1.5}
                     color="white"
+                    title={menu.title}
                   />
                 </div>
               </Card>
             </Link>
           );
         })}
+      </div>
+
+      {/* 관련 정보 */}
+      <div className="mt-8 pt-6 border-t border-neutral-200">
+        <h3 className="text-base font-semibold text-neutral-900 mb-4">
+          도움이 될 만한 정보
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Link
+            href="/academic/schedule"
+            className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors"
+          >
+            <p className="text-sm font-medium text-neutral-900">📅 학사일정</p>
+            <p className="text-xs text-neutral-600 mt-1">
+              캠퍼스 행사와 학사 일정 확인
+            </p>
+          </Link>
+          <Link
+            href="/more/phone"
+            className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors"
+          >
+            <p className="text-sm font-medium text-neutral-900">
+              📞 시설 관련 문의
+            </p>
+            <p className="text-xs text-neutral-600 mt-1">
+              건물 관리 및 지원 부서 연락처
+            </p>
+          </Link>
+        </div>
       </div>
     </Container>
   );

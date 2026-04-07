@@ -8,6 +8,7 @@ interface IconProps {
   color?: string;
   strokeWidth?: number;
   className?: string;
+  title?: string;
 }
 
 interface IconComponentProps {
@@ -438,6 +439,7 @@ export function Icon({
   color = "currentColor",
   strokeWidth = 2,
   className,
+  title,
 }: IconProps) {
   const IconComponent = icons[name];
 
@@ -447,7 +449,7 @@ export function Icon({
   }
 
   return (
-    <span className={className}>
+    <span className={className} title={title} role="img" aria-label={title}>
       <IconComponent size={size} color={color} strokeWidth={strokeWidth} />
     </span>
   );

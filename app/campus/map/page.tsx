@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+
 import { useState, useRef } from "react";
 import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
@@ -31,7 +32,7 @@ export default function MapPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Icon name="map" size={28} color="rgb(37, 99, 235)" />
+          <Icon name="map" size={28} color="rgb(37, 99, 235)" title="캠퍼스 지도" />
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
             캠퍼스 지도
           </h1>

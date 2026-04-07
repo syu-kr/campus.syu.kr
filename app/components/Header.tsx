@@ -65,13 +65,15 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
                 </svg>
               </button>
             )}
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2" title="홈페이지로 이동">
               <Image
                 src="/images/syu-kr-logo.png"
-                alt="SYU CAMPUS Logo"
+                alt="삼육대학교 캠퍼스 통합 정보 플랫폼 로고 - 홈페이지로 이동"
                 width={32}
                 height={32}
                 className="object-contain"
+                loading="lazy"
+                priority={false}
               />
               <span className="font-bold text-lg text-primary-600">
                 SYU CAMPUS

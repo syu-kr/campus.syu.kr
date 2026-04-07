@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "셔틀버스",
-  description: "캠퍼스 셔틀버스 운행 시간표",
+  title: "셔틀버스 | 삼육대 캠퍼스",
+  description: "셔틀버스",
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

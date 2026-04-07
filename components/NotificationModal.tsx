@@ -59,10 +59,11 @@ export function NotificationModal() {
           {notification.icon && (
             <Image
               src={notification.icon}
-              alt="notification icon"
+              alt={`${notification.title} 알림 아이콘`}
               width={48}
               height={48}
               className="w-12 h-12 rounded-lg flex-shrink-0"
+              loading="lazy"
             />
           )}
           <div className="flex-1 min-w-0">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";

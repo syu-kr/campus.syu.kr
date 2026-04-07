@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
+
 import { Card } from "./components/Card";
 import { Container } from "./components/Container";
 import { SearchBar } from "./components/SearchBar";
@@ -793,6 +794,98 @@ export default function Home() {
               )}
             </>
           )}
+        </div>
+      </div>
+
+      {/* 관련 정보 퀵 링크 */}
+      <div className="mt-8 pt-6 border-t border-neutral-200">
+        <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+          더 알아보기
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Link
+            href="/campus/bus-info"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="bus"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">버스 정보</p>
+            <p className="text-xs text-neutral-600">셔틀·시내버스</p>
+          </Link>
+
+          <Link
+            href="/campus/map"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="map"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">캠퍼스 지도</p>
+            <p className="text-xs text-neutral-600">건물·시설</p>
+          </Link>
+
+          <Link
+            href="/academic/announcements"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="megaphone"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">학사공지</p>
+            <p className="text-xs text-neutral-600">공지사항</p>
+          </Link>
+
+          <Link
+            href="/campus/library"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="book-open"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">도서관</p>
+            <p className="text-xs text-neutral-600">이용정보</p>
+          </Link>
+
+          <Link
+            href="/more/scholarship"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="award"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">장학금</p>
+            <p className="text-xs text-neutral-600">공지사항</p>
+          </Link>
+
+          <Link
+            href="/more/phone"
+            className="p-4 rounded-lg border border-neutral-200 hover:border-primary-500 hover:bg-primary-50 transition-all"
+          >
+            <Icon
+              name="phone"
+              size={24}
+              color="rgb(37, 99, 235)"
+              className="mb-2"
+            />
+            <p className="text-sm font-medium text-neutral-900">연락처</p>
+            <p className="text-xs text-neutral-600">부서 검색</p>
+          </Link>
         </div>
       </div>
     </Container>

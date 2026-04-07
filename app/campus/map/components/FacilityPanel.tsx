@@ -20,7 +20,7 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
     return (
       <Card className="p-6 text-center text-neutral-500">
         <div className="flex justify-center mb-2">
-          <Icon name="map-pin" size={32} color="rgb(209, 213, 219)" />
+          <Icon name="map-pin" size={32} color="rgb(209, 213, 219)" title="위치 핀" />
         </div>
         <p className="text-sm">건물을 선택하여 시설 정보를 확인하세요</p>
       </Card>

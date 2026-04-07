@@ -65,6 +65,34 @@ export default function MorePage() {
         ))}
       </div>
 
+      {/* 관련 정보 */}
+      <div className="mt-8 pt-6 border-t border-neutral-200">
+        <h3 className="text-base font-semibold text-neutral-900 mb-4">자주 가는 메뉴</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <Link
+            href="/campus/cafeteria"
+            className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors text-center"
+          >
+            <p className="text-xl mb-2">🍽️</p>
+            <p className="text-sm font-medium text-neutral-900">학식</p>
+          </Link>
+          <Link
+            href="/campus/bus-info"
+            className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors text-center"
+          >
+            <p className="text-xl mb-2">🚍</p>
+            <p className="text-sm font-medium text-neutral-900">버스</p>
+          </Link>
+          <Link
+            href="/campus/library"
+            className="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:border-purple-500 transition-colors text-center"
+          >
+            <p className="text-xl mb-2">📚</p>
+            <p className="text-sm font-medium text-neutral-900">도서관</p>
+          </Link>
+        </div>
+      </div>
+
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900">
           <strong>개발 예정:</strong> 더 많은 기능이 준비 중입니다.

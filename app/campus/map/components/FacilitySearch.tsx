@@ -22,7 +22,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
     <div className="relative">
       <div className="relative mb-3">
         <div className="flex items-center gap-2 bg-white border border-neutral-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
-          <Icon name="search" size={18} color="rgb(156, 163, 175)" />
+          <Icon name="search" size={18} color="rgb(156, 163, 175)" title="검색" />
           <input
             type="text"
             placeholder="건물명 또는 시설 검색 (예: 도서관, 음악관, 카페...)"
@@ -43,7 +43,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
               className="p-1 hover:bg-neutral-100 rounded"
               aria-label="검색어 삭제"
             >
-              <Icon name="x" size={16} color="rgb(156, 163, 175)" />
+              <Icon name="x" size={16} color="rgb(156, 163, 175)" title="검색어 삭제" />
             </button>
           )}
         </div>
