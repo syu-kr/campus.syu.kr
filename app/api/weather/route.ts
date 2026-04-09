@@ -89,14 +89,20 @@ export async function GET() {
     const windSpeed = categoryMap["WSD"] ?? 0;
 
     // 하늘상태는 초단기실황에서는 제공되지 않으므로 강수 형태로 추정
-    // PTY: 0=없음, 1=비, 2=진눈깨비, 3=눈
-    let skyCondition = 0;
+    // PTY: 0=없음, 1=비, 2=비/눈, 3=눈, 5=빗방울(이슬비), 6=빗방울눈날림, 7=눈날림
+    // SKY: 1=맑음, 3=구름많음, 4=흐림
+    let skyCondition = 1;
     if (precipitation === 0) {
-      skyCondition = 0; // 맑음
-    } else if (precipitation === 1) {
-      skyCondition = 3; // 흐림 (비)
-    } else if (precipitation === 2 || precipitation === 3) {
-      skyCondition = 3; // 흐림 (눈/진눈깨비)
+      skyCondition = 1; // 맑음
+    } else if (precipitation === 1 || precipitation === 5) {
+      skyCondition = 4; // 흐림 (비 또는 빗방울/이슬비)
+    } else if (
+      precipitation === 2 ||
+      precipitation === 3 ||
+      precipitation === 6 ||
+      precipitation === 7
+    ) {
+      skyCondition = 4; // 흐림 (눈/진눈깨비/빗방울눈날림/눈날림)
     }
 
     const weatherData = {

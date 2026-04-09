@@ -66,13 +66,25 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
           {weather.temperature}°C
         </span>
         <span className="hidden sm:inline text-xs text-neutral-600">
-          {weather.skyCondition === 0
-            ? "맑음"
-            : weather.skyCondition === 1
-              ? "구름많음"
-              : weather.skyCondition === 3
-                ? "흐림"
-                : ""}
+          {weather.precipitation === 1
+            ? "비"
+            : weather.precipitation === 2
+              ? "비/눈"
+              : weather.precipitation === 3
+                ? "눈"
+                : weather.precipitation === 5
+                  ? "이슬비"
+                  : weather.precipitation === 6
+                    ? "빗방울눈날림"
+                    : weather.precipitation === 7
+                      ? "눈날림"
+                      : weather.skyCondition === 1
+                        ? "맑음"
+                        : weather.skyCondition === 3
+                          ? "구름많음"
+                          : weather.skyCondition === 4
+                            ? "흐림"
+                            : ""}
         </span>
       </div>
     </button>

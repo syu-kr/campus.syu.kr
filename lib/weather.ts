@@ -2,8 +2,8 @@
 
 export interface WeatherData {
   temperature: number; // 기온
-  skyCondition: number; // 하늘상태 (0:맑음, 1:구름많음, 3:흐림)
-  precipitation: number; // 강수형태 (0:없음, 1:비, 2:비/눈, 3:눈)
+  skyCondition: number; // 하늘상태 (1:맑음, 3:구름많음, 4:흐림)
+  precipitation: number; // 강수형태 (0:없음, 1:비, 2:비/눈, 3:눈, 5:빗방울/이슬비, 6:빗방울눈날림, 7:눈날림)
   windSpeed: number; // 풍속
   time: string;
   latitude: number;
@@ -46,18 +46,24 @@ export async function fetchWeather(): Promise<WeatherData | null> {
 export function getWeatherDescription(weather: WeatherData): string {
   const descriptions = [];
 
-  // 강수 형태
+  // 강수 형태 (PTY 코드 기준)
   if (weather.precipitation === 1) {
     descriptions.push("비");
   } else if (weather.precipitation === 2) {
     descriptions.push("비/눈");
   } else if (weather.precipitation === 3) {
     descriptions.push("눈");
-  } else if (weather.skyCondition === 0) {
-    descriptions.push("맑음");
+  } else if (weather.precipitation === 5) {
+    descriptions.push("이슬비");
+  } else if (weather.precipitation === 6) {
+    descriptions.push("빗방울눈날림");
+  } else if (weather.precipitation === 7) {
+    descriptions.push("눈날림");
   } else if (weather.skyCondition === 1) {
-    descriptions.push("구름많음");
+    descriptions.push("맑음");
   } else if (weather.skyCondition === 3) {
+    descriptions.push("구름많음");
+  } else if (weather.skyCondition === 4) {
     descriptions.push("흐림");
   }
 
@@ -70,21 +76,24 @@ export function getWeatherDescription(weather: WeatherData): string {
  * 날씨에 맞는 SVG 아이콘 반환
  */
 export function getWeatherIcon(weather: WeatherData): string {
-  // 강수 형태 우선 확인
-  if (weather.precipitation === 1) {
+  // 강수 형태 우선 확인 (PTY 코드 기준)
+  if (weather.precipitation === 1 || weather.precipitation === 5) {
+    // 1: 비, 5: 빗방울(이슬비)
     return getRainIcon();
-  } else if (weather.precipitation === 2) {
+  } else if (weather.precipitation === 2 || weather.precipitation === 6) {
+    // 2: 비/눈, 6: 빗방울눈날림
     return getSleetIcon();
-  } else if (weather.precipitation === 3) {
+  } else if (weather.precipitation === 3 || weather.precipitation === 7) {
+    // 3: 눈, 7: 눈날림
     return getSnowIcon();
   }
 
-  // 하늘 상태
-  if (weather.skyCondition === 0) {
+  // 하늘 상태 (SKY 코드 기준)
+  if (weather.skyCondition === 1) {
     return getSunIcon();
-  } else if (weather.skyCondition === 1) {
-    return getPartlyCloudyIcon();
   } else if (weather.skyCondition === 3) {
+    return getPartlyCloudyIcon();
+  } else if (weather.skyCondition === 4) {
     return getCloudyIcon();
   }
 
