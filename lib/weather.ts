@@ -104,23 +104,17 @@ export function getWeatherIcon(weather: WeatherData): string {
 function getSunIcon(): string {
   return `
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="5" fill="#FFD700"/>
-      <line x1="12" y1="1" x2="12" y2="3" stroke="#FFD700" stroke-width="2"/>
-      <line x1="12" y1="21" x2="12" y2="23" stroke="#FFD700" stroke-width="2"/>
-      <line x1="1" y1="12" x2="3" y2="12" stroke="#FFD700" stroke-width="2"/>
-      <line x1="21" y1="12" x2="23" y2="12" stroke="#FFD700" stroke-width="2"/>
-      <line x1="3" y1="3" x2="4.5" y2="4.5" stroke="#FFD700" stroke-width="2"/>
-      <line x1="19.5" y1="19.5" x2="21" y2="21" stroke="#FFD700" stroke-width="2"/>
-      <line x1="21" y1="3" x2="19.5" y2="4.5" stroke="#FFD700" stroke-width="2"/>
-      <line x1="4.5" y1="19.5" x2="3" y2="21" stroke="#FFD700" stroke-width="2"/>
-    </svg>
-  `;
-}
-
-function getCloudyIcon(): string {
-  return `
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 18H18C19.65 18 21 16.65 21 15C21 13.65 20.36 12.46 19.35 11.8C19.12 8.57 16.57 6 13.5 6C11.22 6 9.24 7.27 8.29 9.04C5.95 9.22 4 11.34 4 14C4 16.76 6.24 19 9 19" fill="#B0BEC5"/>
+      <!-- 해 -->
+      <circle cx="12" cy="12" r="5" fill="#FDB813"/>
+      <!-- 광선 -->
+      <line x1="12" y1="1" x2="12" y2="3" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="12" y1="21" x2="12" y2="23" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="1" y1="12" x2="3" y2="12" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="21" y1="12" x2="23" y2="12" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="3.5" y1="3.5" x2="4.9" y2="4.9" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="19.1" y1="19.1" x2="20.5" y2="20.5" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="20.5" y1="3.5" x2="19.1" y2="4.9" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
+      <line x1="4.9" y1="19.1" x2="3.5" y2="20.5" stroke="#FDB813" stroke-width="2" stroke-linecap="round"/>
     </svg>
   `;
 }
@@ -128,8 +122,26 @@ function getCloudyIcon(): string {
 function getPartlyCloudyIcon(): string {
   return `
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="15" cy="9" r="4" fill="#FFD700"/>
-      <path d="M6 18H15C16.65 18 18 16.65 18 15C18 13.65 17.36 12.46 16.35 11.8C16.12 10.57 15.22 9.5 14 9.2" fill="#B0BEC5"/>
+      <!-- 해 -->
+      <circle cx="6" cy="6" r="2.5" fill="#FDB813"/>
+      <!-- 광선 -->
+      <line x1="6" y1="1.5" x2="6" y2="2.5" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="6" y1="9.5" x2="6" y2="10.5" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="1.5" y1="6" x2="2.5" y2="6" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="9.5" y1="6" x2="10.5" y2="6" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- 구름 -->
+      <path d="M5 12C5 11.17 5.51 10.47 6.24 10.16C6.92 8.21 8.68 6.8 10.8 6.8C13.42 6.8 15.57 8.62 15.87 11H16.8C18.24 11 19.4 12.16 19.4 13.6C19.4 15.04 18.24 16.2 16.8 16.2H6C4.9 16.2 4 15.3 4 14.2C4 13.12 4.84 12.23 5.91 12.06" fill="#E0E0E0" stroke="#B0BEC5" stroke-width="0.5"/>
+    </svg>
+  `;
+}
+
+function getCloudyIcon(): string {
+  return `
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- 큰 구름 -->
+      <path d="M3 14C3 12.35 4.35 11 6 11C6.2 8.9 7.9 7.3 10 7.3C11.95 7.3 13.6 8.7 13.86 10.5C15.4 10.6 16.6 11.9 16.6 13.5C16.6 15.14 15.24 16.5 13.6 16.5H4C3.45 16.5 3 16.05 3 15.5V14Z" fill="#B0BEC5" stroke="#90A4AE" stroke-width="0.5"/>
+      <!-- 두 번째 구름 -->
+      <path d="M8 18.2C8 17.1 8.9 16.2 10 16.2C10.15 14.7 11.3 13.5 12.8 13.5C14 13.5 15 14.3 15.3 15.4C16.3 15.5 17.1 16.3 17.1 17.4C17.1 18.6 16.14 19.6 15 19.6H9C8.45 19.6 8 19.15 8 18.6V18.2Z" fill="#78909C" stroke="#607D8B" stroke-width="0.5"/>
     </svg>
   `;
 }
@@ -137,10 +149,12 @@ function getPartlyCloudyIcon(): string {
 function getRainIcon(): string {
   return `
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 18H16C17.65 18 19 16.65 19 15C19 13.65 18.36 12.46 17.35 11.8C17.12 9.57 15.57 7.8 13.5 7.8C11.7 7.8 10.13 8.75 9.35 10.24C7.35 10.4 5.8 12.1 5.8 14C5.8 16.13 7.57 17.8 9.8 18" fill="#90CAF9"/>
-      <line x1="8" y1="19" x2="7" y2="22" stroke="#4FC3F7" stroke-width="2"/>
-      <line x1="12" y1="19" x2="11" y2="22" stroke="#4FC3F7" stroke-width="2"/>
-      <line x1="16" y1="19" x2="15" y2="22" stroke="#4FC3F7" stroke-width="2"/>
+      <!-- 구름 -->
+      <path d="M3 14C3 12.35 4.35 11 6 11C6.2 8.9 7.9 7.3 10 7.3C11.95 7.3 13.6 8.7 13.86 10.5C15.4 10.6 16.6 11.9 16.6 13.5C16.6 15.14 15.24 16.5 13.6 16.5H4C3.45 16.5 3 16.05 3 15.5V14Z" fill="#90CAF9" stroke="#64B5F6" stroke-width="0.5"/>
+      <!-- 빗줄기 -->
+      <line x1="5" y1="17" x2="4" y2="21" stroke="#1976D2" stroke-width="2" stroke-linecap="round"/>
+      <line x1="9" y1="17" x2="8" y2="21" stroke="#1976D2" stroke-width="2" stroke-linecap="round"/>
+      <line x1="13" y1="17" x2="12" y2="21" stroke="#1976D2" stroke-width="2" stroke-linecap="round"/>
     </svg>
   `;
 }
@@ -148,10 +162,13 @@ function getRainIcon(): string {
 function getSleetIcon(): string {
   return `
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 18H16C17.65 18 19 16.65 19 15C19 13.65 18.36 12.46 17.35 11.8C17.12 9.57 15.57 7.8 13.5 7.8C11.7 7.8 10.13 8.75 9.35 10.24C7.35 10.4 5.8 12.1 5.8 14C5.8 16.13 7.57 17.8 9.8 18" fill="#B0BEC5"/>
-      <line x1="8" y1="19" x2="7" y2="22" stroke="#4FC3F7" stroke-width="2"/>
-      <line x1="12" y1="19" x2="11" y2="22" stroke="#FFD700" stroke-width="2"/>
-      <line x1="16" y1="19" x2="15" y2="22" stroke="#4FC3F7" stroke-width="2"/>
+      <!-- 구름 -->
+      <path d="M3 14C3 12.35 4.35 11 6 11C6.2 8.9 7.9 7.3 10 7.3C11.95 7.3 13.6 8.7 13.86 10.5C15.4 10.6 16.6 11.9 16.6 13.5C16.6 15.14 15.24 16.5 13.6 16.5H4C3.45 16.5 3 16.05 3 15.5V14Z" fill="#B0BEC5" stroke="#90A4AE" stroke-width="0.5"/>
+      <!-- 빗줄기 (파란색) -->
+      <line x1="5" y1="17" x2="4" y2="21" stroke="#1976D2" stroke-width="2" stroke-linecap="round"/>
+      <line x1="13" y1="17" x2="12" y2="21" stroke="#1976D2" stroke-width="2" stroke-linecap="round"/>
+      <!-- 눈송이 (흰색) -->
+      <text x="9" y="22" font-size="10" fill="#FFFFFF">❄</text>
     </svg>
   `;
 }
@@ -159,12 +176,12 @@ function getSleetIcon(): string {
 function getSnowIcon(): string {
   return `
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M6 18H16C17.65 18 19 16.65 19 15C19 13.65 18.36 12.46 17.35 11.8C17.12 9.57 15.57 7.8 13.5 7.8C11.7 7.8 10.13 8.75 9.35 10.24C7.35 10.4 5.8 12.1 5.8 14C5.8 16.13 7.57 17.8 9.8 18" fill="#E0E0E0"/>
-      <g opacity="0.8">
-        <path d="M8 20L8.5 22L7.5 22Z" fill="#FFFFFF"/>
-        <path d="M12 20L12.5 22L11.5 22Z" fill="#FFFFFF"/>
-        <path d="M16 20L16.5 22L15.5 22Z" fill="#FFFFFF"/>
-      </g>
+      <!-- 구름 -->
+      <path d="M3 14C3 12.35 4.35 11 6 11C6.2 8.9 7.9 7.3 10 7.3C11.95 7.3 13.6 8.7 13.86 10.5C15.4 10.6 16.6 11.9 16.6 13.5C16.6 15.14 15.24 16.5 13.6 16.5H4C3.45 16.5 3 16.05 3 15.5V14Z" fill="#E0E0E0" stroke="#B0BEC5" stroke-width="0.5"/>
+      <!-- 눈송이 -->
+      <text x="4" y="22" font-size="11" fill="#FFFFFF">❄</text>
+      <text x="9" y="22" font-size="11" fill="#FFFFFF">❄</text>
+      <text x="12" y="22" font-size="11" fill="#FFFFFF">❄</text>
     </svg>
   `;
 }

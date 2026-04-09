@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo, useEffect } from "react";
-import { type WeatherData } from "@/lib/weather";
+import { type WeatherData, getWeatherIcon } from "@/lib/weather";
 
 interface WeatherModalProps {
   isOpen: boolean;
@@ -34,11 +34,11 @@ function WeatherModalComponent({
 
   const getSkyConditionDetail = (skyCondition: number): string => {
     switch (skyCondition) {
-      case 0:
-        return "맑음";
       case 1:
-        return "구름많음";
+        return "맑음";
       case 3:
+        return "구름많음";
+      case 4:
         return "흐림";
       default:
         return "알 수 없음";
@@ -52,9 +52,15 @@ function WeatherModalComponent({
       case 1:
         return "비";
       case 2:
-        return "진눈깨비";
+        return "비/눈";
       case 3:
         return "눈";
+      case 5:
+        return "이슬비";
+      case 6:
+        return "빗방울눈날림";
+      case 7:
+        return "눈날림";
       default:
         return "알 수 없음";
     }
@@ -82,15 +88,9 @@ function WeatherModalComponent({
                   <div
                     className="w-12 h-12"
                     dangerouslySetInnerHTML={{
-                      __html: `
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="5" fill="#FFFFFF"/>
-                          <line x1="12" y1="1" x2="12" y2="3" stroke="#FFFFFF" stroke-width="2"/>
-                          <line x1="12" y1="21" x2="12" y2="23" stroke="#FFFFFF" stroke-width="2"/>
-                          <line x1="1" y1="12" x2="3" y2="12" stroke="#FFFFFF" stroke-width="2"/>
-                          <line x1="21" y1="12" x2="23" y2="12" stroke="#FFFFFF" stroke-width="2"/>
-                        </svg>
-                      `,
+                      __html: getWeatherIcon(weather)
+                        .replace(/#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})/g, "#FFFFFF")
+                        .replace(/fill="#/g, 'fill="#'),
                     }}
                   />
                 </div>
@@ -150,7 +150,7 @@ function WeatherModalComponent({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m0 0l-2-1m2 1v2.5M14 4l-2 1m0 0L10 4m2 1V2.5M20 4l-2 1m0 0l-2-1m2 1V2.5"
+                      d="M3 14l3-3m0 0l3 3m-3-3v8m6-10h2a2 2 0 012 2v8a2 2 0 01-2 2h-2m0-14h-4a2 2 0 00-2 2v8a2 2 0 002 2h4m0-14v14"
                     />
                   </svg>
                 </div>
