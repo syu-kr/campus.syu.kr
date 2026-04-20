@@ -92,6 +92,19 @@
   },
   {
     "no": "",
+    "id": "academic-00960750cd86",
+    "title": "학적[교무처 학사지원팀] 자퇴 신청 안내",
+    "date": "2026.02.24",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%ac%b4%ec%b2%98-%ed%95%99%ec%82%ac%ec%a7%80%ec%9b%90%ed%8c%80-%ec%9e%90%ed%87%b4-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
+  },
+  {
+    "no": "",
     "id": "academic-102bb9e79036",
     "title": "학적학생 정보 변경 신청 안내",
     "date": "2024.08.01",
@@ -104,7 +117,7 @@
     "isPinned": true
   },
   {
-    "no": "3055",
+    "no": "3054",
     "id": "academic-67be7c46dcea",
     "title": "2026-하계 계절학기 학점교류대학 수강신청 일정 안내",
     "date": "2026.04.16",
@@ -117,7 +130,7 @@
     "isPinned": false
   },
   {
-    "no": "3054",
+    "no": "3053",
     "id": "academic-392985d8e20f",
     "title": "노동절(5월1일) 법정 공휴일 지정에 따른 휴·보강 안내",
     "date": "2026.04.13",
@@ -130,7 +143,7 @@
     "isPinned": false
   },
   {
-    "no": "3053",
+    "no": "3052",
     "id": "academic-75dae010876e",
     "title": "수업2026-1학기 중간 강의 평가 실시 안내",
     "date": "2026.04.09",
@@ -143,7 +156,7 @@
     "isPinned": false
   },
   {
-    "no": "3052",
+    "no": "3051",
     "id": "academic-09a6910dcaa2",
     "title": "2026년 대학예비군 훈련계획 공지",
     "date": "2026.04.06",
@@ -156,7 +169,7 @@
     "isPinned": false
   },
   {
-    "no": "3051",
+    "no": "3050",
     "id": "academic-b12a3b944cb2",
     "title": "[졸업] 2025학년도 후기(2026년 8월) 우등졸업 신청 안내",
     "date": "2026.03.31",
@@ -169,7 +182,7 @@
     "isPinned": false
   },
   {
-    "no": "3050",
+    "no": "3049",
     "id": "academic-1abde877ea53",
     "title": "[졸업] 2025학년도 후기(2026년 8월) 조기졸업 신청 안내",
     "date": "2026.03.30",
@@ -182,7 +195,7 @@
     "isPinned": false
   },
   {
-    "no": "3049",
+    "no": "3048",
     "id": "academic-33416ffae5bb",
     "title": "(기간연장)신·편입생 학생증(ID-CARD) 발급 안내",
     "date": "2026.03.27",
@@ -195,7 +208,7 @@
     "isPinned": false
   },
   {
-    "no": "3048",
+    "no": "3047",
     "id": "academic-2afd9dd23788",
     "title": "2026-1학기 장애학생 서포터즈 모집 안내(추가)",
     "date": "2026.03.25",
@@ -208,7 +221,7 @@
     "isPinned": false
   },
   {
-    "no": "3047",
+    "no": "3046",
     "id": "academic-6740b9f19331",
     "title": "등록2026-1학기 등록금 분납2차 납부 안내",
     "date": "2026.03.23",
@@ -221,7 +234,7 @@
     "isPinned": false
   },
   {
-    "no": "3046",
+    "no": "3045",
     "id": "academic-00697092b6fe",
     "title": "2026년 대학 예비군훈련계획(예정)",
     "date": "2026.03.20",
@@ -234,7 +247,7 @@
     "isPinned": false
   },
   {
-    "no": "3045",
+    "no": "3044",
     "id": "academic-626d1dc1cb47",
     "title": "전국단위 및 휴일 예비군훈련제도 안내",
     "date": "2026.03.20",
@@ -247,7 +260,7 @@
     "isPinned": false
   },
   {
-    "no": "3044",
+    "no": "3043",
     "id": "academic-a1c009fb078f",
     "title": "2026-1 People's Grocery+ 모집안내 [교목처 리더십센터]",
     "date": "2026.03.20",
@@ -260,7 +273,7 @@
     "isPinned": false
   },
   {
-    "no": "3043",
+    "no": "3042",
     "id": "academic-4c925620b2b5",
     "title": "수업2026학년도 1학기(정규) 수강신청과목 중도포기 안내",
     "date": "2026.03.17",
@@ -273,7 +286,7 @@
     "isPinned": false
   },
   {
-    "no": "3042",
+    "no": "3041",
     "id": "academic-fc852ba227fc",
     "title": "[성적] 2026년 1학기 취득학점포기 안내 *기간엄수*",
     "date": "2026.03.16",
@@ -286,7 +299,7 @@
     "isPinned": false
   },
   {
-    "no": "3041",
+    "no": "3040",
     "id": "academic-831a454e9563",
     "title": "[성적] 2026년 1학기 이수구분 변경신청 안내",
     "date": "2026.03.16",
@@ -299,7 +312,7 @@
     "isPinned": false
   },
   {
-    "no": "3040",
+    "no": "3039",
     "id": "academic-ae933def3251",
     "title": "2026학년도 교직과정 이수예정자 선발 및 교직 복수전공 이수예정자 신청 안내",
     "date": "2026.03.16",
@@ -307,12 +320,12 @@
     "views": 0,
     "category": "academic",
     "content": "",
-    "url": "https://www.syu.ac.kr/blog/2026%ed%95%99%eb%85%84%eb%8f%84-%ea%b5%90%ec%a7%81%ea%b3%bc%ec%a0%95-%ec%9d%b4%ec%88%98%ec%98%88%ec%a0%95%ec%9e%90-%ec%84%a0%eb%b0%9c-%eb%b0%8f-%ea%b5%90%ec%a7%81-%eb%b3%b5%ec%88%98%ec%a0%84%ea%b3%b5/?pageds=1&k=&t=&c=",
+    "url": "https://www.syu.ac.kr/blog/2026%ed%95%99%eb%85%84%eb%8f%84-%ea%b5%90%ec%a7%81%ea%b3%bc%ec%a0%95-%ec%9d%b4%ec%88%98%ec%98%88%ec%a0%95%ec%9e%90-%ec%84%a0%eb%b0%9c-%eb%b0%8f-%ea%b5%90%ec%a7%81-%eb%b3%b5%ec%88%98%ec%a0%84%ea%b3%b5/?pageds=2&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
   {
-    "no": "3039",
+    "no": "3038",
     "id": "academic-9b365dbce8a9",
     "title": "「인상파, 찬란한 순간들」 전시 관람 안내 (노원 관내 대학 재학생 특별 할인)",
     "date": "2026.03.12",
@@ -325,7 +338,7 @@
     "isPinned": false
   },
   {
-    "no": "3038",
+    "no": "3037",
     "id": "academic-5e61442ea8d2",
     "title": "2026-1학기 군e-러닝 과정 수강 안내 (수강신청 기간 연장)",
     "date": "2026.03.11",
@@ -338,7 +351,7 @@
     "isPinned": false
   },
   {
-    "no": "3037",
+    "no": "3036",
     "id": "academic-8de0df63fba5",
     "title": "2026-1학기 글로컬영어 일부 분반 수업 운영 변경 안내",
     "date": "2026.03.10",
@@ -351,7 +364,7 @@
     "isPinned": false
   },
   {
-    "no": "3036",
+    "no": "3035",
     "id": "academic-87010f155b7f",
     "title": "수업2026-1학기 2차(최종) 폐강과목 공고(3/9부)",
     "date": "2026.03.09",
@@ -364,7 +377,7 @@
     "isPinned": false
   },
   {
-    "no": "3035",
+    "no": "3034",
     "id": "academic-447286c5c61f",
     "title": "2026년 삼육대학교 개교 120주년 기념 「세상을 변화시키는 아이디어 스피치 릴레이」 개최 안내",
     "date": "2026.03.09",
@@ -377,7 +390,7 @@
     "isPinned": false
   },
   {
-    "no": "3034",
+    "no": "3033",
     "id": "academic-06b18e44b452",
     "title": "학적[대학혁신지원사업단/학사지원팀] 💁 전과·다전공 제도 가이드북 이북 배포 안내",
     "date": "2026.03.05",
@@ -390,7 +403,7 @@
     "isPinned": false
   },
   {
-    "no": "3033",
+    "no": "3032",
     "id": "academic-6a2cdd23ea30",
     "title": "수업2026-1학기 1차 폐강과목 공고(3/5 부)",
     "date": "2026.03.05",
@@ -403,7 +416,7 @@
     "isPinned": false
   },
   {
-    "no": "3032",
+    "no": "3031",
     "id": "academic-bbe1d863d498",
     "title": "[IR센터] 2026-1학기 신입생 핵심역량진단검사 참여 안내 (인생설계와 진로 I 필수과제)",
     "date": "2026.03.04",
@@ -416,7 +429,7 @@
     "isPinned": false
   },
   {
-    "no": "3031",
+    "no": "3030",
     "id": "academic-05614edd853a",
     "title": "2026-2학기 파견교환학생 모집 공고 (일부 대학 추가)",
     "date": "2026.03.04",
@@ -429,7 +442,7 @@
     "isPinned": false
   },
   {
-    "no": "3030",
+    "no": "3029",
     "id": "academic-1565869bbbf3",
     "title": "2026년 1학기 정기 연구실 안전교육 실시 안내",
     "date": "2026.03.03",
@@ -442,7 +455,7 @@
     "isPinned": false
   },
   {
-    "no": "3029",
+    "no": "3028",
     "id": "academic-842e64472d69",
     "title": "수업[AI융합교육원] 2026학년도 예비신입생 대상 입학 전 SW교육 학점 인정 신청 안내",
     "date": "2026.02.28",
@@ -455,7 +468,7 @@
     "isPinned": false
   },
   {
-    "no": "3028",
+    "no": "3027",
     "id": "academic-8609584f4732",
     "title": "수업2026학년도 신입생 부서별 안내 가이드북 자료",
     "date": "2026.02.27",
@@ -468,7 +481,7 @@
     "isPinned": false
   },
   {
-    "no": "3027",
+    "no": "3026",
     "id": "academic-c494861c8c6a",
     "title": "수업2026-1학기 K-MOOC 강좌 특별학점인정제 안내",
     "date": "2026.02.27",
@@ -481,7 +494,7 @@
     "isPinned": false
   },
   {
-    "no": "3026",
+    "no": "3025",
     "id": "academic-9967cffa11a4",
     "title": "🎵 2026-1 U2Can 프로그램 참여 학생 모집 [교목처 리더십센터]",
     "date": "2026.02.27",
@@ -494,7 +507,7 @@
     "isPinned": false
   },
   {
-    "no": "3025",
+    "no": "3024",
     "id": "academic-876fa9f6d742",
     "title": "2026-1학기 글로컬영어 분반 일정 변경 안내",
     "date": "2026.02.26",
@@ -507,7 +520,7 @@
     "isPinned": false
   },
   {
-    "no": "3024",
+    "no": "3023",
     "id": "academic-a053d7c01910",
     "title": "인생설계와 진로 I 수업 안내(2026-1학기)_e-Book 교재링크 포함(과제: 상담 신청 방법 재공지!)",
     "date": "2026.02.25",
@@ -520,7 +533,7 @@
     "isPinned": false
   },
   {
-    "no": "3023",
+    "no": "3022",
     "id": "academic-ffce935da6c9",
     "title": "학적2026학년도 1학기 학기 중 입대휴학 신청 안내",
     "date": "2026.02.24",
@@ -533,7 +546,7 @@
     "isPinned": false
   },
   {
-    "no": "3022",
+    "no": "3021",
     "id": "academic-08ad73bf93a2",
     "title": "수업2026-1학기 캡스톤디자인 교과목 운영 안내",
     "date": "2026.02.24",
@@ -542,19 +555,6 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%ec%ba%a1%ec%8a%a4%ed%86%a4%eb%94%94%ec%9e%90%ec%9d%b8-%ea%b5%90%ea%b3%bc%eb%aa%a9-%ec%9a%b4%ec%98%81-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": false
-  },
-  {
-    "no": "3021",
-    "id": "academic-83fd19f7582c",
-    "title": "[교무처 학사지원팀] 자퇴 신청 안내",
-    "date": "2026.02.24",
-    "author": "학사지원팀",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%ac%b4%ec%b2%98-%ed%95%99%ec%82%ac%ec%a7%80%ec%9b%90%ed%8c%80-%ec%9e%90%ed%87%b4-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
@@ -39802,6 +39802,19 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-1%ed%95%99%ea%b8%b0-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%8b%ac%ec%95%bc%ec%9e%91%ec%97%85%ec%8b%a0%ec%b2%ad-%ec%a7%91%ed%9a%8c%ed%97%88%ea%b0%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=128&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3021",
+    "id": "academic-83fd19f7582c",
+    "title": "[교무처 학사지원팀] 자퇴 신청 안내",
+    "date": "2026.02.24",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ea%b5%90%eb%ac%b4%ec%b2%98-%ed%95%99%ec%82%ac%ec%a7%80%ec%9b%90%ed%8c%80-%ec%9e%90%ed%87%b4-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=2&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
