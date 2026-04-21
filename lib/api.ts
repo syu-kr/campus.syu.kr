@@ -3,6 +3,7 @@ import {
   CafeteriaMenu,
   AcademicSchedule,
   ShuttleBusSchedule,
+  ShuttleSpecialPeriods,
   BusLocation,
   Scholarship,
   PhoneNumber,
@@ -188,6 +189,24 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_error) {
     return [];
+  }
+}
+
+// 셔틀버스 특수 기간 API
+export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriods> {
+  try {
+    const response = await fetch("/data/shuttle-special-periods.json", {
+      cache: "no-store",
+      next: { revalidate: 0 },
+    });
+    const data = await response.json();
+    return (data || {
+      specialPeriods: [],
+      vacationPeriods: [],
+    }) as ShuttleSpecialPeriods;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_error) {
+    return { specialPeriods: [], vacationPeriods: [] };
   }
 }
 

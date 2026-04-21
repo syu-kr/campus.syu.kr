@@ -67,6 +67,31 @@ export interface ShuttleBusSchedule {
   lastUpdated: string;
 }
 
+// 셔틀버스 특수 기간
+export interface ShuttleSpecialPeriod {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  addedTimes: string[];
+  applicableDates: string[];
+  routes: string[]; // "all" 또는 route ID 배열
+}
+
+export interface ShuttleVacationPeriod {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  scheduleType: "vacation";
+}
+
+export interface ShuttleSpecialPeriods {
+  specialPeriods: ShuttleSpecialPeriod[];
+  vacationPeriods: ShuttleVacationPeriod[];
+}
+
 // 버스 실시간 위치
 export interface BusLocation {
   id: string;

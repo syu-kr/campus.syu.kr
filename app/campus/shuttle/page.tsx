@@ -5,8 +5,12 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { fetchShuttleBuses, fetchBusLocations } from "@/lib/api";
-import { BusLocation } from "@/types";
+import {
+  fetchShuttleBuses,
+  fetchBusLocations,
+  fetchShuttleSpecialPeriods,
+} from "@/lib/api";
+import { BusLocation, ShuttleBusSchedule } from "@/types";
 import {
   useState,
   useMemo,
@@ -20,6 +24,12 @@ export default function ShuttlePage() {
   const { data: buses, isLoading } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
+    staleTime: 0,
+  });
+
+  const { data: specialPeriods } = useQuery({
+    queryKey: ["shuttle-special-periods"],
+    queryFn: () => fetchShuttleSpecialPeriods(),
     staleTime: 0,
   });
 
@@ -88,6 +98,12 @@ export default function ShuttlePage() {
     const hour = now.getHours();
     const minute = now.getMinutes();
 
+    // 현재 날짜를 YYYY-MM-DD 형식으로
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const date = String(now.getDate()).padStart(2, "0");
+    const dateStr = `${year}-${month}-${date}`;
+
     const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
 
     return {
@@ -98,15 +114,33 @@ export default function ShuttlePage() {
       hour,
       minute,
       dayName: dayNames[dayOfWeek],
+      dateStr,
     };
   }, [now]);
 
-  // 초기 선택 상태 (현재 요일에 따라)
+  // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
+    // 방학 기간 확인
+    if (specialPeriods?.vacationPeriods) {
+      for (const vacation of specialPeriods.vacationPeriods) {
+        if (
+          dateInfo.dateStr >= vacation.startDate &&
+          dateInfo.dateStr <= vacation.endDate
+        ) {
+          // 방학 기간 내: 금요일 판별
+          if (dateInfo.isFriday) {
+            return "fridayVacation" as const;
+          }
+          return "mondayToThursdayVacation" as const;
+        }
+      }
+    }
+
+    // 학기 중
     if (dateInfo.isWeekend) return "mondayToThursday"; // 주말이면 월요일 시간표 표시
     if (dateInfo.isFriday) return "friday";
     return "mondayToThursday";
-  }, [dateInfo]);
+  }, [dateInfo, specialPeriods?.vacationPeriods]);
 
   const [selectedType, setSelectedType] = useState<
     | "mondayToThursday"
@@ -115,9 +149,117 @@ export default function ShuttlePage() {
     | "fridayVacation"
   >(defaultType);
 
-  // 시간 문자열을 분 단위로 변환
+  // defaultType 변경 시 selectedType도 자동으로 업데이트 (방학 기간 변경 대응)
+  useEffect(() => {
+    setSelectedType(defaultType);
+  }, [defaultType]);
+
+  // 특수 기간 추가 시간을 병합한 버스 데이터
+  const busesWithSpecialPeriods = useMemo((): ShuttleBusSchedule[] => {
+    // 시간 정렬 헬퍼 함수 (useMemo 내부에서 사용)
+    const parseTime = (timeStr: string): number => {
+      if (!timeStr || typeof timeStr !== "string") return 0;
+      const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})$/);
+      if (!match) return 0;
+      const hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      if (isNaN(hours) || isNaN(minutes)) return 0;
+      return hours * 60 + minutes;
+    };
+
+    if (!buses || buses.length === 0) return buses || [];
+    if (
+      !specialPeriods?.specialPeriods ||
+      specialPeriods.specialPeriods.length === 0
+    ) {
+      return buses;
+    }
+
+    // 현재 날짜의 특수 기간 찾기
+    const applicableSpecialPeriods = specialPeriods.specialPeriods.filter(
+      (period) => period.applicableDates.includes(dateInfo.dateStr),
+    );
+
+    if (applicableSpecialPeriods.length === 0) {
+      return buses;
+    }
+
+    // 버스 데이터 복사하여 시간 추가
+    return buses.map((bus) => {
+      const schedulesCopy = { ...bus.schedules };
+
+      // 이 버스에 적용될 특수 기간 필터링
+      const applicablePeriodsForBus = applicableSpecialPeriods.filter(
+        (period) => {
+          // routes에 "all"이 있거나, 이 버스 ID가 포함된 경우
+          return (
+            period.routes.includes("all") || period.routes.includes(bus.id)
+          );
+        },
+      );
+
+      if (applicablePeriodsForBus.length === 0) {
+        return bus; // 적용될 특수 기간이 없으면 원본 반환
+      }
+
+      // 이 버스에 추가할 시간 수집
+      const addedTimes = new Set<string>();
+      applicablePeriodsForBus.forEach((period) => {
+        period.addedTimes.forEach((time) => addedTimes.add(time));
+      });
+
+      // 각 시간표 타입에 추가 시간 병합 (정렬)
+      Object.keys(schedulesCopy).forEach((key) => {
+        const times = schedulesCopy[key as keyof typeof schedulesCopy];
+        if (Array.isArray(times)) {
+          const mergedTimes = Array.from(new Set([...times, ...addedTimes]));
+          mergedTimes.sort((a, b) => {
+            const aMinutes = parseTime(a);
+            const bMinutes = parseTime(b);
+            return aMinutes - bMinutes;
+          });
+          schedulesCopy[key as keyof typeof schedulesCopy] = mergedTimes;
+        }
+      });
+
+      return { ...bus, schedules: schedulesCopy };
+    });
+  }, [buses, specialPeriods?.specialPeriods, dateInfo.dateStr]);
+
+  // 시간 문자열을 분 단위로 변환 (공백, 형식 오류 처리)
   const timeToMinutes = (timeStr: string): number => {
-    const [hours, minutes] = timeStr.split(":").map(Number);
+    // 입력값 유효성 검사
+    if (!timeStr || typeof timeStr !== "string") {
+      console.warn("Invalid timeStr:", timeStr);
+      return 0;
+    }
+
+    // 공백 제거 및 정규화
+    const normalized = timeStr.trim();
+
+    // 시간:분 형식 검증
+    const match = normalized.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      console.warn("Invalid time format:", timeStr);
+      return 0;
+    }
+
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+
+    // 시간, 분 범위 검증
+    if (
+      isNaN(hours) ||
+      isNaN(minutes) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      console.warn("Out of range time values:", { timeStr, hours, minutes });
+      return 0;
+    }
+
     return hours * 60 + minutes;
   };
 
@@ -128,8 +270,8 @@ export default function ShuttlePage() {
     minutesUntil: number;
   }> => {
     if (
-      !buses ||
-      buses.length === 0 ||
+      !busesWithSpecialPeriods ||
+      busesWithSpecialPeriods.length === 0 ||
       dateInfo.isWeekend ||
       selectedType !== defaultType
     )
@@ -142,7 +284,7 @@ export default function ShuttlePage() {
     >();
 
     // 각 노선별로 첫 번째 버스(가장 빨리 출발)를 찾기
-    buses.forEach((bus) => {
+    busesWithSpecialPeriods.forEach((bus) => {
       const times = bus.schedules[selectedType];
 
       for (const time of times) {
@@ -169,13 +311,13 @@ export default function ShuttlePage() {
       .sort((a, b) => a.minutesUntil - b.minutesUntil);
 
     return result;
-  }, [buses, dateInfo, selectedType, defaultType]);
+  }, [busesWithSpecialPeriods, dateInfo, selectedType, defaultType]);
 
   // 노선별 가장 빨리 오는 버스 시간 (하이라이트용)
   const nextBusTimeByRoute = useMemo((): Map<string, string> => {
     if (
-      !buses ||
-      buses.length === 0 ||
+      !busesWithSpecialPeriods ||
+      busesWithSpecialPeriods.length === 0 ||
       dateInfo.isWeekend ||
       selectedType !== defaultType
     )
@@ -184,7 +326,7 @@ export default function ShuttlePage() {
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
     const timeByRoute = new Map<string, string>();
 
-    buses.forEach((bus) => {
+    busesWithSpecialPeriods.forEach((bus) => {
       const times = bus.schedules[selectedType];
 
       // 각 노선별로 첫 번째 다음 버스 찾기
@@ -200,18 +342,23 @@ export default function ShuttlePage() {
     });
 
     return timeByRoute;
-  }, [buses, dateInfo, selectedType, defaultType]);
+  }, [busesWithSpecialPeriods, dateInfo, selectedType, defaultType]);
 
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
-    if (!buses || buses.length === 0 || !now) return false;
+    if (
+      !busesWithSpecialPeriods ||
+      busesWithSpecialPeriods.length === 0 ||
+      !now
+    )
+      return false;
 
     const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
     let firstTime = Infinity;
     let lastTime = -Infinity;
 
     // 현재 요일의 모든 버스 시간에서 첫차와 마지막차 찾기
-    buses.forEach((bus) => {
+    busesWithSpecialPeriods.forEach((bus) => {
       const times = bus.schedules[selectedType];
       if (times && times.length > 0) {
         times.forEach((time) => {
@@ -231,7 +378,7 @@ export default function ShuttlePage() {
     const operationEnd = Math.min(24 * 60 - 1, lastTime + 30);
 
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
-  }, [buses, dateInfo, now, selectedType]);
+  }, [busesWithSpecialPeriods, dateInfo, now, selectedType]);
 
   // 요일 버튼 클릭 시
   const dayButtons = [
@@ -449,6 +596,29 @@ export default function ShuttlePage() {
         ))}
       </div>
 
+      {/* 특수 기간 (시험 연장 운행) 안내 - 배치 전에 표시 */}
+      {specialPeriods &&
+        specialPeriods.specialPeriods &&
+        specialPeriods.specialPeriods.length > 0 &&
+        specialPeriods.specialPeriods.some((period) =>
+          period.applicableDates.includes(dateInfo.dateStr),
+        ) && (
+          <Card className="mb-4 bg-purple-50 border-2 border-purple-300 text-sm text-purple-900">
+            <p className="font-bold mb-2">시험기간 연장 운행 기간입니다</p>
+            <ul className="list-disc list-inside space-y-1">
+              {specialPeriods.specialPeriods
+                .filter((period) =>
+                  period.applicableDates.includes(dateInfo.dateStr),
+                )
+                .map((period) => (
+                  <li key={period.id} className="text-purple-800">
+                    {period.description}
+                  </li>
+                ))}
+            </ul>
+          </Card>
+        )}
+
       {/* 방학 운행 안내 */}
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
@@ -461,19 +631,21 @@ export default function ShuttlePage() {
       <div className="space-y-4">
         {isLoading && <Skeleton count={3} height="150px" />}
 
-        {!isLoading && buses && buses.length === 0 && (
-          <Card>
-            <div className="py-8 text-center">
-              <p className="text-neutral-600">
-                버스 정보를 불러올 수 없습니다.
-              </p>
-            </div>
-          </Card>
-        )}
+        {!isLoading &&
+          busesWithSpecialPeriods &&
+          busesWithSpecialPeriods.length === 0 && (
+            <Card>
+              <div className="py-8 text-center">
+                <p className="text-neutral-600">
+                  버스 정보를 불러올 수 없습니다.
+                </p>
+              </div>
+            </Card>
+          )}
 
         {!isLoading &&
-          buses &&
-          buses.map((bus) => {
+          busesWithSpecialPeriods &&
+          busesWithSpecialPeriods.map((bus) => {
             const times = bus.schedules[selectedType];
 
             return (
@@ -525,42 +697,59 @@ export default function ShuttlePage() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                        {times.map((time, idx) => {
-                          const timeMinutes = timeToMinutes(time);
-                          const currentMinutes =
-                            dateInfo.hour * 60 + dateInfo.minute;
-                          const minutesUntil = timeMinutes - currentMinutes;
+                        {times
+                          .filter((time) => {
+                            // 유효한 시간 형식만 필터링
+                            if (!time || typeof time !== "string") return false;
+                            const match = time
+                              .trim()
+                              .match(/^(\d{1,2}):(\d{2})$/);
+                            return match !== null;
+                          })
+                          .map((time, idx) => {
+                            const timeMinutes = timeToMinutes(time);
+                            const currentMinutes =
+                              dateInfo.hour * 60 + dateInfo.minute;
+                            const minutesUntil = timeMinutes - currentMinutes;
 
-                          // 이 노선의 가장 빨리 오는 버스인지 확인
-                          const nextBusTime = nextBusTimeByRoute.get(
-                            bus.routeName,
-                          );
-                          const isNextBus = nextBusTime === time;
-                          const isWithin30Min =
-                            isNextBus &&
-                            minutesUntil <= 30 &&
-                            selectedType === defaultType &&
-                            !dateInfo.isWeekend;
+                            // timeMinutes가 유효한지 확인
+                            if (isNaN(timeMinutes)) {
+                              console.error("NaN timeMinutes for time:", time);
+                              return null; // NaN이면 렌더링하지 않음
+                            }
 
-                          const isPassed =
-                            timeMinutes <= currentMinutes &&
-                            selectedType === defaultType;
+                            // 이 노선의 가장 빨리 오는 버스인지 확인
+                            const nextBusTime = nextBusTimeByRoute.get(
+                              bus.routeName,
+                            );
+                            const isNextBus = nextBusTime === time;
+                            const isWithin30Min =
+                              isNextBus &&
+                              minutesUntil <= 30 &&
+                              selectedType === defaultType &&
+                              !dateInfo.isWeekend;
 
-                          return (
-                            <div
-                              key={idx}
-                              className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
-                                isWithin30Min
-                                  ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
-                                  : isPassed
-                                    ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
-                                    : "bg-primary-50 border border-primary-200 text-primary-700"
-                              }`}
-                            >
-                              {time}
-                            </div>
-                          );
-                        })}
+                            const isPassed =
+                              timeMinutes <= currentMinutes &&
+                              selectedType === defaultType;
+
+                            return (
+                              <div
+                                key={idx}
+                                className={`rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors ${
+                                  isWithin30Min
+                                    ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                    : isPassed
+                                      ? "bg-gray-100 border border-gray-300 text-gray-500 line-through"
+                                      : "bg-primary-50 border border-primary-200 text-primary-700"
+                                }`}
+                              >
+                                {time}
+                              </div>
+                            );
+                          })
+                          .filter(Boolean)}{" "}
+                        {/* null 값 제거 */}
                       </div>
                     )}
 
