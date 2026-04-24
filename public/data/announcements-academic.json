@@ -1,8 +1,8 @@
 [
   {
     "no": "",
-    "id": "academic-b10c357329cf",
-    "title": "부서행사[교육혁신원]나의 학습방향을 바로잡아줄 SU-EBE X AI기초학력진단 연계 프로그램NEW",
+    "id": "academic-aee2e0beb91b",
+    "title": "부서행사[교육혁신원]나의 학습방향을 바로잡아줄 SU-EBE X AI기초학력진단 연계 프로그램",
     "date": "2026.04.22",
     "author": "교육혁신원",
     "views": 0,
@@ -22,19 +22,6 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%b1%ec%a0%81-2026-1-%ec%a4%91%ea%b0%84%ea%b3%a0%ec%82%ac-%ec%84%b1%ec%a0%81%ed%99%95%ec%9d%b8-%ea%b8%b0%ea%b0%84-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": true
-  },
-  {
-    "no": "",
-    "id": "academic-e2bcea06bf09",
-    "title": "학적[증명서 발급 서비스 일시 중단 안내] 2026.04.22 (수) *정정*",
-    "date": "2026.04.17",
-    "author": "학사지원팀",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/%ec%a6%9d%eb%aa%85%ec%84%9c-%eb%b0%9c%ea%b8%89-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c-%ec%a4%91%eb%8b%a8-%ec%95%88%eb%82%b4-2026-04-22-%ec%88%98/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": true
   },
@@ -143,7 +130,7 @@
     "isPinned": true
   },
   {
-    "no": "3056",
+    "no": "3057",
     "id": "academic-f54040ac692f",
     "title": "2026-1학기 HOPE CAMP 모집 안내[교목처 리더십센터]",
     "date": "2026.04.22",
@@ -156,7 +143,7 @@
     "isPinned": false
   },
   {
-    "no": "3055",
+    "no": "3056",
     "id": "academic-20f96282e764",
     "title": "2026학년도 교직이수신청 추가모집 기간 안내[간호학과]",
     "date": "2026.04.21",
@@ -165,6 +152,19 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%ed%95%99%eb%85%84%eb%8f%84-%ea%b5%90%ec%a7%81%ec%9d%b4%ec%88%98%ec%8b%a0%ec%b2%ad-%ec%b6%94%ea%b0%80%eb%aa%a8%ec%a7%91-%ea%b8%b0%ea%b0%84-%ec%95%88%eb%82%b4%ea%b0%84%ed%98%b8%ed%95%99%ea%b3%bc/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3055",
+    "id": "academic-e2bcea06bf09",
+    "title": "학적[증명서 발급 서비스 일시 중단 안내] 2026.04.22 (수) *정정*",
+    "date": "2026.04.17",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%a6%9d%eb%aa%85%ec%84%9c-%eb%b0%9c%ea%b8%89-%ec%84%9c%eb%b9%84%ec%8a%a4-%ec%9d%bc%ec%8b%9c-%ec%a4%91%eb%8b%a8-%ec%95%88%eb%82%b4-2026-04-22-%ec%88%98/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
@@ -39856,6 +39856,19 @@
     "url": "https://www.syu.ac.kr/blog/2016-1%ed%95%99%ea%b8%b0-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%8b%ac%ec%95%bc%ec%9e%91%ec%97%85%ec%8b%a0%ec%b2%ad-%ec%a7%91%ed%9a%8c%ed%97%88%ea%b0%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=128&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
+  },
+  {
+    "no": "",
+    "id": "academic-b10c357329cf",
+    "title": "부서행사[교육혁신원]나의 학습방향을 바로잡아줄 SU-EBE X AI기초학력진단 연계 프로그램NEW",
+    "date": "2026.04.22",
+    "author": "교육혁신원",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/su-ebe/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
   },
   {
     "no": "",
