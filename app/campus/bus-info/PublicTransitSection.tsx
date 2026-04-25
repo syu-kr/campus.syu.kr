@@ -12,14 +12,8 @@ interface EnrichedBusArrival extends BusArrival {
   minArrivalTime: number; // 첫번째 도착까지 초 단위
 }
 
-interface CachedData {
-  data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
-  convertedAt: Date;
-}
-
 export default function PublicTransitSection() {
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
-  const [cachedData, setCachedData] = useState<CachedData | null>(null);
   const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
   const [selectedBusDirection, setSelectedBusDirection] = useState<
     "up" | "down" | null
@@ -44,36 +38,26 @@ export default function PublicTransitSection() {
         data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
       };
 
-      // 데이터를 한 번만 변환
-      const converted = (json.data || []).map((item) => ({
+      return (json.data || []).map((item) => ({
         ...item,
         lastUpdated: new Date(item.lastUpdated),
       }));
-
-      setCachedData({
-        data: json.data || [],
-        convertedAt: new Date(),
-      });
-
-      return converted;
     },
     staleTime: 0,
     gcTime: 0,
-    refetchInterval: 0,
+    refetchInterval: 10000,
+    refetchIntervalInBackground: true,
   });
 
-  // 캐시된 데이터 사용 (변환 반복 방지)
-  const displayArrivals = useMemo(() => {
-    if (cachedData) {
-      return cachedData.data.map((item) => ({
-        ...item,
-        lastUpdated: cachedData.convertedAt,
-      }));
-    }
-    return arrivals;
-  }, [cachedData, arrivals]);
+  const lastUpdated = useMemo(() => {
+    if (!arrivals.length) return null;
+    const latest = Math.max(
+      ...arrivals.map((item) => new Date(item.lastUpdated).getTime()),
+    );
+    return Number.isFinite(latest) ? new Date(latest) : null;
+  }, [arrivals]);
 
-  const selectedStop = displayArrivals.find((s) => {
+  const selectedStop = arrivals.find((s) => {
     const stopId = s.stop.id;
     return selectedStopId === "jungmun-up"
       ? stopId.includes("jungmun") && s.stop.direction === "up"
@@ -97,6 +81,12 @@ export default function PublicTransitSection() {
     }))
     .sort((a, b) => a.minArrivalTime - b.minArrivalTime);
 
+  // 운행 중(도착예정 시간 존재) 노선만 표시
+  const activeArrivals = sortedArrivals.filter(
+    (arrival) =>
+      typeof arrival.predictTime1 === "number" && arrival.predictTime1 > 0,
+  );
+
   const stops = [
     { id: "jungmun-up", label: "정문 상행" },
     { id: "jungmun-down", label: "정문 하행" },
@@ -119,7 +109,7 @@ export default function PublicTransitSection() {
             <div className="text-xs text-neutral-500 flex items-center gap-1">
               <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               마지막 업데이트:{" "}
-              {cachedData?.convertedAt.toLocaleTimeString("ko-KR")}
+              {lastUpdated ? lastUpdated.toLocaleTimeString("ko-KR") : "-"}
             </div>
           </div>
         </div>
@@ -177,17 +167,35 @@ export default function PublicTransitSection() {
       ) : sortedArrivals.length === 0 ? (
         <Card className="bg-neutral-50 border border-neutral-200">
           <div className="text-center py-8 text-neutral-600">
-            <p>현재 운행중인 버스가 없습니다</p>
+            <p>표시 가능한 노선 정보가 없습니다</p>
           </div>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
+          {activeArrivals.length === 0 && (
+            <Card className="bg-amber-50 border border-amber-200">
+              <div className="text-amber-800 text-sm font-medium">
+                현재 운행중인 버스는 없습니다.
+                <p className="mt-1 text-xs text-amber-700">
+                  아래에는 운행종료/정보없음을 포함한 전체 노선 상태를
+                  표시합니다.
+                </p>
+              </div>
+            </Card>
+          )}
+
           {sortedArrivals.map((arrival, idx) => {
             // 운행 정보 확인
             const isNoInfo =
               !arrival.predictTime1 ||
               arrival.predictTime1 <= 0 ||
               arrival.arrivalMsg1 === "정보 없음";
+
+            const statusLabel = isNoInfo
+              ? arrival.arrivalMsg1?.includes("운행종료")
+                ? "운행종료"
+                : "정보없음"
+              : "운행중";
 
             // 좌석 혼잡도
             const seatStatus =
@@ -246,6 +254,18 @@ export default function PublicTransitSection() {
                       >
                         {arrival.routeName}
                       </p>
+                      <span
+                        className={clsx(
+                          "text-xs px-2 py-0.5 rounded font-medium",
+                          statusLabel === "운행중"
+                            ? "bg-blue-100 text-blue-700"
+                            : statusLabel === "운행종료"
+                              ? "bg-gray-200 text-gray-700"
+                              : "bg-amber-100 text-amber-700",
+                        )}
+                      >
+                        {statusLabel}
+                      </span>
                       {arrival.isLow1 && !isNoInfo && (
                         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
                           저상

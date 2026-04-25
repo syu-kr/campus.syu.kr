@@ -444,25 +444,24 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
 
 // 정류장 설정 (고정)
 export const PUBLIC_TRANSIT_STOPS: BusStop[] = [
-  // [서울 버스 API 잠시 주석처리]
-  // {
-  //   id: "seoul-jungmun-up",
-  //   name: "삼육대앞",
-  //   region: "seoul",
-  //   seoulArsId: "11154",
-  //   lat: 37.2625,
-  //   lon: 127.0284,
-  //   direction: "up",
-  // },
-  // {
-  //   id: "seoul-jungmun-down",
-  //   name: "삼육대앞",
-  //   region: "seoul",
-  //   seoulArsId: "11155",
-  //   lat: 37.2625,
-  //   lon: 127.0284,
-  //   direction: "down",
-  // },
+  {
+    id: "seoul-jungmun-up",
+    name: "삼육대앞",
+    region: "seoul",
+    seoulArsId: "11154",
+    lat: 37.6384167,
+    lon: 127.10835,
+    direction: "up",
+  },
+  {
+    id: "seoul-jungmun-down",
+    name: "삼육대앞",
+    region: "seoul",
+    seoulArsId: "11155",
+    lat: 37.6384167,
+    lon: 127.10835,
+    direction: "down",
+  },
   {
     id: "gyeonggi-jungmun-up",
     name: "삼육대앞",
@@ -501,67 +500,127 @@ export const PUBLIC_TRANSIT_STOPS: BusStop[] = [
   },
 ];
 
-// [서울 버스 API 잠시 주석처리]
-// 서울 버스 도착정보 조회
-// async function fetchSeoulBusArrivals(arsId: string): Promise<BusArrival[]> {
-//   try {
-//     const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-//     if (!serviceKey) {
-//       console.warn("Seoul bus service key not configured");
-//       return [];
-//     }
-//
-//     const url = `http://ws.bus.go.kr/api/rest/arrive/getArrInfoByStId?serviceKey=${encodeURIComponent(serviceKey)}&stId=${arsId}`;
-//
-//     const response = await fetch(url, {
-//       method: "GET",
-//       headers: { Accept: "application/xml" },
-//       // 서버사이드 호출이므로 캐싱 가능
-//     });
-//
-//     if (!response.ok) {
-//       throw new Error(`Seoul API returned ${response.status}`);
-//     }
-//
-//     const text = await response.text();
-//
-//     // XML 파싱 (간단한 정규식 방식)
-//     const itemRegex = /<itemList>[\s\S]*?<\/itemList>/g;
-//     const matches = text.match(itemRegex) || [];
-//
-//     const arrivals: BusArrival[] = [];
-//
-//     matches.forEach((item: string) => {
-//       // 노선 ID와 이름 추출
-//       const rtNmMatch = item.match(/<rtNm>([^<]+)<\/rtNm>/);
-//       const busRouteIdMatch = item.match(/<busRouteId>([^<]+)<\/busRouteId>/);
-//       const arrmsg1Match = item.match(/<arrmsg1>([^<]+)<\/arrmsg1>/);
-//       const arrmsg2Match = item.match(/<arrmsg2>([^<]+)<\/arrmsg2>/);
-//       const isLow1Match = item.match(/<isLow1>([^<]+)<\/isLow1>/);
-//       const isLow2Match = item.match(/<isLow2>([^<]+)<\/isLow2>/);
-//
-//       if (rtNmMatch && arrmsg1Match) {
-//         arrivals.push({
-//           routeId: busRouteIdMatch?.[1] || "",
-//           routeName: rtNmMatch[1],
-//           arrivalMsg1: arrmsg1Match[1],
-//           arrivalMsg2: arrmsg2Match?.[1] || "운행 종료",
-//           isLow1: isLow1Match?.[1] === "Y",
-//           isLow2: isLow2Match?.[1] === "Y",
-//         });
-//       }
-//     });
-//
-//     return arrivals;
-//   } catch (error) {
-//     console.error("Failed to fetch Seoul bus arrivals:", error);
-//     return [];
-//   }
-// }
+function extractKoreanMinutes(message: string): number | undefined {
+  const match = message.match(/(\d+)\s*분\s*후/);
+  return match ? Number(match[1]) : undefined;
+}
+
+function extractStopsBefore(message: string): number | undefined {
+  const match = message.match(/\[(\d+)\s*번째\s*전\]/);
+  return match ? Number(match[1]) : undefined;
+}
+
+function parseSeoulItemTag(item: string, tag: string): string {
+  const match = item.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
+  return match?.[1]?.trim() ?? "";
+}
+
+function hasSamyukName(name: string): boolean {
+  const normalized = name.replace(/\s+/g, "");
+  return normalized.includes("삼육대");
+}
+
+function isFreshSeoulReport(reportTime: string): boolean {
+  if (!reportTime) return true;
+
+  const normalized = reportTime.replace(".0", "").trim();
+  const parsed = new Date(normalized.replace(" ", "T"));
+  if (Number.isNaN(parsed.getTime())) {
+    return true;
+  }
+
+  // 서울 API의 오래된 잔존 데이터(과거 연도/과도한 지연)를 제외
+  const ageMs = Date.now() - parsed.getTime();
+  return ageMs >= 0 && ageMs <= 1000 * 60 * 60 * 3;
+}
+
+function normalizeRouteName(name: string): string {
+  const compact = name.replace(/\s+/g, "");
+  return compact.replace(/^남양주/, "").replace(/남양주$/, "");
+}
+
+// 서울 버스 도착정보 조회 (정류소 고유번호 arsId 기반)
+async function fetchSeoulBusArrivals(
+  arsId: string,
+  expectedStopName: string,
+): Promise<BusArrival[]> {
+  try {
+    const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
+    if (!serviceKey) {
+      console.warn("Seoul bus service key not configured");
+      return [];
+    }
+
+    const url = `http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?serviceKey=${encodeURIComponent(serviceKey)}&arsId=${arsId}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/xml" },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Seoul API returned ${response.status}`);
+    }
+
+    const text = await response.text();
+    const itemRegex = /<itemList>[\s\S]*?<\/itemList>/g;
+    const matches = text.match(itemRegex) || [];
+
+    return matches
+      .map((item): BusArrival | null => {
+        const itemArsId = parseSeoulItemTag(item, "arsId");
+        const stopName = parseSeoulItemTag(item, "stNm");
+        const reportTime = parseSeoulItemTag(item, "repTm1");
+
+        // 정류장 번호/정류장명(삼육대 포함) 검증
+        if (itemArsId !== arsId) {
+          return null;
+        }
+
+        if (!hasSamyukName(stopName) || !hasSamyukName(expectedStopName)) {
+          return null;
+        }
+
+        if (!isFreshSeoulReport(reportTime)) {
+          return null;
+        }
+
+        const routeName = parseSeoulItemTag(item, "rtNm");
+        const routeId = parseSeoulItemTag(item, "busRouteId");
+        const arrivalMsg1 = parseSeoulItemTag(item, "arrmsg1") || "정보 없음";
+        const arrivalMsg2 = parseSeoulItemTag(item, "arrmsg2") || "운행 종료";
+
+        if (!routeName) {
+          return null;
+        }
+
+        return {
+          routeId,
+          routeName: normalizeRouteName(routeName),
+          arrivalMsg1,
+          arrivalMsg2,
+          isLow1: false,
+          isLow2: false,
+          locationNo1: extractStopsBefore(arrivalMsg1),
+          locationNo2: extractStopsBefore(arrivalMsg2),
+          nextStation1: parseSeoulItemTag(item, "nxtStn") || undefined,
+          nextStation2: parseSeoulItemTag(item, "nxtStn") || undefined,
+          predictTime1: extractKoreanMinutes(arrivalMsg1),
+          predictTime2: extractKoreanMinutes(arrivalMsg2),
+        };
+      })
+      .filter((item): item is BusArrival => item !== null);
+  } catch (error) {
+    console.error("Failed to fetch Seoul bus arrivals:", error);
+    return [];
+  }
+}
 
 // 경기도 버스 도착정보 조회
 async function fetchGyeonggiBusArrivals(
   stationIds: string[],
+  expectedStopName: string,
 ): Promise<BusArrival[]> {
   try {
     const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
@@ -604,7 +663,13 @@ async function fetchGyeonggiBusArrivals(
 
         const items = data.response?.msgBody?.busArrivalList || [];
 
-        return items.map((item) => {
+        return items
+          .filter((item) => {
+            const itemStationId = String((item as { stationId?: string | number }).stationId ?? "");
+            // 정류장 번호/정류장명(삼육대 포함) 검증
+            return stationId === itemStationId && hasSamyukName(expectedStopName);
+          })
+          .map((item) => {
           // predictTime은 이미 분 단위 (API 문서: 초 단위라 했으나 실제는 분 단위)
           const time1 =
             typeof item.predictTime1 === "number"
@@ -617,7 +682,7 @@ async function fetchGyeonggiBusArrivals(
 
           return {
             routeId: String(item.routeId) || "",
-            routeName: String(item.routeName) || "",
+            routeName: normalizeRouteName(String(item.routeName) || ""),
             arrivalMsg1: time1,
             arrivalMsg2: time2,
             isLow1: item.lowPlate1 === 1,
@@ -675,16 +740,14 @@ export async function fetchPublicTransitArrivals(): Promise<
   const promises = PUBLIC_TRANSIT_STOPS.map(async (stop) => {
     let arrivals: BusArrival[] = [];
 
-    // [서울 버스 API 잠시 주석처리]
-    // if (stop.region === "seoul" && stop.seoulArsId) {
-    //   arrivals = await fetchSeoulBusArrivals(stop.seoulArsId);
-    // } else
-    if (
+    if (stop.region === "seoul" && stop.seoulArsId) {
+      arrivals = await fetchSeoulBusArrivals(stop.seoulArsId, stop.name);
+    } else if (
       stop.region === "gyeonggi" &&
       stop.gyeonggiStationIds &&
       stop.gyeonggiStationIds.length > 0
     ) {
-      arrivals = await fetchGyeonggiBusArrivals(stop.gyeonggiStationIds);
+      arrivals = await fetchGyeonggiBusArrivals(stop.gyeonggiStationIds, stop.name);
     }
 
     // noLine 또는 빈 응답 제거
@@ -701,7 +764,34 @@ export async function fetchPublicTransitArrivals(): Promise<
     if (stopMap.has(mergeKey)) {
       // 이미 이 방향의 데이터가 있으면 arrivals 병합
       const existing = stopMap.get(mergeKey)!;
-      existing.arrivals.push(...arrivals);
+      const mergedByRoute = new Map<string, BusArrival>();
+
+      [...existing.arrivals, ...arrivals].forEach((arrival) => {
+        const key = (arrival.routeName || arrival.routeId || "").replace(
+          /\s+/g,
+          "",
+        );
+        const prev = mergedByRoute.get(key);
+
+        if (!prev) {
+          mergedByRoute.set(key, arrival);
+          return;
+        }
+
+        const prevTime =
+          typeof prev.predictTime1 === "number" ? prev.predictTime1 : Infinity;
+        const nextTime =
+          typeof arrival.predictTime1 === "number"
+            ? arrival.predictTime1
+            : Infinity;
+
+        // 동일 노선이 여러 소스에서 오면 도착예정이 있는 값, 그리고 더 이른 값을 우선 사용
+        if (nextTime < prevTime) {
+          mergedByRoute.set(key, arrival);
+        }
+      });
+
+      existing.arrivals = Array.from(mergedByRoute.values());
       existing.lastUpdated = new Date();
     } else {
       // 새로운 방향 데이터
