@@ -5,8 +5,8 @@
       "name": "중간고사 연장 운행",
       "startDate": "2026-04-21",
       "endDate": "2026-04-27",
-      "description": "18:40 추가 운행 (석계역행만)",
-      "addedTimes": ["18:40"],
+      "description": "추가 운행 (석계역행)",
+      "addedTimes": ["18:40", "19:00"],
       "applicableDates": [
         "2026-04-21",
         "2026-04-22",
@@ -20,8 +20,8 @@
       "name": "기말고사 연장 운행",
       "startDate": "2026-06-09",
       "endDate": "2026-06-15",
-      "description": "18:40 추가 운행 (석계역행만)",
-      "addedTimes": ["18:40"],
+      "description": "추가 운행 (석계역행)",
+      "addedTimes": ["18:40", "19:00"],
       "applicableDates": [
         "2026-06-09",
         "2026-06-10",

@@ -665,44 +665,48 @@ async function fetchGyeonggiBusArrivals(
 
         return items
           .filter((item) => {
-            const itemStationId = String((item as { stationId?: string | number }).stationId ?? "");
+            const itemStationId = String(
+              (item as { stationId?: string | number }).stationId ?? "",
+            );
             // 정류장 번호/정류장명(삼육대 포함) 검증
-            return stationId === itemStationId && hasSamyukName(expectedStopName);
+            return (
+              stationId === itemStationId && hasSamyukName(expectedStopName)
+            );
           })
           .map((item) => {
-          // predictTime은 이미 분 단위 (API 문서: 초 단위라 했으나 실제는 분 단위)
-          const time1 =
-            typeof item.predictTime1 === "number"
-              ? Math.ceil(item.predictTime1) + "분"
-              : "정보 없음";
-          const time2 =
-            typeof item.predictTime2 === "number"
-              ? Math.ceil(item.predictTime2) + "분"
-              : "운행 종료";
-
-          return {
-            routeId: String(item.routeId) || "",
-            routeName: normalizeRouteName(String(item.routeName) || ""),
-            arrivalMsg1: time1,
-            arrivalMsg2: time2,
-            isLow1: item.lowPlate1 === 1,
-            isLow2: item.lowPlate2 === 1,
-            locationNo1: item.locationNo1,
-            locationNo2:
-              typeof item.locationNo2 === "number"
-                ? item.locationNo2
-                : undefined,
-            nextStation1: item.stationNm1,
-            nextStation2: item.stationNm2,
-            predictTime1: item.predictTime1,
-            predictTime2:
+            // predictTime은 이미 분 단위 (API 문서: 초 단위라 했으나 실제는 분 단위)
+            const time1 =
+              typeof item.predictTime1 === "number"
+                ? Math.ceil(item.predictTime1) + "분"
+                : "정보 없음";
+            const time2 =
               typeof item.predictTime2 === "number"
-                ? item.predictTime2
-                : undefined,
-            crowded1: item.crowded1,
-            crowded2: item.crowded2,
-          };
-        }) as BusArrival[];
+                ? Math.ceil(item.predictTime2) + "분"
+                : "운행 종료";
+
+            return {
+              routeId: String(item.routeId) || "",
+              routeName: normalizeRouteName(String(item.routeName) || ""),
+              arrivalMsg1: time1,
+              arrivalMsg2: time2,
+              isLow1: item.lowPlate1 === 1,
+              isLow2: item.lowPlate2 === 1,
+              locationNo1: item.locationNo1,
+              locationNo2:
+                typeof item.locationNo2 === "number"
+                  ? item.locationNo2
+                  : undefined,
+              nextStation1: item.stationNm1,
+              nextStation2: item.stationNm2,
+              predictTime1: item.predictTime1,
+              predictTime2:
+                typeof item.predictTime2 === "number"
+                  ? item.predictTime2
+                  : undefined,
+              crowded1: item.crowded1,
+              crowded2: item.crowded2,
+            };
+          }) as BusArrival[];
       } catch {
         return [];
       }
@@ -747,7 +751,10 @@ export async function fetchPublicTransitArrivals(): Promise<
       stop.gyeonggiStationIds &&
       stop.gyeonggiStationIds.length > 0
     ) {
-      arrivals = await fetchGyeonggiBusArrivals(stop.gyeonggiStationIds, stop.name);
+      arrivals = await fetchGyeonggiBusArrivals(
+        stop.gyeonggiStationIds,
+        stop.name,
+      );
     }
 
     // noLine 또는 빈 응답 제거
