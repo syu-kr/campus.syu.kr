@@ -201,8 +201,8 @@ NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY=your_public_data_service_key
 useQuery({
   queryKey: ["public-transit-arrivals"],
   queryFn: () => fetch("/api/bus/public-transit").then((r) => r.json()),
-  staleTime: 10000, // 10초 후 stale 표시
-  gcTime: 30000, // 30초 후 메모리 해제
+  staleTime: 0,
+  gcTime: 0,
   refetchInterval: 10000, // 10초마다 재요청
 });
 ```
@@ -213,8 +213,8 @@ useQuery({
 1. 4개 정류장의 도착 정보 병렬 조회
    ├─ 서울 정문상행 (11154)
    ├─ 서울 정문하행 (11155)
-   ├─ 경기도 후문상행 (42100, 49339)
-   └─ 경기도 후문하행 (42101, 49340)
+   ├─ 경기도 후문상행 (222001596)
+   └─ 경기도 후문하행 (222001597)
 
 2. 각 정류장별 도착 정보 응답
    ├─ 노선명 (버스 번호)
@@ -260,9 +260,11 @@ useQuery({
 
 | 데이터      | staleTime | gcTime | refetchInterval |
 | ----------- | --------- | ------ | --------------- |
-| 도착 정보   | 10초      | 30초   | 10초 (자동)     |
+| 도착 정보   | 0초       | 0초    | 10초 (자동)     |
 | 차량 위치   | 5초       | 15초   | 5초 (자동)      |
 | 정류소 정보 | 1시간     | 3시간  | 없음            |
+
+Next.js fetch 옵션에서는 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 않습니다. 둘 다 캐시 비활성화 의미를 가지므로 동시에 쓰면 경고가 발생합니다.
 
 ---
 

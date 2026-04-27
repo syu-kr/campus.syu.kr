@@ -2,11 +2,12 @@
 
 ## 📊 번들 크기 분석
 
-### 현재 상태 (Task 6 완료)
+### 현재 상태
 
 - **First Load JS**: 87.4 kB ✅ (우수)
-- **페이지 평균 크기**: 90-103 kB (캠퍼스 지도 최대)
-- **Shared JS Chunks**: 85.3 kB (2개 청크)
+- **페이지 First Load JS 범위**: 89.7-118 kB (홈 최대)
+- **캠퍼스 꿀팁 페이지**: 3.73 kB / First Load JS 106 kB
+- **Shared JS Chunks**: 87.4 kB
 - **빌드 최적화**: ✅ 활성화
 
 ### 분석 방법
@@ -161,6 +162,6 @@ npm run lint
 
 ---
 
-**Last Updated**: 2026-04-07  
-**Task 6 Status**: ✅ 완료  
-**Next**: Task 7 - 최종 배포 준비
+**Last Updated**: 2026-04-27  
+**Status**: ✅ 최신 빌드 기준 갱신  
+**Next**: 배포 후 Core Web Vitals 및 Lighthouse 확인

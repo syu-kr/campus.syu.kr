@@ -111,9 +111,15 @@
   </url>
   <url>
     <loc>https://campus.syu.kr/more/scholarship</loc>
-    <lastmod>2026-04-07</lastmod>
+    <lastmod>2026-04-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://campus.syu.kr/more/campus-tips</loc>
+    <lastmod>2026-04-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   
   <!-- Service & Legal Pages - Lower Priority -->

@@ -18,7 +18,7 @@
 - **`components/`** - Root-level shared components used globally (e.g., NotificationModal)
 - **`app/api/`** - API routes that proxy/transform external data (weather, bus locations, notifications)
 - **`lib/`** - Shared utilities: data fetching (api.ts, firebase.ts), helpers (utils.ts, weather.ts), custom hooks (use-versioned-query.ts)
-- **`public/data/`** - Static crawled datasets in JSON format (announcements, schedules, cafeteria menus)
+- **`public/data/`** - Static datasets in JSON format (announcements, schedules, cafeteria menus, campus tips)
 - **`public/service-notices/`** - Markdown files with YAML frontmatter for service announcements
 - **`types/`** - Centralized TypeScript definitions (Announcement, WeatherData, BusArrival, etc.)
 
@@ -26,7 +26,7 @@
 
 ```
 React Component
-  → useQuery() with no caching (staleTime=0, gcTime=0)
+  → useQuery() with feature-specific staleTime/gcTime
   → lib/api.ts (JSON), lib/firebase.ts (realtime), or app/api/* (proxied data)
   → External APIs / Static JSON / Firebase
 ```
@@ -35,7 +35,7 @@ React Component
 
 ### Static JSON Data (Primary)
 
-Most data comes from `public/data/` JSON files crawled by Python scripts in `scripts/`:
+Most app data comes from `public/data/` JSON files:
 
 ```typescript
 // lib/api.ts pattern
@@ -43,10 +43,10 @@ export async function fetchAnnouncements(
   category?: string,
 ): Promise<Announcement[]> {
   try {
-    const data = await fetch("/data/announcements-academic.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    }).then((r) => r.json());
+    const data = await fetchJson<Announcement[]>(
+      "/data/announcements-academic.json",
+      { fallback: [] },
+    );
     return data;
   } catch {
     return []; // Graceful fallback to empty state
@@ -54,7 +54,7 @@ export async function fetchAnnouncements(
 }
 ```
 
-**Always use `cache: "no-store"` and `revalidate: 0`** to ensure fresh data. Errors are caught silently.
+Use `fetchJson` from `lib/fetch-json.ts` for JSON data. Do not set `cache: "no-store"` and `next.revalidate` together; Next.js warns because they express overlapping cache policies.
 
 ### External Government APIs (via API Routes)
 
@@ -96,18 +96,18 @@ See [DEVELOPMENT.md](../DEVELOPMENT.md) for detailed setup.
 ### React Query Configuration
 
 ```typescript
-// app/providers.tsx - Aggressive cache invalidation (always refetch)
+// app/providers.tsx - Feature-specific queries can override these defaults
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0, // Always stale
-      gcTime: 0, // Never garbage collect
+      staleTime: 0,
+      gcTime: 0,
     },
   },
 });
 ```
 
-This means **every page navigation refetches data** (no caching between routes). Use `useQuery` with custom `queryKey` for deduplication.
+Use explicit `staleTime` and `gcTime` per feature. Static JSON datasets can use longer values, while live transit data can use short polling intervals.
 
 ## Environment Variables
 
@@ -151,7 +151,7 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 
 ### ⚠️ CRITICAL: Real Data Only
 
-- **Never add dummy or mock data** to production. All data in `public/data/` is **crawled from real sources** (scripts in `scripts/`).
+- **Never add dummy or mock data** to production. Data in `public/data/` should come from real sources or curated source material.
 - If adding development-only mock data, mark it clearly (e.g., `// DEV ONLY - Remove before merging`).
 
 ### Data Handling
@@ -205,8 +205,8 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 
 ### React Query & Caching
 
-- The app disables all caching (`staleTime=0, gcTime=0`) by design—always fresh data.
-- If you add new data sources, follow the same pattern in `lib/api.ts`.
+- The app defines React Query defaults in `app/providers.tsx`, but feature queries should choose practical caching values.
+- Static JSON sources such as campus tips can use longer `staleTime`; live transit data should keep short polling intervals.
 
 ### XML/Regex Extraction
 

@@ -24,7 +24,7 @@
   - Naver/Bing 봇 최적화
   - 악의적 봇 차단 (MJ12bot, SemrushBot, DotBot)
   - Request-rate 제한 (30/60)
-- [x] sitemap.xml 업데이트 (21개 URL)
+- [x] sitemap.xml 업데이트 (22개 URL)
   - 우선순위 세분화 (1.0~0.6)
   - 변경 빈도 설정 (hourly~yearly)
   - lastmod 날짜 최신화
@@ -46,6 +46,7 @@
 - [x] 학사 페이지: "참고해보세요" 컨텍스트 링크
 - [x] 캠퍼스 페이지: "도움이 될 만한 정보" 섹션
 - [x] 더보기 페이지: "자주 가는 메뉴" 그리드
+- [x] 캠퍼스 꿀팁 자료실: 더보기 진입점 및 검색형 링크 모음
 - [x] 사용자 네비게이션 흐름 개선
 - [x] 빌드 검증: 30/30 페이지
 
@@ -111,7 +112,7 @@ npm run lint
 ### 2. SEO 파일 확인
 
 - [x] /public/robots.txt - 44줄, 모든 봇 규칙 포함
-- [x] /public/sitemap.xml - 21개 URL, 완전한 우선순위
+- [x] /public/sitemap.xml - 22개 URL, 완전한 우선순위
 - [x] app/layout.tsx - JSON-LD Organization Schema
 - [x] 모든 페이지 - 메타데이터
 
@@ -246,7 +247,7 @@ npm start
 
 ### 📅 타임라인
 
-- **2026-04-07**: 모든 최적화 완료 ✅
+- **2026-04-27**: campus-tips sitemap 반영 및 문서 갱신 ✅
 - **2026-04-08~14**: 배포 & 모니터링 시작
 - **2026-05-07**: 1개월 성과 평가
 - **2026-06-07**: 2개월 성과 평가
@@ -254,6 +255,6 @@ npm start
 ---
 
 **작성자**: GitHub Copilot (Claude Haiku 4.5)  
-**작성일**: 2026-04-07  
+**작성일**: 2026-04-27  
 **상태**: ✅ 배포 준비 완료  
 **다음 단계**: Search Console 등록 및 배포 후 모니터링

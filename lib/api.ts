@@ -5,6 +5,7 @@ import {
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
   BusLocation,
+  CampusTip,
   Scholarship,
   PhoneNumber,
 } from "@/types";
@@ -339,6 +340,19 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
   try {
     return await fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
       fallback: [],
+    });
+  } catch {
+    return [];
+  }
+}
+
+// 캠퍼스 꿀팁 자료실
+export async function fetchCampusTips(): Promise<CampusTip[]> {
+  try {
+    return await fetchJson<CampusTip[]>("/data/campus-tips.json", {
+      fallback: [],
+      noStore: false,
+      next: { revalidate: 604800 },
     });
   } catch {
     return [];

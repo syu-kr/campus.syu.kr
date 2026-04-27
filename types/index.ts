@@ -1,6 +1,7 @@
 export * from "./academic";
 export * from "./announcements";
 export * from "./cafeteria";
+export * from "./campus-tips";
 export * from "./navigation";
 export * from "./phone";
 export * from "./scholarship";

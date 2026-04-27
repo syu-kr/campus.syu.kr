@@ -31,6 +31,14 @@ export default function MorePage() {
       href: "/more/phone",
       color: "from-purple-400 to-purple-600",
     },
+    {
+      id: "4",
+      title: "캠퍼스 꿀팁",
+      description: "학교생활에 필요한 링크 모음",
+      iconName: "lightbulb",
+      href: "/more/campus-tips",
+      color: "from-amber-400 to-orange-500",
+    },
   ];
 
   return (

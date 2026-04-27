@@ -92,6 +92,7 @@ syu-campus/
 │   │
 │   ├── more/                      # 추가 기능
 │   │   ├── page.tsx
+│   │   ├── campus-tips/
 │   │   ├── phone/
 │   │   └── scholarship/
 │   │
@@ -126,6 +127,7 @@ syu-campus/
 │   ├── data/                      # JSON 데이터 파일
 │   │   ├── announcements-*.json
 │   │   ├── cafeteria-menu.json
+│   │   ├── campus-tips.json
 │   │   ├── graduation-requirements.json
 │   │   ├── library-reading-rooms.json
 │   │   ├── phone-numbers.json
@@ -212,7 +214,7 @@ API Routes (Next.js API)
 
 ### 캐싱 전략
 
-- **JSON 데이터**: 1시간마다 재검증 (컴포넌트 레벨 60초)
+- **JSON 데이터**: React Query staleTime/gcTime으로 화면별 정책 적용
 - **날씨 데이터**: 최대 55초 캐시 + 시간 변경시 수동 무효화
 - **Firebase**: 캐싱을 활용한 실시간 리스너
 - **Service Worker**: 네트워크 우선 전략, 캐시로 폴백
@@ -358,30 +360,40 @@ export async function GET(request: NextRequest) {
 
 ### 데이터 페칭 패턴
 
-**클라이언트 쪽 React Query 사용**:
+**공통 JSON fetch 유틸 사용**:
 
 ```typescript
 // lib/api.ts
-import { useQuery } from '@tanstack/react-query';
-
-export function useAnnouncements() {
-  return useQuery({
-    queryKey: ['announcements'],
-    queryFn: async () => {
-      const response = await fetch('/data/announcements.json');
-      return response.json();
-    },
-    staleTime: 3600000, // 1시간
-  });
+export async function fetchCampusTips(): Promise<CampusTip[]> {
+  try {
+    return await fetchJson<CampusTip[]>("/data/campus-tips.json", {
+      fallback: [],
+      noStore: false,
+      next: { revalidate: 604800 },
+    });
+  } catch {
+    return [];
+  }
 }
+```
 
-// 컴포넌트에서
-export function MyComponent() {
-  const { data, isLoading } = useAnnouncements();
+**클라이언트 쪽 React Query 사용**:
+
+```typescript
+export function CampusTipsPage() {
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["campus-tips"],
+    queryFn: () => fetchCampusTips(),
+    staleTime: 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+  });
+
   if (isLoading) return <Skeleton />;
   return <div>{/* 데이터 렌더링 */}</div>;
 }
 ```
+
+`fetchJson`에서 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 마세요. Next.js가 중복 캐시 정책으로 경고합니다.
 
 ## 배포
 
@@ -563,6 +575,6 @@ npm run build       # 전체 빌드 테스트
 
 ---
 
-**최종 업데이트**: 2026년 4월 2일
+**최종 업데이트**: 2026년 4월 27일
 
 질문이나 문제사항은 상세한 내용과 함께 GitHub 이슈를 작성해주세요.
