@@ -106,6 +106,20 @@ export function getCategoryLabel(category: string): string {
 }
 
 /**
+ * 시간표 과목 카테고리 한글 레이블
+ */
+export function getCourseCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    "major-required": "전공 필수",
+    "major-elective": "전공 선택",
+    "liberal-required": "교양 필수",
+    "liberal-elective": "교양 선택",
+  };
+
+  return labels[category] || category;
+}
+
+/**
  * 카테고리 색상
  */
 export function getCategoryColor(

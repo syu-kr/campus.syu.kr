@@ -7,11 +7,11 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
+import { usePagination } from "@/lib/use-pagination";
 
 export default function DirectoryPage() {
   const ITEMS_PER_PAGE = 10;
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: phoneData, isLoading } = useQuery({
     queryKey: ["phone-numbers"],
@@ -32,13 +32,16 @@ export default function DirectoryPage() {
     );
   }, [searchQuery, phoneData]);
 
-  // 페이지네이션 계산
-  const totalPages = Math.ceil(filteredDirectory.length / ITEMS_PER_PAGE);
-  const paginatedDirectory = useMemo(() => {
-    const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIdx = startIdx + ITEMS_PER_PAGE;
-    return filteredDirectory.slice(startIdx, endIdx);
-  }, [filteredDirectory, currentPage]);
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedDirectory,
+    pageNumbers,
+  } = usePagination(filteredDirectory, ITEMS_PER_PAGE, {
+    mobilePageRange: 5,
+    desktopPageRange: 5,
+  });
 
   // 검색어 변경 시 첫 페이지로 이동
   const handleSearch = (value: string) => {
@@ -137,26 +140,19 @@ export default function DirectoryPage() {
             </button>
 
             {/* 페이지 번호 표시 */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const startPage = Math.max(1, currentPage - Math.floor(5 / 2));
-              const pageNum = startPage + i;
-              return pageNum <= totalPages ? pageNum : null;
-            }).map(
-              (pageNum) =>
-                pageNum !== null && (
-                  <button
-                    key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === pageNum
-                        ? "bg-primary-600 text-white"
-                        : "border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                ),
-            )}
+            {pageNumbers.map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  currentPage === pageNum
+                    ? "bg-primary-600 text-white"
+                    : "border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
 
             <button
               onClick={() =>

@@ -5,6 +5,7 @@ import { Card } from "@/app/components/Card";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/app/components/Icon";
+import { getCourseCategoryLabel } from "@/lib/utils";
 
 interface Course {
   id: string;
@@ -251,16 +252,6 @@ export default function TimetableWizardPage() {
     setFilterCategories(newFilter);
   };
 
-  const getCategoryLabel = (category: string): string => {
-    const labels: Record<string, string> = {
-      "major-required": "전공 필수",
-      "major-elective": "전공 선택",
-      "liberal-required": "교양 필수",
-      "liberal-elective": "교양 선택",
-    };
-    return labels[category] || "";
-  };
-
   return (
     <Container className="py-6 sm:py-8">
       {/* 모달 - 항상 표시됨 */}
@@ -421,7 +412,7 @@ export default function TimetableWizardPage() {
                         key={category}
                         className="text-xs text-neutral-600 flex justify-between"
                       >
-                        <span>{getCategoryLabel(category)}:</span>
+                        <span>{getCourseCategoryLabel(category)}:</span>
                         <span className="font-semibold">
                           {credits}학점 ({count}개)
                         </span>
@@ -462,7 +453,7 @@ export default function TimetableWizardPage() {
                         className="w-4 h-4 rounded border-neutral-300"
                       />
                       <span className="text-sm text-neutral-700">
-                        {getCategoryLabel(category)}
+                        {getCourseCategoryLabel(category)}
                       </span>
                     </label>
                   ))}
@@ -495,7 +486,7 @@ export default function TimetableWizardPage() {
                             {course.time}
                           </p>
                           <p className="text-xs text-neutral-500">
-                            {getCategoryLabel(course.category)}
+                            {getCourseCategoryLabel(course.category)}
                           </p>
                           {conflicts && conflicts.length > 0 && (
                             <p className="text-xs text-red-600 mt-1">
@@ -558,7 +549,7 @@ export default function TimetableWizardPage() {
                           {course.professor} | {course.credit}학점
                         </p>
                         <p className="text-xs text-neutral-500">
-                          {getCategoryLabel(course.category)}
+                          {getCourseCategoryLabel(course.category)}
                         </p>
                         {hasConflicts && (
                           <p className="text-xs text-red-600 mt-1">

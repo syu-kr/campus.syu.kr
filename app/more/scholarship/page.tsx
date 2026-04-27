@@ -8,12 +8,12 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScholarships } from "@/lib/api";
 import { useState, useMemo } from "react";
+import { usePagination } from "@/lib/use-pagination";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ScholarshipPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
@@ -34,19 +34,15 @@ export default function ScholarshipPage() {
     );
   }, [allScholarships, searchQuery]);
 
-  // 페이지네이션
-  const totalPages = Math.ceil(filteredScholarships.length / ITEMS_PER_PAGE);
-  const paginatedScholarships = filteredScholarships.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
-
-  // 페이지 범위: 모바일은 5개, 데스크톱은 10개
-  const pageRange =
-    typeof window !== "undefined" && window.innerWidth < 768 ? 5 : 10;
-  const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
-  const endPage = Math.min(totalPages, startPage + pageRange - 1);
-  const adjustedStartPage = Math.max(1, endPage - pageRange + 1);
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    paginatedItems: paginatedScholarships,
+    pageRange,
+    endPage,
+    pageNumbers,
+  } = usePagination(filteredScholarships, ITEMS_PER_PAGE);
 
   // 검색 결과가 변경되면 첫 페이지로
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,10 +162,7 @@ export default function ScholarshipPage() {
           </button>
 
           {/* 모바일: 5개, 데스크톱: 10개 페이지 표시 */}
-          {Array.from(
-            { length: Math.min(pageRange, endPage - adjustedStartPage + 1) },
-            (_, i) => adjustedStartPage + i,
-          ).map((page) => (
+          {pageNumbers.map((page) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
