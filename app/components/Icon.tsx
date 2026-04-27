@@ -165,17 +165,19 @@ const icons: Record<string, React.FC<IconComponentProps>> = {
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox="0 0 30 30"
       fill="none"
       stroke={color}
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M15 21H9v-2a6 6 0 0 0 6-6V5c0-1.25-.756-2.3-2-2.972"></path>
-      <path d="M9 21h6"></path>
-      <path d="M9 3v6a6 6 0 0 1 6 6v2"></path>
-      <path d="M9 19h6"></path>
+      <path
+        d="M21,24c0,0.552-0.447,1-1,1h-8c-0.553,0-1-0.448-1-1s0.447-1,1-1h8C20.553,23,21,23.448,21,24z
+	 M20,26h-8c-0.553,0-1,0.448-1,1s0.447,1,1,1h8c0.553,0,1-0.448,1-1S20.553,26,20,26z M15,29v1c0,0.552,0.448,1,1,1s1-0.448,1-1v-1
+	H15z M26,11c0,5-5,8-5,10c0,0.552-0.448,1-1,1h-8c-0.552,0-1-0.448-1-1c0-2-5-5-5-10C6,5.477,10.477,1,16,1S26,5.477,26,11z M17,4
+	c0-0.552-0.447-1-1-1c-4.411,0-8,3.589-8,8c0,0.552,0.447,1,1,1s1-0.448,1-1c0-3.309,2.691-6,6-6C16.553,5,17,4.552,17,4z"
+      />
     </svg>
   ),
   map: ({ size = 24, color = "currentColor", strokeWidth = 2 }) => (
