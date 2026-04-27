@@ -43,6 +43,27 @@ type GyeonggiLocationResponse = {
   };
 };
 
+const PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS = 3500;
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS,
+): Promise<Response> {
+  if (init.signal) {
+    return fetch(input, init);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 // 정류장 설정 (고정)
 export const PUBLIC_TRANSIT_STOPS: BusStop[] = [
   {
@@ -154,7 +175,7 @@ async function fetchSeoulBusArrivals(
 
     const url = `http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?serviceKey=${encodeURIComponent(serviceKey)}&arsId=${arsId}`;
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: "GET",
       headers: { Accept: "application/xml" },
       cache: "no-store",
@@ -237,6 +258,7 @@ async function fetchGyeonggiBusArrivals(
 
         const data = await fetchJson<GyeonggiArrivalResponse>(url, {
           fallback: {},
+          timeoutMs: PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS,
         });
 
         const items = data.response?.msgBody?.busArrivalList || [];
@@ -419,6 +441,7 @@ export async function fetchGyeonggiBusLocations(
 
     const data = await fetchJson<GyeonggiLocationResponse>(url, {
       fallback: {},
+      timeoutMs: PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS,
     });
 
     const items = data.response?.body?.items || [];

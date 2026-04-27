@@ -8,6 +8,7 @@ export type FetchJsonOptions<T> = Omit<RequestInit, "cache"> & {
   fallback: T;
   noStore?: boolean;
   next?: NextFetchOptions;
+  timeoutMs?: number;
 };
 
 export async function fetchJson<T>(
@@ -16,14 +17,22 @@ export async function fetchJson<T>(
     fallback,
     noStore = true,
     next,
+    timeoutMs,
     ...init
   }: FetchJsonOptions<T>,
 ): Promise<T> {
+  const controller =
+    timeoutMs && !init.signal ? new AbortController() : undefined;
+  const timeoutId = controller
+    ? setTimeout(() => controller.abort(), timeoutMs)
+    : undefined;
+
   try {
     const requestInit: RequestInit & { next?: NextFetchOptions } = {
       ...init,
       cache: noStore ? "no-store" : init.cache,
       next: noStore ? undefined : next,
+      signal: init.signal ?? controller?.signal,
     };
 
     const response = await fetch(input, requestInit);
@@ -36,5 +45,9 @@ export async function fetchJson<T>(
     return (data ?? fallback) as T;
   } catch {
     return fallback;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
 }

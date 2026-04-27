@@ -54,10 +54,10 @@ export default function PublicTransitSection() {
         lastUpdated: new Date(item.lastUpdated),
       }));
     },
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 10000,
+    gcTime: 60 * 1000,
     refetchInterval: 10000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   });
 
   const selectedStop = useMemo(
