@@ -13,6 +13,13 @@ interface EnrichedBusArrival extends BusArrival {
   minArrivalTime: number; // 첫번째 도착까지 초 단위
 }
 
+const TRANSIT_STOPS = [
+  { id: "jungmun-up", label: "정문 상행" },
+  { id: "jungmun-down", label: "정문 하행" },
+  { id: "humun-up", label: "후문 상행" },
+  { id: "humun-down", label: "후문 하행" },
+];
+
 export default function PublicTransitSection() {
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
   const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
@@ -25,6 +32,7 @@ export default function PublicTransitSection() {
   const {
     data: arrivals = [],
     isLoading,
+    isFetching,
     error,
     refetch,
   } = useQuery({
@@ -54,48 +62,53 @@ export default function PublicTransitSection() {
     return Number.isFinite(latest) ? new Date(latest) : null;
   }, [arrivals]);
 
-  const selectedStop = arrivals.find((s) => {
-    const stopId = s.stop.id;
-    return selectedStopId === "jungmun-up"
-      ? stopId.includes("jungmun") && s.stop.direction === "up"
-      : selectedStopId === "jungmun-down"
-        ? stopId.includes("jungmun") && s.stop.direction === "down"
-        : selectedStopId === "humun-up"
-          ? stopId.includes("humun") && s.stop.direction === "up"
-          : selectedStopId === "humun-down"
-            ? stopId.includes("humun") && s.stop.direction === "down"
-            : false;
-  });
-
-  // 도착 시간순으로 정렬된 버스들 (운행 중인 버스 우선, 정보 없음은 마지막)
-  const sortedArrivals: EnrichedBusArrival[] = (selectedStop?.arrivals || [])
-    .map((arrival) => ({
-      ...arrival,
-      minArrivalTime:
-        arrival.predictTime1 && arrival.predictTime1 > 0
-          ? arrival.predictTime1
-          : Infinity,
-    }))
-    .sort((a, b) => a.minArrivalTime - b.minArrivalTime);
-
-  // 운행 중(도착예정 시간 존재) 노선만 표시
-  const activeArrivals = sortedArrivals.filter(
-    (arrival) =>
-      typeof arrival.predictTime1 === "number" && arrival.predictTime1 > 0,
+  const selectedStop = useMemo(
+    () =>
+      arrivals.find((s) => {
+        const stopId = s.stop.id;
+        return selectedStopId === "jungmun-up"
+          ? stopId.includes("jungmun") && s.stop.direction === "up"
+          : selectedStopId === "jungmun-down"
+            ? stopId.includes("jungmun") && s.stop.direction === "down"
+            : selectedStopId === "humun-up"
+              ? stopId.includes("humun") && s.stop.direction === "up"
+              : selectedStopId === "humun-down"
+                ? stopId.includes("humun") && s.stop.direction === "down"
+                : false;
+      }),
+    [arrivals, selectedStopId],
   );
 
-  const stops = [
-    { id: "jungmun-up", label: "정문 상행" },
-    { id: "jungmun-down", label: "정문 하행" },
-    { id: "humun-up", label: "후문 상행" },
-    { id: "humun-down", label: "후문 하행" },
-  ];
+  // 도착 시간순으로 정렬된 버스들 (운행 중인 버스 우선, 정보 없음은 마지막)
+  const sortedArrivals: EnrichedBusArrival[] = useMemo(
+    () =>
+      (selectedStop?.arrivals || [])
+        .map((arrival) => ({
+          ...arrival,
+          minArrivalTime:
+            arrival.predictTime1 && arrival.predictTime1 > 0
+              ? arrival.predictTime1
+              : Infinity,
+        }))
+        .sort((a, b) => a.minArrivalTime - b.minArrivalTime),
+    [selectedStop],
+  );
+
+  // 운행 중(도착예정 시간 존재) 노선만 표시
+  const activeArrivals = useMemo(
+    () =>
+      sortedArrivals.filter(
+        (arrival) =>
+          typeof arrival.predictTime1 === "number" && arrival.predictTime1 > 0,
+      ),
+    [sortedArrivals],
+  );
 
   return (
     <Container className="py-4 sm:py-8">
       {/* 헤더 - 개선된 디자인 */}
       <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 sm:p-6 border border-blue-100">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
               대중교통 안내
@@ -109,6 +122,16 @@ export default function PublicTransitSection() {
               {lastUpdated ? lastUpdated.toLocaleTimeString("ko-KR") : "-"}
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            title="새로고침"
+            aria-label="대중교통 정보 새로고침"
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshIcon className={isFetching ? "animate-spin" : undefined} />
+          </button>
         </div>
       </div>
 
@@ -134,7 +157,7 @@ export default function PublicTransitSection() {
       {!isLoading && (
         <div className="mb-4 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-2 min-w-max pb-2">
-            {stops.map((stop) => (
+            {TRANSIT_STOPS.map((stop) => (
               <button
                 key={stop.id}
                 onClick={() => setSelectedStopId(stop.id)}
@@ -357,5 +380,25 @@ export default function PublicTransitSection() {
         }}
       />
     </Container>
+  );
+}
+
+function RefreshIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+    </svg>
   );
 }

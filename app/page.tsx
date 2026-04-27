@@ -7,7 +7,6 @@ import { Card } from "./components/Card";
 import { Container } from "./components/Container";
 import { SearchBar } from "./components/SearchBar";
 import { Badge } from "./components/Badge";
-import { AnnouncementCard } from "./components/AnnouncementCard";
 import { Skeleton } from "./components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -25,13 +24,11 @@ import {
   getTodayInfo,
   isScheduleOnDate,
 } from "@/lib/home";
-import type {
-  Announcement,
-  PhoneNumber,
-  ServiceNotice,
-} from "@/types";
+import type { ServiceNotice } from "@/types";
 import { Icon } from "./components/Icon";
 import { StateCard } from "./components/StateCard";
+import { SearchResultSection } from "./components/SearchResultSection";
+import { HomeNoticeCard, ServiceNoticeCard } from "./components/HomeNoticeCard";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
@@ -69,13 +66,13 @@ export default function Home() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [now, setNow] = useState<Date | null>(null);
 
-  // 매초 한국 시간 업데이트
+  // 날짜 기반 표시만 사용하므로 분 단위로만 갱신합니다.
   useEffect(() => {
     setNow(getKoreaNow());
 
     const timer = setInterval(() => {
       setNow(getKoreaNow());
-    }, 1000);
+    }, 60 * 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -149,8 +146,7 @@ export default function Home() {
 
   // 검색 결과를 카테고리별로 분류 (Hook의 규칙을 지키기 위해 조건 밖에서 호출)
   const categorizedResults = useMemo(() => {
-    if (!showSearchResults) return {};
-    return categorizeSearchResults(searchResults);
+    return categorizeSearchResults(showSearchResults ? searchResults : undefined);
   }, [showSearchResults, searchResults]);
 
   const homeNotices = useMemo(
@@ -191,104 +187,10 @@ export default function Home() {
         )}
 
         {!searchLoading && searchResults && searchResults.length > 0 && (
-          <div className="space-y-6">
-            {Object.entries(categorizedResults)
-              .filter(([, category]) => category.items.length > 0)
-              .map(([key, category]) => (
-                <div key={key} className="pb-4 border-b border-neutral-200">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-neutral-900">
-                      {category.label}
-                    </h3>
-                    {category.items.length > 3 && (
-                      <Link
-                        href={{
-                          pathname: category.linkPath,
-                          query:
-                            key === "academicAnnouncement" ||
-                            key === "campusAnnouncement" ||
-                            key === "scholarship"
-                              ? { search: searchQuery }
-                              : undefined,
-                        }}
-                        className="text-xs text-primary-600 hover:text-primary-700"
-                      >
-                        전체보기 →
-                      </Link>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    {category.items.slice(0, 3).map((item) => {
-                      if ("phone" in item && "department" in item) {
-                        // PhoneNumber
-                        const phone = item as PhoneNumber;
-                        return (
-                          <Card key={phone.phone}>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-neutral-900">
-                                  {phone.department}
-                                </h4>
-                                <p className="text-sm text-primary-600 font-semibold mt-1">
-                                  {phone.phone}
-                                </p>
-                              </div>
-                              <a
-                                href={`tel:${phone.phone}`}
-                                className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors"
-                              >
-                                전화
-                              </a>
-                            </div>
-                          </Card>
-                        );
-                      } else if ("startDate" in item) {
-                        // AcademicSchedule
-                        return (
-                          <Card key={item.id}>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-neutral-900">
-                                  {item.title}
-                                </h4>
-                                <p className="text-xs text-neutral-600 mt-1">
-                                  {item.startDate}
-                                  {item.startDate !== item.endDate
-                                    ? ` ~ ${item.endDate}`
-                                    : ""}
-                                </p>
-                              </div>
-                              <Badge color="gray" size="sm">
-                                {item.category === "exam"
-                                  ? "시험"
-                                  : item.category === "registration"
-                                    ? "수강신청"
-                                    : item.category === "holiday"
-                                      ? "휴일"
-                                      : "행사"}
-                              </Badge>
-                            </div>
-                          </Card>
-                        );
-                      } else {
-                        // Announcement
-                        const announcement = item as Announcement;
-                        return (
-                          <div key={item.id}>
-                            <AnnouncementCard
-                              announcement={announcement}
-                              href={announcement.url}
-                              external={true}
-                            />
-                          </div>
-                        );
-                      }
-                    })}
-                  </div>
-                </div>
-              ))}
-          </div>
+          <SearchResultSection
+            categorizedResults={categorizedResults}
+            searchQuery={searchQuery}
+          />
         )}
       </Container>
     );
@@ -397,30 +299,7 @@ export default function Home() {
               serviceNotices.length > 0 ? (
                 serviceNotices.slice(0, 3).map((notice) => (
                   <div key={notice.slug} className="mb-2">
-                    <Link href={`/service/notices/${notice.slug}`}>
-                      <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-neutral-900 mb-2">
-                              {notice.title}
-                            </h3>
-                            <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
-                              {notice.excerpt || ""}
-                            </p>
-                            <div className="text-xs text-neutral-500">
-                              {notice.author} · {notice.date}
-                            </div>
-                          </div>
-                          <Icon
-                            name="megaphone"
-                            size={20}
-                            className="flex-shrink-0"
-                            color="rgb(82, 82, 82)"
-                            strokeWidth={1.5}
-                          />
-                        </div>
-                      </Card>
-                    </Link>
+                    <ServiceNoticeCard notice={notice} />
                   </div>
                 ))
               ) : (
@@ -446,50 +325,16 @@ export default function Home() {
                       </p>
                     </div>
                   ) : (
-                    homeNotices.map((item) => {
-                      if (item.type === "service") {
-                        const notice = item.data;
-                        return (
-                          <div key={notice.slug} className="mb-2">
-                            <Link href={`/service/notices/${notice.slug}`}>
-                              <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-neutral-900 mb-2">
-                                      {notice.title}
-                                    </h3>
-                                    <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
-                                      {notice.excerpt || ""}
-                                    </p>
-                                    <div className="text-xs text-neutral-500">
-                                      {notice.author} · {notice.date}
-                                    </div>
-                                  </div>
-                                  <Icon
-                                    name="megaphone"
-                                    size={20}
-                                    className="flex-shrink-0"
-                                    color="rgb(82, 82, 82)"
-                                    strokeWidth={1.5}
-                                  />
-                                </div>
-                              </Card>
-                            </Link>
-                          </div>
-                        );
-                      } else {
-                        const announcement = item.data;
-                        return (
-                          <div key={announcement.id} className="mb-2">
-                            <AnnouncementCard
-                              announcement={announcement}
-                              href={announcement.url}
-                              external={true}
-                            />
-                          </div>
-                        );
-                      }
-                    })
+                    homeNotices.map((notice) => (
+                      <HomeNoticeCard
+                        key={`${notice.type}-${
+                          notice.type === "service"
+                            ? notice.data.slug
+                            : notice.data.id
+                        }`}
+                        notice={notice}
+                      />
+                    ))
                   )}
                 </>
               )}

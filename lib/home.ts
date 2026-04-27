@@ -29,7 +29,7 @@ export type HomeNotice =
       data: ServiceNotice;
     };
 
-type SearchCategoryItem = Announcement | AcademicSchedule | PhoneNumber;
+export type SearchCategoryItem = Announcement | AcademicSchedule | PhoneNumber;
 
 export type CategorizedSearchResults = Record<
   string,
@@ -41,7 +41,9 @@ export type CategorizedSearchResults = Record<
 >;
 
 export function getKoreaNow(): Date {
-  return new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
+  );
 }
 
 export function getTodayInfo(now: Date | null): TodayInfo {
