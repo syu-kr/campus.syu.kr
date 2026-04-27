@@ -131,6 +131,10 @@ FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"..."}
 
 Bus API is proxied via `vercel.json` rewrites (see package.json proxy configuration).
 
+- Shuttle realtime endpoint: call `/bus/shuttle` in app code.
+- Rewrite `/bus/shuttle` to `https://bus.syu.kr/api`.
+- The upstream endpoint supports `GET` only (do not use `POST`).
+
 ## Build and Test
 
 - Install dependencies with `npm install`.
@@ -183,6 +187,17 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 
 - **HTTPS connections timeout**. Always use HTTP: `http://ws.bus.go.kr/api/rest/arrive/getArrInfoByStId`
 - Gyeonggi bus API (apis.data.go.kr) works with HTTPS.
+
+**Shuttle Realtime API (bus.syu.kr):**
+
+- Use proxied path `/bus/shuttle` rather than upstream URLs directly in client code.
+- Upstream `https://bus.syu.kr/api` accepts `GET`; `POST` returns `Cannot POST /api`.
+- Response `status` may arrive as a string (`"0" | "1" | "2"`), so normalize to number before filtering/rendering.
+
+**Safari Date Parsing:**
+
+- Do not rely on `new Date("YYYY.MM.DD")` parsing in UI logic.
+- Parse dotted dates explicitly (or normalize to numeric constructor args) before formatting to avoid `NaN` rendering in Safari.
 
 **Vercel Edge/API Timeout:**
 

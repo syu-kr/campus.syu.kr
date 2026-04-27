@@ -11,7 +11,7 @@ export async function GET() {
       );
     }
 
-    // 성균관대학교 자연과학캠퍼스 좌표
+    // 삼육대학교 캠퍼스 좌표
     const latitude = 37.642841484;
     const longitude = 127.10846903;
 

@@ -297,7 +297,7 @@ interface MapMarker {
 
 #### 3. 셔틀버스 실시간 API
 
-**엔드포인트**: `POST http://nexmotion.co.kr/bus/busStatusList.php`
+**엔드포인트**: `GET /bus/shuttle` (rewritten to `https://bus.syu.kr/api`)
 
 실시간 셔틀버스 위치 추적
 
