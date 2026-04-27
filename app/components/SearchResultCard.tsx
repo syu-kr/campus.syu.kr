@@ -2,17 +2,18 @@
 
 import type { Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
-import { AnnouncementCard } from "./AnnouncementCard";
+import { getSearchSnippet, highlightText } from "@/lib/search";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
+  query?: string;
 }
 
-export function SearchResultCard({ item }: SearchResultCardProps) {
+export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
   if ("phone" in item && "department" in item) {
-    return <PhoneSearchResultCard phone={item} />;
+    return <PhoneSearchResultCard phone={item} query={query} />;
   }
 
   if ("startDate" in item) {
@@ -20,11 +21,18 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
       <Card key={item.id}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
-            <h4 className="font-medium text-neutral-900">{item.title}</h4>
+            <h4 className="font-medium text-neutral-900">
+              {highlightText(item.title, query)}
+            </h4>
             <p className="text-xs text-neutral-600 mt-1">
               {item.startDate}
               {item.startDate !== item.endDate ? ` ~ ${item.endDate}` : ""}
             </p>
+            {item.description && (
+              <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
+                {highlightText(getSearchSnippet(item.description, query), query)}
+              </p>
+            )}
           </div>
           <Badge color="gray" size="sm">
             {getScheduleCategoryLabel(item.category)}
@@ -36,24 +44,53 @@ export function SearchResultCard({ item }: SearchResultCardProps) {
 
   const announcement = item as Announcement;
   return (
-    <div key={announcement.id}>
-      <AnnouncementCard
-        announcement={announcement}
-        href={announcement.url}
-        external={true}
-      />
-    </div>
+    <a
+      href={announcement.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block"
+    >
+      <Card key={announcement.id} className="hover:shadow-card-hover">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              {announcement.isPinned && <Badge color="red" size="sm">고정글</Badge>}
+              {announcement.isImportant && (
+                <Badge color="yellow" size="sm">중요</Badge>
+              )}
+            </div>
+            <h4 className="font-medium text-neutral-900 line-clamp-2">
+              {highlightText(announcement.title, query)}
+            </h4>
+            <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
+              {highlightText(getSearchSnippet(announcement.content, query), query)}
+            </p>
+            <p className="mt-2 text-xs text-neutral-500">
+              {announcement.author} · {announcement.date}
+            </p>
+          </div>
+        </div>
+      </Card>
+    </a>
   );
 }
 
-function PhoneSearchResultCard({ phone }: { phone: PhoneNumber }) {
+function PhoneSearchResultCard({
+  phone,
+  query,
+}: {
+  phone: PhoneNumber;
+  query: string;
+}) {
   return (
     <Card key={phone.phone}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1">
-          <h4 className="font-medium text-neutral-900">{phone.department}</h4>
+          <h4 className="font-medium text-neutral-900">
+            {highlightText(phone.department, query)}
+          </h4>
           <p className="text-sm text-primary-600 font-semibold mt-1">
-            {phone.phone}
+            {highlightText(phone.phone, query)}
           </p>
         </div>
         <a

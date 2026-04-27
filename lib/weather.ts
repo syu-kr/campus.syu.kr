@@ -13,7 +13,7 @@ export interface WeatherData {
   gridY: number;
 }
 
-// 캐싱 제거 - 모든 요청이 최신 데이터를 가져옴
+// 캐싱 제거 - 매 요청마다 데이터를 가져옴
 
 /**
  * API 라우트를 통해 날씨 정보 조회

@@ -4,6 +4,7 @@ import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import {
   LIBRARY_OPERATING_HOURS,
@@ -11,7 +12,8 @@ import {
   type LibrarySeason,
   type ReadingRoom,
 } from "@/lib/library";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 function getUsageColor(percentage: number): string {
   if (percentage >= 66) return "bg-red-600"; // 2/3 이상
@@ -20,37 +22,32 @@ function getUsageColor(percentage: number): string {
 }
 
 export default function LibraryPage() {
-  const [rooms, setRooms] = useState<ReadingRoom[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<string>("");
   const [selectedSeason, setSelectedSeason] =
     useState<LibrarySeason>("semester");
   const [seatMapUrl, setSeatMapUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRoomStatus = async () => {
-      try {
-        const data = await fetchJson<ReadingRoom[]>(
-          "/api/library/reading-rooms",
-          { fallback: [] },
-        );
-        setRooms(data);
-        setLastUpdate(new Date().toLocaleTimeString("ko-KR"));
-      } catch (error) {
-        console.error("Failed to fetch room status:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRoomStatus();
-    // 5분마다 갱신
-    const interval = setInterval(fetchRoomStatus, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const {
+    data: rooms = [],
+    isLoading,
+    isFetching,
+    isError,
+    dataUpdatedAt,
+    refetch,
+  } = useQuery({
+    queryKey: ["library-reading-rooms"],
+    queryFn: () =>
+      fetchJson<ReadingRoom[]>("/api/library/reading-rooms", {
+        fallback: [],
+      }),
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+  });
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
+  const lastUpdatedTime = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")
+    : "-";
 
   return (
     <Container className="py-6 sm:py-8">
@@ -65,27 +62,41 @@ export default function LibraryPage() {
 
       {/* 열람실 현황 */}
       <Card className="mb-6">
-        <div className="flex justify-between items-center mb-4">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-neutral-900">열람실 현황</h2>
-          {lastUpdate && (
+          <div className="flex items-center gap-2">
             <span className="text-xs text-neutral-500">
-              마지막 업데이트: {lastUpdate}
+              마지막 업데이트: {lastUpdatedTime}
             </span>
-          )}
+            <button
+              type="button"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="rounded bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isFetching ? "새로고침..." : "새로고침"}
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
           <Skeleton count={3} height="60px" />
         ) : rooms.length === 0 ? (
-          <div className="py-4 text-center text-neutral-500">
-            열람실 정보를 불러올 수 없습니다.
-          </div>
+          <StateCard
+            type={isError ? "error" : "info"}
+            message={
+              isError
+                ? "열람실 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요."
+                : "표시할 열람실 좌석 정보가 없습니다."
+            }
+          />
         ) : (
           <div className="space-y-4">
             {rooms.map((room, idx) => {
               const usagePercent = Math.round(
                 (room.strUseSeat / room.strTotalSeat) * 100,
               );
+              const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (
                 <div key={idx}>
                   <div className="flex justify-between items-center mb-2">
@@ -93,12 +104,14 @@ export default function LibraryPage() {
                       <strong className="text-neutral-900">
                         {room.strRoomNm}
                       </strong>
-                      <button
-                        onClick={() => setSeatMapUrl(ROOM_SEAT_MAP_URLS[idx])}
-                        className="px-2 py-1 text-xs font-medium rounded bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
-                      >
-                        좌석보기
-                      </button>
+                      {roomSeatMapUrl && (
+                        <button
+                          onClick={() => setSeatMapUrl(roomSeatMapUrl)}
+                          className="px-2 py-1 text-xs font-medium rounded bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
+                        >
+                          좌석보기
+                        </button>
+                      )}
                     </div>
                     <span className="text-sm font-semibold text-neutral-700">
                       {room.strUseSeat}/{room.strTotalSeat}

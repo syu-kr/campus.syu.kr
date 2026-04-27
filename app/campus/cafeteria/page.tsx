@@ -5,27 +5,22 @@ import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";
 import { Icon } from "@/app/components/Icon";
+import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCafeteriaMenu } from "@/lib/api";
+import { getKoreaNow } from "@/lib/home";
 import { useMemo, useState, useEffect } from "react";
 
 export default function CafeteriaPage() {
   const [now, setNow] = useState<Date | null>(null);
 
-  // 매초 시간 업데이트 및 초기값 설정
+  // 날짜 기반 표시만 사용하므로 분 단위로 갱신합니다.
   useEffect(() => {
-    // 초기값 설정 (한국 시간대)
-    const koreaTime = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-    );
-    setNow(koreaTime);
+    setNow(getKoreaNow());
 
     const timer = setInterval(() => {
-      const koreaTime = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-      );
-      setNow(koreaTime);
-    }, 1000);
+      setNow(getKoreaNow());
+    }, 60 * 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -50,6 +45,13 @@ export default function CafeteriaPage() {
     const dateString = `${year}-${month}-${date}`;
     return { dateString, isWeekend, dayOfWeek };
   }, [now]);
+
+  const todayMenu = useMemo(() => {
+    if (!menus) return null;
+    return menus.find(
+      (menu) => menu.date === todayInfo.dateString && !todayInfo.isWeekend,
+    );
+  }, [menus, todayInfo.dateString, todayInfo.isWeekend]);
 
   return (
     <Container className="py-6 sm:py-8">
@@ -98,15 +100,38 @@ export default function CafeteriaPage() {
       </Card>
 
       {/* 오늘의 메뉴 */}
+      {!isLoading && !todayMenu && todayInfo.isWeekend && (
+        <StateCard
+          type="info"
+          className="mb-8"
+          message="오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다."
+        />
+      )}
+
       {!isLoading &&
-        menus &&
-        (() => {
-          const todayMenu = menus.find(
-            (menu) =>
-              menu.date === todayInfo.dateString && !todayInfo.isWeekend,
-          );
-          return (
-            todayMenu && (
+        !todayMenu &&
+        !todayInfo.isWeekend &&
+        todayInfo.dayOfWeek === 1 && (
+          <StateCard
+            type="warning"
+            className="mb-8"
+            title="식단 준비 중입니다"
+            message="월요일 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요."
+          />
+        )}
+
+      {!isLoading &&
+        !todayMenu &&
+        !todayInfo.isWeekend &&
+        todayInfo.dayOfWeek !== 1 && (
+          <StateCard
+            type="warning"
+            className="mb-8"
+            message="오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요."
+          />
+        )}
+
+      {!isLoading && todayMenu && (
               <Card className="mb-8 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400">
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-2">
@@ -265,9 +290,7 @@ export default function CafeteriaPage() {
                   </div>
                 </div>
               </Card>
-            )
-          );
-        })()}
+      )}
 
       {/* 주간 메뉴 */}
       <div className="mb-8">
@@ -275,8 +298,16 @@ export default function CafeteriaPage() {
         <div className="space-y-6">
           {isLoading && <Skeleton count={3} height="200px" />}
 
+          {!isLoading && (!menus || menus.length === 0) && (
+            <StateCard
+              type="info"
+              message="표시할 주간 식단 정보가 없습니다."
+            />
+          )}
+
           {!isLoading &&
             menus &&
+            menus.length > 0 &&
             menus.map((menu) => {
               const isToday =
                 menu.date === todayInfo.dateString && !todayInfo.isWeekend;

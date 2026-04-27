@@ -2,6 +2,7 @@
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetch-json";
 import { BusArrivalsAtStop, BusArrival } from "@/types";
@@ -34,6 +35,7 @@ export default function PublicTransitSection() {
     isLoading,
     isFetching,
     error,
+    dataUpdatedAt,
     refetch,
   } = useQuery({
     queryKey: ["public-transit-arrivals"],
@@ -42,6 +44,10 @@ export default function PublicTransitSection() {
         success: boolean;
         data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
       }>("/api/bus/public-transit", { fallback: { success: false, data: [] } });
+
+      if (!json.success) {
+        throw new Error("대중교통 정보를 불러오지 못했습니다.");
+      }
 
       return (json.data || []).map((item) => ({
         ...item,
@@ -53,14 +59,6 @@ export default function PublicTransitSection() {
     refetchInterval: 10000,
     refetchIntervalInBackground: true,
   });
-
-  const lastUpdated = useMemo(() => {
-    if (!arrivals.length) return null;
-    const latest = Math.max(
-      ...arrivals.map((item) => new Date(item.lastUpdated).getTime()),
-    );
-    return Number.isFinite(latest) ? new Date(latest) : null;
-  }, [arrivals]);
 
   const selectedStop = useMemo(
     () =>
@@ -104,6 +102,10 @@ export default function PublicTransitSection() {
     [sortedArrivals],
   );
 
+  const lastRefreshTime = dataUpdatedAt
+    ? new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")
+    : "-";
+
   return (
     <Container className="py-4 sm:py-8">
       {/* 헤더 - 개선된 디자인 */}
@@ -116,11 +118,9 @@ export default function PublicTransitSection() {
             <p className="text-xs sm:text-sm text-neutral-600 mb-3">
               삼육대학교 주변 버스 실시간 도착 정보
             </p>
-            <div className="text-xs text-neutral-500 flex items-center gap-1">
-              <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              마지막 업데이트:{" "}
-              {lastUpdated ? lastUpdated.toLocaleTimeString("ko-KR") : "-"}
-            </div>
+            <p className="text-xs text-neutral-500">
+              마지막 새로고침: {lastRefreshTime}
+            </p>
           </div>
           <button
             type="button"
@@ -137,20 +137,20 @@ export default function PublicTransitSection() {
 
       {/* 오류 상태 */}
       {error && (
-        <Card className="bg-red-50 border border-red-200 mb-6">
-          <div className="text-red-700 text-sm font-medium">
-            <strong>정보를 가져올 수 없습니다</strong>
-            <p className="mt-1">
-              API 키가 설정되지 않았거나 일시적 오류가 발생했습니다.
-            </p>
+        <StateCard
+          type="error"
+          className="mb-6"
+          title="정보를 가져올 수 없습니다"
+          message="API 키가 설정되지 않았거나 일시적 오류가 발생했습니다."
+          action={
             <button
               onClick={() => refetch()}
-              className="mt-3 px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
+              className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
             >
               재시도
             </button>
-          </div>
-        </Card>
+          }
+        />
       )}
 
       {/* 정류장 선택 토글 - 모바일 개선 */}
@@ -185,11 +185,10 @@ export default function PublicTransitSection() {
           ))}
         </div>
       ) : sortedArrivals.length === 0 ? (
-        <Card className="bg-neutral-50 border border-neutral-200">
-          <div className="text-center py-8 text-neutral-600">
-            <p>표시 가능한 노선 정보가 없습니다</p>
-          </div>
-        </Card>
+        <StateCard
+          type="info"
+          message="현재 표시 가능한 운행 정보가 없습니다."
+        />
       ) : (
         <div className="space-y-3">
           {activeArrivals.length === 0 && (

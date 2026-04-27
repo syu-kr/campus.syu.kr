@@ -9,6 +9,7 @@ import {
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
+import { sortSearchResults } from "./search";
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
@@ -253,7 +254,10 @@ export async function searchAll(
       searchPhoneNumberSource(query, lowerQuery),
     ]);
 
-    const uniqueResults = dedupeSearchResults(results.flat());
+    const uniqueResults = sortSearchResults(
+      dedupeSearchResults(results.flat()),
+      query,
+    );
 
     return uniqueResults.slice(0, 100); // 최대 100개로 제한
   } catch {

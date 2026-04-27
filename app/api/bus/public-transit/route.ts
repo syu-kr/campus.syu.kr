@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchPublicTransitArrivals } from "@/lib/api";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic"; // 항상 최신 데이터 조회
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {

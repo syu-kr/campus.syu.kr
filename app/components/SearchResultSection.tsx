@@ -22,7 +22,10 @@ export function SearchResultSection({
           <div key={key} className="pb-4 border-b border-neutral-200">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-neutral-900">
-                {category.label}
+                {category.label}{" "}
+                <span className="text-sm font-medium text-neutral-500">
+                  {category.items.length}
+                </span>
               </h3>
               {category.items.length > 3 && (
                 <Link
@@ -41,7 +44,11 @@ export function SearchResultSection({
 
             <div className="space-y-2">
               {category.items.slice(0, 3).map((item) => (
-                <SearchResultCard key={getSearchResultKey(item)} item={item} />
+                <SearchResultCard
+                  key={getSearchResultKey(item)}
+                  item={item}
+                  query={searchQuery}
+                />
               ))}
             </div>
           </div>

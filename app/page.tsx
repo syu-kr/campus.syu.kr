@@ -83,7 +83,10 @@ export default function Home() {
   }, []);
 
   // 공지사항 조회
-  const { data: announcements, isLoading: announcementsLoading } = useQuery({
+  const {
+    data: announcements,
+    isLoading: announcementsLoading,
+  } = useQuery({
     queryKey: ["announcements", selectedCategory],
     queryFn: () =>
       fetchAnnouncements(
@@ -99,7 +102,10 @@ export default function Home() {
   });
 
   // 서비스 공지 조회
-  const { data: serviceNotices, isLoading: serviceNoticesLoading } = useQuery({
+  const {
+    data: serviceNotices,
+    isLoading: serviceNoticesLoading,
+  } = useQuery({
     queryKey: ["serviceNotices"],
     queryFn: () =>
       fetchJson<ServiceNotice[]>("/api/service-notices", { fallback: [] }),
@@ -108,7 +114,10 @@ export default function Home() {
   });
 
   // 학식 조회
-  const { data: cafeteria, isLoading: cafeteriaLoading } = useQuery({
+  const {
+    data: cafeteria,
+    isLoading: cafeteriaLoading,
+  } = useQuery({
     queryKey: ["cafeteria"],
     queryFn: () => fetchCafeteriaMenu(),
     staleTime: FIVE_MINUTES,
@@ -116,7 +125,10 @@ export default function Home() {
   });
 
   // 학사일정 조회
-  const { data: schedules, isLoading: schedulesLoading } = useQuery({
+  const {
+    data: schedules,
+    isLoading: schedulesLoading,
+  } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     staleTime: THIRTY_MINUTES,
@@ -150,6 +162,13 @@ export default function Home() {
     return cafeteria.find((menu) => menu.date === todayInfo.dateStringDash);
   }, [cafeteria, todayInfo]);
 
+  const todaySchedules = useMemo(() => {
+    if (!schedules) return [];
+    return schedules.filter((schedule) =>
+      isScheduleOnDate(schedule, todayInfo.dateStringDot),
+    );
+  }, [schedules, todayInfo.dateStringDot]);
+
   // 검색 결과를 카테고리별로 분류 (Hook의 규칙을 지키기 위해 조건 밖에서 호출)
   const categorizedResults = useMemo(() => {
     return categorizeSearchResults(showSearchResults ? searchResults : undefined);
@@ -180,7 +199,7 @@ export default function Home() {
           <StateCard
             type="info"
             title="검색 결과가 없습니다"
-            message={`검색 결과: "${searchQuery}"`}
+            message={`"${searchQuery}"와 일치하는 결과가 없습니다. 공지 제목, 일정명, 부서명, 전화번호로 검색할 수 있습니다.`}
             action={
               <button
                 onClick={handleSearchClear}
@@ -309,11 +328,10 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4">
-                  <p className="text-sm text-neutral-600">
-                    서비스 공지가 없습니다.
-                  </p>
-                </div>
+                <StateCard
+                  type="info"
+                  message="선택한 서비스 공지가 없습니다."
+                />
               )}
             </>
           ) : (
@@ -325,11 +343,10 @@ export default function Home() {
               {!announcementsLoading && !serviceNoticesLoading && (
                 <>
                   {homeNotices.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-neutral-600">
-                        공지사항이 없습니다.
-                      </p>
-                    </div>
+                    <StateCard
+                      type="info"
+                      message="선택한 분류에 공지사항이 없습니다."
+                    />
                   ) : (
                     homeNotices.map((notice) => (
                       <HomeNoticeCard
@@ -454,7 +471,7 @@ export default function Home() {
                         오늘의 메뉴
                       </div>
                       <h3 className="font-semibold text-neutral-900 mb-2">
-                        최신화 작업 중입니다
+                        식단 준비 중입니다
                       </h3>
                       <p className="text-sm text-yellow-700">
                         데이터가 준비되고 있습니다. 잠시만 기다려주세요.
@@ -463,6 +480,23 @@ export default function Home() {
                   </div>
                 </Card>
               </Link>
+            )}
+          {!cafeteriaLoading &&
+            !todayInfo.isWeekend &&
+            todayInfo.dayOfWeek !== 1 &&
+            !todayMenu && (
+              <StateCard
+                type="warning"
+                message="오늘 식단 정보가 없습니다. 전체 식단에서 다른 날짜를 확인해보세요."
+                action={
+                  <Link
+                    href="/campus/cafeteria"
+                    className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+                  >
+                    전체 식단 보기
+                  </Link>
+                }
+              />
             )}
         </div>
       </div>
@@ -484,18 +518,10 @@ export default function Home() {
           {schedulesLoading && <Skeleton count={2} />}
           {!schedulesLoading && schedules && (
             <>
-              {schedules.filter((schedule) =>
-                isScheduleOnDate(schedule, todayInfo.dateStringDot),
-              ).length === 0 ? (
-                <div className="py-4 text-center text-neutral-600 text-sm">
-                  오늘 일정이 없습니다.
-                </div>
+              {todaySchedules.length === 0 ? (
+                <StateCard type="info" message="오늘 일정이 없습니다." />
               ) : (
-                schedules
-                  .filter((schedule) =>
-                    isScheduleOnDate(schedule, todayInfo.dateStringDot),
-                  )
-                  .map((schedule) => (
+                todaySchedules.map((schedule) => (
                     <div key={schedule.id} className="mb-3">
                       <Link href="/academic/schedule">
                         <Card className="cursor-pointer hover:shadow-card-hover">

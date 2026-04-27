@@ -22,7 +22,7 @@ export default async function ServiceNoticesPage() {
             서비스 공지
           </h1>
           <p className="text-neutral-600">
-            SYU CAMPUS의 최신 소식과 서비스 업데이트를 확인하세요.
+            SYU CAMPUS의 소식과 서비스 업데이트를 확인하세요.
           </p>
         </div>
 

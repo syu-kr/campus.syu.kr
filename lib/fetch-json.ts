@@ -23,7 +23,7 @@ export async function fetchJson<T>(
     const requestInit: RequestInit & { next?: NextFetchOptions } = {
       ...init,
       cache: noStore ? "no-store" : init.cache,
-      next: noStore ? { revalidate: 0, ...next } : next,
+      next: noStore ? undefined : next,
     };
 
     const response = await fetch(input, requestInit);

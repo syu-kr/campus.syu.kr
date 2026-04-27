@@ -2,6 +2,7 @@
 
 import { Container } from "@/app/components/Container";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAnnouncements } from "@/lib/api";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
@@ -13,7 +14,11 @@ const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 export default function CampusAnnouncementsPage() {
-  const { data: announcements, isLoading } = useQuery({
+  const {
+    data: announcements,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["announcements", "campus"],
     queryFn: () => fetchAnnouncements("campus"),
     staleTime: ONE_MINUTE,
@@ -39,7 +44,7 @@ export default function CampusAnnouncementsPage() {
     }
 
     // 고정글을 상단에 정렬 (isPinned가 true인 것이 먼저, 그 다음 isImportant)
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
       if (a.isImportant && !b.isImportant) return -1;
@@ -109,9 +114,14 @@ export default function CampusAnnouncementsPage() {
       <div className="space-y-3 mb-6">
         {isLoading && <Skeleton count={5} />}
         {!isLoading && paginatedAnnouncements.length === 0 && (
-          <div className="py-8 text-center text-neutral-500">
-            검색 결과가 없습니다.
-          </div>
+          <StateCard
+            type={isError ? "error" : "info"}
+            message={
+              isError
+                ? "캠퍼스공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
+                : "검색 결과가 없습니다."
+            }
+          />
         )}
         {!isLoading &&
           paginatedAnnouncements.map((announcement) => (

@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const response = await fetch(
       "https://libmo.syu.ac.kr/mobile/PA/seatRoomStatusListXML.php",
-      { cache: "no-store" }, // 항상 최신 데이터
+      { cache: "no-store" },
     );
 
     if (!response.ok) {
