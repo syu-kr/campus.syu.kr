@@ -17,9 +17,16 @@ import {
   searchAll,
 } from "@/lib/api";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
+import { fetchJson } from "@/lib/fetch-json";
+import {
+  categorizeSearchResults,
+  getKoreaNow,
+  getHomeNotices,
+  getTodayInfo,
+  isScheduleOnDate,
+} from "@/lib/home";
 import type {
   Announcement,
-  AcademicSchedule,
   PhoneNumber,
   ServiceNotice,
 } from "@/types";
@@ -64,16 +71,10 @@ export default function Home() {
 
   // 매초 한국 시간 업데이트
   useEffect(() => {
-    const koreaTime = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-    );
-    setNow(koreaTime);
+    setNow(getKoreaNow());
 
     const timer = setInterval(() => {
-      const koreaTime = new Date(
-        new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-      );
-      setNow(koreaTime);
+      setNow(getKoreaNow());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -97,12 +98,8 @@ export default function Home() {
   // 서비스 공지 조회
   const { data: serviceNotices, isLoading: serviceNoticesLoading } = useQuery({
     queryKey: ["serviceNotices"],
-    queryFn: async () => {
-      const response = await fetch("/api/service-notices", {
-        cache: "no-store",
-      });
-      return (await response.json()) as ServiceNotice[];
-    },
+    queryFn: () =>
+      fetchJson<ServiceNotice[]>("/api/service-notices", { fallback: [] }),
     staleTime: 0,
     gcTime: 0,
   });
@@ -142,25 +139,7 @@ export default function Home() {
   }, []);
 
   // 오늘 날짜와 요일 계산
-  const todayInfo = useMemo(() => {
-    if (!now)
-      return {
-        dateStringDot: "",
-        dateStringDash: "",
-        isWeekend: false,
-        dayOfWeek: -1,
-      };
-
-    const today = now;
-    const dayOfWeek = today.getDay(); // 0: 일요일, 6: 토요일
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const date = String(today.getDate()).padStart(2, "0");
-    const dateStringDot = `${year}.${month}.${date}`; // YYYY.MM.DD (학사일정)
-    const dateStringDash = `${year}-${month}-${date}`; // YYYY-MM-DD (카페테리아)
-    return { dateStringDot, dateStringDash, isWeekend, dayOfWeek };
-  }, [now]);
+  const todayInfo = useMemo(() => getTodayInfo(now), [now]);
 
   // 오늘 식단 찾기
   const todayMenu = useMemo(() => {
@@ -170,66 +149,14 @@ export default function Home() {
 
   // 검색 결과를 카테고리별로 분류 (Hook의 규칙을 지키기 위해 조건 밖에서 호출)
   const categorizedResults = useMemo(() => {
-    if (!showSearchResults || !searchResults) return {};
-
-    type CategoryType = Announcement | AcademicSchedule | PhoneNumber;
-
-    const categories: {
-      [key: string]: {
-        label: string;
-        items: CategoryType[];
-        linkPath?: string;
-        icon?: string;
-      };
-    } = {
-      academicSchedule: {
-        label: "학사일정",
-        items: [],
-        linkPath: "/academic/schedule",
-      },
-      academicAnnouncement: {
-        label: "학사공지",
-        items: [],
-        linkPath: "/academic/announcements",
-      },
-      campusAnnouncement: {
-        label: "캠퍼스공지",
-        items: [],
-        linkPath: "/campus/announcements",
-      },
-      scholarship: {
-        label: "장학금",
-        items: [],
-        linkPath: "/more/scholarship",
-      },
-      phoneNumbers: {
-        label: "연락처",
-        items: [],
-        linkPath: "/more/phone",
-      },
-    };
-
-    searchResults.forEach((result) => {
-      if ("phone" in result && "department" in result) {
-        // PhoneNumber
-        categories.phoneNumbers.items.push(result as PhoneNumber);
-      } else if ("startDate" in result) {
-        // AcademicSchedule
-        categories.academicSchedule.items.push(result as AcademicSchedule);
-      } else if ("category" in result) {
-        const announcement = result as Announcement;
-        if (announcement.category === "academic") {
-          categories.academicAnnouncement.items.push(announcement);
-        } else if (announcement.category === "campus") {
-          categories.campusAnnouncement.items.push(announcement);
-        } else if (announcement.category === "scholarship") {
-          categories.scholarship.items.push(announcement);
-        }
-      }
-    });
-
-    return categories;
+    if (!showSearchResults) return {};
+    return categorizeSearchResults(searchResults);
   }, [showSearchResults, searchResults]);
+
+  const homeNotices = useMemo(
+    () => getHomeNotices(announcements, serviceNotices, selectedCategory),
+    [announcements, serviceNotices, selectedCategory],
+  );
 
   // 검색 결과 화면
   if (showSearchResults) {
@@ -512,52 +439,16 @@ export default function Home() {
               )}
               {!announcementsLoading && !serviceNoticesLoading && (
                 <>
-                  {(() => {
-                    // 공지와 서비스 공지를 혼합해서 정렬 (최대 3개)
-                    const combined: Array<{
-                      type: "announcement" | "service";
-                      data: Announcement | ServiceNotice;
-                    }> = [];
-
-                    if (announcements) {
-                      announcements.forEach((a) => {
-                        combined.push({ type: "announcement", data: a });
-                      });
-                    }
-
-                    // 전체(undefined) 카테고리일 때만 서비스 공지 포함
-                    if (selectedCategory === undefined && serviceNotices) {
-                      serviceNotices.forEach((s) => {
-                        combined.push({ type: "service", data: s });
-                      });
-                    }
-
-                    // 날짜로 정렬 (최신순)
-                    combined.sort((a, b) => {
-                      const dateA =
-                        a.type === "announcement"
-                          ? new Date((a.data as Announcement).date).getTime()
-                          : new Date((a.data as ServiceNotice).date).getTime();
-                      const dateB =
-                        b.type === "announcement"
-                          ? new Date((b.data as Announcement).date).getTime()
-                          : new Date((b.data as ServiceNotice).date).getTime();
-                      return dateB - dateA;
-                    });
-
-                    if (combined.length === 0) {
-                      return (
-                        <div className="text-center py-4">
-                          <p className="text-sm text-neutral-600">
-                            공지사항이 없습니다.
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    return combined.slice(0, 3).map((item) => {
+                  {homeNotices.length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-neutral-600">
+                        공지사항이 없습니다.
+                      </p>
+                    </div>
+                  ) : (
+                    homeNotices.map((item) => {
                       if (item.type === "service") {
-                        const notice = item.data as ServiceNotice;
+                        const notice = item.data;
                         return (
                           <div key={notice.slug} className="mb-2">
                             <Link href={`/service/notices/${notice.slug}`}>
@@ -587,7 +478,7 @@ export default function Home() {
                           </div>
                         );
                       } else {
-                        const announcement = item.data as Announcement;
+                        const announcement = item.data;
                         return (
                           <div key={announcement.id} className="mb-2">
                             <AnnouncementCard
@@ -598,8 +489,8 @@ export default function Home() {
                           </div>
                         );
                       }
-                    });
-                  })()}
+                    })
+                  )}
                 </>
               )}
             </>
@@ -742,25 +633,17 @@ export default function Home() {
           {schedulesLoading && <Skeleton count={2} />}
           {!schedulesLoading && schedules && (
             <>
-              {schedules.filter((schedule) => {
-                const isToday =
-                  schedule.startDate === todayInfo.dateStringDot ||
-                  (todayInfo.dateStringDot >= schedule.startDate &&
-                    todayInfo.dateStringDot <= schedule.endDate);
-                return isToday;
-              }).length === 0 ? (
+              {schedules.filter((schedule) =>
+                isScheduleOnDate(schedule, todayInfo.dateStringDot),
+              ).length === 0 ? (
                 <div className="py-4 text-center text-neutral-600 text-sm">
                   오늘 일정이 없습니다.
                 </div>
               ) : (
                 schedules
-                  .filter((schedule) => {
-                    const isToday =
-                      schedule.startDate === todayInfo.dateStringDot ||
-                      (todayInfo.dateStringDot >= schedule.startDate &&
-                        todayInfo.dateStringDot <= schedule.endDate);
-                    return isToday;
-                  })
+                  .filter((schedule) =>
+                    isScheduleOnDate(schedule, todayInfo.dateStringDot),
+                  )
                   .map((schedule) => (
                     <div key={schedule.id} className="mb-3">
                       <Link href="/academic/schedule">

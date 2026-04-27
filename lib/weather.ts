@@ -1,4 +1,5 @@
 // lib/weather.ts - 날씨 정보 조회
+import { fetchJson } from "./fetch-json";
 
 export interface WeatherData {
   temperature: number; // 기온
@@ -18,26 +19,32 @@ export interface WeatherData {
  * API 라우트를 통해 날씨 정보 조회
  */
 export async function fetchWeather(): Promise<WeatherData | null> {
-  try {
-    const response = await fetch("/api/weather", {
-      cache: "no-store", // 캐싱 완전 비활성화
-    });
+  const data = await fetchJson<unknown>("/api/weather", { fallback: null });
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-
-    if (!data || data.error) {
-      return null;
-    }
-
-    return data as WeatherData;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  if (!isWeatherData(data)) {
     return null;
   }
+
+  return data;
+}
+
+function isWeatherData(data: unknown): data is WeatherData {
+  if (!data || typeof data !== "object" || "error" in data) {
+    return false;
+  }
+
+  const weather = data as Partial<WeatherData>;
+  return (
+    typeof weather.temperature === "number" &&
+    typeof weather.skyCondition === "number" &&
+    typeof weather.precipitation === "number" &&
+    typeof weather.windSpeed === "number" &&
+    typeof weather.time === "string" &&
+    typeof weather.latitude === "number" &&
+    typeof weather.longitude === "number" &&
+    typeof weather.gridX === "number" &&
+    typeof weather.gridY === "number"
+  );
 }
 
 /**

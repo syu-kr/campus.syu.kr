@@ -3,6 +3,7 @@
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { useQuery } from "@tanstack/react-query";
+import { fetchJson } from "@/lib/fetch-json";
 import { BusArrivalsAtStop, BusArrival } from "@/types";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
@@ -29,14 +30,10 @@ export default function PublicTransitSection() {
   } = useQuery({
     queryKey: ["public-transit-arrivals"],
     queryFn: async () => {
-      const response = await fetch("/api/bus/public-transit");
-      if (!response.ok) {
-        throw new Error("Failed to fetch public transit data");
-      }
-      const json = (await response.json()) as {
+      const json = await fetchJson<{
         success: boolean;
         data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
-      };
+      }>("/api/bus/public-transit", { fallback: { success: false, data: [] } });
 
       return (json.data || []).map((item) => ({
         ...item,

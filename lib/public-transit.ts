@@ -4,6 +4,44 @@ import {
   BusArrivalsAtStop,
   BusLocationInfo,
 } from "@/types";
+import { fetchJson } from "./fetch-json";
+
+type GyeonggiArrivalResponse = {
+  response?: {
+    msgBody?: {
+      busArrivalList?: Array<{
+        routeName?: string | number;
+        routeId?: string | number;
+        predictTime1?: number;
+        predictTime2?: number | string;
+        lowPlate1?: number;
+        lowPlate2?: number | string;
+        locationNo1?: number;
+        locationNo2?: number | string;
+        stationId?: string | number;
+        stationNm1?: string;
+        stationNm2?: string;
+        crowded1?: number;
+        crowded2?: number;
+      }>;
+    };
+  };
+};
+
+type GyeonggiLocationResponse = {
+  response?: {
+    body?: {
+      items?: Array<{
+        vehId?: string;
+        routeId?: string;
+        busNo?: string;
+        lon?: number;
+        lat?: number;
+        nextStationName?: string;
+      }>;
+    };
+  };
+};
 
 // 정류장 설정 (고정)
 export const PUBLIC_TRANSIT_STOPS: BusStop[] = [
@@ -197,40 +235,15 @@ async function fetchGyeonggiBusArrivals(
       try {
         const url = `https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalListv2?serviceKey=${encodeURIComponent(serviceKey)}&stationId=${stationId}&format=json`;
 
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          return [];
-        }
-
-        const data = (await response.json()) as {
-          response?: {
-            msgBody?: {
-              busArrivalList?: Array<{
-                routeName?: string | number;
-                routeId?: string | number;
-                predictTime1?: number;
-                predictTime2?: number | string;
-                lowPlate1?: number;
-                lowPlate2?: number | string;
-                locationNo1?: number;
-                locationNo2?: number | string;
-                stationNm1?: string;
-                stationNm2?: string;
-                crowded1?: number;
-                crowded2?: number;
-              }>;
-            };
-          };
-        };
+        const data = await fetchJson<GyeonggiArrivalResponse>(url, {
+          fallback: {},
+        });
 
         const items = data.response?.msgBody?.busArrivalList || [];
 
         return items
           .filter((item) => {
-            const itemStationId = String(
-              (item as { stationId?: string | number }).stationId ?? "",
-            );
+            const itemStationId = String(item.stationId ?? "");
             // 정류장 번호/정류장명(삼육대 포함) 검증
             return (
               stationId === itemStationId && hasSamyukName(expectedStopName)
@@ -404,24 +417,9 @@ export async function fetchGyeonggiBusLocations(
 
     const url = `https://apis.data.go.kr/6410000/buslocationservice/v2/getBusLocationListv2?serviceKey=${encodeURIComponent(serviceKey)}&routeId=${routeId}&format=json`;
 
-    const response = await fetch(url);
-
-    if (!response.ok) return [];
-
-    const data = (await response.json()) as {
-      response?: {
-        body?: {
-          items?: Array<{
-            vehId?: string;
-            routeId?: string;
-            busNo?: string;
-            lon?: number;
-            lat?: number;
-            nextStationName?: string;
-          }>;
-        };
-      };
-    };
+    const data = await fetchJson<GyeonggiLocationResponse>(url, {
+      fallback: {},
+    });
 
     const items = data.response?.body?.items || [];
 

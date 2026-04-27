@@ -8,6 +8,7 @@ import {
   Scholarship,
   PhoneNumber,
 } from "@/types";
+import { fetchJson } from "./fetch-json";
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
@@ -17,21 +18,21 @@ export async function fetchAnnouncements(
     let data: Announcement[] = [];
 
     if (!category || category === "academic") {
-      const academic = await fetch("/data/announcements-academic.json", {
-        cache: "no-store",
-        next: { revalidate: 0 },
-      }).then((r) => r.json());
-      data = [...data, ...(academic as Announcement[])];
+      const academic = await fetchJson<Announcement[]>(
+        "/data/announcements-academic.json",
+        { fallback: [] },
+      );
+      data = [...data, ...academic];
     }
 
     if (!category || category === "scholarship") {
-      const scholarship = await fetch("/data/announcements-scholarship.json", {
-        cache: "no-store",
-        next: { revalidate: 0 },
-      }).then((r) => r.json());
+      const scholarship = await fetchJson<Announcement[]>(
+        "/data/announcements-scholarship.json",
+        { fallback: [] },
+      );
       data = [
         ...data,
-        ...(scholarship as Announcement[]).map((item: Announcement) => ({
+        ...scholarship.map((item: Announcement) => ({
           ...item,
           category: "scholarship" as const,
         })),
@@ -39,26 +40,21 @@ export async function fetchAnnouncements(
     }
 
     if (!category || category === "campus") {
-      try {
-        const campus = await fetch("/data/announcements-campus-life.json", {
-          cache: "no-store",
-          next: { revalidate: 0 },
-        }).then((r) => r.json());
-        data = [
-          ...data,
-          ...(campus as Announcement[]).map((item: Announcement) => ({
-            ...item,
-            category: "campus" as const,
-          })),
-        ];
-      } catch {
-        // handle silently
-      }
+      const campus = await fetchJson<Announcement[]>(
+        "/data/announcements-campus-life.json",
+        { fallback: [] },
+      );
+      data = [
+        ...data,
+        ...campus.map((item: Announcement) => ({
+          ...item,
+          category: "campus" as const,
+        })),
+      ];
     }
 
     return data;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     // Return empty array if fetch fails
     return [];
   }
@@ -69,13 +65,9 @@ export async function fetchCafeteriaMenu(
   date?: string,
 ): Promise<CafeteriaMenu[]> {
   try {
-    const response = await fetch("/data/cafeteria-menu.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    });
-    const data = (await response.json()) as
-      | Array<{ menus?: unknown[] }>
-      | { menus?: unknown[] };
+    const data = await fetchJson<
+      Array<{ menus?: unknown[] }> | { menus?: unknown[] }
+    >("/data/cafeteria-menu.json", { fallback: [] });
 
     // 데이터 구조 확인
     let cafeteriaData: { menus?: unknown[] };
@@ -145,8 +137,7 @@ export async function fetchCafeteriaMenu(
     }
 
     return menus;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -156,19 +147,16 @@ export async function fetchAcademicSchedules(
   category?: string,
 ): Promise<AcademicSchedule[]> {
   try {
-    const schedules = await fetch("/data/schedules-major.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    }).then((r) => r.json());
-
-    const parsedSchedules = (schedules || []) as AcademicSchedule[];
+    const parsedSchedules = await fetchJson<AcademicSchedule[]>(
+      "/data/schedules-major.json",
+      { fallback: [] },
+    );
 
     if (category) {
       return parsedSchedules.filter((s) => s.category === category);
     }
     return parsedSchedules;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -176,14 +164,11 @@ export async function fetchAcademicSchedules(
 // 셔틀버스 API - 크롤링된 실제 데이터 사용
 export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
   try {
-    const response = await fetch("/data/shuttle-bus-schedule.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    });
-    const schedules = await response.json();
-    return (schedules || []) as ShuttleBusSchedule[];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+    return await fetchJson<ShuttleBusSchedule[]>(
+      "/data/shuttle-bus-schedule.json",
+      { fallback: [] },
+    );
+  } catch {
     return [];
   }
 }
@@ -191,17 +176,11 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
 // 셔틀버스 특수 기간 API
 export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriods> {
   try {
-    const response = await fetch("/data/shuttle-special-periods.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    });
-    const data = await response.json();
-    return (data || {
-      specialPeriods: [],
-      vacationPeriods: [],
-    }) as ShuttleSpecialPeriods;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+    return await fetchJson<ShuttleSpecialPeriods>(
+      "/data/shuttle-special-periods.json",
+      { fallback: { specialPeriods: [], vacationPeriods: [] } },
+    );
+  } catch {
     return { specialPeriods: [], vacationPeriods: [] };
   }
 }
@@ -212,13 +191,12 @@ export async function fetchScholarships(
 ): Promise<Scholarship[]> {
   try {
     // API에서 실제 데이터 가져오기
-    const response = await fetch("/data/announcements-scholarship.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    });
-    const notices = await response.json();
+    const notices = await fetchJson<Announcement[]>(
+      "/data/announcements-scholarship.json",
+      { fallback: [] },
+    );
 
-    const scholarshipData: Scholarship[] = (notices as Announcement[])
+    const scholarshipData: Scholarship[] = notices
       .filter((notice) => {
         if (type === "internal") {
           return notice.title.includes("국내") || notice.title.includes("교내");
@@ -240,8 +218,7 @@ export async function fetchScholarships(
       }));
 
     return scholarshipData;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -255,142 +232,111 @@ export async function searchAll(
   }
 
   const lowerQuery = query.toLowerCase();
-  const results: (
-    | Announcement
-    | AcademicSchedule
-    | Scholarship
-    | PhoneNumber
-  )[] = [];
 
   try {
-    // 1. 학사일정 검색
-    try {
-      const schedules = await fetch("/data/schedules-major.json", {
-        cache: "no-store",
-        next: { revalidate: 0 },
-      }).then((r) => r.json());
-      const matchedSchedules = (schedules as AcademicSchedule[]).filter(
-        (s) =>
-          s.title?.toLowerCase().includes(lowerQuery) ||
-          s.description?.toLowerCase().includes(lowerQuery),
-      );
-      results.push(...matchedSchedules);
-    } catch {
-      // handle silently
-    }
-
-    // 2. 크롤링된 공지사항 검색
-
-    // 학사공지
-    try {
-      const academicNotices = await fetch("/data/announcements-academic.json", {
-        cache: "no-store",
-        next: { revalidate: 0 },
-      }).then((r) => r.json());
-      const matchedAcademic = (academicNotices as Announcement[]).filter(
-        (a) =>
-          a.title?.toLowerCase().includes(lowerQuery) ||
-          a.content?.toLowerCase().includes(lowerQuery),
-      );
-      results.push(...matchedAcademic);
-    } catch {
-      // handle silently
-    }
-
-    // 장학금
-    try {
-      const scholarshipNotices = await fetch(
+    const results = await Promise.all([
+      searchSchedules(lowerQuery),
+      searchAnnouncementSource(
+        "/data/announcements-academic.json",
+        lowerQuery,
+      ),
+      searchAnnouncementSource(
         "/data/announcements-scholarship.json",
-        {
-          cache: "no-store",
-          next: { revalidate: 0 },
-        },
-      ).then((r) => r.json());
-      const matchedScholarship = (scholarshipNotices as Announcement[]).filter(
-        (a) =>
-          a.title?.toLowerCase().includes(lowerQuery) ||
-          a.content?.toLowerCase().includes(lowerQuery),
-      );
-      const withCategory = matchedScholarship.map((item) => ({
-        ...item,
-        category: "scholarship" as const,
-      }));
-      results.push(...withCategory);
-    } catch {
-      // handle silently
-    }
-
-    // 캠퍼스공지
-    try {
-      const campusNotices = await fetch(
+        lowerQuery,
+        "scholarship",
+      ),
+      searchAnnouncementSource(
         "/data/announcements-campus-life.json",
-        {
-          cache: "no-store",
-          next: { revalidate: 0 },
-        },
-      ).then((r) => r.json());
-      const matchedCampus = (campusNotices as Announcement[]).filter(
-        (a) =>
-          a.title?.toLowerCase().includes(lowerQuery) ||
-          a.content?.toLowerCase().includes(lowerQuery),
-      );
-      const withCategory = matchedCampus.map((item) => ({
-        ...item,
-        category: "campus" as const,
-      }));
-      results.push(...withCategory);
-    } catch {
-      // handle silently
-    }
+        lowerQuery,
+        "campus",
+      ),
+      searchPhoneNumberSource(query, lowerQuery),
+    ]);
 
-    // 3. 전화번호 검색
-    try {
-      const phoneNumbers = await fetch("/data/phone-numbers.json", {
-        next: { revalidate: 604800 },
-      }).then((r) => r.json());
-      const matchedPhones = (phoneNumbers as PhoneNumber[]).filter(
-        (p) =>
-          p.department?.toLowerCase().includes(lowerQuery) ||
-          p.phone?.includes(query),
-      );
-      results.push(...matchedPhones);
-    } catch {
-      // handle silently
-    }
-
-    // 중복 제거 (ID 또는 phone/department 기반)
-    const uniqueResults = Array.from(
-      new Map<
-        string,
-        Announcement | AcademicSchedule | Scholarship | PhoneNumber
-      >(
-        results.map((item) => {
-          if ("phone" in item) {
-            return [item.phone, item];
-          }
-          return [item.id, item];
-        }),
-      ).values(),
-    );
+    const uniqueResults = dedupeSearchResults(results.flat());
 
     return uniqueResults.slice(0, 100); // 최대 100개로 제한
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     return [];
   }
+}
+
+type SearchAllResult =
+  | Announcement
+  | AcademicSchedule
+  | Scholarship
+  | PhoneNumber;
+
+async function searchSchedules(query: string): Promise<AcademicSchedule[]> {
+  const schedules = await fetchJson<AcademicSchedule[]>(
+    "/data/schedules-major.json",
+    { fallback: [] },
+  );
+
+  return schedules.filter(
+    (schedule) =>
+      includesQuery(schedule.title, query) ||
+      includesQuery(schedule.description, query),
+  );
+}
+
+async function searchAnnouncementSource(
+  path: string,
+  query: string,
+  category?: Announcement["category"],
+): Promise<Announcement[]> {
+  const announcements = await fetchJson<Announcement[]>(path, { fallback: [] });
+
+  return announcements
+    .filter(
+      (announcement) =>
+        includesQuery(announcement.title, query) ||
+        includesQuery(announcement.content, query),
+    )
+    .map((announcement) =>
+      category ? { ...announcement, category } : announcement,
+    );
+}
+
+async function searchPhoneNumberSource(
+  rawQuery: string,
+  lowerQuery: string,
+): Promise<PhoneNumber[]> {
+  const phoneNumbers = await fetchJson<PhoneNumber[]>(
+    "/data/phone-numbers.json",
+    { fallback: [], noStore: false, next: { revalidate: 604800 } },
+  );
+
+  return phoneNumbers.filter(
+    (phone) =>
+      includesQuery(phone.department, lowerQuery) || phone.phone?.includes(rawQuery),
+  );
+}
+
+function includesQuery(value: string | undefined, query: string): boolean {
+  return value?.toLowerCase().includes(query) ?? false;
+}
+
+function dedupeSearchResults(results: SearchAllResult[]): SearchAllResult[] {
+  return Array.from(
+    new Map<string, SearchAllResult>(
+      results.map((item) => {
+        if ("phone" in item) {
+          return [item.phone, item];
+        }
+        return [item.id, item];
+      }),
+    ).values(),
+  );
 }
 
 // 전화번호 API
 export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
   try {
-    const response = await fetch("/data/phone-numbers.json", {
-      cache: "no-store",
-      next: { revalidate: 0 },
+    return await fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
+      fallback: [],
     });
-    const phoneData = await response.json();
-    return (phoneData || []) as PhoneNumber[];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     return [];
   }
 }
@@ -398,31 +344,42 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
 // 버스 실시간 위치 API
 export async function fetchBusLocations(): Promise<BusLocation[]> {
   try {
-    const response = await fetch("/bus/shuttle", {
+    const data = await fetchJson<
+      { returnCode?: string; data?: unknown[] } | unknown[]
+    >("/bus/shuttle", {
+      fallback: [],
       method: "GET",
       credentials: "omit",
-      cache: "no-store",
-      next: { revalidate: 0 },
     });
 
-    if (!response.ok) {
-      return [];
+    if (Array.isArray(data)) {
+      return data
+        .map((bus) => {
+          const busRecord = bus as Record<string, unknown>;
+          const status = Number(busRecord.status);
+          const routeid = Number(busRecord.routeid) as 1 | 2 | 3;
+
+          return {
+            ...busRecord,
+            status: status as 0 | 1 | 2,
+            routeid,
+          } as BusLocation;
+        })
+        .filter((bus) => bus.status !== 0);
     }
 
-    const data = await response.json();
-
-    // returnCode === "200" 또는 배열 데이터 직접 확인
-    if (data && (data.returnCode === "200" || Array.isArray(data.data))) {
-      const busArray = data.data || data;
+    if (data && data.returnCode === "200") {
+      const busArray = data.data || [];
       if (!Array.isArray(busArray)) return [];
 
       return busArray
-        .map((bus: Record<string, unknown>) => {
-          const status = Number(bus.status);
-          const routeid = Number(bus.routeid) as 1 | 2 | 3;
+        .map((bus) => {
+          const busRecord = bus as Record<string, unknown>;
+          const status = Number(busRecord.status);
+          const routeid = Number(busRecord.routeid) as 1 | 2 | 3;
 
           return {
-            ...bus,
+            ...busRecord,
             status: status as 0 | 1 | 2,
             routeid,
           } as BusLocation;

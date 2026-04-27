@@ -4,6 +4,8 @@
  * 버전이 변경되면 React Query의 캐시가 자동으로 무효화됩니다.
  */
 
+import { fetchJson } from "./fetch-json";
+
 let cachedVersions: Record<string, number> | null = null;
 let versionCacheTime = 0;
 const VERSION_CACHE_DURATION = 60000; // 1분
@@ -31,32 +33,25 @@ export async function getDataVersions(): Promise<DataVersions> {
     };
   }
 
+  const fallback = {
+    versions: cachedVersions || {},
+    timestamp: versionCacheTime,
+  };
+
   try {
-    const response = await fetch("/api/version", {
-      cache: "no-store",
+    const data = await fetchJson<DataVersions>("/api/version", {
+      fallback,
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     });
 
-    if (!response.ok) {
-      return {
-        versions: cachedVersions || {},
-        timestamp: versionCacheTime,
-      };
-    }
-
-    const data = await response.json();
     cachedVersions = data.versions;
     versionCacheTime = now;
 
     return data;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return {
-      versions: cachedVersions || {},
-      timestamp: versionCacheTime,
-    };
+  } catch {
+    return fallback;
   }
 }
 
@@ -74,8 +69,7 @@ export async function getQueryKeyWithVersion(
       .join("-")
       .substring(0, 10);
     return [...baseKey, `v${versionHash}`];
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch {
     return baseKey;
   }
 }
