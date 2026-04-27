@@ -402,13 +402,11 @@ export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
 // 버스 실시간 위치 API
 export async function fetchBusLocations(): Promise<BusLocation[]> {
   try {
-    const response = await fetch("/bus/busStatusList.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "",
+    const response = await fetch("/bus/shuttle", {
+      method: "GET",
       credentials: "omit",
+      cache: "no-store",
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) {
@@ -423,15 +421,17 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
       if (!Array.isArray(busArray)) return [];
 
       return busArray
-        .filter((bus: Record<string, unknown>) => bus && bus.status !== 0)
-        .map(
-          (bus: Record<string, unknown>) =>
-            ({
-              ...bus,
-              routeid: Number(bus.routeid) as 1 | 2 | 3,
-              status: Number(bus.status) as 0 | 1 | 2,
-            }) as BusLocation,
-        );
+        .map((bus: Record<string, unknown>) => {
+          const status = Number(bus.status);
+          const routeid = Number(bus.routeid) as 1 | 2 | 3;
+
+          return {
+            ...bus,
+            status: status as 0 | 1 | 2,
+            routeid,
+          } as BusLocation;
+        })
+        .filter((bus) => bus.status !== 0);
     }
 
     return [];

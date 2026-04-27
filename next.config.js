@@ -45,8 +45,8 @@ const nextConfig = {
     return {
       beforeFiles: [
         {
-          source: "/bus/busStatusList.php",
-          destination: "http://nexmotion.co.kr/bus/busStatusList.php",
+          source: "/bus/shuttle",
+          destination: "https://bus.syu.kr/api",
         },
       ],
     };
