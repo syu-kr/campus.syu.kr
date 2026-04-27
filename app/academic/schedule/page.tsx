@@ -8,12 +8,15 @@ import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
 
+const THIRTY_MINUTES = 30 * 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
+
 export default function SchedulePage() {
   const { data: schedules, isLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: THIRTY_MINUTES,
+    gcTime: ONE_HOUR,
   });
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);

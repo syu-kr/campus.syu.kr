@@ -11,6 +11,8 @@ import { useState, useMemo } from "react";
 import { usePagination } from "@/lib/use-pagination";
 
 const ITEMS_PER_PAGE = 10;
+const ONE_MINUTE = 60 * 1000;
+const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 export default function ScholarshipPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,7 +20,8 @@ export default function ScholarshipPage() {
   const { data: allScholarships, isLoading } = useQuery({
     queryKey: ["scholarships"],
     queryFn: () => fetchScholarships(),
-    staleTime: 0,
+    staleTime: ONE_MINUTE,
+    gcTime: FIVE_MINUTES,
   });
 
   // 검색 필터링

@@ -20,17 +20,22 @@ import {
   useImperativeHandle,
 } from "react";
 
+const ONE_MINUTE = 60 * 1000;
+const FIVE_MINUTES = 5 * ONE_MINUTE;
+
 export default function ShuttlePage() {
   const { data: buses, isLoading } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
-    staleTime: 0,
+    staleTime: FIVE_MINUTES,
+    gcTime: 30 * ONE_MINUTE,
   });
 
   const { data: specialPeriods } = useQuery({
     queryKey: ["shuttle-special-periods"],
     queryFn: () => fetchShuttleSpecialPeriods(),
-    staleTime: 0,
+    staleTime: FIVE_MINUTES,
+    gcTime: 30 * ONE_MINUTE,
   });
 
   // 현재 시간을 매초 업데이트

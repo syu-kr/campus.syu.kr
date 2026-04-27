@@ -54,7 +54,35 @@ const nextConfig = {
 
   // 캐싱 설정
   headers: async () => {
+    const noStoreHeaders = [
+      {
+        key: "Cache-Control",
+        value: "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
+      {
+        key: "Pragma",
+        value: "no-cache",
+      },
+      {
+        key: "Expires",
+        value: "0",
+      },
+    ];
+
     return [
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
       {
         source: "/manifest.json",
         headers: [
@@ -64,23 +92,38 @@ const nextConfig = {
           },
         ],
       },
-      // 공지사항 JSON - 항상 최신 데이터 필요! 캐싱 금지
+      // 페이지 문서와 JSON 데이터는 최신 배포/크롤링 결과가 바로 보여야 함
       {
-        source: "/data/announcements-:category*.json",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "no-cache, no-store, must-revalidate",
-          },
-          {
-            key: "Pragma",
-            value: "no-cache",
-          },
-          {
-            key: "Expires",
-            value: "0",
-          },
-        ],
+        source: "/",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/academic/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/campus/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/more/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/service/:path*",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/privacy",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/terms",
+        headers: noStoreHeaders,
+      },
+      {
+        source: "/data/:path*.json",
+        headers: noStoreHeaders,
       },
       // 정적 이미지, 폰트 등 - 5일(432000초) 캐싱
       {

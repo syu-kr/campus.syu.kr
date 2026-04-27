@@ -13,8 +13,9 @@ function getQueryClient() {
     return new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 0,
-          gcTime: 0,
+          staleTime: 60 * 1000,
+          gcTime: 5 * 60 * 1000,
+          refetchOnWindowFocus: false,
         },
       },
     });
@@ -25,8 +26,9 @@ function getQueryClient() {
     clientSingleton = new QueryClient({
       defaultOptions: {
         queries: {
-          staleTime: 0,
-          gcTime: 0,
+          staleTime: 60 * 1000,
+          gcTime: 5 * 60 * 1000,
+          refetchOnWindowFocus: false,
         },
       },
     });
@@ -62,7 +64,11 @@ async function initializePushNotifications() {
   let swRegistration: ServiceWorkerRegistration | null = null;
   if ("serviceWorker" in navigator) {
     try {
-      swRegistration = await navigator.serviceWorker.register("/sw.js");
+      swRegistration = await navigator.serviceWorker.register("/sw.js", {
+        updateViaCache: "none",
+      });
+      setupServiceWorkerUpdateReload(swRegistration);
+      await swRegistration.update();
       await navigator.serviceWorker.ready;
     } finally {
       // Error handling - silently fail
@@ -81,6 +87,33 @@ async function initializePushNotifications() {
   } else if (permission === "default") {
     showPermissionRequest(swRegistration);
   }
+}
+
+function setupServiceWorkerUpdateReload(
+  registration: ServiceWorkerRegistration,
+) {
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  if (registration.waiting) {
+    registration.waiting.postMessage({ type: "SKIP_WAITING" });
+  }
+
+  registration.addEventListener("updatefound", () => {
+    const worker = registration.installing;
+    if (!worker) return;
+
+    worker.addEventListener("statechange", () => {
+      if (worker.state === "installed" && navigator.serviceWorker.controller) {
+        worker.postMessage({ type: "SKIP_WAITING" });
+      }
+    });
+  });
 }
 
 async function generateAndSaveFCMToken(

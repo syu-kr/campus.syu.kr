@@ -9,13 +9,15 @@ import { useState, useMemo } from "react";
 import { usePagination } from "@/lib/use-pagination";
 
 const ITEMS_PER_PAGE = 10;
+const ONE_MINUTE = 60 * 1000;
+const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 export default function CampusAnnouncementsPage() {
   const { data: announcements, isLoading } = useQuery({
     queryKey: ["announcements", "campus"],
     queryFn: () => fetchAnnouncements("campus"),
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: ONE_MINUTE,
+    gcTime: FIVE_MINUTES,
   });
 
   const [searchQuery, setSearchQuery] = useState("");

@@ -9,6 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
 import { usePagination } from "@/lib/use-pagination";
 
+const ONE_HOUR = 60 * 60 * 1000;
+const ONE_DAY = 24 * ONE_HOUR;
+
 export default function DirectoryPage() {
   const ITEMS_PER_PAGE = 10;
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,7 +19,8 @@ export default function DirectoryPage() {
   const { data: phoneData, isLoading } = useQuery({
     queryKey: ["phone-numbers"],
     queryFn: () => fetchPhoneNumbers(),
-    staleTime: 0,
+    staleTime: ONE_HOUR,
+    gcTime: ONE_DAY,
   });
 
   // 검색 필터링

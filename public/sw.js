@@ -70,6 +70,12 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 // 활성화 이벤트
 self.addEventListener("activate", (event) => {
   // 모든 기존 캐시 삭제
