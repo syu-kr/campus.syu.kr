@@ -110,17 +110,6 @@
     "isExternal": true
   },
   {
-    "id": "finance-seoul-youngtech",
-    "title": "청년 대상 맞춤형 금융교육",
-    "description": "서울 영테크 클래스에서 제공하는 무료 금융교육입니다.",
-    "category": "finance",
-    "url": "https://youth.seoul.go.kr/youngtech/class/YoungTechClassList",
-    "urlLabel": "교육 보기",
-    "tags": ["금융교육", "청년", "서울"],
-    "sourceType": "public",
-    "isExternal": true
-  },
-  {
     "id": "reference-everytime-syu-links",
     "title": "삼육대 에타 정보 링크 모음",
     "description": "삼육대 학생 커뮤니티에 정리된 정보 링크 모음입니다.",
