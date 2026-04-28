@@ -1,0 +1,1775 @@
+{
+  "metadata": {
+    "sourceTitle": "2025학년도 삼육대학교 요람",
+    "sourceYear": "2025",
+    "lastVerifiedAt": "2026-04-28",
+    "notes": [
+      "본 자료는 2025학년도 요람의 졸업요건 표를 기준으로 앱 계산기에 맞게 구조화한 참고용 데이터입니다.",
+      "졸업 최종 판정은 반드시 SU-WINGs 및 학과사무실에서 확인해야 합니다.",
+      "졸업시험, 국가시험, 실습, 인증 등 정량 학점 외 조건은 자동 충족 처리하지 않고 확인 필요 항목으로 표시합니다."
+    ]
+  },
+  "colleges": [
+    {
+      "id": "theology",
+      "name": "신학대학",
+      "order": 1
+    },
+    {
+      "id": "nursing",
+      "name": "간호대학",
+      "order": 2
+    },
+    {
+      "id": "pharmacy",
+      "name": "약학대학",
+      "order": 3
+    },
+    {
+      "id": "creative_fusion",
+      "name": "창의융합대학",
+      "order": 4
+    },
+    {
+      "id": "future_fusion",
+      "name": "미래융합대학",
+      "order": 5
+    }
+  ],
+  "departments": [
+    {
+      "id": "theology_dept",
+      "collegeId": "theology",
+      "name": "신학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "warnings": [
+        "신학과 세부 졸업인증 및 교단 관련 요건은 학과사무실 확인이 필요합니다."
+      ]
+    },
+    {
+      "id": "nursing_nursing",
+      "collegeId": "nursing",
+      "name": "간호학과",
+      "requirementGroup": "nursing",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "간호사 국가시험 응시 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "임상실습, 국가시험 응시자격 등 학점 외 필수조건은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "pharmacy_pharm",
+      "collegeId": "pharmacy",
+      "name": "약학과",
+      "requirementGroup": "pharmacy",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "6년제 약학과 기준",
+        "약사 국가시험 응시 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "약학과 편입/전과 및 국가시험 관련 세부 요건은 학과사무실 확인이 필요합니다."
+      ]
+    },
+    {
+      "id": "cf_business",
+      "collegeId": "creative_fusion",
+      "name": "경영학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "cf_korean",
+      "collegeId": "creative_fusion",
+      "name": "글로벌한국학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "cf_socialwelfare",
+      "collegeId": "creative_fusion",
+      "name": "사회복지학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "warnings": [
+        "기존 앱 데이터와 전공학점 불일치가 있어 2025 요람 표 기준으로 계산합니다."
+      ]
+    },
+    {
+      "id": "cf_counseling",
+      "collegeId": "creative_fusion",
+      "name": "상담심리학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "warnings": [
+        "기존 앱 데이터와 전공학점 불일치가 있어 2025 요람 표 기준으로 계산합니다."
+      ]
+    },
+    {
+      "id": "cf_artdesign",
+      "collegeId": "creative_fusion",
+      "name": "아트앤디자인학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "졸업작품 또는 전공별 실기 요건 확인 필요"
+      ],
+      "warnings": [
+        "작품/실기 관련 졸업요건은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "cf_english",
+      "collegeId": "creative_fusion",
+      "name": "영어영문학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "cf_earlychildhood",
+      "collegeId": "creative_fusion",
+      "name": "유아교육과",
+      "requirementGroup": "early_childhood",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "교원자격 및 현장실습 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "교직/실습 관련 세부 요건은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "cf_music",
+      "collegeId": "creative_fusion",
+      "name": "음악학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "졸업연주 또는 실기 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "졸업연주/실기 관련 요건은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "cf_physical",
+      "collegeId": "creative_fusion",
+      "name": "체육학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "cf_aviation",
+      "collegeId": "creative_fusion",
+      "name": "항공관광외국어학부",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "majors": [
+        {
+          "id": "aviation_oriental",
+          "name": "동양어문화전공",
+          "requirementGroup": "general"
+        },
+        {
+          "id": "aviation_tourism",
+          "name": "항공관광전공",
+          "requirementGroup": "general"
+        }
+      ]
+    },
+    {
+      "id": "ff_architecture",
+      "collegeId": "future_fusion",
+      "name": "건축학과",
+      "requirementGroup": "architecture_4year",
+      "sourcePage": "PDF 졸업요건 표",
+      "majors": [
+        {
+          "id": "arch_4year",
+          "name": "4년제",
+          "requirementGroup": "architecture_4year"
+        },
+        {
+          "id": "arch_5year",
+          "name": "5년제",
+          "requirementGroup": "architecture_5year"
+        }
+      ],
+      "warnings": [
+        "건축학과 5년제는 건축사 관련 인증·실습 요건 확인이 필요합니다."
+      ]
+    },
+    {
+      "id": "ff_animal",
+      "collegeId": "future_fusion",
+      "name": "동물자원과학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "ff_datacloud",
+      "collegeId": "future_fusion",
+      "name": "빅데이터클라우드공학과",
+      "requirementGroup": "engineering_140",
+      "sourcePage": "PDF 졸업요건 표",
+      "warnings": [
+        "기존 코드의 '데이터클라우드공학과' 명칭은 2025 요람 표기 '빅데이터클라우드공학과'로 정리했습니다."
+      ]
+    },
+    {
+      "id": "ff_physicaltherapy",
+      "collegeId": "future_fusion",
+      "name": "물리치료학과",
+      "requirementGroup": "physical_therapy",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "물리치료사 국가시험 응시 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "실습 및 국가시험 응시자격은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "ff_healthadmin",
+      "collegeId": "future_fusion",
+      "name": "보건관리학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "ff_foodnutrition",
+      "collegeId": "future_fusion",
+      "name": "식품영양학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표",
+      "specialNotes": [
+        "영양사 국가시험 및 현장실습 관련 요건 확인 필요"
+      ],
+      "warnings": [
+        "국가시험/실습 관련 요건은 자동 판정하지 않습니다."
+      ]
+    },
+    {
+      "id": "ff_ai",
+      "collegeId": "future_fusion",
+      "name": "인공지능융합학부",
+      "requirementGroup": "engineering_140",
+      "sourcePage": "PDF 졸업요건 표",
+      "majors": [
+        {
+          "id": "ai_bis",
+          "name": "경영정보시스템전공",
+          "requirementGroup": "engineering_140"
+        },
+        {
+          "id": "ai_eng",
+          "name": "인공지능공학전공",
+          "requirementGroup": "engineering_140"
+        },
+        {
+          "id": "ai_semi",
+          "name": "지능형반도체전공",
+          "requirementGroup": "engineering_140"
+        }
+      ]
+    },
+    {
+      "id": "ff_computer",
+      "collegeId": "future_fusion",
+      "name": "컴퓨터공학부",
+      "requirementGroup": "engineering_140",
+      "sourcePage": "PDF 졸업요건 표",
+      "majors": [
+        {
+          "id": "cs_cs",
+          "name": "컴퓨터공학전공",
+          "requirementGroup": "engineering_140"
+        },
+        {
+          "id": "cs_sw",
+          "name": "소프트웨어전공",
+          "requirementGroup": "engineering_140"
+        }
+      ]
+    },
+    {
+      "id": "ff_chemistry",
+      "collegeId": "future_fusion",
+      "name": "화학생명과학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "ff_envdesign",
+      "collegeId": "future_fusion",
+      "name": "환경디자인원예학과",
+      "requirementGroup": "general",
+      "sourcePage": "PDF 졸업요건 표"
+    }
+  ],
+  "requirementProfiles": [
+    {
+      "id": "general-freshman-single",
+      "requirementGroup": "general",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 75,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "general-freshman-double",
+      "requirementGroup": "general",
+      "admissionType": "freshman",
+      "majorTrack": "doubleMajor",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 39,
+        "doubleMajor": 36,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "general-freshman-minor",
+      "requirementGroup": "general",
+      "admissionType": "freshman",
+      "majorTrack": "minor",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 54,
+        "minor": 21,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "general-freshman-teaching",
+      "requirementGroup": "general",
+      "admissionType": "freshman",
+      "majorTrack": "teaching",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 50,
+        "teaching": 22,
+        "freeElective": 19
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "교직 적성 및 인성검사 등 교직 세부요건 확인"
+      ],
+      "warnings": [
+        "교직 세부 이수요건은 학과 및 교직과정 담당 부서 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "general-freshman-lifelong",
+      "requirementGroup": "general",
+      "admissionType": "freshman",
+      "majorTrack": "lifelongEducator",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 54,
+        "lifelongEducator": 30,
+        "freeElective": 7
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "평생교육사 자격 관련 세부요건 확인"
+      ],
+      "warnings": [
+        "평생교육사 자격 관련 세부요건은 담당 부서 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "general-transfer3-single",
+      "requirementGroup": "general",
+      "admissionType": "transfer3",
+      "majorTrack": "single",
+      "totalCredits": 68,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 51,
+        "freeElective": 11
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "편입생 인성교양 이수"
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "general-transfer3-double",
+      "requirementGroup": "general",
+      "admissionType": "transfer3",
+      "majorTrack": "doubleMajor",
+      "totalCredits": 68,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 39,
+        "doubleMajor": 36
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "편입생 인성교양 이수"
+      ],
+      "warnings": [
+        "복수전공을 포함하면 항목별 요구학점 합이 최소 졸업학점을 초과할 수 있습니다."
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "general-transfer3-minor",
+      "requirementGroup": "general",
+      "admissionType": "transfer3",
+      "majorTrack": "minor",
+      "totalCredits": 68,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 51,
+        "minor": 21
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "편입생 인성교양 이수"
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "general-transfer4-single",
+      "requirementGroup": "general",
+      "admissionType": "transfer4",
+      "majorTrack": "single",
+      "totalCredits": 34,
+      "categories": {
+        "requiredLiberal": 3,
+        "majorTotal": 21,
+        "freeElective": 10
+      },
+      "graduationConditions": [
+        "채플 1회",
+        "4학년 편입 가능 여부는 모집단위별 확인 필요"
+      ],
+      "warnings": [
+        "4학년 편입은 일부 양성과정 중심으로 운영될 수 있어 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "general-dept-transfer-single",
+      "requirementGroup": "general",
+      "admissionType": "departmentTransfer",
+      "majorTrack": "single",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 51,
+        "freeElective": 40
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "전과 시점별 인정학점 및 전공필수 대체 여부 확인"
+      ],
+      "warnings": [
+        "전과생은 전과 시점에 따라 주전공 요구학점이 달라질 수 있어 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 전과생 졸업요건 표"
+    },
+    {
+      "id": "engineering-freshman-single",
+      "requirementGroup": "engineering_140",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 140,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 85,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "engineering-freshman-double",
+      "requirementGroup": "engineering_140",
+      "admissionType": "freshman",
+      "majorTrack": "doubleMajor",
+      "totalCredits": 140,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 49,
+        "doubleMajor": 36,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "engineering-transfer3-single",
+      "requirementGroup": "engineering_140",
+      "admissionType": "transfer3",
+      "majorTrack": "single",
+      "totalCredits": 72,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 61,
+        "freeElective": 5
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "편입생 인성교양 이수"
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "engineering-dept-transfer-single",
+      "requirementGroup": "engineering_140",
+      "admissionType": "departmentTransfer",
+      "majorTrack": "single",
+      "totalCredits": 140,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 61,
+        "freeElective": 40
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "전과 시점별 인정학점 및 전공필수 대체 여부 확인"
+      ],
+      "warnings": [
+        "전과생은 전과 시점에 따라 주전공 요구학점이 달라질 수 있어 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 전과생 졸업요건 표"
+    },
+    {
+      "id": "nursing-freshman-single",
+      "requirementGroup": "nursing",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 150,
+      "categories": {
+        "requiredLiberal": 18,
+        "areaLiberal": 12,
+        "majorTotal": 120
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "간호사 국가시험 응시 관련 요건 확인",
+        "임상실습 이수 확인"
+      ],
+      "warnings": [
+        "간호학과 국가시험 및 임상실습 요건은 자동 판정하지 않습니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "nursing-transfer3-single",
+      "requirementGroup": "nursing",
+      "admissionType": "transfer3",
+      "majorTrack": "single",
+      "totalCredits": 78,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 72
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "간호사 국가시험 응시 관련 요건 확인",
+        "임상실습 이수 확인"
+      ],
+      "warnings": [
+        "간호학과 편입생 세부 인정학점과 실습 요건은 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "nursing-transfer4-single",
+      "requirementGroup": "nursing",
+      "admissionType": "transfer4",
+      "majorTrack": "single",
+      "totalCredits": 42,
+      "categories": {
+        "requiredLiberal": 3,
+        "majorTotal": 39
+      },
+      "graduationConditions": [
+        "채플 1회",
+        "간호사 국가시험 응시 관련 요건 확인",
+        "임상실습 이수 확인"
+      ],
+      "warnings": [
+        "4학년 편입 가능 여부 및 의료인력양성 과정 요건은 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "pharmacy-freshman-single",
+      "requirementGroup": "pharmacy",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 240,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 201
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "약사 국가시험 응시 관련 요건 확인",
+        "약학 실무실습 이수 확인"
+      ],
+      "warnings": [
+        "약학과 국가시험 및 실무실습 요건은 자동 판정하지 않습니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "arch4-freshman-single",
+      "requirementGroup": "architecture_4year",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 75,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "arch5-freshman-single",
+      "requirementGroup": "architecture_5year",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 158,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 119
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "건축 5년제 인증 및 실습 요건 확인"
+      ],
+      "warnings": [
+        "건축학과 5년제는 건축 인증 관련 세부요건을 학과에서 확인해야 합니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "arch5-transfer3-single",
+      "requirementGroup": "architecture_5year",
+      "admissionType": "transfer3",
+      "majorTrack": "single",
+      "totalCredits": 102,
+      "categories": {
+        "requiredLiberal": 6,
+        "majorTotal": 86,
+        "freeElective": 10
+      },
+      "graduationConditions": [
+        "채플 3회",
+        "건축 5년제 인증 및 실습 요건 확인"
+      ],
+      "warnings": [
+        "건축학과 5년제 편입생 인정학점과 인증 요건은 학과 확인이 필요합니다."
+      ],
+      "sourcePage": "PDF 편입생 졸업요건 표"
+    },
+    {
+      "id": "physical-therapy-freshman-single",
+      "requirementGroup": "physical_therapy",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 140,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 85,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "물리치료사 국가시험 응시 관련 요건 확인",
+        "임상실습 이수 확인"
+      ],
+      "warnings": [
+        "물리치료학과 국가시험 및 실습 요건은 자동 판정하지 않습니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "early-childhood-freshman-teaching",
+      "requirementGroup": "early_childhood",
+      "admissionType": "freshman",
+      "majorTrack": "teaching",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 50,
+        "teaching": 22,
+        "freeElective": 19
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "교원자격 및 현장실습 세부요건 확인"
+      ],
+      "warnings": [
+        "유아교육과 교원자격/실습 관련 세부요건은 자동 판정하지 않습니다."
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    },
+    {
+      "id": "early-childhood-freshman-single",
+      "requirementGroup": "early_childhood",
+      "admissionType": "freshman",
+      "majorTrack": "single",
+      "totalCredits": 130,
+      "categories": {
+        "requiredLiberal": 24,
+        "areaLiberal": 15,
+        "majorTotal": 75,
+        "freeElective": 16
+      },
+      "graduationConditions": [
+        "채플 7회",
+        "흡연음주예방교육 1회",
+        "노작교육 및 사회봉사 이수"
+      ],
+      "sourcePage": "PDF 졸업요건 표"
+    }
+  ],
+  "courseCatalogs": {
+    "requiredLiberal": {
+      "freshman": [
+        {
+          "id": "basic-green",
+          "name": "그린교육(노작교육)",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-service",
+          "name": "지역사회공헌(사회봉사)",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-writing",
+          "name": "글로컬사고와 표현",
+          "credits": 3,
+          "group": "기초교양필수",
+          "note": "2025 요람 자가진단표 기준"
+        },
+        {
+          "id": "basic-english-1",
+          "name": "글로컬영어 I",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "basic-english-2",
+          "name": "글로컬영어 II",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "basic-career-1",
+          "name": "인생설계와 진로 I",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-career-2",
+          "name": "인생설계와 진로 II",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-computing",
+          "name": "컴퓨팅사고력",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "core-character-society",
+          "name": "인성과 사회",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-religion-life",
+          "name": "종교와 인생",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-life-ethics",
+          "name": "생활과 윤리",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-history-culture",
+          "name": "역사와 문화",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-upper-character",
+          "name": "3-4학년 인성교양",
+          "credits": 3,
+          "group": "핵심교양",
+          "note": "자가진단표: 3-4학년 인성교양과목 1과목"
+        },
+        {
+          "id": "basic-smoking",
+          "name": "흡연음주예방교육",
+          "credits": 0,
+          "group": "졸업조건",
+          "note": "1회 이수, 학점 없음"
+        }
+      ],
+      "departmentTransfer": [
+        {
+          "id": "basic-green",
+          "name": "그린교육(노작교육)",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-service",
+          "name": "지역사회공헌(사회봉사)",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-writing",
+          "name": "글로컬사고와 표현",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "basic-english-1",
+          "name": "글로컬영어 I",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "basic-english-2",
+          "name": "글로컬영어 II",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "basic-career-1",
+          "name": "인생설계와 진로 I",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-career-2",
+          "name": "인생설계와 진로 II",
+          "credits": 1,
+          "group": "기초교양필수",
+          "note": "P/F"
+        },
+        {
+          "id": "basic-computing",
+          "name": "컴퓨팅사고력",
+          "credits": 3,
+          "group": "기초교양필수"
+        },
+        {
+          "id": "core-character-society",
+          "name": "인성과 사회",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-religion-life",
+          "name": "종교와 인생",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-life-ethics",
+          "name": "생활과 윤리",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-history-culture",
+          "name": "역사와 문화",
+          "credits": 2,
+          "group": "핵심교양"
+        },
+        {
+          "id": "core-upper-character",
+          "name": "3-4학년 인성교양",
+          "credits": 3,
+          "group": "핵심교양",
+          "note": "자가진단표: 3-4학년 인성교양과목 1과목"
+        }
+      ],
+      "transfer3": [
+        {
+          "id": "transfer-personality-1",
+          "name": "인성교양 1과목",
+          "credits": 3,
+          "group": "편입생 인성교양",
+          "note": "편입생은 기초교양필수 해당사항 없음"
+        },
+        {
+          "id": "transfer-personality-2",
+          "name": "인성교양 2과목",
+          "credits": 3,
+          "group": "편입생 인성교양",
+          "note": "3학년 편입생 기준 총 2과목/6학점"
+        }
+      ],
+      "transfer4": [
+        {
+          "id": "transfer-personality-1",
+          "name": "인성교양 1과목",
+          "credits": 3,
+          "group": "편입생 인성교양",
+          "note": "4학년 편입생 기준 총 1과목/3학점"
+        }
+      ]
+    },
+    "areaLiberal": [
+      {
+        "id": "area-humanities",
+        "name": "인문예술영역(인문/문화예술)",
+        "credits": 3,
+        "note": "자가진단표: 2021학번 이전은 인문예술에서 2개 과목 이수 시 인문학과 문화예술로 인정"
+      },
+      {
+        "id": "area-social",
+        "name": "사회과학영역",
+        "credits": 3
+      },
+      {
+        "id": "area-natural",
+        "name": "자연과학영역",
+        "credits": 3
+      },
+      {
+        "id": "area-digital",
+        "name": "디지털리터러시영역",
+        "credits": 3
+      }
+    ],
+    "majorRequired": [
+      {
+        "id": "major-required-custom",
+        "name": "전공필수 과목 직접 추가",
+        "credits": 0,
+        "note": "자가진단표: 전공 과목은 학과 사무실로 문의하여 요건 확인"
+      }
+    ]
+  },
+  "curriculumCourses": [
+    {
+      "id": "nursing-1-1-chapel",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "채플",
+      "credits": 0,
+      "passFail": true,
+      "note": "지정시간",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-smoking",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "흡연음주예방교육",
+      "credits": 0,
+      "passFail": true,
+      "note": "비교과",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-green",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "그린교육(노작교육)",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "지정시간",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-english-1",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "글로컬영어 I",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "note": "지정시간",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-thinking-expression",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "사고와 표현",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-character-society",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "인성과 사회",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "note": "핵심교양",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-career-1",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교필",
+      "name": "인생설계와 진로 I",
+      "credits": 1,
+      "theoryCredits": 1,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-biology",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "교선",
+      "name": "일반생물학(자연과학영역)",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-intro-nursing",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "전필",
+      "name": "간호학개론",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-1-anatomy-lab",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 1,
+      "category": "전선",
+      "name": "해부학 및 실험(전공기초)",
+      "credits": 2,
+      "theoryCredits": 1,
+      "practiceCredits": 1,
+      "courseType": "혼합",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-chapel",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교필",
+      "name": "채플",
+      "credits": 0,
+      "passFail": true,
+      "note": "지정시간",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-service",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교필",
+      "name": "지역사회공헌",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-english-2",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교필",
+      "name": "글로컬영어 II",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "note": "지정시간",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-computing",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교필",
+      "name": "컴퓨팅사고력",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-religion-life",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교필",
+      "name": "종교와 인생",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "note": "핵심교양",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-digital-literacy",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "교선",
+      "name": "디지털 리터러시 영역",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-physiology-lab",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "전선",
+      "name": "생리학 및 실험(전공기초)",
+      "credits": 2,
+      "theoryCredits": 1,
+      "practiceCredits": 1,
+      "courseType": "혼합",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-1-2-psychology",
+      "departmentId": "nursing_nursing",
+      "year": 1,
+      "semester": 2,
+      "category": "전선",
+      "name": "심리학",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "note": "SW연계전공",
+      "sourcePage": "2025 요람 p.245"
+    },
+    {
+      "id": "nursing-2-1-basic-nursing-1",
+      "departmentId": "nursing_nursing",
+      "year": 2,
+      "semester": 1,
+      "category": "전필",
+      "name": "기본간호학 I",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.246"
+    },
+    {
+      "id": "nursing-2-1-basic-nursing-practice-1",
+      "departmentId": "nursing_nursing",
+      "year": 2,
+      "semester": 1,
+      "category": "전필",
+      "name": "기본간호학실습 I",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "sourcePage": "2025 요람 p.246"
+    },
+    {
+      "id": "nursing-2-1-research-method",
+      "departmentId": "nursing_nursing",
+      "year": 2,
+      "semester": 1,
+      "category": "전필",
+      "name": "간호연구방법론",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.246"
+    },
+    {
+      "id": "nursing-2-2-basic-nursing-2",
+      "departmentId": "nursing_nursing",
+      "year": 2,
+      "semester": 2,
+      "category": "전필",
+      "name": "기본간호학 II",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.246"
+    },
+    {
+      "id": "nursing-2-2-basic-nursing-practice-2",
+      "departmentId": "nursing_nursing",
+      "year": 2,
+      "semester": 2,
+      "category": "전필",
+      "name": "기본간호학실습 II",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "sourcePage": "2025 요람 p.246"
+    },
+    {
+      "id": "nursing-3-1-adult-practice-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "성인간호학실습 I",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-adult-practice-2",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "성인간호학실습 II",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-elective-practice",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "선택실습",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-community-practice-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "지역사회간호학실습 I",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-simulation-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "통합시뮬레이션 I",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-intro-clinical-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "임상간호입문실습 I",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-adult-nursing",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "성인간호개론",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-nutrition-elimination",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "영양과 배설간호",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-psychiatric-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "정신간호학 I",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "note": "SW연계전공",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-1-community-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 1,
+      "category": "전필",
+      "name": "지역사회간호학 I",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-adult-practice-3",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "성인간호학실습 III",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-psychiatric-practice",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "정신간호학실습",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-emergency-practice",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "응급간호실습",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-psychiatric-2",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "정신간호학 II",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-neuroscience",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "신경간호과학",
+      "credits": 1,
+      "theoryCredits": 1,
+      "courseType": "이론",
+      "note": "SW연계전공",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-respiratory-sensory",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "호흡과 감각간호",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-maternity-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "모성간호학 I",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-3-2-child-1",
+      "departmentId": "nursing_nursing",
+      "year": 3,
+      "semester": 2,
+      "category": "전필",
+      "name": "아동간호학 I",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.247"
+    },
+    {
+      "id": "nursing-4-1-maternity-practice",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "모성간호학실습",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-child-practice",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "아동간호학실습",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-management-practice",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "간호관리학실습",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-circulation",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "순환과 간호",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-maternity-2",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "모성간호학 II",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-child-2",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "아동간호학 II",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-endocrine-nursing",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "내분비조절과 간호",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-1-management",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 1,
+      "category": "전필",
+      "name": "간호관리학",
+      "credits": 3,
+      "theoryCredits": 3,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-adult-practice-4",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "성인간호학실습 IV",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-community-practice-2",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "지역사회간호학실습 II",
+      "credits": 2,
+      "practiceCredits": 2,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-simulation-2",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "통합시뮬레이션 II",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-integrated-clinical",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "간호학종합실습",
+      "credits": 1,
+      "practiceCredits": 1,
+      "courseType": "실습",
+      "note": "임상실습",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-spiritual-nursing",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "영적간호(인성교양영역)",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-nursing-capstone",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "간호학총론",
+      "credits": 1,
+      "theoryCredits": 1,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-community-2",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "지역사회간호학 II",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-law-ethics",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "의료법규 및 간호윤리",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "sourcePage": "2025 요람 p.248"
+    },
+    {
+      "id": "nursing-4-2-evidence-based-nursing",
+      "departmentId": "nursing_nursing",
+      "year": 4,
+      "semester": 2,
+      "category": "전필",
+      "name": "근거기반간호",
+      "credits": 2,
+      "theoryCredits": 2,
+      "courseType": "이론",
+      "note": "SW연계전공",
+      "sourcePage": "2025 요람 p.248"
+    }
+  ],
+  "aliases": {
+    "데이터클라우드공학과": "ff_datacloud",
+    "빅데이터클라우드공학과": "ff_datacloud",
+    "cf_business": "cf_business",
+    "ff_datacloud": "ff_datacloud"
+  },
+  "comparisonFindings": [
+    "기존 public/data/graduation-requirements.json은 페이지에서 사용되지 않았습니다.",
+    "기존 lib/graduation.ts와 public/data/graduation-requirements.json 사이에 일부 학과 전공학점 불일치가 있었습니다.",
+    "기존 코드의 2학년편입 계산은 3학년편입 표를 재사용하고 있어 새 계산기에서는 자동 선택지에서 제외했습니다.",
+    "PDF에서 자동 판정하기 어려운 시험, 인증, 실습 조건은 확인 필요 항목으로 분리했습니다."
+  ]
+}

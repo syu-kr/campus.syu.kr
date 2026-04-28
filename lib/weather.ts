@@ -13,19 +13,44 @@ export interface WeatherData {
   gridY: number;
 }
 
-// 캐싱 제거 - 매 요청마다 데이터를 가져옴
+const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+
+let cachedWeather:
+  | {
+      data: WeatherData;
+      expiresAt: number;
+    }
+  | undefined;
+let pendingWeather: Promise<WeatherData | null> | undefined;
 
 /**
  * API 라우트를 통해 날씨 정보 조회
  */
 export async function fetchWeather(): Promise<WeatherData | null> {
-  const data = await fetchJson<unknown>("/api/weather", { fallback: null });
-
-  if (!isWeatherData(data)) {
-    return null;
+  const now = Date.now();
+  if (cachedWeather && cachedWeather.expiresAt > now) {
+    return cachedWeather.data;
   }
 
-  return data;
+  pendingWeather ??= fetchJson<unknown>("/api/weather", {
+    fallback: null,
+    noStore: false,
+    cache: "force-cache",
+  })
+    .then((data) => {
+      if (!isWeatherData(data)) return null;
+
+      cachedWeather = {
+        data,
+        expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
+      };
+      return data;
+    })
+    .finally(() => {
+      pendingWeather = undefined;
+    });
+
+  return pendingWeather;
 }
 
 function isWeatherData(data: unknown): data is WeatherData {

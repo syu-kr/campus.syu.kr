@@ -32,10 +32,6 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
     };
 
     loadWeather();
-
-    // 1분마다 확인 (캐시 만료나 시간 변경 감지용)
-    const interval = setInterval(loadWeather, 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {

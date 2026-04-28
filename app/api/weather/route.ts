@@ -1,14 +1,62 @@
 // app/api/weather/route.ts
 import { NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+
+let cachedWeather:
+  | {
+      data: WeatherResponse;
+      expiresAt: number;
+    }
+  | undefined;
+let pendingWeather: Promise<WeatherResponse> | undefined;
+
+interface WeatherResponse {
+  temperature: number;
+  skyCondition: number;
+  precipitation: number;
+  windSpeed: number;
+  time: string;
+  latitude: number;
+  longitude: number;
+  gridX: number;
+  gridY: number;
+}
+
 export async function GET() {
   try {
+    const now = Date.now();
+    if (cachedWeather && cachedWeather.expiresAt > now) {
+      return weatherJson(cachedWeather.data);
+    }
+
+    pendingWeather ??= fetchWeatherFromKma().finally(() => {
+      pendingWeather = undefined;
+    });
+
+    const weatherData = await pendingWeather;
+    cachedWeather = {
+      data: weatherData,
+      expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
+    };
+
+    return weatherJson(weatherData);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    return NextResponse.json(
+      { error: "서버 오류가 발생했습니다" },
+      { status: 500 },
+    );
+  }
+}
+
+async function fetchWeatherFromKma(): Promise<WeatherResponse> {
     const apiKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "API 키가 설정되지 않았습니다" },
-        { status: 500 },
-      );
+      throw new Error("API 키가 설정되지 않았습니다");
     }
 
     // 삼육대학교 캠퍼스 좌표
@@ -54,23 +102,17 @@ export async function GET() {
 
     const apiResponse = await fetch(
       `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?${params}`,
-      { cache: "no-store" },
+      { next: { revalidate: 600 } },
     );
 
     if (!apiResponse.ok) {
-      return NextResponse.json(
-        { error: "기상청 API 오류" },
-        { status: apiResponse.status },
-      );
+      throw new Error("기상청 API 오류");
     }
 
     const data = await apiResponse.json();
 
     if (!data.response?.body?.items?.item) {
-      return NextResponse.json(
-        { error: "유효한 데이터 없음" },
-        { status: 500 },
-      );
+      throw new Error("유효한 데이터 없음");
     }
 
     // 카테고리별 실황 데이터 정렬
@@ -105,7 +147,7 @@ export async function GET() {
       skyCondition = 4; // 흐림 (눈/진눈깨비/빗방울눈날림/눈날림)
     }
 
-    const weatherData = {
+    return {
       temperature: Math.round(temperature),
       skyCondition,
       precipitation,
@@ -116,19 +158,12 @@ export async function GET() {
       gridX: nx,
       gridY: ny,
     };
+}
 
-    const response = NextResponse.json(weatherData);
-    // 캐싱 제거
-    response.headers.set(
-      "Cache-Control",
-      "no-cache, no-store, must-revalidate, max-age=0",
-    );
-    return response;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    return NextResponse.json(
-      { error: "서버 오류가 발생했습니다" },
-      { status: 500 },
-    );
-  }
+function weatherJson(data: WeatherResponse) {
+  return NextResponse.json(data, {
+    headers: {
+      "Cache-Control": "public, s-maxage=600, stale-while-revalidate=300",
+    },
+  });
 }
