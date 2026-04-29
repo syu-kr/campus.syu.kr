@@ -991,6 +991,11 @@ const MapComponent = forwardRef(
 
         const map = new kakao.maps.Map(mapContainer, mapOptions);
         mapRef.current = map;
+
+        requestAnimationFrame(() => {
+          map.relayout();
+          map.setCenter(center);
+        });
       } catch {
         // Silently handle map initialization error
       }
@@ -1029,17 +1034,29 @@ const MapComponent = forwardRef(
       currentInfoWindowRef.current = null;
 
       // 새 마커 추가
-      const activeBuses = busLocations.filter((bus) => bus.status !== 0);
+      const activeBuses = busLocations
+        .filter((bus) => bus.status !== 0)
+        .map((bus) => ({
+          ...bus,
+          latNumber: Number(bus.lat),
+          lonNumber: Number(bus.lon),
+        }))
+        .filter(
+          (bus) => Number.isFinite(bus.latNumber) && Number.isFinite(bus.lonNumber),
+        );
+      const markerPositions: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
 
       activeBuses.forEach((bus) => {
-        const lat = Number(bus.lat);
-        const lon = Number(bus.lon);
         const color =
           bus.status === 2 ? "#d0d0d0" : routeColors[bus.routeid] || "#999999";
         const routeName = routeNames[bus.routeid] || "알 수 없음";
         const statusLabel = statusLabels[bus.status] || "알 수 없음";
 
-        const markerPosition = new kakao.maps.LatLng(lat, lon);
+        const markerPosition = new kakao.maps.LatLng(
+          bus.latNumber,
+          bus.lonNumber,
+        );
+        markerPositions.push(markerPosition);
 
         const svgMarker = `
           <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
@@ -1097,14 +1114,22 @@ const MapComponent = forwardRef(
       });
 
       // 지도 범위 설정
-      if (activeBuses.length > 0) {
-        const bounds = new kakao.maps.LatLngBounds();
-        activeBuses.forEach((bus) => {
-          bounds.extend(
-            new kakao.maps.LatLng(Number(bus.lat), Number(bus.lon)),
-          );
+      if (markerPositions.length > 0) {
+        requestAnimationFrame(() => {
+          mapRef.current.relayout();
+
+          if (markerPositions.length === 1) {
+            mapRef.current.setCenter(markerPositions[0]);
+            mapRef.current.setLevel(5);
+            return;
+          }
+
+          const bounds = new kakao.maps.LatLngBounds();
+          markerPositions.forEach((position) => {
+            bounds.extend(position);
+          });
+          mapRef.current.setBounds(bounds, 48, 48, 48, 48);
         });
-        mapRef.current.setBounds(bounds);
       }
 
       markersCreatedRef.current = true;

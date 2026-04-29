@@ -57,6 +57,11 @@ export function MapView({
         options,
       );
       setMap(newMap);
+
+      requestAnimationFrame(() => {
+        newMap.relayout();
+        newMap.setCenter(options.center);
+      });
     } catch {
       // Handle map initialization error
     }

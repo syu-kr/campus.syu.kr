@@ -5,7 +5,7 @@ export function loadKakaoMapsSdk(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
-  if (window.kakao?.maps?.LatLng) {
+  if (isKakaoMapsReady()) {
     return Promise.resolve(true);
   }
 
@@ -25,7 +25,7 @@ export function loadKakaoMapsSdk(): Promise<boolean> {
       let attempts = 0;
       const poll = () => {
         attempts += 1;
-        if (window.kakao?.maps?.LatLng) {
+        if (isKakaoMapsReady()) {
           resolve(true);
           return;
         }
@@ -48,9 +48,16 @@ export function loadKakaoMapsSdk(): Promise<boolean> {
 
     const script = document.createElement("script");
     script.id = "kakao-maps-sdk";
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&libraries=services,drawing`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&libraries=services,drawing&autoload=false`;
     script.async = true;
-    script.onload = resolveWhenReady;
+    script.onload = () => {
+      if (window.kakao?.maps?.load) {
+        window.kakao.maps.load(resolveWhenReady);
+        return;
+      }
+
+      resolveWhenReady();
+    };
     script.onerror = () => resolve(false);
     document.head.appendChild(script);
   });
@@ -58,11 +65,33 @@ export function loadKakaoMapsSdk(): Promise<boolean> {
   return kakaoMapsPromise;
 }
 
+function isKakaoMapsReady() {
+  const maps = window.kakao?.maps;
+  return Boolean(
+    maps?.LatLng &&
+      maps.Map &&
+      maps.Marker &&
+      maps.MarkerImage &&
+      maps.Size &&
+      maps.Point &&
+      maps.InfoWindow &&
+      maps.event,
+  );
+}
+
 declare global {
   interface Window {
     kakao?: {
       maps?: {
         LatLng?: unknown;
+        Map?: unknown;
+        Marker?: unknown;
+        MarkerImage?: unknown;
+        Size?: unknown;
+        Point?: unknown;
+        InfoWindow?: unknown;
+        event?: unknown;
+        load?: (callback: () => void) => void;
       };
     };
   }
