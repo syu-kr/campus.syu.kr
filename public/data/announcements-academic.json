@@ -1,14 +1,27 @@
 [
   {
     "no": "",
-    "id": "academic-f46d19e84f46",
-    "title": "[스쿨버스] 온라인 수업 권장 주간 셔틀버스 시간 변경 안내NEW",
+    "id": "academic-2895f3754dcc",
+    "title": "[스쿨버스] 온라인 수업 권장 주간 셔틀버스 시간 변경 안내",
     "date": "2026.04.28",
     "author": "학생처",
     "views": 0,
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ec%98%a8%eb%9d%bc%ec%9d%b8-%ec%88%98%ec%97%85-%ea%b6%8c%ec%9e%a5-%ec%a3%bc%ea%b0%84-%ec%85%94%ed%8b%80%eb%b2%84%ec%8a%a4-%ec%8b%9c%ea%b0%84-%eb%b3%80%ea%b2%bd-2/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
+  },
+  {
+    "no": "",
+    "id": "academic-b532f8e0cfd1",
+    "title": "학적[졸업] 2025학년도 후기(2026년 8월) 졸업대상자 예비졸업사정결과 확인 안내",
+    "date": "2026.04.27",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b8%ec%97%85%eb%8c%80%ec%83%81%ec%9e%90-%ec%98%88%eb%b9%84%ec%a1%b8%ec%97%85%ec%82%ac%ec%a0%95/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": true
   },
@@ -35,19 +48,6 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/%ec%84%b1%ec%a0%81-2026-1-%ec%a4%91%ea%b0%84%ea%b3%a0%ec%82%ac-%ec%84%b1%ec%a0%81%ed%99%95%ec%9d%b8-%ea%b8%b0%ea%b0%84-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": true
-  },
-  {
-    "no": "",
-    "id": "academic-8531609888b4",
-    "title": "등록2026-1학기 등록금 분납3차 납부 안내",
-    "date": "2026.04.15",
-    "author": "재무처",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%eb%93%b1%eb%a1%9d%ea%b8%88-%eb%b6%84%eb%82%a93%ec%b0%a8-%eb%82%a9%eb%b6%80-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": true
   },
@@ -144,21 +144,8 @@
   },
   {
     "no": "3059",
-    "id": "academic-a5bd9e323e92",
-    "title": "[졸업] 2025학년도 후기(2026년 8월) 졸업대상자 예비졸업사정결과 확인 안내",
-    "date": "2026.04.27",
-    "author": "학사지원팀",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b8%ec%97%85%eb%8c%80%ec%83%81%ec%9e%90-%ec%98%88%eb%b9%84%ec%a1%b8%ec%97%85%ec%82%ac%ec%a0%95/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": false
-  },
-  {
-    "no": "3058",
-    "id": "academic-9b62b7ecbbba",
-    "title": "[졸업] 2025학년도 후기(2026년 8월 졸업) 학사학위취득유예(졸업유예) 신청 안내",
+    "id": "academic-9f1c5cceeecf",
+    "title": "학적[졸업] 2025학년도 후기(2026년 8월 졸업) 학사학위취득유예(졸업유예) 신청 안내",
     "date": "2026.04.27",
     "author": "학사지원팀",
     "views": 0,
@@ -169,7 +156,7 @@
     "isPinned": false
   },
   {
-    "no": "3057",
+    "no": "3058",
     "id": "academic-f54040ac692f",
     "title": "2026-1학기 HOPE CAMP 모집 안내[교목처 리더십센터]",
     "date": "2026.04.22",
@@ -182,7 +169,7 @@
     "isPinned": false
   },
   {
-    "no": "3056",
+    "no": "3057",
     "id": "academic-20f96282e764",
     "title": "2026학년도 교직이수신청 추가모집 기간 안내[간호학과]",
     "date": "2026.04.21",
@@ -195,7 +182,7 @@
     "isPinned": false
   },
   {
-    "no": "3055",
+    "no": "3056",
     "id": "academic-e2bcea06bf09",
     "title": "학적[증명서 발급 서비스 일시 중단 안내] 2026.04.22 (수) *정정*",
     "date": "2026.04.17",
@@ -208,7 +195,7 @@
     "isPinned": false
   },
   {
-    "no": "3054",
+    "no": "3055",
     "id": "academic-67be7c46dcea",
     "title": "2026-하계 계절학기 학점교류대학 수강신청 일정 안내",
     "date": "2026.04.16",
@@ -217,6 +204,19 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026-%ed%95%98%ea%b3%84-%ea%b3%84%ec%a0%88%ed%95%99%ea%b8%b0-%ed%95%99%ec%a0%90%ea%b5%90%eb%a5%98%eb%8c%80%ed%95%99-%ec%88%98%ea%b0%95%ec%8b%a0%ec%b2%ad-%ec%9d%bc%ec%a0%95-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3054",
+    "id": "academic-8531609888b4",
+    "title": "등록2026-1학기 등록금 분납3차 납부 안내",
+    "date": "2026.04.15",
+    "author": "재무처",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/2026-1%ed%95%99%ea%b8%b0-%eb%93%b1%eb%a1%9d%ea%b8%88-%eb%b6%84%eb%82%a93%ec%b0%a8-%eb%82%a9%eb%b6%80-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
@@ -39893,6 +39893,45 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-1%ed%95%99%ea%b8%b0-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%8b%ac%ec%95%bc%ec%9e%91%ec%97%85%ec%8b%a0%ec%b2%ad-%ec%a7%91%ed%9a%8c%ed%97%88%ea%b0%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=128&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "",
+    "id": "academic-f46d19e84f46",
+    "title": "[스쿨버스] 온라인 수업 권장 주간 셔틀버스 시간 변경 안내NEW",
+    "date": "2026.04.28",
+    "author": "학생처",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%8a%a4%ec%bf%a8%eb%b2%84%ec%8a%a4-%ec%98%a8%eb%9d%bc%ec%9d%b8-%ec%88%98%ec%97%85-%ea%b6%8c%ec%9e%a5-%ec%a3%bc%ea%b0%84-%ec%85%94%ed%8b%80%eb%b2%84%ec%8a%a4-%ec%8b%9c%ea%b0%84-%eb%b3%80%ea%b2%bd-2/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
+  },
+  {
+    "no": "3059",
+    "id": "academic-a5bd9e323e92",
+    "title": "[졸업] 2025학년도 후기(2026년 8월) 졸업대상자 예비졸업사정결과 확인 안내",
+    "date": "2026.04.27",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b8%ec%97%85%eb%8c%80%ec%83%81%ec%9e%90-%ec%98%88%eb%b9%84%ec%a1%b8%ec%97%85%ec%82%ac%ec%a0%95/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3058",
+    "id": "academic-9b62b7ecbbba",
+    "title": "[졸업] 2025학년도 후기(2026년 8월 졸업) 학사학위취득유예(졸업유예) 신청 안내",
+    "date": "2026.04.27",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b8%ec%97%85-%ed%95%99%ec%82%ac%ed%95%99%ec%9c%84%ec%b7%a8%eb%93%9d%ec%9c%a0%ec%98%88%ec%a1%b8/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
