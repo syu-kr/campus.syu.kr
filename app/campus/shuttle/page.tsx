@@ -725,7 +725,7 @@ export default function ShuttlePage() {
             key={btn.type}
             onClick={() => {
               setSelectedType(btn.type);
-              setUseSpecialSchedule(hasReplacementSpecialSchedule);
+              setUseSpecialSchedule(false);
             }}
             className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
               selectedType === btn.type && !useSpecialSchedule
