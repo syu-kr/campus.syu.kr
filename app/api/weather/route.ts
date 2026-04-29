@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cachedWeather:
   | {
@@ -54,116 +54,218 @@ export async function GET() {
 }
 
 async function fetchWeatherFromKma(): Promise<WeatherResponse> {
-    const apiKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-    if (!apiKey) {
-      throw new Error("API 키가 설정되지 않았습니다");
-    }
+  const apiKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
+  if (!apiKey) {
+    throw new Error("API 키가 설정되지 않았습니다");
+  }
 
-    // 삼육대학교 캠퍼스 좌표
-    const latitude = 37.642841484;
-    const longitude = 127.10846903;
+  // 삼육대학교 캠퍼스 좌표
+  const latitude = 37.642841484;
+  const longitude = 127.10846903;
 
-    // 기상청 기본 격자 좌표
-    const nx = 61; // 격자 X
-    const ny = 128; // 격자 Y
+  // 기상청 기본 격자 좌표
+  const nx = 61; // 격자 X
+  const ny = 128; // 격자 Y
 
-    // 한국 시간(KST, UTC+9) 기준으로 현재 시간 계산
-    const now = new Date();
-    const kstMs = now.getTime() + 9 * 60 * 60 * 1000;
+  const now = new Date();
+  const { baseDate, baseTime, hours, minutes } = getUltraSrtNcstBase(now);
+  const forecastBase = getUltraSrtFcstBase(now);
 
-    // 밀리초 기준으로 직접 계산 (더 정확함)
-    const hours = Math.floor((kstMs / 1000 / 60 / 60) % 24);
-    const minutes = Math.floor((kstMs / 1000 / 60) % 60);
-    const kstDate = new Date(kstMs);
+  const ncstParams = new URLSearchParams({
+    serviceKey: apiKey,
+    pageNo: "1",
+    numOfRows: "100",
+    dataType: "JSON",
+    base_date: baseDate,
+    base_time: baseTime,
+    nx: nx.toString(),
+    ny: ny.toString(),
+  });
 
-    const year = kstDate.getUTCFullYear();
-    const month = String(kstDate.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(kstDate.getUTCDate()).padStart(2, "0");
-    const baseDate = `${year}${month}${day}`;
+  const fcstParams = new URLSearchParams({
+    serviceKey: apiKey,
+    pageNo: "1",
+    numOfRows: "1000",
+    dataType: "JSON",
+    base_date: forecastBase.baseDate,
+    base_time: forecastBase.baseTime,
+    nx: nx.toString(),
+    ny: ny.toString(),
+  });
 
-    // 초단기실황은 현재 시각의 정각 또는 1시간 전 데이터 사용
-    // (API는 약 40분 지연, 예: 12시 50분이면 12시 데이터를 요청)
-    let baseHour = hours;
-    if (minutes < 10) {
-      baseHour = baseHour === 0 ? 23 : baseHour - 1;
-    }
-    const baseTime = String(baseHour).padStart(2, "0") + "00";
+  const [ncstResponse, fcstResponse] = await Promise.all([
+    fetch(
+      `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?${ncstParams}`,
+      { cache: "no-store" },
+    ),
+    fetch(
+      `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?${fcstParams}`,
+      { cache: "no-store" },
+    ),
+  ]);
 
-    const params = new URLSearchParams({
-      serviceKey: apiKey,
-      pageNo: "1",
-      numOfRows: "100",
-      dataType: "JSON",
-      base_date: baseDate,
-      base_time: baseTime,
-      nx: nx.toString(),
-      ny: ny.toString(),
+  if (!ncstResponse.ok) {
+    throw new Error("기상청 실황 API 오류");
+  }
+
+  const ncstData = await ncstResponse.json();
+  const fcstData = fcstResponse.ok ? await fcstResponse.json() : null;
+
+  if (!ncstData.response?.body?.items?.item) {
+    throw new Error("유효한 실황 데이터 없음");
+  }
+
+  const ncstItems = toItemArray(ncstData.response.body.items.item);
+  const fcstItems = toItemArray(fcstData?.response?.body?.items?.item);
+
+  const ncstCategoryMap: Record<string, number> = {};
+  ncstItems.forEach((item) => {
+    setCategoryValue(ncstCategoryMap, item.category, item.obsrValue);
+  });
+
+  const forecastTime = getNearestForecastTime(hours, minutes);
+  const fcstCategoryMap: Record<string, number> = {};
+  fcstItems
+    .filter((item) => !item.fcstTime || item.fcstTime >= forecastTime)
+    .sort((a, b) => (a.fcstTime ?? "").localeCompare(b.fcstTime ?? ""))
+    .forEach((item) => {
+      if (fcstCategoryMap[item.category] === undefined) {
+        setCategoryValue(fcstCategoryMap, item.category, item.fcstValue);
+      }
     });
 
-    const apiResponse = await fetch(
-      `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?${params}`,
-      { next: { revalidate: 600 } },
+  if (Object.keys(fcstCategoryMap).length === 0) {
+    fcstItems
+      .sort((a, b) => (a.fcstTime ?? "").localeCompare(b.fcstTime ?? ""))
+      .forEach((item) => {
+        if (fcstCategoryMap[item.category] === undefined) {
+          setCategoryValue(fcstCategoryMap, item.category, item.fcstValue);
+        }
+      });
+  }
+
+  const temperature = ncstCategoryMap["T1H"] ?? fcstCategoryMap["T1H"] ?? 0;
+  const precipitation = ncstCategoryMap["PTY"] ?? fcstCategoryMap["PTY"] ?? 0;
+  const windSpeed = ncstCategoryMap["WSD"] ?? fcstCategoryMap["WSD"] ?? 0;
+  const skyCondition =
+    precipitation > 0
+      ? getPrecipitationSky(precipitation)
+      : (fcstCategoryMap["SKY"] ?? 1);
+
+  return {
+    temperature: Math.round(temperature),
+    skyCondition,
+    precipitation,
+    windSpeed: Math.round(windSpeed * 10) / 10,
+    time: `${baseTime.substring(0, 2)}:${baseTime.substring(2, 4)}`,
+    latitude,
+    longitude,
+    gridX: nx,
+    gridY: ny,
+  };
+}
+
+type KmaItem = {
+  category: string;
+  obsrValue?: string;
+  fcstValue?: string;
+  fcstTime?: string;
+};
+
+function toItemArray(items: unknown): KmaItem[] {
+  if (!items) return [];
+  const itemArray = Array.isArray(items) ? items : [items];
+  return itemArray.filter(
+    (item): item is KmaItem =>
+      typeof item === "object" &&
+      item !== null &&
+      typeof (item as Partial<KmaItem>).category === "string",
     );
+}
 
-    if (!apiResponse.ok) {
-      throw new Error("기상청 API 오류");
-    }
+function setCategoryValue(
+  target: Record<string, number>,
+  category: string,
+  value: string | undefined,
+) {
+  const numericValue = Number(value);
+  if (Number.isFinite(numericValue)) {
+    target[category] = numericValue;
+  }
+}
 
-    const data = await apiResponse.json();
+function getKstParts(date: Date) {
+  const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const year = kstDate.getUTCFullYear();
+  const month = kstDate.getUTCMonth() + 1;
+  const day = kstDate.getUTCDate();
+  const hours = kstDate.getUTCHours();
+  const minutes = kstDate.getUTCMinutes();
 
-    if (!data.response?.body?.items?.item) {
-      throw new Error("유효한 데이터 없음");
-    }
+  return { year, month, day, hours, minutes };
+}
 
-    // 카테고리별 실황 데이터 정렬
-    const items = Array.isArray(data.response.body.items.item)
-      ? data.response.body.items.item
-      : [data.response.body.items.item];
+function formatBaseDate(date: Date) {
+  const { year, month, day } = getKstParts(date);
+  return `${year}${String(month).padStart(2, "0")}${String(day).padStart(
+    2,
+    "0",
+  )}`;
+}
 
-    const categoryMap: Record<string, number> = {};
-    items.forEach((item: Record<string, string>) => {
-      categoryMap[item.category] = Number(item.obsrValue);
-    });
+function getUltraSrtNcstBase(date: Date) {
+  const { hours, minutes } = getKstParts(date);
+  const baseDateTime = new Date(date);
+  let baseHour = hours;
 
-    // T1H: 기온, PTY: 강수형태, WSD: 풍속
-    const temperature = categoryMap["T1H"] ?? 0;
-    const precipitation = categoryMap["PTY"] ?? 0;
-    const windSpeed = categoryMap["WSD"] ?? 0;
+  // 초단기실황은 매시 40분 이후 안정적으로 조회된다.
+  if (minutes < 40) {
+    baseDateTime.setTime(baseDateTime.getTime() - 60 * 60 * 1000);
+    baseHour = getKstParts(baseDateTime).hours;
+  }
 
-    // 하늘상태는 초단기실황에서는 제공되지 않으므로 강수 형태로 추정
-    // PTY: 0=없음, 1=비, 2=비/눈, 3=눈, 5=빗방울(이슬비), 6=빗방울눈날림, 7=눈날림
-    // SKY: 1=맑음, 3=구름많음, 4=흐림
-    let skyCondition = 1;
-    if (precipitation === 0) {
-      skyCondition = 1; // 맑음
-    } else if (precipitation === 1 || precipitation === 5) {
-      skyCondition = 4; // 흐림 (비 또는 빗방울/이슬비)
-    } else if (
-      precipitation === 2 ||
-      precipitation === 3 ||
-      precipitation === 6 ||
-      precipitation === 7
-    ) {
-      skyCondition = 4; // 흐림 (눈/진눈깨비/빗방울눈날림/눈날림)
-    }
+  return {
+    baseDate: formatBaseDate(baseDateTime),
+    baseTime: `${String(baseHour).padStart(2, "0")}00`,
+    hours,
+    minutes,
+  };
+}
 
-    return {
-      temperature: Math.round(temperature),
-      skyCondition,
-      precipitation,
-      windSpeed: Math.round(windSpeed * 10) / 10,
-      time: `${baseTime.substring(0, 2)}:${baseTime.substring(2, 4)}`,
-      latitude,
-      longitude,
-      gridX: nx,
-      gridY: ny,
-    };
+function getUltraSrtFcstBase(date: Date) {
+  const { hours, minutes } = getKstParts(date);
+  const baseDateTime = new Date(date);
+  let baseHour = hours;
+
+  // 초단기예보는 매시 30분 발표라 여유를 두고 이전 발표분을 사용한다.
+  if (minutes < 45) {
+    baseDateTime.setTime(baseDateTime.getTime() - 60 * 60 * 1000);
+    baseHour = getKstParts(baseDateTime).hours;
+  }
+
+  return {
+    baseDate: formatBaseDate(baseDateTime),
+    baseTime: `${String(baseHour).padStart(2, "0")}30`,
+  };
+}
+
+function getNearestForecastTime(hours: number, minutes: number) {
+  const forecastHour = minutes >= 45 ? hours + 1 : hours;
+  return `${String(forecastHour % 24).padStart(2, "0")}00`;
+}
+
+function getPrecipitationSky(precipitation: number) {
+  if ([1, 2, 3, 5, 6, 7].includes(precipitation)) {
+    return 4;
+  }
+
+  return 1;
 }
 
 function weatherJson(data: WeatherResponse) {
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": "public, s-maxage=600, stale-while-revalidate=300",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }

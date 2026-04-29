@@ -90,7 +90,7 @@
         "14:30"
       ]
     },
-    "lastUpdated": "2026-03-25"
+    "lastUpdated": "2026-04-29"
   },
   {
     "id": "shuttle-1",
@@ -133,7 +133,7 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-25"
+    "lastUpdated": "2026-04-29"
   },
   {
     "id": "shuttle-2",
@@ -170,7 +170,7 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-25"
+    "lastUpdated": "2026-04-29"
   },
   {
     "id": "shuttle-3",
@@ -207,6 +207,6 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-03-25"
+    "lastUpdated": "2026-04-29"
   }
 ]

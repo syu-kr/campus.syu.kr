@@ -13,7 +13,7 @@ export interface WeatherData {
   gridY: number;
 }
 
-const WEATHER_CACHE_TTL_MS = 10 * 60 * 1000;
+const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
 
 let cachedWeather:
   | {
@@ -32,10 +32,12 @@ export async function fetchWeather(): Promise<WeatherData | null> {
     return cachedWeather.data;
   }
 
-  pendingWeather ??= fetchJson<unknown>("/api/weather", {
+  const cacheKey = Math.floor(now / WEATHER_CACHE_TTL_MS);
+
+  pendingWeather ??= fetchJson<unknown>(`/api/weather?ts=${cacheKey}`, {
     fallback: null,
-    noStore: false,
-    cache: "force-cache",
+    noStore: true,
+    cache: "no-store",
   })
     .then((data) => {
       if (!isWeatherData(data)) return null;

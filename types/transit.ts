@@ -12,13 +12,24 @@ export interface ShuttleBusSchedule {
   lastUpdated: string;
 }
 
+export type ShuttleScheduleType =
+  | "mondayToThursday"
+  | "friday"
+  | "mondayToThursdayVacation"
+  | "fridayVacation";
+
 export interface ShuttleSpecialPeriod {
   id: string;
   name: string;
   startDate: string;
   endDate: string;
   description: string;
-  addedTimes: string[];
+  type?: "add" | "replace";
+  addedTimes?: string[];
+  replacementSchedules?: Record<
+    string,
+    string[] | Partial<Record<ShuttleScheduleType, string[]>>
+  >;
   applicableDates: string[];
   routes: string[];
 }
