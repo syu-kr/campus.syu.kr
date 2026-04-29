@@ -62,6 +62,18 @@ export async function fetchAnnouncements(
   }
 }
 
+export async function fetchAnnouncementSummary(): Promise<Announcement[]> {
+  try {
+    return await fetchJson<Announcement[]>("/api/announcements/summary", {
+      fallback: [],
+      noStore: false,
+      next: { revalidate: 300 },
+    });
+  } catch {
+    return [];
+  }
+}
+
 // 학식 API - 크롤링된 실제 데이터 사용
 export async function fetchCafeteriaMenu(
   date?: string,

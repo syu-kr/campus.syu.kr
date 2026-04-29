@@ -66,39 +66,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
 
-        {/* Preconnect to Kakao resources for faster loading */}
-        <link rel="preconnect" href="https://dapi.kakao.com" />
-        <link rel="preconnect" href="https://t1.daumcdn.net" />
-
-        {/* Kakao Maps SDK - 동기 로딩 필수 (레거시 라이브러리) */}
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-        <script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_MAP_KEY}&libraries=services,drawing`}
-          suppressHydrationWarning
-        />
-        {/* Promise 초기화 - defer로 SDK 이후 실행 */}
-        <script
-          suppressHydrationWarning
-          defer
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.kakaoMapsReady = new Promise((resolve) => {
-                let attempts = 0;
-                const check = () => {
-                  attempts++;
-                  if (window.kakao?.maps?.LatLng) {
-                    resolve(true);
-                  } else if (attempts < 20) {
-                    setTimeout(check, 50);
-                  } else {
-                    resolve(false);
-                  }
-                };
-                check();
-              });
-            `,
-          }}
-        />
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-SD8QFQWFVQ"

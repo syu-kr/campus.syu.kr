@@ -10,6 +10,7 @@ import { Badge } from "./components/Badge";
 import { Skeleton } from "./components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import {
+  fetchAnnouncementSummary,
   fetchAnnouncements,
   fetchCafeteriaMenu,
   fetchAcademicSchedules,
@@ -89,14 +90,16 @@ export default function Home() {
   } = useQuery({
     queryKey: ["announcements", selectedCategory],
     queryFn: () =>
-      fetchAnnouncements(
-        selectedCategory as
-          | "academic"
-          | "campus"
-          | "admin"
-          | "activity"
-          | undefined,
-      ),
+      selectedCategory
+        ? fetchAnnouncements(
+            selectedCategory as
+              | "academic"
+              | "campus"
+              | "admin"
+              | "activity"
+              | "scholarship",
+          )
+        : fetchAnnouncementSummary(),
     staleTime: ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });

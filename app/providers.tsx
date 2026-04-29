@@ -45,7 +45,11 @@ export function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
 
   useEffect(() => {
-    initializePushNotifications();
+    const cancelIdleTask = scheduleIdleTask(() => {
+      initializePushNotifications();
+    });
+
+    return cancelIdleTask;
   }, []);
 
   return (
@@ -54,6 +58,21 @@ export function Providers({ children }: ProvidersProps) {
       {children}
     </QueryClientProvider>
   );
+}
+
+function scheduleIdleTask(task: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const idleCallback = window.requestIdleCallback;
+  if (idleCallback) {
+    const id = idleCallback(task, { timeout: 5000 });
+    return () => window.cancelIdleCallback?.(id);
+  }
+
+  const timeoutId = window.setTimeout(task, 3000);
+  return () => window.clearTimeout(timeoutId);
 }
 
 async function initializePushNotifications() {
@@ -77,15 +96,11 @@ async function initializePushNotifications() {
     return;
   }
 
-  // Firebase 포그라운드 핸들러 설정
-  await setupForegroundNotifications();
-
   const permission = Notification.permission;
 
   if (permission === "granted") {
+    await setupForegroundNotifications();
     generateAndSaveFCMToken(swRegistration);
-  } else if (permission === "default") {
-    showPermissionRequest(swRegistration);
   }
 }
 
@@ -146,34 +161,6 @@ async function generateAndSaveFCMToken(
 
     if (token) {
       await saveFCMToken(token);
-    }
-  } finally {
-    // Error handling - silently fail
-  }
-}
-
-function showPermissionRequest(
-  swRegistration: ServiceWorkerRegistration | null,
-) {
-  setTimeout(() => {
-    const userWantsNotification = confirm(
-      "새로운 공지사항을 놓치지 않으려면 알림을 켜시겠어요?",
-    );
-
-    if (userWantsNotification) {
-      requestNotificationPermission(swRegistration);
-    }
-  }, 500);
-}
-
-async function requestNotificationPermission(
-  swRegistration: ServiceWorkerRegistration | null,
-) {
-  try {
-    const permission = await Notification.requestPermission();
-
-    if (permission === "granted") {
-      generateAndSaveFCMToken(swRegistration);
     }
   } finally {
     // Error handling - silently fail

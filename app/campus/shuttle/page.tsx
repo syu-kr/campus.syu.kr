@@ -10,6 +10,7 @@ import {
   fetchBusLocations,
   fetchShuttleSpecialPeriods,
 } from "@/lib/api";
+import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
 import {
   useState,
@@ -957,36 +958,17 @@ const MapComponent = forwardRef(
     const [mapLoaded, setMapLoaded] = useState(false);
     const markersCreatedRef = useRef(false);
 
-    // SDK 로드 (변경 없음)
     useEffect(() => {
-      const kakaoMapKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+      let cancelled = false;
 
-      if (!kakaoMapKey) {
-        return;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((window as any).kakao?.maps) {
-        setMapLoaded(true);
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoMapKey}&libraries=services`;
-      script.async = true;
-
-      script.onload = () => {
-        setMapLoaded(true);
-      };
-
-      script.onerror = () => {
-        // Silently handle Kakao Map API loading error
-      };
-
-      document.head.appendChild(script);
+      loadKakaoMapsSdk().then((loaded) => {
+        if (!cancelled && loaded) {
+          setMapLoaded(true);
+        }
+      });
 
       return () => {
-        // 스크립트 제거하지 않음
+        cancelled = true;
       };
     }, []);
 

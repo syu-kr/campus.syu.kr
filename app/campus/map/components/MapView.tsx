@@ -4,6 +4,7 @@
 import { buildings } from "../lib/mapData";
 import { BuildingMarker } from "./BuildingMarker";
 import { useEffect, useRef, useState } from "react";
+import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
 
 interface MapViewProps {
   selectedBuilding?: string;
@@ -21,53 +22,18 @@ export function MapView({
   const [sdkReady, setSdkReady] = useState(false);
   const currentInfoWindowRef = useRef<any>(null);
 
-  // Wait for Kakao SDK to be ready
   useEffect(() => {
-    let timeout: NodeJS.Timeout | null = null;
+    let cancelled = false;
 
     (async () => {
-      try {
-        // Wait for the SDK promise from layout script
-        const sdkLoaded = await (window as any).kakaoMapsReady;
-
-        if (sdkLoaded) {
-          setSdkReady(true);
-        } else {
-          // Fallback: SDK promise doesn't exist, use direct polling
-
-          let attempts = 0;
-          const maxAttempts = 300; // 30 seconds
-
-          const poll = () => {
-            attempts++;
-            const ready = !!(window as any).kakao?.maps?.LatLng;
-
-            if (ready) {
-              setSdkReady(true);
-            } else if (attempts < maxAttempts) {
-              timeout = setTimeout(poll, 100);
-            }
-          };
-
-          poll();
-        }
-      } catch {
-        // Fallback to direct polling
-        let attempts = 0;
-        const fallbackPoll = () => {
-          attempts++;
-          if ((window as any).kakao?.maps?.LatLng) {
-            setSdkReady(true);
-          } else if (attempts < 300) {
-            timeout = setTimeout(fallbackPoll, 100);
-          }
-        };
-        fallbackPoll();
+      const sdkLoaded = await loadKakaoMapsSdk();
+      if (!cancelled && sdkLoaded) {
+        setSdkReady(true);
       }
     })();
 
     return () => {
-      if (timeout) clearTimeout(timeout);
+      cancelled = true;
     };
   }, []);
 

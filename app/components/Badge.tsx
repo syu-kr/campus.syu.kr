@@ -1,6 +1,4 @@
-"use client";
-
-import React, { memo } from "react";
+import React from "react";
 import clsx from "clsx";
 
 interface BadgeProps {
@@ -24,7 +22,7 @@ const sizeClasses = {
   md: "text-sm px-3 py-1 rounded-md",
 };
 
-function BadgeComponent({
+export function Badge({
   color = "blue",
   size = "sm",
   children,
@@ -36,7 +34,3 @@ function BadgeComponent({
     </span>
   );
 }
-
-export const Badge = memo(BadgeComponent);
-
-export default Badge;
