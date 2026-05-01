@@ -53,19 +53,6 @@
   },
   {
     "no": "",
-    "id": "academic-d5b13da4b1ae",
-    "title": "2026년도 ICT봉사단 모집",
-    "date": "2026.04.09",
-    "author": "글로컬사회혁신원",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/2026%eb%85%84%eb%8f%84-ict%eb%b4%89%ec%82%ac%eb%8b%a8-%eb%aa%a8%ec%a7%91/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": true
-  },
-  {
-    "no": "",
     "id": "academic-788fd6864626",
     "title": "[교육혁신원] 학습역량 진단검사 지원 안내",
     "date": "2026.04.03",
@@ -87,6 +74,32 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/ai%ea%b8%b0%ec%b4%88/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
+  },
+  {
+    "no": "",
+    "id": "academic-b12a3b944cb2",
+    "title": "[졸업] 2025학년도 후기(2026년 8월) 우등졸업 신청 안내",
+    "date": "2026.03.31",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/242326/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": true
+  },
+  {
+    "no": "",
+    "id": "academic-1abde877ea53",
+    "title": "[졸업] 2025학년도 후기(2026년 8월) 조기졸업 신청 안내",
+    "date": "2026.03.30",
+    "author": "학사지원팀",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b0%ea%b8%b0%ec%a1%b8%ec%97%85-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": true
   },
@@ -143,9 +156,9 @@
     "isPinned": true
   },
   {
-    "no": "3060",
-    "id": "academic-1c06ab8f9123",
-    "title": "[국제처] 입학성적우수자 대상 단기어학연수 프로그램 참가자 모집NEW",
+    "no": "3059",
+    "id": "academic-a68c64d85bb5",
+    "title": "[국제처] 입학성적우수자 대상 단기어학연수 프로그램 참가자 모집",
     "date": "2026.04.30",
     "author": "국제교육원",
     "views": 0,
@@ -156,7 +169,7 @@
     "isPinned": false
   },
   {
-    "no": "3059",
+    "no": "3058",
     "id": "academic-9f1c5cceeecf",
     "title": "학적[졸업] 2025학년도 후기(2026년 8월 졸업) 학사학위취득유예(졸업유예) 신청 안내",
     "date": "2026.04.27",
@@ -169,7 +182,7 @@
     "isPinned": false
   },
   {
-    "no": "3058",
+    "no": "3057",
     "id": "academic-f54040ac692f",
     "title": "2026-1학기 HOPE CAMP 모집 안내[교목처 리더십센터]",
     "date": "2026.04.22",
@@ -182,7 +195,7 @@
     "isPinned": false
   },
   {
-    "no": "3057",
+    "no": "3056",
     "id": "academic-20f96282e764",
     "title": "2026학년도 교직이수신청 추가모집 기간 안내[간호학과]",
     "date": "2026.04.21",
@@ -195,7 +208,7 @@
     "isPinned": false
   },
   {
-    "no": "3056",
+    "no": "3055",
     "id": "academic-e2bcea06bf09",
     "title": "학적[증명서 발급 서비스 일시 중단 안내] 2026.04.22 (수) *정정*",
     "date": "2026.04.17",
@@ -208,7 +221,7 @@
     "isPinned": false
   },
   {
-    "no": "3055",
+    "no": "3054",
     "id": "academic-67be7c46dcea",
     "title": "2026-하계 계절학기 학점교류대학 수강신청 일정 안내",
     "date": "2026.04.16",
@@ -221,7 +234,7 @@
     "isPinned": false
   },
   {
-    "no": "3054",
+    "no": "3053",
     "id": "academic-8531609888b4",
     "title": "등록2026-1학기 등록금 분납3차 납부 안내",
     "date": "2026.04.15",
@@ -234,7 +247,7 @@
     "isPinned": false
   },
   {
-    "no": "3053",
+    "no": "3052",
     "id": "academic-392985d8e20f",
     "title": "노동절(5월1일) 법정 공휴일 지정에 따른 휴·보강 안내",
     "date": "2026.04.13",
@@ -247,7 +260,7 @@
     "isPinned": false
   },
   {
-    "no": "3052",
+    "no": "3051",
     "id": "academic-75dae010876e",
     "title": "수업2026-1학기 중간 강의 평가 실시 안내",
     "date": "2026.04.09",
@@ -260,7 +273,20 @@
     "isPinned": false
   },
   {
-    "no": "3051",
+    "no": "3050",
+    "id": "academic-d5b13da4b1ae",
+    "title": "2026년도 ICT봉사단 모집",
+    "date": "2026.04.09",
+    "author": "글로컬사회혁신원",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/2026%eb%85%84%eb%8f%84-ict%eb%b4%89%ec%82%ac%eb%8b%a8-%eb%aa%a8%ec%a7%91/?pageds=1&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3049",
     "id": "academic-09a6910dcaa2",
     "title": "2026년 대학예비군 훈련계획 공지",
     "date": "2026.04.06",
@@ -269,32 +295,6 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2026%eb%85%84-%eb%8c%80%ed%95%99%ec%98%88%eb%b9%84%ea%b5%b0-%ed%9b%88%eb%a0%a8%ea%b3%84%ed%9a%8d-%ea%b3%b5%ec%a7%80/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": false
-  },
-  {
-    "no": "3050",
-    "id": "academic-b12a3b944cb2",
-    "title": "[졸업] 2025학년도 후기(2026년 8월) 우등졸업 신청 안내",
-    "date": "2026.03.31",
-    "author": "학사지원팀",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/242326/?pageds=1&k=&t=&c=",
-    "isImportant": false,
-    "isPinned": false
-  },
-  {
-    "no": "3049",
-    "id": "academic-1abde877ea53",
-    "title": "[졸업] 2025학년도 후기(2026년 8월) 조기졸업 신청 안내",
-    "date": "2026.03.30",
-    "author": "학사지원팀",
-    "views": 0,
-    "category": "academic",
-    "content": "",
-    "url": "https://www.syu.ac.kr/blog/%ec%a1%b8%ec%97%85-2025%ed%95%99%eb%85%84%eb%8f%84-%ed%9b%84%ea%b8%b02026%eb%85%84-8%ec%9b%94-%ec%a1%b0%ea%b8%b0%ec%a1%b8%ec%97%85-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
@@ -39906,6 +39906,19 @@
     "category": "academic",
     "content": "",
     "url": "https://www.syu.ac.kr/blog/2016-1%ed%95%99%ea%b8%b0-%eb%8c%80%ea%b4%80%ec%8b%a0%ec%b2%ad-%ec%8b%ac%ec%95%bc%ec%9e%91%ec%97%85%ec%8b%a0%ec%b2%ad-%ec%a7%91%ed%9a%8c%ed%97%88%ea%b0%80-%ec%8b%a0%ec%b2%ad-%ec%95%88%eb%82%b4/?pageds=128&k=&t=&c=",
+    "isImportant": false,
+    "isPinned": false
+  },
+  {
+    "no": "3060",
+    "id": "academic-1c06ab8f9123",
+    "title": "[국제처] 입학성적우수자 대상 단기어학연수 프로그램 참가자 모집NEW",
+    "date": "2026.04.30",
+    "author": "국제교육원",
+    "views": 0,
+    "category": "academic",
+    "content": "",
+    "url": "https://www.syu.ac.kr/blog/%ea%b5%ad%ec%a0%9c%ec%b2%98-%ec%9e%85%ed%95%99%ec%84%b1%ec%a0%81%ec%9a%b0%ec%88%98%ec%9e%90-%eb%8c%80%ec%83%81-%eb%8b%a8%ea%b8%b0%ec%96%b4%ed%95%99%ec%97%b0%ec%88%98-%ed%94%84%eb%a1%9c%ea%b7%b8/?pageds=1&k=&t=&c=",
     "isImportant": false,
     "isPinned": false
   },
