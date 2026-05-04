@@ -121,6 +121,12 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://campus.syu.kr/more/meet</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
   
   <!-- Service & Legal Pages - Lower Priority -->
   <url>

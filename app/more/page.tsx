@@ -39,6 +39,14 @@ export default function MorePage() {
       href: "/more/campus-tips",
       color: "from-amber-400 to-orange-500",
     },
+    {
+      id: "5",
+      title: "일정 잡기",
+      description: "초대 링크로 가능한 시간 찾기",
+      iconName: "calendar",
+      href: "/more/meet",
+      color: "from-teal-400 to-cyan-600",
+    },
   ];
 
   return (
