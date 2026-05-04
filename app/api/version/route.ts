@@ -26,8 +26,7 @@ export async function GET() {
         const filePath = path.join(publicDataDir, file);
         const stat = await fs.stat(filePath);
         versions[file] = Math.floor(stat.mtimeMs); // 밀리초 단위 수정 시간
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         versions[file] = 0;
       }
     }

@@ -28,8 +28,8 @@ import {
 import type { ServiceNotice } from "@/types";
 import { Icon } from "./components/Icon";
 import { StateCard } from "./components/StateCard";
-import { SearchResultSection } from "./components/SearchResultSection";
 import { HomeNoticeCard, ServiceNoticeCard } from "./components/HomeNoticeCard";
+import { SearchResultsView } from "@/app/features/home/SearchResultsView";
 
 // 자주 사용하는 메뉴
 const frequentMenus = [
@@ -185,42 +185,14 @@ export default function Home() {
   // 검색 결과 화면
   if (showSearchResults) {
     return (
-      <Container className="py-6 sm:py-8">
-        <SearchBar
-          onSearch={handleSearch}
-          placeholder="검색..."
-          className="mb-6"
-        />
-
-        {searchLoading && (
-          <div>
-            <Skeleton count={3} />
-          </div>
-        )}
-
-        {!searchLoading && (!searchResults || searchResults.length === 0) && (
-          <StateCard
-            type="info"
-            title="검색 결과가 없습니다"
-            message={`"${searchQuery}"와 일치하는 결과가 없습니다. 공지 제목, 일정명, 부서명, 전화번호로 검색할 수 있습니다.`}
-            action={
-              <button
-                onClick={handleSearchClear}
-                className="inline-block px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                검색 취소
-              </button>
-            }
-          />
-        )}
-
-        {!searchLoading && searchResults && searchResults.length > 0 && (
-          <SearchResultSection
-            categorizedResults={categorizedResults}
-            searchQuery={searchQuery}
-          />
-        )}
-      </Container>
+      <SearchResultsView
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        categorizedResults={categorizedResults}
+        isLoading={searchLoading}
+        onSearch={handleSearch}
+        onClear={handleSearchClear}
+      />
     );
   }
 

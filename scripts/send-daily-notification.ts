@@ -2,6 +2,7 @@
 import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
+import { initializeScriptFirestore } from "./firebase-admin";
 
 interface AnnouncementStats {
   category: string;
@@ -13,25 +14,7 @@ interface AnnouncementData {
   title: string;
   date: string;
   category: string;
-  [key: string]: any;
-}
-
-async function initializeFirebase() {
-  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!serviceAccountJson) {
-    throw new Error("FIREBASE_SERVICE_ACCOUNT 환경 변수가 필요합니다");
-  }
-
-  const serviceAccount = JSON.parse(serviceAccountJson);
-
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    });
-  }
-
-  return admin.firestore();
+  [key: string]: unknown;
 }
 
 async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
@@ -49,7 +32,7 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
     // Firestore 시도
     let success = false;
     try {
-      const db = await initializeFirebase();
+      const db = await initializeScriptFirestore();
       const snapshot = await db
         .collection("announcements")
         .where("category", "==", category)
@@ -241,7 +224,7 @@ async function sendNotification(stats: AnnouncementStats[]) {
 }
 
 async function logNotificationRecord(stats: AnnouncementStats[]) {
-  const db = await initializeFirebase();
+  const db = await initializeScriptFirestore();
 
   await db.collection("notifications_scheduled").add({
     type: "daily-summary",

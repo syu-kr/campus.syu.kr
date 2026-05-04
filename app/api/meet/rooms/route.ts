@@ -1,21 +1,34 @@
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
 import { buildMeetSlots, normalizeMeetRoomInput } from "@/lib/meet";
+import {
+  admin,
+  getFirestore,
+  nowTimestamp,
+} from "@/lib/server/firestore";
+import {
+  apiErrorResponse,
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/server/http";
 
 const ROOM_EXPIRY_DAYS = 90;
 const RESPONSE_WINDOW_HOURS = 24;
+const RATE_LIMIT = {
+  limit: 10,
+  windowMs: 60 * 60 * 1000,
+};
 
 export async function POST(req: NextRequest) {
   try {
+    enforceRateLimit(req, "meet_rooms", RATE_LIMIT);
+
     const input = normalizeMeetRoomInput(await req.json());
     const slots = buildMeetSlots(input);
 
-    initializeFirebaseAdmin();
-    const db = admin.firestore();
+    const db = getFirestore();
     const roomId = await createUniqueRoomId(db);
-    const now = admin.firestore.Timestamp.now();
+    const now = nowTimestamp();
     const responseClosesAt = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() + RESPONSE_WINDOW_HOURS * 60 * 60 * 1000),
     );
@@ -46,9 +59,10 @@ export async function POST(req: NextRequest) {
       slots,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "방을 만들 수 없습니다";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
+
+    return apiErrorResponse(error, "방을 만들 수 없습니다");
   }
 }
 

@@ -5,6 +5,13 @@ interface RateLimitEntry {
 
 const buckets = new Map<string, RateLimitEntry>();
 
+/**
+ * Process-local fixed-window rate limiter.
+ *
+ * This is intentionally lightweight for low-risk public submission endpoints.
+ * It is not shared across serverless instances or deployments, so high-risk
+ * endpoints should use a persistent store such as Firestore, Redis, or KV.
+ */
 export function checkRateLimit(
   key: string,
   options: { limit: number; windowMs: number },

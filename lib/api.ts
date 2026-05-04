@@ -12,54 +12,71 @@ import {
 import { fetchJson } from "./fetch-json";
 import { sortSearchResults } from "./search";
 
+export interface AnnouncementPageResponse {
+  items: Announcement[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
   category?: string,
 ): Promise<Announcement[]> {
   try {
-    let data: Announcement[] = [];
-
-    if (!category || category === "academic") {
-      const academic = await fetchJson<Announcement[]>(
-        "/data/announcements-academic.json",
-        { fallback: [] },
-      );
-      data = [...data, ...academic];
-    }
-
-    if (!category || category === "scholarship") {
-      const scholarship = await fetchJson<Announcement[]>(
-        "/data/announcements-scholarship.json",
-        { fallback: [] },
-      );
-      data = [
-        ...data,
-        ...scholarship.map((item: Announcement) => ({
-          ...item,
-          category: "scholarship" as const,
-        })),
-      ];
-    }
-
-    if (!category || category === "campus") {
-      const campus = await fetchJson<Announcement[]>(
-        "/data/announcements-campus-life.json",
-        { fallback: [] },
-      );
-      data = [
-        ...data,
-        ...campus.map((item: Announcement) => ({
-          ...item,
-          category: "campus" as const,
-        })),
-      ];
-    }
-
-    return data;
+    const params = new URLSearchParams({
+      category: category || "all",
+      page: "1",
+      limit: "100",
+    });
+    const response = await fetchJson<AnnouncementPageResponse>(
+      `/api/announcements?${params}`,
+      {
+        fallback: {
+          items: [],
+          total: 0,
+          page: 1,
+          limit: 100,
+          totalPages: 1,
+        },
+      },
+    );
+    return response.items;
   } catch {
     // Return empty array if fetch fails
     return [];
   }
+}
+
+export async function fetchAnnouncementPage({
+  category,
+  query = "",
+  page = 1,
+  limit = 10,
+}: {
+  category?: string;
+  query?: string;
+  page?: number;
+  limit?: number;
+}): Promise<AnnouncementPageResponse> {
+  const params = new URLSearchParams({
+    category: category || "all",
+    query,
+    page: String(page),
+    limit: String(limit),
+  });
+
+  return fetchJson<AnnouncementPageResponse>(`/api/announcements?${params}`, {
+    fallback: {
+      items: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1,
+    },
+    noStore: Boolean(query),
+  });
 }
 
 export async function fetchAnnouncementSummary(): Promise<Announcement[]> {
@@ -250,20 +267,7 @@ export async function searchAll(
   try {
     const results = await Promise.all([
       searchSchedules(lowerQuery),
-      searchAnnouncementSource(
-        "/data/announcements-academic.json",
-        lowerQuery,
-      ),
-      searchAnnouncementSource(
-        "/data/announcements-scholarship.json",
-        lowerQuery,
-        "scholarship",
-      ),
-      searchAnnouncementSource(
-        "/data/announcements-campus-life.json",
-        lowerQuery,
-        "campus",
-      ),
+      searchAnnouncementApi(lowerQuery),
       searchPhoneNumberSource(query, lowerQuery),
     ]);
 
@@ -297,22 +301,15 @@ async function searchSchedules(query: string): Promise<AcademicSchedule[]> {
   );
 }
 
-async function searchAnnouncementSource(
-  path: string,
-  query: string,
-  category?: Announcement["category"],
-): Promise<Announcement[]> {
-  const announcements = await fetchJson<Announcement[]>(path, { fallback: [] });
+async function searchAnnouncementApi(query: string): Promise<Announcement[]> {
+  const response = await fetchAnnouncementPage({
+    category: "all",
+    query,
+    page: 1,
+    limit: 60,
+  });
 
-  return announcements
-    .filter(
-      (announcement) =>
-        includesQuery(announcement.title, query) ||
-        includesQuery(announcement.content, query),
-    )
-    .map((announcement) =>
-      category ? { ...announcement, category } : announcement,
-    );
+  return response.items;
 }
 
 async function searchPhoneNumberSource(

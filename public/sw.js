@@ -2,11 +2,14 @@
 // Service Worker - Firebase 푸시 알림 처리
 
 // Firebase 메시징 라이브러리 import
+// package.json의 firebase 버전과 맞춰 compat CDN 버전을 관리한다.
+const FIREBASE_COMPAT_VERSION = "12.11.0";
+
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js",
+  `https://www.gstatic.com/firebasejs/${FIREBASE_COMPAT_VERSION}/firebase-app-compat.js`,
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js",
+  `https://www.gstatic.com/firebasejs/${FIREBASE_COMPAT_VERSION}/firebase-messaging-compat.js`,
 );
 
 // Firebase 설정

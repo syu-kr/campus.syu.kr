@@ -20,7 +20,7 @@ if (
   !firebaseConfig.authDomain ||
   !firebaseConfig.projectId
 ) {
-  // Firebase config validation failed
+  throw new Error("Firebase client config is incomplete");
 }
 
 // Firebase 앱 초기화
@@ -34,8 +34,7 @@ let foregroundListenerRegistered = false;
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   try {
     messaging = getMessaging(app);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     // Messaging initialization failed silently
   }
 }

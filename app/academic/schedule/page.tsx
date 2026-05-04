@@ -78,8 +78,7 @@ export default function SchedulePage() {
         parseInt(endDay),
       );
 
-      // eslint-disable-next-line prefer-const
-      let current = new Date(start);
+      const current = new Date(start);
       while (current <= end) {
         const dateStr = `${current.getFullYear()}.${String(current.getMonth() + 1).padStart(2, "0")}.${String(current.getDate()).padStart(2, "0")}`;
         map.set(dateStr, schedule.category === "exam");
@@ -111,8 +110,7 @@ export default function SchedulePage() {
           parseInt(endDay),
         );
 
-        // eslint-disable-next-line prefer-const
-        let currDate = new Date(start);
+        const currDate = new Date(start);
         while (currDate <= end) {
           const dateStr = `${currDate.getFullYear()}.${String(currDate.getMonth() + 1).padStart(2, "0")}.${String(currDate.getDate()).padStart(2, "0")}`;
           examDates.add(dateStr);

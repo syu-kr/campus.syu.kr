@@ -1,7 +1,8 @@
 "use client";
 
 import React, { memo, useEffect } from "react";
-import { type WeatherData, getWeatherIcon } from "@/lib/weather";
+import { type WeatherData } from "@/lib/weather";
+import { WeatherIcon } from "@/app/components/WeatherIcon";
 
 interface WeatherModalProps {
   isOpen: boolean;
@@ -85,13 +86,10 @@ function WeatherModalComponent({
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                  <div
-                    className="w-12 h-12"
-                    dangerouslySetInnerHTML={{
-                      __html: getWeatherIcon(weather)
-                        .replace(/#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})/g, "#FFFFFF")
-                        .replace(/fill="#/g, 'fill="#'),
-                    }}
+                  <WeatherIcon
+                    weather={weather}
+                    className="h-12 w-12"
+                    monochrome
                   />
                 </div>
               </div>

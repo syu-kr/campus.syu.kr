@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
 import { buildMeetSlots } from "@/lib/meet";
 import type { MeetParticipant, MeetRoom, MeetRoomResponse } from "@/types/meet";
+import { getFirestore, timestampToIso } from "@/lib/server/firestore";
+import { apiServerErrorResponse } from "@/lib/server/http";
 
 interface RouteContext {
   params: {
@@ -12,8 +12,7 @@ interface RouteContext {
 
 export async function GET(_req: Request, { params }: RouteContext) {
   try {
-    initializeFirebaseAdmin();
-    const db = admin.firestore();
+    const db = getFirestore();
     const roomDoc = await db.collection("meet_rooms").doc(params.roomId).get();
 
     if (!roomDoc.exists) {
@@ -77,18 +76,6 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
     return NextResponse.json(response);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "일정 방 정보를 불러오지 못했습니다";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiServerErrorResponse(error, "일정 방 정보를 불러오지 못했습니다");
   }
-}
-
-function timestampToIso(value: unknown): string | null {
-  if (value instanceof admin.firestore.Timestamp) {
-    return value.toDate().toISOString();
-  }
-
-  return null;
 }

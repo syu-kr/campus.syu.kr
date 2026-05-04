@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { Modal } from "@/app/components/Modal";
 
 export interface SubmissionSummaryItem {
   label: string;
@@ -24,47 +25,18 @@ export function SubmissionResultModal({
 }: SubmissionResultModalProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    const previousActiveElement = document.activeElement;
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-
-      const focusable = closeButtonRef.current;
-      if (focusable) {
-        event.preventDefault();
-        focusable.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      if (previousActiveElement instanceof HTMLElement) {
-        previousActiveElement.focus();
-      }
-    };
-  }, [onClose]);
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-4 pt-16 sm:items-center sm:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="submission-result-title"
-      onClick={onClose}
+    <Modal
+      isOpen
+      title={title}
+      description={message}
+      onClose={onClose}
+      size="sm"
+      hideHeader
+      initialFocus="none"
+      bodyClassName="p-0"
     >
-      <div
-        className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="p-5">
         <div
           className={`mb-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
             type === "success"
@@ -105,6 +77,6 @@ export function SubmissionResultModal({
           확인
         </button>
       </div>
-    </div>
+    </Modal>
   );
 }

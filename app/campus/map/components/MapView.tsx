@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { buildings } from "../lib/mapData";
@@ -18,9 +17,9 @@ export function MapView({
   onBuildingSelect,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<Record<string, unknown> | null>(null);
+  const [map, setMap] = useState<KakaoMap | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
-  const currentInfoWindowRef = useRef<any>(null);
+  const currentInfoWindowRef = useRef<KakaoInfoWindow | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,19 +42,19 @@ export function MapView({
     }
 
     try {
+      const kakaoMaps = window.kakao?.maps as KakaoMapsNamespace | undefined;
+      if (!kakaoMaps) return;
+
       const container = mapContainer.current;
       const options = {
-        center: new ((window as any).kakao.maps.LatLng as any)(
+        center: new kakaoMaps.LatLng(
           37.643016227336034,
           127.1055106035126,
         ),
         level: 4,
       };
 
-      const newMap = new ((window as any).kakao.maps.Map as any)(
-        container,
-        options,
-      );
+      const newMap = new kakaoMaps.Map(container, options);
       setMap(newMap);
 
       requestAnimationFrame(() => {
@@ -71,19 +70,20 @@ export function MapView({
     if (!map || !selectedBuilding) return;
 
     const building = buildings.find((b) => b.id === selectedBuilding);
-    if (building) {
-      const moveLatLng = new ((window as any).kakao.maps.LatLng as any)(
-        building.lat,
-        building.lng,
+    const kakaoMaps = window.kakao?.maps as KakaoMapsNamespace | undefined;
+    if (building && kakaoMaps) {
+      const moveLatLng = new kakaoMaps.LatLng(
+        Number(building.lat),
+        Number(building.lng),
       );
-      (map as any).setCenter(moveLatLng);
-      (map as any).setLevel(3);
+      map.setCenter(moveLatLng);
+      map.setLevel(3);
     }
   }, [selectedBuilding, map]);
 
-  const handleInfoWindowOpen = (infoWindow: any) => {
+  const handleInfoWindowOpen = (infoWindow: KakaoInfoWindow) => {
     if (currentInfoWindowRef.current) {
-      (currentInfoWindowRef.current as any).close();
+      currentInfoWindowRef.current.close();
     }
     currentInfoWindowRef.current = infoWindow;
   };

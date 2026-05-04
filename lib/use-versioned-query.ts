@@ -41,8 +41,7 @@ export function useVersionedQuery<TData, TError = Error>(
           initialVersionRef.current = hash;
           setVersionHash(hash);
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         // Version initialization failed silently
       }
     }
@@ -64,8 +63,7 @@ export function useVersionedQuery<TData, TError = Error>(
           initialVersionRef.current = hash;
           setVersionHash(hash); // queryKey가 변경되어 자동으로 refetch
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_error) {
+      } catch {
         // Version check failed silently
       }
     }, 30000); // 30초마다 확인

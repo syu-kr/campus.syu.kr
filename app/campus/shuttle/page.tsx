@@ -10,16 +10,17 @@ import {
   fetchBusLocations,
   fetchShuttleSpecialPeriods,
 } from "@/lib/api";
-import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
 import {
   useState,
   useMemo,
   useEffect,
   useRef,
-  forwardRef,
-  useImperativeHandle,
 } from "react";
+import {
+  ShuttleMap,
+  type ShuttleMapHandle,
+} from "@/app/features/shuttle/ShuttleMap";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -92,7 +93,7 @@ export default function ShuttlePage() {
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
-  const mapComponentRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const mapComponentRef = useRef<ShuttleMapHandle | null>(null);
 
   const toggleBusExpand = (busId: string) => {
     setExpandedBuses((prev) => {
@@ -703,7 +704,7 @@ export default function ShuttlePage() {
               </div>
 
               {/* Leaflet 지도 초기화 스크립트 */}
-              <MapComponent
+              <ShuttleMap
                 ref={mapComponentRef}
                 busLocations={busLocations}
                 selectedBusId={selectedBusId}
@@ -938,239 +939,3 @@ export default function ShuttlePage() {
   );
 }
 
-// 카카오맵 지도 컴포넌트
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MapComponent = forwardRef(
-  (
-    {
-      busLocations,
-      selectedBusId,
-    }: {
-      busLocations: BusLocation[];
-      selectedBusId: string | null;
-    },
-    ref: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  ) => {
-    const mapRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
-    const markersRef = useRef<Map<string, any>>(new Map()); // eslint-disable-line @typescript-eslint/no-explicit-any
-    const infowindowsRef = useRef<Map<string, any>>(new Map()); // eslint-disable-line @typescript-eslint/no-explicit-any
-    const currentInfoWindowRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
-    const [mapLoaded, setMapLoaded] = useState(false);
-    const markersCreatedRef = useRef(false);
-
-    useEffect(() => {
-      let cancelled = false;
-
-      loadKakaoMapsSdk().then((loaded) => {
-        if (!cancelled && loaded) {
-          setMapLoaded(true);
-        }
-      });
-
-      return () => {
-        cancelled = true;
-      };
-    }, []);
-
-    // 지도 한 번만 초기화
-    useEffect(() => {
-      if (!mapLoaded || mapRef.current) return;
-
-      const kakao = (window as any).kakao; // eslint-disable-line @typescript-eslint/no-explicit-any
-      if (!kakao?.maps) return;
-
-      const mapContainer = document.getElementById("shuttle-map");
-      if (!mapContainer) return;
-
-      try {
-        const center = new kakao.maps.LatLng(37.64, 127.11);
-        const mapOptions = {
-          center: center,
-          level: 5,
-        };
-
-        const map = new kakao.maps.Map(mapContainer, mapOptions);
-        mapRef.current = map;
-
-        requestAnimationFrame(() => {
-          map.relayout();
-          map.setCenter(center);
-        });
-      } catch {
-        // Silently handle map initialization error
-      }
-    }, [mapLoaded]);
-
-    // 마커 업데이트 (mapLoaded 후 busLocations 변경 시)
-    useEffect(() => {
-      if (!mapLoaded || !mapRef.current) return;
-
-      const kakao = (window as any).kakao; // eslint-disable-line @typescript-eslint/no-explicit-any
-      if (!kakao?.maps) return;
-
-      const routeColors: Record<string | number, string> = {
-        1: "#3b82f6",
-        2: "#10b981",
-        3: "#f59e0b",
-      };
-
-      const routeNames: Record<string | number, string> = {
-        1: "화랑대역",
-        2: "석계역",
-        3: "별내역",
-      };
-
-      const statusLabels: Record<number, string> = {
-        1: "학교 → 역",
-        2: "역 → 학교",
-      };
-
-      // 기존 마커 제거
-      markersRef.current.forEach((markerData) => {
-        markerData.marker.setMap(null);
-        markerData.infowindow.close();
-      });
-      markersRef.current.clear();
-      currentInfoWindowRef.current = null;
-
-      // 새 마커 추가
-      const activeBuses = busLocations
-        .filter((bus) => bus.status !== 0)
-        .map((bus) => ({
-          ...bus,
-          latNumber: Number(bus.lat),
-          lonNumber: Number(bus.lon),
-        }))
-        .filter(
-          (bus) => Number.isFinite(bus.latNumber) && Number.isFinite(bus.lonNumber),
-        );
-      const markerPositions: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-      activeBuses.forEach((bus) => {
-        const color =
-          bus.status === 2 ? "#d0d0d0" : routeColors[bus.routeid] || "#999999";
-        const routeName = routeNames[bus.routeid] || "알 수 없음";
-        const statusLabel = statusLabels[bus.status] || "알 수 없음";
-
-        const markerPosition = new kakao.maps.LatLng(
-          bus.latNumber,
-          bus.lonNumber,
-        );
-        markerPositions.push(markerPosition);
-
-        const svgMarker = `
-          <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 0C7 0 0 7 0 15c0 11 15 22 15 22s15-11 15-22c0-8-7-15-15-15z" fill="${color}"/>
-            <circle cx="15" cy="15" r="6" fill="white"/>
-          </svg>
-        `;
-
-        const markerImage = new kakao.maps.MarkerImage(
-          `data:image/svg+xml;base64,${btoa(svgMarker)}`,
-          new kakao.maps.Size(30, 37),
-          { offset: new kakao.maps.Point(15, 37) },
-        );
-
-        const marker = new kakao.maps.Marker({
-          position: markerPosition,
-          title: routeName,
-          image: markerImage,
-        });
-
-        marker.setMap(mapRef.current);
-
-        const infowindowContent = `
-        <div style="
-          width: 160px;
-          padding: 12px;
-          border-radius: 8px;
-          background: white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          font-size: 12px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-        ">
-          <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px; color: #000;">${routeName}</p>
-          <p style="margin: 0; color: #333;"><span style="font-weight: 600;">상태:</span> <span style="color: ${color}; font-weight: 500;">${statusLabel}</span></p>
-        </div>
-      `;
-
-        const infowindow = new kakao.maps.InfoWindow({
-          content: infowindowContent,
-          removable: true,
-          zIndex: 1,
-        });
-
-        kakao.maps.event.addListener(marker, "click", () => {
-          // 이전 InfoWindow 닫기
-          if (currentInfoWindowRef.current) {
-            currentInfoWindowRef.current.close();
-          }
-          infowindow.open(mapRef.current, marker);
-          currentInfoWindowRef.current = infowindow;
-        });
-
-        markersRef.current.set(bus.id, { marker, infowindow });
-        infowindowsRef.current.set(bus.id, infowindow);
-      });
-
-      // 지도 범위 설정
-      if (markerPositions.length > 0) {
-        requestAnimationFrame(() => {
-          mapRef.current.relayout();
-
-          if (markerPositions.length === 1) {
-            mapRef.current.setCenter(markerPositions[0]);
-            mapRef.current.setLevel(5);
-            return;
-          }
-
-          const bounds = new kakao.maps.LatLngBounds();
-          markerPositions.forEach((position) => {
-            bounds.extend(position);
-          });
-          mapRef.current.setBounds(bounds, 48, 48, 48, 48);
-        });
-      }
-
-      markersCreatedRef.current = true;
-    }, [busLocations, mapLoaded]);
-
-    // 선택된 버스 마커 열기
-    useEffect(() => {
-      if (!selectedBusId || !mapRef.current) return;
-
-      const markerData = markersRef.current.get(selectedBusId);
-      if (markerData) {
-        // 이전 InfoWindow 닫기
-        if (currentInfoWindowRef.current) {
-          currentInfoWindowRef.current.close();
-        }
-        const { marker, infowindow } = markerData;
-        infowindow.open(mapRef.current, marker);
-        currentInfoWindowRef.current = infowindow;
-        mapRef.current.panTo(marker.getPosition());
-      }
-    }, [selectedBusId]);
-
-    // 외부에서 호출 가능한 메서드
-    useImperativeHandle(ref, () => ({
-      openMarker: (busId: string) => {
-        const markerData = markersRef.current.get(busId);
-        if (markerData && mapRef.current) {
-          // 이전 InfoWindow 닫기
-          if (currentInfoWindowRef.current) {
-            currentInfoWindowRef.current.close();
-          }
-          const { marker, infowindow } = markerData;
-          infowindow.open(mapRef.current, marker);
-          currentInfoWindowRef.current = infowindow;
-          mapRef.current.panTo(marker.getPosition());
-        }
-      },
-    }));
-
-    return null;
-  },
-);
-
-MapComponent.displayName = "MapComponent";

@@ -178,8 +178,7 @@ async function saveFCMToken(token: string) {
     if (response.ok) {
       localStorage.setItem("fcm_token", token);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     // Error handling - silently fail
   } finally {
     // Error handling - silently fail
@@ -191,8 +190,7 @@ async function setupForegroundNotifications() {
     const { setupForegroundNotifications: setup } =
       await import("@/lib/firebase");
     await setup();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_error) {
+  } catch {
     // Error handling - silently fail
   }
 }

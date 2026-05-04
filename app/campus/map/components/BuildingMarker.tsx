@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Building } from "../lib/mapData";
@@ -7,9 +6,9 @@ import { useEffect, useRef } from "react";
 interface BuildingMarkerProps {
   building: Building;
   isHighlighted: boolean;
-  map: Record<string, unknown>;
+  map: KakaoMap;
   onClick?: (buildingId: string) => void;
-  onInfoWindowOpen?: (infoWindow: any) => void;
+  onInfoWindowOpen?: (infoWindow: KakaoInfoWindow) => void;
 }
 
 export function BuildingMarker({
@@ -19,22 +18,21 @@ export function BuildingMarker({
   onClick,
   onInfoWindowOpen,
 }: BuildingMarkerProps) {
-  const markerRef = useRef<any>(null);
-  const infoWindowRef = useRef<any>(null);
+  const markerRef = useRef<KakaoMarker | null>(null);
+  const infoWindowRef = useRef<KakaoInfoWindow | null>(null);
 
   useEffect(() => {
-    if (!map || !(window as any).kakao?.maps) {
+    const kakaoMaps = window.kakao?.maps as KakaoMapsNamespace | undefined;
+    if (!map || !kakaoMaps) {
       return;
     }
 
     try {
-      // Step 1: LatLng 생성
-      const position = new (window as any).kakao.maps.LatLng(
-        building.lat,
-        building.lng,
+      const position = new kakaoMaps.LatLng(
+        Number(building.lat),
+        Number(building.lng),
       );
 
-      // Step 2: 커스텀 SVG 마커 생성 (고유 ID 사용)
       const uniqueId = `marker-${building.id}-${Date.now()}`;
       const svgMarker = `
         <svg width="40" height="48" viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
@@ -53,20 +51,19 @@ export function BuildingMarker({
         </svg>
       `;
 
-      const markerImage = new (window as any).kakao.maps.MarkerImage(
+      const markerImage = new kakaoMaps.MarkerImage(
         `data:image/svg+xml;base64,${btoa(svgMarker)}`,
-        new (window as any).kakao.maps.Size(40, 48),
-        { offset: new (window as any).kakao.maps.Point(20, 48) },
+        new kakaoMaps.Size(40, 48),
+        { offset: new kakaoMaps.Point(20, 48) },
       );
 
-      // Step 3: 마커 생성
-      const marker = new (window as any).kakao.maps.Marker({
+      const marker = new kakaoMaps.Marker({
         position: position,
         image: markerImage,
         title: building.name,
-      } as any);
+      });
 
-      marker.setMap(map as any);
+      marker.setMap(map);
 
       markerRef.current = marker;
 
@@ -78,7 +75,7 @@ export function BuildingMarker({
         </div>
       `;
 
-      const infoWindow = new (window as any).kakao.maps.InfoWindow({
+      const infoWindow = new kakaoMaps.InfoWindow({
         content: content,
         removable: true,
         zIndex: 100,
@@ -86,10 +83,8 @@ export function BuildingMarker({
 
       infoWindowRef.current = infoWindow;
 
-      // 마커 클릭 이벤트
-      (window as any).kakao.maps.event.addListener(marker, "click", () => {
-        // 이전에 열린 팝업을 닫고 새로운 팝업 열기
-        infoWindow.open(map as any, marker);
+      kakaoMaps.event.addListener(marker, "click", () => {
+        infoWindow.open(map, marker);
         if (onInfoWindowOpen) {
           onInfoWindowOpen(infoWindow);
         }
@@ -113,13 +108,11 @@ export function BuildingMarker({
     }
 
     if (isHighlighted) {
-      // InfoWindow 열기
-      infoWindowRef.current.open(map as any, markerRef.current);
+      infoWindowRef.current.open(map, markerRef.current);
       if (onInfoWindowOpen) {
         onInfoWindowOpen(infoWindowRef.current);
       }
     } else {
-      // InfoWindow 닫기
       infoWindowRef.current.close();
     }
   }, [isHighlighted, map, onInfoWindowOpen]);

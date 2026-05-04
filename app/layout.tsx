@@ -12,6 +12,35 @@ import "@fontsource/pretendard/500.css"; // Medium
 import "@fontsource/pretendard/600.css"; // Semibold
 import "@fontsource/pretendard/700.css"; // Bold
 
+const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
+const GOOGLE_ANALYTICS_SCRIPT = `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${GOOGLE_ANALYTICS_ID}');
+`;
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "SYU CAMPUS",
+  url: "https://campus.syu.kr",
+  logo: "https://campus.syu.kr/images/syu-kr-logo.png",
+  description:
+    "삼육대학교 학생들을 위한 공지사항, 학식, 셔틀버스, 학사일정 통합 정보 플랫폼",
+  sameAs: ["https://www.syu.kr"],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "서울특별시 노원구 공릉동",
+    addressLocality: "서울",
+    postalCode: "01795",
+    addressCountry: "KR",
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "Customer Service",
+  },
+};
+
 export const metadata: Metadata = {
   title: {
     template: "%s",
@@ -68,19 +97,14 @@ export default function RootLayout({
 
         {/* Google Analytics */}
         <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-SD8QFQWFVQ"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
           strategy="afterInteractive"
         />
         <Script
           id="google-analytics"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-SD8QFQWFVQ');
-            `,
+            __html: GOOGLE_ANALYTICS_SCRIPT,
           }}
         />
         {/* JSON-LD Organization Schema */}
@@ -88,27 +112,7 @@ export default function RootLayout({
           id="organization-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              name: "SYU CAMPUS",
-              url: "https://campus.syu.kr",
-              logo: "https://campus.syu.kr/images/syu-kr-logo.png",
-              description:
-                "삼육대학교 학생들을 위한 공지사항, 학식, 셔틀버스, 학사일정 통합 정보 플랫폼",
-              sameAs: ["https://www.syu.kr"],
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "서울특별시 노원구 공릉동",
-                addressLocality: "서울",
-                postalCode: "01795",
-                addressCountry: "KR",
-              },
-              contactPoint: {
-                "@type": "ContactPoint",
-                contactType: "Customer Service",
-              },
-            }),
+            __html: JSON.stringify(ORGANIZATION_SCHEMA),
           }}
         />
       </head>

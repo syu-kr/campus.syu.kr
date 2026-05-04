@@ -2,8 +2,7 @@
 // FCM 토큰 저장 API
 
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { getFirestore, nowTimestamp } from "@/lib/server/firestore";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,23 +15,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("[Subscribe] 토큰 저장 요청:", {
-      token_length: fcm_token.length,
-      token_preview: fcm_token.substring(0, 30) + "...",
-      token_full: fcm_token,
-    });
-
     try {
-      initializeFirebaseAdmin();
-      const db = admin.firestore();
+      const db = getFirestore();
       const userAgent = req.headers.get("user-agent") || "unknown";
       const docId = Buffer.from(fcm_token).toString("base64").slice(0, 20);
-
-      console.log("[Subscribe] Firestore에 저장할 문서:", {
-        docId,
-        token_length: fcm_token.length,
-        active: true,
-      });
 
       await db
         .collection("user_devices")
@@ -41,14 +27,12 @@ export async function POST(req: NextRequest) {
           {
             fcm_token,
             user_agent: userAgent,
-            created_at: admin.firestore.Timestamp.fromDate(new Date()),
-            last_updated: admin.firestore.Timestamp.fromDate(new Date()),
+            created_at: nowTimestamp(),
+            last_updated: nowTimestamp(),
             active: true,
           },
           { merge: true },
         );
-
-      console.log("[Subscribe] 토큰 저장 성공:", docId);
 
       return NextResponse.json({
         success: true,
@@ -58,7 +42,6 @@ export async function POST(req: NextRequest) {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("[Subscribe] Firestore 저장 실패:", errorMessage);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       return NextResponse.json(
         {
           success: false,

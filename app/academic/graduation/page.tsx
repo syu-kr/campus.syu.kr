@@ -31,19 +31,33 @@ import {
   type CreditCategoryKey,
   type CurriculumCourse,
   type CurriculumCourseCategory,
-  type EvaluationStatus,
   type GraduationSelection,
   type MajorTrack,
 } from "@/lib/graduation";
 import {
   buildLectureMatchMap,
-  getBestLectureCredit,
   getLectureMatches,
-  type LectureMatchMap,
   type LectureTimetableDataset,
 } from "@/lib/lecture-timetable";
-
-const STEPS = ["대학", "학과/전공", "입학/전공형태", "이수학점", "결과"];
+import {
+  ChoiceButton,
+  CourseModal,
+  CourseSelectCard,
+  EmptyState,
+  ResultBanner,
+  Section,
+  StepIndicator,
+  SummaryRow,
+} from "@/app/features/graduation/components";
+import {
+  CURRICULUM_CATEGORIES,
+  filterCurriculumCourses,
+  getActiveStep,
+  getCurriculumSummary,
+  getEffectiveCurriculumCredits,
+  getRequiredCredit,
+  sumCurriculumCredits,
+} from "@/app/features/graduation/utils";
 
 const INITIAL_SELECTION: GraduationSelection = {
   collegeId: "",
@@ -65,13 +79,6 @@ type LectureApiResponse = {
   success: boolean;
   data?: LectureTimetableDataset;
 };
-
-const CURRICULUM_CATEGORIES: CurriculumCourseCategory[] = [
-  "교필",
-  "교선",
-  "전필",
-  "전선",
-];
 
 export default function GraduationPage() {
   const metadata = getGraduationMetadata();
@@ -981,347 +988,3 @@ export default function GraduationPage() {
   );
 }
 
-function StepIndicator({ activeStep }: { activeStep: number }) {
-  return (
-    <div className="mb-6 overflow-x-auto">
-      <div className="flex min-w-max items-center gap-2 pb-1">
-        {STEPS.map((step, index) => (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={clsx(
-                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
-                index <= activeStep
-                  ? "bg-primary-600 text-white"
-                  : "bg-neutral-100 text-neutral-400",
-              )}
-            >
-              {index + 1}
-            </div>
-            <span
-              className={clsx(
-                "text-sm font-medium",
-                index <= activeStep ? "text-neutral-900" : "text-neutral-400",
-              )}
-            >
-              {step}
-            </span>
-            {index < STEPS.length - 1 && (
-              <div
-                className={clsx(
-                  "h-0.5 w-8",
-                  index < activeStep ? "bg-primary-600" : "bg-neutral-200",
-                )}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Card hover={false} className="border border-neutral-200">
-      <div className="mb-5">
-        <h2 className="text-lg font-bold text-neutral-900">{title}</h2>
-        <p className="mt-1 text-sm text-neutral-500">{description}</p>
-      </div>
-      {children}
-    </Card>
-  );
-}
-
-function ChoiceButton({
-  selected,
-  title,
-  description,
-  onClick,
-}: {
-  selected: boolean;
-  title: string;
-  description?: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        "rounded-lg border p-4 text-left transition",
-        selected
-          ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
-          : "border-neutral-200 bg-white hover:border-primary-300",
-      )}
-    >
-      <span className="block font-semibold text-neutral-900">{title}</span>
-      {description && (
-        <span className="mt-1 block text-xs text-neutral-500">
-          {description}
-        </span>
-      )}
-    </button>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-500">
-      {message}
-    </div>
-  );
-}
-
-function CourseSelectCard({
-  title,
-  description,
-  credits,
-  required,
-  count,
-  optional = false,
-  onClick,
-}: {
-  title: string;
-  description: string;
-  credits: number;
-  required: number;
-  count: number;
-  optional?: boolean;
-  onClick: () => void;
-}) {
-  const shortage = optional ? 0 : Math.max(required - credits, 0);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-lg border border-neutral-200 bg-white p-4 text-left transition hover:border-primary-300 hover:bg-primary-50/40"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-semibold text-neutral-900">{title}</p>
-          <p className="mt-1 text-xs leading-5 text-neutral-500">
-            {description}
-          </p>
-        </div>
-        <Badge color={shortage > 0 ? "yellow" : "green"} className="shrink-0">
-          {count}개
-        </Badge>
-      </div>
-      <div className="mt-4 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-xs text-neutral-500">선택 학점</p>
-          <p className="text-2xl font-bold text-primary-700">{credits}</p>
-        </div>
-        {!optional && (
-          <p className="text-right text-xs text-neutral-500">
-            요구 {required}학점
-            <br />
-            부족 {shortage}학점
-          </p>
-        )}
-      </div>
-    </button>
-  );
-}
-
-function CourseModal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-6">
-      <div className="max-h-[88vh] w-full overflow-hidden rounded-t-2xl bg-white shadow-xl sm:max-w-2xl sm:rounded-2xl">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3 sm:px-5">
-          <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg px-3 py-1.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-100"
-          >
-            닫기
-          </button>
-        </div>
-        <div className="max-h-[calc(88vh-57px)] overflow-y-auto p-4 sm:p-5">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SummaryRow({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-4">
-      <span className="text-neutral-500">{label}</span>
-      <span className="text-right font-semibold text-neutral-900">
-        {value || "-"}
-      </span>
-    </div>
-  );
-}
-
-function ResultBanner({ status }: { status: EvaluationStatus }) {
-  const config =
-    status === "short"
-      ? {
-          title: "졸업요건 부족",
-          description: "학점 부족 항목이 있습니다. 부족학점을 먼저 확인하세요.",
-          className: "border-red-200 bg-red-50 text-red-900",
-        }
-      : status === "checkRequired"
-        ? {
-            title: "학점 충족, 추가 확인 필요",
-            description:
-              "입력한 학점은 충족했지만 시험, 실습, 인증 등 확인 필요 조건이 남아 있습니다.",
-            className: "border-amber-200 bg-amber-50 text-amber-900",
-          }
-        : {
-            title: "졸업요건 충족",
-            description: "입력한 학점 기준으로 모든 항목을 충족했습니다.",
-            className: "border-green-200 bg-green-50 text-green-900",
-          };
-
-  return (
-    <div className={clsx("rounded-lg border p-4", config.className)}>
-      <p className="font-bold">{config.title}</p>
-      <p className="mt-1 text-sm">{config.description}</p>
-    </div>
-  );
-}
-
-function sumCurriculumCredits(
-  courses: CurriculumCourse[],
-  categories: CurriculumCourseCategory[],
-  getCredits: (course: CurriculumCourse) => number = (course) =>
-    course.credits ?? 0,
-): number {
-  return courses
-    .filter((course) => categories.includes(course.category))
-    .reduce((sum, course) => sum + getCredits(course), 0);
-}
-
-function getCurriculumSummary(
-  courses: CurriculumCourse[],
-  selectedCourseIds: string[],
-  getCredits: (course: CurriculumCourse) => number = (course) =>
-    course.credits ?? 0,
-): Record<
-  CurriculumCourseCategory,
-  { totalCount: number; selectedCount: number; selectedCredits: number }
-> {
-  return CURRICULUM_CATEGORIES.reduce(
-    (summary, category) => {
-      const categoryCourses = courses.filter(
-        (course) => course.category === category,
-      );
-      const selectedCourses = categoryCourses.filter((course) =>
-        selectedCourseIds.includes(course.id),
-      );
-
-      summary[category] = {
-        totalCount: categoryCourses.length,
-        selectedCount: selectedCourses.length,
-        selectedCredits: sumCurriculumCredits(
-          selectedCourses,
-          [category],
-          getCredits,
-        ),
-      };
-      return summary;
-    },
-    {} as Record<
-      CurriculumCourseCategory,
-      { totalCount: number; selectedCount: number; selectedCredits: number }
-    >,
-  );
-}
-
-function filterCurriculumCourses(
-  courses: CurriculumCourse[],
-  category: CurriculumCourseCategory,
-  search: string,
-  lectureMatchMap: LectureMatchMap,
-  departmentName?: string,
-): CurriculumCourse[] {
-  const query = search.trim().toLowerCase();
-
-  return courses.filter((course) => {
-    if (course.category !== category) return false;
-    if (!query) return true;
-
-    const matches = getLectureMatches(
-      course.name,
-      lectureMatchMap,
-      departmentName,
-    );
-
-    return [
-      course.name,
-      course.departmentName,
-      course.sourcePage,
-      course.reviewStatus === "needsReview" ? "확인 필요" : "",
-      matches.length > 0 ? "올해 개설 개설" : "개설 정보 없음",
-      ...matches.flatMap((match) => [
-        match.courseName,
-        match.completionType,
-        match.professor,
-        match.grade ? `${match.grade}학년` : "",
-        match.credits == null ? "" : `${match.credits}학점`,
-      ]),
-      course.credits == null ? "학점 확인 필요" : `${course.credits}학점`,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(query);
-  });
-}
-
-function getEffectiveCurriculumCredits(
-  course: CurriculumCourse,
-  lectureMatchMap: LectureMatchMap,
-  departmentName?: string,
-): number {
-  if (course.credits != null) return course.credits;
-  return getBestLectureCredit(course.name, lectureMatchMap, departmentName) ?? 0;
-}
-
-function getRequiredCredit(
-  summary: Array<{ key: CreditCategoryKey | "totalCredits"; value: number }>,
-  key: CreditCategoryKey | "totalCredits",
-): number {
-  return summary.find((item) => item.key === key)?.value ?? 0;
-}
-
-function getActiveStep(
-  selection: GraduationSelection,
-  autoTotalCredits: number,
-): number {
-  if (!selection.collegeId) return 0;
-  if (!selection.departmentId) return 1;
-  if (!selection.admissionType || !selection.majorTrack) return 2;
-  if (autoTotalCredits <= 0) return 3;
-  return 4;
-}

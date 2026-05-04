@@ -78,21 +78,3 @@ function isKakaoMapsReady() {
       maps.event,
   );
 }
-
-declare global {
-  interface Window {
-    kakao?: {
-      maps?: {
-        LatLng?: unknown;
-        Map?: unknown;
-        Marker?: unknown;
-        MarkerImage?: unknown;
-        Size?: unknown;
-        Point?: unknown;
-        InfoWindow?: unknown;
-        event?: unknown;
-        load?: (callback: () => void) => void;
-      };
-    };
-  }
-}

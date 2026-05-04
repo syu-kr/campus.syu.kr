@@ -2,8 +2,8 @@
 // 푸시 알림 발송 API (크롤러에서 호출)
 
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
 import { initializeFirebaseAdmin, sendFCMMessage } from "@/lib/firebaseAdmin";
+import { admin } from "@/lib/server/firestore";
 
 interface SendNotificationRequest {
   title: string;
@@ -35,18 +35,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("[API] 푸시 알림 발송 시작:", {
-      title,
-      category,
-      timestamp: new Date().toISOString(),
-    });
-
     // Firebase Admin 초기화
     initializeFirebaseAdmin();
     const db = admin.firestore();
 
     // Firestore에서 모든 활성 토큰 조회
-    console.log("[API] Firestore에서 토큰 조회 중...");
     const snapshot = await db
       .collection("user_devices")
       .where("active", "==", true)
@@ -54,17 +47,8 @@ export async function POST(req: NextRequest) {
 
     const tokens = snapshot.docs.map((doc) => {
       const data = doc.data();
-      console.log("[API] 저장된 토큰 데이터:", {
-        id: doc.id,
-        token_length: data.fcm_token?.length,
-        token_preview: data.fcm_token?.substring(0, 20) + "...",
-        created_at: data.created_at,
-        active: data.active,
-      });
       return data.fcm_token;
-    });
-
-    console.log(`[API] ${tokens.length}개의 활성 토큰 발견`);
+    }).filter((token): token is string => typeof token === "string");
 
     if (tokens.length === 0) {
       return NextResponse.json({
@@ -75,7 +59,6 @@ export async function POST(req: NextRequest) {
     }
 
     // FCM으로 메시지 발송
-    console.log("[API] FCM으로 메시지 발송 중...");
     const result = await sendFCMMessage(tokens, title, body, {
       category,
       url: url || "/",
@@ -94,8 +77,6 @@ export async function POST(req: NextRequest) {
       failureCount: result.failureCount,
       sent_at: admin.firestore.Timestamp.fromDate(new Date()),
     });
-
-    console.log("[API] 푸시 알림 발송 완료");
 
     return NextResponse.json({
       success: true,

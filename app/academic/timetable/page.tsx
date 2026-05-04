@@ -6,6 +6,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/app/components/Icon";
 import { getCourseCategoryLabel } from "@/lib/utils";
+import { StateCard } from "@/app/components/StateCard";
 
 interface Course {
   id: string;
@@ -139,6 +140,7 @@ export default function TimetableWizardPage() {
   const [filterCategories, setFilterCategories] = useState<Set<string>>(
     new Set(),
   );
+  const [formError, setFormError] = useState("");
 
   const days = ["월", "화", "수", "목", "금"];
   const hours = Array.from({ length: 9 }, (_, i) => i + 8);
@@ -224,15 +226,16 @@ export default function TimetableWizardPage() {
   const handleAddCourse = (course: Course) => {
     const conflicting = getConflictingCourses(course);
     if (conflicting.length > 0) {
-      alert(
-        `시간이 충돌합니다! 다음 과목과 겹칩니다:\n${conflicting.map((c) => c.name).join(", ")}`,
+      setFormError(
+        `시간이 충돌합니다. ${conflicting.map((c) => c.name).join(", ")}과 겹칩니다.`,
       );
       return;
     }
     if (totalCredits + course.credit > 18) {
-      alert("최대 18학점을 초과할 수 없습니다!");
+      setFormError("최대 18학점을 초과할 수 없습니다.");
       return;
     }
+    setFormError("");
     setSelectedCourses([...selectedCourses, course]);
   };
 
@@ -369,6 +372,8 @@ export default function TimetableWizardPage() {
 
           {/* 오른쪽: 과목 목록 및 선택 현황 */}
           <div className="space-y-4">
+            {formError && <StateCard type="warning" message={formError} />}
+
             {/* 선택 현황 */}
             <Card className="bg-blue-50 border border-blue-200">
               <h3 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">

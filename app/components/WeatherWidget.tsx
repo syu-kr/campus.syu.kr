@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, memo } from "react";
-import { fetchWeather, getWeatherIcon, type WeatherData } from "@/lib/weather";
+import { fetchWeather, type WeatherData } from "@/lib/weather";
+import { WeatherIcon } from "@/app/components/WeatherIcon";
 
 interface WeatherWidgetProps {
   onClick?: () => void;
@@ -23,8 +24,7 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
         } else {
           setError("날씨 정보를 불러올 수 없습니다");
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_err) {
+      } catch {
         setError("날씨 조회 중 오류가 발생했습니다");
       } finally {
         setLoading(false);
@@ -52,11 +52,9 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
       onClick={onClick}
       className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer active:scale-95"
     >
-      {/* 날씨 아이콘 */}
       <div className="w-6 h-6 flex-shrink-0">
-        <div dangerouslySetInnerHTML={{ __html: getWeatherIcon(weather) }} />
+        <WeatherIcon weather={weather} />
       </div>
-      {/* 온도와 상태 */}
       <div className="flex items-center gap-1 text-sm">
         <span className="font-semibold text-neutral-800">
           {weather.temperature}°C

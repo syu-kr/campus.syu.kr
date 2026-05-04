@@ -1,12 +1,13 @@
 import React from "react";
 import { FooterContactButton } from "@/app/components/FooterContactButton";
+import { Container } from "@/app/components/Container";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-white border-t border-neutral-200 mt-12 pb-20 md:pb-0">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <Container className="py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
             <h3 className="font-bold text-neutral-900 mb-4">SYU CAMPUS</h3>
@@ -88,7 +89,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

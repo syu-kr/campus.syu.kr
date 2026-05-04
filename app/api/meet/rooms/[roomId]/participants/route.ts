@@ -1,8 +1,8 @@
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import * as admin from "firebase-admin";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
 import { buildMeetSlots, filterValidAvailability } from "@/lib/meet";
+import { admin, getFirestore, nowTimestamp } from "@/lib/server/firestore";
+import { apiServerErrorResponse } from "@/lib/server/http";
 
 interface RouteContext {
   params: {
@@ -22,8 +22,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       );
     }
 
-    initializeFirebaseAdmin();
-    const db = admin.firestore();
+    const db = getFirestore();
     const roomRef = db.collection("meet_rooms").doc(params.roomId);
     const roomDoc = await roomRef.get();
 
@@ -57,7 +56,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     const participantRef = roomRef
       .collection("participants")
       .doc(createNicknameKey(nickname));
-    const now = admin.firestore.Timestamp.now();
+    const now = nowTimestamp();
 
     await db.runTransaction(async (transaction) => {
       const participantDoc = await transaction.get(participantRef);
@@ -89,9 +88,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       availability,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "참여 정보를 저장하지 못했습니다";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiServerErrorResponse(error, "참여 정보를 저장하지 못했습니다");
   }
 }
 
