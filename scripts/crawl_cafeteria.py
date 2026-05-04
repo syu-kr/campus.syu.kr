@@ -13,15 +13,22 @@ from bs4 import BeautifulSoup
 import json
 import re
 import os
+from datetime import datetime
+
+from crawler_utils import DEFAULT_HEADERS, write_json_atomic
 
 def parse_korean_date(date_str):
     """'3월 16일 (월)' 형식의 날짜 파싱"""
     match = re.search(r'(\d{1,2})월\s*(\d{1,2})일\s*\((.)\)', date_str)
     if match:
         month, day, day_of_week = match.groups()
-        from datetime import datetime
         today = datetime.now()
         year = today.year
+        month_int = int(month)
+        if today.month == 12 and month_int == 1:
+            year += 1
+        elif today.month == 1 and month_int == 12:
+            year -= 1
         date_formatted = f"{year}-{int(month):02d}-{int(day):02d}"
         return date_formatted, day_of_week
     return None, None
@@ -60,14 +67,10 @@ def crawl_cafeteria_menu():
             print(f"⚠️  기존 데이터 로드 실패: {e}")
     
     url = "https://www.syu.ac.kr/school-life/facility-information/cafeteria/"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
-    
     print("🍜 학식 메뉴 크롤링 시작...")
     
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=DEFAULT_HEADERS, timeout=10)
         response.encoding = 'utf-8'
         
         if response.status_code != 200:
@@ -94,6 +97,8 @@ def crawl_cafeteria_menu():
                     dates.append((date_formatted, day_name))
         
         print(f"📊 발견된 날짜: {len(dates)}개")
+        if not dates:
+            raise RuntimeError("학식 날짜 헤더를 찾지 못했습니다.")
         for date, day in dates:
             print(f"   - {date} ({day})")
         
@@ -165,19 +170,19 @@ def crawl_cafeteria_menu():
             
             menus.append(menu_data)
         
+        if len(menus) < len(dates):
+            raise RuntimeError("학식 날짜 수와 메뉴 수가 일치하지 않습니다.")
+        
         # JSON 구조 생성
         result = {
             "id": "cafeteria-sulounge",
             "name": "SU-Lounge",
             "weekStart": dates[0][0] if dates else "",
             "menus": menus,
-            "lastUpdated": str(__import__('datetime').datetime.now().isoformat())
+            "lastUpdated": datetime.now().isoformat()
         }
         
-        # 디렉토리 생성 및 JSON 파일로 저장
-        os.makedirs(os.path.dirname(data_path), exist_ok=True)
-        with open(data_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+        write_json_atomic(data_path, result)
         
         print(f"✅ 학식 메뉴 저장 완료 (신규: {new_count}개, 업데이트: {updated_count}개)")
     

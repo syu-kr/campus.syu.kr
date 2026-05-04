@@ -10,6 +10,8 @@ import re
 import os
 import hashlib
 
+from crawler_utils import DEFAULT_HEADERS, write_json_atomic
+
 def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
     """제목+시작날짜+종료날짜 기반 안정적 ID 생성"""
     key = f"{title}|{start_date}|{end_date}"
@@ -20,10 +22,6 @@ def crawl_schedule():
     """학사일정 크롤링 (증분 업데이트 - 개선)"""
     
     url = "https://www.syu.ac.kr/academic/major-schedule/"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
     
     print("📅 학사일정 크롤링 시작...")
     
@@ -46,7 +44,7 @@ def crawl_schedule():
     
     try:
         # POST request
-        response = requests.post(url, headers=headers, timeout=15)
+        response = requests.post(url, headers=DEFAULT_HEADERS, timeout=15)
         response.encoding = 'utf-8'
         
         if response.status_code != 200:
@@ -61,6 +59,8 @@ def crawl_schedule():
         # Find all calendar boxes
         calendars = soup.find_all("div", {"class": "md_textcalendar"})
         print(f"📍 Calendar boxes found: {len(calendars)}")
+        if not calendars:
+            raise RuntimeError("학사일정 달력 영역을 찾지 못했습니다.")
         
         new_schedules_by_key = {}
         processed_keys = set()
@@ -163,6 +163,9 @@ def crawl_schedule():
                 new_schedules_by_key[unique_key] = schedule
         
         # 새 데이터와 기존 데이터 합치기
+        if not new_schedules_by_key:
+            raise RuntimeError("저장할 학사일정 데이터를 찾지 못했습니다.")
+        
         all_schedules = list(new_schedules_by_key.values())
         
         # 기존 데이터 중 새 데이터에 없는 항목 추가
@@ -170,10 +173,7 @@ def crawl_schedule():
             if key not in new_schedules_by_key:
                 all_schedules.append(schedule)
         
-        # Save JSON
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(all_schedules, f, ensure_ascii=False, indent=2)
+        write_json_atomic(output_path, all_schedules)
         
         print(f"\n✅ 학사일정 저장 완료")
         print(f"   기존: {len(existing_schedules)}개, 신규: {new_count}개, 총: {len(all_schedules)}개")
@@ -192,6 +192,7 @@ def crawl_schedule():
         print(f"Crawling error: {str(e)}")
         import traceback
         traceback.print_exc()
+        raise
 
 if __name__ == "__main__":
     crawl_schedule()

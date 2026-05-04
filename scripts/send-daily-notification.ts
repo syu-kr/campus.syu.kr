@@ -27,33 +27,53 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
 
   const categories = ["academic", "scholarship"];
   const results: AnnouncementStats[] = [];
+  let db: admin.firestore.Firestore | null = null;
+  let firestoreUnavailableReason = "";
+
+  try {
+    db = await initializeScriptFirestore();
+  } catch (error) {
+    firestoreUnavailableReason =
+      error instanceof Error ? error.message : String(error);
+    console.warn(
+      "Firestore 공지 통계 조회를 사용할 수 없어 JSON fallback으로 진행합니다:",
+      firestoreUnavailableReason,
+    );
+  }
 
   for (const category of categories) {
     // Firestore 시도
     let success = false;
-    try {
-      const db = await initializeScriptFirestore();
-      const snapshot = await db
-        .collection("announcements")
-        .where("category", "==", category)
-        .where(
-          "created_at",
-          ">=",
-          admin.firestore.Timestamp.fromDate(yesterday),
-        )
-        .orderBy("created_at", "desc")
-        .get();
+    if (db) {
+      try {
+        const snapshot = await db
+          .collection("announcements")
+          .where("category", "==", category)
+          .where(
+            "created_at",
+            ">=",
+            admin.firestore.Timestamp.fromDate(yesterday),
+          )
+          .orderBy("created_at", "desc")
+          .get();
 
-      const titles = snapshot.docs.map((doc) => doc.data().title);
+        const titles = snapshot.docs.map((doc) => doc.data().title);
 
-      results.push({
-        category,
-        count: snapshot.size,
-        titles: titles.slice(0, 3),
-      });
+        results.push({
+          category,
+          count: snapshot.size,
+          titles: titles.slice(0, 3),
+        });
 
-      success = true;
-    } catch (error) {}
+        success = true;
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `${category} Firestore 공지 통계 조회 실패, JSON fallback 사용:`,
+          reason,
+        );
+      }
+    }
 
     // Firestore 실패 시 JSON 파일에서 로드
     if (!success) {

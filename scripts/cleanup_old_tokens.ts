@@ -14,29 +14,34 @@ async function cleanupOldTokens() {
 
     console.log("\nFirestore user_devices 오래된 토큰 정리 시작\n");
 
-    const snapshot = await db
-      .collection("user_devices")
-      .where("last_updated", "<=", cutoff)
-      .limit(450)
-      .get();
+    let deleted = 0;
+    while (true) {
+      const snapshot = await db
+        .collection("user_devices")
+        .where("last_updated", "<=", cutoff)
+        .limit(450)
+        .get();
 
-    console.log(`${cutoffDays}일 이상 갱신되지 않은 토큰: ${snapshot.size}개\n`);
+      if (snapshot.empty) {
+        break;
+      }
 
-    if (snapshot.size === 0) {
-      console.log("정리할 토큰이 없습니다.\n");
-      return;
+      const batch = db.batch();
+      snapshot.docs.forEach((doc, index) => {
+        console.log(
+          `[${deleted + index + 1}] 삭제 예정: ${doc.id}`,
+        );
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+      deleted += snapshot.size;
     }
 
-    let deleted = 0;
-    const batch = db.batch();
-
-    snapshot.docs.forEach((doc, index) => {
-      console.log(`[${index + 1}/${snapshot.size}] 삭제 예정: ${doc.id}`);
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-    deleted = snapshot.size;
+    if (deleted === 0) {
+      console.log(`${cutoffDays}일 이상 갱신되지 않은 토큰이 없습니다.\n`);
+      return;
+    }
 
     console.log(`\n${deleted}개의 오래된 토큰 삭제 완료\n`);
     console.log(
