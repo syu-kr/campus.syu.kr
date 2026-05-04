@@ -1,7 +1,7 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import Link from "next/link";
 import { Metadata } from "next";
+import { LegalPageHeader } from "@/app/features/legal/LegalPageLayout";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
@@ -11,39 +11,12 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <Container className="py-6 sm:py-8">
-      <div className="mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-4 transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          홈으로
-        </Link>
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          개인정보처리방침
-        </h1>
-        <p className="text-neutral-600">
-          SYU CAMPUS 서비스 개인정보처리방침입니다.
-        </p>
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-900 font-semibold mb-2">시행일</p>
-          <p className="text-sm text-blue-800">
-            본 개인정보처리방침은 2026년 3월 23일부터 적용됩니다.
-          </p>
-        </div>
-      </div>
+      <LegalPageHeader
+        title="개인정보처리방침"
+        description="SYU CAMPUS 서비스 개인정보처리방침입니다."
+        noticeTitle="시행일"
+        notice="본 개인정보처리방침은 2026년 3월 23일부터 적용됩니다."
+      />
 
       <div className="space-y-6 mb-8">
         <Card>
