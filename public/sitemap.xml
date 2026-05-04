@@ -122,6 +122,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://campus.syu.kr/more/campus-tips/suggest</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://campus.syu.kr/more/meet</loc>
     <lastmod>2026-05-04</lastmod>
     <changefreq>weekly</changefreq>

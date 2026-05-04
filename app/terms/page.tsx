@@ -178,12 +178,17 @@ export default function TermsPage() {
               이용하여 기본적인 사용자 설정 정보를 저장할 수 있습니다.
             </p>
             <p>
-              <span className="font-semibold">2.</span> 서버에는 개인정보가
-              저장되지 않으며, 모든 데이터는 클라이언트(사용자 기기)에서만
-              처리됩니다.
+              <span className="font-semibold">2.</span> 문의 및 제보 기능을
+              이용하는 경우, 사용자가 직접 입력한 내용과 선택 연락처가 서비스
+              개선 검토를 위해 서버에 저장될 수 있습니다.
             </p>
             <p>
-              <span className="font-semibold">3.</span> 서비스의 검색 노출
+              <span className="font-semibold">3.</span> 저장된 문의 및 제보
+              내용은 개별 답변을 보장하지 않으며, 제공자의 판단에 따라 서비스
+              개선과 데이터 수정에 참고됩니다.
+            </p>
+            <p>
+              <span className="font-semibold">4.</span> 서비스의 검색 노출
               최적화를 위해 Google Search Console을 통해 사이트 데이터를 수집할
               수 있습니다.
             </p>

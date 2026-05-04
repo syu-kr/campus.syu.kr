@@ -1,4 +1,5 @@
 import React from "react";
+import { FooterContactButton } from "@/app/components/FooterContactButton";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -51,8 +52,16 @@ export function Footer() {
               서비스 문의 및 제안
             </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
-              <li className="font-medium text-primary-600">
-                <a href="mailto:singhic_dev@syu.kr">singhic_dev@syu.kr</a>
+              <li>
+                <FooterContactButton />
+              </li>
+              <li>
+                <a
+                  href="mailto:singhic_dev@syu.kr"
+                  className="text-neutral-500 hover:text-neutral-700 transition-colors"
+                >
+                  메일로 문의
+                </a>
               </li>
             </ul>
           </div>

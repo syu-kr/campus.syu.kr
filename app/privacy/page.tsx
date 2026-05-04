@@ -63,6 +63,7 @@ export default function PrivacyPage() {
                 <li>서비스 이용현황 통계분석 및 활용</li>
                 <li>서비스 품질 개선 및 신규 기능 개발</li>
                 <li>고객 문의 및 불만사항 처리</li>
+                <li>사용자 제보 및 문의 내용 검토와 서비스 개선 반영</li>
               </ul>
             </div>
           </div>
@@ -98,6 +99,15 @@ export default function PrivacyPage() {
                 </p>
                 <p className="text-sm text-neutral-600">
                   서비스 운영 및 통계 분석 목적으로 필요한 기간 동안 보존됩니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  4. 문의 및 제보 정보
+                </p>
+                <p className="text-sm text-neutral-600">
+                  서비스 개선 검토 목적 달성 시까지 보존하며, 운영상 필요가
+                  없어진 경우 삭제합니다.
                 </p>
               </div>
             </div>
@@ -136,6 +146,17 @@ export default function PrivacyPage() {
                 <li>접속 IP 주소</li>
                 <li>쿠키 (Kakao Maps SDK)</li>
                 <li>접속 로그</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                4. 문의 및 제보 입력 정보 (선택항목)
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
+                <li>문의/제보 제목 및 내용</li>
+                <li>관련 페이지 URL 또는 관련 링크</li>
+                <li>사용자가 선택적으로 입력한 연락처</li>
+                <li>접수 시점의 브라우저 정보(User-Agent)</li>
               </ul>
             </div>
           </div>
@@ -414,8 +435,9 @@ export default function PrivacyPage() {
                 2. 클라이언트 중심 저장
               </p>
               <p className="text-sm text-neutral-600">
-                개인식별정보는 사용자 기기의 로컬 스토리지에만 저장되며,
-                서버에는 개인정보가 저장되지 않습니다.
+                설정 정보는 사용자 기기의 로컬 스토리지에 저장되며, 문의 및
+                제보 과정에서 사용자가 직접 입력한 정보는 서비스 개선 검토를
+                위해 서버에 저장될 수 있습니다.
               </p>
             </div>
             <div>
@@ -455,7 +477,7 @@ export default function PrivacyPage() {
             </p>
             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
               <p className="text-sm text-blue-900">
-                권리 행사는 메인 페이지의 연락처를 통해 문의하시면 지체 없이
+                권리 행사는 사이트 문의 페이지 또는 메일을 통해 문의하시면 지체 없이
                 처리하겠습니다.
               </p>
             </div>
@@ -485,8 +507,8 @@ export default function PrivacyPage() {
               </p>
             </div>
             <p className="text-sm text-neutral-600">
-              자세한 연락처는 메인 페이지 하단의 Footer에서 확인하실 수
-              있습니다.
+              문의는 사이트 문의 페이지 또는 메인 페이지 하단의 Footer에서
+              확인하실 수 있습니다.
             </p>
           </div>
         </Card>

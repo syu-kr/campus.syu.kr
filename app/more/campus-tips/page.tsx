@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
@@ -121,12 +122,22 @@ export default function CampusTipsPage() {
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          캠퍼스 꿀팁
-        </h1>
-        <p className="text-neutral-600">
-          학교생활, 진로, 대외활동, 지역 정보를 한곳에서 찾아보세요
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
+              캠퍼스 꿀팁
+            </h1>
+            <p className="text-neutral-600">
+              학교생활, 진로, 대외활동, 지역 정보를 한곳에서 찾아보세요
+            </p>
+          </div>
+          <Link
+            href="/more/campus-tips/suggest"
+            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+          >
+            꿀팁 제보하기
+          </Link>
+        </div>
       </div>
 
       <div className="mb-4 relative">
