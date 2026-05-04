@@ -23,40 +23,40 @@ const frequentMenus = [
 
 const relatedLinks = [
   {
-    iconName: "bus",
-    title: "버스 정보",
-    description: "셔틀·시내버스",
-    path: "/campus/bus-info",
+    iconName: "book-open",
+    title: "학사 정보",
+    description: "공지·일정·졸업요건",
+    path: "/academic",
   },
   {
-    iconName: "map",
-    title: "캠퍼스 지도",
-    description: "건물·시설",
-    path: "/campus/map",
+    iconName: "building",
+    title: "캠퍼스 정보",
+    description: "생활·시설·교통",
+    path: "/campus",
+  },
+  {
+    iconName: "more-horizontal",
+    title: "더보기",
+    description: "장학금·연락처·도구",
+    path: "/more",
+  },
+  {
+    iconName: "lightbulb",
+    title: "캠퍼스 꿀팁",
+    description: "학교생활 링크 모음",
+    path: "/more/campus-tips",
+  },
+  {
+    iconName: "calendar",
+    title: "일정 잡기",
+    description: "가능한 시간 모으기",
+    path: "/more/meet",
   },
   {
     iconName: "megaphone",
-    title: "학사공지",
-    description: "공지사항",
-    path: "/academic/announcements",
-  },
-  {
-    iconName: "book-open",
-    title: "도서관",
-    description: "이용정보",
-    path: "/campus/library",
-  },
-  {
-    iconName: "award",
-    title: "장학금",
-    description: "공지사항",
-    path: "/more/scholarship",
-  },
-  {
-    iconName: "phone",
-    title: "연락처",
-    description: "부서 검색",
-    path: "/more/phone",
+    title: "서비스 공지",
+    description: "업데이트 안내",
+    path: "/service/notices",
   },
 ];
 
@@ -117,7 +117,7 @@ export function RelatedLinksSection() {
   return (
     <div className="mt-8 border-t border-neutral-200 pt-6">
       <h2 className="mb-4 text-lg font-semibold text-neutral-900">
-        더 알아보기
+        주요 서비스 바로가기
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {relatedLinks.map((link) => (

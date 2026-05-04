@@ -81,32 +81,32 @@ export default function MorePage() {
         ))}
       </div>
 
-      {/* 관련 정보 */}
+      {/* 관련 더보기 기능 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          자주 가는 메뉴
+          함께 사용하기 좋은 더보기 기능
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Link
-            href="/campus/cafeteria"
+            href="/more/campus-tips"
             className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors text-center"
           >
-            <p className="text-xl mb-2">🍽️</p>
-            <p className="text-sm font-medium text-neutral-900">학식</p>
+            <p className="text-xl mb-2">💡</p>
+            <p className="text-sm font-medium text-neutral-900">캠퍼스 꿀팁</p>
           </Link>
           <Link
-            href="/campus/bus-info"
+            href="/more/meet"
             className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors text-center"
           >
-            <p className="text-xl mb-2">🚍</p>
-            <p className="text-sm font-medium text-neutral-900">버스</p>
+            <p className="text-xl mb-2">📅</p>
+            <p className="text-sm font-medium text-neutral-900">일정 잡기</p>
           </Link>
           <Link
-            href="/campus/library"
+            href="/more/phone"
             className="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:border-purple-500 transition-colors text-center"
           >
-            <p className="text-xl mb-2">📚</p>
-            <p className="text-sm font-medium text-neutral-900">도서관</p>
+            <p className="text-xl mb-2">📞</p>
+            <p className="text-sm font-medium text-neutral-900">연락처 검색</p>
           </Link>
         </div>
       </div>

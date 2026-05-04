@@ -114,30 +114,30 @@ export default function CampusPage() {
         })}
       </div>
 
-      {/* 관련 정보 */}
+      {/* 관련 캠퍼스 정보 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          도움이 될 만한 정보
+          함께 확인하면 좋은 캠퍼스 정보
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href="/academic/schedule"
+            href="/campus/map"
             className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors"
           >
-            <p className="text-sm font-medium text-neutral-900">📅 학사일정</p>
+            <p className="text-sm font-medium text-neutral-900">🗺️ 캠퍼스 지도</p>
             <p className="text-xs text-neutral-600 mt-1">
-              캠퍼스 행사와 학사 일정 확인
+              건물 위치와 주요 시설을 지도에서 확인
             </p>
           </Link>
           <Link
-            href="/more/phone"
+            href="/campus/bus-info"
             className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors"
           >
             <p className="text-sm font-medium text-neutral-900">
-              📞 시설 관련 문의
+              🚌 버스 정보
             </p>
             <p className="text-xs text-neutral-600 mt-1">
-              건물 관리 및 지원 부서 연락처
+              셔틀버스와 대중교통 정보를 함께 확인
             </p>
           </Link>
         </div>

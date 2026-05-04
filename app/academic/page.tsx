@@ -29,32 +29,32 @@ export default function AcademicPage() {
 
       <AcademicMenuGrid />
 
-      {/* 관련 정보 */}
+      {/* 관련 학사 정보 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          참고해보세요
+          함께 확인하면 좋은 학사 정보
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href="/campus/bus-info"
+            href="/academic/schedule"
             className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors"
           >
             <p className="text-sm font-medium text-neutral-900">
-              🚍 캠퍼스 찾기
+              📅 학사일정
             </p>
             <p className="text-xs text-neutral-600 mt-1">
-              버스 정보를 활용하여 캠퍼스 이동
+              주요 학사 일정과 학교 일정을 확인
             </p>
           </Link>
           <Link
-            href="/more/phone"
+            href="/academic/graduation"
             className="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:border-purple-500 transition-colors"
           >
             <p className="text-sm font-medium text-neutral-900">
-              📞 부서 연락처
+              🎓 졸업요건 확인
             </p>
             <p className="text-xs text-neutral-600 mt-1">
-              학사 관련 문의는 해당 부서로
+              이수 학점과 졸업요건을 간편하게 점검
             </p>
           </Link>
         </div>
