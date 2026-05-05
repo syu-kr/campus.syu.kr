@@ -8,6 +8,7 @@ import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 
 const today = new Date().toISOString().slice(0, 10);
+const MAX_DATE_COUNT = 14;
 
 export default function MeetCreatePage() {
   const router = useRouter();
@@ -27,15 +28,25 @@ export default function MeetCreatePage() {
   const [copied, setCopied] = useState(false);
   const [mode, setMode] = useState<"join" | "create">("join");
 
+  const rangeValidation = useMemo(
+    () => validateMeetRange(dateStart, dateEnd, timeStart, timeEnd),
+    [dateEnd, dateStart, timeEnd, timeStart],
+  );
   const canSubmit = useMemo(
-    () => title.trim().length > 0 && !isSubmitting,
-    [title, isSubmitting],
+    () => title.trim().length > 0 && rangeValidation.isValid && !isSubmitting,
+    [title, rangeValidation.isValid, isSubmitting],
   );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
     setCopied(false);
+
+    if (!rangeValidation.isValid) {
+      setError("날짜와 시간 범위를 확인해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -182,41 +193,41 @@ export default function MeetCreatePage() {
         <div className="grid grid-cols-1 gap-6">
           <Card hover={false}>
             <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="meet-title"
-                className="block text-sm font-semibold text-neutral-900 mb-2"
-              >
-                방 제목
-              </label>
-              <input
-                id="meet-title"
-                type="text"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                maxLength={80}
-                placeholder="팀플 회의 시간 정하기"
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
+              <div>
+                <label
+                  htmlFor="meet-title"
+                  className="block text-sm font-semibold text-neutral-900 mb-2"
+                >
+                  방 제목
+                </label>
+                <input
+                  id="meet-title"
+                  type="text"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  maxLength={80}
+                  placeholder="팀플 회의 시간 정하기"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
 
-            <div>
-              <label
-                htmlFor="meet-description"
-                className="block text-sm font-semibold text-neutral-900 mb-2"
-              >
-                설명
-              </label>
-              <textarea
-                id="meet-description"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                maxLength={300}
-                rows={3}
-                placeholder="가능한 시간을 모두 선택해주세요."
-                className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-            </div>
+              <div>
+                <label
+                  htmlFor="meet-description"
+                  className="block text-sm font-semibold text-neutral-900 mb-2"
+                >
+                  설명
+                </label>
+                <textarea
+                  id="meet-description"
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  maxLength={300}
+                  rows={3}
+                  placeholder="가능한 시간을 모두 선택해주세요."
+                  className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -246,8 +257,23 @@ export default function MeetCreatePage() {
                   type="date"
                   value={dateEnd}
                   onChange={(event) => setDateEnd(event.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  min={dateStart}
+                  max={addDays(dateStart, MAX_DATE_COUNT - 1)}
+                  aria-invalid={Boolean(rangeValidation.dateError)}
+                  aria-describedby={
+                    rangeValidation.dateError ? "date-range-error" : undefined
+                  }
+                  className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    rangeValidation.dateError
+                      ? "border-red-300"
+                      : "border-neutral-300"
+                  }`}
                 />
+                {rangeValidation.dateError && (
+                  <p id="date-range-error" className="mt-1 text-xs text-red-600">
+                    {rangeValidation.dateError}
+                  </p>
+                )}
               </div>
               <div>
                 <label
@@ -269,15 +295,28 @@ export default function MeetCreatePage() {
                   htmlFor="time-end"
                   className="block text-sm font-semibold text-neutral-900 mb-2"
                 >
-                종료 시간
-              </label>
+                  종료 시간
+                </label>
                 <input
                   id="time-end"
                   type="time"
                   value={timeEnd}
                   onChange={(event) => setTimeEnd(event.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  aria-invalid={Boolean(rangeValidation.timeError)}
+                  aria-describedby={
+                    rangeValidation.timeError ? "time-range-error" : undefined
+                  }
+                  className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    rangeValidation.timeError
+                      ? "border-red-300"
+                      : "border-neutral-300"
+                  }`}
                 />
+                {rangeValidation.timeError && (
+                  <p id="time-range-error" className="mt-1 text-xs text-red-600">
+                    {rangeValidation.timeError}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -376,4 +415,53 @@ function extractRoomId(value: string): string {
 
 function sanitizeRoomId(value: string): string {
   return value.trim().replace(/[^A-Za-z0-9_-]/g, "");
+}
+
+function validateMeetRange(
+  dateStart: string,
+  dateEnd: string,
+  timeStart: string,
+  timeEnd: string,
+) {
+  const dateCount = getDateCount(dateStart, dateEnd);
+  const startMinutes = parseTimeToMinutes(timeStart);
+  const endMinutes = parseTimeToMinutes(timeEnd);
+  const dateError =
+    dateCount < 1
+      ? "종료 날짜는 시작 날짜보다 빠를 수 없습니다."
+      : dateCount > MAX_DATE_COUNT
+        ? `날짜 범위는 최대 ${MAX_DATE_COUNT}일까지 가능합니다.`
+        : "";
+  const timeError =
+    endMinutes <= startMinutes
+      ? "종료 시간은 시작 시간보다 늦어야 합니다."
+      : "";
+
+  return {
+    dateError,
+    timeError,
+    isValid: !dateError && !timeError,
+  };
+}
+
+function getDateCount(dateStart: string, dateEnd: string): number {
+  const start = parseDateAsUtc(dateStart).getTime();
+  const end = parseDateAsUtc(dateEnd).getTime();
+  return Math.floor((end - start) / 86400000) + 1;
+}
+
+function parseDateAsUtc(date: string): Date {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function parseTimeToMinutes(time: string): number {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+function addDays(date: string, days: number): string {
+  const base = parseDateAsUtc(date);
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
 }

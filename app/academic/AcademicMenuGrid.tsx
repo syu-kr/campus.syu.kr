@@ -14,7 +14,6 @@ const academicMenus = [
     icon: "megaphone",
     href: "/academic/announcements",
     isExternal: false,
-    color: "from-blue-400 to-blue-600",
   },
   {
     id: "schedule",
@@ -23,7 +22,6 @@ const academicMenus = [
     icon: "calendar",
     href: "/academic/schedule",
     isExternal: false,
-    color: "from-purple-400 to-purple-600",
   },
   {
     id: "graduation-check",
@@ -32,7 +30,6 @@ const academicMenus = [
     icon: "check-circle",
     href: "/academic/graduation",
     isExternal: false,
-    color: "from-cyan-400 to-cyan-600",
   },
   {
     id: "timetable",
@@ -41,7 +38,6 @@ const academicMenus = [
     icon: "clock",
     href: "https://lecture.syu.kr/timetable",
     isExternal: true,
-    color: "from-pink-400 to-pink-600",
   },
   {
     id: "mock-sugang",
@@ -50,7 +46,6 @@ const academicMenus = [
     icon: "book-open",
     href: "https://sugang.syu.kr/testLogin",
     isExternal: true,
-    color: "from-orange-400 to-orange-600",
   },
   {
     id: "basket-competition",
@@ -59,7 +54,6 @@ const academicMenus = [
     icon: "bar-chart-3",
     href: "https://sugang.syu.kr/basket",
     isExternal: true,
-    color: "from-green-400 to-green-600",
   },
 ];
 
@@ -72,20 +66,27 @@ export function AcademicMenuGrid() {
         {academicMenus.map((menu) => {
           const cardElement = (
             <Card
-              className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
+              hover={false}
+              className="cursor-pointer border border-neutral-200 bg-white transition-colors hover:border-primary-300 hover:bg-primary-50"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="mb-1 text-lg font-bold">{menu.title}</h3>
-                  <p className="text-sm opacity-90">{menu.description}</p>
+                  <h3 className="mb-1 text-lg font-bold text-neutral-900">
+                    {menu.title}
+                  </h3>
+                  <p className="text-sm text-neutral-600">
+                    {menu.description}
+                  </p>
                 </div>
-                <Icon
-                  name={menu.icon}
-                  size={40}
-                  strokeWidth={1.5}
-                  color="white"
-                  title={menu.title}
-                />
+                <span className="text-primary-600">
+                  <Icon
+                    name={menu.icon}
+                    size={28}
+                    strokeWidth={1.75}
+                    color="currentColor"
+                    title={menu.title}
+                  />
+                </span>
               </div>
             </Card>
           );

@@ -19,7 +19,7 @@ export default function BusInfoPage() {
 
   return (
     <>
-      <Container className="py-3 sm:py-4 sticky top-0 bg-white z-10 border-b border-neutral-200">
+      <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab("shuttle")}

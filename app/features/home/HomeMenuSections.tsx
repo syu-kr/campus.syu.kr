@@ -1,6 +1,11 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+
+const PWA_INSTALL_DISMISSED_KEY = "syu-campus:pwa-install-dismissed";
 
 const frequentMenus = [
   { id: "1", iconName: "utensils", label: "학식", path: "/campus/cafeteria" },
@@ -91,25 +96,51 @@ export function FrequentMenuGrid() {
 }
 
 export function PwaInstallCard() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) !== "true");
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "true");
+    setIsVisible(false);
+  };
+
+  if (!isVisible) return null;
+
   return (
-    <Card className="bg-gradient-to-br from-primary-500 to-primary-600 text-white">
-      <div className="space-y-4">
-        <div>
-          <p className="mb-1 text-xs opacity-90">팁</p>
-          <h3 className="text-lg font-semibold">
-            SYU CAMPUS를 앱처럼 설치하여 사용하세요!
-          </h3>
-          <p className="mt-2 text-xs opacity-80">
-            PWA 설치로 더 빠르고 편리하게 접속 가능합니다
+    <Card className="border border-primary-100 bg-primary-50" hover={false}>
+      <div className="flex items-start gap-3">
+        <Icon
+          name="info"
+          size={20}
+          color="rgb(37, 99, 235)"
+          className="mt-0.5 flex-shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-neutral-900">
+            자주 쓰는 경우 앱처럼 열 수 있습니다
           </p>
+          <p className="mt-1 text-xs leading-5 text-neutral-600">
+            설치는 선택 사항이며, 브라우저에서도 같은 기능을 사용할 수 있습니다.
+          </p>
+          <Link
+            href="/service/notices/005-pwa-installation-guide"
+            prefetch={false}
+            className="mt-3 inline-flex rounded-lg border border-primary-200 bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:bg-primary-50"
+          >
+            앱처럼 쓰는 방법
+          </Link>
         </div>
-        <Link
-          href="/service/notices/005-pwa-installation-guide"
-          prefetch={false}
-          className="inline-block rounded-lg bg-white bg-opacity-20 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-opacity-30"
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="rounded-lg p-1.5 text-neutral-500 transition-colors hover:bg-white hover:text-neutral-900"
+          aria-label="앱 설치 안내 숨기기"
         >
-          설치 방법 보기
-        </Link>
+          <Icon name="x" size={16} color="currentColor" />
+        </button>
       </div>
     </Card>
   );

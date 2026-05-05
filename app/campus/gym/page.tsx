@@ -108,6 +108,13 @@ export default function GymPage() {
         </div>
       </Card>
 
+      <Card className="mb-6 border border-amber-200 bg-amber-50" hover={false}>
+        <p className="text-sm leading-6 text-amber-900">
+          운영시간, 요금, 환불정책은 변경될 수 있습니다. 등록이나 대관 전에는
+          체육문화센터 공식 안내 또는 전화로 최신 정보를 확인하세요.
+        </p>
+      </Card>
+
       <div className="mb-8">
         <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
           체육관 1층
@@ -221,7 +228,7 @@ export default function GymPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            프로그램 보기 →
+            외부 사이트에서 프로그램 보기 →
           </a>
           <a
             href="https://www.syu.ac.kr/sportscenter/facilities/"
@@ -229,7 +236,7 @@ export default function GymPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            시설 상세정보 →
+            외부 사이트에서 시설 상세정보 →
           </a>
         </div>
       </Card>

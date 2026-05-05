@@ -120,6 +120,9 @@ export default function PublicTransitSection() {
             <p className="text-xs text-neutral-500">
               마지막 새로고침: {lastRefreshTime}
             </p>
+            <p className="mt-2 text-xs leading-5 text-neutral-500">
+              공공/API 데이터 기준이며 실제 도착과 다를 수 있습니다.
+            </p>
           </div>
           <button
             type="button"

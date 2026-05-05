@@ -41,7 +41,7 @@ export function HomeNoticesSection({
           prefetch={false}
           className="text-xs text-primary-600 hover:text-primary-700"
         >
-          전체보기 →
+          {getNoticeListLabel(selectedCategory)} →
         </Link>
       </div>
 
@@ -356,4 +356,11 @@ function getNoticeListPath(selectedCategory?: string) {
   if (selectedCategory === "campus") return "/campus/announcements";
   if (selectedCategory === "service") return "/service/notices";
   return "/academic/announcements";
+}
+
+function getNoticeListLabel(selectedCategory?: string) {
+  if (selectedCategory === "scholarship") return "장학금 전체보기";
+  if (selectedCategory === "campus") return "캠퍼스공지 전체보기";
+  if (selectedCategory === "service") return "서비스공지 전체보기";
+  return "학사공지 전체보기";
 }

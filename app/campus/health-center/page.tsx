@@ -68,6 +68,14 @@ export default function HealthCenterPage() {
         </div>
       </Card>
 
+      <Card className="mb-6 border border-red-200 bg-red-50" hover={false}>
+        <p className="text-sm leading-6 text-red-900">
+          응급 상황에서는 보건실 안내를 기다리지 말고 119 또는 교내 비상 연락망을
+          이용하세요. 운영시간과 제공 서비스는 변경될 수 있으므로 방문 전 전화로
+          확인하는 것이 안전합니다.
+        </p>
+      </Card>
+
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">운영시간</h2>
         <Card>

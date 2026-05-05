@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import { Modal } from "@/app/components/Modal";
 import {
   formatMeetSlot,
   getMeetDatesFromSlots,
@@ -40,6 +41,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [dragMode, setDragMode] = useState<boolean | null>(null);
   const [mobileDate, setMobileDate] = useState("");
+  const [overwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false);
 
   const loadRoom = useCallback(async () => {
     setError("");
@@ -108,6 +110,14 @@ export default function MeetRoomPage({ params }: PageProps) {
     );
   }, [data, nickname]);
   const isClosed = !data?.room.acceptingResponses;
+  const selectedCountByDate = useMemo(() => {
+    const counts = new Map<string, number>();
+    availability.forEach((slot) => {
+      const date = slot.slice(0, 10);
+      counts.set(date, (counts.get(date) || 0) + 1);
+    });
+    return counts;
+  }, [availability]);
 
   const bestSlots = useMemo(() => {
     if (!data) return [];
@@ -199,13 +209,17 @@ export default function MeetRoomPage({ params }: PageProps) {
     setStatus("기존 선택을 불러왔습니다.");
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const saveAvailability = async () => {
     setError("");
     setStatus("");
 
     if (isClosed) {
       setError("이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다.");
+      return;
+    }
+
+    if (availability.size === 0) {
+      setError("가능한 시간을 1개 이상 선택한 뒤 저장해주세요.");
       return;
     }
 
@@ -239,7 +253,19 @@ export default function MeetRoomPage({ params }: PageProps) {
       );
     } finally {
       setIsSaving(false);
+      setOverwriteConfirmOpen(false);
     }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (matchedParticipant) {
+      setOverwriteConfirmOpen(true);
+      return;
+    }
+
+    await saveAvailability();
   };
 
   if (isLoading) {
@@ -333,7 +359,8 @@ export default function MeetRoomPage({ params }: PageProps) {
             {matchedParticipant && (
               <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                 같은 닉네임의 기존 응답이 있습니다. 저장하면 이 닉네임의
-                선택이 새 내용으로 바뀝니다.
+                선택이 새 내용으로 바뀝니다. 새 응답으로 저장하려면 닉네임을
+                다르게 입력하세요.
               </p>
             )}
             </Card>
@@ -410,6 +437,17 @@ export default function MeetRoomPage({ params }: PageProps) {
                     </option>
                   ))}
                 </select>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  {dates.map((date) => (
+                    <span
+                      key={date}
+                      className="rounded-full bg-white px-2 py-1 text-neutral-700 ring-1 ring-neutral-200"
+                    >
+                      {formatDateLabel(date)} {selectedCountByDate.get(date) || 0}
+                      칸
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div
@@ -456,12 +494,22 @@ export default function MeetRoomPage({ params }: PageProps) {
           )}
 
           {!isClosed && (
+            <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700">
+              선택한 가능 시간: {availability.size}칸
+            </div>
+          )}
+
+          {!isClosed && (
             <button
               type="submit"
               disabled={isSaving || !nickname.trim()}
               className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
             >
-              {isSaving ? "저장 중..." : "내 가능 시간 저장"}
+              {isSaving
+                ? "저장 중..."
+                : matchedParticipant
+                  ? "기존 응답 덮어쓰기"
+                  : "내 가능 시간 저장"}
             </button>
           )}
         </form>
@@ -520,6 +568,37 @@ export default function MeetRoomPage({ params }: PageProps) {
           </Card>
         </div>
       </div>
+
+      <Modal
+        isOpen={overwriteConfirmOpen}
+        title="기존 응답을 덮어쓸까요?"
+        description="같은 닉네임으로 저장된 응답이 있습니다."
+        onClose={() => setOverwriteConfirmOpen(false)}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm leading-6 text-neutral-600">
+            계속하면 이 닉네임의 기존 가능 시간이 현재 선택한 {availability.size}
+            칸으로 바뀝니다. 새 응답으로 남기려면 닉네임을 다르게 입력하세요.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setOverwriteConfirmOpen(false)}
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={() => void saveAvailability()}
+              className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              덮어쓰기
+            </button>
+          </div>
+        </div>
+      </Modal>
     </Container>
   );
 }

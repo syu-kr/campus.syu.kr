@@ -1,7 +1,7 @@
 "use client";
 
 import { BusArrival } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import clsx from "clsx";
 
 interface BusDetailModalProps {
@@ -39,16 +39,26 @@ export default function BusDetailModal({
   isOpen,
   onClose,
 }: BusDetailModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    if (!isOpen) return;
+
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
+      document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !bus) return null;
 
@@ -64,10 +74,10 @@ export default function BusDetailModal({
 
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
         <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-          <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between">
+          <div className="sticky top-0 bg-white text-neutral-900 px-6 py-4 flex items-center justify-between border-b border-neutral-200">
             <div>
               <h2 className="text-2xl font-bold">{bus.routeName}</h2>
-              <p className="text-blue-100 text-sm mt-1">
+              <p className="text-neutral-600 text-sm mt-1">
                 {stopId?.includes("jungmun") && direction === "up"
                   ? "담터고개 행"
                   : stopId?.includes("jungmun") && direction === "down"
@@ -80,8 +90,10 @@ export default function BusDetailModal({
               </p>
             </div>
             <button
+              ref={closeButtonRef}
               onClick={onClose}
-              className="text-white hover:bg-blue-700 rounded-full p-2 transition"
+              className="text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 rounded-full px-3 py-2 transition"
+              aria-label="버스 상세 닫기"
             >
               ×
             </button>

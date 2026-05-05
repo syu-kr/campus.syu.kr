@@ -24,7 +24,29 @@ export function SearchResultsView({
 }: SearchResultsViewProps) {
   return (
     <Container className="py-6 sm:py-8">
-      <SearchBar onSearch={onSearch} placeholder="검색..." className="mb-6" />
+      <div className="mb-6 space-y-3">
+        <SearchBar
+          onSearch={onSearch}
+          onClear={onClear}
+          defaultValue={searchQuery}
+          placeholder="검색..."
+        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-neutral-600">
+            <span className="font-semibold text-neutral-900">
+              &quot;{searchQuery}&quot;
+            </span>{" "}
+            검색 결과
+          </p>
+          <button
+            type="button"
+            onClick={onClear}
+            className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+          >
+            검색 초기화 / 홈으로
+          </button>
+        </div>
+      </div>
 
       {isLoading && (
         <div>

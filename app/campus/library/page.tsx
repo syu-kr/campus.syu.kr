@@ -21,6 +21,12 @@ function getUsageColor(percentage: number): string {
   return "bg-primary-600"; // 1/3 미만
 }
 
+function getUsageLabel(percentage: number): string {
+  if (percentage >= 66) return "혼잡";
+  if (percentage >= 33) return "보통";
+  return "여유";
+}
+
 export default function LibraryPage() {
   const [selectedSeason, setSelectedSeason] =
     useState<LibrarySeason>("semester");
@@ -92,9 +98,10 @@ export default function LibraryPage() {
         ) : (
           <div className="space-y-4">
             {rooms.map((room, idx) => {
-              const usagePercent = Math.round(
-                (room.strUseSeat / room.strTotalSeat) * 100,
-              );
+              const hasValidSeatTotal = room.strTotalSeat > 0;
+              const usagePercent = hasValidSeatTotal
+                ? Math.round((room.strUseSeat / room.strTotalSeat) * 100)
+                : 0;
               const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (
                 <div key={idx}>
@@ -112,11 +119,17 @@ export default function LibraryPage() {
                         </button>
                       )}
                     </div>
-                    <span className="text-sm font-semibold text-neutral-700">
-                      {room.strUseSeat}/{room.strTotalSeat}
-                      <span className="text-neutral-500 ml-1">
-                        ({usagePercent}%)
-                      </span>
+                    <span className="text-right text-sm font-semibold text-neutral-700">
+                      {hasValidSeatTotal ? (
+                        <>
+                          {room.strUseSeat}/{room.strTotalSeat}
+                          <span className="ml-1 text-neutral-500">
+                            ({usagePercent}%, {getUsageLabel(usagePercent)})
+                          </span>
+                        </>
+                      ) : (
+                        "좌석 수 확인 필요"
+                      )}
                     </span>
                   </div>
                   <div className="w-full bg-neutral-200 rounded h-2">
@@ -286,6 +299,18 @@ export default function LibraryPage() {
               className="flex-1 w-full border-0"
               title="좌석 현황"
             />
+            <div className="border-t border-neutral-200 p-3 text-xs text-neutral-600">
+              좌석 현황은 외부 페이지를 표시합니다. 화면이 보이지 않으면{" "}
+              <a
+                href={seatMapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary-600 hover:text-primary-700"
+              >
+                새 탭에서 열기
+              </a>
+              를 사용하세요.
+            </div>
           </div>
         </div>
       )}

@@ -152,12 +152,6 @@ function MenuSections({
 export function CafeteriaInfoCards() {
   return (
     <>
-      <Card className="mt-8 bg-yellow-50 border border-yellow-200">
-        <p className="text-sm text-yellow-900">
-          <strong>알림:</strong> 현재 만나의 집의 경우는 구현되어있지 않습니다.
-        </p>
-      </Card>
-
       <Card className="mb-8 bg-blue-50 border border-blue-200">
         <div className="flex items-start gap-3">
           <div>
@@ -181,11 +175,22 @@ export function CafeteriaInfoCards() {
           />
           <span>
             <strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된
-            항목을 참고하여 식사를 선택하세요.
+            항목을 참고하여 식사를 선택하세요. 제공 데이터 기준이므로 중증
+            알레르기가 있다면 식당에 직접 확인하세요.
           </span>
         </p>
       </Card>
     </>
+  );
+}
+
+export function CafeteriaNoticeCards() {
+  return (
+    <Card className="mt-8 bg-yellow-50 border border-yellow-200" hover={false}>
+      <p className="text-sm text-yellow-900">
+        <strong>알림:</strong> 현재 만나의 집 식단은 제공되지 않습니다.
+      </p>
+    </Card>
   );
 }
 
@@ -218,7 +223,7 @@ export function WeeklyMenuCard({
     <Card
       className={
         isToday
-          ? "bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400"
+          ? "border-2 border-green-400 bg-green-50"
           : ""
       }
     >
@@ -242,7 +247,13 @@ export function WeeklyMenuCard({
         </p>
       </div>
 
-      <MenuSections menu={menu} highlighted={isToday} />
+      {isToday ? (
+        <p className="text-sm text-green-800">
+          오늘 식단은 위의 오늘의 메뉴에서 확인하세요.
+        </p>
+      ) : (
+        <MenuSections menu={menu} highlighted={isToday} />
+      )}
     </Card>
   );
 }

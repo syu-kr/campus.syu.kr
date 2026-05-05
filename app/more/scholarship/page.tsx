@@ -5,6 +5,7 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
 import { Skeleton } from "@/app/components/Skeleton";
+import { SearchBar } from "@/app/components/SearchBar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScholarships } from "@/lib/api";
 import { useState, useMemo } from "react";
@@ -48,8 +49,8 @@ export default function ScholarshipPage() {
   } = usePagination(filteredScholarships, ITEMS_PER_PAGE);
 
   // 검색 결과가 변경되면 첫 페이지로
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
     setCurrentPage(1);
   };
 
@@ -62,27 +63,14 @@ export default function ScholarshipPage() {
         <p className="text-neutral-600">교내/외 장학금 정보를 확인하세요</p>
       </div>
 
-      <div className="mb-6 relative">
-        <input
-          type="text"
-          placeholder="장학금 이름 또는 설명으로 검색..."
-          value={searchQuery}
-          onChange={handleSearch}
-          className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setCurrentPage(1);
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-1"
-            aria-label="검색 초기화"
-          >
-            ✕
-          </button>
-        )}
-      </div>
+      <SearchBar
+        className="mb-6"
+        defaultValue={searchQuery}
+        placeholder="장학금 이름 또는 설명으로 검색..."
+        onSearch={handleSearch}
+        onClear={() => handleSearch("")}
+        searchOnChange
+      />
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
@@ -141,7 +129,7 @@ export default function ScholarshipPage() {
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
                     >
-                      자세히 알아보기
+                      외부 사이트에서 자세히 보기
                     </a>
                   )}
                 </div>

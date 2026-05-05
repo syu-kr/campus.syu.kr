@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -62,24 +63,14 @@ export default function DirectoryPage() {
         <p className="text-neutral-600">부서 또는 전화번호로 검색하세요</p>
       </div>
 
-      <div className="mb-6 relative">
-        <input
-          type="text"
-          placeholder="부서명 또는 전화번호로 검색..."
-          value={searchQuery}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => handleSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-1"
-            aria-label="검색 초기화"
-          >
-            ✕
-          </button>
-        )}
-      </div>
+      <SearchBar
+        className="mb-6"
+        defaultValue={searchQuery}
+        placeholder="부서명 또는 전화번호로 검색..."
+        onSearch={handleSearch}
+        onClear={() => handleSearch("")}
+        searchOnChange
+      />
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">

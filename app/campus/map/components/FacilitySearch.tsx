@@ -79,14 +79,19 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                 >
                   <div className="flex items-start gap-3">
                     {result.facility && (
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
-                        style={{
-                          backgroundColor:
-                            categoryColors[result.facility.category!] ||
-                            "#95A5A6",
-                        }}
-                      />
+                      <div className="mt-1 flex flex-shrink-0 items-center gap-1">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{
+                            backgroundColor:
+                              categoryColors[result.facility.category!] ||
+                              "#95A5A6",
+                          }}
+                        />
+                        <span className="text-[10px] text-neutral-500">
+                          {result.facility.category}
+                        </span>
+                      </div>
                     )}
                     {!result.facility && (
                       <div className="w-3 h-3 rounded-full flex-shrink-0 mt-1 bg-blue-600" />

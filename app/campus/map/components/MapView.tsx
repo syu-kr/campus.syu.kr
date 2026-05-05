@@ -90,7 +90,10 @@ export function MapView({
 
   return (
     <>
-      <div ref={mapContainer} style={{ width: "100%", height: "600px" }} />
+      <div
+        ref={mapContainer}
+        className="h-[min(60vh,600px)] min-h-[360px] w-full"
+      />
       {map &&
         buildings.map((building) => (
           <BuildingMarker

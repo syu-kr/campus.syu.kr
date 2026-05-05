@@ -1,10 +1,11 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
 import { Container } from "@/app/components/Container";
 import { PaginationControls } from "@/app/components/PaginationControls";
+import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchAnnouncementPage } from "@/lib/api";
@@ -42,11 +43,6 @@ export function AnnouncementListPage({
     gcTime: FIVE_MINUTES,
   });
 
-  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-    setCurrentPage(1);
-  };
-
   const announcements = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
@@ -60,28 +56,20 @@ export function AnnouncementListPage({
         <p className="text-neutral-600">{description}</p>
       </div>
 
-      <div className="relative mb-6">
-        <input
-          type="text"
-          placeholder="제목 또는 작성자로 검색..."
-          value={searchQuery}
-          onChange={handleSearch}
-          className="w-full rounded-lg border border-neutral-300 px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => {
-              setSearchQuery("");
-              setCurrentPage(1);
-            }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 transition-colors hover:text-neutral-600"
-            aria-label="검색 초기화"
-          >
-            x
-          </button>
-        )}
-      </div>
+      <SearchBar
+        className="mb-6"
+        defaultValue={searchQuery}
+        placeholder="제목 또는 작성자로 검색..."
+        onSearch={(query) => {
+          setSearchQuery(query);
+          setCurrentPage(1);
+        }}
+        onClear={() => {
+          setSearchQuery("");
+          setCurrentPage(1);
+        }}
+        searchOnChange
+      />
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">

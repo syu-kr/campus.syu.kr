@@ -329,6 +329,14 @@ export default function CampusTipSuggestPage() {
               placeholder="확인이 필요한 경우 참고할 이메일 또는 연락처"
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
+            <p className="mt-1 text-xs leading-5 text-neutral-500">
+              검토 연락용 선택 항목이며, 개별 답변을 보장하지 않습니다. 처리
+              기준은{" "}
+              <Link href="/privacy" className="text-primary-600 hover:text-primary-700">
+                개인정보처리방침
+              </Link>
+              을 따릅니다.
+            </p>
           </div>
 
           <button

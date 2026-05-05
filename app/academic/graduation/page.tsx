@@ -49,6 +49,7 @@ import {
   StepIndicator,
   SummaryRow,
 } from "@/app/features/graduation/components";
+import { Modal } from "@/app/components/Modal";
 import {
   CURRICULUM_CATEGORIES,
   filterCurriculumCourses,
@@ -74,6 +75,7 @@ interface CustomCourse {
 }
 
 type CourseModalType = "curriculum" | null;
+type PendingResetAction = null | (() => void);
 
 type LectureApiResponse = {
   success: boolean;
@@ -100,6 +102,9 @@ export default function GraduationPage() {
   const [courseSearch, setCourseSearch] = useState("");
   const [customCourseName, setCustomCourseName] = useState("");
   const [customCourseCredits, setCustomCourseCredits] = useState("");
+  const [customCourseOpen, setCustomCourseOpen] = useState(false);
+  const [pendingResetAction, setPendingResetAction] =
+    useState<PendingResetAction>(null);
   const [lectureTimetable, setLectureTimetable] =
     useState<LectureTimetableDataset | null>(null);
   const [lectureLoading, setLectureLoading] = useState(false);
@@ -214,6 +219,19 @@ export default function GraduationPage() {
     lectureMatchMap,
     selectedDepartment?.name,
   );
+  const hasEnteredData =
+    Object.values(completedCredits).some((value) => value != null && value > 0) ||
+    selectedCurriculumCourseIds.length > 0 ||
+    customMajorRequiredCourses.length > 0;
+
+  const runWithResetConfirmation = (action: () => void) => {
+    if (hasEnteredData) {
+      setPendingResetAction(() => action);
+      return;
+    }
+
+    action();
+  };
 
   useEffect(() => {
     let ignore = false;
@@ -241,45 +259,53 @@ export default function GraduationPage() {
   }, []);
 
   const handleCollegeSelect = (collegeId: string) => {
-    setSelection({
-      ...INITIAL_SELECTION,
-      collegeId,
+    runWithResetConfirmation(() => {
+      setSelection({
+        ...INITIAL_SELECTION,
+        collegeId,
+      });
+      setCompletedCredits({});
+      resetCourseSelections();
     });
-    setCompletedCredits({});
-    resetCourseSelections();
   };
 
   const handleDepartmentSelect = (departmentId: string) => {
-    setSelection((prev) => ({
-      ...prev,
-      departmentId,
-      majorId: undefined,
-      admissionType: "",
-      majorTrack: "",
-    }));
-    setCompletedCredits({});
-    resetCourseSelections();
+    runWithResetConfirmation(() => {
+      setSelection((prev) => ({
+        ...prev,
+        departmentId,
+        majorId: undefined,
+        admissionType: "",
+        majorTrack: "",
+      }));
+      setCompletedCredits({});
+      resetCourseSelections();
+    });
   };
 
   const handleMajorSelect = (majorId: string | undefined) => {
-    setSelection((prev) => ({
-      ...prev,
-      majorId,
-      admissionType: "",
-      majorTrack: "",
-    }));
-    setCompletedCredits({});
-    resetCourseSelections();
+    runWithResetConfirmation(() => {
+      setSelection((prev) => ({
+        ...prev,
+        majorId,
+        admissionType: "",
+        majorTrack: "",
+      }));
+      setCompletedCredits({});
+      resetCourseSelections();
+    });
   };
 
   const handleAdmissionTypeSelect = (admissionType: AdmissionType) => {
-    setSelection((prev) => ({
-      ...prev,
-      admissionType,
-      majorTrack: "",
-    }));
-    setCompletedCredits({});
-    resetCourseSelections();
+    runWithResetConfirmation(() => {
+      setSelection((prev) => ({
+        ...prev,
+        admissionType,
+        majorTrack: "",
+      }));
+      setCompletedCredits({});
+      resetCourseSelections();
+    });
   };
 
   const handleMajorTrackSelect = (majorTrack: MajorTrack) => {
@@ -303,9 +329,11 @@ export default function GraduationPage() {
   };
 
   const handleReset = () => {
-    setSelection(INITIAL_SELECTION);
-    setCompletedCredits({});
-    resetCourseSelections();
+    runWithResetConfirmation(() => {
+      setSelection(INITIAL_SELECTION);
+      setCompletedCredits({});
+      resetCourseSelections();
+    });
   };
 
   const resetCourseSelections = () => {
@@ -316,6 +344,7 @@ export default function GraduationPage() {
     setCourseSearch("");
     setCustomCourseName("");
     setCustomCourseCredits("");
+    setCustomCourseOpen(false);
   };
 
   const toggleCurriculumCourse = (courseId: string) => {
@@ -353,6 +382,10 @@ export default function GraduationPage() {
     setCustomMajorRequiredCourses((prev) =>
       prev.filter((course) => course.id !== courseId),
     );
+  };
+  const handleConfirmReset = () => {
+    pendingResetAction?.();
+    setPendingResetAction(null);
   };
 
   return (
@@ -592,6 +625,10 @@ export default function GraduationPage() {
             ) : (
               <div className="space-y-5">
                 <ResultBanner status={evaluation.overallStatus} />
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
+                  이 결과는 입력값과 제공 데이터 기준의 참고용 계산입니다. 공식
+                  졸업 판정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.
+                </div>
 
                 <div className="hidden overflow-hidden rounded-lg border border-neutral-200 sm:block">
                   <div className="grid grid-cols-[1fr_100px_100px_100px] bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600">
@@ -745,7 +782,7 @@ export default function GraduationPage() {
                 disabled={!requirement}
                 className="flex-1 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
               >
-                출력
+                참고용 출력
               </button>
             </div>
           </Card>
@@ -789,6 +826,18 @@ export default function GraduationPage() {
           title={`${selectedDepartment?.name ?? "학과"} 과목 선택`}
           onClose={() => setCourseModal(null)}
         >
+          <div className="sticky -top-4 z-10 mb-4 rounded-lg border border-primary-100 bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span className="font-semibold text-neutral-900">
+                선택 합계 {curriculumSummary[activeCourseCategory].selectedCredits}
+                학점
+              </span>
+              <span className="text-xs text-neutral-500">
+                {curriculumSummary[activeCourseCategory].selectedCount}개 선택
+              </span>
+            </div>
+          </div>
+
           <div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs leading-5 text-neutral-600">
             시간표 API 기준 개설 정보를 함께 표시합니다.
             {lectureTimetable?.year || lectureTimetable?.semester ? (
@@ -922,68 +971,121 @@ export default function GraduationPage() {
             )}
           </div>
 
-          <div className="mt-4 rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700">
-            현재 탭 선택 합계:{" "}
-            <strong className="text-primary-700">
-              {curriculumSummary[activeCourseCategory].selectedCredits}학점
-            </strong>
-          </div>
+          <button
+            type="button"
+            onClick={() => setCustomCourseOpen((open) => !open)}
+            className="mt-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+          >
+            직접 입력 {customCourseOpen ? "접기" : "열기"}
+          </button>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_120px_auto]">
-            <input
-              type="text"
-              value={customCourseName}
-              onChange={(event) => setCustomCourseName(event.target.value)}
-              placeholder="과목명"
-              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-            />
-            <input
-              type="number"
-              min="0"
-              value={customCourseCredits}
-              onChange={(event) => setCustomCourseCredits(event.target.value)}
-              placeholder="학점"
-              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-            />
+          {customCourseOpen && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_120px_auto]">
+              <input
+                type="text"
+                value={customCourseName}
+                onChange={(event) => setCustomCourseName(event.target.value)}
+                placeholder="과목명"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+              />
+              <input
+                type="number"
+                min="0"
+                value={customCourseCredits}
+                onChange={(event) => setCustomCourseCredits(event.target.value)}
+                placeholder="학점"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomMajorCourse}
+                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+              >
+                추가
+              </button>
+            </div>
+          )}
+
+          {customCourseOpen && (
+            <div className="mt-4 space-y-2">
+              {customMajorRequiredCourses.length === 0 ? (
+                <EmptyState message="추가한 전공필수 과목이 없습니다." />
+              ) : (
+                customMajorRequiredCourses.map((course) => (
+                  <div
+                    key={course.id}
+                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-neutral-900">
+                        {course.name}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {course.credits}학점
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCustomMajorCourse(course.id)}
+                      className="shrink-0 rounded border border-neutral-300 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
-              onClick={handleAddCustomMajorCourse}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
+              onClick={() => setCourseModal(null)}
+              className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700"
             >
-              추가
+              선택 완료
             </button>
-          </div>
-
-          <div className="mt-4 space-y-2">
-            {customMajorRequiredCourses.length === 0 ? (
-              <EmptyState message="추가한 전공필수 과목이 없습니다." />
-            ) : (
-              customMajorRequiredCourses.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-neutral-900">
-                      {course.name}
-                    </p>
-                    <p className="text-xs text-neutral-500">
-                      {course.credits}학점
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveCustomMajorCourse(course.id)}
-                    className="shrink-0 rounded border border-neutral-300 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
-                  >
-                    삭제
-                  </button>
-                </div>
-              ))
-            )}
+            <button
+              type="button"
+              onClick={() => setCourseModal(null)}
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
+            >
+              닫기
+            </button>
           </div>
         </CourseModal>
       )}
+
+      <Modal
+        isOpen={Boolean(pendingResetAction)}
+        title="기존 입력을 초기화할까요?"
+        description="이 선택을 바꾸면 입력한 학점과 선택한 과목을 유지할 수 없습니다."
+        onClose={() => setPendingResetAction(null)}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm leading-6 text-neutral-600">
+            계속하면 현재 입력값과 과목 선택이 초기화됩니다. 취소하면 지금
+            입력한 내용을 그대로 유지합니다.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setPendingResetAction(null)}
+              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmReset}
+              className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+            >
+              초기화하고 계속
+            </button>
+          </div>
+        </div>
+      </Modal>
     </Container>
   );
 }

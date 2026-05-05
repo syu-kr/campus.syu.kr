@@ -91,6 +91,10 @@ export default function ShuttlePage() {
   // 현재 시간을 매초 업데이트
   const [now, setNow] = useState(new Date());
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
+  const [locationError, setLocationError] = useState("");
+  const [lastLocationUpdatedAt, setLastLocationUpdatedAt] = useState<Date | null>(
+    null,
+  );
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
   const mapComponentRef = useRef<ShuttleMapHandle | null>(null);
@@ -121,8 +125,10 @@ export default function ShuttlePage() {
       try {
         const locations = await fetchBusLocations();
         setBusLocations(locations);
+        setLastLocationUpdatedAt(new Date());
+        setLocationError("");
       } catch {
-        // Silently handle errors
+        setLocationError("실시간 위치 정보를 새로 가져오지 못했습니다.");
       }
     };
 
@@ -255,6 +261,9 @@ export default function ShuttlePage() {
   const selectedButtonIsCurrent = useSpecialSchedule
     ? specialScheduleIsCurrent
     : Boolean(selectedRegularButton?.isActive);
+  const selectedScheduleLabel = useSpecialSchedule
+    ? "특별운행"
+    : selectedRegularButton?.label || "선택한 시간표";
   // defaultType 변경 시 selectedType도 자동으로 업데이트 (방학 기간 변경 대응)
   useEffect(() => {
     setSelectedType(defaultType);
@@ -512,6 +521,19 @@ export default function ShuttlePage() {
     selectedType,
   ]);
 
+  useEffect(() => {
+    if (expandedBuses.size > 0 || nextBusTimeByRoute.size === 0) return;
+
+    const nextRouteNames = Array.from(nextBusTimeByRoute.keys()).slice(0, 2);
+    const defaultExpanded = busesWithSpecialPeriods
+      .filter((bus) => nextRouteNames.includes(bus.routeName))
+      .map((bus) => bus.id);
+
+    if (defaultExpanded.length > 0) {
+      setExpandedBuses(new Set(defaultExpanded));
+    }
+  }, [busesWithSpecialPeriods, expandedBuses.size, nextBusTimeByRoute]);
+
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
     if (
@@ -638,8 +660,20 @@ export default function ShuttlePage() {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
-              5-10초마다 자동으로 업데이트됩니다
+              공공/API 데이터 기준이며 실제 운행과 다를 수 있습니다. 5-10초마다
+              자동으로 업데이트됩니다.
             </p>
+            <p className="mt-1 text-xs text-neutral-500">
+              마지막 위치 갱신:{" "}
+              {lastLocationUpdatedAt
+                ? lastLocationUpdatedAt.toLocaleTimeString("ko-KR")
+                : "-"}
+            </p>
+            {locationError && (
+              <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                {locationError} 기존 정보가 오래되었을 수 있습니다.
+              </p>
+            )}
           </div>
 
           {busLocations.length > 0 ? (
@@ -758,6 +792,16 @@ export default function ShuttlePage() {
           </button>
         )}
       </div>
+
+      <Card className="mb-4 border border-neutral-200 bg-neutral-50" hover={false}>
+        <p className="text-sm font-semibold text-neutral-900">
+          현재 시간표 기준: {selectedScheduleLabel}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-neutral-600">
+          셔틀 시간표와 실시간 위치는 제공 데이터 기준입니다. 행사, 교통 상황,
+          학교 공지에 따라 실제 운행과 다를 수 있습니다.
+        </p>
+      </Card>
 
       {activeSpecialPeriods.length > 0 && (
         <Card className="mb-4 bg-purple-50 border-2 border-purple-300 text-sm text-purple-900">

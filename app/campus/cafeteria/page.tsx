@@ -5,6 +5,7 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import {
   CafeteriaInfoCards,
+  CafeteriaNoticeCards,
   TodayMenuCard,
   WeeklyMenuCard,
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
@@ -66,8 +67,6 @@ export default function CafeteriaPage() {
         <p className="text-neutral-600">주간 식단 및 영양정보를 확인하세요</p>
       </div>
 
-      <CafeteriaInfoCards />
-
       {!isLoading && !todayMenu && todayInfo.isWeekend && (
         <StateCard
           type="info"
@@ -112,6 +111,8 @@ export default function CafeteriaPage() {
         <TodayMenuCard menu={todayMenu} />
       )}
 
+      <CafeteriaInfoCards />
+
       <div className="mb-8">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">주간 메뉴</h2>
         <div className="space-y-6">
@@ -135,6 +136,8 @@ export default function CafeteriaPage() {
             ))}
         </div>
       </div>
+
+      <CafeteriaNoticeCards />
     </Container>
   );
 }

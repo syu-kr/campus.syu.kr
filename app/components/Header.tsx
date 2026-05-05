@@ -94,7 +94,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
               className="h-9 px-3 rounded-full border border-primary-200 bg-primary-50 text-xs font-semibold text-primary-700 hover:bg-primary-100 transition-colors"
               aria-label="번역 안내 열기"
             >
-              Translate
+              번역 안내
             </button>
             <WeatherWidget onClick={handleWeatherClick} />
           </div>
@@ -125,7 +125,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
               aria-label="번역 안내 열기"
             >
               <Icon name="info" size={16} color="currentColor" />
-              Translate
+              번역 안내
             </button>
             <WeatherWidget onClick={handleWeatherClick} />
           </div>
@@ -186,7 +186,7 @@ function TranslationHelpModal({
         <div className="flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-primary-600">
-              Translation
+              Translation guide
             </p>
             <h2
               id="translation-help-title"
@@ -209,12 +209,22 @@ function TranslationHelpModal({
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
+          <section className="rounded-xl border border-neutral-200 bg-white p-4">
+            <p className="text-sm leading-6 text-neutral-700">
+              SYU CAMPUS는 사이트 내부 번역 기능을 제공하지 않습니다. 번역이
+              필요하다면 Chrome, Edge, Safari 등 브라우저의 기본 번역 기능을
+              사용해주세요.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-neutral-700">
+              SYU CAMPUS does not provide an in-app translator. Please use your
+              browser&apos;s built-in translation feature when needed.
+            </p>
+          </section>
+
           <section className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
             <h3 className="text-sm font-bold text-neutral-900">한국어 안내</h3>
             <p className="mt-2 text-sm leading-6 text-neutral-700">
-              번역을 이용한 원활한 사이트 이용을 위해 이 사이트는 사용자의
-              브라우저 내 자체 번역 기능을 사용합니다. 아래 사항을 따라 번역을
-              켠 뒤 원하는 언어를 선택하세요.
+              아래 사항을 따라 브라우저 번역을 켠 뒤 원하는 언어를 선택하세요.
             </p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-700">
               <li>Chrome / Edge: 주소창의 번역 아이콘 또는 메뉴에서 번역 선택</li>
@@ -228,9 +238,8 @@ function TranslationHelpModal({
               English Guide
             </h3>
             <p className="mt-2 text-sm leading-6 text-neutral-700">
-              To use this site smoothly with translation, we use your
-              browser&rsquo;s built-in translation feature. Follow the steps
-              below, turn on translation, and choose your preferred language.
+              Follow the steps below, turn on browser translation, and choose
+              your preferred language.
             </p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-700">
               <li>Chrome / Edge: use the translate icon or browser menu</li>

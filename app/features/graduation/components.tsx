@@ -210,20 +210,20 @@ export function ResultBanner({ status }: { status: EvaluationStatus }) {
   const config =
     status === "short"
       ? {
-          title: "졸업요건 부족",
-          description: "학점 부족 항목이 있습니다. 부족학점을 먼저 확인하세요.",
+          title: "입력값 기준 부족 가능",
+          description: "입력한 값으로 보면 부족 가능성이 있는 항목이 있습니다.",
           className: "border-red-200 bg-red-50 text-red-900",
         }
       : status === "checkRequired"
         ? {
-            title: "학점 충족, 추가 확인 필요",
+            title: "입력값 기준 추가 확인 필요",
             description:
-              "입력한 학점은 충족했지만 시험, 실습, 인증 등 확인 필요 조건이 남아 있습니다.",
+              "입력한 학점은 충족 가능성이 있지만 시험, 실습, 인증 등 확인 필요 조건이 남아 있습니다.",
             className: "border-amber-200 bg-amber-50 text-amber-900",
           }
         : {
-            title: "졸업요건 충족",
-            description: "입력한 학점 기준으로 모든 항목을 충족했습니다.",
+            title: "입력값 기준 충족 가능",
+            description: "입력한 학점 기준으로 요구 항목을 충족할 가능성이 있습니다.",
             className: "border-green-200 bg-green-50 text-green-900",
           };
 

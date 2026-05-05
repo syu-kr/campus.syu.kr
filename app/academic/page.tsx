@@ -1,5 +1,4 @@
 import { Metadata } from "next";
-import Link from "next/link";
 
 import { AcademicMenuGrid } from "@/app/academic/AcademicMenuGrid";
 import { Container } from "@/app/components/Container";
@@ -28,36 +27,6 @@ export default function AcademicPage() {
       </div>
 
       <AcademicMenuGrid />
-
-      <div className="mt-8 pt-6 border-t border-neutral-200">
-        <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          함께 확인하면 좋은 학사 정보
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Link
-            href="/academic/schedule"
-            className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors"
-          >
-            <p className="text-sm font-medium text-neutral-900">
-              📅 학사일정
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">
-              주요 학사 일정과 학교 일정을 확인
-            </p>
-          </Link>
-          <Link
-            href="/academic/graduation"
-            className="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:border-purple-500 transition-colors"
-          >
-            <p className="text-sm font-medium text-neutral-900">
-              🎓 졸업요건 확인
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">
-              이수 학점과 졸업요건을 간편하게 점검
-            </p>
-          </Link>
-        </div>
-      </div>
     </Container>
   );
 }

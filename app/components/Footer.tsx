@@ -86,6 +86,12 @@ export function Footer() {
               >
                 개인정보처리방침
               </a>
+              <a
+                href="/more/privacy"
+                className="text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                알림 및 개인정보
+              </a>
             </div>
           </div>
         </div>

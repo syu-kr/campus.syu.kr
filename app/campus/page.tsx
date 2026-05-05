@@ -24,7 +24,6 @@ const campusMenus = [
     description: "캠퍼스 생활 공지사항",
     icon: "megaphone",
     href: "/campus/announcements",
-    color: "from-indigo-400 to-indigo-600",
   },
   {
     id: "cafeteria",
@@ -32,7 +31,6 @@ const campusMenus = [
     description: "주간 식단 및 영양정보",
     icon: "utensils",
     href: "/campus/cafeteria",
-    color: "from-orange-400 to-orange-600",
   },
   {
     id: "bus-info",
@@ -40,7 +38,6 @@ const campusMenus = [
     description: "셔틀버스와 대중교통 안내",
     icon: "bus",
     href: "/campus/bus-info",
-    color: "from-blue-400 to-blue-600",
   },
   {
     id: "library",
@@ -48,7 +45,6 @@ const campusMenus = [
     description: "중앙도서관 열람실 정보",
     icon: "book-open",
     href: "/campus/library",
-    color: "from-purple-400 to-purple-600",
   },
   {
     id: "map",
@@ -56,7 +52,6 @@ const campusMenus = [
     description: "건물 위치 및 시설 안내",
     icon: "map",
     href: "/campus/map",
-    color: "from-cyan-400 to-blue-600",
   },
   {
     id: "gym",
@@ -64,7 +59,6 @@ const campusMenus = [
     description: "헬스장, 스포츠 센터 정보",
     icon: "dumbbell",
     href: "/campus/gym",
-    color: "from-red-400 to-red-600",
   },
   {
     id: "health-center",
@@ -72,7 +66,6 @@ const campusMenus = [
     description: "학생 의료 서비스",
     icon: "stethoscope",
     href: "/campus/health-center",
-    color: "from-pink-400 to-pink-600",
   },
 ];
 
@@ -93,53 +86,32 @@ export default function CampusPage() {
           return (
             <Link key={menu.id} href={menu.href}>
               <Card
-                className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
+                hover={false}
+                className="cursor-pointer border border-neutral-200 bg-white transition-colors hover:border-primary-300 hover:bg-primary-50"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
-                    <p className="text-sm opacity-90">{menu.description}</p>
+                    <h3 className="text-lg font-bold mb-1 text-neutral-900">
+                      {menu.title}
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      {menu.description}
+                    </p>
                   </div>
-                  <Icon
-                    name={menu.icon}
-                    size={40}
-                    strokeWidth={1.5}
-                    color="white"
-                    title={menu.title}
-                  />
+                  <span className="text-primary-600">
+                    <Icon
+                      name={menu.icon}
+                      size={28}
+                      strokeWidth={1.75}
+                      color="currentColor"
+                      title={menu.title}
+                    />
+                  </span>
                 </div>
               </Card>
             </Link>
           );
         })}
-      </div>
-
-      <div className="mt-8 pt-6 border-t border-neutral-200">
-        <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          함께 확인하면 좋은 캠퍼스 정보
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Link
-            href="/campus/map"
-            className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors"
-          >
-            <p className="text-sm font-medium text-neutral-900">🗺️ 캠퍼스 지도</p>
-            <p className="text-xs text-neutral-600 mt-1">
-              건물 위치와 주요 시설을 지도에서 확인
-            </p>
-          </Link>
-          <Link
-            href="/campus/bus-info"
-            className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors"
-          >
-            <p className="text-sm font-medium text-neutral-900">
-              🚌 버스 정보
-            </p>
-            <p className="text-xs text-neutral-600 mt-1">
-              셔틀버스와 대중교통 정보를 함께 확인
-            </p>
-          </Link>
-        </div>
       </div>
     </Container>
   );

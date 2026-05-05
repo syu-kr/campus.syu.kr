@@ -9,6 +9,7 @@ import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { SearchBar } from "@/app/components/SearchBar";
 import { fetchCampusTips } from "@/lib/api";
 import { usePagination } from "@/lib/use-pagination";
 import type {
@@ -140,25 +141,14 @@ export default function CampusTipsPage() {
         </div>
       </div>
 
-      <div className="mb-4 relative">
-        <input
-          type="text"
-          placeholder="수윙스, 토익, 공모전, 별내, 장학, 포트폴리오..."
-          value={searchQuery}
-          onChange={(event) => handleSearchChange(event.target.value)}
-          className="w-full px-4 py-2 pr-10 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => handleSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 p-1"
-            aria-label="검색 초기화"
-          >
-            x
-          </button>
-        )}
-      </div>
+      <SearchBar
+        className="mb-4"
+        defaultValue={searchQuery}
+        placeholder="수윙스, 토익, 공모전, 별내, 장학, 포트폴리오..."
+        onSearch={handleSearchChange}
+        onClear={() => handleSearchChange("")}
+        searchOnChange
+      />
 
       <div className="mb-5 -mx-4 overflow-x-auto px-4">
         <div className="flex min-w-max gap-2 pb-1">
@@ -190,6 +180,13 @@ export default function CampusTipsPage() {
               표시
             </span>
           )}
+        </div>
+      )}
+
+      {!isLoading && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
+          공식 배지가 없는 자료는 외부 또는 커뮤니티 자료일 수 있습니다. 중요한
+          신청, 비용, 일정은 반드시 공식 사이트에서 다시 확인하세요.
         </div>
       )}
 
@@ -246,7 +243,7 @@ export default function CampusTipsPage() {
                     </div>
                   </div>
                   <span className="shrink-0 text-sm font-medium text-primary-600">
-                    {tip.urlLabel || "바로가기"}
+                    {tip.urlLabel || "외부 사이트 열기"}
                   </span>
                 </div>
               </Card>

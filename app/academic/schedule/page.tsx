@@ -176,9 +176,13 @@ export default function SchedulePage() {
           {hasEvent && (
             <div className="flex justify-center mt-1">
               {hasExam ? (
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                <span className="rounded bg-red-50 px-1 text-[10px] font-semibold text-red-700">
+                  시험
+                </span>
               ) : (
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                <span className="rounded bg-blue-50 px-1 text-[10px] font-semibold text-blue-700">
+                  일정
+                </span>
               )}
             </div>
           )}

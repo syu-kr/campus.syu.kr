@@ -13,7 +13,6 @@ export default function MorePage() {
       description: "장학금 공지 및 신청",
       iconName: "award",
       href: "/more/scholarship",
-      color: "from-blue-400 to-blue-600",
     },
     {
       id: "2",
@@ -21,7 +20,6 @@ export default function MorePage() {
       description: "SYU CAMPUS 서비스 공지",
       iconName: "megaphone",
       href: "/service/notices",
-      color: "from-green-400 to-green-600",
     },
     {
       id: "3",
@@ -29,7 +27,6 @@ export default function MorePage() {
       description: "부서 및 담당자 연락처",
       iconName: "phone",
       href: "/more/phone",
-      color: "from-purple-400 to-purple-600",
     },
     {
       id: "4",
@@ -37,7 +34,6 @@ export default function MorePage() {
       description: "학교생활에 필요한 링크 모음",
       iconName: "lightbulb",
       href: "/more/campus-tips",
-      color: "from-amber-400 to-orange-500",
     },
     {
       id: "5",
@@ -45,7 +41,13 @@ export default function MorePage() {
       description: "초대 링크로 가능한 시간 찾기",
       iconName: "calendar",
       href: "/more/meet",
-      color: "from-teal-400 to-cyan-600",
+    },
+    {
+      id: "6",
+      title: "알림 및 개인정보",
+      description: "알림 권한과 분석 도구 안내",
+      iconName: "info",
+      href: "/more/privacy",
     },
   ];
 
@@ -62,59 +64,31 @@ export default function MorePage() {
         {moreMenus.map((menu) => (
           <Link key={menu.id} href={menu.href}>
             <Card
-              className={`bg-gradient-to-br ${menu.color} text-white cursor-pointer hover:shadow-card-hover transition-all transform hover:scale-105`}
+              hover={false}
+              className="cursor-pointer border border-neutral-200 bg-white transition-colors hover:border-primary-300 hover:bg-primary-50"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-bold mb-1">{menu.title}</h3>
-                  <p className="text-sm opacity-90">{menu.description}</p>
+                  <h3 className="text-lg font-bold mb-1 text-neutral-900">
+                    {menu.title}
+                  </h3>
+                  <p className="text-sm text-neutral-600">
+                    {menu.description}
+                  </p>
                 </div>
-                <Icon
-                  name={menu.iconName}
-                  size={40}
-                  strokeWidth={1.5}
-                  color="white"
-                />
+                <span className="text-primary-600">
+                  <Icon
+                    name={menu.iconName}
+                    size={28}
+                    strokeWidth={1.75}
+                    color="currentColor"
+                  />
+                </span>
               </div>
             </Card>
           </Link>
         ))}
       </div>
-
-      <div className="mt-8 pt-6 border-t border-neutral-200">
-        <h3 className="text-base font-semibold text-neutral-900 mb-4">
-          함께 사용하기 좋은 더보기 기능
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Link
-            href="/more/campus-tips"
-            className="p-4 rounded-lg bg-green-50 border border-green-200 hover:border-green-500 transition-colors text-center"
-          >
-            <p className="text-xl mb-2">💡</p>
-            <p className="text-sm font-medium text-neutral-900">캠퍼스 꿀팁</p>
-          </Link>
-          <Link
-            href="/more/meet"
-            className="p-4 rounded-lg bg-blue-50 border border-blue-200 hover:border-blue-500 transition-colors text-center"
-          >
-            <p className="text-xl mb-2">📅</p>
-            <p className="text-sm font-medium text-neutral-900">일정 잡기</p>
-          </Link>
-          <Link
-            href="/more/phone"
-            className="p-4 rounded-lg bg-purple-50 border border-purple-200 hover:border-purple-500 transition-colors text-center"
-          >
-            <p className="text-xl mb-2">📞</p>
-            <p className="text-sm font-medium text-neutral-900">연락처 검색</p>
-          </Link>
-        </div>
-      </div>
-
-      <Card className="mt-8 bg-blue-50 border border-blue-200">
-        <p className="text-sm text-blue-900">
-          <strong>개발 예정:</strong> 더 많은 기능이 준비 중입니다.
-        </p>
-      </Card>
     </Container>
   );
 }

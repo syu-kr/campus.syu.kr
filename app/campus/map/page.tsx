@@ -2,7 +2,7 @@
 
 import { Container } from "@/app/components/Container";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
 import { FacilitySearch } from "./components/FacilitySearch";
@@ -11,21 +11,10 @@ import { Icon } from "@/app/components/Icon";
 export default function MapPage() {
   const [selectedBuilding, setSelectedBuilding] = useState<string>();
   const [highlightedBuilding, setHighlightedBuilding] = useState<string>();
-  const mobileFacilityPanelRef = useRef<HTMLDivElement>(null);
 
   const handleFacilitySelect = (buildingId: string) => {
     setSelectedBuilding(buildingId);
     setHighlightedBuilding(buildingId);
-
-    // 모바일에서 시설 정보 섹션으로 자동 스크롤 (덜 내려가도록)
-    if (buildingId && mobileFacilityPanelRef.current) {
-      setTimeout(() => {
-        mobileFacilityPanelRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }, 150);
-    }
   };
 
   return (
@@ -62,12 +51,21 @@ export default function MapPage() {
           />
         </div>
 
-        <div className="hidden lg:flex lg:flex-col space-y-4 max-h-screen overflow-y-auto">
+        <div className="hidden lg:flex lg:flex-col space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
           <FacilityPanel buildingId={selectedBuilding} />
         </div>
       </div>
 
-      <div className="mt-6 lg:hidden" ref={mobileFacilityPanelRef}>
+      {selectedBuilding && (
+        <a
+          href="#facility-info"
+          className="mt-4 inline-flex rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-semibold text-primary-700 lg:hidden"
+        >
+          선택한 건물 시설 정보 보기
+        </a>
+      )}
+
+      <div id="facility-info" className="mt-6 scroll-mt-24 lg:hidden">
         <div className="mt-4">
           <FacilityPanel buildingId={selectedBuilding} />
         </div>

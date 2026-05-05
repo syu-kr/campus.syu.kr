@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
+import React, { useState, useCallback, memo, useEffect } from "react";
 import clsx from "clsx";
 
 interface SearchBarProps {
   placeholder?: string;
   onSearch: (query: string) => void;
+  defaultValue?: string;
+  onClear?: () => void;
+  searchOnChange?: boolean;
   isLoading?: boolean;
   className?: string;
 }
@@ -13,15 +16,25 @@ interface SearchBarProps {
 function SearchBarComponent({
   placeholder = "공지, 학식, 학사일정 검색...",
   onSearch,
+  defaultValue = "",
+  onClear,
+  searchOnChange = false,
   isLoading = false,
   className,
 }: SearchBarProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(defaultValue);
+
+  useEffect(() => {
+    setQuery(defaultValue);
+  }, [defaultValue]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-  }, []);
+    if (searchOnChange) {
+      onSearch(value);
+    }
+  }, [onSearch, searchOnChange]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -35,8 +48,9 @@ function SearchBarComponent({
 
   const handleClear = useCallback(() => {
     setQuery("");
+    onClear?.();
     onSearch("");
-  }, [onSearch]);
+  }, [onClear, onSearch]);
 
   return (
     <form onSubmit={handleSubmit} className={className} role="search">
