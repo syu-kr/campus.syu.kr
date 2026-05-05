@@ -370,54 +370,24 @@ export async function fetchCampusTips(): Promise<CampusTip[]> {
 
 // 버스 실시간 위치 API
 export async function fetchBusLocations(): Promise<BusLocation[]> {
-  try {
-    const data = await fetchJson<
-      { returnCode?: string; data?: unknown[] } | unknown[]
-    >("/bus/shuttle", {
-      fallback: [],
-      method: "GET",
-      credentials: "omit",
-    });
+  const response = await fetchJson<{
+    success: boolean;
+    data: BusLocation[];
+    error?: string;
+  }>("/api/bus/shuttle", {
+    fallback: {
+      success: false,
+      data: [],
+      error: "셔틀 위치 API 응답을 받지 못했습니다.",
+    },
+    method: "GET",
+  });
 
-    if (Array.isArray(data)) {
-      return data
-        .map((bus) => {
-          const busRecord = bus as Record<string, unknown>;
-          const status = Number(busRecord.status);
-          const routeid = Number(busRecord.routeid) as 1 | 2 | 3;
-
-          return {
-            ...busRecord,
-            status: status as 0 | 1 | 2,
-            routeid,
-          } as BusLocation;
-        })
-        .filter((bus) => bus.status !== 0);
-    }
-
-    if (data && data.returnCode === "200") {
-      const busArray = data.data || [];
-      if (!Array.isArray(busArray)) return [];
-
-      return busArray
-        .map((bus) => {
-          const busRecord = bus as Record<string, unknown>;
-          const status = Number(busRecord.status);
-          const routeid = Number(busRecord.routeid) as 1 | 2 | 3;
-
-          return {
-            ...busRecord,
-            status: status as 0 | 1 | 2,
-            routeid,
-          } as BusLocation;
-        })
-        .filter((bus) => bus.status !== 0);
-    }
-
-    return [];
-  } catch {
-    return [];
+  if (!response.success) {
+    throw new Error(response.error || "셔틀 위치 정보를 불러오지 못했습니다.");
   }
+
+  return response.data;
 }
 
 export {

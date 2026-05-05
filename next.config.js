@@ -40,18 +40,6 @@ const nextConfig = {
     optimizePackageImports: ["@tanstack/react-query"],
   },
 
-  // Localhost 개발 서버에서 external API 프록싱
-  rewrites: async () => {
-    return {
-      beforeFiles: [
-        {
-          source: "/bus/shuttle",
-          destination: "https://bus.syu.kr/api",
-        },
-      ],
-    };
-  },
-
   // 캐싱 설정
   headers: async () => {
     const noStoreHeaders = [

@@ -81,11 +81,13 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
         1: "#3b82f6",
         2: "#10b981",
         3: "#f59e0b",
+        4: "#8b5cf6",
       };
       const routeNames: Record<string | number, string> = {
         1: "화랑대역",
         2: "석계역",
         3: "별내역",
+        4: "구리",
       };
       const statusLabels: Record<number, string> = {
         1: "학교 → 역",

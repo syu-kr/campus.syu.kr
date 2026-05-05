@@ -521,19 +521,6 @@ export default function ShuttlePage() {
     selectedType,
   ]);
 
-  useEffect(() => {
-    if (expandedBuses.size > 0 || nextBusTimeByRoute.size === 0) return;
-
-    const nextRouteNames = Array.from(nextBusTimeByRoute.keys()).slice(0, 2);
-    const defaultExpanded = busesWithSpecialPeriods
-      .filter((bus) => nextRouteNames.includes(bus.routeName))
-      .map((bus) => bus.id);
-
-    if (defaultExpanded.length > 0) {
-      setExpandedBuses(new Set(defaultExpanded));
-    }
-  }, [busesWithSpecialPeriods, expandedBuses.size, nextBusTimeByRoute]);
-
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
     if (
@@ -621,7 +608,7 @@ export default function ShuttlePage() {
           </Card>
         )}
 
-      {!dateInfo.isWeekend && isWithinOperationHours && (
+      {!dateInfo.isWeekend && (
         <Card className="mb-6">
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
@@ -653,6 +640,13 @@ export default function ShuttlePage() {
                 <div className="flex items-center gap-1">
                   <div
                     className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: "#8b5cf6" }}
+                  ></div>
+                  <span className="text-neutral-600">구리행</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: "#d0d0d0" }}
                   ></div>
                   <span className="text-neutral-600">캠퍼스행</span>
@@ -660,9 +654,15 @@ export default function ShuttlePage() {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
-              공공/API 데이터 기준이며 실제 운행과 다를 수 있습니다. 5-10초마다
-              자동으로 업데이트됩니다.
+              삼육대학교 셔틀 위치 데이터 기준이며 실제 운행과 다를 수
+              있습니다. 5-10초마다 자동으로 업데이트됩니다.
             </p>
+            {!isWithinOperationHours && (
+              <p className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-700">
+                현재 시간표상 운행 시간 밖입니다. 운행 시간이 되면 위치 정보가
+                표시됩니다.
+              </p>
+            )}
             <p className="mt-1 text-xs text-neutral-500">
               마지막 위치 갱신:{" "}
               {lastLocationUpdatedAt
@@ -693,6 +693,7 @@ export default function ShuttlePage() {
                       1: "화랑대역",
                       2: "석계역",
                       3: "별내역",
+                      4: "구리",
                     };
                     const statusLabels: Record<number, string> = {
                       1: "학교 → 역",
@@ -702,6 +703,7 @@ export default function ShuttlePage() {
                       1: "bg-blue-100 text-blue-700",
                       2: "bg-green-100 text-green-700",
                       3: "bg-amber-100 text-amber-700",
+                      4: "bg-violet-100 text-violet-700",
                     };
 
                     // status가 1일 때만 routeid 색 사용, status가 2일 때는 회색
@@ -741,7 +743,7 @@ export default function ShuttlePage() {
           ) : (
             <div className="text-center py-6">
               <p className="text-sm text-neutral-700 mb-3 font-medium">
-                현재 실시간 버스 위치 정보가 없습니다.
+                현재 운행 중인 셔틀 위치 정보가 없습니다.
               </p>
             </div>
           )}
@@ -844,13 +846,17 @@ export default function ShuttlePage() {
             const times = Array.isArray(bus.schedules?.[selectedType])
               ? bus.schedules[selectedType]
               : [];
+            const isExpanded = expandedBuses.has(bus.id);
 
             return (
               <Card key={bus.id} className="overflow-hidden">
                 <button
                   onClick={() => toggleBusExpand(bus.id)}
                   className="w-full text-left hover:bg-neutral-50 px-1 py-1 rounded-lg transition-all duration-200"
-                  aria-label="시간표 펼치기"
+                  aria-expanded={isExpanded}
+                  aria-label={`${bus.routeName} 시간표 ${
+                    isExpanded ? "닫기" : "펼치기"
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-3 p-3">
                     <div className="flex-1">
@@ -864,7 +870,7 @@ export default function ShuttlePage() {
                     <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-primary-50 rounded-lg">
                       <svg
                         className={`w-5 h-5 text-primary-600 transition-transform duration-300 ${
-                          expandedBuses.has(bus.id) ? "rotate-180" : ""
+                          isExpanded ? "rotate-180" : ""
                         }`}
                         fill="none"
                         stroke="currentColor"
@@ -881,7 +887,7 @@ export default function ShuttlePage() {
                   </div>
                 </button>
 
-                {expandedBuses.has(bus.id) && (
+                {isExpanded && (
                   <div className="border-t border-neutral-200 pt-4 mt-4 animate-in fade-in duration-200">
                     <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
                       운행 시간

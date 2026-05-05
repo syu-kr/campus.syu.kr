@@ -53,7 +53,7 @@ export interface BusLocation {
   lat: string;
   lon: string;
   status: 0 | 1 | 2;
-  routeid: 1 | 2 | 3;
+  routeid: 1 | 2 | 3 | 4;
 }
 
 export interface BusStop {
