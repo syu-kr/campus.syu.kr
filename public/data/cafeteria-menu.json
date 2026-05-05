@@ -41,10 +41,16 @@
       "date": "2026-05-05",
       "day": "화",
       "meals": {
-        "breakfast": [],
+        "breakfast": [
+          "운영 없음"
+        ],
         "lunch": {
-          "a_corner": [],
-          "b_corner": []
+          "a_corner": [
+            "운영 없음"
+          ],
+          "b_corner": [
+            "운영 없음"
+          ]
         },
         "dinner": [
           "운영 없음"
@@ -148,5 +154,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-05-04T21:26:50.092528"
+  "lastUpdated": "2026-05-05T10:52:12.689650"
 }

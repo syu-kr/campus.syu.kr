@@ -11,7 +11,7 @@ import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable, Dict, List, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -38,11 +38,32 @@ def generate_stable_id(prefix: str, *parts: str) -> str:
     return f"{prefix}-{hash_value}"
 
 
-def notice_key(item: Dict[str, object]) -> str:
+def legacy_notice_key(item: Dict[str, object]) -> str:
     title = re.sub(r"\s+", "", str(item.get("title", "")))
     date = str(item.get("date", "")).strip()
     author = re.sub(r"\s+", "", str(item.get("author", "")))
     return f"{title}|{date}|{author}"
+
+
+def normalize_notice_url(url: str) -> str:
+    split_url = urlsplit(url)
+    path = re.sub(r"/+$", "", split_url.path)
+    return urlunsplit((split_url.scheme, split_url.netloc, path, "", ""))
+
+
+def notice_key(item: Dict[str, object]) -> str:
+    url = str(item.get("url", "")).strip()
+    if url:
+        return normalize_notice_url(url)
+    return legacy_notice_key(item)
+
+
+def clean_notice_title(title: str, markers: tuple[str, ...]) -> str:
+    cleaned = title
+    for marker in markers:
+        cleaned = cleaned.replace(marker, "")
+    cleaned = re.sub(r"\bNEW\b", "", cleaned, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", cleaned).strip()
 
 
 def is_valid_notice_item(item: Dict[str, object]) -> bool:
@@ -115,11 +136,22 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
         0,
     )
 
-    raw_title = title_elem.get_text(" ", strip=True)
-    title = raw_title
-    for marker in config.important_markers:
-        title = title.replace(marker, "")
-    title = re.sub(r"\s*NEW\s*$", "", title).strip()
+    title_root = BeautifulSoup(str(title_elem), "html.parser")
+    for noisy in title_root.select(".new, .new_icon, .file_icon, img, svg"):
+        noisy.decompose()
+    category_elem = title_root.select_one(".md_cate")
+    title_text_elem = title_root.select_one(".tit")
+    raw_title = " ".join(
+        part
+        for part in [
+            category_elem.get_text(" ", strip=True) if category_elem else "",
+            title_text_elem.get_text(" ", strip=True)
+            if title_text_elem
+            else title_root.get_text(" ", strip=True),
+        ]
+        if part
+    )
+    title = clean_notice_title(raw_title, config.important_markers)
 
     url = urljoin("https://www.syu.ac.kr", title_elem.get("href", ""))
     author = (
@@ -183,6 +215,9 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
         for item in existing_items
         if item.get("id")
     }
+    for item in existing_items:
+        if item.get("id"):
+            existing_id_by_key.setdefault(legacy_notice_key(item), str(item.get("id")))
 
     print(f"{config.label} 크롤링 시작")
     print(f"기존 데이터: {len(existing_items)}개")
@@ -256,10 +291,18 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
         raise RuntimeError(f"{config.label}에서 저장할 데이터를 찾지 못했습니다")
 
     merged = list(new_by_key.values())
+    merged_keys = set(new_by_key.keys())
     for item in existing_items:
         key = notice_key(item)
-        if key not in new_by_key:
-            merged.append(item)
+        legacy_key = legacy_notice_key(item)
+        if key not in merged_keys and legacy_key not in new_by_key:
+            normalized_item = dict(item)
+            normalized_item["title"] = clean_notice_title(
+                str(normalized_item.get("title", "")),
+                config.important_markers,
+            )
+            merged.append(normalized_item)
+            merged_keys.add(key)
 
     write_json_atomic(config.output_path, merged)
 

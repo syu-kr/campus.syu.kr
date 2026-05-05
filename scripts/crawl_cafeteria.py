@@ -13,9 +13,13 @@ from bs4 import BeautifulSoup
 import json
 import re
 import os
+import html
 from datetime import datetime
 
 from crawler_utils import DEFAULT_HEADERS, write_json_atomic
+
+CLOSED_LABEL = "운영 없음"
+CLOSED_TEXTS = {"운영없음", "운영 없음", "휴무", "없음", "-", "미운영"}
 
 def parse_korean_date(date_str):
     """'3월 16일 (월)' 형식의 날짜 파싱"""
@@ -36,17 +40,61 @@ def parse_korean_date(date_str):
 def parse_menu_items(html_text):
     """메뉴 항목 파싱"""
     items = []
-    # <br> 태그로 구분된 항목들 분리
     for item in re.split(r'<br\s*/?>', html_text):
-        # HTML 태그 제거
         cleaned = re.sub(r'<[^>]*>', '', item)
-        # HTML 엔티티 처리
-        cleaned = cleaned.replace('&nbsp;', '').replace('&amp;', '&')
-        cleaned = cleaned.replace('&lt;', '<').replace('&gt;', '>')
+        cleaned = html.unescape(cleaned)
+        cleaned = cleaned.replace('\xa0', ' ')
+        cleaned = re.sub(r'\s+', ' ', cleaned)
         cleaned = cleaned.strip()
         if cleaned:
             items.append(cleaned)
     return items
+
+
+def is_closed_text(value):
+    normalized = re.sub(r"\s+", "", value or "")
+    return normalized in {re.sub(r"\s+", "", text) for text in CLOSED_TEXTS}
+
+
+def normalize_menu_items(items):
+    if not items:
+        return [CLOSED_LABEL]
+    if all(is_closed_text(item) for item in items):
+        return [CLOSED_LABEL]
+    return [item for item in items if not is_closed_text(item)]
+
+
+def has_food_items(items):
+    return any(not is_closed_text(item) for item in items)
+
+
+def cell_menu_items(row, cell_index):
+    cells = row.select("td")
+    if cell_index >= len(cells):
+        return []
+    return parse_menu_items(cells[cell_index].decode_contents())
+
+
+def is_closed_day(meals):
+    sections = [
+        meals["breakfast"],
+        meals["lunch"]["a_corner"],
+        meals["lunch"]["b_corner"],
+        meals["dinner"],
+    ]
+    return not any(has_food_items(section) for section in sections)
+
+
+def closed_meals():
+    return {
+        "breakfast": [CLOSED_LABEL],
+        "lunch": {
+            "a_corner": [CLOSED_LABEL],
+            "b_corner": [CLOSED_LABEL],
+        },
+        "dinner": [CLOSED_LABEL],
+    }
+
 
 def crawl_cafeteria_menu():
     """학식 메뉴 크롤링"""
@@ -122,37 +170,36 @@ def crawl_cafeteria_menu():
             dinner_row = body_rows[3]
             
             meals = {
-                "breakfast": [],
+                "breakfast": [CLOSED_LABEL],
                 "lunch": {
-                    "a_corner": [],
-                    "b_corner": []
+                    "a_corner": [CLOSED_LABEL],
+                    "b_corner": [CLOSED_LABEL]
                 },
-                "dinner": []
+                "dinner": [CLOSED_LABEL]
             }
             
             # 조식
-            cells = breakfast_row.select("td")
-            if date_idx < len(cells):
-                breakfast_html = cells[date_idx].decode_contents() if hasattr(cells[date_idx], 'decode_contents') else str(cells[date_idx].contents)
-                meals["breakfast"] = parse_menu_items(breakfast_html)
+            meals["breakfast"] = normalize_menu_items(
+                cell_menu_items(breakfast_row, date_idx)
+            )
             
             # A코너 (첫 셀은 라벨, 1~5번 셀이 월~금)
-            cells = a_corner_row.select("td")
-            if date_idx + 1 < len(cells):
-                a_html = cells[date_idx + 1].decode_contents() if hasattr(cells[date_idx + 1], 'decode_contents') else str(cells[date_idx + 1].contents)
-                meals["lunch"]["a_corner"] = parse_menu_items(a_html)
+            meals["lunch"]["a_corner"] = normalize_menu_items(
+                cell_menu_items(a_corner_row, date_idx + 1)
+            )
             
             # B코너
-            cells = b_corner_row.select("td")
-            if date_idx + 1 < len(cells):
-                b_html = cells[date_idx + 1].decode_contents() if hasattr(cells[date_idx + 1], 'decode_contents') else str(cells[date_idx + 1].contents)
-                meals["lunch"]["b_corner"] = parse_menu_items(b_html)
+            meals["lunch"]["b_corner"] = normalize_menu_items(
+                cell_menu_items(b_corner_row, date_idx + 1)
+            )
             
             # 석식
-            cells = dinner_row.select("td")
-            if date_idx < len(cells):
-                dinner_html = cells[date_idx].decode_contents() if hasattr(cells[date_idx], 'decode_contents') else str(cells[date_idx].contents)
-                meals["dinner"] = parse_menu_items(dinner_html)
+            meals["dinner"] = normalize_menu_items(
+                cell_menu_items(dinner_row, date_idx)
+            )
+
+            if is_closed_day(meals):
+                meals = closed_meals()
             
             menu_data = {
                 "date": date,
