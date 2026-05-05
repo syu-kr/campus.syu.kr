@@ -6,7 +6,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/06gy",
     "urlLabel": "안내 보기",
-    "tags": ["유고결석", "출석", "학사"],
+    "tags": [
+      "유고결석",
+      "출석",
+      "학사"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -17,7 +21,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/n3fe",
     "urlLabel": "제도 보기",
-    "tags": ["학생경력", "비교과", "수토리"],
+    "tags": [
+      "학생경력",
+      "비교과",
+      "수토리"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -28,7 +36,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/s7me",
     "urlLabel": "등급제 보기",
-    "tags": ["수토리", "등급제", "비교과"],
+    "tags": [
+      "수토리",
+      "등급제",
+      "비교과"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -39,7 +51,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/m13r",
     "urlLabel": "가이드북 보기",
-    "tags": ["비교과", "가이드북", "SU"],
+    "tags": [
+      "비교과",
+      "가이드북",
+      "SU"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -50,7 +66,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/vijj",
     "urlLabel": "멘토링 보기",
-    "tags": ["멘토링", "SU토링", "선배"],
+    "tags": [
+      "멘토링",
+      "SU토링",
+      "선배"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -61,7 +81,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/sportscenter/program/program-guide/",
     "urlLabel": "프로그램 보기",
-    "tags": ["체육문화센터", "운동", "프로그램"],
+    "tags": [
+      "체육문화센터",
+      "운동",
+      "프로그램"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -72,7 +96,11 @@
     "category": "campus-life",
     "url": "https://syu.ac.kr/brochure/2025SU-MVPRC/",
     "urlLabel": "책자 보기",
-    "tags": ["기숙사", "생활교육원", "상벌점"],
+    "tags": [
+      "기숙사",
+      "생활교육원",
+      "상벌점"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -83,7 +111,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/zvxk",
     "urlLabel": "요건 보기",
-    "tags": ["졸업", "이수요건", "학사"],
+    "tags": [
+      "졸업",
+      "이수요건",
+      "학사"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -94,7 +126,11 @@
     "category": "campus-life",
     "url": "https://www.syu.ac.kr/lmzf",
     "urlLabel": "요람 보기",
-    "tags": ["요람", "학칙", "교육과정"],
+    "tags": [
+      "요람",
+      "학칙",
+      "교육과정"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -105,7 +141,11 @@
     "category": "finance",
     "url": "https://portal.kosaf.go.kr/CO/jspAction.do?forwardOnlyFlag=N&forwardPage=pt/sm/cstmdsgngoods/PTSMCstmDsgnGoods_10M&beanName=PTSMCstmDsgnGoodsSVC&methodName=getItgnSrchCstmDsgnGoodsList&inputVOName=kr.go.kosaf.portal.pt.sm.cstmdsgngoods.svc.PTSMCstmDsgnGoodsSVO&ignoreSession=Y&no=1&lgclMenuClssCd=ss02&smclMenuClssCd=ss0201&naviParam=MK,01,01,01",
     "urlLabel": "검색하기",
-    "tags": ["장학금", "학자금대출", "한국장학재단"],
+    "tags": [
+      "장학금",
+      "학자금대출",
+      "한국장학재단"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -116,7 +156,11 @@
     "category": "reference",
     "url": "https://everytime.kr/385886/v/372342236",
     "urlLabel": "커뮤니티 글 보기",
-    "tags": ["에브리타임", "정보모음", "참고"],
+    "tags": [
+      "에브리타임",
+      "정보모음",
+      "참고"
+    ],
     "sourceType": "community",
     "isExternal": true,
     "note": "로그인이 필요할 수 있습니다"
@@ -128,7 +172,11 @@
     "category": "certificate",
     "url": "https://m.exam.toeic.co.kr/receipt/examSchList.php",
     "urlLabel": "일정 보기",
-    "tags": ["토익", "영어", "자격증"],
+    "tags": [
+      "토익",
+      "영어",
+      "자격증"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -139,7 +187,11 @@
     "category": "certificate",
     "url": "https://www.toeicswt.co.kr/receipt/examSchList.php",
     "urlLabel": "일정 보기",
-    "tags": ["토스", "영어", "스피킹"],
+    "tags": [
+      "토스",
+      "영어",
+      "스피킹"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -150,7 +202,11 @@
     "category": "certificate",
     "url": "https://www.opic.or.kr/opics/servlet/controller.opic.site.receipt.AnnualScheduleServlet?p_process=select-new-list",
     "urlLabel": "일정 보기",
-    "tags": ["오픽", "영어", "스피킹"],
+    "tags": [
+      "오픽",
+      "영어",
+      "스피킹"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -161,7 +217,11 @@
     "category": "certificate",
     "url": "https://www.hsk-korea.co.kr/about/schedule_hsk.aspx",
     "urlLabel": "일정 보기",
-    "tags": ["HSK", "중국어", "자격증"],
+    "tags": [
+      "HSK",
+      "중국어",
+      "자격증"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -172,7 +232,11 @@
     "category": "certificate",
     "url": "https://www.historyexam.go.kr/pageLink.do?link=examSchedule",
     "urlLabel": "일정 보기",
-    "tags": ["한능검", "한국사", "자격증"],
+    "tags": [
+      "한능검",
+      "한국사",
+      "자격증"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -183,7 +247,11 @@
     "category": "certificate",
     "url": "https://license.korcham.net/co/examguide03.do?cd=0103&mm=21",
     "urlLabel": "일정 보기",
-    "tags": ["컴활", "상시", "자격증"],
+    "tags": [
+      "컴활",
+      "상시",
+      "자격증"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -194,7 +262,11 @@
     "category": "certificate",
     "url": "https://www.dataq.or.kr/www/accept/schedule.do",
     "urlLabel": "일정 보기",
-    "tags": ["SQLD", "데이터", "자격증"],
+    "tags": [
+      "SQLD",
+      "데이터",
+      "자격증"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -205,7 +277,11 @@
     "category": "certificate",
     "url": "https://www.q-net.or.kr/crf021.do?id=crf02101&gSite=Q&gId=&scheType=01",
     "urlLabel": "일정 보기",
-    "tags": ["Q-Net", "국가기술자격", "시험"],
+    "tags": [
+      "Q-Net",
+      "국가기술자격",
+      "시험"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -216,7 +292,11 @@
     "category": "reference",
     "url": "https://everytime.kr/384376/v/386827799",
     "urlLabel": "커뮤니티 글 보기",
-    "tags": ["자격증", "에브리타임", "참고"],
+    "tags": [
+      "자격증",
+      "에브리타임",
+      "참고"
+    ],
     "sourceType": "community",
     "isExternal": true,
     "note": "로그인이 필요할 수 있습니다"
@@ -228,7 +308,11 @@
     "category": "certificate",
     "url": "https://community.linkareer.com/bestofbest/566722",
     "urlLabel": "참고 글 보기",
-    "tags": ["스펙", "취득기간", "링커리어"],
+    "tags": [
+      "스펙",
+      "취득기간",
+      "링커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -239,7 +323,11 @@
     "category": "activity",
     "url": "https://www.allforyoung.com/posts/contest",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "대외활동", "요즘것들"],
+    "tags": [
+      "공모전",
+      "대외활동",
+      "요즘것들"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -250,7 +338,11 @@
     "category": "activity",
     "url": "https://www.campuspick.com/contest",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "캠퍼스픽", "대학생"],
+    "tags": [
+      "공모전",
+      "캠퍼스픽",
+      "대학생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -261,7 +353,11 @@
     "category": "activity",
     "url": "https://www.wevity.com/?c=find&s=1&gub=1",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "위비티", "대외활동"],
+    "tags": [
+      "공모전",
+      "위비티",
+      "대외활동"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -272,7 +368,11 @@
     "category": "activity",
     "url": "https://www.detizen.com/contest/contest",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "대티즌", "대학생"],
+    "tags": [
+      "공모전",
+      "대티즌",
+      "대학생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -283,7 +383,11 @@
     "category": "activity",
     "url": "https://www.all-con.co.kr/",
     "urlLabel": "사이트 보기",
-    "tags": ["공모전", "올콘", "전문사이트"],
+    "tags": [
+      "공모전",
+      "올콘",
+      "전문사이트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -294,7 +398,11 @@
     "category": "activity",
     "url": "https://www.thinkcontest.com/thinkgood/index.do",
     "urlLabel": "사이트 보기",
-    "tags": ["공모전", "씽굿", "전문사이트"],
+    "tags": [
+      "공모전",
+      "씽굿",
+      "전문사이트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -305,7 +413,11 @@
     "category": "activity",
     "url": "https://www.contestkorea.com/sub/list.php?int_gbn=1",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "콘테스트코리아", "대학생"],
+    "tags": [
+      "공모전",
+      "콘테스트코리아",
+      "대학생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -316,7 +428,11 @@
     "category": "activity",
     "url": "https://www.ssgsag.kr/contest",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "슥삭", "대외활동"],
+    "tags": [
+      "공모전",
+      "슥삭",
+      "대외활동"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -327,7 +443,11 @@
     "category": "activity",
     "url": "https://thinkyou.co.kr/contest/",
     "urlLabel": "공모전 보기",
-    "tags": ["공모전", "씽유", "대외활동"],
+    "tags": [
+      "공모전",
+      "씽유",
+      "대외활동"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -338,7 +458,11 @@
     "category": "activity",
     "url": "https://www.superookie.com/activities",
     "urlLabel": "활동 보기",
-    "tags": ["대외활동", "슈퍼루키", "커리어"],
+    "tags": [
+      "대외활동",
+      "슈퍼루키",
+      "커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -349,7 +473,11 @@
     "category": "activity",
     "url": "https://sotong.go.kr/front/epilogue/epilogueNewListPage.do",
     "urlLabel": "공모전 보기",
-    "tags": ["정부24", "공모전", "공공"],
+    "tags": [
+      "정부24",
+      "공모전",
+      "공공"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -360,7 +488,11 @@
     "category": "activity",
     "url": "https://linkareer.com/list/activity?filterType=CATEGORY&orderBy_direction=DESC&orderBy_field=CREATED_AT&page=1",
     "urlLabel": "활동 보기",
-    "tags": ["대외활동", "링커리어", "서포터즈"],
+    "tags": [
+      "대외활동",
+      "링커리어",
+      "서포터즈"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -371,7 +503,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/4140741?page=1&hl=ko-KR",
     "urlLabel": "가이드 보기",
-    "tags": ["대외활동", "가이드", "링커리어"],
+    "tags": [
+      "대외활동",
+      "가이드",
+      "링커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -382,7 +518,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/3817673?page=1",
     "urlLabel": "Q&A 보기",
-    "tags": ["대외활동", "취업", "Q&A"],
+    "tags": [
+      "대외활동",
+      "취업",
+      "Q&A"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -393,7 +533,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/3548792?page=1",
     "urlLabel": "전략 보기",
-    "tags": ["대외활동", "차별화", "전략"],
+    "tags": [
+      "대외활동",
+      "차별화",
+      "전략"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -404,7 +548,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/4418589",
     "urlLabel": "가이드 보기",
-    "tags": ["포트폴리오", "자소서", "공모전"],
+    "tags": [
+      "포트폴리오",
+      "자소서",
+      "공모전"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -415,7 +563,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/4889538?page=1&hl=ko-KR",
     "urlLabel": "작성법 보기",
-    "tags": ["포트폴리오", "작성법", "링커리어"],
+    "tags": [
+      "포트폴리오",
+      "작성법",
+      "링커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -426,7 +578,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/employment_data/3911600",
     "urlLabel": "가이드 보기",
-    "tags": ["포트폴리오", "취업", "가이드"],
+    "tags": [
+      "포트폴리오",
+      "취업",
+      "가이드"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -437,7 +593,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/employment_data/4109099",
     "urlLabel": "제작 가이드 보기",
-    "tags": ["포트폴리오", "제작", "취업"],
+    "tags": [
+      "포트폴리오",
+      "제작",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -448,7 +608,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/mentor_data/3214794?page=1",
     "urlLabel": "예시 보기",
-    "tags": ["포트폴리오", "예시", "취업"],
+    "tags": [
+      "포트폴리오",
+      "예시",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -459,7 +623,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/employment_data/3822928",
     "urlLabel": "정리법 보기",
-    "tags": ["노션", "포트폴리오", "툴"],
+    "tags": [
+      "노션",
+      "포트폴리오",
+      "툴"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -470,7 +638,11 @@
     "category": "career",
     "url": "https://www.jobkorea.co.kr/starter/calendar",
     "urlLabel": "달력 보기",
-    "tags": ["공채", "취업", "잡코리아"],
+    "tags": [
+      "공채",
+      "취업",
+      "잡코리아"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -481,7 +653,11 @@
     "category": "career",
     "url": "https://linkareer.com/list/intern?filterBy_activityTypeID=5&filterBy_jobTypes=INTERN&filterBy_status=OPEN&orderBy_direction=DESC&orderBy_field=RECENT&page=1",
     "urlLabel": "인턴 보기",
-    "tags": ["인턴", "취업", "링커리어"],
+    "tags": [
+      "인턴",
+      "취업",
+      "링커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -492,7 +668,11 @@
     "category": "career",
     "url": "https://www.worldjob.or.kr/",
     "urlLabel": "사이트 보기",
-    "tags": ["해외취업", "월드잡", "취업"],
+    "tags": [
+      "해외취업",
+      "월드잡",
+      "취업"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -503,7 +683,11 @@
     "category": "career",
     "url": "https://jobfair.incruit.com/jobfairmng/jobfairlist.asp?ty=n",
     "urlLabel": "일정 보기",
-    "tags": ["채용박람회", "취업", "인크루트"],
+    "tags": [
+      "채용박람회",
+      "취업",
+      "인크루트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -514,7 +698,11 @@
     "category": "career",
     "url": "https://boottent.com/",
     "urlLabel": "부트캠프 보기",
-    "tags": ["부트캠프", "국비지원", "취업"],
+    "tags": [
+      "부트캠프",
+      "국비지원",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -525,7 +713,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/employment_data/3642496?page=1",
     "urlLabel": "가이드 보기",
-    "tags": ["부트캠프", "가이드", "취업"],
+    "tags": [
+      "부트캠프",
+      "가이드",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -536,7 +728,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/community/4925344",
     "urlLabel": "참고 글 보기",
-    "tags": ["부트캠프", "비전공자", "취업"],
+    "tags": [
+      "부트캠프",
+      "비전공자",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -547,7 +743,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/community/1776485",
     "urlLabel": "참고 글 보기",
-    "tags": ["부트캠프", "단기", "문과"],
+    "tags": [
+      "부트캠프",
+      "단기",
+      "문과"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -558,7 +758,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/employment_data/3545037?page=1",
     "urlLabel": "목록 보기",
-    "tags": ["부트캠프", "대기업", "목록"],
+    "tags": [
+      "부트캠프",
+      "대기업",
+      "목록"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -569,7 +773,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/mentor_data/4094677?page=1",
     "urlLabel": "로드맵 보기",
-    "tags": ["취업", "로드맵", "학년별"],
+    "tags": [
+      "취업",
+      "로드맵",
+      "학년별"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -580,7 +788,11 @@
     "category": "reference",
     "url": "https://everytime.kr/384376/v/384456770",
     "urlLabel": "커뮤니티 글 보기",
-    "tags": ["졸업준비", "에브리타임", "참고"],
+    "tags": [
+      "졸업준비",
+      "에브리타임",
+      "참고"
+    ],
     "sourceType": "community",
     "isExternal": true,
     "note": "로그인이 필요할 수 있습니다"
@@ -592,7 +804,11 @@
     "category": "culture",
     "url": "https://korean.visitkorea.or.kr/kfes/list/wntyFstvlList.do",
     "urlLabel": "축제 보기",
-    "tags": ["축제", "여행", "문화생활"],
+    "tags": [
+      "축제",
+      "여행",
+      "문화생활"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -603,7 +819,11 @@
     "category": "culture",
     "url": "https://www.mcst.go.kr/kor/s_culture/culture/cultureList.jsp",
     "urlLabel": "공연 보기",
-    "tags": ["공연", "전시", "문화체육관광부"],
+    "tags": [
+      "공연",
+      "전시",
+      "문화체육관광부"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -614,7 +834,11 @@
     "category": "culture",
     "url": "https://culture.seoul.go.kr/culture/culture/cultureEvent/list.do?searchCate=&menuNo=200110",
     "urlLabel": "행사 보기",
-    "tags": ["서울", "공연", "전시"],
+    "tags": [
+      "서울",
+      "공연",
+      "전시"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -625,7 +849,11 @@
     "category": "culture",
     "url": "https://salon5120.com/",
     "urlLabel": "문화살롱 보기",
-    "tags": ["노원", "문화예술", "행사"],
+    "tags": [
+      "노원",
+      "문화예술",
+      "행사"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -636,7 +864,11 @@
     "category": "culture",
     "url": "https://korean.visitkorea.or.kr/list/travelinfo.do?service=ms",
     "urlLabel": "여행지 보기",
-    "tags": ["여행", "관광", "대한민국구석구석"],
+    "tags": [
+      "여행",
+      "관광",
+      "대한민국구석구석"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -647,7 +879,11 @@
     "category": "culture",
     "url": "https://korean.visitseoul.net/attractions",
     "urlLabel": "관광정보 보기",
-    "tags": ["서울", "관광", "명소"],
+    "tags": [
+      "서울",
+      "관광",
+      "명소"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -658,7 +894,11 @@
     "category": "culture",
     "url": "https://www.nyj.go.kr/culture/contents.do?key=239",
     "urlLabel": "관광정보 보기",
-    "tags": ["남양주", "관광", "여행"],
+    "tags": [
+      "남양주",
+      "관광",
+      "여행"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -669,7 +909,11 @@
     "category": "culture",
     "url": "https://nl.go.kr/NL/contents/N20500000000.do",
     "urlLabel": "추천도서 보기",
-    "tags": ["도서관", "추천도서", "독서"],
+    "tags": [
+      "도서관",
+      "추천도서",
+      "독서"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -680,7 +924,11 @@
     "category": "culture",
     "url": "https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?menuId=current",
     "urlLabel": "전시 보기",
-    "tags": ["박물관", "전시", "문화"],
+    "tags": [
+      "박물관",
+      "전시",
+      "문화"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -691,7 +939,11 @@
     "category": "culture",
     "url": "https://www.mmca.go.kr/exhibitions/progressList.do",
     "urlLabel": "전시 보기",
-    "tags": ["미술관", "전시", "MMCA"],
+    "tags": [
+      "미술관",
+      "전시",
+      "MMCA"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -702,7 +954,11 @@
     "category": "culture",
     "url": "https://sema.seoul.go.kr/kr/index",
     "urlLabel": "미술관 보기",
-    "tags": ["미술관", "서울", "전시"],
+    "tags": [
+      "미술관",
+      "서울",
+      "전시"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -713,7 +969,11 @@
     "category": "culture",
     "url": "https://ddp.or.kr/?menuno=240",
     "urlLabel": "DDP 보기",
-    "tags": ["DDP", "전시", "디자인"],
+    "tags": [
+      "DDP",
+      "전시",
+      "디자인"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -724,7 +984,11 @@
     "category": "culture",
     "url": "https://www.nowonshare.kr/main/index.php",
     "urlLabel": "센터 보기",
-    "tags": ["노원", "물품대여", "청년"],
+    "tags": [
+      "노원",
+      "물품대여",
+      "청년"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -735,7 +999,11 @@
     "category": "local",
     "url": "https://lib.nyj.go.kr/bbit/index.do",
     "urlLabel": "도서관 보기",
-    "tags": ["별내", "도서관", "열람실"],
+    "tags": [
+      "별내",
+      "도서관",
+      "열람실"
+    ],
     "sourceType": "public",
     "isExternal": true,
     "note": "토요일 중앙도서관 휴관으로 이용이 어려운 기숙사생에게 유용합니다"
@@ -747,7 +1015,11 @@
     "category": "local",
     "url": "https://www.pharm114.or.kr/",
     "urlLabel": "약국 찾기",
-    "tags": ["약국", "휴일", "병원"],
+    "tags": [
+      "약국",
+      "휴일",
+      "병원"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -758,7 +1030,11 @@
     "category": "local",
     "url": "https://www.hira.or.kr/ra/hosp/getHealthMap.do",
     "urlLabel": "건강지도 보기",
-    "tags": ["병원", "약국", "별내동"],
+    "tags": [
+      "병원",
+      "약국",
+      "별내동"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -769,7 +1045,11 @@
     "category": "local",
     "url": "https://www.diningcode.com/listmap?query=%EB%B3%84%EB%82%B4%EB%8F%99",
     "urlLabel": "맛집 보기",
-    "tags": ["별내", "맛집", "지도"],
+    "tags": [
+      "별내",
+      "맛집",
+      "지도"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -780,7 +1060,11 @@
     "category": "reference",
     "url": "https://everytime.kr/384376/v/383376752",
     "urlLabel": "커뮤니티 글 보기",
-    "tags": ["별내동", "에브리타임", "참고"],
+    "tags": [
+      "별내동",
+      "에브리타임",
+      "참고"
+    ],
     "sourceType": "community",
     "isExternal": true,
     "note": "로그인이 필요할 수 있습니다"
@@ -792,7 +1076,11 @@
     "category": "school",
     "url": "https://www.syu.ac.kr/",
     "urlLabel": "홈페이지",
-    "tags": ["삼육대", "공식", "홈페이지"],
+    "tags": [
+      "삼육대",
+      "공식",
+      "홈페이지"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -803,7 +1091,11 @@
     "category": "school",
     "url": "https://suwings.syu.ac.kr/sso/login.jsp",
     "urlLabel": "수윙스",
-    "tags": ["수윙스", "학사", "포털"],
+    "tags": [
+      "수윙스",
+      "학사",
+      "포털"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -814,7 +1106,11 @@
     "category": "school",
     "url": "https://lms.suwings.syu.ac.kr/ilos/main/main_form.acl",
     "urlLabel": "이클래스",
-    "tags": ["이클래스", "LMS", "강의"],
+    "tags": [
+      "이클래스",
+      "LMS",
+      "강의"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -825,7 +1121,11 @@
     "category": "school",
     "url": "https://su-plus.syu.ac.kr/",
     "urlLabel": "수플러스",
-    "tags": ["수플러스", "학교", "포털"],
+    "tags": [
+      "수플러스",
+      "학교",
+      "포털"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -836,7 +1136,11 @@
     "category": "school",
     "url": "https://sujpf.syu.ac.kr/",
     "urlLabel": "센터 보기",
-    "tags": ["취업", "진로", "일자리플러스"],
+    "tags": [
+      "취업",
+      "진로",
+      "일자리플러스"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -847,9 +1151,14 @@
     "category": "school",
     "url": "https://sutory.syu.ac.kr/login?=url=%2F",
     "urlLabel": "수토리",
-    "tags": ["수토리", "비교과", "학생경력"],
+    "tags": [
+      "수토리",
+      "비교과",
+      "학생경력"
+    ],
     "sourceType": "official",
-    "isExternal": true
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
   },
   {
     "id": "school-library",
@@ -858,7 +1167,11 @@
     "category": "school",
     "url": "https://lib.syu.ac.kr/",
     "urlLabel": "도서관",
-    "tags": ["도서관", "열람실", "자료"],
+    "tags": [
+      "도서관",
+      "열람실",
+      "자료"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -869,7 +1182,11 @@
     "category": "school",
     "url": "https://ebook.syu.ac.kr/",
     "urlLabel": "전자책",
-    "tags": ["전자책", "도서관", "독서"],
+    "tags": [
+      "전자책",
+      "도서관",
+      "독서"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -880,7 +1197,11 @@
     "category": "school",
     "url": "https://syu.copykiller.com/",
     "urlLabel": "카피킬러",
-    "tags": ["카피킬러", "표절검사", "과제"],
+    "tags": [
+      "카피킬러",
+      "표절검사",
+      "과제"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -891,7 +1212,11 @@
     "category": "school",
     "url": "https://m365.cloud.microsoft/?auth=2",
     "urlLabel": "오피스365",
-    "tags": ["오피스365", "Microsoft", "학교계정"],
+    "tags": [
+      "오피스365",
+      "Microsoft",
+      "학교계정"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -902,7 +1227,11 @@
     "category": "school",
     "url": "https://unv.doculink.co.kr/#reload",
     "urlLabel": "증명서 발급",
-    "tags": ["증명서", "발급", "학사"],
+    "tags": [
+      "증명서",
+      "발급",
+      "학사"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -913,7 +1242,11 @@
     "category": "school",
     "url": "https://www.syu.ac.kr/sportscenter/",
     "urlLabel": "센터 보기",
-    "tags": ["체육문화센터", "운동", "시설"],
+    "tags": [
+      "체육문화센터",
+      "운동",
+      "시설"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -924,7 +1257,11 @@
     "category": "school",
     "url": "https://www.syu.ac.kr/dorm/",
     "urlLabel": "생활교육원",
-    "tags": ["기숙사", "생활교육원", "생활"],
+    "tags": [
+      "기숙사",
+      "생활교육원",
+      "생활"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -935,7 +1272,11 @@
     "category": "school",
     "url": "https://law.syu.ac.kr/index.html",
     "urlLabel": "규정 보기",
-    "tags": ["규정", "학칙", "학교"],
+    "tags": [
+      "규정",
+      "학칙",
+      "학교"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -946,7 +1287,11 @@
     "category": "school",
     "url": "https://www.academyinfo.go.kr/popup/pubinfo1690/list.do?schlId=0000116",
     "urlLabel": "공시정보",
-    "tags": ["대학알리미", "공시", "학교정보"],
+    "tags": [
+      "대학알리미",
+      "공시",
+      "학교정보"
+    ],
     "sourceType": "public",
     "isExternal": true
   },
@@ -957,7 +1302,11 @@
     "category": "school",
     "url": "https://www.instagram.com/student.syu/",
     "urlLabel": "인스타그램",
-    "tags": ["총학생회", "인스타그램", "소식"],
+    "tags": [
+      "총학생회",
+      "인스타그램",
+      "소식"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -968,7 +1317,11 @@
     "category": "school",
     "url": "https://www.univstore.com/",
     "urlLabel": "스토어 보기",
-    "tags": ["학생복지스토어", "할인", "혜택"],
+    "tags": [
+      "학생복지스토어",
+      "할인",
+      "혜택"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -979,7 +1332,11 @@
     "category": "school",
     "url": "https://aitutor.syu.ac.kr/",
     "urlLabel": "SUPilot 보기",
-    "tags": ["SUPilot", "AI", "학습지원"],
+    "tags": [
+      "SUPilot",
+      "AI",
+      "학습지원"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -990,7 +1347,11 @@
     "category": "reference",
     "url": "https://everytime.kr/384376/v/376056745",
     "urlLabel": "커뮤니티 글 보기",
-    "tags": ["시험", "과제", "에브리타임"],
+    "tags": [
+      "시험",
+      "과제",
+      "에브리타임"
+    ],
     "sourceType": "community",
     "isExternal": true,
     "note": "로그인이 필요할 수 있습니다"
@@ -1002,7 +1363,11 @@
     "category": "campus-life",
     "url": "https://elitekorea2133.cafe24.com/syu6/",
     "urlLabel": "가이드북 보기",
-    "tags": ["다전공", "전과", "가이드북"],
+    "tags": [
+      "다전공",
+      "전과",
+      "가이드북"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1013,7 +1378,11 @@
     "category": "career",
     "url": "https://www.syu.ac.kr/bp12",
     "urlLabel": "이용 안내 보기",
-    "tags": ["잡플래닛", "제휴", "취업"],
+    "tags": [
+      "잡플래닛",
+      "제휴",
+      "취업"
+    ],
     "sourceType": "official",
     "isExternal": true
   },
@@ -1024,7 +1393,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2512667?page=6",
     "urlLabel": "참고 글 보기",
-    "tags": ["학점관리", "공부방법", "암기"],
+    "tags": [
+      "학점관리",
+      "공부방법",
+      "암기"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1035,7 +1408,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2493414?page=7",
     "urlLabel": "꿀팁 보기",
-    "tags": ["학점관리", "성적", "대학생활"],
+    "tags": [
+      "학점관리",
+      "성적",
+      "대학생활"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1046,7 +1423,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2529543?page=5",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "강의녹음", "앱"],
+    "tags": [
+      "학점관리",
+      "강의녹음",
+      "앱"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1057,7 +1438,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2513899?page=6",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "필기", "앱"],
+    "tags": [
+      "학점관리",
+      "필기",
+      "앱"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1068,7 +1453,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2486464?page=7",
     "urlLabel": "목록 보기",
-    "tags": ["학점관리", "필수앱", "사이트"],
+    "tags": [
+      "학점관리",
+      "필수앱",
+      "사이트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1079,7 +1468,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2495434?page=7",
     "urlLabel": "꿀팁 보기",
-    "tags": ["대학생활", "신입생", "새내기"],
+    "tags": [
+      "대학생활",
+      "신입생",
+      "새내기"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1090,7 +1483,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2510561?page=6",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "아이폰", "앱"],
+    "tags": [
+      "학점관리",
+      "아이폰",
+      "앱"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1101,7 +1498,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2534117?page=5",
     "urlLabel": "사이트 보기",
-    "tags": ["학점관리", "과제", "사이트"],
+    "tags": [
+      "학점관리",
+      "과제",
+      "사이트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1112,7 +1513,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2507600?page=6",
     "urlLabel": "작성 팁 보기",
-    "tags": ["학점관리", "레포트", "과제"],
+    "tags": [
+      "학점관리",
+      "레포트",
+      "과제"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1123,7 +1528,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2511833?page=6",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "과제", "자료조사"],
+    "tags": [
+      "학점관리",
+      "과제",
+      "자료조사"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1134,7 +1543,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2515062?page=5",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "디자인", "PPT"],
+    "tags": [
+      "학점관리",
+      "디자인",
+      "PPT"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1145,7 +1558,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/honeytips/2501146?page=7",
     "urlLabel": "사이트 보기",
-    "tags": ["포트폴리오", "제작", "참고사이트"],
+    "tags": [
+      "포트폴리오",
+      "제작",
+      "참고사이트"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1156,7 +1573,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2510213?page=6",
     "urlLabel": "PPT 팁 보기",
-    "tags": ["학점관리", "PPT", "발표"],
+    "tags": [
+      "학점관리",
+      "PPT",
+      "발표"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1167,7 +1588,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2515080?page=5",
     "urlLabel": "추천 글 보기",
-    "tags": ["학점관리", "PPT", "인스타그램"],
+    "tags": [
+      "학점관리",
+      "PPT",
+      "인스타그램"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1178,7 +1603,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2503961?page=7",
     "urlLabel": "참고 글 보기",
-    "tags": ["대학생활", "루틴", "자기관리"],
+    "tags": [
+      "대학생활",
+      "루틴",
+      "자기관리"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1189,7 +1618,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2500953?page=7",
     "urlLabel": "꿀팁 보기",
-    "tags": ["대학생활", "수강신청", "학사"],
+    "tags": [
+      "대학생활",
+      "수강신청",
+      "학사"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1200,7 +1633,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2501726?page=7",
     "urlLabel": "조언 보기",
-    "tags": ["대학생활", "새내기", "신입생"],
+    "tags": [
+      "대학생활",
+      "새내기",
+      "신입생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1211,7 +1648,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2517634?page=5",
     "urlLabel": "꿀팁 보기",
-    "tags": ["진로", "대학생활", "취업"],
+    "tags": [
+      "진로",
+      "대학생활",
+      "취업"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1222,7 +1663,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2507577?page=6",
     "urlLabel": "기록법 보기",
-    "tags": ["대학생활", "목표", "자기관리"],
+    "tags": [
+      "대학생활",
+      "목표",
+      "자기관리"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1233,7 +1678,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2502706?page=7",
     "urlLabel": "용어 보기",
-    "tags": ["대학생활", "용어", "새내기"],
+    "tags": [
+      "대학생활",
+      "용어",
+      "새내기"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1244,7 +1693,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2515966?page=5",
     "urlLabel": "용어 보기",
-    "tags": ["대학생활", "용어", "신입생"],
+    "tags": [
+      "대학생활",
+      "용어",
+      "신입생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1255,7 +1708,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2507490?page=6",
     "urlLabel": "대처법 보기",
-    "tags": ["대학생활", "공강", "시간관리"],
+    "tags": [
+      "대학생활",
+      "공강",
+      "시간관리"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1266,7 +1723,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2518022?page=5",
     "urlLabel": "추천 글 보기",
-    "tags": ["대학생활", "노트북", "새학기"],
+    "tags": [
+      "대학생활",
+      "노트북",
+      "새학기"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1277,7 +1738,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2510668?page=6",
     "urlLabel": "추천 글 보기",
-    "tags": ["대학생활", "백팩", "필수템"],
+    "tags": [
+      "대학생활",
+      "백팩",
+      "필수템"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1288,7 +1753,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2507405?page=6",
     "urlLabel": "체크리스트 보기",
-    "tags": ["대학생활", "기숙사", "준비물"],
+    "tags": [
+      "대학생활",
+      "기숙사",
+      "준비물"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1299,7 +1768,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2500532?page=7",
     "urlLabel": "비교 글 보기",
-    "tags": ["대학생활", "기숙사", "자취"],
+    "tags": [
+      "대학생활",
+      "기숙사",
+      "자취"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1310,7 +1783,11 @@
     "category": "local",
     "url": "https://community.linkareer.com/honeytips/2502782?page=7",
     "urlLabel": "꿀팁 보기",
-    "tags": ["자취", "방구하기", "대학생활"],
+    "tags": [
+      "자취",
+      "방구하기",
+      "대학생활"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1321,7 +1798,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2530726?page=5",
     "urlLabel": "참고 글 보기",
-    "tags": ["국가근로", "장학금", "금융"],
+    "tags": [
+      "국가근로",
+      "장학금",
+      "금융"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1332,7 +1813,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2507106?page=6",
     "urlLabel": "추천 글 보기",
-    "tags": ["체크카드", "금융", "혜택"],
+    "tags": [
+      "체크카드",
+      "금융",
+      "혜택"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1343,7 +1828,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2486794?page=7",
     "urlLabel": "혜택 보기",
-    "tags": ["혜택", "할인", "대학생"],
+    "tags": [
+      "혜택",
+      "할인",
+      "대학생"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1354,7 +1843,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2533473?page=5",
     "urlLabel": "정책 보기",
-    "tags": ["청년정책", "지원", "혜택"],
+    "tags": [
+      "청년정책",
+      "지원",
+      "혜택"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1365,7 +1858,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2514143?page=6",
     "urlLabel": "할인 팁 보기",
-    "tags": ["신입생", "할인", "혜택"],
+    "tags": [
+      "신입생",
+      "할인",
+      "혜택"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1376,7 +1873,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2499306?page=7",
     "urlLabel": "추천 글 보기",
-    "tags": ["알바", "대학생활", "커리어"],
+    "tags": [
+      "알바",
+      "대학생활",
+      "커리어"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1387,7 +1888,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2548188?page=5",
     "urlLabel": "참고 글 보기",
-    "tags": ["앱테크", "용돈", "절약"],
+    "tags": [
+      "앱테크",
+      "용돈",
+      "절약"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1398,7 +1903,11 @@
     "category": "finance",
     "url": "https://community.linkareer.com/honeytips/2534833?page=5",
     "urlLabel": "꿀팁 보기",
-    "tags": ["용돈관리", "금융", "절약"],
+    "tags": [
+      "용돈관리",
+      "금융",
+      "절약"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1409,7 +1918,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2506712?page=6",
     "urlLabel": "가이드 보기",
-    "tags": ["대학생활", "루틴", "미라클모닝"],
+    "tags": [
+      "대학생활",
+      "루틴",
+      "미라클모닝"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1420,7 +1933,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2528289?page=5",
     "urlLabel": "루틴 보기",
-    "tags": ["대학생활", "루틴", "자기관리"],
+    "tags": [
+      "대학생활",
+      "루틴",
+      "자기관리"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1431,7 +1948,11 @@
     "category": "campus-life",
     "url": "https://community.linkareer.com/honeytips/2513959?page=6",
     "urlLabel": "작성법 보기",
-    "tags": ["대학생활", "메일", "교수님"],
+    "tags": [
+      "대학생활",
+      "메일",
+      "교수님"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1442,7 +1963,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2517335?page=5",
     "urlLabel": "뉴스레터 보기",
-    "tags": ["스펙", "취준", "마케팅"],
+    "tags": [
+      "스펙",
+      "취준",
+      "마케팅"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1453,7 +1978,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/honeytips/2515409?page=5",
     "urlLabel": "참고 글 보기",
-    "tags": ["스펙", "학생회", "대외활동"],
+    "tags": [
+      "스펙",
+      "학생회",
+      "대외활동"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1464,7 +1993,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/honeytips/2496901?page=7",
     "urlLabel": "준비 글 보기",
-    "tags": ["스펙", "교환학생", "대외활동"],
+    "tags": [
+      "스펙",
+      "교환학생",
+      "대외활동"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1475,7 +2008,11 @@
     "category": "certificate",
     "url": "https://community.linkareer.com/honeytips/2514868?page=6",
     "urlLabel": "꿀팁 보기",
-    "tags": ["토익", "오픽", "스펙"],
+    "tags": [
+      "토익",
+      "오픽",
+      "스펙"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1486,7 +2023,11 @@
     "category": "certificate",
     "url": "https://community.linkareer.com/honeytips/2534771?page=5",
     "urlLabel": "자격증 보기",
-    "tags": ["자격증", "경영학과", "스펙"],
+    "tags": [
+      "자격증",
+      "경영학과",
+      "스펙"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1497,7 +2038,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/honeytips/2513967?page=6",
     "urlLabel": "꿀팁 보기",
-    "tags": ["대외활동", "합격", "스펙"],
+    "tags": [
+      "대외활동",
+      "합격",
+      "스펙"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1508,7 +2053,11 @@
     "category": "activity",
     "url": "https://community.linkareer.com/honeytips/2532178?page=5",
     "urlLabel": "지원 팁 보기",
-    "tags": ["대외활동", "지원", "스펙"],
+    "tags": [
+      "대외활동",
+      "지원",
+      "스펙"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1519,7 +2068,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2498768?page=7",
     "urlLabel": "꿀팁 보기",
-    "tags": ["취준", "면접", "자소서"],
+    "tags": [
+      "취준",
+      "면접",
+      "자소서"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1530,7 +2083,11 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2515020?page=6",
     "urlLabel": "준비 글 보기",
-    "tags": ["취준", "인턴", "자소서"],
+    "tags": [
+      "취준",
+      "인턴",
+      "자소서"
+    ],
     "sourceType": "external",
     "isExternal": true
   },
@@ -1541,8 +2098,675 @@
     "category": "career",
     "url": "https://community.linkareer.com/honeytips/2507418?page=6",
     "urlLabel": "표현 보기",
-    "tags": ["취준", "자소서", "첨삭"],
+    "tags": [
+      "취준",
+      "자소서",
+      "첨삭"
+    ],
     "sourceType": "external",
+    "isExternal": true
+  },
+  {
+    "id": "school-suho-major-list",
+    "title": "SUHO 전공/학과 목록",
+    "description": "학과별 전공 정보를 한 번에 확인할 수 있는 SUHO 전공 목록입니다.",
+    "category": "school",
+    "url": "https://suho.syu.ac.kr/major/major-list/",
+    "urlLabel": "전공 보기",
+    "tags": [
+      "SUHO",
+      "전공",
+      "학과",
+      "진로설계"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "career-suho-module-list",
+    "title": "SUHO 모듈(진로 트랙)",
+    "description": "전공과 진로 트랙을 설계할 때 참고할 수 있는 SUHO 모듈 목록입니다.",
+    "category": "career",
+    "url": "https://suho.syu.ac.kr/module/module-list/",
+    "urlLabel": "모듈 보기",
+    "tags": [
+      "SUHO",
+      "진로",
+      "전공설계",
+      "모듈"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "campus-life-sutory-major-study-recipe-search",
+    "title": "SUtory 전공학습레시피 모아보기",
+    "description": "학과별 전공 공부법과 학습 노하우를 SUtory에서 검색해볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/?s=전공학습레시피",
+    "urlLabel": "검색하기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "공부법",
+      "학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-midterm-review-search",
+    "title": "SUtory 중간고사 후기 모아보기",
+    "description": "과목별 중간고사 후기와 시험 준비 경험을 SUtory에서 검색해볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/?s=중간고사+후기",
+    "urlLabel": "검색하기",
+    "tags": [
+      "수토리",
+      "중간고사",
+      "시험후기",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "career-syu-tax-accountant-success-story",
+    "title": "세무사 합격자 수기",
+    "description": "삼육대 선배들의 세무사 시험 합격 전략과 수험 경험을 볼 수 있는 학교 공식 글입니다.",
+    "category": "career",
+    "url": "https://www.syu.ac.kr/blog/세무사-합격자-3人의-수험-전략-자신을-믿고-끝까지/",
+    "urlLabel": "수기 보기",
+    "tags": [
+      "세무사",
+      "합격수기",
+      "진로",
+      "선배"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-student-life-manual-notion",
+    "title": "삼육대 학교생활 매뉴얼",
+    "description": "새내기와 재학생이 학교생활 정보를 빠르게 훑어볼 수 있는 학생 제작 매뉴얼입니다.",
+    "category": "school",
+    "url": "https://aquamarine-mint-7e9.notion.site/17e12e2bede780ff9497ca01c2fbd8c9",
+    "urlLabel": "매뉴얼 보기",
+    "tags": [
+      "학교생활",
+      "새내기",
+      "매뉴얼",
+      "가이드"
+    ],
+    "sourceType": "external",
+    "isExternal": true
+  },
+  {
+    "id": "campus-life-sutory-composition-minor-advice",
+    "title": "작곡과 부전공 조언",
+    "description": "작곡과 부전공 경험과 조언을 담은 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11600",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "부전공",
+      "작곡과"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-exchange-student-recipe",
+    "title": "교환학생 준비과정 학습레시피",
+    "description": "교환학생 준비 과정과 경험을 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/14080",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "교환학생",
+      "전공학습레시피"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-animal-science-freshman-study",
+    "title": "동물자원과학과 새내기 공부 꿀팁",
+    "description": "동물자원과학과 새내기가 참고할 수 있는 공부 팁입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/14100",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "동물자원과학과",
+      "새내기"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-early-childhood-teacher-recipe",
+    "title": "유아교육과 예비교사 전공학습레시피",
+    "description": "유아교육과 학생의 전공 학습 경험과 교사 준비 과정을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/18971",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "유아교육과",
+      "교사"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-business-major-study-2024",
+    "title": "경영학과 전공학습레시피",
+    "description": "경영학과 전공 공부 방법을 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/18980",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "경영학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-nursing-study-recipe",
+    "title": "간호학과 전공학습레시피",
+    "description": "간호학과 전공 공부법을 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/19001",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "간호학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-early-childhood-plan-tip",
+    "title": "유아교육과 활동계획안 작성 TIP",
+    "description": "유아교육과 활동계획안 작성에 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/19072",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "유아교육과",
+      "활동계획안",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-business-study-method",
+    "title": "경영학과 전공공부 방법",
+    "description": "경영학과 전공 공부 방법을 다룬 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/19078",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "경영학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-english-translation-recipe",
+    "title": "영어통번역전공 학습레시피",
+    "description": "영어통번역전공 학습 방법을 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/19082",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "영어통번역",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-business-major-recipe",
+    "title": "경영학과를 위한 전공학습레시피",
+    "description": "경영학과 학생이 참고할 수 있는 전공학습레시피 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/19093",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "경영학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-chemical-engineering-lab-tip",
+    "title": "화공 실험 과목 준비 팁",
+    "description": "화공 실험 과목 준비와 수행에 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20181",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "화공",
+      "실험",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-counseling-psychology-theory",
+    "title": "상담심리학과 심리이론 레시피",
+    "description": "상담심리학과 심리이론 학습에 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20200",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "상담심리학과",
+      "심리이론",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-food-nutrition-business-double-major",
+    "title": "식품영양/경영 복전생 학습레시피",
+    "description": "식품영양학과와 경영학과 복수전공 경험을 참고할 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20208",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "식품영양학과",
+      "복수전공"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-food-nutrition-4-5-study",
+    "title": "식품영양학과 학점 4.5 공부법",
+    "description": "식품영양학과 공부법과 학점 관리 경험을 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20215",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "식품영양학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-environmental-design-study",
+    "title": "환경디자인원예학과 공부법",
+    "description": "환경디자인원예학과 학생의 전공 공부법을 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20220",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "전공학습레시피",
+      "환경디자인원예학과",
+      "공부법"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-early-childhood-freshman-plan",
+    "title": "유아교육과 활동계획안 작성 팁",
+    "description": "유아교육과 새내기가 참고할 수 있는 활동계획안 작성 팁입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/20223",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "유아교육과",
+      "활동계획안",
+      "새내기"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-computer-algorithm-midterm",
+    "title": "컴공 알고리즘 중간고사 후기",
+    "description": "컴퓨터공학부 알고리즘 과목 중간고사 후기를 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9325",
+    "urlLabel": "후기 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "알고리즘",
+      "중간고사"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-computer-graphics-midterm",
+    "title": "컴공 컴퓨터그래픽스 중간고사 후기",
+    "description": "컴퓨터공학부 컴퓨터그래픽스 과목 중간고사 후기를 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9338",
+    "urlLabel": "후기 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "컴퓨터그래픽스",
+      "중간고사"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-operating-system-midterm",
+    "title": "컴공 운영체제 중간고사 후기",
+    "description": "컴퓨터공학부 운영체제 과목 중간고사 후기를 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9339",
+    "urlLabel": "후기 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "운영체제",
+      "중간고사"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-computer-network-midterm",
+    "title": "컴공 컴퓨터네트워크 중간고사 후기",
+    "description": "컴퓨터공학부 컴퓨터네트워크 과목 중간고사 후기를 볼 수 있는 SUtory 글입니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9350",
+    "urlLabel": "후기 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "컴퓨터네트워크",
+      "중간고사"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "school-instagram-architecture",
+    "title": "건축학과 학생회 인스타",
+    "description": "건축학과 학생회 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/archi36_official/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "건축학과",
+      "학생회"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-social-welfare",
+    "title": "사회복지학과 인스타",
+    "description": "사회복지학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/socialwelfare_syu2026",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "사회복지학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-business",
+    "title": "경영학과 인스타",
+    "description": "경영학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu__business/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "경영학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-aviation-tourism-foreign-language",
+    "title": "항공관광외국어학부 인스타",
+    "description": "항공관광외국어학부 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_airline/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "항공관광외국어학부"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-animal-science",
+    "title": "동물자원과학과 인스타",
+    "description": "동물자원과학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_animal_2026/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "동물자원과학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-bio-convergence",
+    "title": "바이오융합공학과 인스타",
+    "description": "바이오융합공학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_bio/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "바이오융합공학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-early-childhood-education",
+    "title": "유아교육과 인스타",
+    "description": "유아교육과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_ece_official/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "유아교육과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-global-korean",
+    "title": "글로벌한국학과 인스타",
+    "description": "글로벌한국학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_global.kr.std/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "글로벌한국학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-nursing",
+    "title": "간호학과 인스타",
+    "description": "간호학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_nurse_/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "간호학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-counseling-psychology",
+    "title": "상담심리학과 인스타",
+    "description": "상담심리학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_psychology26/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "상담심리학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-physical-therapy",
+    "title": "물리치료학과 인스타",
+    "description": "물리치료학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu_pt_2026/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "물리치료학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-ai-convergence",
+    "title": "인공지능융합학부 인스타",
+    "description": "인공지능융합학부 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu._.aid/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "인공지능융합학부"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-computer-science",
+    "title": "컴퓨터공학부 인스타",
+    "description": "컴퓨터공학부 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu._.computer/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "컴퓨터공학부"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-data-cloud",
+    "title": "데이터클라우드공학과 인스타",
+    "description": "데이터클라우드공학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu._.data_cloud/",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "데이터클라우드공학과"
+    ],
+    "sourceType": "official",
+    "isExternal": true
+  },
+  {
+    "id": "school-instagram-environmental-design-horticulture",
+    "title": "환경디자인원예학과 인스타",
+    "description": "환경디자인원예학과 소식과 활동을 확인할 수 있는 인스타그램입니다.",
+    "category": "school",
+    "url": "https://www.instagram.com/syu._.edh",
+    "urlLabel": "인스타 보기",
+    "tags": [
+      "학과",
+      "인스타",
+      "환경디자인원예학과"
+    ],
+    "sourceType": "official",
     "isExternal": true
   }
 ]
