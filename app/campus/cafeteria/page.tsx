@@ -9,6 +9,7 @@ import {
   WeeklyMenuCard,
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { fetchCafeteriaMenu } from "@/lib/api";
+import { isCafeteriaClosedDay } from "@/lib/cafeteria";
 import { getKoreaNow } from "@/lib/home";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -98,7 +99,18 @@ export default function CafeteriaPage() {
           />
         )}
 
-      {!isLoading && todayMenu && <TodayMenuCard menu={todayMenu} />}
+      {!isLoading && todayMenu && isCafeteriaClosedDay(todayMenu) && (
+        <StateCard
+          type="info"
+          className="mb-8"
+          title="오늘은 운영하지 않습니다"
+          message="공휴일 또는 운영하지 않는 날입니다. 주간 메뉴에서 다른 날짜를 확인해주세요."
+        />
+      )}
+
+      {!isLoading && todayMenu && !isCafeteriaClosedDay(todayMenu) && (
+        <TodayMenuCard menu={todayMenu} />
+      )}
 
       <div className="mb-8">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">주간 메뉴</h2>

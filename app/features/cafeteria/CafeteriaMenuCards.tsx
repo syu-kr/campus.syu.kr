@@ -1,6 +1,8 @@
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+import { StateCard } from "@/app/components/StateCard";
+import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import type { CafeteriaMenu, MenuItem } from "@/types";
 
 type MealColor = "blue" | "green" | "red";
@@ -40,6 +42,17 @@ function MealItemCard({ item }: { item: MenuItem }) {
 }
 
 function MealSection({ title, color, items }: MealSectionProps) {
+  if (isClosedMealItems(items)) {
+    return (
+      <div>
+        <Badge color={color} size="sm" className="mb-2">
+          {title}
+        </Badge>
+        <p className="text-sm text-neutral-600">운영 없음</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Badge color={color} size="sm" className="mb-2">
@@ -82,6 +95,17 @@ function LunchCorner({
 }
 
 function LunchSection({ lunch, highlighted }: LunchSectionProps) {
+  if (isClosedMealItems(lunch.a) && isClosedMealItems(lunch.b)) {
+    return (
+      <div>
+        <Badge color="green" size="sm" className="mb-2">
+          중식
+        </Badge>
+        <p className="text-sm text-neutral-600">운영 없음</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Badge color="green" size="sm" className="mb-2">
@@ -102,6 +126,16 @@ function MenuSections({
   menu: CafeteriaMenu;
   highlighted?: boolean;
 }) {
+  if (isCafeteriaClosedDay(menu)) {
+    return (
+      <StateCard
+        type="info"
+        title="운영하지 않는 날입니다"
+        message="공휴일 또는 운영하지 않는 날로 식단이 제공되지 않습니다."
+      />
+    );
+  }
+
   const dividerColor = highlighted ? "border-green-200" : "border-neutral-200";
 
   return (

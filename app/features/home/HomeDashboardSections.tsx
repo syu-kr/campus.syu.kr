@@ -4,6 +4,7 @@ import { Card } from "@/app/components/Card";
 import { HomeNoticeCard, ServiceNoticeCard } from "@/app/components/HomeNoticeCard";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type { AcademicSchedule, CafeteriaMenu, ServiceNotice } from "@/types";
 import type { HomeNotice, TodayInfo } from "@/lib/home";
@@ -130,7 +131,20 @@ export function TodayMenuSection({
             message="오늘은 주말입니다. 주말을 알차게 보내보는건 어떨까요?"
           />
         )}
-        {!isLoading && !todayInfo.isWeekend && todayMenu && (
+        {!isLoading &&
+          !todayInfo.isWeekend &&
+          todayMenu &&
+          isCafeteriaClosedDay(todayMenu) && (
+            <StateCard
+              type="info"
+              title="오늘은 운영하지 않습니다"
+              message="공휴일 또는 운영하지 않는 날입니다. 전체 식단에서 다른 날짜를 확인해보세요."
+            />
+          )}
+        {!isLoading &&
+          !todayInfo.isWeekend &&
+          todayMenu &&
+          !isCafeteriaClosedDay(todayMenu) && (
           <TodayMenuCard todayMenu={todayMenu} />
         )}
         {!isLoading &&
@@ -290,16 +304,22 @@ function MealPreview({
   items: Array<{ name: string }>;
   count: number;
 }) {
+  if (isClosedMealItems(items)) {
+    return (
+      <div>
+        <p className="mb-1 text-xs text-neutral-500">{title}</p>
+        <p className="text-sm text-neutral-700">운영 없음</p>
+      </div>
+    );
+  }
+
+  const previewItems = items.slice(0, count).map((item) => item.name);
+  const suffix = items.length > count ? " 외" : "";
+
   return (
     <div>
       <p className="mb-1 text-xs text-neutral-500">{title}</p>
-      <p className="text-sm text-neutral-700">
-        {items
-          .slice(0, count)
-          .map((item) => item.name)
-          .join(", ")}{" "}
-        외
-      </p>
+      <p className="text-sm text-neutral-700">{previewItems.join(", ")}{suffix}</p>
     </div>
   );
 }
@@ -311,16 +331,22 @@ function MealCorner({
   title: string;
   items: Array<{ name: string }>;
 }) {
+  if (isClosedMealItems(items)) {
+    return (
+      <div>
+        <p className="mb-1 text-xs font-medium text-green-700">{title}</p>
+        <p className="text-neutral-700">운영 없음</p>
+      </div>
+    );
+  }
+
+  const previewItems = items.slice(0, 1).map((item) => item.name);
+  const suffix = items.length > 1 ? " 외" : "";
+
   return (
     <div>
       <p className="mb-1 text-xs font-medium text-green-700">{title}</p>
-      <p className="text-neutral-700">
-        {items
-          .slice(0, 1)
-          .map((item) => item.name)
-          .join(", ")}{" "}
-        외
-      </p>
+      <p className="text-neutral-700">{previewItems.join(", ")}{suffix}</p>
     </div>
   );
 }
