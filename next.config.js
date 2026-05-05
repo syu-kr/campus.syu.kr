@@ -92,35 +92,6 @@ const nextConfig = {
           },
         ],
       },
-      // 페이지 문서와 JSON 데이터는 최신 배포/크롤링 결과가 바로 보여야 함
-      {
-        source: "/",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/academic/:path*",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/campus/:path*",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/more/:path*",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/service/:path*",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/privacy",
-        headers: noStoreHeaders,
-      },
-      {
-        source: "/terms",
-        headers: noStoreHeaders,
-      },
       {
         source: "/data/:path*.json",
         headers: noStoreHeaders,

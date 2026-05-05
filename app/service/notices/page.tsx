@@ -32,7 +32,11 @@ export default async function ServiceNoticesPage() {
         ) : (
           <div className="space-y-3">
             {notices.map((notice) => (
-              <Link key={notice.slug} href={`/service/notices/${notice.slug}`}>
+              <Link
+                key={notice.slug}
+                href={`/service/notices/${notice.slug}`}
+                prefetch={false}
+              >
                 <div className="mb-2">
                   <Card className="hover:shadow-md transition-shadow cursor-pointer border border-neutral-200">
                     <div className="flex items-start justify-between gap-4">

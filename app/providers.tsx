@@ -77,23 +77,26 @@ async function initializePushNotifications() {
     return;
   }
 
-  let swRegistration: ServiceWorkerRegistration | null = null;
-  if ("serviceWorker" in navigator) {
-    swRegistration = await navigator.serviceWorker.register("/sw.js", {
-      updateViaCache: "none",
-    });
-    setupServiceWorkerUpdateReload(swRegistration);
-    await swRegistration.update();
-    await navigator.serviceWorker.ready;
-  } else {
+  if (!("serviceWorker" in navigator) || !("Notification" in window)) {
     return;
   }
 
   const permission = Notification.permission;
 
-  if (permission === "granted") {
+  if (permission !== "granted") {
+    return;
+  }
+
+  try {
+    const swRegistration = await navigator.serviceWorker.register("/sw.js", {
+      updateViaCache: "none",
+    });
+
+    setupServiceWorkerUpdateReload(swRegistration);
     await setupForegroundNotifications();
-    generateAndSaveFCMToken(swRegistration);
+    await generateAndSaveFCMToken(swRegistration);
+  } catch {
+    return;
   }
 }
 

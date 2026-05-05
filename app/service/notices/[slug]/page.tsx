@@ -1,7 +1,10 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getServiceNoticeBySlug } from "@/lib/serviceNotices";
+import {
+  getAllServiceNotices,
+  getServiceNoticeBySlug,
+} from "@/lib/serviceNotices";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import ReactMarkdown from "react-markdown";
@@ -10,6 +13,15 @@ interface ServiceNoticeDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  const notices = await getAllServiceNotices();
+  return notices.map((notice) => ({
+    slug: notice.slug,
+  }));
 }
 
 export async function generateMetadata({
@@ -37,6 +49,7 @@ export default async function ServiceNoticeDetailPage({
           <p className="text-neutral-600 mb-4">공지를 찾을 수 없습니다.</p>
           <Link
             href="/service/notices"
+            prefetch={false}
             className="text-primary-600 hover:text-primary-700 font-medium"
           >
             ← 목록으로 돌아가기
@@ -51,6 +64,7 @@ export default async function ServiceNoticeDetailPage({
       <div className="py-6 md:py-8">
         <Link
           href="/service/notices"
+          prefetch={false}
           className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
         >
           <svg

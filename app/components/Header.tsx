@@ -68,6 +68,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
             )}
             <Link
               href="/"
+              prefetch={false}
               className="flex items-center gap-2"
               title="홈페이지로 이동"
             >
@@ -104,6 +105,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   className={clsx(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive(item.href)

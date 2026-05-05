@@ -71,6 +71,7 @@ export function FrequentMenuGrid() {
           <Link
             key={menu.id}
             href={menu.path}
+            prefetch={false}
             className="flex flex-col items-center justify-center rounded-lg py-4 transition-colors hover:bg-primary-50"
           >
             <Icon
@@ -104,6 +105,7 @@ export function PwaInstallCard() {
         </div>
         <Link
           href="/service/notices/005-pwa-installation-guide"
+          prefetch={false}
           className="inline-block rounded-lg bg-white bg-opacity-20 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-opacity-30"
         >
           설치 방법 보기
@@ -124,6 +126,7 @@ export function RelatedLinksSection() {
           <Link
             key={link.path}
             href={link.path}
+            prefetch={false}
             className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50"
           >
             <Icon
