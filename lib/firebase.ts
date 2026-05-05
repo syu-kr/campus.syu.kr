@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getMessaging, onMessage, Messaging } from "firebase/messaging";
 import { setNotificationHandler } from "@/components/NotificationModal";
 
@@ -20,6 +21,7 @@ if (
 }
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 let messaging: Messaging | null = null;
 let foregroundListenerRegistered = false;
@@ -30,7 +32,7 @@ if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   } catch {}
 }
 
-export { messaging };
+export { app, auth, messaging };
 
 export function setupForegroundNotifications() {
   if (!messaging) return;
