@@ -135,7 +135,7 @@ export default function SchedulePage() {
 
     // 요일 헤더
     days.push(
-      <div key="header" className="grid grid-cols-7 gap-2 mb-3">
+      <div key="header" className="mb-2 grid grid-cols-7 gap-1 sm:mb-3 sm:gap-2">
         {weekDays.map((day) => (
           <div
             key={day}
@@ -164,7 +164,7 @@ export default function SchedulePage() {
         <button
           key={day}
           onClick={() => setSelectedDate(dateStr)}
-          className={`p-2 rounded-lg text-center text-sm relative transition-colors ${
+          className={`relative flex min-h-[48px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors sm:min-h-[58px] sm:px-2 sm:py-2 ${
             isSelected
               ? "bg-primary-600 text-white"
               : hasEvent
@@ -172,15 +172,15 @@ export default function SchedulePage() {
                 : "hover:bg-neutral-50"
           }`}
         >
-          <div className="font-medium">{day}</div>
+          <div className="shrink-0 font-medium leading-5">{day}</div>
           {hasEvent && (
-            <div className="flex justify-center mt-1">
+            <div className="mt-0.5 flex min-w-0 shrink-0 justify-center sm:mt-1">
               {hasExam ? (
-                <span className="rounded bg-red-50 px-1 text-[10px] font-semibold text-red-700">
+                <span className="max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
                   시험
                 </span>
               ) : (
-                <span className="rounded bg-blue-50 px-1 text-[10px] font-semibold text-blue-700">
+                <span className="max-w-full whitespace-nowrap rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-blue-700 sm:text-[10px]">
                   일정
                 </span>
               )}
@@ -191,7 +191,7 @@ export default function SchedulePage() {
     }
 
     days.push(
-      <div key="grid" className="grid grid-cols-7 gap-2">
+      <div key="grid" className="grid grid-cols-7 gap-1 sm:gap-2">
         {cells}
       </div>,
     );
@@ -212,7 +212,7 @@ export default function SchedulePage() {
         <Skeleton count={4} height="100px" />
       ) : (
         <div className="space-y-6">
-          <Card className="p-6">
+          <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() =>
