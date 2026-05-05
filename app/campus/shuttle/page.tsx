@@ -11,12 +11,7 @@ import {
   fetchShuttleSpecialPeriods,
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
-import {
-  useState,
-  useMemo,
-  useEffect,
-  useRef,
-} from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   ShuttleMap,
   type ShuttleMapHandle,
@@ -92,9 +87,8 @@ export default function ShuttlePage() {
   const [now, setNow] = useState(new Date());
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [locationError, setLocationError] = useState("");
-  const [lastLocationUpdatedAt, setLastLocationUpdatedAt] = useState<Date | null>(
-    null,
-  );
+  const [lastLocationUpdatedAt, setLastLocationUpdatedAt] =
+    useState<Date | null>(null);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
   const mapComponentRef = useRef<ShuttleMapHandle | null>(null);
@@ -272,6 +266,10 @@ export default function ShuttlePage() {
   useEffect(() => {
     setUseSpecialSchedule(hasReplacementSpecialSchedule);
   }, [hasReplacementSpecialSchedule]);
+
+  useEffect(() => {
+    setExpandedBuses(new Set());
+  }, [selectedType, useSpecialSchedule]);
 
   // 특수 기간 추가 시간을 병합한 버스 데이터
   const busesWithSpecialPeriods = useMemo((): ShuttleBusSchedule[] => {
@@ -654,8 +652,8 @@ export default function ShuttlePage() {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
-              삼육대학교 셔틀 위치 데이터 기준이며 실제 운행과 다를 수
-              있습니다. 5-10초마다 자동으로 업데이트됩니다.
+              삼육대학교 셔틀 위치 데이터 기준이며 실제 운행과 다를 수 있습니다.
+              5-10초마다 자동으로 업데이트됩니다.
             </p>
             {!isWithinOperationHours && (
               <p className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-700">
@@ -743,7 +741,7 @@ export default function ShuttlePage() {
           ) : (
             <div className="text-center py-6">
               <p className="text-sm text-neutral-700 mb-3 font-medium">
-                현재 운행 중인 셔틀 위치 정보가 없습니다.
+                현재 운행 중인 셔틀 위치 정보를 찾을 수 없습니다.
               </p>
             </div>
           )}
@@ -795,7 +793,10 @@ export default function ShuttlePage() {
         )}
       </div>
 
-      <Card className="mb-4 border border-neutral-200 bg-neutral-50" hover={false}>
+      <Card
+        className="mb-4 border border-neutral-200 bg-neutral-50"
+        hover={false}
+      >
         <p className="text-sm font-semibold text-neutral-900">
           현재 시간표 기준: {selectedScheduleLabel}
         </p>
@@ -938,8 +939,8 @@ export default function ShuttlePage() {
                             const timeChipClass = isPassedTime
                               ? "bg-gray-100 border border-gray-300 text-gray-500"
                               : isWithin30Min
-                              ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
-                              : "bg-primary-50 border border-primary-200 text-primary-700";
+                                ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                : "bg-primary-50 border border-primary-200 text-primary-700";
 
                             return (
                               <div
@@ -976,4 +977,3 @@ export default function ShuttlePage() {
     </Container>
   );
 }
-
