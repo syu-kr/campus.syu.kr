@@ -136,7 +136,6 @@ export default function TimetableWizardPage() {
 
   return (
     <Container className="py-6 sm:py-8">
-      {/* 모달 - 항상 표시됨 */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <Card className="max-w-md w-full mx-4 p-8">
           <div className="text-center">
@@ -181,7 +180,6 @@ export default function TimetableWizardPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 왼쪽: 시간표 */}
           <div className="lg:col-span-2">
             <Card className="p-0 overflow-x-auto">
               <table className="w-full border-collapse">
@@ -236,7 +234,6 @@ export default function TimetableWizardPage() {
               </table>
             </Card>
 
-            {/* 범례 */}
             <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-yellow-300 rounded"></div>
@@ -249,11 +246,9 @@ export default function TimetableWizardPage() {
             </div>
           </div>
 
-          {/* 오른쪽: 과목 목록 및 선택 현황 */}
           <div className="space-y-4">
             {formError && <StateCard type="warning" message={formError} />}
 
-            {/* 선택 현황 */}
             <Card className="bg-blue-50 border border-blue-200">
               <h3 className="font-semibold text-neutral-900 mb-3 flex items-center gap-2">
                 <Icon
@@ -276,7 +271,6 @@ export default function TimetableWizardPage() {
                   </span>
                 </div>
 
-                {/* 카테고리별 학점 */}
                 <div className="pt-2 border-t border-blue-200 space-y-1">
                   <p className="text-xs font-semibold text-neutral-700">
                     카테고리별:
@@ -305,7 +299,6 @@ export default function TimetableWizardPage() {
                 )}
               </div>
 
-              {/* 필터 버튼 */}
               <div className="mt-4 pt-4 border-t border-blue-200">
                 <p className="text-xs font-semibold text-neutral-700 mb-2">
                   필터:
@@ -331,7 +324,6 @@ export default function TimetableWizardPage() {
               </div>
             </Card>
 
-            {/* 선택된 과목 목록 */}
             {selectedCourses.length > 0 && (
               <Card className="bg-green-50 border border-green-200">
                 <h3 className="font-semibold text-neutral-900 mb-3">
@@ -377,11 +369,9 @@ export default function TimetableWizardPage() {
               </Card>
             )}
 
-            {/* 강의 목록 */}
             <Card>
               <h3 className="font-semibold text-neutral-900 mb-3">강의 목록</h3>
 
-              {/* 검색창 */}
               <input
                 type="text"
                 placeholder="과목명 또는 교수명으로 검색..."

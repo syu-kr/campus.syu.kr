@@ -1,4 +1,3 @@
-// app/api/weather/route.ts
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";

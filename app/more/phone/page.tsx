@@ -62,7 +62,6 @@ export default function DirectoryPage() {
         <p className="text-neutral-600">부서 또는 전화번호로 검색하세요</p>
       </div>
 
-      {/* 검색 바 */}
       <div className="mb-6 relative">
         <input
           type="text"
@@ -82,7 +81,6 @@ export default function DirectoryPage() {
         )}
       </div>
 
-      {/* 결과 수 표시 */}
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
           {filteredDirectory.length}개 항목 찾음
@@ -97,7 +95,6 @@ export default function DirectoryPage() {
         </div>
       )}
 
-      {/* 연락처 목록 */}
       <div className="space-y-3">
         {isLoading && <Skeleton count={5} />}
         {!isLoading && filteredDirectory.length === 0 ? (
@@ -129,10 +126,8 @@ export default function DirectoryPage() {
         )}
       </div>
 
-      {/* 페이지네이션 */}
       {!isLoading && filteredDirectory.length > ITEMS_PER_PAGE && (
         <div className="mt-8 flex flex-col items-center gap-4">
-          {/* 페이지 번호 */}
           <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -143,7 +138,6 @@ export default function DirectoryPage() {
               이전
             </button>
 
-            {/* 페이지 번호 표시 */}
             {pageNumbers.map((pageNum) => (
               <button
                 key={pageNum}
@@ -170,7 +164,6 @@ export default function DirectoryPage() {
             </button>
           </div>
 
-          {/* 페이지 정보 */}
           <p className="text-sm text-neutral-600">
             {currentPage} / {totalPages} 페이지
           </p>

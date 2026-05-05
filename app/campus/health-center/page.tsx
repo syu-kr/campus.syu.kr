@@ -49,7 +49,6 @@ export default function HealthCenterPage() {
         </p>
       </div>
 
-      {/* 위치 및 연락처 */}
       <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
         <h2 className="text-lg font-bold text-blue-900 mb-4">위치 및 연락처</h2>
         <div className="space-y-4">
@@ -69,7 +68,6 @@ export default function HealthCenterPage() {
         </div>
       </Card>
 
-      {/* 운영시간 */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">운영시간</h2>
         <Card>
@@ -88,7 +86,6 @@ export default function HealthCenterPage() {
         </Card>
       </div>
 
-      {/* 제공 서비스 */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">제공 서비스</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -110,7 +107,6 @@ export default function HealthCenterPage() {
         </div>
       </div>
 
-      {/* 이용절차 */}
       <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
         <h2 className="text-lg font-bold text-green-900 mb-4">이용절차</h2>
         <div className="grid grid-cols-4 gap-4">
@@ -133,7 +129,6 @@ export default function HealthCenterPage() {
         </div>
       </Card>
 
-      {/* 주요 안내 */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
           주요 안내

@@ -1,4 +1,3 @@
-// app/api/notifications/send/route.ts
 // 푸시 알림 발송 API (크롤러에서 호출)
 
 import { NextRequest, NextResponse } from "next/server";

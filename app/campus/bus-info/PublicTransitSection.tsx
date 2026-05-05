@@ -108,7 +108,6 @@ export default function PublicTransitSection() {
 
   return (
     <Container className="py-4 sm:py-8">
-      {/* 헤더 - 개선된 디자인 */}
       <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 sm:p-6 border border-blue-100">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -135,7 +134,6 @@ export default function PublicTransitSection() {
         </div>
       </div>
 
-      {/* 오류 상태 */}
       {error && (
         <StateCard
           type="error"
@@ -153,7 +151,6 @@ export default function PublicTransitSection() {
         />
       )}
 
-      {/* 정류장 선택 토글 - 모바일 개선 */}
       {!isLoading && (
         <div className="mb-4 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-2 min-w-max pb-2">
@@ -175,7 +172,6 @@ export default function PublicTransitSection() {
         </div>
       )}
 
-      {/* 버스 도착 정보 */}
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
@@ -263,7 +259,6 @@ export default function PublicTransitSection() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    {/* 노선명 [저상여부] */}
                     <div className="flex items-baseline gap-2 mb-1 flex-wrap">
                       <p
                         className={clsx(
@@ -292,7 +287,6 @@ export default function PublicTransitSection() {
                       )}
                     </div>
 
-                    {/* 행선지 */}
                     <p
                       className={clsx(
                         "text-xs sm:text-sm mb-2 truncate",
@@ -302,7 +296,6 @@ export default function PublicTransitSection() {
                       {fixedDestination}
                     </p>
 
-                    {/* 도착 정보 */}
                     {isNoInfo ? (
                       <p className="text-xs sm:text-sm text-neutral-500 font-medium">
                         도착 예정 정보 없음
@@ -318,7 +311,6 @@ export default function PublicTransitSection() {
                           </p>
                         </div>
 
-                        {/* 두번째 버스 정보 */}
                         {arrival.predictTime2 &&
                           arrival.predictTime2 > 0 &&
                           arrival.predictTime2 < Infinity && (
@@ -334,7 +326,6 @@ export default function PublicTransitSection() {
                     )}
                   </div>
 
-                  {/* 좌석 상태 배지 */}
                   {!isNoInfo && (
                     <div className="ml-2 flex-shrink-0">
                       <span
@@ -354,7 +345,6 @@ export default function PublicTransitSection() {
         </div>
       )}
 
-      {/* 안내 메시지 - 개선된 디자인 */}
       <div className="mt-6 p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
         <div className="space-y-2">
           <p className="text-xs sm:text-sm text-green-900 font-medium flex items-center gap-2">
@@ -366,7 +356,6 @@ export default function PublicTransitSection() {
         </div>
       </div>
 
-      {/* 버스 상세 정보 모달 */}
       <BusDetailModal
         bus={selectedBus}
         direction={selectedBusDirection}

@@ -81,7 +81,6 @@ export default function MorePage() {
         ))}
       </div>
 
-      {/* 관련 더보기 기능 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
           함께 사용하기 좋은 더보기 기능

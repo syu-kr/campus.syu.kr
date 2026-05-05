@@ -173,7 +173,6 @@ export default function Home() {
   // 홈 화면
   return (
     <Container className="py-6 sm:py-8 space-y-6">
-      {/* 검색바 */}
       <SearchBar onSearch={handleSearch} className="mt-4" />
 
       <FrequentMenuGrid />

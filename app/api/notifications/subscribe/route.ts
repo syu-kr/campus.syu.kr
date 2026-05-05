@@ -1,4 +1,3 @@
-// app/api/notifications/subscribe/route.ts
 // FCM 토큰 저장 API
 
 import { NextRequest, NextResponse } from "next/server";

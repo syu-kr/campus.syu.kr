@@ -69,19 +69,16 @@ function WeatherModalComponent({
 
   return (
     <>
-      {/* 배경 오버레이 */}
       <div
         className="fixed inset-0 bg-black/40 z-40 transition-opacity"
         onClick={onClose}
       />
 
-      {/* 모달 박스 */}
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div
           className="bg-white rounded-xl shadow-lg max-w-sm w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* 헤더 - 날씨 요약 */}
           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-8">
             <div className="text-center">
               <div className="flex justify-center mb-4">
@@ -103,9 +100,7 @@ function WeatherModalComponent({
             </div>
           </div>
 
-          {/* 상세 정보 */}
           <div className="px-6 py-6 space-y-4">
-            {/* 강수 형태 */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -134,7 +129,6 @@ function WeatherModalComponent({
               </div>
             </div>
 
-            {/* 풍속 */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -161,7 +155,6 @@ function WeatherModalComponent({
               </div>
             </div>
 
-            {/* 하늘 상태 */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 flex-1">
                 <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -190,10 +183,8 @@ function WeatherModalComponent({
               </div>
             </div>
 
-            {/* 위치 및 시간 */}
             <div className="mt-6 pt-6 border-t border-neutral-200">
               <div className="space-y-3">
-                {/* 위치 */}
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 flex-shrink-0 text-neutral-600">
                     <svg
@@ -212,7 +203,6 @@ function WeatherModalComponent({
                   </div>
                 </div>
 
-                {/* 업데이트 시간 */}
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 flex-shrink-0 text-neutral-600">
                     <svg
@@ -236,7 +226,6 @@ function WeatherModalComponent({
             </div>
           </div>
 
-          {/* 닫기 버튼 */}
           <div className="px-6 pb-6">
             <button
               onClick={onClose}

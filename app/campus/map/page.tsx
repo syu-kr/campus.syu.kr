@@ -47,16 +47,13 @@ export default function MapPage() {
         </p>
       </div>
 
-      {/* 검색바 */}
       <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="lg:col-span-2">
           <FacilitySearch onSelect={handleFacilitySelect} />
         </div>
       </div>
 
-      {/* 메인 레이아웃 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 지도 영역 */}
         <div className="lg:col-span-2 rounded-lg overflow-hidden shadow-lg border border-neutral-200 h-fit">
           <MapView
             selectedBuilding={selectedBuilding}
@@ -65,14 +62,11 @@ export default function MapPage() {
           />
         </div>
 
-        {/* 사이드패널 - 데스크톱에서만 표시 */}
         <div className="hidden lg:flex lg:flex-col space-y-4 max-h-screen overflow-y-auto">
-          {/* 시설 정보 */}
           <FacilityPanel buildingId={selectedBuilding} />
         </div>
       </div>
 
-      {/* 모바일 뷰: 시설 정보 */}
       <div className="mt-6 lg:hidden" ref={mobileFacilityPanelRef}>
         <div className="mt-4">
           <FacilityPanel buildingId={selectedBuilding} />

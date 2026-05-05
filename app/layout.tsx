@@ -95,7 +95,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <link rel="manifest" href="/manifest.json" />
 
-        {/* Google Analytics */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
           strategy="afterInteractive"
@@ -107,7 +106,6 @@ export default function RootLayout({
             __html: GOOGLE_ANALYTICS_SCRIPT,
           }}
         />
-        {/* JSON-LD Organization Schema */}
         <Script
           id="organization-schema"
           type="application/ld+json"

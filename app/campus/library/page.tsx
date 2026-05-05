@@ -60,7 +60,6 @@ export default function LibraryPage() {
         </p>
       </div>
 
-      {/* 열람실 현황 */}
       <Card className="mb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-bold text-neutral-900">열람실 현황</h2>
@@ -139,7 +138,6 @@ export default function LibraryPage() {
         </div>
       </Card>
 
-      {/* 운영시간 */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-neutral-900">운영시간</h2>
@@ -216,7 +214,6 @@ export default function LibraryPage() {
           ))}
         </div>
 
-        {/* 주의사항 */}
         <Card className="mt-6 bg-neutral-50 border border-neutral-300">
           <h3 className="font-semibold text-neutral-900 mb-3">주의사항</h3>
           <ul className="text-sm text-neutral-700 space-y-1">
@@ -230,7 +227,6 @@ export default function LibraryPage() {
         </Card>
       </div>
 
-      {/* 편의시설 및 서비스 */}
       <Card className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">
           편의시설 및 서비스
@@ -257,7 +253,6 @@ export default function LibraryPage() {
         </div>
       </Card>
 
-      {/* 이용 안내 */}
       <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
         <h2 className="text-lg font-bold text-blue-900 mb-4">이용 안내</h2>
         <div className="space-y-3 text-sm">
@@ -274,7 +269,6 @@ export default function LibraryPage() {
         </div>
       </Card>
 
-      {/* 좌석보기 모달 */}
       {seatMapUrl && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl h-[80vh] animate-in fade-in duration-200 flex flex-col">

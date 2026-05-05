@@ -4,12 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 import { NotificationModal } from "@/components/NotificationModal";
 
-// QueryClient를 싱글톤으로 관리
 let clientSingleton: QueryClient | undefined;
 
 function getQueryClient() {
   if (typeof window === "undefined") {
-    // 서버: 항상 새로운 인스턴스 생성
     return new QueryClient({
       defaultOptions: {
         queries: {
@@ -21,7 +19,6 @@ function getQueryClient() {
     });
   }
 
-  // 브라우저: 싱글톤 사용
   if (!clientSingleton) {
     clientSingleton = new QueryClient({
       defaultOptions: {
@@ -82,16 +79,12 @@ async function initializePushNotifications() {
 
   let swRegistration: ServiceWorkerRegistration | null = null;
   if ("serviceWorker" in navigator) {
-    try {
-      swRegistration = await navigator.serviceWorker.register("/sw.js", {
-        updateViaCache: "none",
-      });
-      setupServiceWorkerUpdateReload(swRegistration);
-      await swRegistration.update();
-      await navigator.serviceWorker.ready;
-    } finally {
-      // Error handling - silently fail
-    }
+    swRegistration = await navigator.serviceWorker.register("/sw.js", {
+      updateViaCache: "none",
+    });
+    setupServiceWorkerUpdateReload(swRegistration);
+    await swRegistration.update();
+    await navigator.serviceWorker.ready;
   } else {
     return;
   }
@@ -134,36 +127,32 @@ function setupServiceWorkerUpdateReload(
 async function generateAndSaveFCMToken(
   swRegistration: ServiceWorkerRegistration | null,
 ) {
-  try {
-    const { getToken } = await import("firebase/messaging");
-    const { messaging } = await import("@/lib/firebase");
+  const { getToken } = await import("firebase/messaging");
+  const { messaging } = await import("@/lib/firebase");
 
-    if (!messaging) {
-      return;
-    }
+  if (!messaging) {
+    return;
+  }
 
-    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+  const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
-    const tokenOptions: {
-      serviceWorkerRegistration?: ServiceWorkerRegistration;
-      vapidKey?: string;
-    } = {};
+  const tokenOptions: {
+    serviceWorkerRegistration?: ServiceWorkerRegistration;
+    vapidKey?: string;
+  } = {};
 
-    if (swRegistration) {
-      tokenOptions.serviceWorkerRegistration = swRegistration;
-    }
+  if (swRegistration) {
+    tokenOptions.serviceWorkerRegistration = swRegistration;
+  }
 
-    if (vapidKey) {
-      tokenOptions.vapidKey = vapidKey;
-    }
+  if (vapidKey) {
+    tokenOptions.vapidKey = vapidKey;
+  }
 
-    const token = await getToken(messaging, tokenOptions);
+  const token = await getToken(messaging, tokenOptions);
 
-    if (token) {
-      await saveFCMToken(token);
-    }
-  } finally {
-    // Error handling - silently fail
+  if (token) {
+    await saveFCMToken(token);
   }
 }
 
@@ -179,9 +168,7 @@ async function saveFCMToken(token: string) {
       localStorage.setItem("fcm_token", token);
     }
   } catch {
-    // Error handling - silently fail
-  } finally {
-    // Error handling - silently fail
+    return;
   }
 }
 
@@ -191,6 +178,6 @@ async function setupForegroundNotifications() {
       await import("@/lib/firebase");
     await setup();
   } catch {
-    // Error handling - silently fail
+    return;
   }
 }

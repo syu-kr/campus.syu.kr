@@ -1,4 +1,3 @@
-// components/NotificationModal.tsx
 "use client";
 
 import Image from "next/image";
@@ -29,7 +28,6 @@ export function NotificationModal() {
     notificationSetter = (payload) => {
       setNotification(payload);
       setIsVisible(true);
-      // 5초 후 자동으로 닫기
       setTimeout(() => {
         setIsVisible(false);
       }, 5000);

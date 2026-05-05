@@ -1,4 +1,3 @@
-// public/sw.js
 // Service Worker - Firebase 푸시 알림 처리
 
 // Firebase 메시징 라이브러리 import

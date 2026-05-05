@@ -19,7 +19,6 @@ export default function BusInfoPage() {
 
   return (
     <>
-      {/* 탭 버튼 - 모바일 최적화 */}
       <Container className="py-3 sm:py-4 sticky top-0 bg-white z-10 border-b border-neutral-200">
         <div className="flex gap-2">
           <button
@@ -47,7 +46,6 @@ export default function BusInfoPage() {
         </div>
       </Container>
 
-      {/* 탭 콘텐츠 */}
       <div>
         {activeTab === "shuttle" && <ShuttleSection />}
         {activeTab === "public-transit" && <PublicTransitSection />}

@@ -1,4 +1,3 @@
-// lib/firebaseAdmin.ts
 // 서버 사이드 Firebase Admin SDK 초기화
 
 import * as admin from "firebase-admin";

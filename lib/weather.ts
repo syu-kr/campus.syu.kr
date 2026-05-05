@@ -1,4 +1,3 @@
-// lib/weather.ts - 날씨 정보 조회
 import { fetchJson } from "./fetch-json";
 
 export interface WeatherData {

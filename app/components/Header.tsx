@@ -44,7 +44,6 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
     <>
       <header className="sticky top-0 z-40 bg-white border-b border-neutral-200">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          {/* 왼쪽: 로고 */}
           <div className="flex items-center gap-3">
             {showBack && (
               <button
@@ -87,7 +86,6 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
             </Link>
           </div>
 
-          {/* 모바일: 날씨만 (우측) */}
           <div className="md:hidden flex items-center gap-2">
             <button
               type="button"
@@ -100,7 +98,6 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
             <WeatherWidget onClick={handleWeatherClick} />
           </div>
 
-          {/* 데스크톱: 네비게이션 + 날씨 (오른쪽) */}
           <div className="hidden md:flex items-center gap-3">
             <nav className="flex items-center gap-1">
               {navItems.map((item) => (
@@ -138,7 +135,6 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
         onClose={() => setTranslateModalOpen(false)}
       />
 
-      {/* 날씨 모달 */}
       <WeatherModal
         isOpen={weatherModalOpen}
         weather={weatherData}

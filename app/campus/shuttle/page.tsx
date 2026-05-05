@@ -561,7 +561,6 @@ export default function ShuttlePage() {
         </p>
       </div>
 
-      {/* 주말 안내 */}
       {dateInfo.isWeekend && (
         <Card className="mb-6 bg-orange-50 border border-orange-300">
           <p className="text-sm text-orange-900">
@@ -571,7 +570,6 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 다음 버스 정보 */}
       {!dateInfo.isWeekend &&
         isWithinOperationHours &&
         nextBusesWithin30Min.length > 0 && (
@@ -601,7 +599,6 @@ export default function ShuttlePage() {
           </Card>
         )}
 
-      {/* 실시간 버스 위치 지도 */}
       {!dateInfo.isWeekend && isWithinOperationHours && (
         <Card className="mb-6">
           <div className="mb-4">
@@ -647,14 +644,12 @@ export default function ShuttlePage() {
 
           {busLocations.length > 0 ? (
             <>
-              {/* 카카오맵 지도 */}
               <div
                 id="shuttle-map"
                 className="w-full h-80 sm:h-96 md:h-[500px] rounded-lg border border-neutral-200 overflow-hidden mb-4"
                 style={{ minHeight: "320px" }}
               />
 
-              {/* 버스 위치 목록 */}
               <div className="space-y-2">
                 {busLocations
                   .filter((bus) => bus.status !== 0)
@@ -703,7 +698,6 @@ export default function ShuttlePage() {
                   })}
               </div>
 
-              {/* Leaflet 지도 초기화 스크립트 */}
               <ShuttleMap
                 ref={mapComponentRef}
                 busLocations={busLocations}
@@ -720,7 +714,6 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 요일 선택 */}
       <div className="grid grid-cols-2 gap-2 mb-6 sm:grid-cols-3">
         {dayButtons.map((btn) => (
           <button
@@ -766,7 +759,6 @@ export default function ShuttlePage() {
         )}
       </div>
 
-      {/* 특수 기간 운행 안내 */}
       {activeSpecialPeriods.length > 0 && (
         <Card className="mb-4 bg-purple-50 border-2 border-purple-300 text-sm text-purple-900">
           <p className="font-bold mb-2">셔틀버스 특수 운행 기간입니다</p>
@@ -780,7 +772,6 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 방학 운행 안내 */}
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
         <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
@@ -788,7 +779,6 @@ export default function ShuttlePage() {
         </Card>
       )}
 
-      {/* 운행 시간표 */}
       <div className="space-y-4">
         {isLoading && <Skeleton count={3} height="150px" />}
 
@@ -911,7 +901,6 @@ export default function ShuttlePage() {
                             );
                           })
                           .filter(Boolean)}{" "}
-                        {/* null 값 제거 */}
                       </div>
                     )}
 
@@ -925,7 +914,6 @@ export default function ShuttlePage() {
           })}
       </div>
 
-      {/* 안내 */}
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900 mb-2">
           <strong>안내:</strong> 셔틀버스 운행 시간은 학기 또는 행사에 따라

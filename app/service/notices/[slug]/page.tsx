@@ -49,7 +49,6 @@ export default async function ServiceNoticeDetailPage({
   return (
     <Container>
       <div className="py-6 md:py-8">
-        {/* 뒤로가기 */}
         <Link
           href="/service/notices"
           className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
@@ -70,15 +69,12 @@ export default async function ServiceNoticeDetailPage({
           목록으로 돌아가기
         </Link>
 
-        {/* 공지사항 카드 */}
         <Card className="mb-6 md:mb-8">
           <article className="prose prose-sm md:prose max-w-none">
-            {/* 제목 */}
             <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">
               {notice.title}
             </h1>
 
-            {/* 메타정보 */}
             <div className="flex flex-wrap items-center gap-3 md:gap-4 py-4 border-b border-neutral-200 mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-sm text-neutral-600">작성자:</span>
@@ -99,7 +95,6 @@ export default async function ServiceNoticeDetailPage({
               </div>
             </div>
 
-            {/* 컨텐츠 */}
             <div className="prose prose-sm md:prose max-w-none dark:prose-invert prose-headings:text-neutral-900 prose-headings:font-bold prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline prose-code:bg-neutral-100 prose-code:text-neutral-900 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-img:rounded-lg prose-img:shadow">
               <ReactMarkdown
                 components={{

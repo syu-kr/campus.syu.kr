@@ -83,7 +83,6 @@ export default function GymPage() {
         <p className="text-neutral-600">건강한 신체에 건강한 정신이 깃듭니다</p>
       </div>
 
-      {/* 위치 및 연락처 */}
       <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
         <h2 className="text-lg font-bold text-blue-900 mb-4">위치 및 연락처</h2>
         <div className="space-y-4">
@@ -109,7 +108,6 @@ export default function GymPage() {
         </div>
       </Card>
 
-      {/* 체육관 1층 */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
           체육관 1층
@@ -131,7 +129,6 @@ export default function GymPage() {
         </div>
       </div>
 
-      {/* 체육관 2층 */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
           체육관 2층
@@ -153,7 +150,6 @@ export default function GymPage() {
         </div>
       </div>
 
-      {/* 종합운동장 */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-neutral-900 mb-4 border-b-2 border-primary-600 pb-2">
           종합운동장
@@ -175,7 +171,6 @@ export default function GymPage() {
         </div>
       </div>
 
-      {/* 이용안내 */}
       <Card className="mb-6 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200">
         <h2 className="text-lg font-bold text-amber-900 mb-4">이용안내</h2>
         <div className="space-y-4 text-sm">
@@ -212,7 +207,6 @@ export default function GymPage() {
         </div>
       </Card>
 
-      {/* 상세정보 안내 */}
       <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
         <h2 className="text-lg font-bold text-green-900 mb-3">
           프로그램 및 자세한 정보

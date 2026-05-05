@@ -16,7 +16,6 @@ export default async function ServiceNoticesPage() {
   return (
     <Container>
       <div className="py-6 md:py-8">
-        {/* 헤더 */}
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
             서비스 공지
@@ -26,7 +25,6 @@ export default async function ServiceNoticesPage() {
           </p>
         </div>
 
-        {/* 공지사항 목록 */}
         {notices.length === 0 ? (
           <div className="py-12 text-center">
             <p className="text-neutral-600">아직 서비스 공지가 없습니다.</p>

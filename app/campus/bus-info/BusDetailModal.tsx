@@ -57,16 +57,13 @@ export default function BusDetailModal({
 
   return (
     <>
-      {/* 배경 오버레이 */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 z-40"
         onClick={onClose}
       />
 
-      {/* 모달 창 */}
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
         <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-          {/* 헤더 */}
           <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">{bus.routeName}</h2>
@@ -90,9 +87,7 @@ export default function BusDetailModal({
             </button>
           </div>
 
-          {/* 내용 */}
           <div className="p-6 space-y-6">
-            {/* 첫번째 버스 정보 */}
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-neutral-900">현재 버스</h3>
 
@@ -102,7 +97,6 @@ export default function BusDetailModal({
                 </div>
               ) : (
                 <div className="bg-blue-50 rounded-lg p-4 space-y-3">
-                  {/* 도착 시간 */}
                   <div className="flex items-center justify-between">
                     <span className="text-neutral-600">도착까지</span>
                     <div className="flex items-baseline gap-2">
@@ -117,7 +111,6 @@ export default function BusDetailModal({
                     </div>
                   </div>
 
-                  {/* 다음 정류소 */}
                   {bus.nextStation1 && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-neutral-600">다음 정류소</span>
@@ -127,7 +120,6 @@ export default function BusDetailModal({
                     </div>
                   )}
 
-                  {/* 저상버스 여부 */}
                   <div className="flex items-center justify-between">
                     <span className="text-neutral-600">버스 타입</span>
                     <span>
@@ -143,7 +135,6 @@ export default function BusDetailModal({
                     </span>
                   </div>
 
-                  {/* 좌석 현황 */}
                   <div className="flex items-center justify-between">
                     <span className="text-neutral-600">좌석 현황</span>
                     <span
@@ -159,7 +150,6 @@ export default function BusDetailModal({
               )}
             </div>
 
-            {/* 다음 버스 정보 */}
             {bus.predictTime2 &&
               bus.predictTime2 > 0 &&
               bus.predictTime2 < Infinity && (
@@ -169,7 +159,6 @@ export default function BusDetailModal({
                   </h3>
 
                   <div className="bg-neutral-50 rounded-lg p-4 space-y-3">
-                    {/* 도착 시간 */}
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-600">도착까지</span>
                       <div className="flex items-baseline gap-2">
@@ -184,7 +173,6 @@ export default function BusDetailModal({
                       </div>
                     </div>
 
-                    {/* 다음 정류소 */}
                     {bus.nextStation2 && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-neutral-600">다음 정류소</span>
@@ -194,7 +182,6 @@ export default function BusDetailModal({
                       </div>
                     )}
 
-                    {/* 저상버스 여부 */}
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-600">버스 타입</span>
                       <span>
@@ -210,7 +197,6 @@ export default function BusDetailModal({
                       </span>
                     </div>
 
-                    {/* 좌석 현황 */}
                     <div className="flex items-center justify-between">
                       <span className="text-neutral-600">좌석 현황</span>
                       <span
@@ -226,7 +212,6 @@ export default function BusDetailModal({
                 </div>
               )}
 
-            {/* 닫기 버튼 */}
             <button
               onClick={onClose}
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-3 rounded-lg transition"

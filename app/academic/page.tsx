@@ -29,7 +29,6 @@ export default function AcademicPage() {
 
       <AcademicMenuGrid />
 
-      {/* 관련 학사 정보 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
           함께 확인하면 좋은 학사 정보

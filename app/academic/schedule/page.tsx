@@ -208,7 +208,6 @@ export default function SchedulePage() {
         <Skeleton count={4} height="100px" />
       ) : (
         <div className="space-y-6">
-          {/* 달력 */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-6">
               <button
@@ -255,7 +254,6 @@ export default function SchedulePage() {
             </div>
           </Card>
 
-          {/* 선택된 날짜의 일정 */}
           {selectedDate && (
             <>
               <Card className="p-6 bg-blue-50 border border-blue-200">
@@ -292,7 +290,6 @@ export default function SchedulePage() {
             </>
           )}
 
-          {/* 일정 검색 */}
           <Card className="p-6">
             <div className="flex items-center gap-2 mb-4">
               <input
@@ -313,7 +310,6 @@ export default function SchedulePage() {
               )}
             </div>
 
-            {/* 검색 결과 - 월별로 분류 */}
             {searchQuery.trim().length > 0 && (
               <div className="space-y-6 mt-4">
                 {(() => {

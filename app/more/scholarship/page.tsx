@@ -62,7 +62,6 @@ export default function ScholarshipPage() {
         <p className="text-neutral-600">교내/외 장학금 정보를 확인하세요</p>
       </div>
 
-      {/* 검색 바 */}
       <div className="mb-6 relative">
         <input
           type="text"
@@ -85,7 +84,6 @@ export default function ScholarshipPage() {
         )}
       </div>
 
-      {/* 결과 수 표시 */}
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
           {filteredScholarships.length}개 항목 찾음
@@ -93,7 +91,6 @@ export default function ScholarshipPage() {
         </div>
       )}
 
-      {/* 장학금 목록 */}
       <div className="space-y-4 mb-6">
         {isLoading && <Skeleton count={4} height="150px" />}
 
@@ -153,7 +150,6 @@ export default function ScholarshipPage() {
           ))}
       </div>
 
-      {/* 페이지네이션 */}
       {!isLoading && totalPages > 1 && (
         <div className="flex justify-center items-center gap-1 md:gap-2 mt-8 flex-wrap">
           <button
@@ -164,7 +160,6 @@ export default function ScholarshipPage() {
             이전
           </button>
 
-          {/* 모바일: 5개, 데스크톱: 10개 페이지 표시 */}
           {pageNumbers.map((page) => (
             <button
               key={page}
@@ -179,7 +174,6 @@ export default function ScholarshipPage() {
             </button>
           ))}
 
-          {/* 더 많은 페이지가 있으면 드롭다운 */}
           {totalPages > pageRange && endPage < totalPages && (
             <select
               value={currentPage}
@@ -206,7 +200,6 @@ export default function ScholarshipPage() {
         </div>
       )}
 
-      {/* 주의사항 */}
       <Card className="mt-8 bg-yellow-50 border border-yellow-200">
         <p className="text-sm text-yellow-900 mb-2">
           <strong>중요:</strong> 장학금 신청 기간과 자격요건을 반드시

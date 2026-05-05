@@ -114,7 +114,6 @@ export default function CampusPage() {
         })}
       </div>
 
-      {/* 관련 캠퍼스 정보 */}
       <div className="mt-8 pt-6 border-t border-neutral-200">
         <h3 className="text-base font-semibold text-neutral-900 mb-4">
           함께 확인하면 좋은 캠퍼스 정보
