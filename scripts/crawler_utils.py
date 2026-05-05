@@ -228,6 +228,7 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
     new_by_key: Dict[str, Dict[str, object]] = {}
     pages_crawled = 0
     reached_existing_tail = False
+    first_page_checked = False
 
     for page in range(1, config.max_pages + 1):
         soup = request_soup(session, f"{config.base_url}/{page}/")
@@ -243,6 +244,7 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
             break
 
         pages_crawled += 1
+        page_non_pinned = 0
         page_new_non_pinned = 0
         page_existing_non_pinned = 0
 
@@ -253,10 +255,12 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
 
             key = notice_key(row_data)
             is_existing = key in existing_id_by_key
-            if is_existing and not row_data["is_pinned"]:
-                page_existing_non_pinned += 1
-            if not is_existing and not row_data["is_pinned"]:
-                page_new_non_pinned += 1
+            if not row_data["is_pinned"]:
+                page_non_pinned += 1
+                if is_existing:
+                    page_existing_non_pinned += 1
+                else:
+                    page_new_non_pinned += 1
 
             notice_id = existing_id_by_key.get(key) or generate_stable_id(
                 config.category,
@@ -279,8 +283,20 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
                 "isPinned": row_data["is_pinned"],
             }
 
+        if page == 1:
+            first_page_checked = True
+            if (
+                existing_id_by_key
+                and page_non_pinned > 0
+                and page_new_non_pinned == 0
+            ):
+                reached_existing_tail = True
+                break
+            continue
+
         if (
             existing_id_by_key
+            and first_page_checked
             and page_new_non_pinned == 0
             and page_existing_non_pinned > 0
         ):
