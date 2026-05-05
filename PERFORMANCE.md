@@ -1,167 +1,59 @@
-# 성능 최적화 가이드
+# 성능 점검 가이드
 
-## 📊 번들 크기 분석
+Next.js 빌드 결과와 운영 중 확인해야 할 성능 항목을 정리합니다.
 
-### 현재 상태
+## 현재 기준
 
-- **First Load JS**: 87.4 kB ✅ (우수)
-- **페이지 First Load JS 범위**: 89.7-118 kB (홈 최대)
-- **캠퍼스 꿀팁 페이지**: 3.73 kB / First Load JS 106 kB
-- **Shared JS Chunks**: 87.4 kB
-- **빌드 최적화**: ✅ 활성화
+2026-05-05 `npm run build` 기준:
 
-### 분석 방법
+- Shared First Load JS: 87.4 kB
+- 홈 페이지 First Load JS: 119 kB
+- 정적/동적 라우트 생성: 36개 페이지 기준 정상 빌드
+- 주요 검증 명령: `npm run lint`, `npm run type-check`, `npm run build`
 
-#### 1️⃣ 번들 분석 보고서 생성
-
-```bash
-npm run build:analyze
-```
-
-이 명령어는 Next.js 프로젝트의 JavaScript 번들 구성을 시각적으로 보여주는 HTML 보고서를 생성합니다.
-
-- 브라우저에서 자동으로 열립니다
-- 각 라이브러리의 크기와 의존성 구조 확인 가능
-
-#### 2️⃣ 정적 분석 결과
+## 확인 방법
 
 ```bash
 npm run build
-```
-
-빌드 로그에서 다음 정보 확인:
-
-- 페이지별 크기 (정적, 동적 페이지 구분)
-- 공유 청크 크기
-- 최적화된 라이브러리 목록
-
----
-
-## 🎯 주요 최적화 항목
-
-### ✅ 이미 적용된 최적화
-
-#### 1. 이미지 최적화
-
-- **Next.js Image 컴포넌트 사용**: AVIF, WebP 자동 변환
-- **Lazy Loading**: `loading="lazy"` 속성 설정
-- **캐싱**: 1년 TTL (변경 없을 때)
-
-#### 2. 번들 코드 분할
-
-- **자동 Code Splitting**: 페이지별 필요한 코드만 로드
-- **Shared Chunks**: 공통 라이브러리 분리 (31.7 kB + 53.6 kB)
-- **Tree Shaking**: 사용하지 않는 코드 제거
-
-#### 3. 라이브러리 최적화
-
-```javascript
-// experimental.optimizePackageImports
-optimizePackageImports: ["@tanstack/react-query"];
-```
-
-- React Query의 필요한 부분만 번들에 포함
-
-#### 4. 폰트 최적화
-
-- **@fontsource/pretendard**: 서브셋 폰트 사용
-- **Font 최적화**: CSS-in-JS 대신 정적 폰트
-
-#### 5. 캐싱 전략
-
-| 대상              | 캐시 정책 | TTL           |
-| ----------------- | --------- | ------------- |
-| `/data/*.json`    | no-cache  | -             |
-| `/images/*`       | immutable | 432000s (5일) |
-| `/_next/static/*` | immutable | 432000s (5일) |
-
----
-
-## 📈 추천 개선사항
-
-### 우선순위 1: 의존성 검토
-
-1. **Firebase 크기 확인**
-
-   ```bash
-   npm ls firebase firebase-admin
-   ```
-
-   - Firebase는 상당한 크기이므로 필요한 기능만 import 확인
-   - 브라우저/서버 환경에 맞는 import 사용
-
-2. **React Query 최적화**
-   - 현재: 최적화 설정 적용 ✅
-   - 추가 확인: 사용하지 않는 플러그인/기능 제거
-
-### 우선순위 2: 코드 최적화
-
-1. **동적 Import 활용**
-
-   ```typescript
-   // 무거운 컴포넌트는 동적 로드
-   import dynamic from "next/dynamic";
-   const HeavyComponent = dynamic(() => import("./HeavyComponent"), {
-     loading: () => <div>로딩 중...</div>,
-   });
-   ```
-
-2. **useCallback/useMemo 검토**
-   - 자주 리렌더링되는 컴포넌트 점검
-   - 필요시 최적화 적용
-
-### 우선순위 3: 네트워크 최적화
-
-1. **API 호출 최소화**
-   - 중복 요청 제거 (React Query로 이미 최적화 됨)
-   - 배치 API 고려
-
-2. **이미지 최적화**
-   - 불필요한 이미지 제거
-   - SVG로 대체 가능한 것 확인
-
----
-
-## 🔗 관련 명령어
-
-```bash
-# 정상 빌드
-npm run build
-
-# 번들 분석 (HTML 시각화)
 npm run build:analyze
-
-# 타입 체크
-npm run type-check
-
-# Linting
-npm run lint
 ```
 
----
+`npm run build`에서는 페이지별 First Load JS, 정적/동적 라우트, 타입 검사 결과를 확인합니다. `npm run build:analyze`는 번들 구성과 큰 의존성을 확인할 때 사용합니다.
 
-## 📚 참고 자료
+## 적용 중인 최적화
 
-- **Next.js Performance**: https://nextjs.org/learn/seo/web-performance
-- **Bundle Analyzer**: https://www.npmjs.com/package/@next/bundle-analyzer
-- **React Query Docs**: https://tanstack.com/query/latest
-- **Firebase SDK Size**: https://firebase.google.com/docs/web/setup#import-individual-services
+- Next.js App Router의 자동 code splitting
+- `next/image` 기반 이미지 최적화
+- `@fontsource/pretendard` 사용
+- TanStack Query의 기능별 캐시 정책
+- 정적 JSON 데이터의 장기 캐시와 버전 확인
+- `@tanstack/react-query` package import 최적화
+- Service Worker는 Firebase Messaging 중심으로 유지하고 앱 데이터 캐싱은 제한
 
----
+## 점검 항목
 
-## 📋 성능 체크리스트
+- [x] lint 통과
+- [x] type-check 통과
+- [x] production build 통과
+- [x] First Load JS 추적
+- [ ] 배포 환경 Lighthouse 확인
+- [ ] Core Web Vitals 모니터링
+- [ ] 번들 분석 결과에서 큰 의존성 주기적 확인
 
-- [x] 번들 분석 도구 설정
-- [x] 이미지 컴포넌트 최적화 (Task 4에서 완료)
-- [x] 캐싱 정책 구성
-- [x] Font 최적화
-- [x] Code Splitting 검증
-- [ ] Core Web Vitals 모니터링 (배포 후)
-- [ ] Lighthouse 감사 (배포 전)
-- [ ] Performance 메트릭 수집 (배포 후)
+## 개선 후보
 
----
+- Firebase 클라이언트 import가 브라우저 번들에 필요한 범위만 포함되는지 확인
+- 지도/버스/알림처럼 무거운 기능은 필요한 화면에서만 초기화
+- 반복 렌더링이 많은 목록은 memoization 필요성을 실제 측정 후 적용
+- 이미지가 추가될 때 `next/image` 사용과 적절한 크기 지정 확인
 
-**Last Updated**: 2026-04-27  
-**Status**: ✅ 최신 빌드 기준 갱신  
-**Next**: 배포 후 Core Web Vitals 및 Lighthouse 확인
+## 참고 링크
+
+- Next.js Performance: https://nextjs.org/docs/app/building-your-application/optimizing
+- Bundle Analyzer: https://www.npmjs.com/package/@next/bundle-analyzer
+- TanStack Query: https://tanstack.com/query/latest
+- Firebase Web SDK: https://firebase.google.com/docs/web/setup
+
+## 최종 업데이트
+
+2026-05-05

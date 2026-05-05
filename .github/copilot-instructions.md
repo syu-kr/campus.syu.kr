@@ -3,7 +3,7 @@
 ## Code Style
 
 - Use TypeScript and React function components throughout the app.
-- Follow the existing file boundaries: route-specific UI in `app/`, shared UI in `app/components/`, root shared components in `components/`, utilities in `lib/`, and shared types in `types/`.
+- Follow the existing file boundaries: route-specific UI in `app/`, shared UI in `app/components/`, utilities in `lib/`, and shared types in `types/`.
 - Match the local style of nearby files instead of introducing new patterns unless the task requires it.
 - Keep styling aligned with the current Tailwind-based component system and existing design language.
 - Memoize reusable components (`React.memo`) to prevent unnecessary re-renders in lists.
@@ -14,8 +14,7 @@
 
 - **Next.js 14 App Router** with client-side React Query and server-side API routes that call external APIs, Firebase, and JSON data.
 - **`app/`** - Domain-specific routes (academic, campus, more, privacy, terms)
-- **`app/components/`** - Route-specific UI components (e.g., AnnouncementCard used by academic/campus pages)
-- **`components/`** - Root-level shared components used globally (e.g., NotificationModal)
+- **`app/components/`** - Shared UI components used across routes
 - **`app/api/`** - API routes that proxy/transform external data (weather, bus locations, notifications)
 - **`lib/`** - Shared utilities: data fetching (api.ts, firebase.ts), helpers (utils.ts, weather.ts), custom hooks (use-versioned-query.ts)
 - **`public/data/`** - Static datasets in JSON format (announcements, schedules, cafeteria menus, campus tips)
@@ -163,7 +162,7 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 ### File Organization
 
 - Domain-specific components stay in `app/components/` (e.g., AnnouncementCard).
-- Global components live in root `components/` (e.g., NotificationModal).
+- Shared UI components live in `app/components/`.
 - Utilities belong in `lib/` (data fetching, helpers, custom hooks).
 - Use `lib/utils.ts` for date formatting (`formatDate`, `formatDateKorean`), labels, and colors.
 
