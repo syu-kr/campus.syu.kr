@@ -4,7 +4,7 @@ import type { BusLocation } from "@/types";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SHUTTLE_LOCATION_URL = "http://nexmotion.co.kr/bus/busStatusList.php";
+const SHUTTLE_LOCATION_URL = "https://bus.syu.kr/api";
 const SHUTTLE_CACHE_TTL_MS = 2 * 1000;
 
 let cachedLocations:
@@ -46,22 +46,20 @@ async function fetchShuttleLocations(): Promise<BusLocation[]> {
     cache: "no-store",
     headers: {
       Accept: "application/json",
-      "User-Agent": "SYU-CAMPUS/1.0",
     },
   });
 
   if (!response.ok) {
-    throw new Error(`Shuttle location API returned ${response.status}`);
+    throw new Error(`SYU shuttle API returned ${response.status}`);
   }
 
-  const text = await response.text();
-  const payload = JSON.parse(text) as {
+  const payload = (await response.json()) as {
     returnCode?: string;
     data?: unknown[];
   };
 
   if (payload.returnCode && payload.returnCode !== "200") {
-    throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
+    throw new Error(`SYU shuttle API returned code ${payload.returnCode}`);
   }
 
   const rows = Array.isArray(payload.data) ? payload.data : [];
