@@ -27,6 +27,7 @@ interface ShuttleLocationFetchResult {
   locations: BusLocation[];
   payload: ShuttleLocationPayload;
   upstreamUrl: string;
+  fetchMode: "rewrite" | "direct";
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -54,9 +55,22 @@ function toBusLocation(item: unknown): BusLocation | null {
   };
 }
 
-async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
+async function fetchShuttleLocations(
+  request: Request,
+): Promise<ShuttleLocationFetchResult> {
   const url = new URL(SHUTTLE_LOCATION_URL);
-  const payload = await fetchJsonOverHttp(url);
+  let payload: ShuttleLocationPayload;
+  let upstreamUrl = url.toString();
+  let fetchMode: ShuttleLocationFetchResult["fetchMode"] = "direct";
+
+  try {
+    const rewriteResult = await fetchJsonViaRewrite(request);
+    payload = rewriteResult.payload;
+    upstreamUrl = rewriteResult.upstreamUrl;
+    fetchMode = "rewrite";
+  } catch {
+    payload = await fetchJsonOverHttp(url);
+  }
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
@@ -71,7 +85,8 @@ async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
   return {
     locations,
     payload,
-    upstreamUrl: url.toString(),
+    upstreamUrl,
+    fetchMode,
   };
 }
 
@@ -127,10 +142,33 @@ function fetchJsonOverHttp(url: URL): Promise<ShuttleLocationPayload> {
   });
 }
 
+async function fetchJsonViaRewrite(
+  request: Request,
+): Promise<{ payload: ShuttleLocationPayload; upstreamUrl: string }> {
+  const rewriteUrl = new URL("/bus/shuttle", request.url);
+  const response = await fetch(rewriteUrl, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Shuttle location rewrite returned ${response.status}`);
+  }
+
+  return {
+    payload: (await response.json()) as ShuttleLocationPayload,
+    upstreamUrl: rewriteUrl.toString(),
+  };
+}
+
 export async function GET(request: Request) {
   try {
-    const { locations, payload, upstreamUrl } =
-      await fetchShuttleLocations();
+    const { locations, payload, upstreamUrl, fetchMode } =
+      await fetchShuttleLocations(request);
     const timestamp = new Date().toISOString();
     const firstLocation = locations[0];
     const searchParams = new URL(request.url).searchParams;
@@ -144,6 +182,7 @@ export async function GET(request: Request) {
           "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
           "X-Shuttle-Upstream": SHUTTLE_LOCATION_URL,
           "X-Shuttle-Upstream-Url": upstreamUrl,
+          "X-Shuttle-Fetch-Mode": fetchMode,
           "X-Shuttle-Fetched-At": timestamp,
         },
       });
@@ -158,6 +197,7 @@ export async function GET(request: Request) {
           ? {
               debug: {
                 upstreamUrl,
+                fetchMode,
                 raw: payload,
               },
             }
@@ -174,6 +214,7 @@ export async function GET(request: Request) {
             ? `${firstLocation.name}:${firstLocation.lat},${firstLocation.lon}`
             : "none",
           "X-Shuttle-Upstream-Url": upstreamUrl,
+          "X-Shuttle-Fetch-Mode": fetchMode,
         },
       },
     );
