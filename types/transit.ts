@@ -3,6 +3,7 @@ export interface ShuttleBusSchedule {
   routeName: string;
   startLocation: string;
   endLocation: string;
+  stops?: string[];
   schedules: {
     mondayToThursday: string[];
     friday: string[];

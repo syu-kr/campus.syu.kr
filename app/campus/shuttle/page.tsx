@@ -849,6 +849,7 @@ export default function ShuttlePage() {
               ? bus.schedules[selectedType]
               : [];
             const isExpanded = expandedBuses.has(bus.id);
+            const routeStops = Array.isArray(bus.stops) ? bus.stops : [];
 
             return (
               <Card key={bus.id} className="overflow-hidden">
@@ -865,9 +866,37 @@ export default function ShuttlePage() {
                       <h2 className="text-lg font-bold text-neutral-900 mb-1">
                         {bus.routeName}
                       </h2>
-                      <p className="text-sm text-neutral-600">
-                        {bus.startLocation} → {bus.endLocation}
-                      </p>
+                      {routeStops.length > 0 ? (
+                        <>
+                          <p className="text-sm text-neutral-600">
+                            순환 노선
+                          </p>
+                          <ol className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
+                            {routeStops.map((stop, stopIndex) => (
+                              <li
+                                key={`${bus.id}-${stop}-${stopIndex}`}
+                                className="flex items-center gap-1.5"
+                              >
+                                <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 leading-4">
+                                  {stop}
+                                </span>
+                                {stopIndex < routeStops.length - 1 && (
+                                  <span
+                                    className="text-neutral-400"
+                                    aria-hidden="true"
+                                  >
+                                    →
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ol>
+                        </>
+                      ) : (
+                        <p className="text-sm text-neutral-600">
+                          {bus.startLocation} → {bus.endLocation}
+                        </p>
+                      )}
                     </div>
                     <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-primary-50 rounded-lg">
                       <svg

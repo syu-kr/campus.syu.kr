@@ -55,7 +55,7 @@ export async function getAnnouncementPage({
         announcement.content?.toLowerCase().includes(normalizedQuery)
       );
     })
-    .sort(sortAnnouncements);
+    .sort(category === "all" ? sortAnnouncementsByDate : sortAnnouncements);
 
   const start = (normalizedPage - 1) * normalizedLimit;
   const items = filtered.slice(start, start + normalizedLimit);
