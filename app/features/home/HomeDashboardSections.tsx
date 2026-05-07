@@ -38,7 +38,6 @@ export function HomeNoticesSection({
         <h2 className="text-lg font-semibold text-neutral-900">공지사항</h2>
         <Link
           href={getNoticeListPath(selectedCategory)}
-          prefetch={false}
           className="text-xs text-primary-600 hover:text-primary-700"
         >
           {getNoticeListLabel(selectedCategory)} →
@@ -161,7 +160,6 @@ export function TodayMenuSection({
               action={
                 <Link
                   href="/campus/cafeteria"
-                  prefetch={false}
                   className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
                 >
                   전체 식단 보기
@@ -192,7 +190,7 @@ export function TodaySchedulesSection({
           ) : (
             schedules.map((schedule) => (
               <div key={schedule.id} className="mb-3">
-                <Link href="/academic/schedule" prefetch={false}>
+                <Link href="/academic/schedule">
                   <Card className="cursor-pointer hover:shadow-card-hover">
                     <div className="flex items-center justify-between">
                       <div>
@@ -230,7 +228,6 @@ function SectionTitle({ title, href }: { title: string; href: string }) {
       <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
       <Link
         href={href}
-        prefetch={false}
         className="text-xs text-primary-600 hover:text-primary-700"
       >
         전체보기 →
@@ -241,7 +238,7 @@ function SectionTitle({ title, href }: { title: string; href: string }) {
 
 function TodayMenuCard({ todayMenu }: { todayMenu: CafeteriaMenu }) {
   return (
-    <Link href="/campus/cafeteria" prefetch={false}>
+    <Link href="/campus/cafeteria">
       <Card className="cursor-pointer border-2 border-green-400 bg-gradient-to-r from-green-50 to-green-100 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -275,7 +272,7 @@ function TodayMenuCard({ todayMenu }: { todayMenu: CafeteriaMenu }) {
 
 function PendingMenuCard() {
   return (
-    <Link href="/campus/cafeteria" prefetch={false}>
+    <Link href="/campus/cafeteria">
       <Card className="cursor-pointer border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">

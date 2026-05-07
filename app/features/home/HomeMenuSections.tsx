@@ -46,18 +46,6 @@ const relatedLinks = [
     path: "/more",
   },
   {
-    iconName: "lightbulb",
-    title: "캠퍼스 꿀팁",
-    description: "학교생활 링크 모음",
-    path: "/more/campus-tips",
-  },
-  {
-    iconName: "calendar",
-    title: "일정 잡기",
-    description: "가능한 시간 모으기",
-    path: "/more/meet",
-  },
-  {
     iconName: "megaphone",
     title: "서비스 공지",
     description: "업데이트 안내",
@@ -76,7 +64,6 @@ export function FrequentMenuGrid() {
           <Link
             key={menu.id}
             href={menu.path}
-            prefetch={false}
             className="flex flex-col items-center justify-center rounded-lg py-4 transition-colors hover:bg-primary-50"
           >
             <Icon
@@ -127,7 +114,6 @@ export function PwaInstallCard() {
           </p>
           <Link
             href="/service/notices/005-pwa-installation-guide"
-            prefetch={false}
             className="mt-3 inline-flex rounded-lg border border-primary-200 bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:bg-primary-50"
           >
             앱처럼 쓰는 방법
@@ -157,7 +143,6 @@ export function RelatedLinksSection() {
           <Link
             key={link.path}
             href={link.path}
-            prefetch={false}
             className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50"
           >
             <Icon

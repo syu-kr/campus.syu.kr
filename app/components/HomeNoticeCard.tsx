@@ -38,7 +38,7 @@ export function ServiceNoticeCard({
   notice: ServiceNotice;
 }) {
   return (
-    <Link href={`/service/notices/${notice.slug}`} prefetch={false}>
+    <Link href={`/service/notices/${notice.slug}`}>
       <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">

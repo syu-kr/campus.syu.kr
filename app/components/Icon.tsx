@@ -451,7 +451,13 @@ export function Icon({
   }
 
   return (
-    <span className={className} title={title} role="img" aria-label={title}>
+    <span
+      className={className}
+      title={title}
+      role={title ? "img" : undefined}
+      aria-label={title}
+      aria-hidden={title ? undefined : true}
+    >
       <IconComponent size={size} color={color} strokeWidth={strokeWidth} />
     </span>
   );

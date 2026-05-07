@@ -2,13 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
-  const phpSessionId = request.cookies.get("PHPSESSID")?.value;
+  const existingPhpSessionId = request.cookies.get("PHPSESSID")?.value;
+  const phpSessionId =
+    existingPhpSessionId ?? crypto.randomUUID().replace(/-/g, "");
 
-  if (phpSessionId) {
-    requestHeaders.set("cookie", `PHPSESSID=${phpSessionId}`);
-  } else {
-    requestHeaders.delete("cookie");
-  }
+  requestHeaders.set("cookie", `PHPSESSID=${phpSessionId}`);
 
   requestHeaders.set(
     "accept",
@@ -24,11 +22,21 @@ export function middleware(request: NextRequest) {
   requestHeaders.delete("referer");
   requestHeaders.delete("origin");
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  if (!existingPhpSessionId) {
+    response.cookies.set("PHPSESSID", phpSessionId, {
+      path: "/",
+      maxAge: 30 * 60,
+      sameSite: "lax",
+    });
+  }
+
+  return response;
 }
 
 export const config = {

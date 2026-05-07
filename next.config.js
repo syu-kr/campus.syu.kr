@@ -40,6 +40,13 @@ const nextConfig = {
     optimizePackageImports: ["@tanstack/react-query"],
   },
 
+  rewrites: async () => [
+    {
+      source: "/bus/shuttle",
+      destination: "http://nexmotion.co.kr/bus/busStatusList.php",
+    },
+  ],
+
   // 캐싱 설정
   headers: async () => {
     const noStoreHeaders = [

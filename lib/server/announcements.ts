@@ -28,6 +28,14 @@ const CATEGORY_ORDER: AnnouncementCategory[] = [
   "campus",
   "scholarship",
 ];
+const ANNOUNCEMENT_CACHE_TTL_MS = 60 * 1000;
+const announcementCache = new Map<
+  AnnouncementCategory,
+  {
+    expiresAt: number;
+    promise: Promise<Announcement[]>;
+  }
+>();
 
 export async function getAnnouncementPage({
   category = "all",
@@ -85,6 +93,28 @@ export async function getAnnouncementSummary(limit = 12) {
 }
 
 async function readAnnouncements(
+  category: AnnouncementCategory,
+): Promise<Announcement[]> {
+  const now = Date.now();
+  const cached = announcementCache.get(category);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.promise;
+  }
+
+  const promise = readAnnouncementsFromDisk(category).catch((error) => {
+    announcementCache.delete(category);
+    throw error;
+  });
+  announcementCache.set(category, {
+    expiresAt: now + ANNOUNCEMENT_CACHE_TTL_MS,
+    promise,
+  });
+
+  return promise;
+}
+
+async function readAnnouncementsFromDisk(
   category: AnnouncementCategory,
 ): Promise<Announcement[]> {
   const fileName = SOURCE_BY_CATEGORY[category];

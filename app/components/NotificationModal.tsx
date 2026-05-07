@@ -34,6 +34,19 @@ export function NotificationModal() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isVisible]);
+
   const handleClose = () => {
     setIsVisible(false);
   };
@@ -48,7 +61,12 @@ export function NotificationModal() {
   if (!isVisible || !notification) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end z-50 pointer-events-none">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-end z-50 pointer-events-none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="notification-title"
+    >
       <div
         className="pointer-events-auto w-full bg-white rounded-t-2xl shadow-2xl p-6 sm:rounded-lg sm:m-4 sm:max-w-md sm:ml-auto sm:mr-auto animate-in slide-in-from-bottom-5"
         onClick={handleClick}
@@ -65,7 +83,10 @@ export function NotificationModal() {
             />
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 break-words">
+            <h3
+              id="notification-title"
+              className="font-semibold text-gray-900 break-words"
+            >
               {notification.title}
             </h3>
             <p className="text-sm text-gray-600 mt-1 break-words">
@@ -74,6 +95,7 @@ export function NotificationModal() {
           </div>
         </div>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             handleClose();
