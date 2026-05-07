@@ -652,7 +652,7 @@ export default function ShuttlePage() {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
-              삼육대학교 셔틀 위치 데이터 기준이며 실제 운행과 다를 수 있습니다.
+              삼육대학교 셔틀 위치 데이터 기준입니다.
               <br />
               5-10초마다 자동으로 업데이트됩니다.
             </p>

@@ -355,12 +355,14 @@ function getNoticeListPath(selectedCategory?: string) {
   if (selectedCategory === "scholarship") return "/more/scholarship";
   if (selectedCategory === "campus") return "/campus/announcements";
   if (selectedCategory === "service") return "/service/notices";
-  return "/academic/announcements";
+  if (selectedCategory === "academic") return "/academic/announcements";
+  return "/announcements";
 }
 
 function getNoticeListLabel(selectedCategory?: string) {
   if (selectedCategory === "scholarship") return "장학금 전체보기";
   if (selectedCategory === "campus") return "캠퍼스공지 전체보기";
   if (selectedCategory === "service") return "서비스공지 전체보기";
-  return "학사공지 전체보기";
+  if (selectedCategory === "academic") return "학사공지 전체보기";
+  return "전체 공지 보기";
 }

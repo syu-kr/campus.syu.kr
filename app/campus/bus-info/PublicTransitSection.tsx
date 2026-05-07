@@ -122,6 +122,9 @@ export default function PublicTransitSection() {
             </p>
             <p className="mt-2 text-xs leading-5 text-neutral-500">
               공공/API 데이터 기준이며 실제 도착과 다를 수 있습니다.
+              <br />
+              정보는 10초마다 자동으로 새로고침됩니다. 데이터 출처:
+              경기도 공공데이터포털
             </p>
           </div>
           <button
@@ -347,17 +350,6 @@ export default function PublicTransitSection() {
           })}
         </div>
       )}
-
-      <div className="mt-6 p-3 sm:p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-        <div className="space-y-2">
-          <p className="text-xs sm:text-sm text-green-900 font-medium flex items-center gap-2">
-            정보는 10초마다 자동으로 새로고침됩니다
-          </p>
-          <p className="text-xs text-green-700">
-            데이터 출처: 경기도 공공데이터포털
-          </p>
-        </div>
-      </div>
 
       <BusDetailModal
         bus={selectedBus}

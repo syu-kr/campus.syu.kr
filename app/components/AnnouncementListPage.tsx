@@ -15,7 +15,7 @@ const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 interface AnnouncementListPageProps {
-  category: "academic" | "campus";
+  category: "all" | "academic" | "campus";
   title: string;
   description: string;
   errorMessage: string;
