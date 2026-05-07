@@ -369,25 +369,59 @@ export async function fetchCampusTips(): Promise<CampusTip[]> {
 }
 
 // 버스 실시간 위치 API
-export async function fetchBusLocations(): Promise<BusLocation[]> {
-  const response = await fetchJson<{
-    success: boolean;
-    data: BusLocation[];
-    error?: string;
-  }>("/api/bus/shuttle", {
-    fallback: {
-      success: false,
-      data: [],
-      error: "셔틀 위치 API 응답을 받지 못했습니다.",
-    },
-    method: "GET",
-  });
+interface ShuttleLocationPayload {
+  returnCode?: string;
+  data?: unknown[];
+}
 
-  if (!response.success) {
-    throw new Error(response.error || "셔틀 위치 정보를 불러오지 못했습니다.");
+function toBusLocation(item: unknown): BusLocation | null {
+  if (!item || typeof item !== "object") return null;
+
+  const record = item as Record<string, unknown>;
+  const id = String(record.id ?? record.name ?? "");
+  const name = String(record.name ?? id);
+  const lat = String(record.lat ?? "");
+  const lon = String(record.lon ?? "");
+  const status = Number(record.status);
+  const routeid = Number(record.routeid);
+
+  if (!id || !Number.isFinite(status) || !Number.isFinite(routeid)) {
+    return null;
   }
 
-  return response.data;
+  return {
+    id,
+    name,
+    lat,
+    lon,
+    status: status as BusLocation["status"],
+    routeid: routeid as BusLocation["routeid"],
+  };
+}
+
+export async function fetchBusLocations(): Promise<BusLocation[]> {
+  const response = await fetchJson<ShuttleLocationPayload>("/bus/shuttle", {
+    fallback: {
+      returnCode: "500",
+      data: [],
+    },
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Cache-Control": "no-cache",
+      Pragma: "no-cache",
+    },
+    timeoutMs: 8000,
+  });
+
+  if (response.returnCode && response.returnCode !== "200") {
+    throw new Error("셔틀 위치 정보를 불러오지 못했습니다.");
+  }
+
+  return (Array.isArray(response.data) ? response.data : [])
+    .map(toBusLocation)
+    .filter((item): item is BusLocation => item !== null)
+    .filter((bus) => bus.status !== 0);
 }
 
 export {
