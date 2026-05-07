@@ -27,7 +27,26 @@ interface ShuttleLocationFetchResult {
   locations: BusLocation[];
   payload: ShuttleLocationPayload;
   upstreamUrl: string;
-  fetchMode: "rewrite" | "direct";
+}
+
+function getCookieValue(cookieHeader: string | null, name: string) {
+  if (!cookieHeader) return null;
+
+  return (
+    cookieHeader
+      .split(";")
+      .map((item) => item.trim())
+      .find((item) => item.startsWith(`${name}=`))
+      ?.slice(name.length + 1) ?? null
+  );
+}
+
+function createPhpSessionId() {
+  return crypto.randomBytes(16).toString("hex");
+}
+
+function createPhpSessionCookie(phpSessionId: string) {
+  return `PHPSESSID=${phpSessionId}; Path=/; Max-Age=1800; SameSite=Lax`;
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -56,21 +75,10 @@ function toBusLocation(item: unknown): BusLocation | null {
 }
 
 async function fetchShuttleLocations(
-  request: Request,
+  phpSessionId: string,
 ): Promise<ShuttleLocationFetchResult> {
   const url = new URL(SHUTTLE_LOCATION_URL);
-  let payload: ShuttleLocationPayload;
-  let upstreamUrl = url.toString();
-  let fetchMode: ShuttleLocationFetchResult["fetchMode"] = "direct";
-
-  try {
-    const rewriteResult = await fetchJsonViaRewrite(request);
-    payload = rewriteResult.payload;
-    upstreamUrl = rewriteResult.upstreamUrl;
-    fetchMode = "rewrite";
-  } catch {
-    payload = await fetchJsonOverHttp(url);
-  }
+  const payload = await fetchJsonOverHttp(url, phpSessionId);
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
@@ -85,15 +93,15 @@ async function fetchShuttleLocations(
   return {
     locations,
     payload,
-    upstreamUrl,
-    fetchMode,
+    upstreamUrl: url.toString(),
   };
 }
 
-function fetchJsonOverHttp(url: URL): Promise<ShuttleLocationPayload> {
+function fetchJsonOverHttp(
+  url: URL,
+  phpSessionId: string,
+): Promise<ShuttleLocationPayload> {
   return new Promise((resolve, reject) => {
-    const phpSessionId = crypto.randomBytes(16).toString("hex");
-
     const request = http.request(
       {
         protocol: url.protocol,
@@ -142,33 +150,15 @@ function fetchJsonOverHttp(url: URL): Promise<ShuttleLocationPayload> {
   });
 }
 
-async function fetchJsonViaRewrite(
-  request: Request,
-): Promise<{ payload: ShuttleLocationPayload; upstreamUrl: string }> {
-  const rewriteUrl = new URL("/bus/shuttle", request.url);
-  const response = await fetch(rewriteUrl, {
-    cache: "no-store",
-    headers: {
-      Accept: "application/json",
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Shuttle location rewrite returned ${response.status}`);
-  }
-
-  return {
-    payload: (await response.json()) as ShuttleLocationPayload,
-    upstreamUrl: rewriteUrl.toString(),
-  };
-}
-
 export async function GET(request: Request) {
+  const cookieHeader = request.headers.get("cookie");
+  const phpSessionId =
+    getCookieValue(cookieHeader, "PHPSESSID") ?? createPhpSessionId();
+  const phpSessionCookie = createPhpSessionCookie(phpSessionId);
+
   try {
-    const { locations, payload, upstreamUrl, fetchMode } =
-      await fetchShuttleLocations(request);
+    const { locations, payload, upstreamUrl } =
+      await fetchShuttleLocations(phpSessionId);
     const timestamp = new Date().toISOString();
     const firstLocation = locations[0];
     const searchParams = new URL(request.url).searchParams;
@@ -182,8 +172,9 @@ export async function GET(request: Request) {
           "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
           "X-Shuttle-Upstream": SHUTTLE_LOCATION_URL,
           "X-Shuttle-Upstream-Url": upstreamUrl,
-          "X-Shuttle-Fetch-Mode": fetchMode,
+          "X-Shuttle-Session": phpSessionId,
           "X-Shuttle-Fetched-At": timestamp,
+          "Set-Cookie": phpSessionCookie,
         },
       });
     }
@@ -197,7 +188,7 @@ export async function GET(request: Request) {
           ? {
               debug: {
                 upstreamUrl,
-                fetchMode,
+                phpSessionId,
                 raw: payload,
               },
             }
@@ -214,7 +205,8 @@ export async function GET(request: Request) {
             ? `${firstLocation.name}:${firstLocation.lat},${firstLocation.lon}`
             : "none",
           "X-Shuttle-Upstream-Url": upstreamUrl,
-          "X-Shuttle-Fetch-Mode": fetchMode,
+          "X-Shuttle-Session": phpSessionId,
+          "Set-Cookie": phpSessionCookie,
         },
       },
     );
@@ -229,7 +221,13 @@ export async function GET(request: Request) {
         data: [],
         timestamp: new Date().toISOString(),
       },
-      { status: 502, headers: NO_STORE_HEADERS },
+      {
+        status: 502,
+        headers: {
+          ...NO_STORE_HEADERS,
+          "Set-Cookie": phpSessionCookie,
+        },
+      },
     );
   }
 }
