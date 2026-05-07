@@ -12,17 +12,17 @@ const frequentMenus = [
   { id: "2", iconName: "bus", label: "버스 정보", path: "/campus/bus-info" },
   {
     id: "3",
+    iconName: "lightbulb",
+    label: "캠퍼스 꿀팁",
+    path: "/more/campus-tips",
+  },
+  { id: "4", iconName: "award", label: "장학금", path: "/more/scholarship" },
+  {
+    id: "5",
     iconName: "map",
     label: "캠퍼스 지도",
     path: "/campus/map",
   },
-  {
-    id: "4",
-    iconName: "calendar",
-    label: "학사일정",
-    path: "/academic/schedule",
-  },
-  { id: "5", iconName: "award", label: "장학금", path: "/more/scholarship" },
   { id: "6", iconName: "book-open", label: "도서관", path: "/campus/library" },
 ];
 

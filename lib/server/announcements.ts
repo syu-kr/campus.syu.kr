@@ -70,16 +70,18 @@ export async function getAnnouncementPage({
 }
 
 export async function getAnnouncementSummary(limit = 12) {
-  const page = await getAnnouncementPage({
-    category: "all",
-    page: 1,
-    limit,
-  });
+  const sourceItems = await Promise.all(
+    CATEGORY_ORDER.map((sourceCategory) => readAnnouncements(sourceCategory)),
+  );
 
-  return page.items.map((item) => ({
-    ...item,
-    content: item.content ? item.content.slice(0, 240) : "",
-  }));
+  return sourceItems
+    .flat()
+    .sort(sortAnnouncementsByDate)
+    .slice(0, limit)
+    .map((item) => ({
+      ...item,
+      content: item.content ? item.content.slice(0, 240) : "",
+    }));
 }
 
 async function readAnnouncements(
@@ -103,5 +105,16 @@ function sortAnnouncements(a: Announcement, b: Announcement) {
   if (!a.isPinned && b.isPinned) return 1;
   if (a.isImportant && !b.isImportant) return -1;
   if (!a.isImportant && b.isImportant) return 1;
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
+  return sortAnnouncementsByDate(a, b);
+}
+
+function sortAnnouncementsByDate(a: Announcement, b: Announcement) {
+  return parseAnnouncementDate(b.date) - parseAnnouncementDate(a.date);
+}
+
+function parseAnnouncementDate(date: string) {
+  const normalizedDate = date.replace(/\./g, "-");
+  const parsed = new Date(normalizedDate).getTime();
+
+  return Number.isNaN(parsed) ? 0 : parsed;
 }

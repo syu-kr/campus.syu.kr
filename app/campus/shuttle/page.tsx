@@ -653,6 +653,7 @@ export default function ShuttlePage() {
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
               삼육대학교 셔틀 위치 데이터 기준이며 실제 운행과 다를 수 있습니다.
+              <br />
               5-10초마다 자동으로 업데이트됩니다.
             </p>
             {!isWithinOperationHours && (
@@ -965,15 +966,6 @@ export default function ShuttlePage() {
           })}
       </div>
 
-      <Card className="mt-8 bg-blue-50 border border-blue-200">
-        <p className="text-sm text-blue-900 mb-2">
-          <strong>안내:</strong> 셔틀버스 운행 시간은 학기 또는 행사에 따라
-          변경될 수 있습니다.
-        </p>
-        <p className="text-xs text-blue-800">
-          정확한 정보는 캠퍼스 공지사항을 확인해주세요.
-        </p>
-      </Card>
     </Container>
   );
 }
