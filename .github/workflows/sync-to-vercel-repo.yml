@@ -1,0 +1,108 @@
+name: Sync to Vercel Repository
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: sync-to-vercel-repo-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_FIREBASE_API_KEY: "ci-placeholder"
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "ci-placeholder.firebaseapp.com"
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: "ci-placeholder"
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "ci-placeholder.appspot.com"
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+  NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:ci"
+  NEXT_PUBLIC_FIREBASE_VAPID_KEY: "ci-placeholder"
+  NEXT_PUBLIC_KAKAO_MAP_KEY: "ci-placeholder"
+  NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY: "ci-placeholder"
+  PUSH_API_KEY: "ci-placeholder"
+
+jobs:
+  verify-and-sync:
+    name: Verify and Sync
+    if: github.repository != 'singhic/syu-campus'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        run: npm run build
+
+      - name: Clone destination repository
+        env:
+          VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_PERSONAL_ACCOUNT_TOKEN" ]; then
+            echo "VERCEL_PERSONAL_ACCOUNT_TOKEN secret is not configured."
+            exit 1
+          fi
+
+          DESTINATION_DIR="$(mktemp -d)"
+          echo "DESTINATION_DIR=$DESTINATION_DIR" >> "$GITHUB_ENV"
+          git clone --depth 1 "https://x-access-token:${VERCEL_PERSONAL_ACCOUNT_TOKEN}@github.com/singhic/syu-campus.git" "$DESTINATION_DIR"
+
+      - name: Copy source files
+        run: |
+          find "$DESTINATION_DIR" -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+          rsync -a "$GITHUB_WORKSPACE"/ "$DESTINATION_DIR"/ \
+            --exclude ".git/" \
+            --exclude ".github/workflows/" \
+            --exclude ".next/" \
+            --exclude "node_modules/" \
+            --exclude ".env" \
+            --exclude ".env.local" \
+            --exclude ".env.*.local" \
+            --exclude "tsconfig.tsbuildinfo" \
+            --exclude ".cache/" \
+            --exclude ".cache_ggshield" \
+            --exclude ".venv/" \
+            --exclude ".vscode/"
+
+      - name: Push changes to destination repository
+        env:
+          OFFICIAL_ACCOUNT_EMAIL: ${{ secrets.OFFICIAL_ACCOUNT_EMAIL }}
+        run: |
+          if [ -z "$OFFICIAL_ACCOUNT_EMAIL" ]; then
+            echo "OFFICIAL_ACCOUNT_EMAIL secret is not configured."
+            exit 1
+          fi
+
+          cd "$DESTINATION_DIR"
+          git config user.name "github-actions[bot]"
+          git config user.email "$OFFICIAL_ACCOUNT_EMAIL"
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to sync."
+            exit 0
+          fi
+
+          git commit -m "chore: sync syu-campus for Vercel deployment"
+          git push origin main
