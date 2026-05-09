@@ -13,7 +13,7 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 ### 설치
 
 ```bash
-git clone https://github.com/singhic/syu-campus.git
+git clone https://github.com/syu-kr/campus.syu.kr.git
 cd syu-campus
 npm install
 cp .env.example .env.local

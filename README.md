@@ -26,7 +26,7 @@
 ### 설치 및 실행
 
 ```bash
-git clone https://github.com/singhic/syu-campus.git
+git clone https://github.com/syu-kr/campus.syu.kr.git
 cd syu-campus
 npm install
 cp .env.example .env.local
