@@ -133,7 +133,7 @@ python scripts/crawl_phone.py
 
 - 날씨: 기상청 단기예보/초단기예보 API
 - 대중교통: 서울/경기도 공공데이터 버스 API
-- 셔틀 위치: `/bus/shuttle` rewrites를 통해 `https://bus.syu.kr/api` 호출
+- 셔틀 위치: `/bus/shuttle` rewrites를 통해 `http://nexmotion.co.kr/bus/busStatusList.php` 호출
 - 지도: Kakao Maps JavaScript SDK
 
 버스 API 상세는 [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md)를 참고하세요.
