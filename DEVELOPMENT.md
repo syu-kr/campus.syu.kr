@@ -87,26 +87,47 @@ Client UI
 
 ## 환경 변수
 
-`.env.example`을 기준으로 `.env.local`을 구성합니다.
+`.env.example`을 기준으로 `.env.local`을 구성합니다. `NEXT_PUBLIC_*` 값은 브라우저에 노출됩니다. 서비스 계정, 푸시 API 키, 관리자 키는 서버 환경 변수로만 설정하세요.
 
-```env
-NEXT_PUBLIC_KAKAO_MAP_KEY=
-NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY=
+### Local/Vercel Runtime Variables
 
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_VAPID_KEY=
+Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 
-FIREBASE_SERVICE_ACCOUNT=
-FIREBASE_ADMIN_SDK_KEY=
-PUSH_API_KEY=
-```
+| 이름 | 필수 | 사용처 | 설명 |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_KAKAO_MAP_KEY` | 필수 | campus map | Kakao Maps JavaScript SDK 키 |
+| `NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY` | 필수 | weather, public transit | 공공데이터포털 서비스 키 |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | 필수 | Firebase client | Firebase Web App API key |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | 필수 | Firebase client | Firebase Auth domain |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | Firebase client/admin scripts | Firebase project id |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | 필수 | Firebase client | Firebase storage bucket |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | 필수 | Firebase client/FCM | Firebase messaging sender id |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase client | Firebase app id |
+| `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | FCM web push | Web Push VAPID public key |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
+| `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
+| `ADMIN_EMAILS` | 권장 | `/api/admin/submissions` | 관리자 허용 이메일 목록, 쉼표로 구분 |
+| `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |
+| `TOKEN_CLEANUP_DAYS` | 선택 | cleanup tokens script | 오래된 FCM 토큰 삭제 기준 일수, 기본값 `90` |
+| `ANALYZE` | 선택 | bundle analyzer | `true`일 때 bundle analyzer 활성화 |
+| `NEXT_PUBLIC_APP_URL` | 선택 | reserved/config | 앱 공개 URL. 현재 핵심 런타임 코드에서는 직접 사용하지 않음 |
 
-`NEXT_PUBLIC_*` 값은 브라우저에 노출됩니다. 서비스 계정, 푸시 API 키, 관리자 키는 서버 환경 변수로만 설정하세요.
+`FIREBASE_ADMIN_SDK_KEY`는 `.env.example`에 남아 있는 legacy/대체 형식 값이며, 현재 코드에서는 `FIREBASE_SERVICE_ACCOUNT`를 사용합니다.
+
+### GitHub Actions Secrets
+
+Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables -> Actions`에 등록할 값입니다. `GITHUB_TOKEN`은 GitHub가 자동 제공하므로 직접 만들지 않습니다.
+
+| 이름 | 필수 | 사용 워크플로 | 설명 |
+| --- | --- | --- | --- |
+| `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포 `singhic/syu-campus`에 push 가능한 GitHub fine-grained token. 권한은 해당 repo `Contents: Read and write` |
+| `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
+| `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 URL. 운영 도메인 또는 Vercel production URL |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml` | Firebase Admin service account JSON 문자열 |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
+| `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
+
+Vercel 런타임 환경 변수는 GitHub Actions Secrets와 별개로 Vercel Project Settings에서 관리합니다.
 
 ## 데이터와 API
 
@@ -166,6 +187,7 @@ syu-kr/campus.syu.kr main push
 ```
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
+daily/monthly crawler가 `public/data/` 변경 커밋을 만들면, 해당 워크플로 안에서 검증과 동기화 워크플로를 호출해 개인 레포와 Vercel 배포까지 이어집니다. 데이터 변경이 없으면 동기화도 건너뜁니다.
 
 배포 전 확인:
 
@@ -179,8 +201,8 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: lint, type-check, build
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화
-- daily crawl: 공지, 장학금, 행사, 캠퍼스 공지, 학식
-- monthly crawl: 학사 일정, 전화번호
+- daily crawl: 공지, 장학금, 행사, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
+- monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
 - daily notification: 일일 공지 푸시 발송
 
 ## 개발 규칙

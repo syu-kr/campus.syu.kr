@@ -6,22 +6,56 @@ on:
       - CI
     types:
       - completed
+  workflow_call:
+    inputs:
+      source_ref:
+        description: Source commit SHA or ref to sync
+        required: true
+        type: string
+      verify_before_sync:
+        description: Run lint, type-check, and build before syncing
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      VERCEL_PERSONAL_ACCOUNT_TOKEN:
+        required: true
+      OFFICIAL_ACCOUNT_EMAIL:
+        required: true
 
 concurrency:
-  group: sync-to-vercel-repo-${{ github.event.workflow_run.head_branch }}
+  group: sync-to-vercel-repo-${{ github.event.workflow_run.head_branch || inputs.source_ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  NEXT_PUBLIC_FIREBASE_API_KEY: "ci-placeholder"
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "ci-placeholder.firebaseapp.com"
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: "ci-placeholder"
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "ci-placeholder.appspot.com"
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+  NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:ci"
+  NEXT_PUBLIC_FIREBASE_VAPID_KEY: "ci-placeholder"
+  NEXT_PUBLIC_KAKAO_MAP_KEY: "ci-placeholder"
+  NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY: "ci-placeholder"
+  PUSH_API_KEY: "ci-placeholder"
 
 jobs:
   sync:
     name: Sync
     if: >-
       github.repository != 'singhic/syu-campus' &&
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+      (
+        github.event_name == 'workflow_call' ||
+        (
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
+        )
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -29,7 +63,30 @@ jobs:
       - name: Checkout source repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ inputs.source_ref || github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        if: inputs.verify_before_sync
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        if: inputs.verify_before_sync
+        run: npm ci
+
+      - name: Lint
+        if: inputs.verify_before_sync
+        run: npm run lint
+
+      - name: Type check
+        if: inputs.verify_before_sync
+        run: npm run type-check
+
+      - name: Build
+        if: inputs.verify_before_sync
+        run: npm run build
 
       - name: Clone destination repository
         env:

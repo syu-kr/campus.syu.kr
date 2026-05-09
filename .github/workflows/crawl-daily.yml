@@ -13,6 +13,9 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+      source_ref: ${{ steps.commit.outputs.source_ref }}
 
     steps:
       - name: Set timezone to KST
@@ -49,6 +52,7 @@ jobs:
         run: python scripts/crawl_cafeteria.py
 
       - name: Commit and Push changes
+        id: commit
         run: |
           git config --local user.email "ssb50800@gmail.com"
           git config --local user.name "singhic"
@@ -62,10 +66,24 @@ jobs:
               echo "First push failed, trying with explicit token..."
               git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
             fi
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "✅ Changes pushed successfully"
           else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "ℹ️ No changes to commit - skipping push"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+
+  sync-to-vercel-repo:
+    name: Sync to Vercel Repository
+    needs: crawl
+    if: needs.crawl.outputs.changed == 'true'
+    uses: ./.github/workflows/sync-to-vercel-repo.yml
+    with:
+      source_ref: ${{ needs.crawl.outputs.source_ref }}
+      verify_before_sync: true
+    secrets: inherit
