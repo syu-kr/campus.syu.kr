@@ -136,7 +136,7 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 
 ## Build and Test
 
-- Install dependencies with `npm install`.
+- Install dependencies with `npm ci`.
 - Start local development with `npm run dev`.
 - Validate production builds with `npm run build`.
 - Run the production server with `npm start`.

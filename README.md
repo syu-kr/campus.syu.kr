@@ -27,8 +27,8 @@
 
 ```bash
 git clone https://github.com/syu-kr/campus.syu.kr.git
-cd syu-campus
-npm install
+cd campus.syu.kr
+npm ci
 cp .env.example .env.local
 npm run dev
 ```
@@ -65,7 +65,7 @@ npm run build
 ## 프로젝트 구조
 
 ```text
-syu-campus/
+campus.syu.kr/
 ├── app/                    # Next.js App Router routes, UI, API
 │   ├── api/                # API routes
 │   ├── components/         # shared UI components
@@ -98,6 +98,10 @@ python scripts/crawl_campus.py
 python scripts/crawl_events.py
 python scripts/crawl_cafeteria.py
 ```
+
+## 배포
+
+개발과 협업은 Organization 레포 `syu-kr/campus.syu.kr`에서 진행합니다. `main` 브랜치의 CI가 성공하면 GitHub Actions가 Vercel에 연결된 개인 레포 `singhic/syu-campus`로 소스 파일을 동기화하고, Vercel은 그 개인 레포의 변경을 감지해 배포합니다.
 
 ## 라이선스
 

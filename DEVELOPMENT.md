@@ -14,8 +14,8 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ```bash
 git clone https://github.com/syu-kr/campus.syu.kr.git
-cd syu-campus
-npm install
+cd campus.syu.kr
+npm ci
 cp .env.example .env.local
 npm run dev
 ```
@@ -36,7 +36,7 @@ npm run cleanup-meet-rooms        # 만료된 일정 잡기 방 정리
 ## 프로젝트 구조
 
 ```text
-syu-campus/
+campus.syu.kr/
 ├── app/
 │   ├── api/                    # Next.js API routes
 │   ├── components/             # shared UI components
@@ -153,7 +153,19 @@ python scripts/crawl_phone.py
 
 ## 배포
 
-Vercel에 배포합니다. `main` 브랜치 푸시 또는 PR 생성 시 Vercel이 빌드합니다.
+개발 원본은 Organization 레포 `syu-kr/campus.syu.kr`입니다. Vercel 연결을 유지하기 위해 배포는 개인 레포 `singhic/syu-campus`를 통해 진행합니다.
+
+배포 흐름:
+
+```text
+syu-kr/campus.syu.kr main push
+  -> CI: lint, type-check, build
+  -> Sync to Vercel Repository
+  -> singhic/syu-campus main 동기화
+  -> Vercel 배포
+```
+
+PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
 
 배포 전 확인:
 
@@ -166,6 +178,7 @@ npm run build
 GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: lint, type-check, build
+- sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화
 - daily crawl: 공지, 장학금, 행사, 캠퍼스 공지, 학식
 - monthly crawl: 학사 일정, 전화번호
 - daily notification: 일일 공지 푸시 발송
