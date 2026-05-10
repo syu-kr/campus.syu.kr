@@ -6,6 +6,18 @@ on:
       - CI
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Source commit SHA or ref to sync
+        required: true
+        default: main
+        type: string
+      verify_before_sync:
+        description: Run lint, type-check, and build before syncing
+        required: false
+        default: true
+        type: boolean
   workflow_call:
     inputs:
       source_ref:
@@ -49,7 +61,7 @@ jobs:
     if: >-
       github.repository != 'singhic/syu-campus' &&
       (
-        github.event_name == 'workflow_call' ||
+        github.event_name != 'workflow_run' ||
         (
           github.event.workflow_run.conclusion == 'success' &&
           github.event.workflow_run.head_branch == 'main' &&
