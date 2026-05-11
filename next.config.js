@@ -43,7 +43,7 @@ const nextConfig = {
   rewrites: async () => [
     {
       source: "/bus/shuttle",
-      destination: "http://nexmotion.co.kr/bus/busStatusList.php",
+      destination: "https://bus.syu.kr/api",
     },
   ],
 

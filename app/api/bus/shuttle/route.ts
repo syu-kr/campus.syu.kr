@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
 import http from "node:http";
+import https from "node:https";
 import type { BusLocation } from "@/types";
 
 export const runtime = "nodejs";
@@ -8,9 +9,8 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const SHUTTLE_LOCATION_URL =
-  "http://nexmotion.co.kr/bus/busStatusList.php";
-const SHUTTLE_LOCATION_SOURCE = "nexmotion";
+const SHUTTLE_LOCATION_URL = "https://bus.syu.kr/api";
+const SHUTTLE_LOCATION_SOURCE = "bus.syu.kr";
 const NO_STORE_HEADERS = {
   "Cache-Control":
     "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
@@ -78,7 +78,7 @@ async function fetchShuttleLocations(
   phpSessionId: string,
 ): Promise<ShuttleLocationFetchResult> {
   const url = new URL(SHUTTLE_LOCATION_URL);
-  const payload = await fetchJsonOverHttp(url, phpSessionId);
+  const payload = await fetchJsonFromUrl(url, phpSessionId);
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
@@ -97,16 +97,18 @@ async function fetchShuttleLocations(
   };
 }
 
-function fetchJsonOverHttp(
+function fetchJsonFromUrl(
   url: URL,
   phpSessionId: string,
 ): Promise<ShuttleLocationPayload> {
   return new Promise((resolve, reject) => {
-    const request = http.request(
+    const transport = url.protocol === "https:" ? https : http;
+    const defaultPort = url.protocol === "https:" ? 443 : 80;
+    const request = transport.request(
       {
         protocol: url.protocol,
         hostname: url.hostname,
-        port: url.port || 80,
+        port: url.port || defaultPort,
         path: `${url.pathname}${url.search}`,
         method: "GET",
         headers: {

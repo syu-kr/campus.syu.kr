@@ -131,7 +131,7 @@ FIREBASE_SERVICE_ACCOUNT={"type":"service_account","project_id":"..."}
 Bus API is proxied via `vercel.json` rewrites (see package.json proxy configuration).
 
 - Shuttle realtime endpoint: call `/bus/shuttle` in app code.
-- Rewrite `/bus/shuttle` to `http://nexmotion.co.kr/bus/busStatusList.php`.
+- Rewrite `/bus/shuttle` to `https://bus.syu.kr/api`.
 - The upstream endpoint supports `GET` only (do not use `POST`).
 
 ## Build and Test
@@ -187,10 +187,10 @@ Bus API is proxied via `vercel.json` rewrites (see package.json proxy configurat
 - **HTTPS connections timeout**. Always use HTTP: `http://ws.bus.go.kr/api/rest/arrive/getArrInfoByStId`
 - Gyeonggi bus API (apis.data.go.kr) works with HTTPS.
 
-**Shuttle Realtime API (nexmotion.co.kr):**
+**Shuttle Realtime API (bus.syu.kr):**
 
 - Use proxied path `/bus/shuttle` rather than upstream URLs directly in client code.
-- Upstream `http://nexmotion.co.kr/bus/busStatusList.php` accepts `GET`.
+- Upstream `https://bus.syu.kr/api` accepts `GET`.
 - Response `status` may arrive as a string (`"0" | "1" | "2"`), so normalize to number before filtering/rendering.
 
 **Safari Date Parsing:**
