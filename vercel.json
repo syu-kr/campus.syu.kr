@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/bus/shuttle",
-      "destination": "https://bus.syu.kr/api"
+      "destination": "/api/bus/shuttle?raw=1"
     }
   ],
   "headers": [

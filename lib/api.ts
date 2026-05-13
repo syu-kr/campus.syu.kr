@@ -401,20 +401,23 @@ function toBusLocation(item: unknown): BusLocation | null {
 }
 
 export async function fetchBusLocations(): Promise<BusLocation[]> {
-  const response = await fetchJson<ShuttleLocationPayload>("/bus/shuttle", {
-    fallback: {
-      returnCode: "500",
-      data: [],
+  const response = await fetchJson<ShuttleLocationPayload>(
+    "/api/bus/shuttle?raw=1",
+    {
+      fallback: {
+        returnCode: "500",
+        data: [],
+      },
+      method: "GET",
+      credentials: "same-origin",
+      headers: {
+        Accept: "*/*",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+      timeoutMs: 8000,
     },
-    method: "GET",
-    credentials: "same-origin",
-    headers: {
-      Accept: "*/*",
-      "Cache-Control": "no-cache",
-      Pragma: "no-cache",
-    },
-    timeoutMs: 8000,
-  });
+  );
 
   if (response.returnCode && response.returnCode !== "200") {
     throw new Error("셔틀 위치 정보를 불러오지 못했습니다.");

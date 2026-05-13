@@ -43,7 +43,7 @@ const nextConfig = {
   rewrites: async () => [
     {
       source: "/bus/shuttle",
-      destination: "https://bus.syu.kr/api",
+      destination: "/api/bus/shuttle?raw=1",
     },
   ],
 

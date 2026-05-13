@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import crypto from "node:crypto";
 import http from "node:http";
 import https from "node:https";
 import type { BusLocation } from "@/types";
@@ -11,6 +10,9 @@ export const fetchCache = "force-no-store";
 
 const SHUTTLE_LOCATION_URL = "https://bus.syu.kr/api";
 const SHUTTLE_LOCATION_SOURCE = "bus.syu.kr";
+const SHUTTLE_REFERER = "https://bus.syu.kr/";
+const SHUTTLE_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0";
 const NO_STORE_HEADERS = {
   "Cache-Control":
     "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
@@ -27,26 +29,6 @@ interface ShuttleLocationFetchResult {
   locations: BusLocation[];
   payload: ShuttleLocationPayload;
   upstreamUrl: string;
-}
-
-function getCookieValue(cookieHeader: string | null, name: string) {
-  if (!cookieHeader) return null;
-
-  return (
-    cookieHeader
-      .split(";")
-      .map((item) => item.trim())
-      .find((item) => item.startsWith(`${name}=`))
-      ?.slice(name.length + 1) ?? null
-  );
-}
-
-function createPhpSessionId() {
-  return crypto.randomBytes(16).toString("hex");
-}
-
-function createPhpSessionCookie(phpSessionId: string) {
-  return `PHPSESSID=${phpSessionId}; Path=/; Max-Age=1800; SameSite=Lax`;
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -74,11 +56,9 @@ function toBusLocation(item: unknown): BusLocation | null {
   };
 }
 
-async function fetchShuttleLocations(
-  phpSessionId: string,
-): Promise<ShuttleLocationFetchResult> {
+async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
   const url = new URL(SHUTTLE_LOCATION_URL);
-  const payload = await fetchJsonFromUrl(url, phpSessionId);
+  const payload = await fetchJsonFromUrl(url);
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
@@ -97,10 +77,7 @@ async function fetchShuttleLocations(
   };
 }
 
-function fetchJsonFromUrl(
-  url: URL,
-  phpSessionId: string,
-): Promise<ShuttleLocationPayload> {
+function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
   return new Promise((resolve, reject) => {
     const transport = url.protocol === "https:" ? https : http;
     const defaultPort = url.protocol === "https:" ? 443 : 80;
@@ -113,10 +90,20 @@ function fetchJsonFromUrl(
         method: "GET",
         headers: {
           Accept: "*/*",
+          "Accept-Language": "ko,en;q=0.9,en-US;q=0.8",
           "Cache-Control": "no-cache",
+          DNT: "1",
           Pragma: "no-cache",
-          Cookie: `PHPSESSID=${phpSessionId}`,
-          "User-Agent": "SYU-CAMPUS/1.0",
+          Priority: "u=1, i",
+          Referer: SHUTTLE_REFERER,
+          "Sec-CH-UA":
+            '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
+          "Sec-CH-UA-Mobile": "?0",
+          "Sec-CH-UA-Platform": '"Windows"',
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-origin",
+          "User-Agent": SHUTTLE_USER_AGENT,
         },
       },
       (response) => {
@@ -153,14 +140,8 @@ function fetchJsonFromUrl(
 }
 
 export async function GET(request: Request) {
-  const cookieHeader = request.headers.get("cookie");
-  const phpSessionId =
-    getCookieValue(cookieHeader, "PHPSESSID") ?? createPhpSessionId();
-  const phpSessionCookie = createPhpSessionCookie(phpSessionId);
-
   try {
-    const { locations, payload, upstreamUrl } =
-      await fetchShuttleLocations(phpSessionId);
+    const { locations, payload, upstreamUrl } = await fetchShuttleLocations();
     const timestamp = new Date().toISOString();
     const firstLocation = locations[0];
     const searchParams = new URL(request.url).searchParams;
@@ -174,9 +155,7 @@ export async function GET(request: Request) {
           "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
           "X-Shuttle-Upstream": SHUTTLE_LOCATION_URL,
           "X-Shuttle-Upstream-Url": upstreamUrl,
-          "X-Shuttle-Session": phpSessionId,
           "X-Shuttle-Fetched-At": timestamp,
-          "Set-Cookie": phpSessionCookie,
         },
       });
     }
@@ -190,7 +169,6 @@ export async function GET(request: Request) {
           ? {
               debug: {
                 upstreamUrl,
-                phpSessionId,
                 raw: payload,
               },
             }
@@ -207,8 +185,6 @@ export async function GET(request: Request) {
             ? `${firstLocation.name}:${firstLocation.lat},${firstLocation.lon}`
             : "none",
           "X-Shuttle-Upstream-Url": upstreamUrl,
-          "X-Shuttle-Session": phpSessionId,
-          "Set-Cookie": phpSessionCookie,
         },
       },
     );
@@ -225,10 +201,7 @@ export async function GET(request: Request) {
       },
       {
         status: 502,
-        headers: {
-          ...NO_STORE_HEADERS,
-          "Set-Cookie": phpSessionCookie,
-        },
+        headers: NO_STORE_HEADERS,
       },
     );
   }
