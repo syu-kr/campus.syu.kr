@@ -1,3 +1,11 @@
+export type LectureDay = "월" | "화" | "수" | "목" | "금" | "토" | "일";
+
+export interface LectureTimeSlot {
+  day: LectureDay;
+  startPeriod: number;
+  endPeriod: number;
+}
+
 export interface LectureTimetableCourse {
   id: string;
   courseCode?: string;
@@ -11,8 +19,10 @@ export interface LectureTimetableCourse {
   credits: number | null;
   professor?: string;
   classTime?: string;
+  timeSlots: LectureTimeSlot[];
   place?: string;
   note?: string;
+  teamTeaching?: string;
   semesterLabel?: string;
   sourceYear?: string;
 }
@@ -95,6 +105,38 @@ export function normalizeCourseName(name: string): string {
     .trim();
 }
 
+export function parseLectureTimeSlots(classTime?: string): LectureTimeSlot[] {
+  if (!classTime) return [];
+
+  return classTime
+    .split(",")
+    .map((part) => part.trim())
+    .flatMap((part) => {
+      const match = part.match(/^([월화수목금토일])(\d+)(?:~(\d+))?$/);
+      if (!match) return [];
+
+      const startPeriod = Number(match[2]);
+      const endPeriod = Number(match[3] ?? match[2]);
+
+      if (
+        !Number.isFinite(startPeriod) ||
+        !Number.isFinite(endPeriod) ||
+        startPeriod <= 0 ||
+        endPeriod <= 0
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          day: match[1] as LectureDay,
+          startPeriod: Math.min(startPeriod, endPeriod),
+          endPeriod: Math.max(startPeriod, endPeriod),
+        },
+      ];
+    });
+}
+
 export function buildLectureMatchMap(
   courses: LectureTimetableCourse[],
 ): LectureMatchMap {
@@ -150,6 +192,7 @@ function normalizeLectureRow(
 
   const courseCode = stringValue(row["과목코드"] ?? row.courseCode);
   const lectureNumber = stringValue(row["강좌번호"] ?? row.lectureNumber);
+  const classTime = stringValue(row["수업시간"] ?? row.classTime);
 
   return {
     id:
@@ -167,9 +210,11 @@ function normalizeLectureRow(
     areaType: stringValue(row["영역구분"] ?? row.areaType),
     credits: numberValue(row["학점"] ?? row.credits),
     professor: stringValue(row["교수명"] ?? row.professor),
-    classTime: stringValue(row["수업시간"] ?? row.classTime),
+    classTime,
+    timeSlots: parseLectureTimeSlots(classTime),
     place: stringValue(row["장소"] ?? row.place),
     note: stringValue(row["비고"] ?? row.note),
+    teamTeaching: stringValue(row["팀티칭여부"] ?? row.teamTeaching),
     semesterLabel: metadata.semester,
     sourceYear: metadata.year,
   };

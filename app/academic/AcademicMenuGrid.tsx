@@ -36,8 +36,8 @@ const academicMenus = [
     title: "시간표 짜기",
     description: "학기 시간표 작성 마법사",
     icon: "clock",
-    href: "https://lecture.syu.kr/timetable",
-    isExternal: true,
+    href: "/academic/timetable",
+    isExternal: false,
   },
   {
     id: "mock-sugang",
