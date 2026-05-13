@@ -27,11 +27,10 @@ export async function GET(req: NextRequest) {
 
     const db = getFirestore();
     const [inquiriesSnapshot, tipSuggestionsSnapshot] = await Promise.all([
-      db.collection("site_inquiries").orderBy("created_at", "desc").limit(100).get(),
+      db.collection("site_inquiries").orderBy("created_at", "desc").get(),
       db
         .collection("campus_tip_suggestions")
         .orderBy("created_at", "desc")
-        .limit(100)
         .get(),
     ]);
 
