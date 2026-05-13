@@ -1,6 +1,11 @@
 import { readFile } from "fs/promises";
 import path from "path";
-import type { AcademicSchedule, CafeteriaMenu } from "@/types";
+import type {
+  AcademicSchedule,
+  CafeteriaMenu,
+  ShuttleBusSchedule,
+  ShuttleSpecialPeriods,
+} from "@/types";
 
 async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
   try {
@@ -54,4 +59,15 @@ export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
 
 export function getHomeAcademicSchedules(): Promise<AcademicSchedule[]> {
   return readPublicData<AcademicSchedule[]>("schedules-major.json", []);
+}
+
+export function getHomeShuttleBuses(): Promise<ShuttleBusSchedule[]> {
+  return readPublicData<ShuttleBusSchedule[]>("shuttle-bus-schedule.json", []);
+}
+
+export function getHomeShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriods> {
+  return readPublicData<ShuttleSpecialPeriods>("shuttle-special-periods.json", {
+    specialPeriods: [],
+    vacationPeriods: [],
+  });
 }

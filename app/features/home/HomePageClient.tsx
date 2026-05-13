@@ -10,6 +10,8 @@ import {
   fetchAnnouncements,
   fetchCafeteriaMenu,
   fetchAcademicSchedules,
+  fetchShuttleBuses,
+  fetchShuttleSpecialPeriods,
   searchAll,
 } from "@/lib/api";
 import { fetchJson } from "@/lib/fetch-json";
@@ -25,6 +27,8 @@ import type {
   Announcement,
   CafeteriaMenu,
   ServiceNotice,
+  ShuttleBusSchedule,
+  ShuttleSpecialPeriods,
 } from "@/types";
 import { SearchResultsView } from "@/app/features/home/SearchResultsView";
 import {
@@ -34,6 +38,7 @@ import {
 } from "@/app/features/home/HomeMenuSections";
 import {
   HomeNoticesSection,
+  TodayShuttleSection,
   TodayMenuSection,
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
@@ -49,6 +54,8 @@ interface HomePageClientProps {
   initialServiceNotices: ServiceNotice[];
   initialCafeteria: CafeteriaMenu[];
   initialSchedules: AcademicSchedule[];
+  initialShuttleBuses: ShuttleBusSchedule[];
+  initialShuttleSpecialPeriods: ShuttleSpecialPeriods;
   initialNowIso: string;
 }
 
@@ -57,6 +64,8 @@ export function HomePageClient({
   initialServiceNotices,
   initialCafeteria,
   initialSchedules,
+  initialShuttleBuses,
+  initialShuttleSpecialPeriods,
   initialNowIso,
 }: HomePageClientProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
@@ -116,6 +125,25 @@ export function HomePageClient({
     initialData: initialSchedules,
     staleTime: THIRTY_MINUTES,
     gcTime: ONE_HOUR,
+  });
+
+  const { data: shuttleBuses, isLoading: shuttleBusesLoading } = useQuery({
+    queryKey: ["shuttle-buses"],
+    queryFn: () => fetchShuttleBuses(),
+    initialData: initialShuttleBuses,
+    staleTime: FIVE_MINUTES,
+    gcTime: THIRTY_MINUTES,
+  });
+
+  const {
+    data: shuttleSpecialPeriods,
+    isLoading: shuttleSpecialPeriodsLoading,
+  } = useQuery({
+    queryKey: ["shuttle-special-periods"],
+    queryFn: () => fetchShuttleSpecialPeriods(),
+    initialData: initialShuttleSpecialPeriods,
+    staleTime: FIVE_MINUTES,
+    gcTime: THIRTY_MINUTES,
   });
 
   const { data: searchResults, isLoading: searchLoading } = useQuery({
@@ -181,9 +209,11 @@ export function HomePageClient({
         todayInfo={todayInfo}
         todayMenu={todayMenu ?? null}
       />
-      <TodaySchedulesSection
-        isLoading={schedulesLoading}
-        schedules={todaySchedules}
+      <TodayShuttleSection
+        isLoading={shuttleBusesLoading || shuttleSpecialPeriodsLoading}
+        buses={shuttleBuses}
+        specialPeriods={shuttleSpecialPeriods}
+        now={now}
       />
       <HomeNoticesSection
         selectedCategory={selectedCategory}
@@ -192,6 +222,10 @@ export function HomePageClient({
         serviceNoticesLoading={serviceNoticesLoading}
         announcementsLoading={announcementsLoading}
         homeNotices={homeNotices}
+      />
+      <TodaySchedulesSection
+        isLoading={schedulesLoading}
+        schedules={todaySchedules}
       />
 
       <FrequentMenuGrid />

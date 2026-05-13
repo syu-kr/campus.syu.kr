@@ -1,12 +1,22 @@
 import Link from "next/link";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
-import { HomeNoticeCard, ServiceNoticeCard } from "@/app/components/HomeNoticeCard";
+import {
+  HomeNoticeCard,
+  ServiceNoticeCard,
+} from "@/app/components/HomeNoticeCard";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
+import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
-import type { AcademicSchedule, CafeteriaMenu, ServiceNotice } from "@/types";
+import type {
+  AcademicSchedule,
+  CafeteriaMenu,
+  ServiceNotice,
+  ShuttleBusSchedule,
+  ShuttleSpecialPeriods,
+} from "@/types";
 import type { HomeNotice, TodayInfo } from "@/lib/home";
 
 const categoryFilters = [
@@ -144,8 +154,8 @@ export function TodayMenuSection({
           !todayInfo.isWeekend &&
           todayMenu &&
           !isCafeteriaClosedDay(todayMenu) && (
-          <TodayMenuCard todayMenu={todayMenu} />
-        )}
+            <TodayMenuCard todayMenu={todayMenu} />
+          )}
         {!isLoading &&
           !todayInfo.isWeekend &&
           todayInfo.dayOfWeek === 1 &&
@@ -167,6 +177,108 @@ export function TodayMenuSection({
               }
             />
           )}
+      </div>
+    </div>
+  );
+}
+
+export function TodayShuttleSection({
+  isLoading,
+  buses,
+  specialPeriods,
+  now,
+}: {
+  isLoading: boolean;
+  buses?: ShuttleBusSchedule[];
+  specialPeriods?: ShuttleSpecialPeriods;
+  now: Date | null;
+}) {
+  const summary = getCurrentShuttleSummary({
+    buses,
+    specialPeriods,
+    now,
+    limit: 3,
+  });
+  const primaryDeparture = summary.departures[0];
+
+  return (
+    <div>
+      <SectionTitle title="다음 셔틀" href="/campus/shuttle" />
+      <div className="space-y-3">
+        {isLoading && <Skeleton count={2} />}
+        {!isLoading && summary.isWeekend && (
+          <StateCard
+            type="info"
+            message="오늘은 주말입니다. 셔틀버스가 운행되지 않습니다."
+          />
+        )}
+        {!isLoading &&
+          !summary.isWeekend &&
+          !primaryDeparture &&
+          !summary.hasMoreToday && (
+            <StateCard
+              type="info"
+              message="오늘 남은 셔틀 운행이 없습니다. 전체 시간표를 확인해보세요."
+              action={
+                <Link
+                  href="/campus/shuttle"
+                  className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+                >
+                  셔틀 시간표 보기
+                </Link>
+              }
+            />
+          )}
+        {!isLoading && primaryDeparture && (
+          <Link href="/campus/shuttle" className="block">
+            <Card className="cursor-pointer border border-primary-100 bg-primary-50/70 hover:shadow-card-hover">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Badge color="blue" size="sm">
+                      {summary.scheduleLabel}
+                    </Badge>
+                    {summary.isSpecialSchedule && (
+                      <Badge color="purple" size="sm">
+                        특별운행
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="truncate text-base font-semibold text-neutral-900">
+                    {primaryDeparture.routeName}
+                  </h3>
+                  <p className="mt-1 text-sm text-neutral-600">
+                    {primaryDeparture.time} 출발
+                  </p>
+                </div>
+                <div className="flex items-end justify-between gap-3 sm:block sm:text-right">
+                  <p className="text-3xl font-bold leading-none text-primary-700">
+                    {primaryDeparture.minutesUntil}
+                    <span className="ml-1 text-base font-semibold">분 뒤</span>
+                  </p>
+                </div>
+              </div>
+
+              {summary.departures.length > 1 && (
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {summary.departures.slice(1).map((departure) => (
+                    <div
+                      key={`${departure.routeName}-${departure.time}`}
+                      className="rounded-lg border border-white/80 bg-white/80 px-3 py-2"
+                    >
+                      <p className="truncate text-xs font-semibold text-neutral-800">
+                        {departure.routeName}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-600">
+                        {departure.time} 출발 · {departure.minutesUntil}분 뒤
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -316,7 +428,10 @@ function MealPreview({
   return (
     <div>
       <p className="mb-1 text-xs text-neutral-500">{title}</p>
-      <p className="text-sm text-neutral-700">{previewItems.join(", ")}{suffix}</p>
+      <p className="text-sm text-neutral-700">
+        {previewItems.join(", ")}
+        {suffix}
+      </p>
     </div>
   );
 }
@@ -343,7 +458,10 @@ function MealCorner({
   return (
     <div>
       <p className="mb-1 text-xs font-medium text-green-700">{title}</p>
-      <p className="text-neutral-700">{previewItems.join(", ")}{suffix}</p>
+      <p className="text-neutral-700">
+        {previewItems.join(", ")}
+        {suffix}
+      </p>
     </div>
   );
 }
