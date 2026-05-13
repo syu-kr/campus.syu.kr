@@ -4,7 +4,7 @@
 import io
 import sys
 
-from crawler_utils import NoticeCrawlerConfig, crawl_notice_board
+from crawler_utils import NoticeCrawlerConfig, crawl_notice_board, require_env
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
@@ -14,7 +14,7 @@ def crawl_scholarship_notice():
         NoticeCrawlerConfig(
             category="scholarship",
             label="장학공지",
-            base_url="https://www.syu.ac.kr/academic/scholarship-information/scholarship-notice/page",
+            base_url=require_env("CRAWL_SCHOLARSHIP_NOTICES_URL"),
             output_path="public/data/announcements-scholarship.json",
             default_author="장학팀",
             important_markers=("[공지]", "[중요]", "[필독]"),

@@ -12,6 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict, List, Optional
 import logging
+from crawler_utils import require_env
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_business(self):
         """경영학과 졸업요건"""
-        url = "https://www.syu.ac.kr/doba/경영학과-졸업학점-안내-2/"
+        url = require_env("CRAWL_GRAD_BUSINESS_URL")
         soup = self.fetch_page(url)
         
         return {
@@ -64,7 +65,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_global_korean(self):
         """글로벌한국학과 졸업요건"""
-        url = "https://www.syu.ac.kr/gks/curriculum/academic-credit-table/"
+        url = require_env("CRAWL_GRAD_GLOBAL_KOREAN_URL")
         soup = self.fetch_page(url)
         
         return {
@@ -83,7 +84,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_computer_science(self):
         """컴퓨터공학부 졸업요건"""
-        url = "https://www.syu.ac.kr/cse/"
+        url = require_env("CRAWL_GRAD_COMPUTER_SCIENCE_URL")
         soup = self.fetch_page(url)
         
         return {
@@ -114,7 +115,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_nursing(self):
         """간호학과 졸업요건"""
-        url = "https://www.syu.ac.kr/nursing/"
+        url = require_env("CRAWL_GRAD_NURSING_URL")
         soup = self.fetch_page(url)
         if not soup:
             return {
@@ -147,7 +148,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_pharmacy(self):
         """약학과 졸업요건"""
-        url = "https://www.syu.ac.kr/pharmacy/"
+        url = require_env("CRAWL_GRAD_PHARMACY_URL")
         soup = self.fetch_page(url)
         
         return {
@@ -167,7 +168,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_architecture(self):
         """건축학과 졸업요건"""
-        url = "https://www.syu.ac.kr/arch/curriculum/academic-credit-table/"
+        url = require_env("CRAWL_GRAD_ARCHITECTURE_URL")
         soup = self.fetch_page(url)
         
         return {
@@ -199,7 +200,7 @@ class GraduationRequirementsCrawler:
     # ─────────────────────────────────────────
     def crawl_ai(self):
         """인공지능융합학부 졸업요건"""
-        url = "https://www.syu.ac.kr/aice/curriculum/credits-for-graduation/"
+        url = require_env("CRAWL_GRAD_AI_URL")
         soup = self.fetch_page(url)
         
         return {

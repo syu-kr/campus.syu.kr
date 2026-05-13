@@ -21,6 +21,13 @@ DEFAULT_HEADERS = {
 }
 
 
+def require_env(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        raise RuntimeError(f"{name} environment variable is not configured")
+    return value
+
+
 @dataclass
 class NoticeCrawlerConfig:
     category: str

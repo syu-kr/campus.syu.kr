@@ -13,6 +13,12 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    env:
+      CRAWL_ACADEMIC_NOTICES_URL: ${{ vars.CRAWL_ACADEMIC_NOTICES_URL }}
+      CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
+      CRAWL_EVENT_NOTICES_URL: ${{ vars.CRAWL_EVENT_NOTICES_URL }}
+      CRAWL_CAMPUS_NOTICES_URL: ${{ vars.CRAWL_CAMPUS_NOTICES_URL }}
+      CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
       source_ref: ${{ steps.commit.outputs.source_ref }}

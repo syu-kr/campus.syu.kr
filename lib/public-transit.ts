@@ -5,6 +5,7 @@ import {
   BusLocationInfo,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
+import { requireServerEnv } from "./server/env";
 
 type GyeonggiArrivalResponse = {
   response?: {
@@ -167,13 +168,14 @@ async function fetchSeoulBusArrivals(
   expectedStopName: string,
 ): Promise<BusArrival[]> {
   try {
-    const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-    if (!serviceKey) {
-      console.warn("Seoul bus service key not configured");
-      return [];
-    }
+    const serviceKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
+    const baseUrl = requireServerEnv("SEOUL_BUS_ARRIVAL_URL");
 
-    const url = `http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid?serviceKey=${encodeURIComponent(serviceKey)}&arsId=${arsId}`;
+    const params = new URLSearchParams({
+      serviceKey,
+      arsId,
+    });
+    const url = `${baseUrl}?${params}`;
 
     const response = await fetchWithTimeout(url, {
       method: "GET",
@@ -245,16 +247,18 @@ async function fetchGyeonggiBusArrivals(
   expectedStopName: string,
 ): Promise<BusArrival[]> {
   try {
-    const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-    if (!serviceKey) {
-      console.warn("Gyeonggi bus service key not configured");
-      return [];
-    }
+    const serviceKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
+    const baseUrl = requireServerEnv("GYEONGGI_BUS_ARRIVAL_URL");
 
     // 각 stationId에 대해 병렬 조회
     const promises = stationIds.map(async (stationId: string) => {
       try {
-        const url = `https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalListv2?serviceKey=${encodeURIComponent(serviceKey)}&stationId=${stationId}&format=json`;
+        const params = new URLSearchParams({
+          serviceKey,
+          stationId,
+          format: "json",
+        });
+        const url = `${baseUrl}?${params}`;
 
         const data = await fetchJson<GyeonggiArrivalResponse>(url, {
           fallback: {},
@@ -434,10 +438,15 @@ export async function fetchGyeonggiBusLocations(
   routeId: string,
 ): Promise<BusLocationInfo[]> {
   try {
-    const serviceKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-    if (!serviceKey) return [];
+    const serviceKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
+    const baseUrl = requireServerEnv("GYEONGGI_BUS_LOCATION_URL");
 
-    const url = `https://apis.data.go.kr/6410000/buslocationservice/v2/getBusLocationListv2?serviceKey=${encodeURIComponent(serviceKey)}&routeId=${routeId}&format=json`;
+    const params = new URLSearchParams({
+      serviceKey,
+      routeId,
+      format: "json",
+    });
+    const url = `${baseUrl}?${params}`;
 
     const data = await fetchJson<GyeonggiLocationResponse>(url, {
       fallback: {},

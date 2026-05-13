@@ -4,7 +4,7 @@
 import io
 import sys
 
-from crawler_utils import NoticeCrawlerConfig, crawl_notice_board
+from crawler_utils import NoticeCrawlerConfig, crawl_notice_board, require_env
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
@@ -14,7 +14,7 @@ def crawl_event_notices():
         NoticeCrawlerConfig(
             category="event",
             label="행사공지",
-            base_url="https://www.syu.ac.kr/university-square/notice/event/page",
+            base_url=require_env("CRAWL_EVENT_NOTICES_URL"),
             output_path="public/data/announcements-events.json",
             default_author="행사팀",
             max_pages=128,

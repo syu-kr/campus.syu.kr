@@ -5,7 +5,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 """
 업무별 전화번호 안내 크롤링 스크립트
 월 1회 실행됨
-https://www.syu.ac.kr/about-sahmyook/phone-number-information/
+대상 URL은 CRAWL_PHONE_DIRECTORY_URL 환경변수로 주입
 """
 
 import requests
@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 import json
 import os
 
-from crawler_utils import DEFAULT_HEADERS, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
 
 
 def phone_key(phone_info):
@@ -36,7 +36,7 @@ def crawl_phone_numbers():
             print(f"⚠️  기존 데이터 로드 실패: {e}")
     
     phones = []
-    url = "https://www.syu.ac.kr/about-sahmyook/phone-number-information/"
+    url = require_env("CRAWL_PHONE_DIRECTORY_URL")
     print("📞 업무별 전화번호 크롤링 시작...")
     
     try:

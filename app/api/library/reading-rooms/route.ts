@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
+import { requireServerEnv } from "@/lib/server/env";
 
 // 🚀 빌드 최적화: 이 라우트를 동적으로 처리 (빌드 시간 단축)
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const response = await fetch(
-      "https://libmo.syu.ac.kr/mobile/PA/seatRoomStatusListXML.php",
-      { cache: "no-store" },
-    );
+    const response = await fetch(requireServerEnv("LIBRARY_READING_ROOMS_URL"), {
+      cache: "no-store",
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.status}`);

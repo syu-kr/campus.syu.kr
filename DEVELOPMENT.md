@@ -96,7 +96,17 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | 이름 | 필수 | 사용처 | 설명 |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_KAKAO_MAP_KEY` | 필수 | campus map | Kakao Maps JavaScript SDK 키 |
-| `NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY` | 필수 | weather, public transit | 공공데이터포털 서비스 키 |
+| `PUBLIC_DATA_SERVICE_KEY` | 필수 | weather, public transit | 공공데이터포털 서비스 키. 서버 전용이므로 `NEXT_PUBLIC_` 접두사를 붙이지 않음 |
+| `KMA_NCST_URL` | 필수 | weather | 기상청 초단기 실황 endpoint |
+| `KMA_FCST_URL` | 필수 | weather | 기상청 초단기 예보 endpoint |
+| `SEOUL_BUS_ARRIVAL_URL` | 필수 | public transit | 서울 버스 도착 endpoint |
+| `GYEONGGI_BUS_ARRIVAL_URL` | 필수 | public transit | 경기도 버스 도착 endpoint |
+| `GYEONGGI_BUS_LOCATION_URL` | 필수 | public transit | 경기도 버스 위치 endpoint |
+| `SHUTTLE_LOCATION_URL` | 필수 | shuttle | 셔틀 실시간 위치 endpoint |
+| `SHUTTLE_REFERER` | 필수 | shuttle | 셔틀 upstream 요청 Referer |
+| `SHUTTLE_USER_AGENT` | 필수 | shuttle | 셔틀 upstream 요청 User-Agent |
+| `LECTURE_TIMETABLE_URL` | 필수 | lecture timetable | 강의 시간표 endpoint |
+| `LIBRARY_READING_ROOMS_URL` | 필수 | library | 도서관 열람실 현황 endpoint |
 | `NEXT_PUBLIC_FIREBASE_API_KEY` | 필수 | Firebase client | Firebase Web App API key |
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | 필수 | Firebase client | Firebase Auth domain |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | Firebase client/admin scripts | Firebase project id |
@@ -127,6 +137,21 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 
+### GitHub Actions Variables
+
+Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables -> Actions -> Variables`에 등록할 값입니다.
+
+| 이름 | 필수 | 사용 워크플로 | 설명 |
+| --- | --- | --- | --- |
+| `CRAWL_ACADEMIC_NOTICES_URL` | 필수 | `crawl-daily.yml` | 학사공지 목록 page base URL |
+| `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
+| `CRAWL_EVENT_NOTICES_URL` | 필수 | `crawl-daily.yml` | 행사공지 목록 page base URL |
+| `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
+| `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
+| `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
+| `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
+| `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포의 `owner/name` |
+
 Vercel 런타임 환경 변수는 GitHub Actions Secrets와 별개로 Vercel Project Settings에서 관리합니다.
 
 ## 데이터와 API
@@ -154,7 +179,7 @@ python scripts/crawl_phone.py
 
 - 날씨: 기상청 단기예보/초단기예보 API
 - 대중교통: 서울/경기도 공공데이터 버스 API
-- 셔틀 위치: `/bus/shuttle` rewrites를 통해 `https://bus.syu.kr/api` 호출
+- 셔틀 위치: `/bus/shuttle` rewrites를 통해 서버 전용 `SHUTTLE_LOCATION_URL` 호출
 - 지도: Kakao Maps JavaScript SDK
 
 버스 API 상세는 [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md)를 참고하세요.

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireServerEnv } from "@/lib/server/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,10 +53,9 @@ export async function GET() {
 }
 
 async function fetchWeatherFromKma(): Promise<WeatherResponse> {
-  const apiKey = process.env.NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY;
-  if (!apiKey) {
-    throw new Error("API 키가 설정되지 않았습니다");
-  }
+  const apiKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
+  const ncstUrl = requireServerEnv("KMA_NCST_URL");
+  const fcstUrl = requireServerEnv("KMA_FCST_URL");
 
   // 삼육대학교 캠퍼스 좌표
   const latitude = 37.642841484;
@@ -92,14 +92,8 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
   });
 
   const [ncstResponse, fcstResponse] = await Promise.all([
-    fetch(
-      `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?${ncstParams}`,
-      { cache: "no-store" },
-    ),
-    fetch(
-      `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?${fcstParams}`,
-      { cache: "no-store" },
-    ),
+    fetch(`${ncstUrl}?${ncstParams}`, { cache: "no-store" }),
+    fetch(`${fcstUrl}?${fcstParams}`, { cache: "no-store" }),
   ]);
 
   if (!ncstResponse.ok) {

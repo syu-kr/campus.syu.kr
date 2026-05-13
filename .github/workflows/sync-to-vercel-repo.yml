@@ -52,7 +52,17 @@ env:
   NEXT_PUBLIC_FIREBASE_APP_ID: "1:000000000000:web:ci"
   NEXT_PUBLIC_FIREBASE_VAPID_KEY: "ci-placeholder"
   NEXT_PUBLIC_KAKAO_MAP_KEY: "ci-placeholder"
-  NEXT_PUBLIC_PUBLIC_DATA_SERVICE_KEY: "ci-placeholder"
+  PUBLIC_DATA_SERVICE_KEY: "ci-placeholder"
+  KMA_NCST_URL: "ci-placeholder"
+  KMA_FCST_URL: "ci-placeholder"
+  SEOUL_BUS_ARRIVAL_URL: "ci-placeholder"
+  GYEONGGI_BUS_ARRIVAL_URL: "ci-placeholder"
+  GYEONGGI_BUS_LOCATION_URL: "ci-placeholder"
+  SHUTTLE_LOCATION_URL: "https://ci-placeholder.invalid"
+  SHUTTLE_REFERER: "https://ci-placeholder.invalid/"
+  SHUTTLE_USER_AGENT: "ci-placeholder"
+  LECTURE_TIMETABLE_URL: "ci-placeholder"
+  LIBRARY_READING_ROOMS_URL: "ci-placeholder"
   PUSH_API_KEY: "ci-placeholder"
 
 jobs:
@@ -103,15 +113,20 @@ jobs:
       - name: Clone destination repository
         env:
           VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
+          VERCEL_DESTINATION_REPO: ${{ vars.VERCEL_DESTINATION_REPO }}
         run: |
           if [ -z "$VERCEL_PERSONAL_ACCOUNT_TOKEN" ]; then
             echo "VERCEL_PERSONAL_ACCOUNT_TOKEN secret is not configured."
             exit 1
           fi
+          if [ -z "$VERCEL_DESTINATION_REPO" ]; then
+            echo "VERCEL_DESTINATION_REPO variable is not configured."
+            exit 1
+          fi
 
           DESTINATION_DIR="$(mktemp -d)"
           echo "DESTINATION_DIR=$DESTINATION_DIR" >> "$GITHUB_ENV"
-          git clone --depth 1 "https://x-access-token:${VERCEL_PERSONAL_ACCOUNT_TOKEN}@github.com/singhic/syu-campus.git" "$DESTINATION_DIR"
+          git clone --depth 1 "https://x-access-token:${VERCEL_PERSONAL_ACCOUNT_TOKEN}@github.com/${VERCEL_DESTINATION_REPO}.git" "$DESTINATION_DIR"
 
       - name: Copy source files
         run: |

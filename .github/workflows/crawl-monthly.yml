@@ -13,6 +13,9 @@ permissions:
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    env:
+      CRAWL_PHONE_DIRECTORY_URL: ${{ vars.CRAWL_PHONE_DIRECTORY_URL }}
+      CRAWL_ACADEMIC_SCHEDULE_URL: ${{ vars.CRAWL_ACADEMIC_SCHEDULE_URL }}
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
       source_ref: ${{ steps.commit.outputs.source_ref }}

@@ -5,7 +5,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 """
 학식 메뉴 크롤링 스크립트 (날짜별 업데이트)
 매일 실행됨 - 같은 날짜 메뉴는 덮어쓰고, 새로운 날짜는 추가
-https://www.syu.ac.kr/school-life/facility-information/cafeteria/
+대상 URL은 CRAWL_CAFETERIA_URL 환경변수로 주입
 """
 
 import requests
@@ -16,7 +16,7 @@ import os
 import html
 from datetime import datetime
 
-from crawler_utils import DEFAULT_HEADERS, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
 
 CLOSED_LABEL = "운영 없음"
 CLOSED_TEXTS = {"운영없음", "운영 없음", "휴무", "없음", "-", "미운영"}
@@ -114,7 +114,7 @@ def crawl_cafeteria_menu():
         except Exception as e:
             print(f"⚠️  기존 데이터 로드 실패: {e}")
     
-    url = "https://www.syu.ac.kr/school-life/facility-information/cafeteria/"
+    url = require_env("CRAWL_CAFETERIA_URL")
     print("🍜 학식 메뉴 크롤링 시작...")
     
     try:

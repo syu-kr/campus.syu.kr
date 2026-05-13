@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 
 import { fetchJson } from "@/lib/fetch-json";
 import { normalizeLectureTimetablePayload } from "@/lib/lecture-timetable";
+import { requireServerEnv } from "@/lib/server/env";
 import type { LectureTimetableDataset } from "@/lib/lecture-timetable";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const LECTURE_TIMETABLE_URL = "https://api.syu.kr/v1/lecture/timetable";
 const LECTURE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
 let cachedTimetable:
@@ -80,12 +80,15 @@ export async function GET() {
 }
 
 async function fetchLectureTimetable(): Promise<LectureTimetableDataset> {
-  const payload = await fetchJson<unknown>(LECTURE_TIMETABLE_URL, {
-    fallback: undefined,
-    noStore: false,
-    next: { revalidate: 60 * 60 * 6 },
-    timeoutMs: 20_000,
-  });
+  const payload = await fetchJson<unknown>(
+    requireServerEnv("LECTURE_TIMETABLE_URL"),
+    {
+      fallback: undefined,
+      noStore: false,
+      next: { revalidate: 60 * 60 * 6 },
+      timeoutMs: 20_000,
+    },
+  );
 
   return normalizeLectureTimetablePayload(payload);
 }

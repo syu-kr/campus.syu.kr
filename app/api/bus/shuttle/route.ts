@@ -2,17 +2,14 @@ import { NextResponse } from "next/server";
 import http from "node:http";
 import https from "node:https";
 import type { BusLocation } from "@/types";
+import { requireServerEnv } from "@/lib/server/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const SHUTTLE_LOCATION_URL = "https://bus.syu.kr/api";
-const SHUTTLE_LOCATION_SOURCE = "bus.syu.kr";
-const SHUTTLE_REFERER = "https://bus.syu.kr/";
-const SHUTTLE_USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0";
+const SHUTTLE_LOCATION_SOURCE = "shuttle";
 const NO_STORE_HEADERS = {
   "Cache-Control":
     "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
@@ -28,7 +25,6 @@ interface ShuttleLocationPayload {
 interface ShuttleLocationFetchResult {
   locations: BusLocation[];
   payload: ShuttleLocationPayload;
-  upstreamUrl: string;
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -57,7 +53,7 @@ function toBusLocation(item: unknown): BusLocation | null {
 }
 
 async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
-  const url = new URL(SHUTTLE_LOCATION_URL);
+  const url = new URL(requireServerEnv("SHUTTLE_LOCATION_URL"));
   const payload = await fetchJsonFromUrl(url);
 
   if (payload.returnCode && payload.returnCode !== "200") {
@@ -73,11 +69,13 @@ async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
   return {
     locations,
     payload,
-    upstreamUrl: url.toString(),
   };
 }
 
 function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
+  const referer = requireServerEnv("SHUTTLE_REFERER");
+  const userAgent = requireServerEnv("SHUTTLE_USER_AGENT");
+
   return new Promise((resolve, reject) => {
     const transport = url.protocol === "https:" ? https : http;
     const defaultPort = url.protocol === "https:" ? 443 : 80;
@@ -95,7 +93,7 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
           DNT: "1",
           Pragma: "no-cache",
           Priority: "u=1, i",
-          Referer: SHUTTLE_REFERER,
+          Referer: referer,
           "Sec-CH-UA":
             '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
           "Sec-CH-UA-Mobile": "?0",
@@ -103,7 +101,7 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
           "Sec-Fetch-Dest": "empty",
           "Sec-Fetch-Mode": "cors",
           "Sec-Fetch-Site": "same-origin",
-          "User-Agent": SHUTTLE_USER_AGENT,
+          "User-Agent": userAgent,
         },
       },
       (response) => {
@@ -141,7 +139,7 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
 
 export async function GET(request: Request) {
   try {
-    const { locations, payload, upstreamUrl } = await fetchShuttleLocations();
+    const { locations, payload } = await fetchShuttleLocations();
     const timestamp = new Date().toISOString();
     const firstLocation = locations[0];
     const searchParams = new URL(request.url).searchParams;
@@ -153,8 +151,6 @@ export async function GET(request: Request) {
         headers: {
           ...NO_STORE_HEADERS,
           "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
-          "X-Shuttle-Upstream": SHUTTLE_LOCATION_URL,
-          "X-Shuttle-Upstream-Url": upstreamUrl,
           "X-Shuttle-Fetched-At": timestamp,
         },
       });
@@ -168,7 +164,6 @@ export async function GET(request: Request) {
         ...(debug
           ? {
               debug: {
-                upstreamUrl,
                 raw: payload,
               },
             }
@@ -179,12 +174,10 @@ export async function GET(request: Request) {
         headers: {
           ...NO_STORE_HEADERS,
           "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
-          "X-Shuttle-Upstream": SHUTTLE_LOCATION_URL,
           "X-Shuttle-Fetched-At": timestamp,
           "X-Shuttle-First-Location": firstLocation
             ? `${firstLocation.name}:${firstLocation.lat},${firstLocation.lon}`
             : "none",
-          "X-Shuttle-Upstream-Url": upstreamUrl,
         },
       },
     );

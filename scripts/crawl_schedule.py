@@ -10,7 +10,7 @@ import re
 import os
 import hashlib
 
-from crawler_utils import DEFAULT_HEADERS, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
 
 def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
     """제목+시작날짜+종료날짜 기반 안정적 ID 생성"""
@@ -21,7 +21,7 @@ def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
 def crawl_schedule():
     """학사일정 크롤링 (증분 업데이트 - 개선)"""
     
-    url = "https://www.syu.ac.kr/academic/major-schedule/"
+    url = require_env("CRAWL_ACADEMIC_SCHEDULE_URL")
     
     print("📅 학사일정 크롤링 시작...")
     
