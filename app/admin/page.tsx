@@ -146,33 +146,36 @@ export default function AdminPage() {
     }
   };
 
-  const loadSubmissions = useCallback(async (currentUser = user) => {
-    if (!currentUser) return;
+  const loadSubmissions = useCallback(
+    async (currentUser = user) => {
+      if (!currentUser) return;
 
-    setIsLoading(true);
-    setPageError("");
+      setIsLoading(true);
+      setPageError("");
 
-    try {
-      const token = await currentUser.getIdToken();
-      const response = await fetch("/api/admin/submissions", {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      const data = await response.json();
+      try {
+        const token = await currentUser.getIdToken();
+        const response = await fetch("/api/admin/submissions", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "목록을 불러오지 못했습니다");
+        if (!response.ok) {
+          throw new Error(data.error || "목록을 불러오지 못했습니다");
+        }
+
+        setSubmissions(data.submissions || []);
+      } catch (error) {
+        setPageError(
+          error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      setSubmissions(data.submissions || []);
-    } catch (error) {
-      setPageError(
-        error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+    },
+    [user],
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -241,7 +244,8 @@ export default function AdminPage() {
               제보 및 문의 관리
             </h1>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
-              Firebase Authentication에 미리 만든 이메일 계정으로 로그인합니다.
+              컴공의 자존심으로 뚫어보고 싶다면 말리진 않겠습니다.<br/> 하지만 정문은
+              Firebase Authentication 로그인입니다.
             </p>
           </div>
 
@@ -509,7 +513,9 @@ function SubmissionDetail({
             <DetailItem label="연락처" value={item.contact || "-"} />
             <DetailItem
               label={item.kind === "inquiry" ? "관련 페이지" : "관련 링크"}
-              value={item.kind === "inquiry" ? item.pageUrl || "-" : item.url || "-"}
+              value={
+                item.kind === "inquiry" ? item.pageUrl || "-" : item.url || "-"
+              }
             />
             <DetailItem label="접수일" value={formatDateTime(item.createdAt)} />
             <DetailItem label="수정일" value={formatDateTime(item.updatedAt)} />
@@ -532,7 +538,11 @@ function SubmissionDetail({
             </div>
           )}
 
-          <DetailBlock title="User Agent" content={item.userAgent || "-"} small />
+          <DetailBlock
+            title="User Agent"
+            content={item.userAgent || "-"}
+            small
+          />
         </div>
 
         <aside className="space-y-3">
