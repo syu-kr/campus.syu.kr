@@ -42,6 +42,8 @@ const ORGANIZATION_SCHEMA = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://campus.syu.kr"),
+  applicationName: "SYU CAMPUS",
   title: {
     template: "%s",
     default: "SYU CAMPUS - 학생 통합 정보 플랫폼",
@@ -49,6 +51,42 @@ export const metadata: Metadata = {
   description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
   keywords: "삼육대, 삼육대학교, 캠퍼스, 공지사항, 학식, 학사일정",
   authors: [{ name: "SYU KR" }],
+  alternates: {
+    canonical: "./",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: "https://campus.syu.kr",
+    siteName: "SYU CAMPUS",
+    title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
+    description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
+    images: [
+      {
+        url: "/images/syu-kr-logo.png",
+        width: 512,
+        height: 512,
+        alt: "SYU CAMPUS",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
+    description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
+    images: ["/images/syu-kr-logo.png"],
+  },
   verification: {
     google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
   },

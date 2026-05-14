@@ -3,6 +3,9 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin
+Disallow: /more/meet/
+Disallow: /more/campus-tips/suggest
 Disallow: /private/
 
 # Block bad bots

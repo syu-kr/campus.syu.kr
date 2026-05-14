@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         title="개인정보처리방침"
         description="SYU CAMPUS 서비스 개인정보처리방침입니다."
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 3월 23일부터 적용됩니다."
+        notice="본 개인정보처리방침은 2026년 5월 14일부터 적용됩니다."
       />
 
       <div className="space-y-6 mb-8">
@@ -37,6 +37,8 @@ export default function PrivacyPage() {
                 <li>서비스 품질 개선 및 신규 기능 개발</li>
                 <li>고객 문의 및 불만사항 처리</li>
                 <li>사용자 제보 및 문의 내용 검토와 서비스 개선 반영</li>
+                <li>일정 잡기 초대 링크 생성 및 참여자 가능 시간 취합</li>
+                <li>사용자가 허용한 경우 서비스 공지 푸시 알림 발송</li>
               </ul>
             </div>
           </div>
@@ -81,6 +83,24 @@ export default function PrivacyPage() {
                 <p className="text-sm text-neutral-600">
                   서비스 개선 검토 목적 달성 시까지 보존하며, 운영상 필요가
                   없어진 경우 삭제합니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  5. 일정 잡기 정보
+                </p>
+                <p className="text-sm text-neutral-600">
+                  일정 방 만료 또는 운영상 보존 필요가 없어진 시점까지 보존하며,
+                  만료된 일정 방은 정리될 수 있습니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  6. 푸시 알림 토큰
+                </p>
+                <p className="text-sm text-neutral-600">
+                  알림 발송 목적 달성 시까지 보존하며, 사용자가 알림을 차단하거나
+                  토큰이 유효하지 않은 경우 삭제될 수 있습니다.
                 </p>
               </div>
             </div>
@@ -132,6 +152,27 @@ export default function PrivacyPage() {
                 <li>접수 시점의 브라우저 정보(User-Agent)</li>
               </ul>
             </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                5. 일정 잡기 입력 정보 (선택항목)
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
+                <li>일정 방 제목 및 설명</li>
+                <li>후보 날짜와 시간대</li>
+                <li>참여자 닉네임</li>
+                <li>참여자가 선택한 가능 시간</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                6. 푸시 알림 정보 (선택항목)
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
+                <li>Firebase Cloud Messaging 알림 토큰</li>
+                <li>알림 구독 시점과 토큰 갱신 시점</li>
+                <li>알림 발송 결과 및 실패 기록</li>
+              </ul>
+            </div>
           </div>
         </Card>
 
@@ -172,7 +213,7 @@ export default function PrivacyPage() {
                   <tr>
                     <td className="border border-gray-300 p-2">Google</td>
                     <td className="border border-gray-300 p-2">
-                      검색 최적화 및 분석
+                      검색 최적화, 분석, Firebase 기반 데이터 저장 및 푸시 알림
                     </td>
                     <td className="border border-gray-300 p-2">
                       Google의 정책에 따름
@@ -185,6 +226,15 @@ export default function PrivacyPage() {
                     </td>
                     <td className="border border-gray-300 p-2">
                       개인정보의 이용 목적 달성 시 또는 위탁 계약 종료 시
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">GitHub</td>
+                    <td className="border border-gray-300 p-2">
+                      소스코드 저장소 제공 및 변경 이력 관리
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      GitHub의 정책 및 저장소 운영 기간에 따름
                     </td>
                   </tr>
                 </tbody>
@@ -389,6 +439,32 @@ export default function PrivacyPage() {
                 </p>
               </div>
             </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                3. Firebase 및 Firestore
+              </p>
+              <p className="text-sm text-neutral-600 mb-2">
+                본 서비스는 문의, 꿀팁 제보, 일정 잡기, 푸시 알림 토큰 관리를
+                위해 Google Firebase와 Firestore를 사용합니다.
+              </p>
+              <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                <p className="text-sm">
+                  <span className="font-semibold">처리 정보:</span>
+                  <span className="text-neutral-600">
+                    {" "}
+                    사용자가 직접 입력한 문의·제보·일정 정보, 브라우저 정보,
+                    알림 토큰
+                  </span>
+                </p>
+                <p className="text-sm mt-1">
+                  <span className="font-semibold">목적:</span>
+                  <span className="text-neutral-600">
+                    {" "}
+                    서비스 운영, 사용자 제보 검토, 일정 조율, 푸시 알림 발송
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
         </Card>
 
@@ -410,30 +486,32 @@ export default function PrivacyPage() {
               <p className="text-sm text-neutral-600">
                 설정 정보는 사용자 기기의 로컬 스토리지에 저장되며, 문의 및
                 제보 과정에서 사용자가 직접 입력한 정보는 서비스 개선 검토를
-                위해 서버에 저장될 수 있습니다.
+                위해 서버에 저장될 수 있습니다. 일정 잡기와 푸시 알림 기능에
+                필요한 정보도 사용자가 기능을 이용하거나 권한을 허용한 경우에만
+                저장됩니다.
               </p>
             </div>
             <div>
               <p className="font-semibold text-sm mb-2">3. 접근 제한</p>
               <p className="text-sm text-neutral-600">
-                개인정보 취급 직원을 최소화하고, 개인정보를 처리하는
-                데이터베이스에 대한 접근 제한을 실시하고 있습니다.
+                관리자 기능은 Firebase Authentication과 허용된 관리자 계정을
+                통해 접근을 제한하며, 개인정보가 저장된 데이터베이스는 필요한
+                서버 API에서만 접근하도록 관리합니다.
               </p>
             </div>
             <div>
               <p className="font-semibold text-sm mb-2">4. 기술적 대책</p>
               <p className="text-sm text-neutral-600">
-                보안프로그램을 설치하고 주기적인 갱신·점검을 하며, 외부로부터
-                접근이 통제된 구역에 시스템을 설치하고 기술적/물리적으로 감시 및
-                차단하고 있습니다.
+                HTTPS, Firebase 보안 설정, 서버 환경변수 관리, 관리자 인증 등
+                서비스 규모에 맞는 기술적 보호조치를 적용합니다.
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">5. 접속기록의 보관</p>
+              <p className="font-semibold text-sm mb-2">5. 접속기록 관리</p>
               <p className="text-sm text-neutral-600">
-                개인정보처리시스템에 접속한 기록을 최소 1년 이상 보관하고
-                있으며, 접속기록이 위변조 및 도난, 분실되지 않도록 보안기능을
-                사용하고 있습니다.
+                서비스 운영과 보안 확인에 필요한 범위에서 접속 기록과 처리
+                기록을 관리하며, 불필요한 정보는 운영상 필요가 없어진 경우
+                정리할 수 있습니다.
               </p>
             </div>
           </div>
@@ -542,6 +620,8 @@ export default function PrivacyPage() {
             <div className="p-3 bg-neutral-50 border border-neutral-200 rounded mt-3">
               <p className="text-xs text-neutral-600">
                 <strong>시행일</strong>: 2026년 3월 23일
+                <br />
+                <strong>최종 개정일</strong>: 2026년 5월 14일
               </p>
             </div>
           </div>

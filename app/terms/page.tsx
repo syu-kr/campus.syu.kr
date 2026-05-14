@@ -24,6 +24,25 @@ const serviceItems = [
   },
   { title: "장학금정보", description: "장학금 안내" },
   {
+    title: "캠퍼스 꿀팁",
+    description:
+      "학교생활, 전공 학습, 진로, 대외활동 등에 도움이 되는 외부 링크와 학생 제보 기반 자료",
+  },
+  {
+    title: "문의 및 제보",
+    description:
+      "서비스 문의, 데이터 수정 요청, 캠퍼스 꿀팁 제보 접수 및 운영자 검토",
+  },
+  {
+    title: "일정 잡기",
+    description:
+      "초대 링크를 통해 참여자의 가능한 시간을 모으고 일정 조율을 돕는 기능",
+  },
+  {
+    title: "알림",
+    description: "사용자가 명시적으로 허용한 경우 서비스 공지 푸시 알림 제공",
+  },
+  {
     title: "통합검색",
     description: "모든 공지사항, 일정, 연락처, 건물 정보를 통합 검색",
   },
@@ -68,7 +87,7 @@ export default function TermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="이용약관"
-        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 22일 시행"
+        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 5월 14일 시행"
         noticeTitle="중요 공지"
         noticeTone="red"
         notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 제공되는 모든 자료는 참고용이며, 정확한 정보는 학교 공식 웹사이트를 참고하시기 바랍니다."
@@ -149,8 +168,10 @@ export default function TermsPage() {
             </NumberedParagraph>
             <NumberedParagraph number={4}>
               본 서비스는 삼육대학교의 공식 서비스가 아니며, SYU KR에 의해
-              개발되었습니다. 서비스 이용 시 발생하는 모든 문제 또는 손해에 대해
-              제공자는 책임을 지지 않습니다.
+              개발되었습니다. 제공자는 정보의 정확성과 안정성을 위해 합리적인
+              노력을 다하나, 무료 참고용 정보 서비스의 특성상 제공자의 고의
+              또는 중대한 과실이 없는 한 서비스 이용으로 발생한 손해에 대해
+              책임을 지지 않습니다.
             </NumberedParagraph>
           </div>
         </LegalSection>
@@ -177,10 +198,20 @@ export default function TermsPage() {
               선택 연락처가 서비스 개선 검토를 위해 서버에 저장될 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
+              일정 잡기 기능을 이용하는 경우, 일정 방 제목, 설명, 후보 시간,
+              참여자 닉네임과 가능 시간이 링크 공유 및 일정 조율을 위해 서버에
+              저장될 수 있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={4}>
+              푸시 알림을 허용한 경우, 알림 발송을 위한 브라우저 알림 토큰이
+              저장될 수 있습니다. 알림 권한은 브라우저 설정에서 언제든지 변경할
+              수 있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={5}>
               저장된 문의 및 제보 내용은 개별 답변을 보장하지 않으며, 제공자의
               판단에 따라 서비스 개선과 데이터 수정에 참고됩니다.
             </NumberedParagraph>
-            <NumberedParagraph number={4}>
+            <NumberedParagraph number={6}>
               서비스의 검색 노출 최적화를 위해 Google Search Console을 통해
               사이트 데이터를 수집할 수 있습니다.
             </NumberedParagraph>
@@ -206,12 +237,20 @@ export default function TermsPage() {
 
         <LegalSection title="제7조 책임의 제한">
           <div className="space-y-3 text-neutral-700">
-            <p>제공자는 다음의 경우 서비스로 인해 발생한 손해에 대해 책임을 지지 않습니다:</p>
+            <p>
+              제공자는 다음의 경우 제공자의 고의 또는 중대한 과실이 없는 한
+              서비스로 인해 발생한 손해에 대해 책임을 지지 않습니다:
+            </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               {liabilityLimits.map((limit) => (
                 <li key={limit}>{limit}</li>
               ))}
             </ul>
+            <p className="text-sm text-neutral-600">
+              특히 학식, 도서관, 버스, 공지사항 등 외부 또는 학교 시스템에서
+              가져오는 정보는 원본 제공처의 변경, 지연, 오류에 따라 실제 내용과
+              다를 수 있습니다.
+            </p>
           </div>
         </LegalSection>
 
