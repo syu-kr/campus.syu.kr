@@ -9,6 +9,7 @@ import {
   timestampToIso,
 } from "@/lib/server/firestore";
 import type {
+  AdminSubmissionKind,
   AdminSubmissionItem,
   SubmissionStatus,
 } from "@/types/submissions";
@@ -20,26 +21,22 @@ const VALID_STATUSES: SubmissionStatus[] = [
   "rejected",
   "done",
 ];
+const VALID_KINDS: AdminSubmissionKind[] = ["inquiry", "campus-tip"];
 
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin(req);
 
+    const { searchParams } = new URL(req.url);
+    const kind = readKindFilter(searchParams.get("kind"));
+    const status = readStatusFilter(searchParams.get("status"));
     const db = getFirestore();
-    const [inquiriesSnapshot, tipSuggestionsSnapshot] = await Promise.all([
-      db.collection("site_inquiries").orderBy("created_at", "desc").get(),
-      db
-        .collection("campus_tip_suggestions")
-        .orderBy("created_at", "desc")
-        .get(),
+    const [submissions, counts] = await Promise.all([
+      readSubmissions(db, kind, status),
+      readSubmissionCounts(db, kind),
     ]);
 
-    const submissions = [
-      ...inquiriesSnapshot.docs.map(mapInquiry),
-      ...tipSuggestionsSnapshot.docs.map(mapCampusTipSuggestion),
-    ].sort((a, b) => compareCreatedAtDesc(a, b));
-
-    return NextResponse.json({ submissions });
+    return NextResponse.json({ submissions, counts });
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -141,6 +138,94 @@ function readAllowedEmails() {
     .split(",")
     .map((email) => email.trim())
     .filter(Boolean);
+}
+
+async function readSubmissions(
+  db: admin.firestore.Firestore,
+  kind: "all" | AdminSubmissionKind,
+  status: "all" | SubmissionStatus,
+) {
+  const reads: Promise<AdminSubmissionItem[]>[] = [];
+
+  if (kind === "all" || kind === "inquiry") {
+    reads.push(
+      readCollection(db, "site_inquiries", status, (doc) => mapInquiry(doc)),
+    );
+  }
+
+  if (kind === "all" || kind === "campus-tip") {
+    reads.push(
+      readCollection(db, "campus_tip_suggestions", status, (doc) =>
+        mapCampusTipSuggestion(doc),
+      ),
+    );
+  }
+
+  const submissions = (await Promise.all(reads)).flat();
+  return submissions.sort(compareCreatedAtDesc);
+}
+
+async function readCollection(
+  db: admin.firestore.Firestore,
+  collection: "site_inquiries" | "campus_tip_suggestions",
+  status: "all" | SubmissionStatus,
+  mapper: (doc: admin.firestore.QueryDocumentSnapshot) => AdminSubmissionItem,
+) {
+  const query =
+    status === "all"
+      ? db.collection(collection).orderBy("created_at", "desc")
+      : db.collection(collection).where("status", "==", status);
+  const snapshot = await query.get();
+
+  return snapshot.docs.map(mapper);
+}
+
+async function readSubmissionCounts(
+  db: admin.firestore.Firestore,
+  kind: "all" | AdminSubmissionKind,
+) {
+  const entries = await Promise.all(
+    VALID_STATUSES.map(async (status) => {
+      const collectionCounts = await Promise.all([
+        kind === "all" || kind === "inquiry"
+          ? countByStatus(db, "site_inquiries", status)
+          : Promise.resolve(0),
+        kind === "all" || kind === "campus-tip"
+          ? countByStatus(db, "campus_tip_suggestions", status)
+          : Promise.resolve(0),
+      ]);
+
+      return [status, collectionCounts[0] + collectionCounts[1]] as const;
+    }),
+  );
+
+  return Object.fromEntries(entries) as Record<SubmissionStatus, number>;
+}
+
+async function countByStatus(
+  db: admin.firestore.Firestore,
+  collection: "site_inquiries" | "campus_tip_suggestions",
+  status: SubmissionStatus,
+) {
+  const snapshot = await db
+    .collection(collection)
+    .where("status", "==", status)
+    .count()
+    .get();
+
+  return snapshot.data().count || 0;
+}
+
+function readKindFilter(value: string | null): "all" | AdminSubmissionKind {
+  return VALID_KINDS.includes(value as AdminSubmissionKind)
+    ? (value as AdminSubmissionKind)
+    : "all";
+}
+
+function readStatusFilter(value: string | null): "all" | SubmissionStatus {
+  return VALID_STATUSES.includes(value as SubmissionStatus)
+    ? (value as SubmissionStatus)
+    : "all";
 }
 
 function mapInquiry(

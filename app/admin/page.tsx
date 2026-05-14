@@ -47,6 +47,14 @@ const categoryLabels: Record<string, string> = {
   reference: "참고자료",
 };
 
+const emptyCounts: Record<SubmissionStatus, number> = {
+  pending: 0,
+  reviewing: 0,
+  accepted: 0,
+  rejected: 0,
+  done: 0,
+};
+
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -59,9 +67,11 @@ export default function AdminPage() {
     "all",
   );
   const [statusFilter, setStatusFilter] = useState<"all" | SubmissionStatus>(
-    "all",
+    "pending",
   );
   const [query, setQuery] = useState("");
+  const [counts, setCounts] =
+    useState<Record<SubmissionStatus, number>>(emptyCounts);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [pageError, setPageError] = useState("");
@@ -116,24 +126,6 @@ export default function AdminPage() {
     }
   }, [selectedId, selectedSubmission]);
 
-  const counts = useMemo(() => {
-    return statuses.reduce<Record<SubmissionStatus, number>>(
-      (acc, status) => {
-        acc[status.value] = submissions.filter(
-          (item) => item.status === status.value,
-        ).length;
-        return acc;
-      },
-      {
-        pending: 0,
-        reviewing: 0,
-        accepted: 0,
-        rejected: 0,
-        done: 0,
-      },
-    );
-  }, [submissions]);
-
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoginError("");
@@ -155,7 +147,11 @@ export default function AdminPage() {
 
       try {
         const token = await currentUser.getIdToken();
-        const response = await fetch("/api/admin/submissions", {
+        const params = new URLSearchParams({
+          kind: kindFilter,
+          status: statusFilter,
+        });
+        const response = await fetch(`/api/admin/submissions?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
@@ -166,6 +162,7 @@ export default function AdminPage() {
         }
 
         setSubmissions(data.submissions || []);
+        setCounts({ ...emptyCounts, ...(data.counts || {}) });
       } catch (error) {
         setPageError(
           error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
@@ -174,7 +171,7 @@ export default function AdminPage() {
         setIsLoading(false);
       }
     },
-    [user],
+    [kindFilter, statusFilter, user],
   );
 
   useEffect(() => {
@@ -209,12 +206,25 @@ export default function AdminPage() {
 
       const updatedAt = new Date().toISOString();
       setSubmissions((items) =>
-        items.map((current) =>
-          current.id === item.id && current.kind === item.kind
-            ? { ...current, status, updatedAt }
-            : current,
-        ),
+        items
+          .map((current) =>
+            current.id === item.id && current.kind === item.kind
+              ? { ...current, status, updatedAt }
+              : current,
+          )
+          .filter(
+            (current) =>
+              statusFilter === "all" ||
+              current.id !== item.id ||
+              current.kind !== item.kind ||
+              status === statusFilter,
+          ),
       );
+      setCounts((current) => ({
+        ...current,
+        [item.status]: Math.max(0, current[item.status] - 1),
+        [status]: current[status] + 1,
+      }));
     } catch (error) {
       setPageError(
         error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
@@ -244,8 +254,8 @@ export default function AdminPage() {
               제보 및 문의 관리
             </h1>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
-              컴공의 자존심으로 뚫어보고 싶다면 말리진 않겠습니다.<br/> 하지만 정문은
-              Firebase Authentication 로그인입니다.
+              컴공의 자존심으로 뚫어보고 싶다면 말리진 않겠습니다.
+              <br /> 하지만 정문은 Firebase Authentication 로그인입니다.
             </p>
           </div>
 
@@ -335,7 +345,11 @@ export default function AdminPage() {
               key={status.value}
               type="button"
               onClick={() => setStatusFilter(status.value)}
-              className="rounded-lg border border-neutral-200 bg-white p-4 text-left shadow-sm hover:border-primary-300"
+              className={`rounded-lg border bg-white p-4 text-left shadow-sm hover:border-primary-300 ${
+                statusFilter === status.value
+                  ? "border-primary-400 ring-2 ring-primary-100"
+                  : "border-neutral-200"
+              }`}
             >
               <span className="text-sm font-medium text-neutral-600">
                 {status.label}
