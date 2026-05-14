@@ -2544,6 +2544,1093 @@
     "note": "로그인이 필요할 수 있습니다"
   },
   {
+    "id": "campus-life-sutory-archives-11046",
+    "title": "인간과 컴퓨터 상호작용 공부법",
+    "description": "HCI 과목 학습 흐름과 인간-컴퓨터 상호작용 개념을 정리하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11046",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-14502",
+    "title": "컴공 비교과 SU-EBE후기",
+    "description": "SU-EBE 비교과 프로그램 참여 경험과 수강 후 느낀 점을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/14502",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-7485",
+    "title": "컴공 자동제어 공부법",
+    "description": "자동제어 과목을 준비할 때 필요한 개념 정리와 시험 공부 방향을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/7485",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6924",
+    "title": "컴공 주기신호와 비주기신호 중간고사 공부법",
+    "description": "주기신호와 비주기신호 단원을 중간고사 전에 정리하는 학습 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/6924",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6433",
+    "title": "컴공 비교과 CTL서포터즈",
+    "description": "CTL 서포터즈 비교과 활동 내용과 참여 경험을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/6433",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8211",
+    "title": "컴공 시스템 버스 공부법",
+    "description": "컴퓨터 구조의 시스템 버스 개념을 공부할 때 참고할 만한 정리 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/8211",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6608",
+    "title": "컴공 구글 DOCS 공부법",
+    "description": "Google Docs를 활용해 과제와 수업 자료를 정리하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/6608",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-19085",
+    "title": "전공평점 4.06이 알려주는 컴공 전공학습법",
+    "description": "전공평점 4점대 학생의 컴퓨터공학부 전공 학습 전략과 과목 관리법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/infinity/19085?order=date&offset=14",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11494",
+    "title": "컴공 맥 유저분들을 위한 한컴스페이스 무료로 사용하기",
+    "description": "맥 사용자가 한컴스페이스를 활용해 학교 문서 작업을 처리하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11494",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-7691",
+    "title": "컴공 독서실 공부법",
+    "description": "독서실을 활용한 집중 공부 루틴과 시험기간 학습 환경 관리 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/7691",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8102",
+    "title": "컴공 아이패드 공부법",
+    "description": "아이패드를 활용한 필기, 자료 정리, 수업 복습 방법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/8102",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9007",
+    "title": "컴공 글영 공부법",
+    "description": "글로벌영어 과목을 준비할 때 활용할 수 있는 공부 방법과 정리 팁을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9007",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-14372",
+    "title": "컴공 자료구조 공부법",
+    "description": "자료구조 과목의 개념 이해와 문제 풀이 중심 학습법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/14372",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9353",
+    "title": "컴공 단권화 공부법",
+    "description": "여러 수업 자료를 한 권처럼 정리하는 단권화 공부법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9353",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9119",
+    "title": "컴공 데이터베이스 공부법",
+    "description": "데이터베이스 과목의 핵심 개념과 시험 대비 학습 방향을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9119",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-14552",
+    "title": "컴공 비교과 텍스타 분석 글쓰기 공부법",
+    "description": "텍스타 분석 글쓰기 비교과 수업의 활동 내용과 글쓰기 학습 경험을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/14552",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8963",
+    "title": "컴공 물리 중간고사 공부법",
+    "description": "물리 중간고사를 준비할 때 개념 정리와 문제 풀이를 병행하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/8963",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10069",
+    "title": "컴공 스왑 공부법",
+    "description": "스왑 개념을 이해하고 관련 내용을 정리하는 컴공 과목 학습법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10069",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6922",
+    "title": "컴공 데이터통신 중간고사 공부법",
+    "description": "데이터통신 중간고사 대비를 위한 개념 정리와 복습 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/6922",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-2831",
+    "title": "컴공 영어회화 공부할때 보기좋은 넷플릭스 추천",
+    "description": "영어회화 공부에 활용하기 좋은 넷플릭스 콘텐츠 추천을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/2831",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10073",
+    "title": "컴공 색깔펜 공부법",
+    "description": "색깔펜을 활용해 필기와 암기 포인트를 구분하는 공부법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10073",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-17972",
+    "title": "컴공 비교과 SU-EBE 기초 ChatGPT",
+    "description": "SU-EBE 기초 ChatGPT 비교과 수업 내용과 AI 도구 활용 경험을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/17972",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "AI",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9789",
+    "title": "컴공 필사 암기법",
+    "description": "필사를 활용해 수업 내용을 암기하고 장기 기억으로 옮기는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9789",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-7912",
+    "title": "컴공 컴퓨터 구조 공부법",
+    "description": "컴퓨터 구조 과목의 핵심 개념을 정리하고 시험을 준비하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/7912",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-22080",
+    "title": "컴공 AI 시대에 신문읽기를 통한 정보 활용법",
+    "description": "AI 시대에 신문 읽기를 통해 정보를 선별하고 활용하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/infinity/22080?order=date&offset=6",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "AI",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9469",
+    "title": "컴공 데이터베이스 강의 필기 공부법",
+    "description": "데이터베이스 강의 내용을 필기하고 복습 자료로 정리하는 방법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9469",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-21460",
+    "title": "컴공 전과생의 학습법",
+    "description": "전과생 관점에서 컴퓨터공학부 전공 적응과 학습 전략을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/infinity/21460?order=date&offset=1",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "전과",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11982",
+    "title": "컴공 데이터베이스 오답 노트 공부법",
+    "description": "데이터베이스 오답노트를 만들어 약한 개념과 문제 유형을 보완하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11982",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-4675",
+    "title": "컴공 c언어 노트 필기 공부법",
+    "description": "C언어 수업 내용을 노트 필기로 정리하고 복습하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/4675",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-3936",
+    "title": "컴공 버찌의 삼육대 꿀팁!! _[4]MVP+2.0 (졸업필수)",
+    "description": "졸업필수 요소인 MVP+2.0을 준비할 때 확인해야 할 사항을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/3936",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-2833",
+    "title": "컴공 과제할때 알면 좋은 사이트 모음",
+    "description": "컴공 과제에 도움이 되는 참고 사이트와 온라인 도구 모음을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/2833",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-15713",
+    "title": "컴공 비교과 SU-EBE 수강후기",
+    "description": "SU-EBE 비교과 프로그램 수강 과정과 참여 후기를 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/15713",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11681",
+    "title": "컴공 소프트웨어 공학 요약 공부법",
+    "description": "소프트웨어공학 과목 내용을 요약하고 핵심 개념을 정리하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11681",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10969",
+    "title": "컴공 소프트웨어 공학 공부법",
+    "description": "소프트웨어공학 과목의 개념 학습과 시험 준비 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10969",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9503",
+    "title": "컴공 프로토콜 분석 공부법",
+    "description": "프로토콜 분석 내용을 공부할 때 필요한 개념 정리와 분석 관점을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9503",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-3793",
+    "title": "컴공 버찌의 삼육대 꿀팁!! _[3] U2CAN(악기배우기)",
+    "description": "U2CAN 프로그램으로 악기를 배우는 교내 활동 정보와 참여 경험을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/3793",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10861",
+    "title": "컴공 사고와표현 정리 공부법",
+    "description": "사고와 표현 과목 내용을 정리하고 글쓰기 수업을 준비하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10861",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11098",
+    "title": "확률통계 공부법",
+    "description": "확률통계 과목의 개념 정리와 문제 풀이 중심 공부법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11098",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10102",
+    "title": "컴공 목차로 정리 공부법",
+    "description": "목차를 기준으로 수업 내용을 구조화해 정리하는 공부법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10102",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10001",
+    "title": "컴공 기말고사 강의 정리 공부법",
+    "description": "기말고사 대비를 위해 강의 내용을 정리하고 복습 계획을 세우는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/10001",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11673",
+    "title": "컴공 요구사항 수집 방법 비교 공부법",
+    "description": "요구사항 수집 방법을 비교하며 소프트웨어공학 내용을 정리하는 학습법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11673",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6660",
+    "title": "컴공 중간고사 공부법",
+    "description": "컴공 중간고사를 준비할 때 활용할 수 있는 시험 대비 루틴과 공부 방법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/6660",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-20207",
+    "title": "컴퓨터공학부 복수전공생이 말하는 공부법",
+    "description": "복수전공생 관점에서 컴퓨터공학부 전공을 병행하며 공부하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/infinity/20207?order=date&offset=3",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "복수전공",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-3669",
+    "title": "컴공 버찌의 삼육대 꿀팁!! _[1]장학금!!",
+    "description": "삼육대 장학금 제도와 신청할 때 챙겨볼 만한 정보를 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/3669",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "장학금",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-3785",
+    "title": "컴공 버찌의 삼육대 꿀팁!! _[2]교내 편의서비스(?)",
+    "description": "교내 편의서비스와 학교생활에 도움이 되는 이용 정보를 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/3785",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-22030",
+    "title": "컴공 AI와 다글로 공부법",
+    "description": "AI와 다글로를 활용해 수업 자료와 학습 내용을 정리하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/infinity/22030?order=date&offset=12",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "AI",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9611",
+    "title": "컴공 프로그래밍언어론 필기법",
+    "description": "프로그래밍언어론 수업 내용을 필기하고 개념을 복습하는 방법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9611",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-7581",
+    "title": "컴공 이산수학 공부법",
+    "description": "이산수학 과목의 개념 이해와 증명, 문제 풀이 학습법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/7581",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-12226",
+    "title": "컴공 취업(SU포터즈) : 컴과 학생들 취업 뽀개기",
+    "description": "컴퓨터공학부 학생을 위한 취업 준비 방향과 SU포터즈 활동 경험을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/12226",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "취업",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9592",
+    "title": "컴공 운영체제 필기 공부법",
+    "description": "운영체제 수업 내용을 필기하고 시험 대비 자료로 정리하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/9592",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11911",
+    "title": "컴공 인공지능 공부법",
+    "description": "인공지능 과목의 핵심 개념과 학습 흐름을 정리하는 방법을 참고할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11911",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "AI",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-7774",
+    "title": "컴공 인공지능과목 공부법",
+    "description": "인공지능 과목을 공부할 때 필요한 개념 정리와 복습 방법을 확인할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/7774",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "AI",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11809",
+    "title": "컴공 인간과 상호작용 필기법",
+    "description": "인간과 컴퓨터 상호작용 수업 내용을 필기하고 복습하는 방법을 볼 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://sutory.syu.ac.kr/archives/11809",
+    "urlLabel": "글 보기",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-11007",
+    "title": "컴공 중간고사 공부법",
+    "description": "컴퓨터공학부 중간고사를 준비할 때 활용할 수 있는 시험 대비 루틴과 공부 방법을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/11007",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "시험",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8195",
+    "title": "컴공 물리 막학기 학생의 기말고사 공부법",
+    "description": "막학기 학생의 관점에서 물리 기말고사를 준비하는 복습 방법과 시험 대비 팁을 볼 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/8195",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "물리",
+      "기말고사",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-6957",
+    "title": "컴공 인간과 컴퓨터 상호작용 공부법",
+    "description": "인간과 컴퓨터 상호작용 과목의 핵심 개념을 정리하고 시험을 준비하는 방법을 참고할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/6957",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "HCI",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9089",
+    "title": "컴공 연산과정 및 입출력 관계 공부법",
+    "description": "연산 과정과 입출력 관계를 이해하기 위한 개념 정리 방식과 복습 방향을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/9089",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "컴퓨터구조",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9102",
+    "title": "컴공 운영체제 공부법",
+    "description": "운영체제 과목의 주요 개념을 정리하고 시험 범위를 복습하는 방법을 참고할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/9102",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "운영체제",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-10007",
+    "title": "컴공 회전력 성능 공부법",
+    "description": "회전력과 성능 관련 개념을 정리하고 문제 풀이로 연결하는 학습 방법을 볼 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/10007",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-9906",
+    "title": "컴공 기말고사 공부법",
+    "description": "컴퓨터공학부 기말고사를 준비할 때 활용할 수 있는 과목 정리와 복습 계획을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/9906",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "기말고사",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-2764",
+    "title": "컴공 비교과 SU-Start Up 서포터즈 이야기",
+    "description": "SU-Start Up 서포터즈 비교과 활동 내용과 참여 경험을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/2764",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "창업"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-infinity-20036",
+    "title": "컴공 비교과 MVP 학습법 특강 AI를 활용한 보고서 작성법 후기",
+    "description": "AI를 활용한 보고서 작성법 특강 후기와 MVP 학습법 비교과 참여 경험을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/infinity/20036?order=date&offset=4",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "AI",
+      "보고서"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8084",
+    "title": "컴공 반도체 공부법",
+    "description": "반도체 관련 과목을 공부할 때 핵심 개념을 정리하고 시험을 준비하는 방법을 볼 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/8084",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "반도체",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-8825",
+    "title": "컴공 수토리 가입방법",
+    "description": "SUtory를 처음 이용하는 학생이 가입 절차와 기본 이용 방법을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/8825",
+    "tags": [
+      "수토리",
+      "가입",
+      "학교생활"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-12017",
+    "title": "컴공 연극과 뮤지컬 필기 공부법",
+    "description": "연극과 뮤지컬 교양 수업에서 필기하고 시험 대비 자료를 정리하는 방법을 참고할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/12017",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "교양",
+      "필기",
+      "공부법"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
+    "id": "campus-life-sutory-archives-17759",
+    "title": "컴공 비교과 SU-EBE 기초수학 수강후기",
+    "description": "SU-EBE 기초수학 비교과 수업의 수강 경험과 학습에 도움이 된 점을 확인할 수 있습니다.",
+    "url": "https://sutory.syu.ac.kr/archives/17759",
+    "tags": [
+      "수토리",
+      "컴퓨터공학부",
+      "비교과",
+      "기초수학"
+    ],
+    "category": "campus-life",
+    "urlLabel": "글 보기",
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다"
+  },
+  {
     "id": "school-instagram-architecture",
     "title": "건축학과 학생회 인스타",
     "description": "건축학과 학생회 소식과 활동을 확인할 수 있는 인스타그램입니다.",
