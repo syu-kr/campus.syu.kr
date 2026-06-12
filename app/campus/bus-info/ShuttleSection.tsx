@@ -50,9 +50,9 @@ function isDateInSpecialPeriod(
 ): boolean {
   if (
     Array.isArray(period.applicableDates) &&
-    period.applicableDates.includes(dateStr)
+    period.applicableDates.length > 0
   ) {
-    return true;
+    return period.applicableDates.includes(dateStr);
   }
 
   if (period.startDate && period.endDate) {

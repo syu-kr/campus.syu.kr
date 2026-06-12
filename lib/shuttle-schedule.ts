@@ -74,7 +74,10 @@ function isDateInSpecialPeriod(
   >,
   dateString: string,
 ): boolean {
-  if (period.applicableDates.includes(dateString)) return true;
+  if (period.applicableDates.length > 0) {
+    return period.applicableDates.includes(dateString);
+  }
+
   return dateString >= period.startDate && dateString <= period.endDate;
 }
 
@@ -153,7 +156,6 @@ function applySpecialPeriods({
   const activeReplacementPeriods = activePeriods.filter(
     isReplacementSpecialPeriod,
   );
-  const useReplacementSchedule = activeReplacementPeriods.length > 0;
   const applicablePeriods = [
     ...activePeriods.filter((period) => !isReplacementSpecialPeriod(period)),
     ...activeReplacementPeriods,
@@ -210,7 +212,7 @@ function applySpecialPeriods({
 
       return { ...bus, schedules };
     }),
-    isSpecialSchedule: useReplacementSchedule,
+    isSpecialSchedule: true,
   };
 }
 
