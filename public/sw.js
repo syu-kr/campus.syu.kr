@@ -24,22 +24,9 @@ const firebaseConfig = {
 // Firebase 초기화
 firebase.initializeApp(firebaseConfig);
 
-// Firebase Messaging 가져오기
-const messaging = firebase.messaging();
-
-// 백그라운드 메시지 핸들러
-messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.icon || "/icon-192x192.png",
-    badge: payload.notification.badge || "/badge-72x72.png",
-    tag: payload.data?.tag || "notification",
-    data: payload.data || {},
-  };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+// Firebase Messaging 초기화
+// notification payload는 백그라운드에서 Firebase가 자동으로 표시한다.
+firebase.messaging();
 
 // 알림 클릭 핸들러
 self.addEventListener("notificationclick", (event) => {
