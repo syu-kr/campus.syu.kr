@@ -228,7 +228,7 @@ export default function GymPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            외부 사이트에서 프로그램 보기 →
+            프로그램 보기 →
           </a>
           <a
             href="https://www.syu.ac.kr/sportscenter/facilities/"
@@ -236,7 +236,7 @@ export default function GymPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
           >
-            외부 사이트에서 시설 상세정보 →
+            시설 상세정보 →
           </a>
         </div>
       </Card>

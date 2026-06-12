@@ -68,7 +68,7 @@ function isReplacementSpecialPeriod(period: {
   return period.type === "replace" || Boolean(period.replacementSchedules);
 }
 
-export default function ShuttlePage() {
+export default function ShuttleSection() {
   const { data: buses, isLoading } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),

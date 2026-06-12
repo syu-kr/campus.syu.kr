@@ -131,7 +131,7 @@ export function TodayMenuSection({
 }) {
   return (
     <div>
-      <SectionTitle title="학식" href="/campus/cafeteria" />
+      <SectionTitle title="학식" />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {!isLoading && todayInfo.isWeekend && (
@@ -203,13 +203,21 @@ export function TodayShuttleSection({
 
   return (
     <div>
-      <SectionTitle title="다음 셔틀" href="/campus/shuttle" />
+      <SectionTitle title="다음 셔틀" />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {!isLoading && summary.isWeekend && (
           <StateCard
             type="info"
             message="오늘은 주말입니다. 셔틀버스가 운행되지 않습니다."
+            action={
+              <Link
+                href="/campus/bus-info"
+                className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                셔틀 시간표 보기
+              </Link>
+            }
           />
         )}
         {!isLoading &&
@@ -221,7 +229,7 @@ export function TodayShuttleSection({
               message="오늘 남은 셔틀 운행이 없습니다. 전체 시간표를 확인해보세요."
               action={
                 <Link
-                  href="/campus/shuttle"
+                  href="/campus/bus-info"
                   className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
                 >
                   셔틀 시간표 보기
@@ -230,7 +238,7 @@ export function TodayShuttleSection({
             />
           )}
         {!isLoading && primaryDeparture && (
-          <Link href="/campus/shuttle" className="block">
+          <Link href="/campus/bus-info" className="block">
             <Card className="cursor-pointer border border-primary-100 bg-primary-50/70 hover:shadow-card-hover">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -334,16 +342,18 @@ export function TodaySchedulesSection({
   );
 }
 
-function SectionTitle({ title, href }: { title: string; href: string }) {
+function SectionTitle({ title, href }: { title: string; href?: string }) {
   return (
     <div className="mb-3 flex items-center justify-between">
       <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
-      <Link
-        href={href}
-        className="text-xs text-primary-600 hover:text-primary-700"
-      >
-        전체보기 →
-      </Link>
+      {href && (
+        <Link
+          href={href}
+          className="text-xs text-primary-600 hover:text-primary-700"
+        >
+          전체보기 →
+        </Link>
+      )}
     </div>
   );
 }

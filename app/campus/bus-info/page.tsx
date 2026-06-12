@@ -7,8 +7,8 @@ import dynamic from "next/dynamic";
 import PublicTransitSection from "./PublicTransitSection";
 import clsx from "clsx";
 
-// 셔틀버스 페이지를 동적 임포트 (코드 분할)
-const ShuttleSection = dynamic(() => import("../shuttle/page"), {
+// 셔틀버스 섹션을 동적 임포트 (코드 분할)
+const ShuttleSection = dynamic(() => import("./ShuttleSection"), {
   loading: () => <div className="py-8">로딩 중...</div>,
 });
 
