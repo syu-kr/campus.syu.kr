@@ -16,6 +16,7 @@ import {
   ShuttleMap,
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
+import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -175,29 +176,16 @@ export default function ShuttleSection() {
 
   // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
-    const vacationPeriods = Array.isArray(specialPeriods?.vacationPeriods)
-      ? specialPeriods.vacationPeriods
-      : [];
-
-    // 방학 기간 확인
-    for (const vacation of vacationPeriods) {
-      if (
-        dateInfo.dateStr >= vacation.startDate &&
-        dateInfo.dateStr <= vacation.endDate
-      ) {
-        // 방학 기간 내: 금요일 판별
-        if (dateInfo.isFriday) {
-          return "fridayVacation" as const;
-        }
-        return "mondayToThursdayVacation" as const;
-      }
+    if (isShuttleVacationDate(dateInfo.dateStr, specialPeriods)) {
+      return dateInfo.isFriday
+        ? ("fridayVacation" as const)
+        : ("mondayToThursdayVacation" as const);
     }
 
-    // 학기 중
     if (dateInfo.isWeekend) return "mondayToThursday"; // 주말이면 월요일 시간표 표시
     if (dateInfo.isFriday) return "friday";
     return "mondayToThursday";
-  }, [dateInfo, specialPeriods?.vacationPeriods]);
+  }, [dateInfo, specialPeriods]);
 
   const [selectedType, setSelectedType] = useState<
     | "mondayToThursday"

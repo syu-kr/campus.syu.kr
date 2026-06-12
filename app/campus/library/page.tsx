@@ -12,8 +12,11 @@ import {
   type LibrarySeason,
   type ReadingRoom,
 } from "@/lib/library";
+import { fetchShuttleSpecialPeriods } from "@/lib/api";
+import { getKoreaNow } from "@/lib/home";
+import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function getUsageColor(percentage: number): string {
   if (percentage >= 66) return "bg-red-600"; // 2/3 이상
@@ -31,6 +34,24 @@ export default function LibraryPage() {
   const [selectedSeason, setSelectedSeason] =
     useState<LibrarySeason>("semester");
   const [seatMapUrl, setSeatMapUrl] = useState<string | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(getKoreaNow());
+
+    const timer = setInterval(() => {
+      setNow(getKoreaNow());
+    }, 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const { data: shuttleSpecialPeriods } = useQuery({
+    queryKey: ["shuttle-special-periods"],
+    queryFn: () => fetchShuttleSpecialPeriods(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
 
   const {
     data: rooms = [],
@@ -49,6 +70,23 @@ export default function LibraryPage() {
     gcTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });
+
+  const defaultSeason = useMemo<LibrarySeason>(() => {
+    if (!now) return "semester";
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const date = String(now.getDate()).padStart(2, "0");
+    const dateString = `${year}-${month}-${date}`;
+
+    return isShuttleVacationDate(dateString, shuttleSpecialPeriods)
+      ? "vacation"
+      : "semester";
+  }, [now, shuttleSpecialPeriods]);
+
+  useEffect(() => {
+    setSelectedSeason(defaultSeason);
+  }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
   const lastUpdatedTime = dataUpdatedAt

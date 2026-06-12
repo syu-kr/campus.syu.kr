@@ -92,19 +92,28 @@ function getDateInfo(now: Date) {
   };
 }
 
+export function isShuttleVacationDate(
+  dateString: string,
+  specialPeriods?: ShuttleSpecialPeriods,
+): boolean {
+  const vacationPeriods = Array.isArray(specialPeriods?.vacationPeriods)
+    ? specialPeriods.vacationPeriods
+    : [];
+
+  return vacationPeriods.some(
+    (period) =>
+      dateString >= period.startDate && dateString <= period.endDate,
+  );
+}
+
 function getScheduleType(
   now: Date,
   specialPeriods?: ShuttleSpecialPeriods,
 ): ShuttleScheduleType {
   const dateInfo = getDateInfo(now);
-  const vacationPeriods = Array.isArray(specialPeriods?.vacationPeriods)
-    ? specialPeriods.vacationPeriods
-    : [];
-
-  const isVacation = vacationPeriods.some(
-    (period) =>
-      dateInfo.dateString >= period.startDate &&
-      dateInfo.dateString <= period.endDate,
+  const isVacation = isShuttleVacationDate(
+    dateInfo.dateString,
+    specialPeriods,
   );
 
   if (isVacation) {
