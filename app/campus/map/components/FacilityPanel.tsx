@@ -13,7 +13,7 @@ interface FacilityPanelProps {
 export function FacilityPanel({ buildingId }: FacilityPanelProps) {
   const building = buildingId ? getBuildingById(buildingId) : null;
   const [expandedFloors, setExpandedFloors] = useState<Set<number>>(
-    new Set([1, 2]),
+    new Set(building?.floors.map((floor) => floor.floor) ?? []),
   );
 
   if (!building) {

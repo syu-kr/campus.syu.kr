@@ -2,7 +2,7 @@
 
 import { Container } from "@/app/components/Container";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
 import { FacilitySearch } from "./components/FacilitySearch";
@@ -11,11 +11,27 @@ import { Icon } from "@/app/components/Icon";
 export default function MapPage() {
   const [selectedBuilding, setSelectedBuilding] = useState<string>();
   const [highlightedBuilding, setHighlightedBuilding] = useState<string>();
+  const [selectionVersion, setSelectionVersion] = useState(0);
+  const mobileFacilityInfoRef = useRef<HTMLDivElement>(null);
 
   const handleFacilitySelect = (buildingId: string) => {
     setSelectedBuilding(buildingId);
     setHighlightedBuilding(buildingId);
+    setSelectionVersion((version) => version + 1);
   };
+
+  useEffect(() => {
+    if (!selectedBuilding || !window.matchMedia("(max-width: 1023px)").matches) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      mobileFacilityInfoRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [selectedBuilding, selectionVersion]);
 
   return (
     <Container className="py-6 sm:py-8">
@@ -52,22 +68,23 @@ export default function MapPage() {
         </div>
 
         <div className="hidden lg:flex lg:flex-col space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
-          <FacilityPanel buildingId={selectedBuilding} />
+          <FacilityPanel
+            key={`desktop-${selectedBuilding}-${selectionVersion}`}
+            buildingId={selectedBuilding}
+          />
         </div>
       </div>
 
-      {selectedBuilding && (
-        <a
-          href="#facility-info"
-          className="mt-4 inline-flex rounded-lg border border-primary-200 bg-primary-50 px-4 py-2 text-sm font-semibold text-primary-700 lg:hidden"
-        >
-          선택한 건물 시설 정보 보기
-        </a>
-      )}
-
-      <div id="facility-info" className="mt-6 scroll-mt-24 lg:hidden">
+      <div
+        ref={mobileFacilityInfoRef}
+        id="facility-info"
+        className="mt-6 scroll-mt-24 lg:hidden"
+      >
         <div className="mt-4">
-          <FacilityPanel buildingId={selectedBuilding} />
+          <FacilityPanel
+            key={`mobile-${selectedBuilding}-${selectionVersion}`}
+            buildingId={selectedBuilding}
+          />
         </div>
       </div>
     </Container>
