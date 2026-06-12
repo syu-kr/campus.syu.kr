@@ -196,7 +196,10 @@ export function CafeteriaNoticeCards() {
 
 export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
   return (
-    <Card className="mb-8 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400">
+    <Card
+      id="today-menu"
+      className="mb-8 scroll-mt-24 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400"
+    >
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-bold text-green-900">오늘의 메뉴</h2>
@@ -219,13 +222,32 @@ export function WeeklyMenuCard({
   menu: CafeteriaMenu;
   isToday: boolean;
 }) {
+  const scrollToTodayMenu = () => {
+    if (!isToday) return;
+
+    document
+      .getElementById("today-menu")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <Card
       className={
         isToday
-          ? "border-2 border-green-400 bg-green-50"
+          ? "border-2 border-green-400 bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
           : ""
       }
+      clickable={isToday}
+      role={isToday ? "button" : undefined}
+      tabIndex={isToday ? 0 : undefined}
+      aria-label={isToday ? "오늘의 메뉴로 이동" : undefined}
+      onClick={scrollToTodayMenu}
+      onKeyDown={(event) => {
+        if (!isToday || (event.key !== "Enter" && event.key !== " ")) return;
+
+        event.preventDefault();
+        scrollToTodayMenu();
+      }}
     >
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
