@@ -3,6 +3,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 import { NotificationModal } from "@/components/NotificationModal";
+import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
+import {
+  FCM_TOKEN_KEY,
+  enablePushNotifications,
+  getNotificationPreference,
+} from "@/lib/push-notifications";
 
 let clientSingleton: QueryClient | undefined;
 
@@ -52,6 +58,7 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <NotificationModal />
+      <NotificationPermissionPrompt />
       {children}
     </QueryClientProvider>
   );
@@ -82,104 +89,19 @@ async function initializePushNotifications() {
   }
 
   const permission = Notification.permission;
+  const preference = getNotificationPreference();
+  const storedToken = localStorage.getItem(FCM_TOKEN_KEY);
 
-  if (permission !== "granted") {
+  if (
+    permission !== "granted" ||
+    preference === "disabled" ||
+    (!preference && !storedToken)
+  ) {
     return;
   }
 
   try {
-    const swRegistration = await navigator.serviceWorker.register("/sw.js", {
-      updateViaCache: "none",
-    });
-
-    setupServiceWorkerUpdateReload(swRegistration);
-    await setupForegroundNotifications();
-    await generateAndSaveFCMToken(swRegistration);
-  } catch {
-    return;
-  }
-}
-
-function setupServiceWorkerUpdateReload(
-  registration: ServiceWorkerRegistration,
-) {
-  let refreshing = false;
-
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
-
-  if (registration.waiting) {
-    registration.waiting.postMessage({ type: "SKIP_WAITING" });
-  }
-
-  registration.addEventListener("updatefound", () => {
-    const worker = registration.installing;
-    if (!worker) return;
-
-    worker.addEventListener("statechange", () => {
-      if (worker.state === "installed" && navigator.serviceWorker.controller) {
-        worker.postMessage({ type: "SKIP_WAITING" });
-      }
-    });
-  });
-}
-
-async function generateAndSaveFCMToken(
-  swRegistration: ServiceWorkerRegistration | null,
-) {
-  const { getToken } = await import("firebase/messaging");
-  const { messaging } = await import("@/lib/firebase");
-
-  if (!messaging) {
-    return;
-  }
-
-  const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-
-  const tokenOptions: {
-    serviceWorkerRegistration?: ServiceWorkerRegistration;
-    vapidKey?: string;
-  } = {};
-
-  if (swRegistration) {
-    tokenOptions.serviceWorkerRegistration = swRegistration;
-  }
-
-  if (vapidKey) {
-    tokenOptions.vapidKey = vapidKey;
-  }
-
-  const token = await getToken(messaging, tokenOptions);
-
-  if (token) {
-    await saveFCMToken(token);
-  }
-}
-
-async function saveFCMToken(token: string) {
-  try {
-    const response = await fetch("/api/notifications/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fcm_token: token }),
-    });
-
-    if (response.ok) {
-      localStorage.setItem("fcm_token", token);
-    }
-  } catch {
-    return;
-  }
-}
-
-async function setupForegroundNotifications() {
-  try {
-    const { setupForegroundNotifications: setup } =
-      await import("@/lib/firebase");
-    await setup();
+    await enablePushNotifications();
   } catch {
     return;
   }

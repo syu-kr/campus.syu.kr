@@ -64,3 +64,33 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { fcm_token } = await req.json();
+
+    if (!fcm_token || typeof fcm_token !== "string") {
+      return NextResponse.json(
+        { error: "FCM 토큰이 필요합니다" },
+        { status: 400 },
+      );
+    }
+
+    const db = getFirestore();
+    const docId = Buffer.from(fcm_token).toString("base64").slice(0, 20);
+    await db.collection("user_devices").doc(docId).delete();
+
+    return NextResponse.json({
+      success: true,
+      message: "FCM 토큰이 제거되었습니다",
+    });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error("[Subscribe] FCM 토큰 제거 실패:", errorMessage);
+    return NextResponse.json(
+      { error: "알림 구독 해제 중 오류가 발생했습니다" },
+      { status: 500 },
+    );
+  }
+}
