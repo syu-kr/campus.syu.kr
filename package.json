@@ -1,6 +1,7 @@
 {
   "name": "syu-campus",
   "version": "1.0.0",
+  "packageManager": "npm@10.9.4",
   "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
   "private": true,
   "engines": {
