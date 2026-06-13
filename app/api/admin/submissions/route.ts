@@ -127,7 +127,6 @@ async function requireAdmin(req: NextRequest) {
   }
 
   if (
-    !decodedToken.email_verified ||
     !decodedToken.email ||
     !allowedEmails.includes(decodedToken.email.toLowerCase())
   ) {
@@ -148,7 +147,13 @@ function readBearerToken(req: NextRequest) {
 }
 
 function readAllowedEmails() {
-  return (process.env.ADMIN_EMAILS || "")
+  return [
+    process.env.ADMIN_EMAILS,
+    process.env.ADMIN_EMAIL,
+    process.env.admin_email,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(",")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
