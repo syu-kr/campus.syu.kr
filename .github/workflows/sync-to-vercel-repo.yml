@@ -82,20 +82,20 @@ jobs:
 
     steps:
       - name: Checkout source repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.source_ref || github.event.workflow_run.head_sha }}
 
       - name: Setup Node.js
         if: inputs.verify_before_sync
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: npm
 
       - name: Setup Python
         if: inputs.verify_before_sync
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 

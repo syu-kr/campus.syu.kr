@@ -1,11 +1,12 @@
 // 서버 사이드 Firebase Admin SDK 초기화
 
-import * as admin from "firebase-admin";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getMessaging, type Messaging } from "firebase-admin/messaging";
 
 export function initializeFirebaseAdmin() {
   // 이미 초기화된 앱이 있으면 기존 앱 사용
-  if (admin.apps.length > 0) {
-    return admin.app();
+  if (getApps().length > 0) {
+    return getApps()[0];
   }
 
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -16,17 +17,17 @@ export function initializeFirebaseAdmin() {
 
   const serviceAccount = JSON.parse(serviceAccountJson);
 
-  return admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+  return initializeApp({
+    credential: cert(serviceAccount),
   });
 }
 
 // Messaging 인스턴스 가져오기
-function getMessagingInstance(): admin.messaging.Messaging {
-  if (admin.apps.length === 0) {
+function getMessagingInstance(): Messaging {
+  if (getApps().length === 0) {
     initializeFirebaseAdmin();
   }
-  return admin.messaging();
+  return getMessaging();
 }
 
 // FCM 메시지 발송

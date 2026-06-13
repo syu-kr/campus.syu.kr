@@ -1,8 +1,7 @@
 // scripts/send-daily-notification.ts
-import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
-import { initializeScriptFirestore } from "./firebase-admin";
+import { admin, initializeScriptFirestore } from "./firebase-admin";
 
 interface AnnouncementStats {
   category: string;

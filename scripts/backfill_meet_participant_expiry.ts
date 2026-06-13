@@ -1,5 +1,4 @@
-import * as admin from "firebase-admin";
-import { initializeScriptFirestore } from "./firebase-admin";
+import { admin, initializeScriptFirestore } from "./firebase-admin";
 
 const PAGE_SIZE = 100;
 const BATCH_SIZE = 450;
