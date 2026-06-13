@@ -32,7 +32,8 @@ npm run build                     # 프로덕션 빌드
 npm run build:analyze             # 번들 분석
 npm run send-daily-notification   # 일일 공지 알림
 npm run cleanup-tokens            # 오래된 FCM 토큰 정리
-npm run cleanup-meet-rooms        # 만료된 일정 잡기 방 정리
+npm run cleanup-expired-firestore # 만료된 Firestore 문서 정리
+npm run cleanup-meet-rooms        # 위 정리 명령의 이전 호환 별칭
 npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at 일회성 보정
 ```
 
