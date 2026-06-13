@@ -462,5 +462,3 @@ export function Icon({
     </span>
   );
 }
-
-export default Icon;

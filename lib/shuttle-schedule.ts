@@ -12,7 +12,7 @@ const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "fridayVacation",
 ];
 
-export interface NextShuttleDeparture {
+interface NextShuttleDeparture {
   routeName: string;
   time: string;
   minutesUntil: number;

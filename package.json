@@ -3,44 +3,51 @@
   "version": "1.0.0",
   "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "knip": {
+    "ignoreBinaries": [
+      "python"
+    ]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:analyze": "ANALYZE=true next build",
+    "build:analyze": "node scripts/build-analyze.mjs",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "type-check": "tsc --noEmit --incremental false",
-    "check": "npm run lint && npm run type-check && npm run build",
+    "check:unused": "knip",
+    "check:python": "python scripts/check_python_syntax.py",
+    "check": "npm run lint && npm run type-check && npm run check:unused && npm run check:python && npm run build",
     "send-daily-notification": "ts-node --project tsconfig.json scripts/send-daily-notification.ts",
     "cleanup-tokens": "ts-node --project tsconfig.json scripts/cleanup_old_tokens.ts",
-    "cleanup-meet-rooms": "ts-node --project tsconfig.json scripts/cleanup_meet_rooms.ts"
+    "cleanup-meet-rooms": "ts-node --project tsconfig.json scripts/cleanup_meet_rooms.ts",
+    "backfill-meet-participant-expiry": "ts-node --project tsconfig.json scripts/backfill_meet_participant_expiry.ts"
   },
   "dependencies": {
     "@fontsource/pretendard": "^5.2.5",
     "@tanstack/react-query": "^5.28.0",
     "clsx": "^2.1.0",
     "firebase": "^12.11.0",
-    "firebase-admin": "^13.7.0",
-    "next": "^14.1.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "firebase-admin": "^13.10.0",
+    "next": "^16.2.9",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.2.2",
-    "@types/cheerio": "^0.22.35",
+    "@next/bundle-analyzer": "^16.2.9",
     "@types/node": "^20.10.6",
-    "@types/react": "^18.2.46",
-    "@types/react-dom": "^18.2.18",
-    "axios": "^1.13.6",
-    "cheerio": "^1.0.0-rc.12",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.1.0",
-    "firebase-tools": "^15.12.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.9",
+    "knip": "^6.16.1",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
 }

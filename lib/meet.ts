@@ -2,7 +2,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const MAX_DATE_COUNT = 14;
 
-export const ALLOWED_MEET_SLOT_MINUTES = [15, 30, 60] as const;
+const ALLOWED_MEET_SLOT_MINUTES = [15, 30, 60] as const;
 
 export interface MeetRoomInput {
   title: string;
@@ -49,7 +49,7 @@ export function normalizeMeetRoomInput(input: unknown): MeetRoomInput {
   };
 }
 
-export function assertValidMeetRange({
+function assertValidMeetRange({
   dateStart,
   dateEnd,
   timeStart,

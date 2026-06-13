@@ -44,8 +44,7 @@ def crawl_phone_numbers():
         response.encoding = 'utf-8'
         
         if response.status_code != 200:
-            print(f"❌ 요청 실패: {response.status_code}")
-            return
+            raise RuntimeError(f"전화번호 페이지 요청 실패: {response.status_code}")
         
         soup = BeautifulSoup(response.text, 'html.parser')
         

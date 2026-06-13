@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Container } from "@/app/components/Container";
@@ -26,6 +26,7 @@ import type {
   AcademicSchedule,
   Announcement,
   CafeteriaMenu,
+  HomeNoticeCategory,
   ServiceNotice,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
@@ -68,9 +69,9 @@ export function HomePageClient({
   initialShuttleSpecialPeriods,
   initialNowIso,
 }: HomePageClientProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedCategory, setSelectedCategory] = useState<
+    HomeNoticeCategory | undefined
+  >(undefined);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
@@ -87,17 +88,11 @@ export function HomePageClient({
   const { data: announcements, isLoading: announcementsLoading } = useQuery({
     queryKey: ["announcements", selectedCategory],
     queryFn: () =>
-      selectedCategory
-        ? fetchAnnouncements(
-            selectedCategory as
-              | "academic"
-              | "campus"
-              | "admin"
-              | "activity"
-              | "scholarship",
-          )
+      selectedCategory && selectedCategory !== "service"
+        ? fetchAnnouncements(selectedCategory)
         : fetchAnnouncementSummary(),
     initialData: selectedCategory ? undefined : initialAnnouncements,
+    enabled: selectedCategory !== "service",
     staleTime: ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });

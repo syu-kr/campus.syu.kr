@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "firebase-admin/auth";
+import { getAuth, type DecodedIdToken } from "firebase-admin/auth";
 import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
-import { apiErrorResponse } from "@/lib/server/http";
+import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
 import {
   admin,
   getFirestore,
@@ -50,16 +50,19 @@ export async function PATCH(req: NextRequest) {
   try {
     await requireAdmin(req);
 
-    const body = (await req.json()) as {
+    const body = await readJsonBody<{
       id?: unknown;
       kind?: unknown;
       status?: unknown;
-    };
+    }>(req, 4 * 1024);
     const id = typeof body.id === "string" ? body.id.trim() : "";
     const kind = typeof body.kind === "string" ? body.kind : "";
     const status = typeof body.status === "string" ? body.status : "";
 
-    if (!id || (kind !== "inquiry" && kind !== "campus-tip")) {
+    if (
+      !/^[A-Za-z0-9_-]{1,128}$/.test(id) ||
+      (kind !== "inquiry" && kind !== "campus-tip")
+    ) {
       return NextResponse.json(
         { error: "제출 항목을 찾을 수 없습니다" },
         { status: 400 },
@@ -110,12 +113,23 @@ async function requireAdmin(req: NextRequest) {
     throw new AdminAuthError("로그인이 필요합니다", 401);
   }
 
-  const decodedToken = await getAuth().verifyIdToken(token);
+  let decodedToken: DecodedIdToken;
+  try {
+    decodedToken = await getAuth().verifyIdToken(token, true);
+  } catch {
+    throw new AdminAuthError("유효한 로그인이 필요합니다", 401);
+  }
   const allowedEmails = readAllowedEmails();
 
+  if (allowedEmails.length === 0) {
+    console.error("[Admin API] ADMIN_EMAILS is not configured");
+    throw new AdminAuthError("관리자 설정이 완료되지 않았습니다", 503);
+  }
+
   if (
-    allowedEmails.length > 0 &&
-    (!decodedToken.email || !allowedEmails.includes(decodedToken.email))
+    !decodedToken.email_verified ||
+    !decodedToken.email ||
+    !allowedEmails.includes(decodedToken.email.toLowerCase())
   ) {
     throw new AdminAuthError("관리자 권한이 없습니다", 403);
   }
@@ -136,7 +150,7 @@ function readBearerToken(req: NextRequest) {
 function readAllowedEmails() {
   return (process.env.ADMIN_EMAILS || "")
     .split(",")
-    .map((email) => email.trim())
+    .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
 }
 

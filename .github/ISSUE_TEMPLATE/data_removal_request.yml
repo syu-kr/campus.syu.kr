@@ -1,0 +1,31 @@
+name: Data or asset removal request
+description: 데이터, 로고, 이미지 또는 기타 자산의 정정·삭제를 요청합니다.
+title: "[Removal] "
+labels:
+  - removal-request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        개인 정보나 비밀 값은 공개 Issue에 포함하지 마세요. 보안 취약점은 SECURITY.md의 비공개 제보 절차를 이용해 주세요.
+  - type: textarea
+    id: target
+    attributes:
+      label: 대상
+      description: 정정 또는 삭제가 필요한 파일, 페이지, 데이터나 자산을 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 요청 사유와 권리 근거
+      description: 요청 사유와 확인 가능한 권리 또는 출처 정보를 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: action
+    attributes:
+      label: 요청 조치
+      description: 삭제, 출처 수정, 내용 정정 등 원하는 조치를 적어 주세요.
+    validations:
+      required: true

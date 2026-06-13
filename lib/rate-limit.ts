@@ -42,6 +42,6 @@ export function checkRateLimit(
 export function getRateLimitKey(req: Request, scope: string): string {
   const forwardedFor = req.headers.get("x-forwarded-for");
   const realIp = req.headers.get("x-real-ip");
-  const ip = forwardedFor?.split(",")[0]?.trim() || realIp || "unknown";
+  const ip = realIp || forwardedFor?.split(",")[0]?.trim() || "unknown";
   return `${scope}:${ip}`;
 }

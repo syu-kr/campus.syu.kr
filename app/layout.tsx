@@ -19,26 +19,14 @@ const GOOGLE_ANALYTICS_SCRIPT = `
   gtag('js', new Date());
   gtag('config', '${GOOGLE_ANALYTICS_ID}');
 `;
-const ORGANIZATION_SCHEMA = {
+const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "WebSite",
   name: "SYU CAMPUS",
   url: "https://campus.syu.kr",
-  logo: "https://campus.syu.kr/images/syu-kr-logo.png",
   description:
     "삼육대학교 학생들을 위한 공지사항, 학식, 셔틀버스, 학사일정 통합 정보 플랫폼",
-  sameAs: ["https://www.syu.kr"],
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "서울특별시 노원구 공릉동",
-    addressLocality: "서울",
-    postalCode: "01795",
-    addressCountry: "KR",
-  },
-  contactPoint: {
-    "@type": "ContactPoint",
-    contactType: "Customer Service",
-  },
+  inLanguage: "ko-KR",
 };
 
 export const metadata: Metadata = {
@@ -96,7 +84,7 @@ export const metadata: Metadata = {
     title: "SYU CAMPUS",
   },
   icons: {
-    icon: "/images/syu-kr-logo.png",
+    icon: "/images/favicon.ico",
     apple: "/images/syu-kr-logo.png",
   },
   manifest: "/manifest.json",
@@ -128,8 +116,6 @@ export default function RootLayout({
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="manifest" href="/manifest.json" />
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
@@ -143,10 +129,10 @@ export default function RootLayout({
           }}
         />
         <Script
-          id="organization-schema"
+          id="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(ORGANIZATION_SCHEMA),
+            __html: JSON.stringify(WEBSITE_SCHEMA),
           }}
         />
       </head>

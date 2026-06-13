@@ -1,6 +1,7 @@
 import type {
   AcademicSchedule,
   Announcement,
+  HomeNoticeCategory,
   PhoneNumber,
   Scholarship,
   ServiceNotice,
@@ -70,7 +71,7 @@ export function getTodayInfo(now: Date | null): TodayInfo {
   };
 }
 
-export function createEmptySearchCategories(): CategorizedSearchResults {
+function createEmptySearchCategories(): CategorizedSearchResults {
   return {
     academicSchedule: {
       label: "학사일정",
@@ -147,7 +148,7 @@ export function isScheduleOnDate(
 export function getHomeNotices(
   announcements?: Announcement[],
   serviceNotices?: ServiceNotice[],
-  selectedCategory?: string,
+  selectedCategory?: HomeNoticeCategory,
   limit = 3,
 ): HomeNotice[] {
   const combined: HomeNotice[] = [

@@ -9,6 +9,7 @@ import {
 import {
   apiErrorResponse,
   enforceRateLimit,
+  readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
 
@@ -21,9 +22,8 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
-    enforceRateLimit(req, "meet_rooms", RATE_LIMIT);
-
-    const input = normalizeMeetRoomInput(await req.json());
+    const input = normalizeMeetRoomInput(await readJsonBody(req, 8 * 1024));
+    await enforceRateLimit(req, "meet_rooms", RATE_LIMIT);
     const slots = buildMeetSlots(input);
 
     const db = getFirestore();

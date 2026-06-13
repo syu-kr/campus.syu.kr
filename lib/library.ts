@@ -7,7 +7,7 @@ export interface ReadingRoom {
 
 export type LibrarySeason = "semester" | "vacation";
 
-export interface LibraryRoomHours {
+interface LibraryRoomHours {
   name: string;
   schedule: {
     "월-목": string;
@@ -17,7 +17,7 @@ export interface LibraryRoomHours {
   note?: string;
 }
 
-export interface LibraryFloorHours {
+interface LibraryFloorHours {
   name: string;
   rooms: LibraryRoomHours[];
 }

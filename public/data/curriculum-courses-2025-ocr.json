@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "sourceFile": "C:\\Users\\ssb50\\test_file\\merged_cleaned.txt",
+    "sourceFile": "2025학년도 삼육대학교 요람 OCR 추출본",
     "generatedAt": "2026-04-29",
     "description": "OCR 텍스트에서 문맥 보정으로 추출한 2025학년도 학과별 전공/교양 과목 데이터셋 초안입니다.",
     "reviewPolicy": "reviewStatus가 needsReview인 항목은 원문 대조 후 확정 데이터로 승격해야 합니다."

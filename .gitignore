@@ -19,6 +19,9 @@ yarn.lock
 dist/
 build/
 .cache/
+.venv/
+__pycache__/
+*.py[cod]
 tsconfig.tsbuildinfo
 
 # Environment

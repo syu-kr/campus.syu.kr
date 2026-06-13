@@ -1,5 +1,6 @@
 import {
   Announcement,
+  AnnouncementCategory,
   CafeteriaMenu,
   AcademicSchedule,
   ShuttleBusSchedule,
@@ -22,7 +23,7 @@ export interface AnnouncementPageResponse {
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
 export async function fetchAnnouncements(
-  category?: string,
+  category?: AnnouncementCategory,
 ): Promise<Announcement[]> {
   try {
     const params = new URLSearchParams({
@@ -55,7 +56,7 @@ export async function fetchAnnouncementPage({
   page = 1,
   limit = 10,
 }: {
-  category?: string;
+  category?: AnnouncementCategory | "all";
   query?: string;
   page?: number;
   limit?: number;
@@ -371,7 +372,7 @@ export async function fetchCampusTips(): Promise<CampusTip[]> {
 
 // 버스 실시간 위치 API
 interface ShuttleLocationPayload {
-  returnCode?: string;
+  success?: boolean;
   data?: unknown[];
 }
 
@@ -402,10 +403,10 @@ function toBusLocation(item: unknown): BusLocation | null {
 
 export async function fetchBusLocations(): Promise<BusLocation[]> {
   const response = await fetchJson<ShuttleLocationPayload>(
-    "/api/bus/shuttle?raw=1",
+    "/api/bus/shuttle",
     {
       fallback: {
-        returnCode: "500",
+        success: false,
         data: [],
       },
       method: "GET",
@@ -419,7 +420,7 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
     },
   );
 
-  if (response.returnCode && response.returnCode !== "200") {
+  if (!response.success) {
     throw new Error("셔틀 위치 정보를 불러오지 못했습니다.");
   }
 
@@ -430,7 +431,5 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
 }
 
 export {
-  PUBLIC_TRANSIT_STOPS,
   fetchPublicTransitArrivals,
-  fetchGyeonggiBusLocations,
 } from "./public-transit";

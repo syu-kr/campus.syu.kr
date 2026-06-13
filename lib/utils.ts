@@ -1,4 +1,6 @@
-// 유틸리티 함수들
+import type { AcademicSchedule, AnnouncementCategory } from "@/types";
+
+type CategoryLabel = AnnouncementCategory | AcademicSchedule["category"];
 
 function parseDateString(dateString: string): Date | null {
   if (!dateString || typeof dateString !== "string") {
@@ -75,7 +77,7 @@ export function formatDateWithYear(dateString: string): string {
 /**
  * 날짜 한글 포맷팅 (2024년 1월 15일)
  */
-export function formatDateKorean(dateString: string): string {
+function formatDateKorean(dateString: string): string {
   const date = parseDateString(dateString);
   if (!date) return dateString;
 
@@ -88,58 +90,34 @@ export function formatDateKorean(dateString: string): string {
 /**
  * 카테고리 한글 레이블
  */
-export function getCategoryLabel(category: string): string {
-  const labels: Record<string, string> = {
+export function getCategoryLabel(category: CategoryLabel): string {
+  const labels: Record<CategoryLabel, string> = {
     academic: "학사공지",
     scholarship: "장학금",
     campus: "캠퍼스",
-    admin: "행정",
-    activity: "학생활동",
     registration: "수강신청",
     exam: "시험",
     holiday: "휴무",
     event: "행사",
-    internal: "교내",
-    external: "교외",
   };
-  return labels[category] || category;
-}
-
-/**
- * 시간표 과목 카테고리 한글 레이블
- */
-export function getCourseCategoryLabel(category: string): string {
-  const labels: Record<string, string> = {
-    "major-required": "전공 필수",
-    "major-elective": "전공 선택",
-    "liberal-required": "교양 필수",
-    "liberal-elective": "교양 선택",
-  };
-
-  return labels[category] || category;
+  return labels[category];
 }
 
 /**
  * 카테고리 색상
  */
 export function getCategoryColor(
-  category: string,
+  category: AnnouncementCategory,
 ): "blue" | "red" | "green" | "yellow" | "purple" {
-  const colors: Record<string, "blue" | "red" | "green" | "yellow" | "purple"> =
-    {
-      academic: "blue",
-      scholarship: "yellow",
-      campus: "green",
-      admin: "purple",
-      activity: "yellow",
-      registration: "blue",
-      exam: "red",
-      holiday: "green",
-      event: "yellow",
-      internal: "blue",
-      external: "green",
-    };
-  return colors[category] || "blue";
+  const colors: Record<
+    AnnouncementCategory,
+    "blue" | "red" | "green" | "yellow" | "purple"
+  > = {
+    academic: "blue",
+    scholarship: "yellow",
+    campus: "green",
+  };
+  return colors[category];
 }
 
 /**

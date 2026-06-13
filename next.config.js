@@ -5,8 +5,9 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-
+  turbopack: {
+    root: __dirname,
+  },
   // 이미지 최적화
   images: {
     formats: ["image/avif", "image/webp"],
@@ -22,9 +23,6 @@ const nextConfig = {
 
   // 압축 설정
   compress: true,
-
-  // 폰트 최적화
-  optimizeFonts: true,
 
   // 빌드 최적화: 개발 중 불필요한 source map 제거
   productionBrowserSourceMaps: false,
@@ -43,12 +41,38 @@ const nextConfig = {
   rewrites: async () => [
     {
       source: "/bus/shuttle",
-      destination: "/api/bus/shuttle?raw=1",
+      destination: "/api/bus/shuttle",
     },
   ],
 
   // 캐싱 설정
   headers: async () => {
+    const securityHeaders = [
+      {
+        key: "Content-Security-Policy",
+        value: "base-uri 'self'; object-src 'none'; frame-ancestors 'none'",
+      },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=()",
+      },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+      {
+        key: "X-Content-Type-Options",
+        value: "nosniff",
+      },
+      {
+        key: "X-Frame-Options",
+        value: "DENY",
+      },
+      {
+        key: "X-Permitted-Cross-Domain-Policies",
+        value: "none",
+      },
+    ];
     const noStoreHeaders = [
       {
         key: "Cache-Control",
@@ -63,8 +87,59 @@ const nextConfig = {
         value: "0",
       },
     ];
+    const sensitiveApiSources = [
+      "/api/admin/:path*",
+      "/api/notifications/:path*",
+      "/api/contact",
+      "/api/campus-tips/suggestions",
+      "/api/meet/:path*",
+      "/api/lecture/timetable/shares/:path*",
+    ];
 
     return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      ...sensitiveApiSources.map((source) => ({
+        source,
+        headers: noStoreHeaders,
+      })),
+      {
+        source: "/admin/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-store",
+          },
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
+      {
+        source: "/more/meet/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "private, no-store",
+          },
+          {
+            key: "X-Robots-Tag",
+            value: "noindex, nofollow",
+          },
+        ],
+      },
       {
         source: "/sw.js",
         headers: [
@@ -113,16 +188,6 @@ const nextConfig = {
       // 다른 정적 자산 - 5일 캐싱
       {
         source: "/:path*\\.(png|jpg|jpeg|gif|webp|svg|ico)$",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=432000, immutable",
-          },
-        ],
-      },
-      // Next.js 생성 JS/CSS 번들 - 5일 캐싱 (immutable은 Next.js가 자동 추가)
-      {
-        source: "/_next/static/:path*",
         headers: [
           {
             key: "Cache-Control",

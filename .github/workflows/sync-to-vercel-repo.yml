@@ -57,7 +57,6 @@ env:
   KMA_FCST_URL: "ci-placeholder"
   SEOUL_BUS_ARRIVAL_URL: "ci-placeholder"
   GYEONGGI_BUS_ARRIVAL_URL: "ci-placeholder"
-  GYEONGGI_BUS_LOCATION_URL: "ci-placeholder"
   SHUTTLE_LOCATION_URL: "https://ci-placeholder.invalid"
   SHUTTLE_REFERER: "https://ci-placeholder.invalid/"
   SHUTTLE_USER_AGENT: "ci-placeholder"
@@ -69,7 +68,7 @@ jobs:
   sync:
     name: Sync
     if: >-
-      github.repository != 'singhic/syu-campus' &&
+      github.repository == 'syu-kr/campus.syu.kr' &&
       (
         github.event_name != 'workflow_run' ||
         (
@@ -94,6 +93,12 @@ jobs:
           node-version: "20"
           cache: npm
 
+      - name: Setup Python
+        if: inputs.verify_before_sync
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install dependencies
         if: inputs.verify_before_sync
         run: npm ci
@@ -105,6 +110,14 @@ jobs:
       - name: Type check
         if: inputs.verify_before_sync
         run: npm run type-check
+
+      - name: Check unused code
+        if: inputs.verify_before_sync
+        run: npm run check:unused
+
+      - name: Check Python crawler syntax
+        if: inputs.verify_before_sync
+        run: npm run check:python
 
       - name: Build
         if: inputs.verify_before_sync
@@ -143,6 +156,8 @@ jobs:
             --exclude ".cache/" \
             --exclude ".cache_ggshield" \
             --exclude ".venv/" \
+            --exclude "__pycache__/" \
+            --exclude "*.py[cod]" \
             --exclude ".vscode/"
 
       - name: Push changes to destination repository

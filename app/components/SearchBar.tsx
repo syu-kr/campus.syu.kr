@@ -136,5 +136,3 @@ function SearchBarComponent({
 }
 
 export const SearchBar = memo(SearchBarComponent);
-
-export default SearchBar;

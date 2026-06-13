@@ -1,22 +1,23 @@
-name: Daily Crawl - Academic, Scholarship, Events, Campus & Cafeteria Notices
+name: Daily Crawl - Academic, Scholarship, Campus & Cafeteria Notices
 
 on:
   schedule:
-    # 매일 0시(UTC) 실행 = KST 자정(09:00)
+    # 매일 15시(UTC) 실행 = KST 자정(00:00)
     - cron: "0 15 * * *"
   workflow_dispatch: # 수동 실행 option
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   crawl:
+    if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       CRAWL_ACADEMIC_NOTICES_URL: ${{ vars.CRAWL_ACADEMIC_NOTICES_URL }}
       CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
-      CRAWL_EVENT_NOTICES_URL: ${{ vars.CRAWL_EVENT_NOTICES_URL }}
       CRAWL_CAMPUS_NOTICES_URL: ${{ vars.CRAWL_CAMPUS_NOTICES_URL }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
     outputs:
@@ -31,8 +32,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -48,9 +47,6 @@ jobs:
       - name: Run scholarship notices crawler
         run: python scripts/crawl_scholarships.py
 
-      - name: Run event notices crawler
-        run: python scripts/crawl_events.py
-
       - name: Run campus life notices crawler
         run: python scripts/crawl_campus.py
 
@@ -60,18 +56,15 @@ jobs:
       - name: Commit and Push changes
         id: commit
         run: |
-          git config --local user.email "ssb50800@gmail.com"
-          git config --local user.name "singhic"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git config --global --add safe.directory "$PWD"
           git add public/data/
 
           if ! git diff --cached --quiet; then
-            git commit -m "chore: update daily crawl data (notices & cafeteria menu)"
+            git commit -m "chore: update daily crawl data (notices and cafeteria menu)"
             git pull --rebase origin main
-            if ! git push origin main 2>&1; then
-              echo "First push failed, trying with explicit token..."
-              git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
-            fi
+            git push origin main
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "✅ Changes pushed successfully"
@@ -80,10 +73,6 @@ jobs:
             echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "ℹ️ No changes to commit - skipping push"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
   sync-to-vercel-repo:
     name: Sync to Vercel Repository
     needs: crawl
@@ -92,4 +81,6 @@ jobs:
     with:
       source_ref: ${{ needs.crawl.outputs.source_ref }}
       verify_before_sync: true
-    secrets: inherit
+    secrets:
+      VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
+      OFFICIAL_ACCOUNT_EMAIL: ${{ secrets.OFFICIAL_ACCOUNT_EMAIL }}

@@ -17,7 +17,7 @@ export interface AnnouncementPage {
   totalPages: number;
 }
 
-const SOURCE_BY_CATEGORY: Partial<Record<AnnouncementCategory, string>> = {
+const SOURCE_BY_CATEGORY: Record<AnnouncementCategory, string> = {
   academic: "announcements-academic.json",
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
@@ -118,8 +118,6 @@ async function readAnnouncementsFromDisk(
   category: AnnouncementCategory,
 ): Promise<Announcement[]> {
   const fileName = SOURCE_BY_CATEGORY[category];
-  if (!fileName) return [];
-
   const filePath = path.join(process.cwd(), "public", "data", fileName);
   const content = await readFile(filePath, "utf8");
   const items = JSON.parse(content) as Announcement[];

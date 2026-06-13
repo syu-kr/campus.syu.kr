@@ -6,7 +6,7 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ### 요구사항
 
-- Node.js 18.17 이상
+- Node.js 20.9 이상
 - npm
 - Python 3.11 이상: 크롤러 실행 시 필요
 
@@ -26,11 +26,14 @@ npm run dev
 npm run dev                       # 개발 서버
 npm run lint                      # ESLint
 npm run type-check                # TypeScript 검사
+npm run check:unused              # 미사용 파일, export, 의존성 검사
+npm run check:python              # Python 크롤러 문법 검사
 npm run build                     # 프로덕션 빌드
 npm run build:analyze             # 번들 분석
 npm run send-daily-notification   # 일일 공지 알림
 npm run cleanup-tokens            # 오래된 FCM 토큰 정리
 npm run cleanup-meet-rooms        # 만료된 일정 잡기 방 정리
+npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at 일회성 보정
 ```
 
 ## 프로젝트 구조
@@ -48,6 +51,7 @@ campus.syu.kr/
 │   ├── layout.tsx
 │   ├── page.tsx
 │   ├── providers.tsx
+│   ├── sw.js/route.ts          # Firebase Messaging service worker
 │   └── globals.css
 ├── lib/
 │   ├── api.ts                  # public JSON/API fetch helpers
@@ -61,8 +65,7 @@ campus.syu.kr/
 │   ├── data/                   # static JSON datasets
 │   ├── images/
 │   ├── service-notices/        # service notice Markdown data
-│   ├── manifest.json
-│   └── sw.js
+│   └── manifest.json
 ├── scripts/                    # crawlers and maintenance scripts
 ├── types/                      # shared TypeScript types
 ├── docs/                       # operational reference docs
@@ -101,7 +104,6 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `KMA_FCST_URL` | 필수 | weather | 기상청 초단기 예보 endpoint |
 | `SEOUL_BUS_ARRIVAL_URL` | 필수 | public transit | 서울 버스 도착 endpoint |
 | `GYEONGGI_BUS_ARRIVAL_URL` | 필수 | public transit | 경기도 버스 도착 endpoint |
-| `GYEONGGI_BUS_LOCATION_URL` | 필수 | public transit | 경기도 버스 위치 endpoint |
 | `SHUTTLE_LOCATION_URL` | 필수 | shuttle | 셔틀 실시간 위치 endpoint |
 | `SHUTTLE_REFERER` | 필수 | shuttle | 셔틀 upstream 요청 Referer |
 | `SHUTTLE_USER_AGENT` | 필수 | shuttle | 셔틀 upstream 요청 User-Agent |
@@ -116,13 +118,11 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | FCM web push | Web Push VAPID public key |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
 | `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
-| `ADMIN_EMAILS` | 권장 | `/api/admin/submissions` | 관리자 허용 이메일 목록, 쉼표로 구분 |
+| `RATE_LIMIT_SECRET` | 권장 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. 미등록 시 `PUSH_API_KEY`를 fallback으로 사용 |
+| `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 이메일 검증이 완료된 관리자 허용 이메일 목록. 비어 있으면 관리자 API가 모든 요청을 거부함 |
 | `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |
 | `TOKEN_CLEANUP_DAYS` | 선택 | cleanup tokens script | 오래된 FCM 토큰 삭제 기준 일수, 기본값 `90` |
 | `ANALYZE` | 선택 | bundle analyzer | `true`일 때 bundle analyzer 활성화 |
-| `NEXT_PUBLIC_APP_URL` | 선택 | reserved/config | 앱 공개 URL. 현재 핵심 런타임 코드에서는 직접 사용하지 않음 |
-
-`FIREBASE_ADMIN_SDK_KEY`는 `.env.example`에 남아 있는 legacy/대체 형식 값이며, 현재 코드에서는 `FIREBASE_SERVICE_ACCOUNT`를 사용합니다.
 
 ### GitHub Actions Secrets
 
@@ -145,7 +145,6 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | --- | --- | --- | --- |
 | `CRAWL_ACADEMIC_NOTICES_URL` | 필수 | `crawl-daily.yml` | 학사공지 목록 page base URL |
 | `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
-| `CRAWL_EVENT_NOTICES_URL` | 필수 | `crawl-daily.yml` | 행사공지 목록 page base URL |
 | `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
@@ -162,13 +161,12 @@ Vercel 런타임 환경 변수는 GitHub Actions Secrets와 별개로 Vercel Pro
 
 ### 크롤러
 
-GitHub Actions에서 공지, 장학금, 행사, 캠퍼스 공지, 학식, 학사 일정, 전화번호 데이터를 갱신합니다.
+GitHub Actions에서 공지, 장학금, 캠퍼스 공지, 학식, 학사 일정, 전화번호 데이터를 갱신합니다.
 
 ```bash
 pip install -r requirements.txt
 python scripts/crawl_announcements.py
 python scripts/crawl_scholarships.py
-python scripts/crawl_events.py
 python scripts/crawl_campus.py
 python scripts/crawl_cafeteria.py
 python scripts/crawl_schedule.py
@@ -214,6 +212,8 @@ syu-kr/campus.syu.kr main push
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
 daily/monthly crawler가 `public/data/` 변경 커밋을 만들면, 해당 워크플로 안에서 검증과 동기화 워크플로를 호출해 개인 레포와 Vercel 배포까지 이어집니다. 데이터 변경이 없으면 동기화도 건너뜁니다.
 
+`main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 예약 크롤러가 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 **GitHub Actions 앱**만 추가합니다. 그 외 사용자와 앱에는 bypass를 허용하지 않습니다.
+
 배포 전 확인:
 
 ```bash
@@ -226,7 +226,7 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: lint, type-check, build
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화
-- daily crawl: 공지, 장학금, 행사, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
+- daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
 - daily notification: 일일 공지 푸시 발송
 
@@ -238,7 +238,7 @@ GitHub Actions는 다음 용도로 사용합니다.
 - 공유 로직은 `lib/`, 공유 타입은 `types/`에 둡니다.
 - 운영 데이터에 더미/mock 데이터를 넣지 않습니다.
 - 외부 API 실패 시 화면이 빈 상태나 안내 상태로 안전하게 내려가야 합니다.
-- 변경 후 `npm run lint`, `npm run type-check`, 필요 시 `npm run build`를 실행합니다.
+- 변경 후 `npm run check`를 실행합니다.
 
 ## 문제 해결
 
@@ -256,10 +256,10 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 ### Service Worker 문제
 
-- `public/sw.js`가 배포되었는지 확인합니다.
+- `/sw.js`가 JavaScript 응답으로 배포되고 Firebase 공개 설정이 주입되는지 확인합니다.
 - localhost 또는 HTTPS 환경에서 테스트합니다.
 - 브라우저 Application 탭에서 기존 service worker/cache를 정리한 뒤 재시도합니다.
 
 ## 최종 업데이트
 
-2026-05-05
+2026-06-13

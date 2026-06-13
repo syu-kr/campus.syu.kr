@@ -9,7 +9,6 @@
 # Frontend components
 
 /app/components/ @singhic
-/components/ @singhic
 
 # Backend and APIs
 
@@ -23,6 +22,5 @@
 
 # Documentation
 
-/README.md @singhic
-/DEVELOPMENT.md @singhic
-/LICENSE @singhic
+/*.md @singhic
+/docs/ @singhic

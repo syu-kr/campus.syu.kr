@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
 import { fetchWeather, type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
 
@@ -86,5 +86,3 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
 }
 
 export const WeatherWidget = memo(WeatherWidgetComponent);
-
-export default WeatherWidget;

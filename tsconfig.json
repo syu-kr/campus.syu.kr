@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -13,7 +17,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -22,13 +26,27 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@/components": ["./app/components"],
-      "@/components/*": ["./app/components/*"],
-      "@/features": ["./app/features"],
-      "@/lib": ["./lib"],
-      "@/data": ["./data"],
-      "@/types": ["./types"]
+      "@/*": [
+        "./*"
+      ],
+      "@/components": [
+        "./app/components"
+      ],
+      "@/components/*": [
+        "./app/components/*"
+      ],
+      "@/features": [
+        "./app/features"
+      ],
+      "@/lib": [
+        "./lib"
+      ],
+      "@/data": [
+        "./data"
+      ],
+      "@/types": [
+        "./types"
+      ]
     },
     "allowJs": true,
     "incremental": true,
@@ -38,8 +56,16 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS",

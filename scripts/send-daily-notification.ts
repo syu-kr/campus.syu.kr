@@ -131,7 +131,7 @@ async function getAnnouncementStatsFromJSON(
       count: filtered.length,
       titles: titles.slice(0, 3), // 상위 3개만
     };
-  } catch (error) {
+  } catch {
     return { category, count: 0, titles: [] };
   }
 }

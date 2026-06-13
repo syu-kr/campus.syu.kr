@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  use,
   useState,
 } from "react";
 import Link from "next/link";
@@ -26,12 +27,13 @@ import {
 } from "@/app/features/meet/availability-grid";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     roomId: string;
-  };
+  }>;
 }
 
 export default function MeetRoomPage({ params }: PageProps) {
+  const { roomId } = use(params);
   const [data, setData] = useState<MeetRoomResponse | null>(null);
   const [nickname, setNickname] = useState("");
   const [availability, setAvailability] = useState<Set<string>>(new Set());
@@ -42,13 +44,14 @@ export default function MeetRoomPage({ params }: PageProps) {
   const [dragMode, setDragMode] = useState<boolean | null>(null);
   const [mobileDate, setMobileDate] = useState("");
   const [overwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false);
+  const [participantEditToken, setParticipantEditToken] = useState("");
 
   const loadRoom = useCallback(async () => {
     setError("");
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/meet/rooms/${params.roomId}`, {
+      const response = await fetch(`/api/meet/rooms/${roomId}`, {
         cache: "no-store",
       });
       const roomData = await response.json();
@@ -65,7 +68,7 @@ export default function MeetRoomPage({ params }: PageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [params.roomId]);
+  }, [roomId]);
 
   useEffect(() => {
     void loadRoom();
@@ -89,6 +92,19 @@ export default function MeetRoomPage({ params }: PageProps) {
       window.removeEventListener("pointercancel", stopDrag);
     };
   }, [dragMode]);
+
+  useEffect(() => {
+    const normalizedNickname = nickname.trim().toLocaleLowerCase("ko-KR");
+    if (!normalizedNickname) {
+      setParticipantEditToken("");
+      return;
+    }
+
+    setParticipantEditToken(
+      localStorage.getItem(getParticipantTokenKey(roomId, normalizedNickname)) ||
+        "",
+    );
+  }, [nickname, roomId]);
 
   const dates = useMemo(
     () => (data ? getMeetDatesFromSlots(data.slots) : []),
@@ -227,7 +243,7 @@ export default function MeetRoomPage({ params }: PageProps) {
 
     try {
       const response = await fetch(
-        `/api/meet/rooms/${params.roomId}/participants`,
+        `/api/meet/rooms/${roomId}/participants`,
         {
           method: "PUT",
           headers: {
@@ -236,6 +252,7 @@ export default function MeetRoomPage({ params }: PageProps) {
           body: JSON.stringify({
             nickname,
             availability: Array.from(availability),
+            editToken: participantEditToken || undefined,
           }),
         },
       );
@@ -243,6 +260,15 @@ export default function MeetRoomPage({ params }: PageProps) {
 
       if (!response.ok) {
         throw new Error(result.error || "참여 정보를 저장하지 못했습니다");
+      }
+
+      if (typeof result.editToken === "string") {
+        const normalizedNickname = nickname.trim().toLocaleLowerCase("ko-KR");
+        localStorage.setItem(
+          getParticipantTokenKey(roomId, normalizedNickname),
+          result.editToken,
+        );
+        setParticipantEditToken(result.editToken);
       }
 
       setStatus("가능한 시간이 저장되었습니다.");
@@ -358,9 +384,9 @@ export default function MeetRoomPage({ params }: PageProps) {
             </div>
             {matchedParticipant && (
               <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                같은 닉네임의 기존 응답이 있습니다. 저장하면 이 닉네임의
-                선택이 새 내용으로 바뀝니다. 새 응답으로 저장하려면 닉네임을
-                다르게 입력하세요.
+                {participantEditToken
+                  ? "같은 닉네임의 기존 응답이 있습니다. 이 브라우저에서 만든 응답이므로 수정할 수 있습니다."
+                  : "같은 닉네임의 기존 응답이 있습니다. 다른 사람의 응답은 수정할 수 없으므로 새 응답으로 저장하려면 닉네임을 다르게 입력하세요."}
               </p>
             )}
             </Card>
@@ -502,7 +528,11 @@ export default function MeetRoomPage({ params }: PageProps) {
           {!isClosed && (
             <button
               type="submit"
-              disabled={isSaving || !nickname.trim()}
+              disabled={
+                isSaving ||
+                !nickname.trim() ||
+                Boolean(matchedParticipant && !participantEditToken)
+              }
               className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
             >
               {isSaving
@@ -601,4 +631,8 @@ export default function MeetRoomPage({ params }: PageProps) {
       </Modal>
     </Container>
   );
+}
+
+function getParticipantTokenKey(roomId: string, normalizedNickname: string) {
+  return `meet-participant-token:${roomId}:${normalizedNickname}`;
 }

@@ -22,7 +22,7 @@ export function initializeFirebaseAdmin() {
 }
 
 // Messaging 인스턴스 가져오기
-export function getMessagingInstance(): admin.messaging.Messaging {
+function getMessagingInstance(): admin.messaging.Messaging {
   if (admin.apps.length === 0) {
     initializeFirebaseAdmin();
   }
@@ -40,31 +40,42 @@ export async function sendFCMMessage(
 
   let successCount = 0;
   let failureCount = 0;
+  const invalidTokens: string[] = [];
 
-  // 각 토큰에 개별 발송
-  for (const token of tokens) {
-    try {
-      await messaging.send({
-        token,
+  for (let index = 0; index < tokens.length; index += 500) {
+    const batchTokens = tokens.slice(index, index + 500);
+    const response = await messaging.sendEachForMulticast({
+      tokens: batchTokens,
+      notification: {
+        title,
+        body,
+      },
+      webpush: {
         notification: {
           title,
           body,
+          icon: "/images/syu-kr-logo.png",
+          badge: "/images/syu-kr-logo.png",
         },
-        webpush: {
-          notification: {
-            title,
-            body,
-            icon: "/icon-192x192.png",
-            badge: "/badge-72x72.png",
-          },
-          data: data || {},
-        },
-      });
-      successCount++;
-    } catch {
-      failureCount++;
-    }
+        data: data || {},
+      },
+    });
+
+    successCount += response.successCount;
+    failureCount += response.failureCount;
+    response.responses.forEach((result, responseIndex) => {
+      if (!result.success && isInvalidFcmTokenError(result.error?.code)) {
+        invalidTokens.push(batchTokens[responseIndex]);
+      }
+    });
   }
 
-  return { successCount, failureCount };
+  return { successCount, failureCount, invalidTokens };
+}
+
+function isInvalidFcmTokenError(code: string | undefined) {
+  return (
+    code === "messaging/invalid-registration-token" ||
+    code === "messaging/registration-token-not-registered"
+  );
 }

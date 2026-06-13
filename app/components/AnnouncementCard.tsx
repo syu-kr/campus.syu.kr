@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import { memo } from "react";
 import Link from "next/link";
 import { Announcement } from "@/types";
 import { Card } from "./Card";
@@ -76,5 +76,3 @@ function AnnouncementCardComponent({
 }
 
 export const AnnouncementCard = memo(AnnouncementCardComponent);
-
-export default AnnouncementCard;

@@ -103,8 +103,8 @@ export function normalizeSiteInquiry(input: unknown): SiteInquiryInput {
 }
 
 function asRecord(input: unknown): Record<string, unknown> {
-  if (!input || typeof input !== "object") {
-    throw new Error("요청 본문이 올바르지 않습니다");
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new ValidationError("", "요청 본문이 올바르지 않습니다");
   }
 
   return input as Record<string, unknown>;
@@ -133,7 +133,7 @@ function parseTags(value: unknown): string[] {
 
 function assertEmptyHoneypot(body: Record<string, unknown>) {
   if (readString(body.website)) {
-    throw new Error("제출할 수 없습니다");
+    throw new ValidationError("", "제출할 수 없습니다");
   }
 }
 

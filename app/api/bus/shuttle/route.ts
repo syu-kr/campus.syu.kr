@@ -10,21 +10,22 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 const SHUTTLE_LOCATION_SOURCE = "shuttle";
-const NO_STORE_HEADERS = {
-  "Cache-Control":
-    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
-  Pragma: "no-cache",
-  Expires: "0",
+const SHUTTLE_CACHE_TTL_MS = 3 * 1000;
+const PUBLIC_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=3, stale-while-revalidate=10",
 };
+let cachedLocations:
+  | {
+      locations: BusLocation[];
+      timestamp: string;
+      expiresAt: number;
+    }
+  | undefined;
+let pendingLocations: Promise<BusLocation[]> | undefined;
 
 interface ShuttleLocationPayload {
   returnCode?: string;
   data?: unknown[];
-}
-
-interface ShuttleLocationFetchResult {
-  locations: BusLocation[];
-  payload: ShuttleLocationPayload;
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -52,7 +53,7 @@ function toBusLocation(item: unknown): BusLocation | null {
   };
 }
 
-async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
+async function fetchShuttleLocations(): Promise<BusLocation[]> {
   const url = new URL(requireServerEnv("SHUTTLE_LOCATION_URL"));
   const payload = await fetchJsonFromUrl(url);
 
@@ -66,10 +67,7 @@ async function fetchShuttleLocations(): Promise<ShuttleLocationFetchResult> {
     .filter((item): item is BusLocation => item !== null)
     .filter((bus) => bus.status !== 0);
 
-  return {
-    locations,
-    payload,
-  };
+  return locations;
 }
 
 function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
@@ -137,50 +135,26 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
   });
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { locations, payload } = await fetchShuttleLocations();
-    const timestamp = new Date().toISOString();
-    const firstLocation = locations[0];
-    const searchParams = new URL(request.url).searchParams;
-    const debug = searchParams.get("debug") === "1";
-    const raw = searchParams.get("raw") === "1";
-
-    if (raw) {
-      return NextResponse.json(payload, {
-        headers: {
-          ...NO_STORE_HEADERS,
-          "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
-          "X-Shuttle-Fetched-At": timestamp,
-        },
-      });
+    const now = Date.now();
+    if (cachedLocations && cachedLocations.expiresAt > now) {
+      return shuttleJson(cachedLocations.locations, cachedLocations.timestamp);
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        source: SHUTTLE_LOCATION_SOURCE,
-        data: locations,
-        ...(debug
-          ? {
-              debug: {
-                raw: payload,
-              },
-            }
-          : {}),
-        timestamp,
-      },
-      {
-        headers: {
-          ...NO_STORE_HEADERS,
-          "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
-          "X-Shuttle-Fetched-At": timestamp,
-          "X-Shuttle-First-Location": firstLocation
-            ? `${firstLocation.name}:${firstLocation.lat},${firstLocation.lon}`
-            : "none",
-        },
-      },
-    );
+    pendingLocations ??= fetchShuttleLocations().finally(() => {
+      pendingLocations = undefined;
+    });
+
+    const locations = await pendingLocations;
+    const timestamp = new Date().toISOString();
+    cachedLocations = {
+      locations,
+      timestamp,
+      expiresAt: Date.now() + SHUTTLE_CACHE_TTL_MS,
+    };
+
+    return shuttleJson(locations, timestamp);
   } catch (error) {
     console.error("Failed to fetch shuttle bus locations:", error);
 
@@ -188,14 +162,32 @@ export async function GET(request: Request) {
       {
         success: false,
         source: SHUTTLE_LOCATION_SOURCE,
-        error: error instanceof Error ? error.message : "Failed to fetch data",
+        error: "셔틀 위치 정보를 불러오지 못했습니다",
         data: [],
         timestamp: new Date().toISOString(),
       },
       {
         status: 502,
-        headers: NO_STORE_HEADERS,
+        headers: PUBLIC_CACHE_HEADERS,
       },
     );
   }
+}
+
+function shuttleJson(locations: BusLocation[], timestamp: string) {
+  return NextResponse.json(
+    {
+      success: true,
+      source: SHUTTLE_LOCATION_SOURCE,
+      data: locations,
+      timestamp,
+    },
+    {
+      headers: {
+        ...PUBLIC_CACHE_HEADERS,
+        "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
+        "X-Shuttle-Fetched-At": timestamp,
+      },
+    },
+  );
 }

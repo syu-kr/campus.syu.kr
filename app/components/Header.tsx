@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState } from "react";
+import { memo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -120,5 +120,3 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
 }
 
 export const Header = memo(HeaderComponent);
-
-export default Header;

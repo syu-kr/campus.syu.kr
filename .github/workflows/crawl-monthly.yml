@@ -1,4 +1,4 @@
-name: Monthly Crawl - Phone, Schedule & Shuttle Bus
+name: Monthly Crawl - Phone & Schedule
 
 on:
   schedule:
@@ -7,12 +7,14 @@ on:
   workflow_dispatch: # 수동 실행 option
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   crawl:
+    if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       CRAWL_PHONE_DIRECTORY_URL: ${{ vars.CRAWL_PHONE_DIRECTORY_URL }}
       CRAWL_ACADEMIC_SCHEDULE_URL: ${{ vars.CRAWL_ACADEMIC_SCHEDULE_URL }}
@@ -28,8 +30,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -48,18 +48,15 @@ jobs:
       - name: Commit and Push changes
         id: commit
         run: |
-          git config --local user.email "ssb50800@gmail.com"
-          git config --local user.name "singhic"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git config --global --add safe.directory "$PWD"
           git add public/data/phone-*.json public/data/schedules-*.json
 
           if ! git diff --cached --quiet; then
             git commit -m "chore: update monthly reference data"
             git pull --rebase origin main
-            if ! git push origin main 2>&1; then
-              echo "First push failed, trying with explicit token..."
-              git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git main
-            fi
+            git push origin main
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "✅ Changes pushed successfully"
@@ -68,10 +65,6 @@ jobs:
             echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
             echo "ℹ️ No changes to commit - skipping push"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-
   sync-to-vercel-repo:
     name: Sync to Vercel Repository
     needs: crawl
@@ -80,4 +73,6 @@ jobs:
     with:
       source_ref: ${{ needs.crawl.outputs.source_ref }}
       verify_before_sync: true
-    secrets: inherit
+    secrets:
+      VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
+      OFFICIAL_ACCOUNT_EMAIL: ${{ secrets.OFFICIAL_ACCOUNT_EMAIL }}

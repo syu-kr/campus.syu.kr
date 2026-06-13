@@ -1,19 +1,24 @@
 import { NextResponse } from "next/server";
 import { buildMeetSlots } from "@/lib/meet";
 import type { MeetParticipant, MeetRoom, MeetRoomResponse } from "@/types/meet";
-import { getFirestore, timestampToIso } from "@/lib/server/firestore";
-import { apiServerErrorResponse } from "@/lib/server/http";
+import { admin, getFirestore, timestampToIso } from "@/lib/server/firestore";
+import { ApiError, apiServerErrorResponse } from "@/lib/server/http";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     roomId: string;
-  };
+  }>;
 }
 
 export async function GET(_req: Request, { params }: RouteContext) {
   try {
+    const { roomId } = await params;
+    if (!/^[A-Za-z0-9_-]{8,32}$/.test(roomId)) {
+      throw new ApiError("일정 방 코드 형식이 올바르지 않습니다", 400);
+    }
+
     const db = getFirestore();
-    const roomDoc = await db.collection("meet_rooms").doc(params.roomId).get();
+    const roomDoc = await db.collection("meet_rooms").doc(roomId).get();
 
     if (!roomDoc.exists) {
       return NextResponse.json(
@@ -23,9 +28,19 @@ export async function GET(_req: Request, { params }: RouteContext) {
     }
 
     const data = roomDoc.data() || {};
+    if (
+      data.expires_at instanceof admin.firestore.Timestamp &&
+      data.expires_at.toMillis() <= Date.now()
+    ) {
+      return NextResponse.json(
+        { error: "일정 방을 찾을 수 없습니다" },
+        { status: 404 },
+      );
+    }
+
     const responseClosesAt = timestampToIso(data.response_closes_at);
     const room: MeetRoom = {
-      id: params.roomId,
+      id: roomId,
       title: String(data.title || ""),
       description: String(data.description || ""),
       dateStart: String(data.date_start || ""),

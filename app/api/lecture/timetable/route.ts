@@ -68,7 +68,7 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch data",
+        error: "강의 시간표를 불러오지 못했습니다",
         data: {
           courses: [],
         } satisfies LectureTimetableDataset,

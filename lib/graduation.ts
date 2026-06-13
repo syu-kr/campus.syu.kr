@@ -60,7 +60,7 @@ export interface GraduationDepartment {
   warnings?: string[];
 }
 
-export type CreditCategories = Partial<Record<CreditCategoryKey, number>>;
+type CreditCategories = Partial<Record<CreditCategoryKey, number>>;
 
 export interface RequirementProfile {
   id: string;
@@ -74,7 +74,7 @@ export interface RequirementProfile {
   sourcePage?: string;
 }
 
-export interface GraduationCourse {
+interface GraduationCourse {
   id: string;
   name: string;
   credits: number;
@@ -103,7 +103,7 @@ export interface CurriculumCourse {
   reviewStatus?: "ocrCleaned" | "needsReview";
 }
 
-export interface GraduationData {
+interface GraduationData {
   metadata: GraduationMetadata;
   colleges: GraduationCollege[];
   departments: GraduationDepartment[];
@@ -130,7 +130,7 @@ export type CompletedCreditInput = Partial<
   Record<CreditCategoryKey | "totalCredits", number>
 >;
 
-export interface CreditEvaluationItem {
+interface CreditEvaluationItem {
   key: CreditCategoryKey | "totalCredits";
   label: string;
   required: number;
@@ -139,7 +139,7 @@ export interface CreditEvaluationItem {
   status: EvaluationStatus;
 }
 
-export interface ConditionEvaluationItem {
+interface ConditionEvaluationItem {
   id: string;
   label: string;
   status: "checkRequired";
@@ -154,7 +154,7 @@ export interface GraduationEvaluationResult {
   totalCheckCount: number;
 }
 
-export const GRADUATION_DATA =
+const GRADUATION_DATA =
   graduationRequirements2025 as GraduationData;
 
 const OCR_CURRICULUM_COURSES = (
@@ -226,10 +226,6 @@ const AUTO_TOTAL_KEYS: CreditCategoryKey[] = [
 
 export function getGraduationMetadata(): GraduationMetadata {
   return GRADUATION_DATA.metadata;
-}
-
-export function getComparisonFindings(): string[] {
-  return GRADUATION_DATA.comparisonFindings;
 }
 
 export function getColleges(): GraduationCollege[] {
@@ -325,17 +321,6 @@ export function getInputCreditKeys(
   });
 }
 
-export function getRequiredLiberalCourses(
-  admissionType: AdmissionType | "",
-): GraduationCourse[] {
-  if (!admissionType) return [];
-  return GRADUATION_DATA.courseCatalogs?.requiredLiberal?.[admissionType] ?? [];
-}
-
-export function getAreaLiberalCourses(): GraduationCourse[] {
-  return GRADUATION_DATA.courseCatalogs?.areaLiberal ?? [];
-}
-
 export const CURRICULUM_CATEGORY_LABELS: Record<
   CurriculumCourseCategory,
   string
@@ -369,41 +354,6 @@ export function getCurriculumCourses(
       }
       return a.name.localeCompare(b.name, "ko");
     });
-}
-
-export function getMajorRequiredCourses(
-  departmentId?: string,
-  majorId?: string,
-): GraduationCourse[] {
-  if (departmentId) {
-    const curriculumCourses = getCurriculumCourses(
-      departmentId,
-      majorId,
-      "전필",
-    );
-
-    if (curriculumCourses.length > 0) {
-      return curriculumCourses.map((course) => ({
-        id: course.id,
-        name: course.name,
-        credits: course.credits ?? 0,
-        group:
-          course.year && course.semester
-            ? `${course.year}학년 ${course.semester}학기 ${course.category}`
-            : "전공필수",
-        note: [
-          course.courseType,
-          course.note,
-          course.credits == null ? "학점 확인 필요" : undefined,
-          course.reviewStatus === "needsReview" ? "확인 필요" : undefined,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-      }));
-    }
-  }
-
-  return GRADUATION_DATA.courseCatalogs?.majorRequired ?? [];
 }
 
 export function calculateAutoTotalCredits(

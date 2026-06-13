@@ -1,23 +1,24 @@
 import { NextResponse } from "next/server";
-
+import { ApiError, apiServerErrorResponse } from "@/lib/server/http";
 import {
-  ApiError,
-  apiServerErrorResponse,
-} from "@/lib/server/http";
-import { getFirestore, timestampToIso } from "@/lib/server/firestore";
+  admin,
+  getFirestore,
+  timestampToIso,
+} from "@/lib/server/firestore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 interface RouteContext {
-  params: {
+  params: Promise<{
     shareId: string;
-  };
+  }>;
 }
 
 export async function GET(_req: Request, { params }: RouteContext) {
   try {
-    const shareId = normalizeShareId(params.shareId);
+    const { shareId: rawShareId } = await params;
+    const shareId = normalizeShareId(rawShareId);
     const snapshot = await getFirestore()
       .collection("timetable_shares")
       .doc(shareId)
@@ -28,6 +29,13 @@ export async function GET(_req: Request, { params }: RouteContext) {
     }
 
     const data = snapshot.data() ?? {};
+    if (
+      data.expires_at instanceof admin.firestore.Timestamp &&
+      data.expires_at.toMillis() <= Date.now()
+    ) {
+      throw new ApiError("공유 시간표를 찾을 수 없습니다.", 404);
+    }
+
     const courseIds = Array.isArray(data.course_ids)
       ? data.course_ids.filter((item): item is string => typeof item === "string")
       : [];

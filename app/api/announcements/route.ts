@@ -20,9 +20,9 @@ export async function GET(req: NextRequest) {
     ? (categoryParam as AnnouncementCategory | "all")
     : "all";
 
-  const page = Number(searchParams.get("page") || 1);
-  const limit = Number(searchParams.get("limit") || 10);
-  const query = searchParams.get("query") || "";
+  const page = readPositiveInteger(searchParams.get("page"), 1);
+  const limit = readPositiveInteger(searchParams.get("limit"), 10);
+  const query = (searchParams.get("query") || "").slice(0, 100);
 
   const result = await getAnnouncementPage({
     category,
@@ -38,4 +38,9 @@ export async function GET(req: NextRequest) {
         : "public, s-maxage=300, stale-while-revalidate=600",
     },
   });
+}
+
+function readPositiveInteger(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
 }

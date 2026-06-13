@@ -105,7 +105,7 @@ export function normalizeCourseName(name: string): string {
     .trim();
 }
 
-export function parseLectureTimeSlots(classTime?: string): LectureTimeSlot[] {
+function parseLectureTimeSlots(classTime?: string): LectureTimeSlot[] {
   if (!classTime) return [];
 
   return classTime

@@ -5,6 +5,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
+const WEATHER_REQUEST_TIMEOUT_MS = 10 * 1000;
 
 let cachedWeather:
   | {
@@ -47,7 +48,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다" },
-      { status: 500 },
+      { status: 502 },
     );
   }
 }
@@ -92,8 +93,14 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
   });
 
   const [ncstResponse, fcstResponse] = await Promise.all([
-    fetch(`${ncstUrl}?${ncstParams}`, { cache: "no-store" }),
-    fetch(`${fcstUrl}?${fcstParams}`, { cache: "no-store" }),
+    fetch(`${ncstUrl}?${ncstParams}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(WEATHER_REQUEST_TIMEOUT_MS),
+    }),
+    fetch(`${fcstUrl}?${fcstParams}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(WEATHER_REQUEST_TIMEOUT_MS),
+    }),
   ]);
 
   if (!ncstResponse.ok) {
@@ -257,7 +264,7 @@ function getPrecipitationSky(precipitation: number) {
 function weatherJson(data: WeatherResponse) {
   return NextResponse.json(data, {
     headers: {
-      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
     },
   });
 }

@@ -35,7 +35,7 @@ export interface ShuttleSpecialPeriod {
   routes: string[];
 }
 
-export interface ShuttleVacationPeriod {
+interface ShuttleVacationPeriod {
   id: string;
   name: string;
   startDate: string;
@@ -91,13 +91,4 @@ export interface BusArrivalsAtStop {
   stop: BusStop;
   arrivals: BusArrival[];
   lastUpdated: Date;
-}
-
-export interface BusLocationInfo {
-  vehId: string;
-  routeId: string;
-  routeName: string;
-  lat: number;
-  lon: number;
-  nextStationName: string;
 }

@@ -4,6 +4,7 @@ import {
   apiErrorResponse,
   enforceRateLimit,
   getUserAgent,
+  readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
 import { getFirestore, nowTimestamp } from "@/lib/server/firestore";
@@ -16,9 +17,8 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
-    enforceRateLimit(req, "site_inquiries", RATE_LIMIT);
-
-    const input = normalizeSiteInquiry(await req.json());
+    const input = normalizeSiteInquiry(await readJsonBody(req, 8 * 1024));
+    await enforceRateLimit(req, "site_inquiries", RATE_LIMIT);
 
     const db = getFirestore();
     const now = nowTimestamp();

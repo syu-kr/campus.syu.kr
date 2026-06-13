@@ -2,7 +2,7 @@ import * as admin from "firebase-admin";
 import * as fs from "fs";
 import * as path from "path";
 
-export function loadEnvLocal() {
+function loadEnvLocal() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     return;
   }

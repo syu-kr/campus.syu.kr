@@ -48,8 +48,7 @@ def crawl_schedule():
         response.encoding = 'utf-8'
         
         if response.status_code != 200:
-            print(f"Request failed: {response.status_code}")
-            return
+            raise RuntimeError(f"학사일정 페이지 요청 실패: {response.status_code}")
         
         print(f"✓ Request successful (status: {response.status_code})")
         
@@ -66,7 +65,7 @@ def crawl_schedule():
         processed_keys = set()
         new_count = 0
         
-        for calendar_idx, calendar in enumerate(calendars):
+        for calendar in calendars:
             # Find DL element
             dl = calendar.find("dl")
             if not dl:
@@ -88,7 +87,7 @@ def crawl_schedule():
             li_items = dl.find_all("li")
             print(f"    Items: {len(li_items)}")
             
-            for li_idx, li in enumerate(li_items):
+            for li in li_items:
                 inner_dl = li.find("dl")
                 if not inner_dl:
                     continue
@@ -139,9 +138,6 @@ def crawl_schedule():
                 category = "event"
                 if "중간고사" in event_text or "기말고사" in event_text:
                     category = "exam"
-                
-                # Check if this schedule is new
-                is_new = unique_key not in existing_map
                 
                 # 기존 ID 있으면 사용, 없으면 새로 생성
                 if unique_key in existing_map:

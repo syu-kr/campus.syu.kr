@@ -32,7 +32,7 @@ if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   } catch {}
 }
 
-export { app, auth, messaging };
+export { auth, messaging };
 
 export function setupForegroundNotifications() {
   if (!messaging) return;

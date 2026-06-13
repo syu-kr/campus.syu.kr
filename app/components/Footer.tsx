@@ -1,4 +1,3 @@
-import React from "react";
 import { FooterContactButton } from "@/app/components/FooterContactButton";
 import { Container } from "@/app/components/Container";
 

@@ -2,15 +2,6 @@
 
 Next.js 빌드 결과와 운영 중 확인해야 할 성능 항목을 정리합니다.
 
-## 현재 기준
-
-2026-05-05 `npm run build` 기준:
-
-- Shared First Load JS: 87.4 kB
-- 홈 페이지 First Load JS: 119 kB
-- 정적/동적 라우트 생성: 36개 페이지 기준 정상 빌드
-- 주요 검증 명령: `npm run lint`, `npm run type-check`, `npm run build`
-
 ## 확인 방법
 
 ```bash
@@ -18,7 +9,7 @@ npm run build
 npm run build:analyze
 ```
 
-`npm run build`에서는 페이지별 First Load JS, 정적/동적 라우트, 타입 검사 결과를 확인합니다. `npm run build:analyze`는 번들 구성과 큰 의존성을 확인할 때 사용합니다.
+`npm run build`에서는 정적/동적 라우트와 타입 검사 결과를 확인합니다. `npm run build:analyze`는 번들 구성과 큰 의존성을 확인할 때 사용합니다.
 
 ## 적용 중인 최적화
 
@@ -26,7 +17,7 @@ npm run build:analyze
 - `next/image` 기반 이미지 최적화
 - `@fontsource/pretendard` 사용
 - TanStack Query의 기능별 캐시 정책
-- 정적 JSON 데이터의 장기 캐시와 버전 확인
+- 크롤러가 갱신하는 정적 JSON은 `no-store`로 제공해 최신 데이터 반영
 - `@tanstack/react-query` package import 최적화
 - Service Worker는 Firebase Messaging 중심으로 유지하고 앱 데이터 캐싱은 제한
 
@@ -35,7 +26,7 @@ npm run build:analyze
 - [x] lint 통과
 - [x] type-check 통과
 - [x] production build 통과
-- [x] First Load JS 추적
+- [x] 정적/동적 라우트 생성 결과 확인
 - [ ] 배포 환경 Lighthouse 확인
 - [ ] Core Web Vitals 모니터링
 - [ ] 번들 분석 결과에서 큰 의존성 주기적 확인
@@ -54,6 +45,8 @@ npm run build:analyze
 - TanStack Query: https://tanstack.com/query/latest
 - Firebase Web SDK: https://firebase.google.com/docs/web/setup
 
+수치 기준은 프레임워크와 기능 변경에 따라 빠르게 오래되므로 문서에 고정하지 않습니다. PR에서 번들 크기가 크게 변하면 `npm run build` 결과와 원인을 PR 본문에 기록합니다.
+
 ## 최종 업데이트
 
-2026-05-05
+2026-06-13

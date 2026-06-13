@@ -1,0 +1,25 @@
+name: Bug report
+description: 재현 가능한 오류를 제보합니다.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 문제 설명
+      description: 발생한 문제와 기대한 동작을 설명해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 방법
+      description: 문제를 재현할 수 있는 순서를 적어 주세요.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 환경
+      description: 브라우저, 운영체제, 기기 정보를 적어 주세요.

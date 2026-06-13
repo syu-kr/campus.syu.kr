@@ -6,9 +6,11 @@ import {
   apiServerErrorResponse,
   enforceRateLimit,
   getUserAgent,
+  readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
 import { getFirestore, nowTimestamp } from "@/lib/server/firestore";
+import { admin } from "@/lib/server/firestore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +22,7 @@ const RATE_LIMIT = {
 
 const MAX_SHARED_COURSES = 120;
 const SHARE_ID_ATTEMPTS = 5;
+const SHARE_EXPIRY_DAYS = 90;
 
 interface ShareRequestBody {
   courseIds?: unknown;
@@ -29,9 +32,8 @@ interface ShareRequestBody {
 
 export async function POST(req: NextRequest) {
   try {
-    enforceRateLimit(req, "lecture_timetable_shares", RATE_LIMIT);
-
-    const body = (await req.json()) as ShareRequestBody;
+    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
+    await enforceRateLimit(req, "lecture_timetable_shares", RATE_LIMIT);
     const courseIds = normalizeCourseIds(body.courseIds);
     const year = normalizeOptionalString(body.year, 20);
     const semester = normalizeOptionalString(body.semester, 40);
@@ -43,6 +45,9 @@ export async function POST(req: NextRequest) {
     const db = getFirestore();
     const now = nowTimestamp();
     const shareId = await createUniqueShareId();
+    const expiresAt = admin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + SHARE_EXPIRY_DAYS * 86400000),
+    );
 
     await db.collection("timetable_shares").doc(shareId).set({
       course_ids: courseIds,
@@ -50,6 +55,7 @@ export async function POST(req: NextRequest) {
       semester,
       created_at: now,
       updated_at: now,
+      expires_at: expiresAt,
       user_agent: getUserAgent(req),
     });
 

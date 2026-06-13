@@ -122,16 +122,14 @@ def crawl_cafeteria_menu():
         response.encoding = 'utf-8'
         
         if response.status_code != 200:
-            print(f"❌ 요청 실패: {response.status_code}")
-            return
+            raise RuntimeError(f"학식 페이지 요청 실패: {response.status_code}")
         
         soup = BeautifulSoup(response.text, 'html.parser')
         
         # 주간 메뉴 테이블 찾기
         table = soup.select_one(".weekly-menu-table")
         if not table:
-            print("⚠️  weekly-menu-table을 찾을 수 없습니다.")
-            return
+            raise RuntimeError("weekly-menu-table을 찾을 수 없습니다.")
         
         # 헤더에서 날짜 추출
         header_cells = table.select("thead th")
@@ -155,8 +153,7 @@ def crawl_cafeteria_menu():
         print(f"📋 Body 행: {len(body_rows)}개")
         
         if len(body_rows) < 4:
-            print("⚠️  예상되는 4개 행이 없습니다.")
-            return
+            raise RuntimeError("예상되는 4개 메뉴 행을 찾지 못했습니다.")
         
         # 각 날짜별로 메뉴 구성
         menus = []

@@ -66,7 +66,7 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to fetch data",
+        error: "대중교통 도착 정보를 불러오지 못했습니다",
         data: [],
         timestamp: new Date().toISOString(),
       },

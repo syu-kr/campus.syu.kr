@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useEffect } from "react";
+import { memo, useEffect } from "react";
 import { type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
 
@@ -241,5 +241,3 @@ function WeatherModalComponent({
 }
 
 export const WeatherModal = memo(WeatherModalComponent);
-
-export default WeatherModal;

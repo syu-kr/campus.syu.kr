@@ -8,7 +8,6 @@
 PUBLIC_DATA_SERVICE_KEY=your_public_data_service_key
 SEOUL_BUS_ARRIVAL_URL=your_seoul_bus_arrival_endpoint
 GYEONGGI_BUS_ARRIVAL_URL=your_gyeonggi_bus_arrival_endpoint
-GYEONGGI_BUS_LOCATION_URL=your_gyeonggi_bus_location_endpoint
 ```
 
 서울과 경기도 버스 API는 공공데이터포털 서비스 키를 사용합니다. 운영 환경에서는 Vercel 환경 변수에도 같은 값을 설정합니다. 브라우저에 노출하지 않기 위해 `NEXT_PUBLIC_` 접두사를 쓰지 않습니다.
@@ -41,7 +40,6 @@ GYEONGGI_BUS_LOCATION_URL=your_gyeonggi_bus_location_endpoint
 ## 경기도 버스 API
 
 - 도착 정보: `GYEONGGI_BUS_ARRIVAL_URL`
-- 위치 정보: `GYEONGGI_BUS_LOCATION_URL`
 - 응답 형식: JSON 또는 XML
 
 주요 필드:

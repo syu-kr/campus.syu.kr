@@ -1,9 +1,9 @@
 export type AnnouncementCategory =
   | "academic"
   | "campus"
-  | "admin"
-  | "activity"
   | "scholarship";
+
+export type HomeNoticeCategory = AnnouncementCategory | "service";
 
 export interface Announcement {
   id: string;

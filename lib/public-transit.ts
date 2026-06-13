@@ -2,7 +2,6 @@ import {
   BusStop,
   BusArrival,
   BusArrivalsAtStop,
-  BusLocationInfo,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
 import { requireServerEnv } from "./server/env";
@@ -24,21 +23,6 @@ type GyeonggiArrivalResponse = {
         stationNm2?: string;
         crowded1?: number;
         crowded2?: number;
-      }>;
-    };
-  };
-};
-
-type GyeonggiLocationResponse = {
-  response?: {
-    body?: {
-      items?: Array<{
-        vehId?: string;
-        routeId?: string;
-        busNo?: string;
-        lon?: number;
-        lat?: number;
-        nextStationName?: string;
       }>;
     };
   };
@@ -66,7 +50,7 @@ async function fetchWithTimeout(
 }
 
 // 정류장 설정 (고정)
-export const PUBLIC_TRANSIT_STOPS: BusStop[] = [
+const PUBLIC_TRANSIT_STOPS: BusStop[] = [
   {
     id: "seoul-jungmun-up",
     name: "삼육대앞",
@@ -430,41 +414,4 @@ export async function fetchPublicTransitArrivals(): Promise<
   });
 
   return results;
-}
-
-// 경기도 버스 위치 정보 조회
-// 향후 차량 위치 맵 표시에 사용될 예정
-export async function fetchGyeonggiBusLocations(
-  routeId: string,
-): Promise<BusLocationInfo[]> {
-  try {
-    const serviceKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
-    const baseUrl = requireServerEnv("GYEONGGI_BUS_LOCATION_URL");
-
-    const params = new URLSearchParams({
-      serviceKey,
-      routeId,
-      format: "json",
-    });
-    const url = `${baseUrl}?${params}`;
-
-    const data = await fetchJson<GyeonggiLocationResponse>(url, {
-      fallback: {},
-      timeoutMs: PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS,
-    });
-
-    const items = data.response?.body?.items || [];
-
-    return items.map((item) => ({
-      vehId: item.vehId || "",
-      routeId: item.routeId || routeId,
-      routeName: item.busNo || "",
-      lon: item.lon || 0,
-      lat: item.lat || 0,
-      nextStationName: item.nextStationName || "정보 없음",
-    })) as BusLocationInfo[];
-  } catch (error) {
-    console.error("Failed to fetch Gyeonggi bus locations:", error);
-    return [];
-  }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 export const FCM_TOKEN_KEY = "fcm_token";
-export const NOTIFICATION_PREFERENCE_KEY = "notification_preference";
+const NOTIFICATION_PREFERENCE_KEY = "notification_preference";
 
 export type NotificationPreference = "enabled" | "disabled";
 export type PushNotificationStatus =

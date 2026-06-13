@@ -13,13 +13,18 @@ import { formatDate, getCategoryLabel } from "@/lib/utils";
 import type {
   AcademicSchedule,
   CafeteriaMenu,
+  HomeNoticeCategory,
   ServiceNotice,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
 } from "@/types";
 import type { HomeNotice, TodayInfo } from "@/lib/home";
 
-const categoryFilters = [
+const categoryFilters: Array<{
+  id: string;
+  label: string;
+  value: HomeNoticeCategory | undefined;
+}> = [
   { id: "all", label: "전체", value: undefined },
   { id: "academic", label: "학사공지", value: "academic" },
   { id: "scholarship", label: "장학금", value: "scholarship" },
@@ -35,8 +40,8 @@ export function HomeNoticesSection({
   announcementsLoading,
   homeNotices,
 }: {
-  selectedCategory?: string;
-  onCategoryChange: (category?: string) => void;
+  selectedCategory?: HomeNoticeCategory;
+  onCategoryChange: (category?: HomeNoticeCategory) => void;
   serviceNotices?: ServiceNotice[];
   serviceNoticesLoading: boolean;
   announcementsLoading: boolean;
@@ -476,7 +481,7 @@ function MealCorner({
   );
 }
 
-function getNoticeListPath(selectedCategory?: string) {
+function getNoticeListPath(selectedCategory?: HomeNoticeCategory) {
   if (selectedCategory === "scholarship") return "/more/scholarship";
   if (selectedCategory === "campus") return "/campus/announcements";
   if (selectedCategory === "service") return "/service/notices";
@@ -484,7 +489,7 @@ function getNoticeListPath(selectedCategory?: string) {
   return "/announcements";
 }
 
-function getNoticeListLabel(selectedCategory?: string) {
+function getNoticeListLabel(selectedCategory?: HomeNoticeCategory) {
   if (selectedCategory === "scholarship") return "장학금 전체보기";
   if (selectedCategory === "campus") return "캠퍼스공지 전체보기";
   if (selectedCategory === "service") return "서비스공지 전체보기";

@@ -10,7 +10,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Callable, Dict, List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import requests
@@ -183,34 +183,13 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
     return {
         "no": no_text,
         "title": title,
-        "date": date_text or datetime.now().strftime("%Y-%m-%d"),
+        "date": date_text or datetime.now().strftime("%Y.%m.%d"),
         "author": author or config.default_author,
         "views": parse_int(views_text),
         "url": url,
         "is_important": any(marker in raw_title for marker in config.important_markers),
         "is_pinned": is_pinned,
     }
-
-
-def find_last_page(
-    session: requests.Session,
-    base_url: str,
-    max_page: int,
-    page_has_rows: Callable[[BeautifulSoup], bool],
-) -> int:
-    left, right = 1, max_page
-    last_valid = 1
-
-    while left <= right:
-        mid = (left + right) // 2
-        soup = request_soup(session, f"{base_url}/{mid}/")
-        if soup and page_has_rows(soup):
-            last_valid = mid
-            left = mid + 1
-        else:
-            right = mid - 1
-
-    return last_valid
 
 
 def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
