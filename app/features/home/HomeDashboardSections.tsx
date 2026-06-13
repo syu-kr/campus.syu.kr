@@ -143,6 +143,7 @@ export function TodayMenuSection({
           <StateCard
             type="info"
             message="오늘은 주말입니다. 주말을 알차게 보내보는건 어떨까요?"
+            action={<ViewFullMenuLink />}
           />
         )}
         {!isLoading &&
@@ -153,6 +154,7 @@ export function TodayMenuSection({
               type="info"
               title="오늘은 운영하지 않습니다"
               message="공휴일 또는 운영하지 않는 날입니다. 전체 식단에서 다른 날짜를 확인해보세요."
+              action={<ViewFullMenuLink />}
             />
           )}
         {!isLoading &&
@@ -172,14 +174,7 @@ export function TodayMenuSection({
             <StateCard
               type="warning"
               message="오늘 식단 정보가 없습니다. 전체 식단에서 다른 날짜를 확인해보세요."
-              action={
-                <Link
-                  href="/campus/cafeteria"
-                  className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-                >
-                  전체 식단 보기
-                </Link>
-              }
+              action={<ViewFullMenuLink />}
             />
           )}
       </div>
@@ -415,6 +410,17 @@ function PendingMenuCard() {
           </div>
         </div>
       </Card>
+    </Link>
+  );
+}
+
+function ViewFullMenuLink() {
+  return (
+    <Link
+      href="/campus/cafeteria"
+      className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+    >
+      전체 식단 보기
     </Link>
   );
 }

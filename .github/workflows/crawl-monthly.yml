@@ -7,20 +7,22 @@ on:
   workflow_dispatch: # 수동 실행 option
 
 permissions:
+  checks: read
   contents: read
+  pull-requests: read
+
+concurrency:
+  group: monthly-crawl
+  cancel-in-progress: false
 
 jobs:
   crawl:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 30
     env:
       CRAWL_PHONE_DIRECTORY_URL: ${{ vars.CRAWL_PHONE_DIRECTORY_URL }}
       CRAWL_ACADEMIC_SCHEDULE_URL: ${{ vars.CRAWL_ACADEMIC_SCHEDULE_URL }}
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
-      source_ref: ${{ steps.commit.outputs.source_ref }}
 
     steps:
       - name: Set timezone to KST
@@ -30,6 +32,8 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.CRAWLER_PAT }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -45,34 +49,43 @@ jobs:
       - name: Run academic schedule crawler
         run: python scripts/crawl_schedule.py
 
-      - name: Commit and Push changes
-        id: commit
+      - name: Create pull request and merge after required checks
+        env:
+          GH_TOKEN: ${{ secrets.CRAWLER_PAT }}
+          CI_TOKEN: ${{ github.token }}
+          BRANCH: automation/monthly-crawl
+          PR_TITLE: "chore: update monthly reference data"
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "CRAWLER_PAT secret is not configured."
+            exit 1
+          fi
+
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git config --global --add safe.directory "$PWD"
           git add public/data/phone-*.json public/data/schedules-*.json
 
-          if ! git diff --cached --quiet; then
-            git commit -m "chore: update monthly reference data"
-            git pull --rebase origin main
-            git push origin main
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "✅ Changes pushed successfully"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "source_ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-            echo "ℹ️ No changes to commit - skipping push"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
           fi
-  sync-to-vercel-repo:
-    name: Sync to Vercel Repository
-    needs: crawl
-    if: needs.crawl.outputs.changed == 'true'
-    uses: ./.github/workflows/sync-to-vercel-repo.yml
-    with:
-      source_ref: ${{ needs.crawl.outputs.source_ref }}
-      verify_before_sync: true
-    secrets:
-      VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
-      OFFICIAL_ACCOUNT_EMAIL: ${{ secrets.OFFICIAL_ACCOUNT_EMAIL }}
+
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git checkout -B "$BRANCH"
+          git commit -m "chore: update monthly reference data"
+          git push --force-with-lease origin "$BRANCH"
+
+          PR_URL="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')"
+          if [ -z "$PR_URL" ]; then
+            PR_URL="$(gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "$PR_TITLE" \
+              --body "Automated monthly crawler data update.")"
+          fi
+
+          echo "Waiting for required checks on $PR_URL"
+          sleep 10
+          GH_TOKEN="$CI_TOKEN" gh pr checks "$PR_URL" --required --watch --fail-fast --interval 10
+          gh pr merge "$PR_URL" --squash --delete-branch
