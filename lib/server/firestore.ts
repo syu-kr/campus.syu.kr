@@ -34,13 +34,11 @@ export namespace admin {
 
   // eslint-disable-next-line @typescript-eslint/no-namespace
   export namespace firestore {
-    export type DocumentData = import("firebase-admin/firestore").DocumentData;
-    export type DocumentReference =
-      import("firebase-admin/firestore").DocumentReference;
     export type Firestore = import("firebase-admin/firestore").Firestore;
     export type QueryDocumentSnapshot<
-      AppModelType = DocumentData,
-      DbModelType extends DocumentData = DocumentData,
+      AppModelType = import("firebase-admin/firestore").DocumentData,
+      DbModelType extends import("firebase-admin/firestore").DocumentData =
+        import("firebase-admin/firestore").DocumentData,
     > = import("firebase-admin/firestore").QueryDocumentSnapshot<
       AppModelType,
       DbModelType
