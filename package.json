@@ -5,7 +5,7 @@
   "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.0.0"
   },
   "knip": {
     "ignoreBinaries": [
@@ -32,7 +32,7 @@
     "@tanstack/react-query": "^5.28.0",
     "clsx": "^2.1.0",
     "firebase": "^12.11.0",
-    "firebase-admin": "^13.10.0",
+    "firebase-admin": "^14.0.0",
     "next": "^16.2.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.4",

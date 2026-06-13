@@ -1,8 +1,7 @@
 // scripts/cleanup_old_tokens.ts
 // Firestore에서 오래된 비활성 FCM 토큰 삭제
 
-import * as admin from "firebase-admin";
-import { initializeScriptFirestore } from "./firebase-admin";
+import { admin, initializeScriptFirestore } from "./firebase-admin";
 
 async function cleanupOldTokens() {
   try {
