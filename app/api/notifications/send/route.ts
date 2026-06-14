@@ -2,7 +2,8 @@
 
 import { createHash, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { initializeFirebaseAdmin, sendFCMMessage } from "@/lib/firebaseAdmin";
+import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { sendFCMMessage } from "@/lib/firebaseMessaging";
 import { admin } from "@/lib/server/firestore";
 import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
 
