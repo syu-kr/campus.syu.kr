@@ -123,7 +123,8 @@ async function requireAdmin(req: NextRequest) {
   try {
     const { getAuth } = await import("firebase-admin/auth");
     decodedToken = await getAuth().verifyIdToken(token, true);
-  } catch {
+  } catch (error) {
+    console.error("[Admin API] Firebase ID token verification failed", error);
     throw new AdminAuthError("유효한 로그인이 필요합니다", 401);
   }
   const allowedEmails = readAllowedEmails();
