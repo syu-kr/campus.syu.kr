@@ -28,7 +28,7 @@ type GyeonggiArrivalResponse = {
   };
 };
 
-const PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS = 3500;
+const PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS = 8000;
 
 async function fetchWithTimeout(
   input: RequestInfo | URL,
