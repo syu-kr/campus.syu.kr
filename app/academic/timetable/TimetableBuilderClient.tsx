@@ -658,7 +658,7 @@ function CoursePicker({
 
             return (
               <CourseResultCard
-                key={getCourseRenderKey(course)}
+                key={course.id}
                 course={course}
                 isSelected={isSelected}
                 hasConflict={hasConflict}
@@ -1162,18 +1162,6 @@ function uniqueSorted(values: Array<string | undefined>) {
 
 function normalizeSearchText(value: string) {
   return normalizeCourseName(value).replace(/[^0-9a-z가-힣]/g, "");
-}
-
-function getCourseRenderKey(course: LectureTimetableCourse) {
-  return [
-    course.id,
-    course.courseCode,
-    course.departmentName,
-    course.professor,
-    course.classTime,
-  ]
-    .filter(Boolean)
-    .join("-");
 }
 
 function joinParts(parts: Array<string | undefined>) {

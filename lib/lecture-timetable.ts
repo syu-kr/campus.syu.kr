@@ -65,18 +65,20 @@ export function normalizeLectureTimetablePayload(
   const semester = stringValue(apiRoot.semester);
   const updatedAt = stringValue(apiRoot.time);
 
+  const courses = rows
+    .map((row, index) =>
+      normalizeLectureRow(row, index, {
+        year,
+        semester,
+      }),
+    )
+    .filter((course): course is LectureTimetableCourse => Boolean(course));
+
   return {
     year,
     semester,
     updatedAt,
-    courses: rows
-      .map((row, index) =>
-        normalizeLectureRow(row, index, {
-          year,
-          semester,
-        }),
-      )
-      .filter((course): course is LectureTimetableCourse => Boolean(course)),
+    courses: mergeCoursesById(courses),
   };
 }
 
@@ -218,6 +220,37 @@ function normalizeLectureRow(
     semesterLabel: metadata.semester,
     sourceYear: metadata.year,
   };
+}
+
+function mergeCoursesById(
+  courses: LectureTimetableCourse[],
+): LectureTimetableCourse[] {
+  const coursesById = new Map<string, LectureTimetableCourse>();
+
+  courses.forEach((course) => {
+    const existing = coursesById.get(course.id);
+
+    if (!existing) {
+      coursesById.set(course.id, course);
+      return;
+    }
+
+    coursesById.set(course.id, {
+      ...existing,
+      professor: mergeUniqueText(existing.professor, course.professor),
+    });
+  });
+
+  return Array.from(coursesById.values());
+}
+
+function mergeUniqueText(first?: string, second?: string): string | undefined {
+  const values = [first, second]
+    .flatMap((value) => value?.split(",") ?? [])
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(values)).join(", ") || undefined;
 }
 
 function normalizeDepartmentName(name: string): string {
