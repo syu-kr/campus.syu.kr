@@ -1,7 +1,6 @@
 import { createHmac } from "crypto";
 import { NextResponse } from "next/server";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
-import { admin, getFirestore } from "@/lib/server/firestore";
 
 export type ApiErrorStatus =
   | 400
@@ -159,6 +158,7 @@ async function checkPersistentRateLimit(
   documentId: string,
   options: { limit: number; windowMs: number },
 ) {
+  const { admin, getFirestore } = await import("@/lib/server/firestore");
   const db = getFirestore();
   const ref = db.collection("api_rate_limits").doc(documentId);
 

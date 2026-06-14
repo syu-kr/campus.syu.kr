@@ -1,10 +1,6 @@
-// 서버 사이드 Firebase Admin SDK 초기화
-
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getMessaging, type Messaging } from "firebase-admin/messaging";
 
 export function initializeFirebaseAdmin() {
-  // 이미 초기화된 앱이 있으면 기존 앱 사용
   if (getApps().length > 0) {
     return getApps()[0];
   }
@@ -20,63 +16,4 @@ export function initializeFirebaseAdmin() {
   return initializeApp({
     credential: cert(serviceAccount),
   });
-}
-
-// Messaging 인스턴스 가져오기
-function getMessagingInstance(): Messaging {
-  if (getApps().length === 0) {
-    initializeFirebaseAdmin();
-  }
-  return getMessaging();
-}
-
-// FCM 메시지 발송
-export async function sendFCMMessage(
-  tokens: string[],
-  title: string,
-  body: string,
-  data?: Record<string, string>,
-) {
-  const messaging = getMessagingInstance();
-
-  let successCount = 0;
-  let failureCount = 0;
-  const invalidTokens: string[] = [];
-
-  for (let index = 0; index < tokens.length; index += 500) {
-    const batchTokens = tokens.slice(index, index + 500);
-    const response = await messaging.sendEachForMulticast({
-      tokens: batchTokens,
-      notification: {
-        title,
-        body,
-      },
-      webpush: {
-        notification: {
-          title,
-          body,
-          icon: "/images/syu-kr-logo.png",
-          badge: "/images/syu-kr-logo.png",
-        },
-        data: data || {},
-      },
-    });
-
-    successCount += response.successCount;
-    failureCount += response.failureCount;
-    response.responses.forEach((result, responseIndex) => {
-      if (!result.success && isInvalidFcmTokenError(result.error?.code)) {
-        invalidTokens.push(batchTokens[responseIndex]);
-      }
-    });
-  }
-
-  return { successCount, failureCount, invalidTokens };
-}
-
-function isInvalidFcmTokenError(code: string | undefined) {
-  return (
-    code === "messaging/invalid-registration-token" ||
-    code === "messaging/registration-token-not-registered"
-  );
 }
