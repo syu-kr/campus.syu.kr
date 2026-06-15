@@ -15,6 +15,7 @@ const PUBLIC_ROUTES = [
   { route: "/academic/schedule", changeFrequency: "weekly", priority: 0.9 },
   { route: "/academic/timetable", changeFrequency: "monthly", priority: 0.85 },
   { route: "/academic/graduation", changeFrequency: "monthly", priority: 0.85 },
+  { route: "/academic/scholarship", changeFrequency: "weekly", priority: 0.85 },
   { route: "/campus", changeFrequency: "weekly", priority: 0.95 },
   {
     route: "/campus/announcements",
@@ -25,6 +26,8 @@ const PUBLIC_ROUTES = [
   { route: "/campus/cafeteria", changeFrequency: "daily", priority: 0.9 },
   { route: "/campus/library", changeFrequency: "hourly", priority: 0.9 },
   { route: "/campus/map", changeFrequency: "monthly", priority: 0.85 },
+  { route: "/campus/phone", changeFrequency: "monthly", priority: 0.8 },
+  { route: "/campus/campus-tips", changeFrequency: "weekly", priority: 0.8 },
   { route: "/campus/gym", changeFrequency: "weekly", priority: 0.8 },
   {
     route: "/campus/health-center",
@@ -32,9 +35,6 @@ const PUBLIC_ROUTES = [
     priority: 0.8,
   },
   { route: "/more", changeFrequency: "weekly", priority: 0.8 },
-  { route: "/more/phone", changeFrequency: "monthly", priority: 0.8 },
-  { route: "/more/scholarship", changeFrequency: "weekly", priority: 0.85 },
-  { route: "/more/campus-tips", changeFrequency: "weekly", priority: 0.8 },
   { route: "/more/meet", changeFrequency: "monthly", priority: 0.75 },
   { route: "/more/privacy", changeFrequency: "yearly", priority: 0.5 },
   { route: "/service/notices", changeFrequency: "monthly", priority: 0.7 },

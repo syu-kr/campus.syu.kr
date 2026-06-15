@@ -133,7 +133,7 @@ export default function CampusTipsPage() {
             </p>
           </div>
           <Link
-            href="/more/campus-tips/suggest"
+            href="/campus/campus-tips/suggest"
             className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
             꿀팁 제보하기

@@ -54,6 +54,20 @@ const campusMenus = [
     href: "/campus/map",
   },
   {
+    id: "phone",
+    title: "연락처 검색",
+    description: "부서 및 담당자 연락처",
+    icon: "phone",
+    href: "/campus/phone",
+  },
+  {
+    id: "campus-tips",
+    title: "캠퍼스 꿀팁",
+    description: "학교생활에 필요한 링크 모음",
+    icon: "lightbulb",
+    href: "/campus/campus-tips",
+  },
+  {
     id: "gym",
     title: "체육시설",
     description: "헬스장, 스포츠 센터 정보",
@@ -84,7 +98,7 @@ export default function CampusPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {campusMenus.map((menu) => {
           return (
-            <Link key={menu.id} href={menu.href}>
+            <Link key={menu.id} href={menu.href} className="block">
               <Card
                 hover={false}
                 className="cursor-pointer border border-neutral-200 bg-white transition-colors hover:border-primary-300 hover:bg-primary-50"

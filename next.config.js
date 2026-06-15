@@ -102,6 +102,28 @@ const nextConfig = {
       destination: "/api/bus/shuttle",
     },
   ],
+  redirects: async () => [
+    {
+      source: "/more/scholarship",
+      destination: "/academic/scholarship",
+      permanent: true,
+    },
+    {
+      source: "/more/phone",
+      destination: "/campus/phone",
+      permanent: true,
+    },
+    {
+      source: "/more/campus-tips",
+      destination: "/campus/campus-tips",
+      permanent: true,
+    },
+    {
+      source: "/more/campus-tips/suggest",
+      destination: "/campus/campus-tips/suggest",
+      permanent: true,
+    },
+  ],
 
   // 캐싱 설정
   headers: async () => {
