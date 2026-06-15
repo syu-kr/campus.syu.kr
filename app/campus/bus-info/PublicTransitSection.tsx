@@ -9,19 +9,31 @@ import { BusArrivalsAtStop, BusArrival } from "@/types";
 import { useState, useMemo } from "react";
 import clsx from "clsx";
 import BusDetailModal from "./BusDetailModal";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n";
 
 interface EnrichedBusArrival extends BusArrival {
   minArrivalTime: number; // 첫번째 도착까지 초 단위
 }
 
+type BusInfoDictionary = Dictionary["pages"]["busInfo"];
+type TransitStopLabelKey = keyof BusInfoDictionary["stopLabels"];
+
 const TRANSIT_STOPS = [
-  { id: "jungmun-up", label: "정문 상행" },
-  { id: "jungmun-down", label: "정문 하행" },
-  { id: "humun-up", label: "후문 상행" },
-  { id: "humun-down", label: "후문 하행" },
-];
+  { id: "jungmun-up", labelKey: "jungmunUp" },
+  { id: "jungmun-down", labelKey: "jungmunDown" },
+  { id: "humun-up", labelKey: "humunUp" },
+  { id: "humun-down", labelKey: "humunDown" },
+] as const satisfies ReadonlyArray<{
+  id: string;
+  labelKey: TransitStopLabelKey;
+}>;
 
 export default function PublicTransitSection() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.busInfo;
+  const localeCode = locale === "ko" ? "ko-KR" : "en-US";
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
   const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
   const [selectedBusDirection, setSelectedBusDirection] = useState<
@@ -38,7 +50,7 @@ export default function PublicTransitSection() {
     dataUpdatedAt,
     refetch,
   } = useQuery({
-    queryKey: ["public-transit-arrivals"],
+    queryKey: ["public-transit-arrivals", locale],
     queryFn: async () => {
       const json = await fetchJson<{
         success: boolean;
@@ -46,7 +58,7 @@ export default function PublicTransitSection() {
       }>("/api/bus/public-transit", { fallback: { success: false, data: [] } });
 
       if (!json.success) {
-        throw new Error("대중교통 정보를 불러오지 못했습니다.");
+        throw new Error(text.transitLoadFailed);
       }
 
       return (json.data || []).map((item) => ({
@@ -103,7 +115,7 @@ export default function PublicTransitSection() {
   );
 
   const lastRefreshTime = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")
+    ? new Date(dataUpdatedAt).toLocaleTimeString(localeCode)
     : "-";
 
   return (
@@ -112,26 +124,26 @@ export default function PublicTransitSection() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
-              대중교통 안내
+              {text.publicTransitTitle}
             </h2>
             <p className="text-xs sm:text-sm text-neutral-600 mb-3">
-              삼육대학교 주변 버스 실시간 도착 정보
+              {text.publicTransitDescription}
             </p>
             <p className="text-xs text-neutral-500">
-              마지막 새로고침: {lastRefreshTime}
+              {text.lastRefresh}: {lastRefreshTime}
             </p>
             <p className="mt-2 text-xs leading-5 text-neutral-500">
-              경기도 공공데이터포털 기준이며 실제 도착과 다를 수 있습니다.
+              {text.transitSourceNotice}
               <br />
-              정보는 10초마다 자동으로 새로고침됩니다.
+              {text.transitAutoRefresh}
             </p>
           </div>
           <button
             type="button"
             onClick={() => refetch()}
             disabled={isFetching}
-            title="새로고침"
-            aria-label="대중교통 정보 새로고침"
+            title={text.refresh}
+            aria-label={text.refreshTransit}
             className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshIcon className={isFetching ? "animate-spin" : undefined} />
@@ -143,14 +155,14 @@ export default function PublicTransitSection() {
         <StateCard
           type="error"
           className="mb-6"
-          title="정보를 가져올 수 없습니다"
-          message="API 키가 설정되지 않았거나 일시적 오류가 발생했습니다."
+          title={text.infoUnavailableTitle}
+          message={text.infoUnavailableMessage}
           action={
             <button
               onClick={() => refetch()}
               className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
             >
-              재시도
+              {text.retry}
             </button>
           }
         />
@@ -170,7 +182,7 @@ export default function PublicTransitSection() {
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
                 )}
               >
-                {stop.label}
+                {text.stopLabels[stop.labelKey]}
               </button>
             ))}
           </div>
@@ -188,17 +200,16 @@ export default function PublicTransitSection() {
       ) : sortedArrivals.length === 0 ? (
         <StateCard
           type="info"
-          message="현재 표시 가능한 운행 정보가 없습니다."
+          message={text.noTransitInfo}
         />
       ) : (
         <div className="space-y-3">
           {activeArrivals.length === 0 && (
             <Card className="bg-amber-50 border border-amber-200">
               <div className="text-amber-800 text-sm font-medium">
-                현재 운행중인 버스는 없습니다.
+                {text.noActiveBus}
                 <p className="mt-1 text-xs text-amber-700">
-                  아래에는 운행종료/정보없음을 포함한 전체 노선 상태를
-                  표시합니다.
+                  {text.allRouteStatusHint}
                 </p>
               </div>
             </Card>
@@ -213,34 +224,34 @@ export default function PublicTransitSection() {
 
             const statusLabel = isNoInfo
               ? arrival.arrivalMsg1?.includes("운행종료")
-                ? "운행종료"
-                : "정보없음"
-              : "운행중";
+                ? text.ended
+                : text.noInfoCompact
+              : text.running;
 
             // 좌석 혼잡도
             const seatStatus =
               arrival.crowded1 === undefined || arrival.crowded1 < 0
-                ? { label: "정보 없음", color: "bg-gray-100 text-gray-700" }
+                ? { label: text.noInfo, color: "bg-gray-100 text-gray-700" }
                 : arrival.crowded1 === 0
-                  ? { label: "여유", color: "bg-green-100 text-green-700" }
+                  ? { label: text.relaxed, color: "bg-green-100 text-green-700" }
                   : arrival.crowded1 === 1
-                    ? { label: "보통", color: "bg-yellow-100 text-yellow-700" }
-                    : { label: "혼잡", color: "bg-red-100 text-red-700" };
+                    ? { label: text.normal, color: "bg-yellow-100 text-yellow-700" }
+                    : { label: text.crowded, color: "bg-red-100 text-red-700" };
 
             // 방향에 따른 고정 행선지
             const fixedDestination =
               selectedStop?.stop.id.includes("jungmun") &&
               selectedStop?.stop.direction === "up"
-                ? "담터고개 행"
+                ? text.destinations.damteogogae
                 : selectedStop?.stop.id.includes("jungmun") &&
                     selectedStop?.stop.direction === "down"
-                  ? "태릉국제스케이트장 행"
+                  ? text.destinations.taereungRink
                   : selectedStop?.stop.id.includes("humun") &&
                       selectedStop?.stop.direction === "up"
-                    ? "미리내마을4-2단지.한별초등학교 행"
+                    ? text.destinations.mirinaeHanbyeol
                     : selectedStop?.stop.id.includes("humun") &&
                         selectedStop?.stop.direction === "down"
-                      ? "태릉국제스케이트장 행"
+                      ? text.destinations.taereungRink
                       : "";
 
             return (
@@ -276,9 +287,9 @@ export default function PublicTransitSection() {
                       <span
                         className={clsx(
                           "text-xs px-2 py-0.5 rounded font-medium",
-                          statusLabel === "운행중"
+                          statusLabel === text.running
                             ? "bg-blue-100 text-blue-700"
-                            : statusLabel === "운행종료"
+                            : statusLabel === text.ended
                               ? "bg-gray-200 text-gray-700"
                               : "bg-amber-100 text-amber-700",
                         )}
@@ -287,7 +298,7 @@ export default function PublicTransitSection() {
                       </span>
                       {arrival.isLow1 && !isNoInfo && (
                         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
-                          저상
+                          {text.lowFloor}
                         </span>
                       )}
                     </div>
@@ -303,16 +314,20 @@ export default function PublicTransitSection() {
 
                     {isNoInfo ? (
                       <p className="text-xs sm:text-sm text-neutral-500 font-medium">
-                        도착 예정 정보 없음
+                        {text.noArrivalInfo}
                       </p>
                     ) : (
                       <>
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-xs sm:text-sm text-blue-600 font-semibold">
                             {arrival.locationNo1 && arrival.locationNo1 > 0
-                              ? `${arrival.locationNo1}정거장 전 | `
+                              ? `${arrival.locationNo1}${
+                                  locale === "ko" ? "" : " "
+                                }${text.stopsBefore} | `
                               : ""}
-                            {Math.ceil(arrival.predictTime1 || 0)}분 후
+                            {Math.ceil(arrival.predictTime1 || 0)}
+                            {locale === "ko" ? "" : " "}
+                            {text.minutesAfter}
                           </p>
                         </div>
 
@@ -320,11 +335,15 @@ export default function PublicTransitSection() {
                           arrival.predictTime2 > 0 &&
                           arrival.predictTime2 < Infinity && (
                             <p className="text-xs text-neutral-500 mt-1">
-                              다음:{" "}
+                              {text.next}{" "}
                               {arrival.locationNo2 && arrival.locationNo2 > 0
-                                ? `${arrival.locationNo2}정거장 전 | `
+                                ? `${arrival.locationNo2}${
+                                    locale === "ko" ? "" : " "
+                                  }${text.stopsBefore} | `
                                 : ""}
-                              {Math.ceil(arrival.predictTime2)}분 후
+                              {Math.ceil(arrival.predictTime2)}
+                              {locale === "ko" ? "" : " "}
+                              {text.minutesAfter}
                             </p>
                           )}
                       </>

@@ -9,9 +9,11 @@ import clsx from "clsx";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
+import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 import { normalizeCourseName } from "@/lib/lecture-timetable";
 import type {
   LectureDay,
@@ -19,6 +21,8 @@ import type {
   LectureTimetableCourse,
   LectureTimetableDataset,
 } from "@/lib/lecture-timetable";
+
+type TimetableDictionary = Dictionary["pages"]["timetable"];
 
 interface TimetableApiResponse {
   success: boolean;
@@ -91,6 +95,9 @@ export function TimetableBuilderClient() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.timetable;
   const shareId = searchParams.get("share")?.trim() ?? "";
 
   const [departmentFilter, setDepartmentFilter] = useState("");
@@ -158,9 +165,9 @@ export function TimetableBuilderClient() {
       );
       setSelectedCourseIds(restoredIds);
       setAppliedShareId(shareId);
-      setShareMessage("공유 시간표를 불러왔습니다.");
+      setShareMessage(text.shareLoaded);
     }
-  }, [appliedShareId, courseById, shareId, shareResponse]);
+  }, [appliedShareId, courseById, shareId, shareResponse, text.shareLoaded]);
 
   const selectedCourses = useMemo(
     () =>
@@ -261,11 +268,12 @@ export function TimetableBuilderClient() {
     (course) => course.timeSlots.length === 0,
   ).length;
   const hasCourses = courses.length > 0;
-  const semesterBaseLabel = `${response.data.year ?? ""}년 ${
-    response.data.semester ?? ""
-  } 시간표를 기준으로 합니다.`
-    .replace(/\s+/g, " ")
-    .trim();
+  const semesterBaseLabel = formatSemesterBaseLabel(
+    response.data.year,
+    response.data.semester,
+    locale,
+    text,
+  );
 
   function clearShareFromUrl() {
     if (shareId) {
@@ -312,7 +320,7 @@ export function TimetableBuilderClient() {
       );
 
       if (!share.success || !share.shareId) {
-        setShareMessage(share.error ?? "공유 링크를 만들지 못했습니다.");
+        setShareMessage(share.error ?? text.shareCreateFailed);
         return;
       }
 
@@ -325,9 +333,9 @@ export function TimetableBuilderClient() {
       }
 
       setAppliedShareId(share.shareId);
-      setShareMessage("공유 링크를 만들고 클립보드에 복사했습니다.");
+      setShareMessage(text.shareCreated);
     } catch {
-      setShareMessage("공유 링크를 만들지 못했습니다.");
+      setShareMessage(text.shareCreateFailed);
     } finally {
       setIsCreatingShare(false);
     }
@@ -347,19 +355,19 @@ export function TimetableBuilderClient() {
     >
       <div className="mb-6">
         <Link
-          href="/academic"
+          href={localizePath("/academic", locale)}
           className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900"
         >
           <Icon name="chevron-right" size={16} className="rotate-180" />
-          학사 정보
+          {text.backToAcademic}
         </Link>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <span className="mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
-              큰 화면에서 더 편해요
+              {text.desktopHint}
             </span>
             <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
-              시간표 짜기
+              {text.title}
             </h1>
             <p className="text-sm text-neutral-600 sm:text-base">
               {semesterBaseLabel}
@@ -370,12 +378,21 @@ export function TimetableBuilderClient() {
 
       <section className="sticky top-[73px] z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          <SummaryMetric label="총 학점" value={`${totalCredits}학점`} />
-          <SummaryMetric label="선택" value={`${selectedCourses.length}개`} />
-          <SummaryMetric label="시간 미정" value={`${unscheduledCount}개`} />
           <SummaryMetric
-            label="충돌"
-            value={`${conflictSummary.pairCount}건`}
+            label={text.totalCredits}
+            value={formatCredits(totalCredits, text)}
+          />
+          <SummaryMetric
+            label={text.selected}
+            value={formatCount(selectedCourses.length, text.itemsUnit)}
+          />
+          <SummaryMetric
+            label={text.unscheduled}
+            value={formatCount(unscheduledCount, text.itemsUnit)}
+          />
+          <SummaryMetric
+            label={text.conflicts}
+            value={formatCount(conflictSummary.pairCount, text.casesUnit)}
             isWarning={conflictSummary.pairCount > 0}
           />
           <button
@@ -384,7 +401,7 @@ export function TimetableBuilderClient() {
             disabled={selectedCourses.length === 0 || isCreatingShare}
             className="col-span-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300 sm:col-span-1"
           >
-            {isCreatingShare ? "공유 생성 중" : "공유"}
+            {isCreatingShare ? text.creatingShare : text.share}
           </button>
         </div>
         {visibleCompletionStats.length > 0 && (
@@ -394,7 +411,9 @@ export function TimetableBuilderClient() {
                 key={stat.id}
                 className="rounded-full border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700"
               >
-                {stat.label} {stat.credits}학점/{stat.count}과목
+                {getCompletionGroupLabel(stat.id, text)}{" "}
+                {formatCredits(stat.credits, text)}/
+                {formatCount(stat.count, text.coursesUnit)}
               </span>
             ))}
           </div>
@@ -402,10 +421,10 @@ export function TimetableBuilderClient() {
         {(shareMessage || isShareFetching || (shareId && !shareResponse.success)) && (
           <p className="mt-3 text-sm font-medium text-neutral-600">
             {isShareFetching
-              ? "공유 시간표를 불러오는 중입니다."
+              ? text.shareLoading
               : shareMessage ||
                 shareResponse.error ||
-                "공유 시간표를 불러오지 못했습니다."}
+                text.shareLoadFailed}
           </p>
         )}
       </section>
@@ -418,10 +437,10 @@ export function TimetableBuilderClient() {
       ) : !hasCourses ? (
         <StateCard
           type={isError || !response.success ? "error" : "info"}
-          title="강의 정보를 불러올 수 없습니다"
+          title={text.loadFailedTitle}
           message={
             response.error ??
-            "잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요."
+            text.loadFailedMessage
           }
           action={
             <button
@@ -429,7 +448,7 @@ export function TimetableBuilderClient() {
               onClick={() => refetch()}
               className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
             >
-              다시 불러오기
+              {text.retry}
             </button>
           }
         />
@@ -443,10 +462,10 @@ export function TimetableBuilderClient() {
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-neutral-900">
-                    주간 시간표
+                    {text.weeklyTimetable}
                   </h2>
                   <p className="text-sm text-neutral-500">
-                    교시별 시간과 선택한 강의를 한눈에 확인하세요.
+                    {text.weeklyTimetableDescription}
                   </p>
                 </div>
               </div>
@@ -496,7 +515,7 @@ export function TimetableBuilderClient() {
             onClick={() => setIsPickerOpen(true)}
             className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 max-w-[calc(100vw-2rem)] rounded-lg bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-primary-700 lg:hidden"
           >
-            강의 추가
+            {text.addCourse}
           </button>
 
           {isPickerOpen && (
@@ -595,6 +614,9 @@ function CoursePicker({
   idPrefix: string;
   listKey: string;
 }) {
+  const text = useDictionary().pages.timetable;
+  const locale = useLocale();
+  const numberLocale = getNumberLocale(locale);
   const searchInputId = `${idPrefix}-course-search`;
 
   return (
@@ -605,13 +627,13 @@ function CoursePicker({
             htmlFor={searchInputId}
             className="mb-1 block text-sm font-semibold text-neutral-800"
           >
-            과목 필터
+            {text.courseFilter}
           </label>
           <input
             id={searchInputId}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
-            placeholder="과목명, 교수, 코드, 강좌번호"
+            placeholder={text.searchPlaceholder}
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-primary-500"
           />
         </div>
@@ -619,40 +641,46 @@ function CoursePicker({
         <div className="grid gap-3 sm:grid-cols-3">
           <FilterSelect
             id={`${idPrefix}-department-filter`}
-            label="학과"
+            label={text.department}
             value={departmentFilter}
             onChange={onDepartmentFilterChange}
             options={departments}
-            allLabel="전체 학과"
+            allLabel={text.allDepartments}
           />
           <FilterSelect
             id={`${idPrefix}-grade-filter`}
-            label="학년"
+            label={text.grade}
             value={gradeFilter}
             onChange={onGradeFilterChange}
             options={grades}
-            allLabel="전체 학년"
+            allLabel={text.allGrades}
+            getOptionLabel={(option) => formatGrade(option, text, locale)}
           />
           <FilterSelect
             id={`${idPrefix}-completion-filter`}
-            label="이수구분"
+            label={text.completionType}
             value={completionTypeFilter}
             onChange={onCompletionTypeFilterChange}
             options={completionTypes}
-            allLabel="전체 구분"
+            allLabel={text.allCompletionTypes}
+            getOptionLabel={(option) => formatCompletionType(option, text)}
           />
         </div>
 
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-neutral-600">
-            {filteredCoursesCount.toLocaleString("ko-KR")}개 결과
+            {locale === "ko"
+              ? `${filteredCoursesCount.toLocaleString(numberLocale)}${text.results}`
+              : `${filteredCoursesCount.toLocaleString(numberLocale)} ${
+                  text.results
+                }`}
           </p>
           <button
             type="button"
             onClick={onResetFilters}
             className="rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-200"
           >
-            초기화
+            {text.reset}
           </button>
         </div>
 
@@ -678,12 +706,15 @@ function CoursePicker({
 
           {filteredCoursesCount > visibleCourses.length && (
             <div className="rounded-lg border border-neutral-200 bg-white px-4 py-3 text-center text-sm font-medium text-neutral-600">
-              상위 {MAX_VISIBLE_RESULTS.toLocaleString("ko-KR")}개 표시
+              {text.showingTop}{" "}
+              {MAX_VISIBLE_RESULTS.toLocaleString(numberLocale)}
+              {locale === "ko" ? "" : " "}
+              {text.showingTopSuffix}
             </div>
           )}
 
           {filteredCoursesCount === 0 && (
-            <StateCard type="info" message="조건에 맞는 강의가 없습니다." />
+            <StateCard type="info" message={text.noCourses} />
           )}
         </div>
       </div>
@@ -698,6 +729,8 @@ function MobileCoursePickerSheet({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  const text = useDictionary().pages.timetable;
+
   return (
     <div
       className="fixed inset-0 z-40 bg-black/40 lg:hidden"
@@ -712,14 +745,14 @@ function MobileCoursePickerSheet({
       >
         <div className="mb-3 flex items-center justify-between">
           <h2 id="course-picker-title" className="text-lg font-bold text-neutral-900">
-            강의 추가
+            {text.addCourse}
           </h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700"
           >
-            닫기
+            {text.close}
           </button>
         </div>
         <div className="max-h-[calc(88vh-64px)] overflow-y-auto pb-2">
@@ -737,6 +770,7 @@ function FilterSelect({
   onChange,
   options,
   allLabel,
+  getOptionLabel,
 }: {
   id: string;
   label: string;
@@ -744,6 +778,7 @@ function FilterSelect({
   onChange: (value: string) => void;
   options: string[];
   allLabel: string;
+  getOptionLabel?: (value: string) => string;
 }) {
   return (
     <div>
@@ -762,7 +797,7 @@ function FilterSelect({
         <option value="">{allLabel}</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {getOptionLabel ? getOptionLabel(option) : option}
           </option>
         ))}
       </select>
@@ -781,6 +816,9 @@ function CourseResultCard({
   hasConflict: boolean;
   onToggle: () => void;
 }) {
+  const text = useDictionary().pages.timetable;
+  const locale = useLocale();
+
   return (
     <article
       className={clsx(
@@ -797,21 +835,25 @@ function CourseResultCard({
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             <Badge tone="neutral">{course.id}</Badge>
             {course.completionType && (
-              <Badge tone="blue">{course.completionType}</Badge>
+              <Badge tone="blue">
+                {formatCompletionType(course.completionType, text)}
+              </Badge>
             )}
             {course.credits != null && (
-              <Badge tone="green">{course.credits}학점</Badge>
+              <Badge tone="green">{formatCredits(course.credits, text)}</Badge>
             )}
-            {hasConflict && <Badge tone="red">충돌</Badge>}
+            {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
           <h3 className="break-keep text-base font-bold text-neutral-900">
             {course.courseName}
           </h3>
           <p className="mt-1 text-sm text-neutral-600">
             {joinParts([
-              course.professor || "교수 미지정",
+              course.professor || text.professorMissing,
               course.departmentName,
-              course.grade ? `${course.grade}학년` : undefined,
+              course.grade
+                ? formatGrade(course.grade.toString(), text, locale)
+                : undefined,
             ])}
           </p>
         </div>
@@ -825,14 +867,14 @@ function CourseResultCard({
               : "bg-primary-600 text-white hover:bg-primary-700",
           )}
         >
-          {isSelected ? "삭제" : "추가"}
+          {isSelected ? text.delete : text.add}
         </button>
       </div>
 
       <dl className="mt-3 grid gap-2 text-sm text-neutral-700">
-        <CourseMeta label="시간" value={course.classTime || "시간 미정"} />
-        <CourseMeta label="장소" value={course.place || "장소 미정"} />
-        {course.note && <CourseMeta label="비고" value={course.note} />}
+        <CourseMeta label={text.time} value={course.classTime || text.timeMissing} />
+        <CourseMeta label={text.place} value={course.place || text.placeMissing} />
+        {course.note && <CourseMeta label={text.note} value={course.note} />}
       </dl>
     </article>
   );
@@ -854,19 +896,21 @@ function TimetableGrid({
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
 }) {
+  const text = useDictionary().pages.timetable;
+
   return (
     <div className="w-full max-w-full max-h-[72vh] overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200 lg:max-h-[760px]">
       <div className="w-[420px] max-w-none sm:w-full">
         <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))] sm:text-sm">
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
-            교시
+            {text.period}
           </div>
           {DAYS.map((day) => (
             <div
               key={day}
               className="border-r border-neutral-200 px-1 py-2 last:border-r-0 sm:px-2 sm:py-3"
             >
-              {day}
+              {getDayLabel(day, text)}
             </div>
           ))}
         </div>
@@ -878,7 +922,7 @@ function TimetableGrid({
           >
             <div className="flex flex-col items-center justify-center border-r border-neutral-200 bg-neutral-50 px-0.5 text-center font-semibold text-neutral-600">
               <span className="text-[11px] leading-4 sm:text-sm">
-                {period}교시
+                {formatPeriodLabel(period, text)}
               </span>
               <span className="text-[8px] leading-3 text-neutral-500 sm:text-[10px]">
                 {getPeriodTimeLabel(period)}
@@ -911,7 +955,7 @@ function TimetableGrid({
                           {course.courseName}
                         </p>
                         <p className="mt-0.5 text-[9px] text-neutral-700 sm:text-[11px]">
-                          {course.classTime || "시간 미정"}
+                          {course.classTime || text.timeMissing}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-neutral-600 sm:line-clamp-2 sm:block">
                           {joinParts([course.professor, course.place])}
@@ -944,28 +988,33 @@ function SelectedCoursesPanel({
   onClear: () => void;
   onRemove: (course: LectureTimetableCourse) => void;
 }) {
+  const text = useDictionary().pages.timetable;
+
   return (
     <Card hover={false} className="min-w-0 border border-neutral-200">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-neutral-900">선택 강의</h2>
+        <h2 className="text-lg font-bold text-neutral-900">
+          {text.selectedCourses}
+        </h2>
         {selectedCourses.length > 0 && (
           <button
             type="button"
             onClick={onClear}
             className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
           >
-            전체 삭제
+            {text.clearAll}
           </button>
         )}
       </div>
 
       {selectedCourses.length === 0 ? (
-        <StateCard type="info" message="선택한 강의가 없습니다." />
+        <StateCard type="info" message={text.selectedEmpty} />
       ) : (
         <div className="space-y-4">
           <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             <p className="text-sm font-bold text-neutral-900">
-              총 {totalCredits}학점 / {selectedCourses.length}과목
+              {text.totalSummaryPrefix} {formatCredits(totalCredits, text)} /{" "}
+              {formatCount(selectedCourses.length, text.coursesUnit)}
             </p>
             <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
               {completionStats.map((stat) => (
@@ -974,10 +1023,11 @@ function SelectedCoursesPanel({
                   className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm"
                 >
                   <span className="font-semibold text-neutral-700">
-                    {stat.label}
+                    {getCompletionGroupLabel(stat.id, text)}
                   </span>
                   <span className="font-bold text-neutral-900">
-                    {stat.credits}학점 / {stat.count}과목
+                    {formatCredits(stat.credits, text)} /{" "}
+                    {formatCount(stat.count, text.coursesUnit)}
                   </span>
                 </div>
               ))}
@@ -1009,6 +1059,8 @@ function SelectedCourseRow({
   hasConflict: boolean;
   onRemove: () => void;
 }) {
+  const text = useDictionary().pages.timetable;
+
   return (
     <div
       className={clsx(
@@ -1020,21 +1072,21 @@ function SelectedCourseRow({
         <div className="min-w-0">
           <div className="mb-1 flex flex-wrap items-center gap-1.5">
             {course.credits != null && (
-              <Badge tone="green">{course.credits}학점</Badge>
+              <Badge tone="green">{formatCredits(course.credits, text)}</Badge>
             )}
             {course.timeSlots.length === 0 && (
-              <Badge tone="neutral">시간 미정</Badge>
+              <Badge tone="neutral">{text.timeMissing}</Badge>
             )}
-            {hasConflict && <Badge tone="red">충돌</Badge>}
+            {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
           <p className="break-keep font-bold text-neutral-900">
             {course.courseName}
           </p>
           <p className="mt-1 text-sm text-neutral-600">
             {joinParts([
-              course.classTime || "시간 미정",
-              course.professor || "교수 미지정",
-              course.place || "장소 미정",
+              course.classTime || text.timeMissing,
+              course.professor || text.professorMissing,
+              course.place || text.placeMissing,
             ])}
           </p>
         </div>
@@ -1043,7 +1095,7 @@ function SelectedCourseRow({
           onClick={onRemove}
           className="shrink-0 rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-200"
         >
-          삭제
+          {text.delete}
         </button>
       </div>
     </div>
@@ -1074,6 +1126,100 @@ function Badge({
       {children}
     </span>
   );
+}
+
+function getNumberLocale(locale: Locale) {
+  return locale === "ko" ? "ko-KR" : "en-US";
+}
+
+function formatCount(value: number, unit: string) {
+  const numberLocale = /^[A-Za-z]/.test(unit) ? "en-US" : "ko-KR";
+  const separator = /^[A-Za-z]/.test(unit) ? " " : "";
+
+  return `${value.toLocaleString(numberLocale)}${separator}${unit}`;
+}
+
+function formatCredits(value: number, text: TimetableDictionary) {
+  return formatCount(value, text.creditsUnit);
+}
+
+function formatGrade(
+  value: string,
+  text: TimetableDictionary,
+  locale: Locale,
+) {
+  return locale === "ko" ? `${value}${text.gradeSuffix}` : `Year ${value}`;
+}
+
+function formatPeriodLabel(period: number, text: TimetableDictionary) {
+  return /^[A-Za-z]/.test(text.period)
+    ? `${text.period} ${period}`
+    : `${period}${text.period}`;
+}
+
+function formatSemesterBaseLabel(
+  year: string | null | undefined,
+  semester: string | null | undefined,
+  locale: Locale,
+  text: TimetableDictionary,
+) {
+  const normalizedYear = year?.trim() ?? "";
+  const normalizedSemester = semester?.trim() ?? "";
+
+  if (locale === "ko") {
+    return `${normalizedYear ? `${normalizedYear}년` : ""} ${
+      normalizedSemester || ""
+    } ${text.semesterBase}`
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  const sourceLabel = [normalizedYear, normalizedSemester]
+    .filter(Boolean)
+    .join(" ");
+
+  return sourceLabel
+    ? `Based on ${sourceLabel} ${text.semesterBase}.`
+    : text.semesterBase;
+}
+
+function getDayLabel(day: LectureDay, text: TimetableDictionary) {
+  const dayLabels: Partial<Record<LectureDay, string>> = {
+    월: text.dayLabels.mon,
+    화: text.dayLabels.tue,
+    수: text.dayLabels.wed,
+    목: text.dayLabels.thu,
+    금: text.dayLabels.fri,
+  };
+
+  return dayLabels[day] ?? day;
+}
+
+function getCompletionGroupLabel(
+  id: CompletionGroupId,
+  text: TimetableDictionary,
+) {
+  return text.completionGroups[id];
+}
+
+function formatCompletionType(value: string, text: TimetableDictionary) {
+  const completionTypeLabels: Record<
+    string,
+    keyof TimetableDictionary["completionTypes"]
+  > = {
+    전공필수: "majorRequired",
+    전공선택: "majorElective",
+    교양필수: "liberalRequired",
+    교양선택: "liberalElective",
+    연계필수: "linkedRequired",
+    연계선택: "linkedElective",
+    교직필수: "teachingRequired",
+    채플: "chapel",
+    일반선택: "generalElective",
+  };
+  const labelKey = completionTypeLabels[value];
+
+  return labelKey ? text.completionTypes[labelKey] : value;
 }
 
 function getConflictSummary(courses: LectureTimetableCourse[]) {

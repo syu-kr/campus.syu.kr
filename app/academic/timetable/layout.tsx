@@ -1,9 +1,37 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "시간표 짜기 | SYU CAMPUS",
-  description: "학기 강의 시간표를 직접 구성하고 공유할 수 있습니다.",
-};
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
+
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const dictionary = getDictionary(locale);
+
+  return {
+    title: `${dictionary.academic.menus.timetableTitle} | SYU CAMPUS`,
+    description: dictionary.academic.menus.timetableDescription,
+    openGraph: {
+      title: `${dictionary.academic.menus.timetableTitle} | SYU CAMPUS`,
+      description: dictionary.academic.menus.timetableDescription,
+      type: "website",
+      url: `https://campus.syu.kr${localizePath(
+        "/academic/timetable",
+        locale,
+      )}`,
+    },
+  };
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
