@@ -34,8 +34,6 @@ export interface LectureTimetableDataset {
   courses: LectureTimetableCourse[];
 }
 
-export type LectureMatchMap = Record<string, LectureTimetableCourse[]>;
-
 const OCR_NAME_FIXES: Array<[RegExp, string]> = [
   [/글로걸/g, "글로컬"],
   [/글로컬영어/g, "글로컬 영어"],
@@ -65,18 +63,20 @@ export function normalizeLectureTimetablePayload(
   const semester = stringValue(apiRoot.semester);
   const updatedAt = stringValue(apiRoot.time);
 
+  const courses = rows
+    .map((row, index) =>
+      normalizeLectureRow(row, index, {
+        year,
+        semester,
+      }),
+    )
+    .filter((course): course is LectureTimetableCourse => Boolean(course));
+
   return {
     year,
     semester,
     updatedAt,
-    courses: rows
-      .map((row, index) =>
-        normalizeLectureRow(row, index, {
-          year,
-          semester,
-        }),
-      )
-      .filter((course): course is LectureTimetableCourse => Boolean(course)),
+    courses: mergeCoursesById(courses),
   };
 }
 
@@ -137,49 +137,6 @@ function parseLectureTimeSlots(classTime?: string): LectureTimeSlot[] {
     });
 }
 
-export function buildLectureMatchMap(
-  courses: LectureTimetableCourse[],
-): LectureMatchMap {
-  return courses.reduce((map, course) => {
-    if (!course.normalizedName) return map;
-    map[course.normalizedName] ??= [];
-    map[course.normalizedName].push(course);
-    return map;
-  }, {} as LectureMatchMap);
-}
-
-export function getLectureMatches(
-  courseName: string,
-  matchMap: LectureMatchMap,
-  departmentName?: string,
-): LectureTimetableCourse[] {
-  const matches = matchMap[normalizeCourseName(courseName)] ?? [];
-  const normalizedDepartment = departmentName
-    ? normalizeDepartmentName(departmentName)
-    : "";
-
-  if (!normalizedDepartment) return matches;
-
-  const departmentMatches = matches.filter((match) =>
-    normalizeDepartmentName(match.departmentName ?? "").includes(
-      normalizedDepartment,
-    ),
-  );
-
-  return departmentMatches.length > 0 ? departmentMatches : matches;
-}
-
-export function getBestLectureCredit(
-  courseName: string,
-  matchMap: LectureMatchMap,
-  departmentName?: string,
-): number | null {
-  const match = getLectureMatches(courseName, matchMap, departmentName).find(
-    (item) => item.credits != null,
-  );
-  return match?.credits ?? null;
-}
-
 function normalizeLectureRow(
   row: unknown,
   index: number,
@@ -220,8 +177,35 @@ function normalizeLectureRow(
   };
 }
 
-function normalizeDepartmentName(name: string): string {
-  return name.normalize("NFKC").replace(/\s/g, "").trim();
+function mergeCoursesById(
+  courses: LectureTimetableCourse[],
+): LectureTimetableCourse[] {
+  const coursesById = new Map<string, LectureTimetableCourse>();
+
+  courses.forEach((course) => {
+    const existing = coursesById.get(course.id);
+
+    if (!existing) {
+      coursesById.set(course.id, course);
+      return;
+    }
+
+    coursesById.set(course.id, {
+      ...existing,
+      professor: mergeUniqueText(existing.professor, course.professor),
+    });
+  });
+
+  return Array.from(coursesById.values());
+}
+
+function mergeUniqueText(first?: string, second?: string): string | undefined {
+  const values = [first, second]
+    .flatMap((value) => value?.split(",") ?? [])
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(values)).join(", ") || undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

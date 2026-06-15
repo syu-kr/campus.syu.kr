@@ -1074,6 +1074,7 @@
     "title": "삼육대 홈페이지",
     "description": "삼육대학교 공식 홈페이지입니다.",
     "category": "school",
+    "sortPriority": 10,
     "url": "https://www.syu.ac.kr/",
     "urlLabel": "홈페이지",
     "tags": [
@@ -1089,6 +1090,7 @@
     "title": "삼육대 수윙스",
     "description": "학사 행정 시스템입니다.",
     "category": "school",
+    "sortPriority": 40,
     "url": "https://suwings.syu.ac.kr/sso/login.jsp",
     "urlLabel": "수윙스",
     "tags": [
@@ -1104,6 +1106,7 @@
     "title": "삼육대 이클래스",
     "description": "강의와 학습 활동을 확인하는 LMS입니다.",
     "category": "school",
+    "sortPriority": 20,
     "url": "https://lms.suwings.syu.ac.kr/ilos/main/main_form.acl",
     "urlLabel": "이클래스",
     "tags": [
@@ -1119,6 +1122,7 @@
     "title": "삼육대 수플러스",
     "description": "삼육대 수플러스 시스템입니다.",
     "category": "school",
+    "sortPriority": 30,
     "url": "https://su-plus.syu.ac.kr/",
     "urlLabel": "수플러스",
     "tags": [
@@ -1149,6 +1153,7 @@
     "title": "삼육대 수토리",
     "description": "비교과 활동과 학생경력 관리 시스템입니다.",
     "category": "school",
+    "sortPriority": 50,
     "url": "https://sutory.syu.ac.kr/login?=url=%2F",
     "urlLabel": "수토리",
     "tags": [
@@ -1165,6 +1170,7 @@
     "title": "삼육대 도서관",
     "description": "중앙도서관 공식 사이트입니다.",
     "category": "school",
+    "sortPriority": 60,
     "url": "https://lib.syu.ac.kr/",
     "urlLabel": "도서관",
     "tags": [
@@ -1210,6 +1216,7 @@
     "title": "삼육대 오피스365",
     "description": "학교 계정으로 Microsoft 365를 이용할 수 있습니다.",
     "category": "school",
+    "sortPriority": 80,
     "url": "https://m365.cloud.microsoft/?auth=2",
     "urlLabel": "오피스365",
     "tags": [
@@ -1219,6 +1226,25 @@
     ],
     "sourceType": "official",
     "isExternal": true
+  },
+  {
+    "id": "school-google-workspace",
+    "title": "삼육대 Google Workspace 계정 신청",
+    "description": "SW중심대학사업단에서 제공하는 @syusw.ac.kr Google Workspace 계정 신청 안내입니다.",
+    "category": "school",
+    "sortPriority": 70,
+    "url": "https://syusw.ac.kr/sub/google_workspace.php",
+    "urlLabel": "계정 신청",
+    "tags": [
+      "Google",
+      "워크스페이스",
+      "메일",
+      "드라이브",
+      "SW중심사업단"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "학교 그룹웨어 공식계정이나 노션·피그마·애플·어도비 혜택 인증 계정은 아닙니다."
   },
   {
     "id": "school-certificate-issue",

@@ -5,7 +5,7 @@
   "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
   "private": true,
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=20.9.0"
   },
   "knip": {
     "ignoreBinaries": [
@@ -21,7 +21,11 @@
     "type-check": "tsc --noEmit --incremental false",
     "check:unused": "knip",
     "check:python": "python scripts/check_python_syntax.py",
-    "check": "npm run lint && npm run type-check && npm run check:unused && npm run check:python && npm run build",
+    "check:graduation": "node scripts/check_graduation_data.mjs",
+    "check:curriculum": "node scripts/check_curriculum_data.mjs",
+    "audit:curriculum": "python scripts/audit_curriculum_courses.py",
+    "build:verified-curriculum": "python scripts/build_verified_curriculum.py",
+    "check": "npm run lint && npm run type-check && npm run check:unused && npm run check:python && npm run check:graduation && npm run check:curriculum && npm run build",
     "send-daily-notification": "ts-node --project tsconfig.json scripts/send-daily-notification.ts",
     "cleanup-tokens": "ts-node --project tsconfig.json scripts/cleanup_old_tokens.ts",
     "cleanup-expired-firestore": "ts-node --project tsconfig.json scripts/cleanup_meet_rooms.ts",
@@ -33,7 +37,7 @@
     "@tanstack/react-query": "^5.28.0",
     "clsx": "^2.1.0",
     "firebase": "^12.11.0",
-    "firebase-admin": "^14.0.0",
+    "firebase-admin": "^13.10.0",
     "next": "^16.2.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.4",

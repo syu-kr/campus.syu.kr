@@ -1,0 +1,211 @@
+{
+  "metadata": {
+    "generatedAt": "2026-06-15",
+    "sourceFile": "졸업요건/2025학년도-삼육대학교요람_졸업요건.pdf",
+    "sourceSha256": "9886D28435C496E8796E159664205ADAC66361F55C175CF18ADBD853BC375DFE",
+    "sourcePages": 404,
+    "fullSourceFile": "졸업요건/★2025학년도-삼육대학교요람_국문수정.pdf",
+    "fullSourceSha256": "BE893750C1897C9101F015DB323B94B2E89A0B8E1DC5464C16E82E4DEDD5B4B4",
+    "fullSourcePages": 626,
+    "pageMapping": "fullSourcePage = sourcePage + 222",
+    "policy": "legacy ocrCleaned is not treated as verified; only manual verification records are verified"
+  },
+  "summary": {
+    "totalCourses": 1006,
+    "humanVerified": 2134,
+    "humanVerifiedOriginalCourses": 1006,
+    "humanVerifiedAddedCourses": 1128,
+    "unreviewed": 0,
+    "legacyNeedsReview": 519,
+    "legacyOcrCleaned": 487,
+    "issueTotals": {
+      "missingYear": 1006,
+      "missingSemester": 1006,
+      "missingCredits": 517,
+      "legacyOcrCleanedNotVerified": 487,
+      "duplicateDepartmentCourseName": 129,
+      "unbalancedParentheses": 32,
+      "suspiciousName": 21
+    }
+  },
+  "departmentIssueTotals": {
+    "간호학과": {
+      "missingYear": 64,
+      "missingSemester": 64,
+      "legacyOcrCleanedNotVerified": 53,
+      "duplicateDepartmentCourseName": 16,
+      "missingCredits": 11,
+      "unbalancedParentheses": 6,
+      "suspiciousName": 2
+    },
+    "건축학과": {
+      "missingYear": 66,
+      "missingSemester": 66,
+      "missingCredits": 44,
+      "duplicateDepartmentCourseName": 43,
+      "legacyOcrCleanedNotVerified": 21,
+      "suspiciousName": 2,
+      "unbalancedParentheses": 2
+    },
+    "경영학과": {
+      "missingYear": 31,
+      "missingSemester": 31,
+      "missingCredits": 28,
+      "duplicateDepartmentCourseName": 4,
+      "legacyOcrCleanedNotVerified": 3
+    },
+    "글로벌한국학과": {
+      "missingYear": 60,
+      "missingSemester": 60,
+      "legacyOcrCleanedNotVerified": 32,
+      "missingCredits": 28,
+      "duplicateDepartmentCourseName": 10,
+      "suspiciousName": 2
+    },
+    "동물자원과학과": {
+      "missingYear": 26,
+      "missingSemester": 26,
+      "missingCredits": 13,
+      "legacyOcrCleanedNotVerified": 13,
+      "unbalancedParentheses": 2,
+      "duplicateDepartmentCourseName": 2,
+      "suspiciousName": 1
+    },
+    "물리치료학과": {
+      "missingYear": 34,
+      "missingSemester": 34,
+      "missingCredits": 24,
+      "legacyOcrCleanedNotVerified": 10,
+      "unbalancedParentheses": 4,
+      "duplicateDepartmentCourseName": 2
+    },
+    "바이오융합공학과": {
+      "missingYear": 59,
+      "missingSemester": 59,
+      "legacyOcrCleanedNotVerified": 44,
+      "missingCredits": 15,
+      "duplicateDepartmentCourseName": 7,
+      "suspiciousName": 3,
+      "unbalancedParentheses": 3
+    },
+    "보건관리학과": {
+      "missingYear": 44,
+      "missingSemester": 44,
+      "missingCredits": 36,
+      "legacyOcrCleanedNotVerified": 8,
+      "duplicateDepartmentCourseName": 7
+    },
+    "빅데이터클라우드공학과": {
+      "missingYear": 22,
+      "missingSemester": 22,
+      "missingCredits": 18,
+      "legacyOcrCleanedNotVerified": 4
+    },
+    "사회복지학과": {
+      "missingYear": 59,
+      "missingSemester": 59,
+      "legacyOcrCleanedNotVerified": 34,
+      "missingCredits": 25,
+      "duplicateDepartmentCourseName": 3,
+      "unbalancedParentheses": 2
+    },
+    "상담심리학과": {
+      "missingYear": 50,
+      "missingSemester": 50,
+      "legacyOcrCleanedNotVerified": 38,
+      "missingCredits": 12,
+      "duplicateDepartmentCourseName": 3
+    },
+    "식품영양학과": {
+      "missingYear": 56,
+      "missingSemester": 56,
+      "legacyOcrCleanedNotVerified": 45,
+      "missingCredits": 11,
+      "suspiciousName": 2,
+      "duplicateDepartmentCourseName": 2
+    },
+    "신학과": {
+      "missingYear": 5,
+      "missingSemester": 5,
+      "legacyOcrCleanedNotVerified": 3,
+      "missingCredits": 2,
+      "suspiciousName": 2
+    },
+    "아트앤디자인학과": {
+      "missingYear": 8,
+      "missingSemester": 8,
+      "missingCredits": 5,
+      "legacyOcrCleanedNotVerified": 3
+    },
+    "약학과": {
+      "missingYear": 96,
+      "missingSemester": 96,
+      "legacyOcrCleanedNotVerified": 69,
+      "missingCredits": 26,
+      "unbalancedParentheses": 9,
+      "duplicateDepartmentCourseName": 9,
+      "suspiciousName": 4
+    },
+    "영어영문학과": {
+      "missingYear": 23,
+      "missingSemester": 23,
+      "missingCredits": 14,
+      "legacyOcrCleanedNotVerified": 9
+    },
+    "유아교육과": {
+      "missingYear": 49,
+      "missingSemester": 49,
+      "missingCredits": 36,
+      "legacyOcrCleanedNotVerified": 13,
+      "duplicateDepartmentCourseName": 6
+    },
+    "음악학과": {
+      "missingCredits": 2,
+      "missingYear": 2,
+      "missingSemester": 2
+    },
+    "인공지능융합학부": {
+      "missingYear": 27,
+      "missingSemester": 27,
+      "missingCredits": 25,
+      "legacyOcrCleanedNotVerified": 2
+    },
+    "체육학과": {
+      "missingYear": 44,
+      "missingSemester": 44,
+      "missingCredits": 33,
+      "legacyOcrCleanedNotVerified": 11,
+      "duplicateDepartmentCourseName": 2
+    },
+    "컴퓨터공학부": {
+      "missingYear": 44,
+      "missingSemester": 44,
+      "missingCredits": 32,
+      "legacyOcrCleanedNotVerified": 13,
+      "duplicateDepartmentCourseName": 5
+    },
+    "항공관광외국어학부": {
+      "missingYear": 58,
+      "missingSemester": 58,
+      "missingCredits": 41,
+      "legacyOcrCleanedNotVerified": 17
+    },
+    "화학생명과학과": {
+      "missingYear": 40,
+      "missingSemester": 40,
+      "legacyOcrCleanedNotVerified": 31,
+      "missingCredits": 8,
+      "unbalancedParentheses": 4,
+      "suspiciousName": 2
+    },
+    "환경디자인원예학과": {
+      "missingYear": 39,
+      "missingSemester": 39,
+      "missingCredits": 28,
+      "legacyOcrCleanedNotVerified": 11,
+      "duplicateDepartmentCourseName": 8,
+      "suspiciousName": 1
+    }
+  },
+  "reviewQueue": []
+}

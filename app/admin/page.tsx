@@ -155,7 +155,11 @@ export default function AdminPage() {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
-        const data = await response.json();
+        const data = await readAdminApiResponse<{
+          error?: string;
+          submissions?: AdminSubmissionItem[];
+          counts?: Partial<Record<SubmissionStatus, number>>;
+        }>(response);
 
         if (!response.ok) {
           throw new Error(data.error || "목록을 불러오지 못했습니다");
@@ -198,7 +202,7 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ id: item.id, kind: item.kind, status }),
       });
-      const data = await response.json();
+      const data = await readAdminApiResponse<{ error?: string }>(response);
 
       if (!response.ok) {
         throw new Error(data.error || "상태를 변경하지 못했습니다");
@@ -627,4 +631,18 @@ function formatDateTime(value: string | null) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+async function readAdminApiResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.toLowerCase().includes("application/json")) {
+    throw new Error(
+      response.ok
+        ? "관리자 API가 올바르지 않은 응답을 반환했습니다"
+        : `관리자 API 서버 오류가 발생했습니다 (${response.status})`,
+    );
+  }
+
+  return (await response.json()) as T;
 }

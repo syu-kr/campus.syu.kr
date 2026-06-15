@@ -66,14 +66,17 @@ export default function BusDetailModal({
   const seatStatus2 = getSeatStatus(bus.crowded2);
 
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${bus.routeName} 버스 상세 정보`}
+    >
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        onClick={onClose}
-      />
-
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
+        className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
           <div className="sticky top-0 bg-white text-neutral-900 px-6 py-4 flex items-center justify-between border-b border-neutral-200">
             <div>
               <h2 className="text-2xl font-bold">{bus.routeName}</h2>
@@ -231,8 +234,7 @@ export default function BusDetailModal({
               닫기
             </button>
           </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 }

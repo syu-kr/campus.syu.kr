@@ -20,6 +20,7 @@ export interface CampusTip {
   title: string;
   description?: string;
   category: CampusTipCategory;
+  sortPriority?: number;
   url: string;
   urlLabel?: string;
   tags: string[];

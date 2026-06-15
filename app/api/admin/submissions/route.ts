@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth, type DecodedIdToken } from "firebase-admin/auth";
-import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
+import type { DecodedIdToken } from "firebase-admin/auth";
+import type {
+  Firestore,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
-import {
-  admin,
-  getFirestore,
-  nowTimestamp,
-  timestampToIso,
-} from "@/lib/server/firestore";
 import type {
   AdminSubmissionKind,
   AdminSubmissionItem,
   SubmissionStatus,
 } from "@/types/submissions";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const VALID_STATUSES: SubmissionStatus[] = [
   "pending",
@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const kind = readKindFilter(searchParams.get("kind"));
     const status = readStatusFilter(searchParams.get("status"));
+    const { getFirestore } = await import("@/lib/server/firestore");
     const db = getFirestore();
     const [submissions, counts] = await Promise.all([
       readSubmissions(db, kind, status),
@@ -78,6 +79,9 @@ export async function PATCH(req: NextRequest) {
 
     const collection =
       kind === "inquiry" ? "site_inquiries" : "campus_tip_suggestions";
+    const { getFirestore, nowTimestamp } = await import(
+      "@/lib/server/firestore"
+    );
     const db = getFirestore();
 
     await db.collection(collection).doc(id).update({
@@ -106,17 +110,21 @@ class AdminAuthError extends Error {
 }
 
 async function requireAdmin(req: NextRequest) {
-  initializeFirebaseAdmin();
   const token = readBearerToken(req);
 
   if (!token) {
     throw new AdminAuthError("로그인이 필요합니다", 401);
   }
 
+  const { initializeFirebaseAdmin } = await import("@/lib/firebaseAdmin");
+  initializeFirebaseAdmin();
+
   let decodedToken: DecodedIdToken;
   try {
+    const { getAuth } = await import("firebase-admin/auth");
     decodedToken = await getAuth().verifyIdToken(token, true);
-  } catch {
+  } catch (error) {
+    console.error("[Admin API] Firebase ID token verification failed", error);
     throw new AdminAuthError("유효한 로그인이 필요합니다", 401);
   }
   const allowedEmails = readAllowedEmails();
@@ -127,7 +135,6 @@ async function requireAdmin(req: NextRequest) {
   }
 
   if (
-    !decodedToken.email_verified ||
     !decodedToken.email ||
     !allowedEmails.includes(decodedToken.email.toLowerCase())
   ) {
@@ -148,14 +155,20 @@ function readBearerToken(req: NextRequest) {
 }
 
 function readAllowedEmails() {
-  return (process.env.ADMIN_EMAILS || "")
+  return [
+    process.env.ADMIN_EMAILS,
+    process.env.ADMIN_EMAIL,
+    process.env.admin_email,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(",")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
 }
 
 async function readSubmissions(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   kind: "all" | AdminSubmissionKind,
   status: "all" | SubmissionStatus,
 ) {
@@ -180,10 +193,10 @@ async function readSubmissions(
 }
 
 async function readCollection(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: "site_inquiries" | "campus_tip_suggestions",
   status: "all" | SubmissionStatus,
-  mapper: (doc: admin.firestore.QueryDocumentSnapshot) => AdminSubmissionItem,
+  mapper: (doc: QueryDocumentSnapshot) => AdminSubmissionItem,
 ) {
   const query =
     status === "all"
@@ -195,7 +208,7 @@ async function readCollection(
 }
 
 async function readSubmissionCounts(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   kind: "all" | AdminSubmissionKind,
 ) {
   const entries = await Promise.all(
@@ -217,7 +230,7 @@ async function readSubmissionCounts(
 }
 
 async function countByStatus(
-  db: admin.firestore.Firestore,
+  db: Firestore,
   collection: "site_inquiries" | "campus_tip_suggestions",
   status: SubmissionStatus,
 ) {
@@ -243,7 +256,7 @@ function readStatusFilter(value: string | null): "all" | SubmissionStatus {
 }
 
 function mapInquiry(
-  doc: admin.firestore.QueryDocumentSnapshot,
+  doc: QueryDocumentSnapshot,
 ): AdminSubmissionItem {
   const data = doc.data();
 
@@ -263,7 +276,7 @@ function mapInquiry(
 }
 
 function mapCampusTipSuggestion(
-  doc: admin.firestore.QueryDocumentSnapshot,
+  doc: QueryDocumentSnapshot,
 ): AdminSubmissionItem {
   const data = doc.data();
 
@@ -301,4 +314,17 @@ function readStatus(value: unknown): SubmissionStatus {
   return VALID_STATUSES.includes(value as SubmissionStatus)
     ? (value as SubmissionStatus)
     : "pending";
+}
+
+function timestampToIso(value: unknown): string | null {
+  if (
+    value &&
+    typeof value === "object" &&
+    "toDate" in value &&
+    typeof value.toDate === "function"
+  ) {
+    return value.toDate().toISOString();
+  }
+
+  return null;
 }

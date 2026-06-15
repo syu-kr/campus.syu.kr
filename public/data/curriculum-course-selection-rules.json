@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "sourceYear": "2025",
+    "verifiedAt": "2026-06-15",
+    "policy": "원문 표에서 택1 또는 동일 과목의 양 학기 개설이 확인된 경우에만 상호배타 선택 묶음으로 기록합니다."
+  },
+  "exclusiveGroups": [
+    {
+      "id": "computer-labor-education",
+      "departmentId": "ff_computer",
+      "label": "노작교육 양 학기 중 택1",
+      "courseIds": [
+        "verified-ff_computer-316-labor-education-1",
+        "verified-ff_computer-316-labor-education-2"
+      ]
+    },
+    {
+      "id": "computer-smoking-alcohol-prevention",
+      "departmentId": "ff_computer",
+      "label": "흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "ff_computer-316-975",
+        "verified-ff_computer-316-smoking-alcohol-prevention-2"
+      ]
+    },
+    {
+      "id": "computer-writing-reading",
+      "departmentId": "ff_computer",
+      "label": "글쓰기 또는 독서와 토론 양 학기 중 택1",
+      "courseIds": [
+        "ff_computer-316-976",
+        "verified-ff_computer-316-writing-reading-2"
+      ]
+    },
+    {
+      "id": "computer-computational-thinking",
+      "departmentId": "ff_computer",
+      "label": "컴퓨팅사고력 양 학기 중 택1",
+      "courseIds": [
+        "ff_computer-316-977",
+        "verified-ff_computer-316-computational-thinking-2"
+      ]
+    },
+    {
+      "id": "computer-ict-internship-1",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십 I 중복 개설",
+      "courseIds": [
+        "ff_computer-319-1007",
+        "verified-ff_computer-319-ict-internship-1-2"
+      ]
+    },
+    {
+      "id": "computer-ict-internship-2",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십 II 중복 개설",
+      "courseIds": [
+        "ff_computer-319-1008",
+        "verified-ff_computer-319-ict-internship-2-2"
+      ]
+    },
+    {
+      "id": "computer-ict-internship-3",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십 III 중복 개설",
+      "courseIds": [
+        "verified-ff_computer-319-ict-internship-3-1",
+        "verified-ff_computer-319-ict-internship-3-2"
+      ]
+    },
+    {
+      "id": "computer-ict-internship-4",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십 IV 중복 개설",
+      "courseIds": [
+        "ff_computer-319-1010",
+        "ff_computer-319-1018"
+      ]
+    },
+    {
+      "id": "nursing-second-year-first-semester-choice",
+      "departmentId": "nursing_nursing",
+      "label": "2학년 1학기 전공선택 택1",
+      "courseIds": [
+        "verified-nursing_nursing-24-addiction-assessment",
+        "verified-nursing_nursing-24-growth-development"
+      ]
+    },
+    {
+      "id": "nursing-second-year-second-semester-choice",
+      "departmentId": "nursing_nursing",
+      "label": "2학년 2학기 전공선택 택1",
+      "courseIds": [
+        "verified-nursing_nursing-24-digital-healthcare",
+        "verified-nursing_nursing-24-global-health"
+      ]
+    },
+    {
+      "id": "nursing-third-year-first-semester-choice",
+      "departmentId": "nursing_nursing",
+      "label": "3학년 1학기 전공선택 택1",
+      "courseIds": [
+        "verified-nursing_nursing-25-clinical-diagnostics",
+        "verified-nursing_nursing-25-clinical-terminology"
+      ]
+    },
+    {
+      "id": "nursing-third-year-second-semester-choice",
+      "departmentId": "nursing_nursing",
+      "label": "3학년 2학기 전공선택 택1",
+      "courseIds": [
+        "verified-nursing_nursing-25-global-leadership",
+        "verified-nursing_nursing-25-comprehensive-exam"
+      ]
+    },
+    {
+      "id": "theology-overseas-mission-internship",
+      "departmentId": "theology_dept",
+      "label": "해외선교인턴십 중복 개설",
+      "courseIds": [
+        "theology_dept-14-4",
+        "theology_dept-14-5"
+      ]
+    },
+    {
+      "id": "socialwelfare-labor-education",
+      "departmentId": "cf_socialwelfare",
+      "label": "노작교육 양 학기 중 택1",
+      "courseIds": [
+        "verified-cf_socialwelfare-80-labor-education-1",
+        "verified-cf_socialwelfare-80-labor-education-2"
+      ]
+    },
+    {
+      "id": "socialwelfare-community-contribution",
+      "departmentId": "cf_socialwelfare",
+      "label": "지역사회공헌 양 학기 중 택1",
+      "courseIds": [
+        "cf_socialwelfare-80-295",
+        "verified-cf_socialwelfare-80-community-contribution-2"
+      ]
+    },
+    {
+      "id": "socialwelfare-smoking-alcohol-prevention",
+      "departmentId": "cf_socialwelfare",
+      "label": "흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "cf_socialwelfare-80-297",
+        "verified-cf_socialwelfare-80-smoking-alcohol-2"
+      ]
+    },
+    {
+      "id": "socialwelfare-glocal-thinking-expression",
+      "departmentId": "cf_socialwelfare",
+      "label": "글로컬 사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "verified-cf_socialwelfare-80-glocal-thinking-expression-1",
+        "verified-cf_socialwelfare-80-glocal-thinking-expression-2"
+      ]
+    },
+    {
+      "id": "counseling-community-contribution",
+      "departmentId": "cf_counseling",
+      "label": "지역사회공헌 양 학기 중 택1",
+      "courseIds": [
+        "cf_counseling-96-355",
+        "verified-cf_counseling-96-add-8"
+      ]
+    },
+    {
+      "id": "counseling-glocal-thinking-expression",
+      "departmentId": "cf_counseling",
+      "label": "글로컬사고와표현 양 학기 중 택1",
+      "courseIds": [
+        "verified-cf_counseling-96-add-1",
+        "verified-cf_counseling-96-add-9"
+      ]
+    },
+    {
+      "id": "english-smoking-alcohol-prevention",
+      "departmentId": "cf_english",
+      "label": "흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "verified-cf_english-123-add-3",
+        "verified-cf_english-123-add-11"
+      ]
+    },
+    {
+      "id": "earlychildhood-smoking-alcohol-prevention",
+      "departmentId": "cf_earlychildhood",
+      "label": "흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "cf_earlychildhood-135-441",
+        "verified-cf_earlychildhood-135-add-5"
+      ]
+    },
+    {
+      "id": "earlychildhood-glocal-thinking-expression",
+      "departmentId": "cf_earlychildhood",
+      "label": "글로컬사고와표현 양 학기 중 택1",
+      "courseIds": [
+        "verified-cf_earlychildhood-135-add-2",
+        "verified-cf_earlychildhood-135-add-6"
+      ]
+    },
+    {
+      "id": "architecture-4year-glocal-thinking-expression",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(4년제) 글로컬사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_architecture-184-601",
+        "verified-ff_architecture-184-add-03"
+      ]
+    },
+    {
+      "id": "architecture-4year-computational-thinking",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(4년제) 컴퓨팅 사고력 양 학기 중 택1",
+      "courseIds": [
+        "ff_architecture-184-602",
+        "verified-ff_architecture-184-add-04"
+      ]
+    },
+    {
+      "id": "architecture-4year-character-education",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(4년제) 인성교육 영역 3-1/3-2 중 택1",
+      "courseIds": [
+        "verified-ff_architecture-185-add-16",
+        "verified-ff_architecture-185-add-23"
+      ]
+    },
+    {
+      "id": "architecture-5year-glocal-thinking-expression",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(5년제) 글로컬사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_architecture-196-638",
+        "ff_architecture-196-647"
+      ]
+    },
+    {
+      "id": "architecture-5year-computational-thinking",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(5년제) 컴퓨팅 사고력 양 학기 중 택1",
+      "courseIds": [
+        "ff_architecture-196-639",
+        "verified-ff_architecture-196-add-03"
+      ]
+    },
+    {
+      "id": "architecture-5year-character-education",
+      "departmentId": "ff_architecture",
+      "label": "건축학과(5년제) 인성교육 영역 3-1/3-2 중 택1",
+      "courseIds": [
+        "verified-ff_architecture-197-add-14",
+        "verified-ff_architecture-197-add-22"
+      ]
+    },
+    {
+      "id": "envdesign-envgreen-smoking-alcohol-prevention",
+      "departmentId": "ff_envdesign",
+      "label": "환경그린디자인전공 흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "ff_envdesign-347-1067",
+        "verified-ff_envdesign-347-env-green-smoke-1-2"
+      ]
+    },
+    {
+      "id": "envdesign-envgreen-glocal-thinking-expression",
+      "departmentId": "ff_envdesign",
+      "label": "환경그린디자인전공 글로컬사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "verified-ff_envdesign-347-env-green-glocal-thinking-1-1",
+        "verified-ff_envdesign-347-env-green-glocal-thinking-1-2"
+      ]
+    },
+    {
+      "id": "envdesign-horticulture-smoking-alcohol-prevention",
+      "departmentId": "ff_envdesign",
+      "label": "원예전공 흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "ff_envdesign-349-1076",
+        "verified-ff_envdesign-349-horticulture-smoke-1-2"
+      ]
+    },
+    {
+      "id": "envdesign-horticulture-glocal-thinking-expression",
+      "departmentId": "ff_envdesign",
+      "label": "원예전공 글로컬사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_envdesign-349-1077",
+        "verified-ff_envdesign-349-horticulture-glocal-thinking-1-2"
+      ]
+    },
+    {
+      "id": "envdesign-teacher-smoking-alcohol-prevention",
+      "departmentId": "ff_envdesign",
+      "label": "교직과정 흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "ff_envdesign-351-1099",
+        "verified-ff_envdesign-351-teacher-smoke-1-2"
+      ]
+    },
+    {
+      "id": "envdesign-teacher-glocal-thinking-expression",
+      "departmentId": "ff_envdesign",
+      "label": "교직과정 글로컬사고와 표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_envdesign-351-1100",
+        "verified-ff_envdesign-351-teacher-glocal-thinking-1-2"
+      ]
+    },
+    {
+      "id": "pharmacy-advanced-practice-elective",
+      "departmentId": "pharmacy_pharm",
+      "label": "6학년 심화실무실습 5개 과정 중 택1",
+      "courseIds": [
+        "pharmacy_pharm-41-188",
+        "pharmacy_pharm-41-189",
+        "pharmacy_pharm-41-190",
+        "pharmacy_pharm-41-191",
+        "pharmacy_pharm-41-192"
+      ]
+    },
+    {
+      "id": "animal-community-service",
+      "departmentId": "ff_animal",
+      "label": "지역사회공헌 양 학기 중 택1",
+      "courseIds": [
+        "ff_animal-223-703",
+        "verified-ff_animal-223-add-07"
+      ]
+    },
+    {
+      "id": "animal-computational-thinking",
+      "departmentId": "ff_animal",
+      "label": "컴퓨팅사고력 양 학기 중 택1",
+      "courseIds": [
+        "verified-ff_animal-223-add-05",
+        "ff_animal-223-711"
+      ]
+    },
+    {
+      "id": "physicaltherapy-glocal-thinking-expression",
+      "departmentId": "ff_physicaltherapy",
+      "label": "글로컬사고와표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_physicaltherapy-236-730",
+        "verified-ff_physicaltherapy-236-add-04"
+      ]
+    },
+    {
+      "id": "bioconvergence-community-service",
+      "departmentId": "ff_bioconvergence",
+      "label": "지역사회공헌 양 학기 중 택1",
+      "courseIds": [
+        "바이오융합공학과-248-768",
+        "바이오융합공학과-248-776"
+      ]
+    },
+    {
+      "id": "bioconvergence-computational-thinking",
+      "departmentId": "ff_bioconvergence",
+      "label": "컴퓨팅사고력 양 학기 중 택1",
+      "courseIds": [
+        "바이오융합공학과-248-769",
+        "바이오융합공학과-248-777"
+      ]
+    },
+    {
+      "id": "bioconvergence-character-education",
+      "departmentId": "ff_bioconvergence",
+      "label": "인성교육 영역 양 학기 중 택1",
+      "courseIds": [
+        "바이오융합공학과-250-800",
+        "verified-ff_bioconvergence-250-add-4"
+      ]
+    },
+    {
+      "id": "healthadmin-character-education",
+      "departmentId": "ff_healthadmin",
+      "label": "인성교육 영역 양 학기 중 택1",
+      "courseIds": [
+        "ff_healthadmin-266-854",
+        "verified-ff_healthadmin-266-add-2"
+      ]
+    },
+    {
+      "id": "foodnutrition-smoking-alcohol-prevention",
+      "departmentId": "ff_foodnutrition",
+      "label": "흡연음주예방교육 양 학기 중 택1",
+      "courseIds": [
+        "verified-ff_foodnutrition-278-add-3",
+        "verified-ff_foodnutrition-278-add-12"
+      ]
+    },
+    {
+      "id": "foodnutrition-glocal-thinking-expression",
+      "departmentId": "ff_foodnutrition",
+      "label": "글로컬사고와표현 양 학기 중 택1",
+      "courseIds": [
+        "ff_foodnutrition-278-883",
+        "verified-ff_foodnutrition-278-add-13"
+      ]
+    },
+    {
+      "id": "foodnutrition-computational-thinking",
+      "departmentId": "ff_foodnutrition",
+      "label": "컴퓨팅 사고력 양 학기 중 택1",
+      "courseIds": [
+        "ff_foodnutrition-278-884",
+        "verified-ff_foodnutrition-278-add-14"
+      ]
+    }
+  ]
+}

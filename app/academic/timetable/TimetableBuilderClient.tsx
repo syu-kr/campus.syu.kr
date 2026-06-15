@@ -341,7 +341,7 @@ export function TimetableBuilderClient() {
   }
 
   return (
-    <Container className="py-6 sm:py-8">
+    <Container size="full" className="max-w-[88rem] py-6 sm:py-8">
       <div className="mb-6">
         <Link
           href="/academic"
@@ -352,6 +352,9 @@ export function TimetableBuilderClient() {
         </Link>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
+            <span className="mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
+              큰 화면에서 더 편해요
+            </span>
             <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
               시간표 짜기
             </h1>
@@ -429,48 +432,24 @@ export function TimetableBuilderClient() {
         />
       ) : (
         <div className="space-y-6">
-          <Card hover={false} className="border border-neutral-200">
-            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-neutral-900">
-                  주간 시간표
-                </h2>
-                <p className="text-sm text-neutral-500">
-                  교시별 시간과 선택한 강의를 한눈에 확인하세요.
-                </p>
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
+            <Card hover={false} className="border border-neutral-200">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-neutral-900">
+                    주간 시간표
+                  </h2>
+                  <p className="text-sm text-neutral-500">
+                    교시별 시간과 선택한 강의를 한눈에 확인하세요.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            <TimetableGrid
-              selectedCourses={selectedCourses}
-              conflictCourseIds={conflictSummary.courseIds}
-            />
-          </Card>
-
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="hidden lg:block">
-              <CoursePicker
-                completionTypeFilter={completionTypeFilter}
-                departments={departments}
-                departmentFilter={departmentFilter}
-                filteredCoursesCount={filteredCourses.length}
-                grades={grades}
-                gradeFilter={gradeFilter}
-                completionTypes={completionTypes}
-                onCompletionTypeFilterChange={setCompletionTypeFilter}
-                onDepartmentFilterChange={setDepartmentFilter}
-                onGradeFilterChange={setGradeFilter}
-                onResetFilters={resetFilters}
-                onSearchQueryChange={setSearchQuery}
-                onToggleCourse={toggleCourse}
-                searchQuery={searchQuery}
-                selectedIdSet={selectedIdSet}
-                visibleCourses={visibleCourses}
+              <TimetableGrid
+                selectedCourses={selectedCourses}
                 conflictCourseIds={conflictSummary.courseIds}
-                idPrefix="desktop"
-                listKey={courseListKey}
               />
-            </div>
+            </Card>
 
             <SelectedCoursesPanel
               selectedCourses={selectedCourses}
@@ -481,6 +460,30 @@ export function TimetableBuilderClient() {
               onRemove={toggleCourse}
             />
           </section>
+
+          <div className="hidden lg:block">
+            <CoursePicker
+              completionTypeFilter={completionTypeFilter}
+              departments={departments}
+              departmentFilter={departmentFilter}
+              filteredCoursesCount={filteredCourses.length}
+              grades={grades}
+              gradeFilter={gradeFilter}
+              completionTypes={completionTypes}
+              onCompletionTypeFilterChange={setCompletionTypeFilter}
+              onDepartmentFilterChange={setDepartmentFilter}
+              onGradeFilterChange={setGradeFilter}
+              onResetFilters={resetFilters}
+              onSearchQueryChange={setSearchQuery}
+              onToggleCourse={toggleCourse}
+              searchQuery={searchQuery}
+              selectedIdSet={selectedIdSet}
+              visibleCourses={visibleCourses}
+              conflictCourseIds={conflictSummary.courseIds}
+              idPrefix="desktop"
+              listKey={courseListKey}
+            />
+          </div>
 
           <button
             type="button"
@@ -649,7 +652,7 @@ function CoursePicker({
 
         <div
           key={listKey}
-          className="max-h-[60vh] space-y-3 overflow-y-auto pr-1 lg:max-h-[620px]"
+          className="grid max-h-[60vh] gap-3 overflow-y-auto pr-1 lg:max-h-[620px] lg:grid-cols-2 2xl:grid-cols-3"
         >
           {visibleCourses.map((course) => {
             const isSelected = selectedIdSet.has(course.id);
@@ -658,7 +661,7 @@ function CoursePicker({
 
             return (
               <CourseResultCard
-                key={getCourseRenderKey(course)}
+                key={course.id}
                 course={course}
                 isSelected={isSelected}
                 hasConflict={hasConflict}
@@ -1162,18 +1165,6 @@ function uniqueSorted(values: Array<string | undefined>) {
 
 function normalizeSearchText(value: string) {
   return normalizeCourseName(value).replace(/[^0-9a-z가-힣]/g, "");
-}
-
-function getCourseRenderKey(course: LectureTimetableCourse) {
-  return [
-    course.id,
-    course.courseCode,
-    course.departmentName,
-    course.professor,
-    course.classTime,
-  ]
-    .filter(Boolean)
-    .join("-");
 }
 
 function joinParts(parts: Array<string | undefined>) {

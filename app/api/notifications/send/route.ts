@@ -2,11 +2,17 @@
 
 import { createHash, timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { initializeFirebaseAdmin, sendFCMMessage } from "@/lib/firebaseAdmin";
+import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
+import { sendFCMMessage } from "@/lib/firebaseMessaging";
 import { admin } from "@/lib/server/firestore";
 import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
 
-const NOTIFICATION_CATEGORIES = ["academic", "campus", "scholarship"] as const;
+const NOTIFICATION_CATEGORIES = [
+  "academic",
+  "campus",
+  "scholarship",
+  "daily-summary",
+] as const;
 
 type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
