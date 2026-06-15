@@ -64,7 +64,11 @@ export async function enforceRateLimit(
     );
   }
 
-  const secret = process.env.RATE_LIMIT_SECRET || process.env.PUSH_API_KEY;
+  const secret =
+    process.env.RATE_LIMIT_SECRET ||
+    (process.env.NODE_ENV === "production"
+      ? undefined
+      : process.env.PUSH_API_KEY);
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
       console.error("[Rate Limit] RATE_LIMIT_SECRET is not configured");
