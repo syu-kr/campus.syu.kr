@@ -7,7 +7,12 @@ import { sendFCMMessage } from "@/lib/firebaseMessaging";
 import { admin } from "@/lib/server/firestore";
 import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
 
-const NOTIFICATION_CATEGORIES = ["academic", "campus", "scholarship"] as const;
+const NOTIFICATION_CATEGORIES = [
+  "academic",
+  "campus",
+  "scholarship",
+  "daily-summary",
+] as const;
 
 type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
