@@ -69,6 +69,8 @@ campus.syu.kr/
 │   └── manifest.json
 ├── scripts/                    # crawlers and maintenance scripts
 ├── types/                      # shared TypeScript types
+├── firestore.rules             # Firestore client access deny rules
+├── firebase.json               # Firebase rules deploy target
 ├── docs/                       # operational reference docs
 └── .github/workflows/          # CI and scheduled data jobs
 ```
@@ -91,7 +93,7 @@ Client UI
 
 ## 환경 변수
 
-`.env.example`을 기준으로 `.env.local`을 구성합니다. `NEXT_PUBLIC_*` 값은 브라우저에 노출됩니다. 서비스 계정, 푸시 API 키, 관리자 키는 서버 환경 변수로만 설정하세요.
+`.env.example`을 기준으로 `.env.local`을 구성합니다. `NEXT_PUBLIC_*` 값은 브라우저에 노출됩니다. 서비스 계정, 푸시 API 키, 관리자 키는 서버 환경 변수로만 설정하세요. 운영 Firebase Admin 권한은 Vercel Production과 필요한 GitHub Actions secret에만 등록하고, Preview/Development는 별도 프로젝트 또는 제한된 service account를 사용합니다.
 
 ### Local/Vercel Runtime Variables
 
@@ -119,7 +121,7 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | FCM web push | Web Push VAPID public key |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
 | `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
-| `RATE_LIMIT_SECRET` | 권장 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. 미등록 시 `PUSH_API_KEY`를 fallback으로 사용 |
+| `RATE_LIMIT_SECRET` | 운영 필수 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. Production에서는 미등록 시 public write API가 503으로 실패하며, 로컬 개발에서만 `PUSH_API_KEY` fallback을 허용 |
 | `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
 | `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |
 | `TOKEN_CLEANUP_DAYS` | 선택 | cleanup tokens script | 오래된 FCM 토큰 삭제 기준 일수, 기본값 `90` |
@@ -133,8 +135,8 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | --- | --- | --- | --- |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포 `singhic/syu-campus`에 push 가능한 GitHub fine-grained token. 권한은 해당 repo `Contents: Read and write` |
 | `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
-| `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 URL. 운영 도메인 또는 Vercel production URL |
-| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml` | Firebase Admin service account JSON 문자열 |
+| `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 URL. 운영 HTTPS 도메인 또는 Vercel production URL이며 GitHub Actions에서 localhost 사용 금지 |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 
@@ -195,6 +197,16 @@ python scripts/crawl_phone.py
 - `site_inquiries`
 - `user_devices`
 - `notifications_sent`
+- `notifications_scheduled`
+- `notification_send_locks`
+- `timetable_shares`
+- `api_rate_limits`
+
+Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 운영 반영 시 Firebase 콘솔에서 직접 붙여넣어 publish하거나, 아래 명령으로 rules만 배포합니다. 현재 저장소는 Firestore indexes를 코드로 관리하지 않습니다.
+
+```bash
+firebase deploy --only firestore:rules
+```
 
 ## 배포
 
@@ -212,6 +224,7 @@ syu-kr/campus.syu.kr main push
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
 daily/monthly crawler가 `public/data/` 변경 커밋을 만들면, 해당 워크플로 안에서 검증과 동기화 워크플로를 호출해 개인 레포와 Vercel 배포까지 이어집니다. 데이터 변경이 없으면 동기화도 건너뜁니다.
+`sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 lint, type-check, unused check, Python syntax check, build를 통과해야 개인 Vercel 레포에 push합니다.
 
 `main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 예약 크롤러가 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 **GitHub Actions 앱**만 추가합니다. 그 외 사용자와 앱에는 bypass를 허용하지 않습니다.
 
@@ -226,10 +239,10 @@ npm run build
 GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: lint, type-check, build
-- sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화
+- sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 검증 필수
 - daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
-- daily notification: 일일 공지 푸시 발송
+- daily notification: 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
 
 ## 개발 규칙
 
@@ -263,4 +276,4 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 ## 최종 업데이트
 
-2026-06-13
+2026-06-15
