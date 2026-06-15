@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "lastVerifiedAt": "2026-06-15",
+    "policy": "자동 진단에 사용하는 모든 규칙은 출처와 확인 상태를 함께 표시합니다."
+  },
+  "sources": [
+    {
+      "id": "syu-graduation-guide",
+      "title": "삼육대학교 졸업 안내",
+      "url": "https://www.syu.ac.kr/academic/academic-info/graduation/",
+      "publisher": "삼육대학교",
+      "verifiedAt": "2026-06-15",
+      "scope": "공통 졸업학점, 교양, 채플 및 졸업조건"
+    },
+    {
+      "id": "syu-major-system",
+      "title": "삼육대학교 전공제도 안내",
+      "url": "https://www.syu.ac.kr/academic/academic-info/major-system/",
+      "publisher": "삼육대학교",
+      "verifiedAt": "2026-06-15",
+      "scope": "학과 편제, 복수전공, 부전공"
+    },
+    {
+      "id": "graduation-self-check-sheet",
+      "title": "졸업이수요건 자가진단표",
+      "publisher": "삼육대학교",
+      "verifiedAt": "2026-06-15",
+      "scope": "자가진단 항목과 공통 이수조건"
+    },
+    {
+      "id": "syu-2025-handbook",
+      "title": "2025학년도 삼육대학교 요람 졸업요건 표",
+      "publisher": "삼육대학교",
+      "verifiedAt": "2026-06-15",
+      "scope": "학과·입학유형·전공형태별 참고 학점"
+    },
+    {
+      "id": "cse-graduation-guide",
+      "title": "컴퓨터공학부 졸업요건 공지사항",
+      "url": "https://www.syu.ac.kr/cse/2022/02/09/%ED%95%84%EB%8F%85-%EC%A1%B8%EC%97%85%EC%9A%94%EA%B1%B4-%EA%B3%B5%EC%A7%80%EC%82%AC%ED%95%AD/",
+      "publisher": "삼육대학교 컴퓨터공학부",
+      "verifiedAt": "2026-06-15",
+      "scope": "컴퓨터공학부 전공학점, 종합시험 및 자격증"
+    },
+    {
+      "id": "nursing-graduation-guide",
+      "title": "간호학과 학부생 졸업요건",
+      "url": "https://www.syu.ac.kr/nursing/%ED%95%99%EB%B6%80%EC%83%9D-%EC%A1%B8%EC%97%85%EC%9A%94%EA%B1%B4/",
+      "publisher": "삼육대학교 간호대학",
+      "verifiedAt": "2026-06-15",
+      "scope": "간호학과 학점, 국가시험, 임상실습 및 학습성과"
+    }
+  ]
+}

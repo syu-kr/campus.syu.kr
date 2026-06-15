@@ -6,61 +6,43 @@ import clsx from "clsx";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { ContactModal } from "@/app/components/ContactModal";
 import {
   ADMISSION_TYPE_LABELS,
   CREDIT_CATEGORY_LABELS,
-  CURRICULUM_CATEGORY_LABELS,
   MAJOR_TRACK_LABELS,
-  calculateAutoTotalCredits,
   evaluateGraduation,
   getAvailableAdmissionTypes,
   getAvailableDepartments,
   getAvailableMajorTracks,
   getAvailableMajors,
+  getChecklistItems,
   getCollegeById,
   getColleges,
-  getCurriculumCourses,
   getDepartmentById,
   getGraduationMetadata,
   getInputCreditKeys,
-  getRequirementSummary,
+  getMutuallyExclusiveCourseIds,
+  getSourcesForSelection,
+  getVerifiedCurriculumAvailability,
+  getVerifiedCurriculumCourses,
   isCompleteSelection,
   resolveRequirement,
-  type AdmissionType,
+  summarizeSelectedCourses,
+  type ChecklistAnswer,
   type CompletedCreditInput,
   type CreditCategoryKey,
-  type CurriculumCourse,
-  type CurriculumCourseCategory,
+  type EvaluationStatus,
   type GraduationSelection,
-  type MajorTrack,
+  type VerifiedCurriculumCourse,
 } from "@/lib/graduation";
-import {
-  buildLectureMatchMap,
-  getLectureMatches,
-  type LectureTimetableDataset,
-} from "@/lib/lecture-timetable";
-import {
-  ChoiceButton,
-  CourseModal,
-  CourseSelectCard,
-  EmptyState,
-  ResultBanner,
-  Section,
-  StepIndicator,
-  SummaryRow,
-} from "@/app/features/graduation/components";
-import { Modal } from "@/app/components/Modal";
-import {
-  CURRICULUM_CATEGORIES,
-  filterCurriculumCourses,
-  getActiveStep,
-  getCurriculumSummary,
-  getEffectiveCurriculumCredits,
-  getRequiredCredit,
-  sumCurriculumCredits,
-} from "@/app/features/graduation/utils";
+
+const STORAGE_KEY = "syu-campus-graduation-self-check-v2";
+const MOBILE_DESKTOP_NOTICE_KEY =
+  "syu-campus-graduation-mobile-desktop-notice-v1";
 
 const INITIAL_SELECTION: GraduationSelection = {
+  admissionYear: "",
   collegeId: "",
   departmentId: "",
   majorId: undefined,
@@ -68,62 +50,36 @@ const INITIAL_SELECTION: GraduationSelection = {
   majorTrack: "",
 };
 
-interface CustomCourse {
-  id: string;
-  name: string;
-  credits: number;
+interface SavedState {
+  selection: GraduationSelection;
+  completedCredits: CompletedCreditInput;
+  selectedCourseIds?: string[];
+  checklistAnswers: Record<string, ChecklistAnswer>;
+  plans: Record<string, string>;
 }
-
-type CourseModalType = "curriculum" | null;
-type PendingResetAction = null | (() => void);
-
-type LectureApiResponse = {
-  success: boolean;
-  data?: LectureTimetableDataset;
-};
 
 export default function GraduationPage() {
   const metadata = getGraduationMetadata();
   const colleges = getColleges();
-
   const [selection, setSelection] =
     useState<GraduationSelection>(INITIAL_SELECTION);
   const [completedCredits, setCompletedCredits] =
     useState<CompletedCreditInput>({});
-  const [selectedCurriculumCourseIds, setSelectedCurriculumCourseIds] = useState<
-    string[]
-  >([]);
-  const [customMajorRequiredCourses, setCustomMajorRequiredCourses] = useState<
-    CustomCourse[]
-  >([]);
-  const [courseModal, setCourseModal] = useState<CourseModalType>(null);
-  const [activeCourseCategory, setActiveCourseCategory] =
-    useState<CurriculumCourseCategory>("전필");
-  const [courseSearch, setCourseSearch] = useState("");
-  const [customCourseName, setCustomCourseName] = useState("");
-  const [customCourseCredits, setCustomCourseCredits] = useState("");
-  const [customCourseOpen, setCustomCourseOpen] = useState(false);
-  const [pendingResetAction, setPendingResetAction] =
-    useState<PendingResetAction>(null);
-  const [lectureTimetable, setLectureTimetable] =
-    useState<LectureTimetableDataset | null>(null);
-  const [lectureLoading, setLectureLoading] = useState(false);
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+  const [checklistAnswers, setChecklistAnswers] = useState<
+    Record<string, ChecklistAnswer>
+  >({});
+  const [plans, setPlans] = useState<Record<string, string>>({});
+  const [restored, setRestored] = useState(false);
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
 
-  const selectedCollege = selection.collegeId
-    ? getCollegeById(selection.collegeId)
-    : undefined;
   const departments = selection.collegeId
     ? getAvailableDepartments(selection.collegeId)
     : [];
-  const selectedDepartment = selection.departmentId
-    ? getDepartmentById(selection.departmentId)
-    : undefined;
   const majors = selection.departmentId
     ? getAvailableMajors(selection.departmentId)
     : [];
-  const selectedMajor = selection.majorId
-    ? majors.find((major) => major.id === selection.majorId)
-    : undefined;
   const admissionTypes = selection.departmentId
     ? getAvailableAdmissionTypes(selection.departmentId, selection.majorId)
     : [];
@@ -135,282 +91,277 @@ export default function GraduationPage() {
           selection.admissionType,
         )
       : [];
-
-  const requirement = useMemo(
-    () => resolveRequirement(selection),
-    [selection],
+  const selectedCollege = getCollegeById(selection.collegeId);
+  const selectedDepartment = getDepartmentById(selection.departmentId);
+  const selectedMajor = majors.find((major) => major.id === selection.majorId);
+  const requirement = useMemo(() => resolveRequirement(selection), [selection]);
+  const creditKeys = requirement ? getInputCreditKeys(requirement) : [];
+  const checklistItems = getChecklistItems(requirement, selection.departmentId);
+  const sources = getSourcesForSelection(selection.departmentId);
+  const curriculumAvailability = getVerifiedCurriculumAvailability(
+    selection.departmentId,
+    selection.admissionYear,
   );
-  const curriculumCourses = selection.departmentId
-    ? getCurriculumCourses(selection.departmentId, selection.majorId)
-    : [];
-  const lectureMatchMap = useMemo(
-    () => buildLectureMatchMap(lectureTimetable?.courses ?? []),
-    [lectureTimetable],
+  const verifiedCourses = getVerifiedCurriculumCourses(
+    selection.departmentId,
+    selection.admissionYear,
   );
-  const getCourseCredits = (course: CurriculumCourse) =>
-    getEffectiveCurriculumCredits(
-      course,
-      lectureMatchMap,
-      selectedDepartment?.name,
-    );
-  const selectedCurriculumCourses = curriculumCourses.filter((course) =>
-    selectedCurriculumCourseIds.includes(course.id),
+  const selectedCourseSummary = summarizeSelectedCourses(
+    verifiedCourses,
+    selectedCourseIds,
   );
-  const selectedRequiredLiberalCredits = sumCurriculumCredits(
-    selectedCurriculumCourses,
-    ["교필"],
-    getCourseCredits,
+  const evaluation = evaluateGraduation(
+    requirement,
+    completedCredits,
+    checklistAnswers,
+    selection,
   );
-  const selectedAreaLiberalCredits = sumCurriculumCredits(
-    selectedCurriculumCourses,
-    ["교선"],
-    getCourseCredits,
-  );
-  const selectedMajorRequiredCredits = sumCurriculumCredits(
-    selectedCurriculumCourses,
-    ["전필"],
-    getCourseCredits,
-  );
-  const selectedMajorElectiveCredits = sumCurriculumCredits(
-    selectedCurriculumCourses,
-    ["전선"],
-    getCourseCredits,
-  );
-  const selectedMajorCredits =
-    selectedMajorRequiredCredits +
-    selectedMajorElectiveCredits +
-    customMajorRequiredCourses.reduce((sum, course) => sum + course.credits, 0);
-  const calculatedCredits = useMemo(
-    () => ({
-      ...completedCredits,
-      requiredLiberal: selectedRequiredLiberalCredits,
-      areaLiberal: selectedAreaLiberalCredits,
-      majorTotal:
-        (completedCredits.majorTotal ?? 0) + selectedMajorCredits,
-    }),
-    [
-      completedCredits,
-      selectedAreaLiberalCredits,
-      selectedMajorCredits,
-      selectedRequiredLiberalCredits,
-    ],
-  );
-  const evaluation = useMemo(
-    () => evaluateGraduation(requirement, calculatedCredits, selection),
-    [calculatedCredits, requirement, selection],
-  );
-  const requirementSummary = getRequirementSummary(requirement);
-  const inputCreditKeys = requirement ? getInputCreditKeys(requirement) : [];
-  const autoTotalCredits = calculateAutoTotalCredits(calculatedCredits);
-  const activeStep = getActiveStep(selection, autoTotalCredits);
   const selectionComplete = isCompleteSelection(selection);
-  const visibleInputCreditKeys = inputCreditKeys.filter(
-    (key) => key !== "requiredLiberal" && key !== "areaLiberal",
-  );
-  const curriculumSummary = getCurriculumSummary(
-    curriculumCourses,
-    selectedCurriculumCourseIds,
-    getCourseCredits,
-  );
-  const visibleCurriculumCourses = filterCurriculumCourses(
-    curriculumCourses,
-    activeCourseCategory,
-    courseSearch,
-    lectureMatchMap,
-    selectedDepartment?.name,
-  );
-  const hasEnteredData =
-    Object.values(completedCredits).some((value) => value != null && value > 0) ||
-    selectedCurriculumCourseIds.length > 0 ||
-    customMajorRequiredCourses.length > 0;
-
-  const runWithResetConfirmation = (action: () => void) => {
-    if (hasEnteredData) {
-      setPendingResetAction(() => action);
-      return;
-    }
-
-    action();
-  };
 
   useEffect(() => {
-    let ignore = false;
-
-    async function loadLectureTimetable() {
-      setLectureLoading(true);
-      try {
-        const response = await fetch("/api/lecture/timetable");
-        const payload = (await response.json()) as LectureApiResponse;
-        if (!ignore && payload.success && payload.data) {
-          setLectureTimetable(payload.data);
-        }
-      } catch {
-        if (!ignore) setLectureTimetable({ courses: [] });
-      } finally {
-        if (!ignore) setLectureLoading(false);
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const saved = JSON.parse(raw) as SavedState;
+        setSelection(saved.selection);
+        setCompletedCredits(saved.completedCredits);
+        setSelectedCourseIds(saved.selectedCourseIds ?? []);
+        setChecklistAnswers(saved.checklistAnswers);
+        setPlans(saved.plans);
       }
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setRestored(true);
     }
-
-    loadLectureTimetable();
-
-    return () => {
-      ignore = true;
-    };
   }, []);
 
+  useEffect(() => {
+    if (!restored) return;
+    const saved: SavedState = {
+      selection,
+      completedCredits,
+      selectedCourseIds,
+      checklistAnswers,
+      plans,
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  }, [
+    checklistAnswers,
+    completedCredits,
+    plans,
+    restored,
+    selectedCourseIds,
+    selection,
+  ]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const dismissed =
+      window.sessionStorage.getItem(MOBILE_DESKTOP_NOTICE_KEY) === "dismissed";
+
+    if (mediaQuery.matches && !dismissed) {
+      setShowMobileNotice(true);
+    }
+  }, []);
+
+  const resetProgress = () => {
+    setCompletedCredits({});
+    setSelectedCourseIds([]);
+    setChecklistAnswers({});
+    setPlans({});
+  };
+
+  const updateSelection = (next: Partial<GraduationSelection>) => {
+    setSelection((current) => ({ ...current, ...next }));
+    resetProgress();
+  };
+
   const handleCollegeSelect = (collegeId: string) => {
-    runWithResetConfirmation(() => {
-      setSelection({
-        ...INITIAL_SELECTION,
-        collegeId,
-      });
-      setCompletedCredits({});
-      resetCourseSelections();
+    setSelection({
+      ...INITIAL_SELECTION,
+      admissionYear: selection.admissionYear,
+      collegeId,
     });
+    resetProgress();
   };
 
   const handleDepartmentSelect = (departmentId: string) => {
-    runWithResetConfirmation(() => {
-      setSelection((prev) => ({
-        ...prev,
-        departmentId,
-        majorId: undefined,
-        admissionType: "",
-        majorTrack: "",
-      }));
-      setCompletedCredits({});
-      resetCourseSelections();
+    updateSelection({
+      departmentId,
+      majorId: undefined,
+      admissionType: "",
+      majorTrack: "",
     });
   };
 
-  const handleMajorSelect = (majorId: string | undefined) => {
-    runWithResetConfirmation(() => {
-      setSelection((prev) => ({
-        ...prev,
-        majorId,
-        admissionType: "",
-        majorTrack: "",
-      }));
-      setCompletedCredits({});
-      resetCourseSelections();
-    });
+  const handleAdmissionYearChange = (value: string) => {
+    updateSelection({ admissionYear: value.replace(/\D/g, "").slice(0, 4) });
   };
 
-  const handleAdmissionTypeSelect = (admissionType: AdmissionType) => {
-    runWithResetConfirmation(() => {
-      setSelection((prev) => ({
-        ...prev,
-        admissionType,
-        majorTrack: "",
-      }));
-      setCompletedCredits({});
-      resetCourseSelections();
-    });
+  const handleMobileContinue = () => {
+    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    setShowMobileNotice(false);
   };
 
-  const handleMajorTrackSelect = (majorTrack: MajorTrack) => {
-    setSelection((prev) => ({
-      ...prev,
-      majorTrack,
-    }));
-    setCompletedCredits({});
-    resetCourseSelections();
-  };
+  const handleMobileBack = () => {
+    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    setShowMobileNotice(false);
 
-  const handleCreditChange = (
-    key: CreditCategoryKey | "totalCredits",
-    rawValue: string,
-  ) => {
-    const value = rawValue === "" ? undefined : Number(rawValue);
-    setCompletedCredits((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    window.location.href = "/academic";
   };
 
   const handleReset = () => {
-    runWithResetConfirmation(() => {
-      setSelection(INITIAL_SELECTION);
-      setCompletedCredits({});
-      resetCourseSelections();
-    });
+    setSelection(INITIAL_SELECTION);
+    resetProgress();
+    window.localStorage.removeItem(STORAGE_KEY);
   };
 
-  const resetCourseSelections = () => {
-    setSelectedCurriculumCourseIds([]);
-    setCustomMajorRequiredCourses([]);
-    setCourseModal(null);
-    setActiveCourseCategory("전필");
-    setCourseSearch("");
-    setCustomCourseName("");
-    setCustomCourseCredits("");
-    setCustomCourseOpen(false);
-  };
-
-  const toggleCurriculumCourse = (courseId: string) => {
-    setSelectedCurriculumCourseIds((prev) =>
-      prev.includes(courseId)
-        ? prev.filter((id) => id !== courseId)
-        : [...prev, courseId],
+  const handleCourseToggle = (courseId: string) => {
+    const alreadySelected = selectedCourseIds.includes(courseId);
+    const mutuallyExclusiveIds = getMutuallyExclusiveCourseIds(
+      verifiedCourses,
+      courseId,
     );
+    const nextIds = alreadySelected
+      ? selectedCourseIds.filter((id) => id !== courseId)
+      : [
+          ...selectedCourseIds.filter(
+            (id) => !mutuallyExclusiveIds.includes(id),
+          ),
+          courseId,
+        ];
+    const summary = summarizeSelectedCourses(verifiedCourses, nextIds);
+
+    setSelectedCourseIds(nextIds);
+    setCompletedCredits((current) => ({
+      ...current,
+      ...summary.suggestedCredits,
+    }));
   };
 
-  const openCurriculumModal = (category: CurriculumCourseCategory) => {
-    setActiveCourseCategory(category);
-    setCourseSearch("");
-    setCourseModal("curriculum");
-  };
-
-  const handleAddCustomMajorCourse = () => {
-    const name = customCourseName.trim();
-    const credits = Number(customCourseCredits);
-    if (!name || Number.isNaN(credits) || credits <= 0) return;
-
-    setCustomMajorRequiredCourses((prev) => [
-      ...prev,
-      {
-        id: `major-required-${Date.now()}`,
-        name,
-        credits,
-      },
-    ]);
-    setCustomCourseName("");
-    setCustomCourseCredits("");
-  };
-
-  const handleRemoveCustomMajorCourse = (courseId: string) => {
-    setCustomMajorRequiredCourses((prev) =>
-      prev.filter((course) => course.id !== courseId),
-    );
-  };
-  const handleConfirmReset = () => {
-    pendingResetAction?.();
-    setPendingResetAction(null);
+  const handleCourseSelectionReset = () => {
+    setSelectedCourseIds([]);
+    setCompletedCredits((current) => ({
+      ...current,
+      totalCredits: 0,
+      requiredLiberal: 0,
+      majorRequired: 0,
+      majorElective: 0,
+      majorTotal: 0,
+    }));
   };
 
   return (
-    <Container className="pb-safe pt-6 md:pt-8 max-w-6xl">
-      <div className="mb-8">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Badge color="blue">2025 요람 기준</Badge>
-          <Badge color="gray">상세 계산기</Badge>
+    <Container size="full" className="max-w-[88rem] pb-safe pt-6 md:pt-8">
+      {showMobileNotice && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="graduation-mobile-notice-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/45 px-4 py-6"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+            <Badge color="yellow">데스크톱 권장</Badge>
+            <h2
+              id="graduation-mobile-notice-title"
+              className="mt-3 text-lg font-bold text-neutral-900"
+            >
+              졸업요건 자가진단은 큰 화면이 더 편합니다
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">
+              과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도
+              모바일에서 계속 사용할 수 있습니다.
+            </p>
+            <div className="mt-5 grid gap-2">
+              <button
+                type="button"
+                onClick={handleMobileContinue}
+                className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+              >
+                모바일로 계속 사용하기
+              </button>
+              <button
+                type="button"
+                onClick={handleMobileBack}
+                className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              >
+                이전 페이지로 돌아가기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <header className="mb-8">
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Badge color="blue">자가진단</Badge>
+          <Badge color="yellow">참고용</Badge>
+          <Badge color="gray">마지막 검증 {metadata.lastVerifiedAt}</Badge>
         </div>
         <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
-          졸업요건 확인
+          졸업요건 자가진단
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600 sm:text-base">
-          {metadata.sourceTitle}을 기준으로 조건별 요구학점과 입력한
-          이수학점을 비교합니다. 최종 졸업 판정은 SU-WINGs와 학과사무실에서
-          확인하세요.
+        <p className="mt-3 text-sm leading-6 text-neutral-600 sm:text-base">
+          입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의
+          이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이
+          아닙니다.
         </p>
+      </header>
+
+      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="max-w-5xl">
+            현재 학점 기준은 {metadata.sourceTitle}을 구조화한 참고값입니다.
+            자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직
+            과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시
+            확인하세요.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsContactOpen(true)}
+            className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            잘못된 정보 문의하기
+          </button>
+        </div>
       </div>
 
-      <StepIndicator activeStep={activeStep} />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
+        <main className="space-y-6">
+          <Section
+            title="1. 내 조건 선택"
+            description="입학년도부터 순서대로 선택하세요. 조건을 바꾸면 입력한 진단 내용은 초기화됩니다."
+          >
+            <FieldLabel label="입학년도">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                value={selection.admissionYear}
+                onChange={(event) =>
+                  handleAdmissionYearChange(event.target.value)
+                }
+                placeholder="예: 2024"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+              />
+              <p className="mt-2 text-xs leading-5 text-neutral-500">
+                학번 대신 입학 연도를 입력하세요. 예: 2024년 입학이면
+                <span className="font-semibold text-neutral-700"> 2024</span>
+              </p>
+            </FieldLabel>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
-          <Section title="1. 대학 선택" description="소속 대학을 선택하세요.">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <ChoiceGroup
+              label="대학"
+              emptyMessage="입학년도를 먼저 선택하세요."
+              disabled={!selection.admissionYear}
+            >
               {colleges.map((college) => (
                 <ChoiceButton
                   key={college.id}
@@ -419,319 +370,224 @@ export default function GraduationPage() {
                   onClick={() => handleCollegeSelect(college.id)}
                 />
               ))}
-            </div>
+            </ChoiceGroup>
+
+            <ChoiceGroup
+              label="학과"
+              emptyMessage="대학을 먼저 선택하세요."
+              disabled={departments.length === 0}
+            >
+              {departments.map((department) => (
+                <ChoiceButton
+                  key={department.id}
+                  selected={selection.departmentId === department.id}
+                  title={department.name}
+                  description={
+                    department.majors?.length ? "세부전공 선택 필요" : undefined
+                  }
+                  onClick={() => handleDepartmentSelect(department.id)}
+                />
+              ))}
+            </ChoiceGroup>
+
+            {majors.length > 0 && (
+              <ChoiceGroup label="세부전공">
+                {majors.map((major) => (
+                  <ChoiceButton
+                    key={major.id}
+                    selected={selection.majorId === major.id}
+                    title={major.name}
+                    onClick={() =>
+                      updateSelection({
+                        majorId: major.id,
+                        admissionType: "",
+                        majorTrack: "",
+                      })
+                    }
+                  />
+                ))}
+              </ChoiceGroup>
+            )}
+
+            <ChoiceGroup
+              label="입학유형"
+              emptyMessage="학과와 세부전공을 먼저 선택하세요."
+              disabled={
+                !selection.departmentId ||
+                (majors.length > 0 && !selection.majorId)
+              }
+            >
+              {admissionTypes.map((type) => (
+                <ChoiceButton
+                  key={type}
+                  selected={selection.admissionType === type}
+                  title={ADMISSION_TYPE_LABELS[type]}
+                  onClick={() =>
+                    updateSelection({
+                      admissionType: type,
+                      majorTrack: "",
+                    })
+                  }
+                />
+              ))}
+            </ChoiceGroup>
+
+            <ChoiceGroup
+              label="전공형태"
+              emptyMessage="입학유형을 먼저 선택하세요."
+              disabled={!selection.admissionType}
+            >
+              {majorTracks.map((track) => (
+                <ChoiceButton
+                  key={track}
+                  selected={selection.majorTrack === track}
+                  title={MAJOR_TRACK_LABELS[track]}
+                  onClick={() => updateSelection({ majorTrack: track })}
+                />
+              ))}
+            </ChoiceGroup>
           </Section>
 
           <Section
-            title="2. 학과/전공 선택"
-            description={
-              selectedCollege
-                ? `${selectedCollege.name} 내 학과를 선택하세요.`
-                : "대학을 먼저 선택하면 학과 목록이 표시됩니다."
-            }
+            title="2. 검증 과목 선택"
+            description="원문 PDF 전체 페이지 검증이 완료된 학과는 입학년도와 관계없이 현재 검증된 2025년 교육과정을 참고 기준으로 과목 선택 합계를 지원합니다."
           >
-            {departments.length === 0 ? (
-              <EmptyState message="대학을 선택하면 학과 목록이 나타납니다." />
+            {!selection.departmentId || !selection.admissionYear ? (
+              <EmptyState message="입학년도와 학과를 선택하면 검증 과목 지원 여부가 표시됩니다." />
+            ) : !curriculumAvailability.available ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                {curriculumAvailability.reason}
+              </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {departments.map((department) => (
-                  <ChoiceButton
-                    key={department.id}
-                    selected={selection.departmentId === department.id}
-                    title={department.name}
-                    description={
-                      department.majors?.length
-                        ? "세부전공 선택 필요"
-                        : "세부전공 없음"
+              <div className="space-y-4">
+                <CurriculumCourseSelector
+                  courses={verifiedCourses}
+                  selectedCourseIds={selectedCourseIds}
+                  summary={selectedCourseSummary}
+                  onToggle={handleCourseToggle}
+                  onReset={handleCourseSelectionReset}
+                />
+              </div>
+            )}
+          </Section>
+
+          <Section
+            title="3. 학점 입력"
+            description="과목 선택으로 계산된 값은 참고용입니다. SU-WINGs의 인정학점, 교양 영역, 자유선택 학점을 확인해 직접 보정하세요."
+          >
+            {!requirement ? (
+              <EmptyState message="내 조건을 모두 선택하면 입력할 학점 항목이 표시됩니다." />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {creditKeys.map((key) => (
+                  <CreditInput
+                    key={key}
+                    creditKey={key}
+                    required={
+                      key === "totalCredits"
+                        ? requirement.totalCredits
+                        : Number(requirement.categories[key] ?? 0)
                     }
-                    onClick={() => handleDepartmentSelect(department.id)}
+                    value={completedCredits[key]}
+                    onChange={(value) =>
+                      setCompletedCredits((current) => ({
+                        ...current,
+                        [key]: value,
+                      }))
+                    }
                   />
                 ))}
               </div>
             )}
-
-            {selection.departmentId && majors.length > 0 && (
-              <div className="mt-5 border-t border-neutral-200 pt-5">
-                <p className="mb-3 text-sm font-semibold text-neutral-900">
-                  세부전공
-                </p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {majors.map((major) => (
-                    <ChoiceButton
-                      key={major.id}
-                      selected={selection.majorId === major.id}
-                      title={major.name}
-                      onClick={() => handleMajorSelect(major.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
           </Section>
 
           <Section
-            title="3. 입학유형과 전공형태"
-            description="선택 가능한 조합만 표시합니다. 근거가 불명확한 조합은 자동 계산에서 제외했습니다."
+            title="4. 비학점 조건 체크"
+            description="시험, 채플, 실습, 인증 등은 시스템이 자동 확인할 수 없습니다. 직접 확인한 상태를 기록하세요."
           >
-            {!selection.departmentId ||
-            (majors.length > 0 && !selection.majorId) ? (
-              <EmptyState message="학과와 필요한 경우 세부전공을 먼저 선택하세요." />
+            {checklistItems.length === 0 ? (
+              <EmptyState message="내 조건을 모두 선택하면 확인할 체크리스트가 표시됩니다." />
             ) : (
-              <div className="space-y-5">
-                <div>
-                  <p className="mb-3 text-sm font-semibold text-neutral-900">
-                    입학유형
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {admissionTypes.map((admissionType) => (
-                      <ChoiceButton
-                        key={admissionType}
-                        selected={selection.admissionType === admissionType}
-                        title={ADMISSION_TYPE_LABELS[admissionType]}
-                        onClick={() =>
-                          handleAdmissionTypeSelect(admissionType)
-                        }
-                      />
-                    ))}
-                  </div>
-                  {admissionTypes.length === 0 && (
-                    <EmptyState message="선택한 학과/전공에 연결된 입학유형 데이터가 없습니다." />
-                  )}
-                </div>
-
-                <div>
-                  <p className="mb-3 text-sm font-semibold text-neutral-900">
-                    전공형태
-                  </p>
-                  {selection.admissionType ? (
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {majorTracks.map((majorTrack) => (
-                        <ChoiceButton
-                          key={majorTrack}
-                          selected={selection.majorTrack === majorTrack}
-                          title={MAJOR_TRACK_LABELS[majorTrack]}
-                          onClick={() => handleMajorTrackSelect(majorTrack)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <EmptyState message="입학유형을 먼저 선택하세요." />
-                  )}
-                </div>
+              <div className="space-y-4">
+                {checklistItems.map((item) => (
+                  <ChecklistCard
+                    key={item.id}
+                    label={item.label}
+                    description={item.description}
+                    answer={checklistAnswers[item.id]}
+                    plan={plans[item.id] ?? ""}
+                    onAnswer={(answer) =>
+                      setChecklistAnswers((current) => ({
+                        ...current,
+                        [item.id]: answer,
+                      }))
+                    }
+                    onPlan={(plan) =>
+                      setPlans((current) => ({ ...current, [item.id]: plan }))
+                    }
+                  />
+                ))}
               </div>
             )}
           </Section>
 
           <Section
-            title="4. 이수학점 입력"
-            description="선택한 학과의 과목을 검색해 선택하고, 부족한 학점은 SU-WINGs 기준으로 추가 입력하세요."
-          >
-            {!requirement ? (
-              <EmptyState message="조건을 모두 선택하면 입력 항목이 표시됩니다." />
-            ) : (
-              <div className="space-y-5">
-                <div className="grid gap-3 md:grid-cols-2">
-                  {CURRICULUM_CATEGORIES.map((category) => {
-                    const summary = curriculumSummary[category];
-                    const required =
-                      category === "교필"
-                        ? getRequiredCredit(requirementSummary, "requiredLiberal")
-                        : category === "교선"
-                          ? getRequiredCredit(requirementSummary, "areaLiberal")
-                          : 0;
-                    return (
-                      <CourseSelectCard
-                        key={category}
-                        title={CURRICULUM_CATEGORY_LABELS[category]}
-                        description={`${selectedDepartment?.name ?? "선택 학과"}의 ${CURRICULUM_CATEGORY_LABELS[category]} 과목을 선택하세요.`}
-                        credits={summary.selectedCredits}
-                        required={required}
-                        count={summary.selectedCount}
-                        onClick={() => openCurriculumModal(category)}
-                        optional={required === 0}
-                      />
-                    );
-                  })}
-                </div>
-
-                {curriculumCourses.length === 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
-                    선택한 학과의 과목 데이터가 아직 연결되지 않았습니다. 아래
-                    입력란으로 이수학점을 직접 입력하세요.
-                  </div>
-                )}
-
-                <div className="rounded-lg border border-primary-100 bg-primary-50 p-4">
-                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-primary-900">
-                        총 취득학점 자동 계산
-                      </p>
-                      <p className="text-xs text-primary-700">
-                        교양, 전공, 자유선택 등 아래 입력값을 합산합니다.
-                      </p>
-                    </div>
-                    <p className="text-2xl font-bold text-primary-700">
-                      {autoTotalCredits}학점
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {visibleInputCreditKeys.map((key) => (
-                    <label key={key} className="block">
-                      <span className="mb-1.5 block text-sm font-medium text-neutral-800">
-                        {key === "majorTotal"
-                          ? "주전공 추가 이수학점"
-                          : CREDIT_CATEGORY_LABELS[key]}
-                      </span>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min="0"
-                          inputMode="decimal"
-                          value={completedCredits[key] ?? ""}
-                          onChange={(event) =>
-                            handleCreditChange(key, event.target.value)
-                          }
-                          className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 pr-12 text-sm outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-                          placeholder="0"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500">
-                          학점
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {key === "majorTotal"
-                          ? `선택한 전공 과목(${selectedMajorCredits}학점)을 포함해 요구 ${getRequiredCredit(
-                              requirementSummary,
-                              key,
-                            )}학점`
-                          : `요구 ${getRequiredCredit(requirementSummary, key)}학점`}
-                      </p>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Section>
-
-          <Section
-            title="5. 판정 결과"
-            description="학점은 자동 계산하고, 시험·실습·인증은 확인 필요로 분리합니다."
+            title="5. 진단 결과"
+            description="학점과 체크리스트를 분리해서 보여줍니다."
           >
             {!selectionComplete || !requirement ? (
-              <EmptyState message="조건 선택과 이수학점 입력을 완료하면 결과가 표시됩니다." />
+              <EmptyState message="내 조건을 모두 선택하면 진단 결과가 표시됩니다." />
             ) : (
               <div className="space-y-5">
                 <ResultBanner status={evaluation.overallStatus} />
-                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-600">
-                  이 결과는 입력값과 제공 데이터 기준의 참고용 계산입니다. 공식
-                  졸업 판정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <SummaryMetric
+                    label="전체 확인 항목"
+                    value={evaluation.totalCheckCount}
+                  />
+                  <SummaryMetric
+                    label="충족·해당없음"
+                    value={evaluation.satisfiedCount}
+                    color="green"
+                  />
+                  <SummaryMetric
+                    label="남은 확인"
+                    value={
+                      evaluation.totalCheckCount - evaluation.satisfiedCount
+                    }
+                    color="yellow"
+                  />
                 </div>
 
-                <div className="hidden overflow-hidden rounded-lg border border-neutral-200 sm:block">
-                  <div className="grid grid-cols-[1fr_100px_100px_100px] bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600">
-                    <span>항목</span>
-                    <span className="text-right">요구</span>
-                    <span className="text-right">이수</span>
-                    <span className="text-right">부족</span>
-                  </div>
+                <div className="space-y-2">
                   {evaluation.creditItems.map((item) => (
                     <div
                       key={item.key}
-                      className="grid grid-cols-[1fr_100px_100px_100px] items-center border-t border-neutral-100 px-3 py-3 text-sm"
+                      className="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-3 text-sm"
                     >
-                      <span className="font-medium text-neutral-900">
-                        {item.label}
-                      </span>
-                      <span className="text-right text-neutral-600">
-                        {item.required}
-                      </span>
-                      <span className="text-right text-neutral-600">
-                        {item.completed}
-                      </span>
-                      <span
-                        className={clsx(
-                          "text-right font-semibold",
-                          item.shortage > 0
-                            ? "text-red-600"
-                            : "text-green-700",
-                        )}
-                      >
-                        {item.shortage}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-3 sm:hidden">
-                  {evaluation.creditItems.map((item) => (
-                    <div
-                      key={item.key}
-                      className="rounded-lg border border-neutral-200 p-4"
-                    >
-                      <div className="flex items-center justify-between gap-3">
+                      <div>
                         <p className="font-semibold text-neutral-900">
                           {item.label}
                         </p>
-                        <Badge
-                          color={item.shortage > 0 ? "red" : "green"}
-                          className="shrink-0"
-                        >
-                          {item.shortage > 0 ? "부족" : "충족"}
-                        </Badge>
+                        <p className="mt-0.5 text-xs text-neutral-500">
+                          요구 {item.required} / 입력 {item.completed}
+                        </p>
                       </div>
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
-                        <div className="rounded bg-neutral-50 p-2">
-                          <p className="text-xs text-neutral-500">요구</p>
-                          <p className="font-bold text-neutral-900">
-                            {item.required}
-                          </p>
-                        </div>
-                        <div className="rounded bg-neutral-50 p-2">
-                          <p className="text-xs text-neutral-500">이수</p>
-                          <p className="font-bold text-neutral-900">
-                            {item.completed}
-                          </p>
-                        </div>
-                        <div className="rounded bg-neutral-50 p-2">
-                          <p className="text-xs text-neutral-500">부족</p>
-                          <p
-                            className={clsx(
-                              "font-bold",
-                              item.shortage > 0
-                                ? "text-red-600"
-                                : "text-green-700",
-                            )}
-                          >
-                            {item.shortage}
-                          </p>
-                        </div>
-                      </div>
+                      <Badge color={item.shortage > 0 ? "red" : "green"}>
+                        {item.shortage > 0
+                          ? `${item.shortage}학점 부족`
+                          : "충족"}
+                      </Badge>
                     </div>
                   ))}
                 </div>
 
-                {evaluation.conditionItems.length > 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                    <p className="mb-2 text-sm font-semibold text-amber-900">
-                      확인 필요 조건
-                    </p>
-                    <ul className="space-y-1.5 text-sm text-amber-800">
-                      {evaluation.conditionItems.map((condition) => (
-                        <li key={condition.id}>- {condition.label}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
                 {evaluation.warnings.length > 0 && (
                   <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                    <p className="mb-2 text-sm font-semibold text-blue-900">
-                      학과 확인 안내
+                    <p className="text-sm font-semibold text-blue-900">
+                      추가 확인 안내
                     </p>
-                    <ul className="space-y-1.5 text-sm text-blue-800">
+                    <ul className="mt-2 space-y-1.5 text-sm leading-6 text-blue-800">
                       {evaluation.warnings.map((warning) => (
                         <li key={warning}>- {warning}</li>
                       ))}
@@ -741,15 +597,59 @@ export default function GraduationPage() {
               </div>
             )}
           </Section>
-        </div>
+
+          <Section
+            title="공식 근거"
+            description="진단에 사용한 자료의 범위와 마지막 확인일입니다."
+          >
+            <div className="space-y-3">
+              {sources.map((source) => (
+                <div
+                  key={source.id}
+                  className="rounded-lg border border-neutral-200 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="font-semibold text-neutral-900">
+                        {source.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-neutral-500">
+                        {source.scope}
+                      </p>
+                    </div>
+                    <Badge color="gray">{source.verifiedAt} 확인</Badge>
+                  </div>
+                  {source.url && (
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-block text-sm font-semibold text-primary-700 hover:underline"
+                    >
+                      공식 페이지 열기
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Section>
+        </main>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card hover={false} className="border border-neutral-200">
-            <h2 className="text-lg font-bold text-neutral-900">선택 요약</h2>
+            <h2 className="text-lg font-bold text-neutral-900">내 조건</h2>
             <div className="mt-4 space-y-3 text-sm">
+              <SummaryRow
+                label="입학년도"
+                value={
+                  selection.admissionYear
+                    ? `${selection.admissionYear}년`
+                    : undefined
+                }
+              />
               <SummaryRow label="대학" value={selectedCollege?.name} />
               <SummaryRow label="학과" value={selectedDepartment?.name} />
-              <SummaryRow label="전공" value={selectedMajor?.name || "-"} />
+              <SummaryRow label="전공" value={selectedMajor?.name} />
               <SummaryRow
                 label="입학유형"
                 value={
@@ -767,12 +667,11 @@ export default function GraduationPage() {
                 }
               />
             </div>
-
-            <div className="mt-5 flex gap-2">
+            <div className="mt-5 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={handleReset}
-                className="flex-1 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
               >
                 초기화
               </button>
@@ -780,313 +679,480 @@ export default function GraduationPage() {
                 type="button"
                 onClick={() => window.print()}
                 disabled={!requirement}
-                className="flex-1 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
               >
-                참고용 출력
+                출력
               </button>
             </div>
           </Card>
 
           <Card hover={false} className="border border-neutral-200">
-            <h2 className="text-lg font-bold text-neutral-900">요건 요약</h2>
-            {requirementSummary.length === 0 ? (
-              <p className="mt-3 text-sm text-neutral-500">
-                조건을 선택하면 요구학점이 표시됩니다.
-              </p>
-            ) : (
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {requirementSummary.map((item) => (
-                  <div
-                    key={item.key}
-                    className="rounded-lg bg-neutral-50 p-3 text-center"
-                  >
-                    <p className="text-xs text-neutral-500">{item.label}</p>
-                    <p className="mt-1 text-xl font-bold text-primary-700">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h2 className="text-lg font-bold text-neutral-900">진단 원칙</h2>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
+              <li>- 입력하지 않은 항목은 충족으로 보지 않습니다.</li>
+              <li>- 원문 대조가 끝난 확정 과목만 합계에 사용합니다.</li>
+              <li>- 과목 합계는 SU-WINGs 인정학점으로 직접 보정합니다.</li>
+              <li>- 학과별 시험·실습·인증은 직접 확인합니다.</li>
+              <li>- 입력 내용은 현재 브라우저에만 저장됩니다.</li>
+            </ul>
           </Card>
 
-          <Card hover={false} className="border border-neutral-200">
-            <h2 className="text-lg font-bold text-neutral-900">확인 안내</h2>
+          <Card
+            hover={false}
+            className="border border-primary-100 bg-primary-50"
+          >
+            <h2 className="text-lg font-bold text-neutral-900">
+              정보 수정 문의
+            </h2>
             <p className="mt-2 text-sm leading-6 text-neutral-600">
-              이 화면은 {metadata.sourceYear}학년도 요람 기준의 참고용
-              계산기입니다. 최종 졸업 가능 여부는 SU-WINGs와 학과사무실에서
-              확인하세요.
+              오탈자, 학과별 기준 차이, 잘못된 과목 정보가 보이면 바로
+              알려주세요. 확인 후 데이터에 반영하겠습니다.
             </p>
+            <button
+              type="button"
+              onClick={() => setIsContactOpen(true)}
+              className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              잘못된 정보 문의하기
+            </button>
           </Card>
         </aside>
       </div>
 
-      {courseModal === "curriculum" && (
-        <CourseModal
-          title={`${selectedDepartment?.name ?? "학과"} 과목 선택`}
-          onClose={() => setCourseModal(null)}
-        >
-          <div className="sticky -top-4 z-10 mb-4 rounded-lg border border-primary-100 bg-white p-3 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span className="font-semibold text-neutral-900">
-                선택 합계 {curriculumSummary[activeCourseCategory].selectedCredits}
-                학점
-              </span>
-              <span className="text-xs text-neutral-500">
-                {curriculumSummary[activeCourseCategory].selectedCount}개 선택
-              </span>
-            </div>
-          </div>
-
-          <div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs leading-5 text-neutral-600">
-            시간표 API 기준 개설 정보를 함께 표시합니다.
-            {lectureTimetable?.year || lectureTimetable?.semester ? (
-              <span className="ml-1 font-semibold text-neutral-800">
-                {[
-                  lectureTimetable.year ? `${lectureTimetable.year}년` : "",
-                  lectureTimetable.semester,
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-              </span>
-            ) : null}
-            {lectureLoading ? " 불러오는 중..." : ""}
-          </div>
-
-          <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
-            {CURRICULUM_CATEGORIES.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setActiveCourseCategory(category)}
-                className={clsx(
-                  "shrink-0 rounded-lg border px-3 py-2 text-sm font-semibold transition",
-                  activeCourseCategory === category
-                    ? "border-primary-500 bg-primary-50 text-primary-700"
-                    : "border-neutral-200 text-neutral-600 hover:bg-neutral-50",
-                )}
-              >
-                {CURRICULUM_CATEGORY_LABELS[category]}
-                <span className="ml-1 text-xs">
-                  {curriculumSummary[category].selectedCount}/
-                  {curriculumSummary[category].totalCount}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <input
-            type="search"
-            value={courseSearch}
-            onChange={(event) => setCourseSearch(event.target.value)}
-            placeholder="과목명, 학점, 상태 검색"
-            className="mb-4 w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-          />
-
-          <div className="max-h-[50vh] space-y-2 overflow-y-auto pr-1">
-            {visibleCurriculumCourses.length > 0 ? (
-              visibleCurriculumCourses.map((course) => {
-                const checked = selectedCurriculumCourseIds.includes(course.id);
-                const matches = getLectureMatches(
-                  course.name,
-                  lectureMatchMap,
-                  selectedDepartment?.name,
-                );
-                const apiCredit = matches.find(
-                  (match) => match.credits != null,
-                )?.credits;
-                const creditLabel =
-                  course.credits == null
-                    ? apiCredit == null
-                      ? "학점 확인 필요"
-                      : `API ${apiCredit}학점`
-                    : `${course.credits}학점`;
-                const firstMatch = matches[0];
-
-                return (
-                  <label
-                    key={course.id}
-                    className={clsx(
-                      "flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition",
-                      checked
-                        ? "border-primary-400 bg-primary-50"
-                        : "border-neutral-200 hover:border-neutral-300",
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleCurriculumCourse(course.id)}
-                      className="mt-1 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-neutral-900">
-                        {course.name}
-                      </span>
-                      <span className="block text-xs leading-5 text-neutral-500">
-                        {CURRICULUM_CATEGORY_LABELS[course.category]} ·{" "}
-                        {creditLabel}
-                        {course.year && course.semester
-                          ? ` · ${course.year}학년 ${course.semester}학기`
-                          : ""}
-                        {course.reviewStatus === "needsReview"
-                          ? " · 확인 필요"
-                          : ""}
-                      </span>
-                      <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                        <span
-                          className={clsx(
-                            "rounded px-1.5 py-0.5 font-medium",
-                            matches.length > 0
-                              ? "bg-green-50 text-green-700"
-                              : "bg-neutral-100 text-neutral-500",
-                          )}
-                        >
-                          {matches.length > 0
-                            ? `올해 개설 ${matches.length}개`
-                            : "개설 정보 없음"}
-                        </span>
-                        {firstMatch?.completionType && (
-                          <span className="text-neutral-500">
-                            {firstMatch.completionType}
-                          </span>
-                        )}
-                        {firstMatch?.grade && (
-                          <span className="text-neutral-500">
-                            {firstMatch.grade}학년
-                          </span>
-                        )}
-                        {firstMatch?.professor && (
-                          <span className="text-neutral-500">
-                            {firstMatch.professor}
-                          </span>
-                        )}
-                      </span>
-                    </span>
-                  </label>
-                );
-              })
-            ) : (
-              <EmptyState message="검색 조건에 맞는 과목이 없습니다." />
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setCustomCourseOpen((open) => !open)}
-            className="mt-4 w-full rounded-lg border border-neutral-300 px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
-          >
-            직접 입력 {customCourseOpen ? "접기" : "열기"}
-          </button>
-
-          {customCourseOpen && (
-            <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_120px_auto]">
-              <input
-                type="text"
-                value={customCourseName}
-                onChange={(event) => setCustomCourseName(event.target.value)}
-                placeholder="과목명"
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              />
-              <input
-                type="number"
-                min="0"
-                value={customCourseCredits}
-                onChange={(event) => setCustomCourseCredits(event.target.value)}
-                placeholder="학점"
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-              />
-              <button
-                type="button"
-                onClick={handleAddCustomMajorCourse}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700"
-              >
-                추가
-              </button>
-            </div>
-          )}
-
-          {customCourseOpen && (
-            <div className="mt-4 space-y-2">
-              {customMajorRequiredCourses.length === 0 ? (
-                <EmptyState message="추가한 전공필수 과목이 없습니다." />
-              ) : (
-                customMajorRequiredCourses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 p-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-neutral-900">
-                        {course.name}
-                      </p>
-                      <p className="text-xs text-neutral-500">
-                        {course.credits}학점
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCustomMajorCourse(course.id)}
-                      className="shrink-0 rounded border border-neutral-300 px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
-                    >
-                      삭제
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setCourseModal(null)}
-              className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700"
-            >
-              선택 완료
-            </button>
-            <button
-              type="button"
-              onClick={() => setCourseModal(null)}
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 transition hover:bg-neutral-50"
-            >
-              닫기
-            </button>
-          </div>
-        </CourseModal>
-      )}
-
-      <Modal
-        isOpen={Boolean(pendingResetAction)}
-        title="기존 입력을 초기화할까요?"
-        description="이 선택을 바꾸면 입력한 학점과 선택한 과목을 유지할 수 없습니다."
-        onClose={() => setPendingResetAction(null)}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-sm leading-6 text-neutral-600">
-            계속하면 현재 입력값과 과목 선택이 초기화됩니다. 취소하면 지금
-            입력한 내용을 그대로 유지합니다.
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => setPendingResetAction(null)}
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmReset}
-              className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
-            >
-              초기화하고 계속
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+      />
     </Container>
   );
 }
 
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card hover={false} className="border border-neutral-200">
+      <h2 className="text-lg font-bold text-neutral-900">{title}</h2>
+      <p className="mt-1 text-sm leading-6 text-neutral-500">{description}</p>
+      <div className="mt-5">{children}</div>
+    </Card>
+  );
+}
+
+function FieldLabel({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-semibold text-neutral-900">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function ChoiceGroup({
+  label,
+  emptyMessage,
+  disabled = false,
+  children,
+}: {
+  label: string;
+  emptyMessage?: string;
+  disabled?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mt-5 border-t border-neutral-100 pt-5">
+      <p className="mb-3 text-sm font-semibold text-neutral-900">{label}</p>
+      {disabled ? (
+        <EmptyState message={emptyMessage ?? "이전 조건을 먼저 선택하세요."} />
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChoiceButton({
+  selected,
+  title,
+  description,
+  onClick,
+}: {
+  selected: boolean;
+  title: string;
+  description?: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        "rounded-lg border p-3 text-left transition",
+        selected
+          ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
+          : "border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40",
+      )}
+    >
+      <span className="block font-semibold text-neutral-900">{title}</span>
+      {description && (
+        <span className="mt-1 block text-xs text-neutral-500">
+          {description}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function CurriculumCourseSelector({
+  courses,
+  selectedCourseIds,
+  summary,
+  onToggle,
+  onReset,
+}: {
+  courses: VerifiedCurriculumCourse[];
+  selectedCourseIds: string[];
+  summary: ReturnType<typeof summarizeSelectedCourses>;
+  onToggle: (courseId: string) => void;
+  onReset: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toLocaleLowerCase("ko");
+  const filteredCourses = courses.filter(
+    (course) =>
+      !normalizedQuery ||
+      course.name.toLocaleLowerCase("ko").includes(normalizedQuery) ||
+      course.category.toLocaleLowerCase("ko").includes(normalizedQuery),
+  );
+  const groupedCourses = new Map<string, VerifiedCurriculumCourse[]>();
+  for (const course of filteredCourses) {
+    const label = `${course.year}학년 ${course.semester}학기`;
+    groupedCourses.set(label, [...(groupedCourses.get(label) ?? []), course]);
+  }
+  const groups = Array.from(groupedCourses);
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-green-900">
+              원문 대조 완료 과목 {courses.length}개
+            </p>
+            <p className="mt-1 text-xs leading-5 text-green-800">
+              선택한 과목의 합계를 학점 입력란에 반영합니다.
+              재수강·대체과목·편입 인정학점은 SU-WINGs 기준으로 직접 수정하세요.
+              택1 및 동일 과목의 양 학기 개설분은 하나만 선택됩니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onReset}
+            disabled={selectedCourseIds.length === 0}
+            className="rounded-lg border border-green-300 bg-white px-3 py-2 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            과목 선택 초기화
+          </button>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <CourseSummaryMetric
+            label="선택 과목"
+            value={summary.courseCount}
+            unit="개"
+          />
+          <CourseSummaryMetric label="선택 학점" value={summary.totalCredits} />
+          <CourseSummaryMetric
+            label="교양필수"
+            value={summary.categoryCredits["교필"] ?? 0}
+          />
+          <CourseSummaryMetric
+            label="주전공"
+            value={
+              (summary.categoryCredits["전필"] ?? 0) +
+              (summary.categoryCredits["전선"] ?? 0)
+            }
+          />
+        </div>
+      </div>
+
+      {summary.conflicts.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <p className="font-semibold">중복 선택은 한 과목만 합산했습니다</p>
+          <ul className="mt-2 space-y-1 text-xs leading-5">
+            {summary.conflicts.map((conflict) => (
+              <li key={conflict.groupLabel}>
+                - {conflict.groupLabel}: {conflict.courseNames.join(", ")}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-800">
+        자동 반영: 총 취득학점, 교양필수, 전공필수, 전공선택, 주전공. 교양선택의
+        세부 영역과 자유선택 학점은 과목표만으로 확정할 수 없어 직접 입력해야
+        합니다.
+      </div>
+
+      <input
+        type="search"
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="과목명 또는 이수구분 검색"
+        className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+      />
+
+      {groups.length === 0 ? (
+        <EmptyState message="검색 조건에 맞는 과목이 없습니다." />
+      ) : (
+        <div className="space-y-5">
+          {groups.map(([label, groupCourses]) => (
+            <div key={label}>
+              <p className="mb-2 text-sm font-semibold text-neutral-900">
+                {label}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-3">
+                {groupCourses.map((course) => {
+                  const selected = selectedCourseIds.includes(course.id);
+                  return (
+                    <button
+                      key={course.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => onToggle(course.id)}
+                      className={clsx(
+                        "flex items-start justify-between gap-3 rounded-lg border p-3 text-left transition",
+                        selected
+                          ? "border-primary-500 bg-primary-50 ring-2 ring-primary-100"
+                          : "border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40",
+                      )}
+                    >
+                      <span>
+                        <span className="block text-sm font-semibold text-neutral-900">
+                          {course.name}
+                        </span>
+                        <span className="mt-1 block text-xs text-neutral-500">
+                          {course.category}
+                        </span>
+                      </span>
+                      <Badge color={selected ? "blue" : "gray"}>
+                        {course.credits}학점
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CourseSummaryMetric({
+  label,
+  value,
+  unit = "학점",
+}: {
+  label: string;
+  value: number;
+  unit?: string;
+}) {
+  return (
+    <div className="rounded-lg bg-white p-3">
+      <p className="text-xs text-neutral-500">{label}</p>
+      <p className="mt-1 font-bold text-neutral-900">
+        {value}
+        <span className="ml-1 text-xs font-medium text-neutral-500">
+          {unit}
+        </span>
+      </p>
+    </div>
+  );
+}
+
+function CreditInput({
+  creditKey,
+  required,
+  value,
+  onChange,
+}: {
+  creditKey: CreditCategoryKey | "totalCredits";
+  required: number;
+  value?: number;
+  onChange: (value: number | undefined) => void;
+}) {
+  return (
+    <label className="rounded-lg border border-neutral-200 p-4">
+      <span className="block text-sm font-semibold text-neutral-900">
+        {CREDIT_CATEGORY_LABELS[creditKey]}
+      </span>
+      <span className="mt-1 block text-xs text-neutral-500">
+        참고 요구학점 {required}
+      </span>
+      <div className="relative mt-3">
+        <input
+          type="number"
+          min="0"
+          inputMode="decimal"
+          value={value ?? ""}
+          onChange={(event) =>
+            onChange(
+              event.target.value === ""
+                ? undefined
+                : Number(event.target.value),
+            )
+          }
+          placeholder="0"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 pr-12 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        />
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500">
+          학점
+        </span>
+      </div>
+    </label>
+  );
+}
+
+function ChecklistCard({
+  label,
+  description,
+  answer,
+  plan,
+  onAnswer,
+  onPlan,
+}: {
+  label: string;
+  description?: string;
+  answer?: ChecklistAnswer;
+  plan: string;
+  onAnswer: (answer: ChecklistAnswer) => void;
+  onPlan: (plan: string) => void;
+}) {
+  const choices: Array<{ value: ChecklistAnswer; label: string }> = [
+    { value: "satisfied", label: "이수" },
+    { value: "incomplete", label: "미이수" },
+    { value: "notApplicable", label: "해당 없음" },
+  ];
+
+  return (
+    <div className="rounded-lg border border-neutral-200 p-4">
+      <p className="font-semibold text-neutral-900">{label}</p>
+      {description && (
+        <p className="mt-1 text-xs leading-5 text-neutral-500">{description}</p>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {choices.map((choice) => (
+          <button
+            key={choice.value}
+            type="button"
+            onClick={() => onAnswer(choice.value)}
+            className={clsx(
+              "rounded-lg border px-3 py-2 text-xs font-semibold transition",
+              answer === choice.value
+                ? "border-primary-500 bg-primary-50 text-primary-700"
+                : "border-neutral-200 text-neutral-600 hover:bg-neutral-50",
+            )}
+          >
+            {choice.label}
+          </button>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={plan}
+        onChange={(event) => onPlan(event.target.value)}
+        placeholder="확인 방법이나 이수 계획을 메모하세요"
+        className="mt-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+      />
+    </div>
+  );
+}
+
+function ResultBanner({ status }: { status: EvaluationStatus }) {
+  const config =
+    status === "short"
+      ? {
+          title: "부족하거나 미이수인 항목이 있습니다",
+          description: "부족 학점과 미이수 조건을 확인해 계획을 세우세요.",
+          className: "border-red-200 bg-red-50 text-red-900",
+        }
+      : status === "checkRequired"
+        ? {
+            title: "직접 확인할 항목이 남아 있습니다",
+            description:
+              "입력하지 않은 조건과 공식 확인이 필요한 내용을 확인하세요.",
+            className: "border-amber-200 bg-amber-50 text-amber-900",
+          }
+        : {
+            title: "입력값 기준으로 모든 항목을 확인했습니다",
+            description:
+              "최종 졸업 판정은 SU-WINGs와 학과사무실에서 확인하세요.",
+            className: "border-green-200 bg-green-50 text-green-900",
+          };
+
+  return (
+    <div className={clsx("rounded-lg border p-4", config.className)}>
+      <p className="font-bold">{config.title}</p>
+      <p className="mt-1 text-sm leading-6">{config.description}</p>
+    </div>
+  );
+}
+
+function SummaryMetric({
+  label,
+  value,
+  color = "blue",
+}: {
+  label: string;
+  value: number;
+  color?: "blue" | "green" | "yellow";
+}) {
+  const colors = {
+    blue: "bg-primary-50 text-primary-700",
+    green: "bg-green-50 text-green-700",
+    yellow: "bg-amber-50 text-amber-700",
+  };
+  return (
+    <div className={clsx("rounded-lg p-3 text-center", colors[color])}>
+      <p className="text-xs">{label}</p>
+      <p className="mt-1 text-2xl font-bold">{value}</p>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-neutral-500">{label}</span>
+      <span className="text-right font-semibold text-neutral-900">
+        {value || "-"}
+      </span>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-500">
+      {message}
+    </div>
+  );
+}
