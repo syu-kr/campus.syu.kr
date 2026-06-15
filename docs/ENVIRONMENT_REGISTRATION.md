@@ -79,8 +79,18 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
+| `CRAWLER_DEPLOY_KEY` | 필수 | `crawl-daily.yml`, `crawl-monthly.yml` | `main`에 자동 커밋하는 write deploy key의 private key |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포에 push 가능한 GitHub token |
 | `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
+
+### CRAWLER_DEPLOY_KEY 등록
+
+`crawl-daily.yml`과 `crawl-monthly.yml`은 PAT 대신 repository deploy key로 `main`에 자동 커밋합니다.
+
+1. 전용 SSH key pair를 생성합니다.
+2. Public key를 `GitHub Repository -> Settings -> Deploy keys`에 등록하고 `Allow write access`를 켭니다.
+3. Branch ruleset bypass 대상에서 `deploy keys`를 허용합니다.
+4. Private key 전체를 `CRAWLER_DEPLOY_KEY` Actions secret으로 등록합니다.
 
 ## GitHub Actions Variables
 
