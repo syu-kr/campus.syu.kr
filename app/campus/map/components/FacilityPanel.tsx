@@ -1,16 +1,28 @@
 "use client";
 
-import { getBuildingById, categoryColors, formatFloor } from "../lib/mapData";
+import { getBuildingById, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
 import { useState } from "react";
 import { Icon } from "@/app/components/Icon";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
+import {
+  formatMapCountSummary,
+  formatMapFloor,
+  getFacilityCategoryLabel,
+} from "../lib/mapI18n";
 
 interface FacilityPanelProps {
   buildingId?: string;
 }
 
 export function FacilityPanel({ buildingId }: FacilityPanelProps) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.map;
   const building = buildingId ? getBuildingById(buildingId) : null;
   const [expandedFloors, setExpandedFloors] = useState<Set<number>>(
     new Set(building?.floors.map((floor) => floor.floor) ?? []),
@@ -24,10 +36,10 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
             name="map-pin"
             size={32}
             color="rgb(209, 213, 219)"
-            title="위치 핀"
+            title={text.locationPin}
           />
         </div>
-        <p className="text-sm">건물을 선택하여 시설 정보를 확인하세요</p>
+        <p className="text-sm">{text.selectBuilding}</p>
       </Card>
     );
   }
@@ -57,9 +69,15 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
               {building.name}
             </h2>
             <p className="text-sm text-neutral-600 mt-1">
-              총 {building.floors.length}개 층 ·{" "}
-              {building.floors.reduce((acc, f) => acc + f.facilities.length, 0)}
-              개 시설
+              {formatMapCountSummary(
+                building.floors.length,
+                building.floors.reduce(
+                  (acc, f) => acc + f.facilities.length,
+                  0,
+                ),
+                locale,
+                text,
+              )}
             </p>
           </div>
         </div>
@@ -73,7 +91,7 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
               className="w-full p-4 hover:bg-neutral-50 transition-colors flex items-center justify-between"
             >
               <h3 className="font-semibold text-neutral-900">
-                {formatFloor(floor.floor)}
+                {formatMapFloor(floor.floor, locale, text)}
               </h3>
               <Icon
                 name="chevron-down"
@@ -127,7 +145,7 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
                             }
                             size="sm"
                           >
-                            {facility.category}
+                            {getFacilityCategoryLabel(facility.category, text)}
                           </Badge>
                         </div>
                         {facility.description && (

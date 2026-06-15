@@ -7,8 +7,11 @@ import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
 import { FacilitySearch } from "./components/FacilitySearch";
 import { Icon } from "@/app/components/Icon";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 export default function MapPage() {
+  const dictionary = useDictionary();
+  const text = dictionary.pages.map;
   const [selectedBuilding, setSelectedBuilding] = useState<string>();
   const [highlightedBuilding, setHighlightedBuilding] = useState<string>();
   const [selectionVersion, setSelectionVersion] = useState(0);
@@ -41,15 +44,13 @@ export default function MapPage() {
             name="map"
             size={28}
             color="rgb(37, 99, 235)"
-            title="캠퍼스 지도"
+            title={text.title}
           />
           <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900">
-            캠퍼스 지도
+            {text.title}
           </h1>
         </div>
-        <p className="text-neutral-600">
-          삼육대학교 캠퍼스의 건물과 시설을 확인하세요
-        </p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       <div className="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">

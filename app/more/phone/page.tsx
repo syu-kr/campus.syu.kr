@@ -3,6 +3,10 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useState, useMemo } from "react";
@@ -14,6 +18,10 @@ const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 
 export default function DirectoryPage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.phone;
+  const numberLocale = locale === "ko" ? "ko-KR" : "en-US";
   const ITEMS_PER_PAGE = 10;
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -58,15 +66,15 @@ export default function DirectoryPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          연락처 검색
+          {text.title}
         </h1>
-        <p className="text-neutral-600">부서 또는 전화번호로 검색하세요</p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       <SearchBar
         className="mb-6"
         defaultValue={searchQuery}
-        placeholder="부서명 또는 전화번호로 검색..."
+        placeholder={text.placeholder}
         onSearch={handleSearch}
         onClear={() => handleSearch("")}
         searchOnChange
@@ -74,13 +82,17 @@ export default function DirectoryPage() {
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
-          {filteredDirectory.length}개 항목 찾음
-          {searchQuery && ` (검색어: "${searchQuery}")`}
+          {formatPhoneCount(filteredDirectory.length, text.itemsFoundSuffix, locale)}
+          {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
           {filteredDirectory.length > 0 && (
             <span className="ml-2">
-              - {(currentPage - 1) * ITEMS_PER_PAGE + 1} ~{" "}
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredDirectory.length)}
-              개 표시
+              - {((currentPage - 1) * ITEMS_PER_PAGE + 1).toLocaleString(numberLocale)} ~{" "}
+              {Math.min(
+                currentPage * ITEMS_PER_PAGE,
+                filteredDirectory.length,
+              ).toLocaleString(numberLocale)}
+              {locale === "ko" ? "" : " "}
+              {text.showingSuffix}
             </span>
           )}
         </div>
@@ -91,7 +103,7 @@ export default function DirectoryPage() {
         {!isLoading && filteredDirectory.length === 0 ? (
           <Card>
             <div className="py-8 text-center text-neutral-500">
-              검색 결과가 없습니다.
+              {text.empty}
             </div>
           </Card>
         ) : (
@@ -109,7 +121,7 @@ export default function DirectoryPage() {
                   href={`tel:${item.phone}`}
                   className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
                 >
-                  전화
+                  {text.call}
                 </a>
               </div>
             </Card>
@@ -124,9 +136,9 @@ export default function DirectoryPage() {
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="이전 페이지"
+              aria-label={text.previousPage}
             >
-              이전
+              {text.previous}
             </button>
 
             {pageNumbers.map((pageNum) => (
@@ -149,23 +161,30 @@ export default function DirectoryPage() {
               }
               disabled={currentPage === totalPages}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="다음 페이지"
+              aria-label={text.nextPage}
             >
-              다음
+              {text.next}
             </button>
           </div>
 
           <p className="text-sm text-neutral-600">
-            {currentPage} / {totalPages} 페이지
+            {currentPage.toLocaleString(numberLocale)} /{" "}
+            {totalPages.toLocaleString(numberLocale)} {text.page}
           </p>
         </div>
       )}
 
       <Card className="mt-8 bg-blue-50 border border-blue-200">
         <p className="text-sm text-blue-900">
-          안내: 더 많은 전화번호는 학교 홈페이지를 참고하세요.
+          {text.notice}
         </p>
       </Card>
     </Container>
   );
+}
+
+function formatPhoneCount(value: number, suffix: string, locale: "ko" | "en") {
+  const formattedValue = value.toLocaleString(locale === "ko" ? "ko-KR" : "en-US");
+
+  return locale === "ko" ? `${formattedValue}${suffix}` : `${formattedValue} ${suffix}`;
 }
