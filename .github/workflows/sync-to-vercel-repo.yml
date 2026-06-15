@@ -27,7 +27,7 @@ on:
       verify_before_sync:
         description: Run lint, type-check, and build before syncing
         required: false
-        default: false
+        default: true
         type: boolean
     secrets:
       VERCEL_PERSONAL_ACCOUNT_TOKEN:
@@ -81,6 +81,22 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Validate sync source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_REF: ${{ inputs.source_ref || github.event.workflow_run.head_sha }}
+          VERIFY_BEFORE_SYNC: ${{ inputs.verify_before_sync }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$SOURCE_REF" != "main" ] && [ "$SOURCE_REF" != "refs/heads/main" ]; then
+            echo "Manual sync is limited to main. Refusing source_ref=$SOURCE_REF"
+            exit 1
+          fi
+
+          if [ "$EVENT_NAME" != "workflow_run" ] && [ "$VERIFY_BEFORE_SYNC" != "true" ]; then
+            echo "Manual or reusable sync must run verification before pushing to the Vercel repository."
+            exit 1
+          fi
+
       - name: Checkout source repository
         uses: actions/checkout@v6
         with:

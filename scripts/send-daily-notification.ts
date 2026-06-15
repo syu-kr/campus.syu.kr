@@ -1,4 +1,5 @@
 // scripts/send-daily-notification.ts
+import { createHash } from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import { admin, initializeScriptFirestore } from "./firebase-admin";
@@ -16,13 +17,19 @@ interface AnnouncementData {
   [key: string]: unknown;
 }
 
-async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
-  // 어제 자정 기준으로 새로운 공지사항 조회
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+interface DailyNotificationContext {
+  dedupeKey: string;
+  koreaDate: string;
+}
 
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  yesterday.setHours(0, 0, 0, 0);
+interface KoreaDayWindow {
+  dateKey: string;
+  start: Date;
+  end: Date;
+}
+
+async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
+  const targetWindow = createPreviousKoreaDayWindow(new Date());
 
   const categories = ["academic", "scholarship"];
   const results: AnnouncementStats[] = [];
@@ -51,7 +58,12 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
           .where(
             "created_at",
             ">=",
-            admin.firestore.Timestamp.fromDate(yesterday),
+            admin.firestore.Timestamp.fromDate(targetWindow.start),
+          )
+          .where(
+            "created_at",
+            "<",
+            admin.firestore.Timestamp.fromDate(targetWindow.end),
           )
           .orderBy("created_at", "desc")
           .get();
@@ -78,8 +90,7 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
     if (!success) {
       const jsonData = await getAnnouncementStatsFromJSON(
         category,
-        yesterday,
-        today,
+        targetWindow,
       );
       results.push(jsonData);
     }
@@ -90,8 +101,7 @@ async function getAnnouncementStats(): Promise<AnnouncementStats[]> {
 
 async function getAnnouncementStatsFromJSON(
   category: string,
-  yesterday: Date,
-  today: Date,
+  targetWindow: KoreaDayWindow,
 ): Promise<AnnouncementStats> {
   const fileMap: { [key: string]: string } = {
     academic: "announcements-academic.json",
@@ -113,14 +123,10 @@ async function getAnnouncementStatsFromJSON(
     const rawData = fs.readFileSync(filepath, "utf-8");
     const announcements: AnnouncementData[] = JSON.parse(rawData);
 
-    // 날짜 문자열 "2026.03.31" 형식을 파싱
     const filtered = announcements.filter((announcement) => {
-      const dateStr = announcement.date; // "2026.03.31"
-      const [year, month, day] = dateStr.split(".").map(Number);
-      const announcementDate = new Date(year, month - 1, day);
-      announcementDate.setHours(0, 0, 0, 0);
-
-      return announcementDate >= yesterday && announcementDate < today;
+      return (
+        normalizeKoreaDateString(announcement.date) === targetWindow.dateKey
+      );
     });
 
     const titles = filtered.map((a) => a.title);
@@ -135,9 +141,23 @@ async function getAnnouncementStatsFromJSON(
   }
 }
 
-async function sendNotification(stats: AnnouncementStats[]) {
-  const apiUrl = process.env.API_URL || "http://localhost:3000";
+async function sendNotification(
+  stats: AnnouncementStats[],
+  context: DailyNotificationContext,
+) {
+  const apiUrl = process.env.API_URL;
   const apiKey = process.env.PUSH_API_KEY;
+
+  if (!apiUrl) {
+    throw new Error("API_URL 환경 변수가 필요합니다");
+  }
+
+  if (
+    process.env.GITHUB_ACTIONS === "true" &&
+    /^https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?(?:\/|$)/i.test(apiUrl)
+  ) {
+    throw new Error("GitHub Actions에서는 localhost API_URL을 사용할 수 없습니다");
+  }
 
   if (!apiKey) {
     throw new Error("PUSH_API_KEY 환경 변수가 필요합니다");
@@ -193,6 +213,7 @@ async function sendNotification(stats: AnnouncementStats[]) {
       body,
       category: "daily-summary",
       url: "/academic/announcements",
+      dedupeKey: context.dedupeKey,
       timestamp: koreaTime,
       stats: {
         academic: academicCount,
@@ -242,11 +263,17 @@ async function sendNotification(stats: AnnouncementStats[]) {
   }
 }
 
-async function logNotificationRecord(stats: AnnouncementStats[]) {
+async function logNotificationRecord(
+  stats: AnnouncementStats[],
+  context: DailyNotificationContext,
+) {
   const db = await initializeScriptFirestore();
+  const recordId = createHash("sha256").update(context.dedupeKey).digest("hex");
 
-  await db.collection("notifications_scheduled").add({
+  await db.collection("notifications_scheduled").doc(recordId).set({
     type: "daily-summary",
+    dedupeKey: context.dedupeKey,
+    koreaDate: context.koreaDate,
     timestamp: admin.firestore.Timestamp.now(),
     stats: {
       academic: stats.find((s) => s.category === "academic")?.count || 0,
@@ -263,17 +290,20 @@ async function main() {
   console.log("🚀 Daily Announcement Notification Job 시작\n");
 
   try {
+    const context = createDailyNotificationContext();
+    console.log(`중복 방지 키: ${context.dedupeKey}`);
+
     // 1. 공지사항 통계 조회
     console.log("1️⃣ 공지사항 통계 조회 중...");
     const stats = await getAnnouncementStats();
 
     // 2. 알림 발송
     console.log("\n2️⃣ FCM 알림 발송 중...");
-    await sendNotification(stats);
+    await sendNotification(stats, context);
 
     // 3. 기록 저장
     console.log("\n3️⃣ 실행 기록 저장 중...");
-    await logNotificationRecord(stats);
+    await logNotificationRecord(stats, context);
 
     console.log("\n✅ Job 완료!");
     process.exit(0);
@@ -281,6 +311,77 @@ async function main() {
     console.error("\n❌ Job 실패:", error);
     process.exit(1);
   }
+}
+
+function createDailyNotificationContext(): DailyNotificationContext {
+  const koreaDate = formatKoreaDate(new Date());
+  return {
+    koreaDate,
+    dedupeKey: `daily-summary:${koreaDate}`,
+  };
+}
+
+function createPreviousKoreaDayWindow(now: Date): KoreaDayWindow {
+  const todayStart = startOfKoreaDate(getKoreaDateParts(now));
+  const start = new Date(todayStart.getTime() - 86400000);
+  const end = todayStart;
+
+  return {
+    dateKey: formatKoreaDate(start),
+    start,
+    end,
+  };
+}
+
+function formatKoreaDate(date: Date): string {
+  const { year, month, day } = getKoreaDateParts(date);
+  return `${year}-${month}-${day}`;
+}
+
+function getKoreaDateParts(date: Date): {
+  year: string;
+  month: string;
+  day: string;
+} {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    throw new Error("한국 날짜를 계산하지 못했습니다");
+  }
+
+  return { year, month, day };
+}
+
+function startOfKoreaDate({
+  year,
+  month,
+  day,
+}: {
+  year: string;
+  month: string;
+  day: string;
+}): Date {
+  return new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day)) - 9 * 60 * 60 * 1000,
+  );
+}
+
+function normalizeKoreaDateString(value: string): string {
+  const match = value.match(/^(\d{4})\.(\d{1,2})\.(\d{1,2})$/);
+  if (!match) return "";
+
+  const [, year, month, day] = match;
+  if (!year || !month || !day) return "";
+
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
 main();

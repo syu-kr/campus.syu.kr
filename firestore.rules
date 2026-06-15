@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /meet_rooms/{roomId} {
+      allow read, write: if false;
+
+      match /participants/{participantId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /campus_tip_suggestions/{suggestionId} {
+      allow read, write: if false;
+    }
+
+    match /site_inquiries/{inquiryId} {
+      allow read, write: if false;
+    }
+
+    match /user_devices/{deviceId} {
+      allow read, write: if false;
+    }
+
+    match /notifications_sent/{notificationId} {
+      allow read, write: if false;
+    }
+
+    match /notifications_scheduled/{notificationId} {
+      allow read, write: if false;
+    }
+
+    match /notification_send_locks/{lockId} {
+      allow read, write: if false;
+    }
+
+    match /timetable_shares/{shareId} {
+      allow read, write: if false;
+    }
+
+    match /api_rate_limits/{rateLimitId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

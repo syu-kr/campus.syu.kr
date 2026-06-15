@@ -3,6 +3,58 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  !isProduction ? "'unsafe-eval'" : "",
+  "https://www.googletagmanager.com",
+  "https://www.gstatic.com",
+  "https://dapi.kakao.com",
+  "https://t1.daumcdn.net",
+].filter(Boolean);
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  `script-src ${scriptSrc.join(" ")}`,
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  [
+    "img-src",
+    "'self'",
+    "data:",
+    "blob:",
+    "https://www.googletagmanager.com",
+    "https://*.googleusercontent.com",
+    "https://*.gstatic.com",
+    "https://*.daumcdn.net",
+    "https://*.kakaocdn.net",
+    "https://t1.daumcdn.net",
+  ].join(" "),
+  [
+    "connect-src",
+    "'self'",
+    "https://www.google-analytics.com",
+    "https://*.google-analytics.com",
+    "https://region1.google-analytics.com",
+    "https://analytics.google.com",
+    "https://*.googleapis.com",
+    "https://firebaseinstallations.googleapis.com",
+    "https://fcmregistrations.googleapis.com",
+    "https://*.firebaseio.com",
+    "https://*.kakao.com",
+    "https://*.kakaocdn.net",
+    "https://*.daumcdn.net",
+  ].join(" "),
+  "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+  isProduction ? "upgrade-insecure-requests" : "",
+].filter(Boolean).join("; ");
+
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {
@@ -50,7 +102,7 @@ const nextConfig = {
     const securityHeaders = [
       {
         key: "Content-Security-Policy",
-        value: "base-uri 'self'; object-src 'none'; frame-ancestors 'none'",
+        value: contentSecurityPolicy,
       },
       {
         key: "Permissions-Policy",

@@ -8,9 +8,12 @@
 
 `Vercel Dashboard -> syu-campus Project -> Settings -> Environment Variables`
 
-권장 적용 범위:
+환경별 등록 원칙:
 
-`Production`, `Preview`, `Development` 모두 체크
+- 운영 데이터에 접근하는 민감 값은 `Production`에만 등록합니다.
+- `Preview`, `Development`에는 별도 Firebase 프로젝트, 제한된 service account, 별도 `PUSH_API_KEY`, 별도 `RATE_LIMIT_SECRET`을 사용합니다.
+- 공개 값과 외부 공개 API endpoint도 가능하면 환경별로 분리합니다. 같은 값을 써야 하는 경우에만 여러 환경에 체크합니다.
+- Vercel Preview에 운영 `FIREBASE_SERVICE_ACCOUNT`를 등록하지 않습니다.
 
 | 이름 | 필수 | 설명 |
 | --- | --- | --- |
@@ -24,10 +27,10 @@
 | `SHUTTLE_USER_AGENT` | 필수 | 셔틀 upstream 요청 User-Agent |
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |
-| `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열 |
-| `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키 |
-| `RATE_LIMIT_SECRET` | 권장 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. 미등록 시 `PUSH_API_KEY`를 fallback으로 사용 |
-| `ADMIN_EMAILS` | 필수 | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열. 운영 값은 Production 전용 |
+| `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키. 환경별로 별도 값 사용 |
+| `RATE_LIMIT_SECRET` | 운영 필수 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. Production에서는 미등록 시 public write API가 실패함 |
+| `ADMIN_EMAILS` | 필수 | 쉼표로 구분한 관리자 허용 이메일 목록. 운영 관리자 목록은 Production 전용으로 관리 |
 | `TOKEN_CLEANUP_DAYS` | 선택 | 오래된 FCM 토큰 삭제 기준 일수. 기본값 `90` |
 
 ### RATE_LIMIT_SECRET 생성 및 등록
@@ -40,9 +43,10 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 - 출력 예시는 문서에 남기지 않습니다. 실제로 생성된 값을 사용합니다.
 - `PUSH_API_KEY`, Firebase 키, 비밀번호를 재사용하지 않습니다.
-- Production, Preview, Development마다 별도 값을 생성하는 것을 권장합니다.
+- Production, Preview, Development마다 별도 값을 생성합니다.
 - 같은 환경 내에서는 모든 서버리스 인스턴스가 같은 값을 사용해야 하므로 Vercel 환경 변수로 고정합니다.
 - 값을 교체하면 기존 rate limit 문서와 다른 HMAC 문서 ID가 생성됩니다. 긴급 상황이 아니라면 자주 회전하지 않습니다.
+- Production에서는 `RATE_LIMIT_SECRET`이 없으면 요청 제한 공용 저장소를 쓰는 API가 503으로 실패합니다.
 
 ## Vercel Public Variables
 
@@ -75,9 +79,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
-| `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL |
+| `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL. GitHub Actions에서는 운영 HTTPS URL만 사용하고 localhost를 쓰지 않음 |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml` | Firebase Admin service account JSON 문자열 |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `CRAWLER_DEPLOY_KEY` | 필수 | `crawl-daily.yml`, `crawl-monthly.yml` | `main`에 자동 커밋하는 write deploy key의 private key |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포에 push 가능한 GitHub token |
@@ -114,9 +118,23 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
 | `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 동기화 대상 개인 배포 레포. `owner/name` 형식 |
 
+## Firebase Console Configuration
+
+Firestore Rules는 저장소 루트의 `firestore.rules`를 기준으로 배포합니다. Firebase 콘솔에서 직접 붙여넣어 publish해도 되고, Firebase CLI를 쓰는 경우에는 아래처럼 rules만 배포합니다.
+
+현재 저장소는 Firestore indexes를 코드로 관리하지 않습니다. 운영 인덱스를 실수로 건드리지 않도록 `firebase deploy --only firestore` 대신 `firebase deploy --only firestore:rules`만 사용합니다.
+
+```powershell
+firebase deploy --only firestore:rules
+```
+
+새 컬렉션을 추가하면 먼저 rules 파일에서 client read/write가 차단되어 있는지 확인하고, 콘솔에 수동 반영한 내용도 repo 파일과 같은 상태로 유지합니다.
+
+TTL 정책은 [FIRESTORE_RULES.md](./FIRESTORE_RULES.md)의 컬렉션 그룹 목록과 순서를 기준으로 등록합니다.
+
 ## Local Development
 
-Next.js 로컬 서버는 `.env.local`을 읽습니다. Vercel Project Environment Variables 표의 값을 같은 이름으로 `.env.local`에 등록하세요.
+Next.js 로컬 서버는 `.env.local`을 읽습니다. Vercel Project Environment Variables 표의 값을 같은 이름으로 `.env.local`에 등록하세요. 로컬에서는 운영 Firebase service account 대신 개발용 프로젝트 또는 제한된 service account를 사용합니다.
 
 Python 크롤러는 `.env.local`을 자동으로 읽지 않습니다. 로컬에서 크롤러를 직접 실행할 때는 PowerShell에서 필요한 값을 먼저 설정하세요.
 

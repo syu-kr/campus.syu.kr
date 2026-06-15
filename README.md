@@ -52,7 +52,7 @@ npm run check
 - [SECURITY.md](./SECURITY.md): 보안 취약점 제보 방법
 - [PERFORMANCE.md](./PERFORMANCE.md): 번들 및 성능 점검 가이드
 - [NOTICE.md](./NOTICE.md): 로고, 상표, 크롤링 데이터 관련 고지
-- [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙
+- [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙과 TTL 운영
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
 
 ## 기술 스택
@@ -85,6 +85,8 @@ campus.syu.kr/
 │   ├── service-notices/    # service notice Markdown files
 │   └── manifest.json
 ├── scripts/                # crawlers and scheduled maintenance scripts
+├── firestore.rules         # Firestore client access deny rules
+├── firebase.json           # Firebase rules deploy target
 ├── docs/                   # operational reference docs
 └── .github/workflows/      # CI and scheduled crawlers
 ```
