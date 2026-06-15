@@ -8,6 +8,7 @@ import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage } from "@/lib/api";
 
 const ITEMS_PER_PAGE = 10;
@@ -27,6 +28,7 @@ export function AnnouncementListPage({
   description,
   errorMessage,
 }: AnnouncementListPageProps) {
+  const dictionary = useDictionary();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -59,7 +61,7 @@ export function AnnouncementListPage({
       <SearchBar
         className="mb-6"
         defaultValue={searchQuery}
-        placeholder="제목 또는 작성자로 검색..."
+        placeholder={dictionary.pages.announcements.listSearchPlaceholder}
         onSearch={(query) => {
           setSearchQuery(query);
           setCurrentPage(1);
@@ -73,8 +75,9 @@ export function AnnouncementListPage({
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
-          {total}개 항목 찾음
-          {searchQuery && ` (검색어: "${searchQuery}")`}
+          {localeAwareResultCount(total, dictionary.pages.announcements.foundItems)}
+          {searchQuery &&
+            ` (${dictionary.pages.announcements.searchQuery}: "${searchQuery}")`}
         </div>
       )}
 
@@ -83,7 +86,9 @@ export function AnnouncementListPage({
         {!isLoading && announcements.length === 0 && (
           <StateCard
             type={isError ? "error" : "info"}
-            message={isError ? errorMessage : "검색 결과가 없습니다."}
+            message={
+              isError ? errorMessage : dictionary.pages.announcements.empty
+            }
           />
         )}
         {!isLoading &&
@@ -107,4 +112,8 @@ export function AnnouncementListPage({
       )}
     </Container>
   );
+}
+
+function localeAwareResultCount(total: number, label: string) {
+  return label.startsWith("개") ? `${total}${label}` : `${total} ${label}`;
 }

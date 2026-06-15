@@ -1,4 +1,10 @@
 import type { AcademicSchedule, AnnouncementCategory } from "@/types";
+import {
+  DEFAULT_LOCALE,
+  getDictionary,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
 type CategoryLabel = AnnouncementCategory | AcademicSchedule["category"];
 
@@ -90,17 +96,12 @@ function formatDateKorean(dateString: string): string {
 /**
  * 카테고리 한글 레이블
  */
-export function getCategoryLabel(category: CategoryLabel): string {
-  const labels: Record<CategoryLabel, string> = {
-    academic: "학사공지",
-    scholarship: "장학금",
-    campus: "캠퍼스",
-    registration: "수강신청",
-    exam: "시험",
-    holiday: "휴무",
-    event: "행사",
-  };
-  return labels[category];
+export function getCategoryLabel(
+  category: CategoryLabel,
+  locale: Locale = DEFAULT_LOCALE,
+): string {
+  const dictionary = getDictionary(normalizeLocale(locale));
+  return dictionary.categories[category];
 }
 
 /**

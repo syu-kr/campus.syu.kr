@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
@@ -10,6 +12,8 @@ import { StateCard } from "@/app/components/StateCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { localizePath, type Dictionary } from "@/lib/i18n";
 import type {
   AcademicSchedule,
   CafeteriaMenu,
@@ -20,17 +24,27 @@ import type {
 } from "@/types";
 import type { HomeNotice, TodayInfo } from "@/lib/home";
 
-const categoryFilters: Array<{
+function getCategoryFilters(dictionary: Dictionary): Array<{
   id: string;
   label: string;
   value: HomeNoticeCategory | undefined;
-}> = [
-  { id: "all", label: "전체", value: undefined },
-  { id: "academic", label: "학사공지", value: "academic" },
-  { id: "scholarship", label: "장학금", value: "scholarship" },
-  { id: "campus", label: "캠퍼스", value: "campus" },
-  { id: "service", label: "서비스공지", value: "service" },
-];
+}> {
+  return [
+    { id: "all", label: dictionary.home.notices.all, value: undefined },
+    {
+      id: "academic",
+      label: dictionary.home.notices.academic,
+      value: "academic",
+    },
+    {
+      id: "scholarship",
+      label: dictionary.home.notices.scholarship,
+      value: "scholarship",
+    },
+    { id: "campus", label: dictionary.home.notices.campus, value: "campus" },
+    { id: "service", label: dictionary.home.notices.service, value: "service" },
+  ];
+}
 
 export function HomeNoticesSection({
   selectedCategory,
@@ -47,15 +61,21 @@ export function HomeNoticesSection({
   announcementsLoading: boolean;
   homeNotices: HomeNotice[];
 }) {
+  const locale = useLocale();
+  const dictionary = useDictionary();
+  const categoryFilters = getCategoryFilters(dictionary);
+
   return (
     <div className="border-b border-neutral-200 pb-4 sm:pb-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-neutral-900">공지사항</h2>
+        <h2 className="text-lg font-semibold text-neutral-900">
+          {dictionary.home.notices.title}
+        </h2>
         <Link
-          href={getNoticeListPath(selectedCategory)}
+          href={localizePath(getNoticeListPath(selectedCategory), locale)}
           className="text-xs text-primary-600 hover:text-primary-700"
         >
-          {getNoticeListLabel(selectedCategory)} →
+          {getNoticeListLabel(selectedCategory, dictionary)} →
         </Link>
       </div>
 
@@ -89,7 +109,10 @@ export function HomeNoticesSection({
                 </div>
               ))
             ) : (
-              <StateCard type="info" message="선택한 서비스 공지가 없습니다." />
+              <StateCard
+                type="info"
+                message={dictionary.home.notices.emptyService}
+              />
             )}
           </>
         ) : (
@@ -102,7 +125,7 @@ export function HomeNoticesSection({
                 {homeNotices.length === 0 ? (
                   <StateCard
                     type="info"
-                    message="선택한 분류에 공지사항이 없습니다."
+                    message={dictionary.home.notices.emptyCategory}
                   />
                 ) : (
                   homeNotices.map((notice) => (
@@ -134,15 +157,17 @@ export function TodayMenuSection({
   todayInfo: TodayInfo;
   todayMenu: CafeteriaMenu | null;
 }) {
+  const dictionary = useDictionary();
+
   return (
     <div>
-      <SectionTitle title="학식" />
+      <SectionTitle title={dictionary.home.dashboard.cafeteria} />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {!isLoading && todayInfo.isWeekend && (
           <StateCard
             type="info"
-            message="오늘은 주말입니다. 주말을 알차게 보내보는건 어떨까요?"
+            message={dictionary.home.dashboard.weekendMenu}
             action={<ViewFullMenuLink />}
           />
         )}
@@ -152,8 +177,8 @@ export function TodayMenuSection({
           isCafeteriaClosedDay(todayMenu) && (
             <StateCard
               type="info"
-              title="오늘은 운영하지 않습니다"
-              message="공휴일 또는 운영하지 않는 날입니다. 전체 식단에서 다른 날짜를 확인해보세요."
+              title={dictionary.home.dashboard.closedMenuTitle}
+              message={dictionary.home.dashboard.closedMenuMessage}
               action={<ViewFullMenuLink />}
             />
           )}
@@ -173,7 +198,7 @@ export function TodayMenuSection({
           !todayMenu && (
             <StateCard
               type="warning"
-              message="오늘 식단 정보가 없습니다. 전체 식단에서 다른 날짜를 확인해보세요."
+              message={dictionary.home.dashboard.missingMenu}
               action={<ViewFullMenuLink />}
             />
           )}
@@ -193,6 +218,8 @@ export function TodayShuttleSection({
   specialPeriods?: ShuttleSpecialPeriods;
   now: Date | null;
 }) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
   const summary = getCurrentShuttleSummary({
     buses,
     specialPeriods,
@@ -203,19 +230,19 @@ export function TodayShuttleSection({
 
   return (
     <div>
-      <SectionTitle title="다음 셔틀" />
+      <SectionTitle title={dictionary.home.dashboard.shuttle} />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {!isLoading && summary.isWeekend && (
           <StateCard
             type="info"
-            message="오늘은 주말입니다. 셔틀버스가 운행되지 않습니다."
+            message={dictionary.home.dashboard.shuttleWeekend}
             action={
               <Link
-                href="/campus/bus-info"
+                href={localizePath("/campus/bus-info", locale)}
                 className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
               >
-                셔틀 시간표 보기
+                {dictionary.home.dashboard.shuttleSchedule}
               </Link>
             }
           />
@@ -226,19 +253,19 @@ export function TodayShuttleSection({
           !summary.hasMoreToday && (
             <StateCard
               type="info"
-              message="오늘 남은 셔틀 운행이 없습니다. 전체 시간표를 확인해보세요."
+              message={dictionary.home.dashboard.shuttleNoMore}
               action={
                 <Link
-                  href="/campus/bus-info"
+                  href={localizePath("/campus/bus-info", locale)}
                   className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
                 >
-                  셔틀 시간표 보기
+                  {dictionary.home.dashboard.shuttleSchedule}
                 </Link>
               }
             />
           )}
         {!isLoading && primaryDeparture && (
-          <Link href="/campus/bus-info" className="block">
+          <Link href={localizePath("/campus/bus-info", locale)} className="block">
             <Card className="cursor-pointer border border-primary-100 bg-primary-50/70 hover:shadow-card-hover">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -248,7 +275,7 @@ export function TodayShuttleSection({
                     </Badge>
                     {summary.isSpecialSchedule && (
                       <Badge color="purple" size="sm">
-                        특별운행
+                        {dictionary.home.dashboard.specialSchedule}
                       </Badge>
                     )}
                   </div>
@@ -256,13 +283,15 @@ export function TodayShuttleSection({
                     {primaryDeparture.routeName}
                   </h3>
                   <p className="mt-1 text-sm text-neutral-600">
-                    {primaryDeparture.time} 출발
+                    {primaryDeparture.time} {dictionary.home.dashboard.departs}
                   </p>
                 </div>
                 <div className="flex items-end justify-between gap-3 sm:block sm:text-right">
                   <p className="text-3xl font-bold leading-none text-primary-700">
                     {primaryDeparture.minutesUntil}
-                    <span className="ml-1 text-base font-semibold">분 뒤</span>
+                    <span className="ml-1 text-base font-semibold">
+                      {dictionary.home.dashboard.minutesAfter}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -278,7 +307,9 @@ export function TodayShuttleSection({
                         {departure.routeName}
                       </p>
                       <p className="mt-1 text-xs text-neutral-600">
-                        {departure.time} 출발 · {departure.minutesUntil}분 뒤
+                        {departure.time} {dictionary.home.dashboard.departs} ·{" "}
+                        {departure.minutesUntil}
+                        {dictionary.home.dashboard.minutesAfter}
                       </p>
                     </div>
                   ))}
@@ -299,18 +330,27 @@ export function TodaySchedulesSection({
   isLoading: boolean;
   schedules: AcademicSchedule[];
 }) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+
   return (
     <div>
-      <SectionTitle title="오늘의 일정" href="/academic/schedule" />
+      <SectionTitle
+        title={dictionary.home.dashboard.todaySchedules}
+        href="/academic/schedule"
+      />
       <div className="space-y-4">
         {isLoading && <Skeleton count={2} />}
         {!isLoading &&
           (schedules.length === 0 ? (
-            <StateCard type="info" message="오늘 일정이 없습니다." />
+            <StateCard
+              type="info"
+              message={dictionary.home.dashboard.scheduleEmpty}
+            />
           ) : (
             schedules.map((schedule) => (
               <div key={schedule.id} className="mb-3">
-                <Link href="/academic/schedule">
+                <Link href={localizePath("/academic/schedule", locale)}>
                   <Card className="cursor-pointer hover:shadow-card-hover">
                     <div className="flex items-center justify-between">
                       <div>
@@ -318,7 +358,7 @@ export function TodaySchedulesSection({
                           color={schedule.category === "exam" ? "red" : "blue"}
                           size="sm"
                         >
-                          {getCategoryLabel(schedule.category)}
+                          {getCategoryLabel(schedule.category, locale)}
                         </Badge>
                         <h3 className="mt-2 font-semibold text-neutral-900">
                           {schedule.title}
@@ -329,7 +369,9 @@ export function TodaySchedulesSection({
                         </p>
                       </div>
                       <span className="text-xs font-semibold text-neutral-600">
-                        {schedule.category === "exam" ? "시험" : "일정"}
+                        {schedule.category === "exam"
+                          ? dictionary.home.dashboard.exam
+                          : dictionary.home.dashboard.schedule}
                       </span>
                     </div>
                   </Card>
@@ -343,15 +385,18 @@ export function TodaySchedulesSection({
 }
 
 function SectionTitle({ title, href }: { title: string; href?: string }) {
+  const locale = useLocale();
+  const dictionary = useDictionary();
+
   return (
     <div className="mb-3 flex items-center justify-between">
       <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
       {href && (
         <Link
-          href={href}
+          href={localizePath(href, locale)}
           className="text-xs text-primary-600 hover:text-primary-700"
         >
-          전체보기 →
+          {dictionary.search.viewAll} →
         </Link>
       )}
     </div>
@@ -359,31 +404,50 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
 }
 
 function TodayMenuCard({ todayMenu }: { todayMenu: CafeteriaMenu }) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+
   return (
-    <Link href="/campus/cafeteria">
+    <Link href={localizePath("/campus/cafeteria", locale)}>
       <Card className="cursor-pointer border-2 border-green-400 bg-gradient-to-r from-green-50 to-green-100 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="mb-1 text-sm font-semibold text-green-700">
-              오늘의 메뉴
+              {dictionary.home.dashboard.todayMenu}
             </div>
             <h3 className="mb-2 font-semibold text-neutral-900">
               {todayMenu.location}
             </h3>
             <div className="space-y-2">
-              <MealPreview title="조식" items={todayMenu.breakfast} count={2} />
+              <MealPreview
+                title={dictionary.home.dashboard.breakfast}
+                items={todayMenu.breakfast}
+                count={2}
+              />
               <div>
-                <p className="mb-1 text-xs text-neutral-500">중식</p>
+                <p className="mb-1 text-xs text-neutral-500">
+                  {dictionary.home.dashboard.lunch}
+                </p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {todayMenu.lunch.a && (
-                    <MealCorner title="A 코너" items={todayMenu.lunch.a} />
+                    <MealCorner
+                      title={dictionary.home.dashboard.cornerA}
+                      items={todayMenu.lunch.a}
+                    />
                   )}
                   {todayMenu.lunch.b && (
-                    <MealCorner title="B 코너" items={todayMenu.lunch.b} />
+                    <MealCorner
+                      title={dictionary.home.dashboard.cornerB}
+                      items={todayMenu.lunch.b}
+                    />
                   )}
                 </div>
               </div>
-              <MealPreview title="석식" items={todayMenu.dinner} count={2} />
+              <MealPreview
+                title={dictionary.home.dashboard.dinner}
+                items={todayMenu.dinner}
+                count={2}
+              />
             </div>
           </div>
         </div>
@@ -393,19 +457,22 @@ function TodayMenuCard({ todayMenu }: { todayMenu: CafeteriaMenu }) {
 }
 
 function PendingMenuCard() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+
   return (
-    <Link href="/campus/cafeteria">
+    <Link href={localizePath("/campus/cafeteria", locale)}>
       <Card className="cursor-pointer border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="mb-1 text-sm font-semibold text-yellow-700">
-              오늘의 메뉴
+              {dictionary.home.dashboard.todayMenu}
             </div>
             <h3 className="mb-2 font-semibold text-neutral-900">
-              식단 준비 중입니다
+              {dictionary.home.dashboard.pendingMenuTitle}
             </h3>
             <p className="text-sm text-yellow-700">
-              데이터가 준비되고 있습니다. 잠시만 기다려주세요.
+              {dictionary.home.dashboard.pendingMenuMessage}
             </p>
           </div>
         </div>
@@ -415,12 +482,15 @@ function PendingMenuCard() {
 }
 
 function ViewFullMenuLink() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+
   return (
     <Link
-      href="/campus/cafeteria"
+      href={localizePath("/campus/cafeteria", locale)}
       className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
     >
-      전체 식단 보기
+      {dictionary.home.dashboard.fullMenu}
     </Link>
   );
 }
@@ -434,17 +504,21 @@ function MealPreview({
   items: Array<{ name: string }>;
   count: number;
 }) {
+  const dictionary = useDictionary();
+
   if (isClosedMealItems(items)) {
     return (
       <div>
         <p className="mb-1 text-xs text-neutral-500">{title}</p>
-        <p className="text-sm text-neutral-700">운영 없음</p>
+        <p className="text-sm text-neutral-700">
+          {dictionary.home.dashboard.closedMeal}
+        </p>
       </div>
     );
   }
 
   const previewItems = items.slice(0, count).map((item) => item.name);
-  const suffix = items.length > count ? " 외" : "";
+  const suffix = items.length > count ? dictionary.home.dashboard.extraItems : "";
 
   return (
     <div>
@@ -464,17 +538,21 @@ function MealCorner({
   title: string;
   items: Array<{ name: string }>;
 }) {
+  const dictionary = useDictionary();
+
   if (isClosedMealItems(items)) {
     return (
       <div>
         <p className="mb-1 text-xs font-medium text-green-700">{title}</p>
-        <p className="text-neutral-700">운영 없음</p>
+        <p className="text-neutral-700">
+          {dictionary.home.dashboard.closedMeal}
+        </p>
       </div>
     );
   }
 
   const previewItems = items.slice(0, 1).map((item) => item.name);
-  const suffix = items.length > 1 ? " 외" : "";
+  const suffix = items.length > 1 ? dictionary.home.dashboard.extraItems : "";
 
   return (
     <div>
@@ -488,17 +566,24 @@ function MealCorner({
 }
 
 function getNoticeListPath(selectedCategory?: HomeNoticeCategory) {
-  if (selectedCategory === "scholarship") return "/more/scholarship";
+  if (selectedCategory === "scholarship") return "/academic/scholarship";
   if (selectedCategory === "campus") return "/campus/announcements";
   if (selectedCategory === "service") return "/service/notices";
   if (selectedCategory === "academic") return "/academic/announcements";
   return "/announcements";
 }
 
-function getNoticeListLabel(selectedCategory?: HomeNoticeCategory) {
-  if (selectedCategory === "scholarship") return "장학금 전체보기";
-  if (selectedCategory === "campus") return "캠퍼스공지 전체보기";
-  if (selectedCategory === "service") return "서비스공지 전체보기";
-  if (selectedCategory === "academic") return "학사공지 전체보기";
-  return "전체 공지 보기";
+function getNoticeListLabel(
+  selectedCategory: HomeNoticeCategory | undefined,
+  dictionary: Dictionary,
+) {
+  if (selectedCategory === "scholarship") {
+    return dictionary.home.notices.scholarshipAll;
+  }
+  if (selectedCategory === "campus") return dictionary.home.notices.campusAll;
+  if (selectedCategory === "service") return dictionary.home.notices.serviceAll;
+  if (selectedCategory === "academic") {
+    return dictionary.home.notices.academicAll;
+  }
+  return dictionary.home.notices.allNotices;
 }

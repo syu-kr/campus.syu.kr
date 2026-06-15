@@ -1,6 +1,7 @@
 "use client";
 
 import { ContactForm } from "@/app/components/ContactForm";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
 
 interface ContactModalProps {
@@ -9,14 +10,15 @@ interface ContactModalProps {
 }
 
 export function ContactModal({ isOpen, onClose }: ContactModalProps) {
+  const dictionary = useDictionary();
   const currentUrl =
     typeof window === "undefined" ? "" : window.location.href;
 
   return (
     <Modal
       isOpen={isOpen}
-      title="사이트 문의하기"
-      description="오류, 정보 수정, 기능 제안 등을 남겨주세요."
+      title={dictionary.footer.contact}
+      description={dictionary.footer.contactDescription}
       onClose={onClose}
     >
       <ContactForm defaultPageUrl={currentUrl} onSuccessConfirm={onClose} />

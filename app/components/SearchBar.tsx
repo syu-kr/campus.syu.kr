@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, memo, useEffect } from "react";
 import clsx from "clsx";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface SearchBarProps {
   placeholder?: string;
@@ -14,7 +15,7 @@ interface SearchBarProps {
 }
 
 function SearchBarComponent({
-  placeholder = "공지, 학식, 학사일정 검색...",
+  placeholder,
   onSearch,
   defaultValue = "",
   onClear,
@@ -22,7 +23,9 @@ function SearchBarComponent({
   isLoading = false,
   className,
 }: SearchBarProps) {
+  const dictionary = useDictionary();
   const [query, setQuery] = useState(defaultValue);
+  const inputPlaceholder = placeholder ?? dictionary.search.defaultPlaceholder;
 
   useEffect(() => {
     setQuery(defaultValue);
@@ -59,14 +62,14 @@ function SearchBarComponent({
           type="text"
           value={query}
           onChange={handleChange}
-          placeholder={placeholder}
+          placeholder={inputPlaceholder}
           className={clsx(
             "w-full px-4 py-3 pl-10 bg-neutral-50 border border-neutral-200 rounded-lg",
             "pr-24",
             "text-sm placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent",
             "transition-all",
           )}
-          aria-label="검색"
+          aria-label={dictionary.search.label}
         />
         <svg
           className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400"
@@ -87,7 +90,7 @@ function SearchBarComponent({
             type="button"
             onClick={handleClear}
             className="absolute right-12 top-1/2 -translate-y-1/2 p-1 hover:bg-neutral-200 rounded transition-colors"
-            aria-label="검색어 삭제"
+            aria-label={dictionary.search.clear}
           >
             <svg
               className="w-4 h-4 text-neutral-400"
@@ -112,7 +115,7 @@ function SearchBarComponent({
         <button
           type="submit"
           className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
-          aria-label="검색 실행"
+          aria-label={dictionary.search.submit}
           disabled={!query.trim() || isLoading}
         >
           <svg

@@ -1,9 +1,20 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
+import { LocaleProvider } from "./components/LocaleProvider";
 import { Providers } from "./providers";
+import {
+  LOCALE_HEADER_NAME,
+  PATHNAME_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  stripLocalePrefix,
+  type Locale,
+} from "@/lib/i18n";
 import "./globals.css";
 
 // Pretendard 폰트 import - 필요한 weight만 로드
@@ -19,76 +30,102 @@ const GOOGLE_ANALYTICS_SCRIPT = `
   gtag('js', new Date());
   gtag('config', '${GOOGLE_ANALYTICS_ID}');
 `;
-const WEBSITE_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "SYU CAMPUS",
-  url: "https://campus.syu.kr",
-  description:
-    "삼육대학교 학생들을 위한 공지사항, 학식, 셔틀버스, 학사일정 통합 정보 플랫폼",
-  inLanguage: "ko-KR",
-};
+function getWebsiteSchema(locale: Locale) {
+  const dictionary = getDictionary(locale);
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://campus.syu.kr"),
-  applicationName: "SYU CAMPUS",
-  title: {
-    template: "%s",
-    default: "SYU CAMPUS - 학생 통합 정보 플랫폼",
-  },
-  description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
-  keywords: "삼육대, 삼육대학교, 캠퍼스, 공지사항, 학식, 학사일정",
-  authors: [{ name: "SYU KR" }],
-  alternates: {
-    canonical: "./",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "SYU CAMPUS",
+    url: "https://campus.syu.kr",
+    description: dictionary.meta.schemaDescription,
+    inLanguage: dictionary.meta.inLanguage,
+  };
+}
+
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+async function getRequestPathname(): Promise<string> {
+  const headerStore = await headers();
+  return headerStore.get(PATHNAME_HEADER_NAME) || "/";
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const pathname = await getRequestPathname();
+  const dictionary = getDictionary(locale);
+  const canonicalPath = localizePath(stripLocalePrefix(pathname), locale);
+  const koreanPath = stripLocalePrefix(pathname);
+  const englishPath = localizePath(koreanPath, "en");
+
+  return {
+    metadataBase: new URL("https://campus.syu.kr"),
+    applicationName: "SYU CAMPUS",
+    title: {
+      template: "%s",
+      default: dictionary.meta.title,
+    },
+    description: dictionary.meta.description,
+    keywords: dictionary.meta.keywords,
+    authors: [{ name: "SYU KR" }],
+    alternates: {
+      canonical: canonicalPath,
+      languages: {
+        ko: koreanPath,
+        en: englishPath,
+      },
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-  openGraph: {
-    type: "website",
-    locale: "ko_KR",
-    url: "https://campus.syu.kr",
-    siteName: "SYU CAMPUS",
-    title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
-    description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
-    images: [
-      {
-        url: "/images/syu-kr-logo.png",
-        width: 512,
-        height: 512,
-        alt: "SYU CAMPUS",
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
       },
-    ],
-  },
-  twitter: {
-    card: "summary",
-    title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
-    description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
-    images: ["/images/syu-kr-logo.png"],
-  },
-  verification: {
-    google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "SYU CAMPUS",
-  },
-  icons: {
-    icon: "/images/favicon.ico",
-    apple: "/images/syu-kr-logo.png",
-  },
-  manifest: "/manifest.json",
-};
+    },
+    openGraph: {
+      type: "website",
+      locale: dictionary.meta.openGraphLocale,
+      url: "https://campus.syu.kr",
+      siteName: "SYU CAMPUS",
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      images: [
+        {
+          url: "/images/syu-kr-logo.png",
+          width: 512,
+          height: 512,
+          alt: "SYU CAMPUS",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary",
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      images: ["/images/syu-kr-logo.png"],
+    },
+    verification: {
+      google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "SYU CAMPUS",
+    },
+    icons: {
+      icon: "/images/favicon.ico",
+      apple: "/images/syu-kr-logo.png",
+    },
+    manifest: "/manifest.json",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -97,13 +134,15 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getRequestLocale();
+
   return (
-    <html lang="ko">
+    <html lang={locale}>
       <head>
         <meta
           name="google-site-verification"
@@ -132,16 +171,18 @@ export default function RootLayout({
           id="website-schema"
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(WEBSITE_SCHEMA),
+            __html: JSON.stringify(getWebsiteSchema(locale)),
           }}
         />
       </head>
       <body>
         <Providers>
-          <Header />
-          <main className="min-h-screen pb-20 md:pb-0">{children}</main>
-          <Footer />
-          <BottomNav />
+          <LocaleProvider locale={locale}>
+            <Header />
+            <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+            <Footer locale={locale} />
+            <BottomNav />
+          </LocaleProvider>
         </Providers>
       </body>
     </html>

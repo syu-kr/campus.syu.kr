@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
+import { localizePath } from "@/lib/i18n";
 
 const BASE_URL = "https://campus.syu.kr";
 
@@ -43,6 +44,7 @@ const PUBLIC_ROUTES = [
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const serviceNotices = await getAllServiceNotices();
   const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(
     ({ route, changeFrequency, priority }) => ({
       url: `${BASE_URL}${route}`,
@@ -51,14 +53,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const noticeRoutes: MetadataRoute.Sitemap = (
-    await getAllServiceNotices()
-  ).map((notice) => ({
+  const noticeRoutes: MetadataRoute.Sitemap = serviceNotices.map((notice) => ({
     url: `${BASE_URL}/service/notices/${notice.slug}`,
     lastModified: notice.date,
     changeFrequency: "monthly",
     priority: 0.5,
   }));
 
-  return [...staticRoutes, ...noticeRoutes];
+  const englishStaticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(
+    ({ route, changeFrequency, priority }) => ({
+      url: `${BASE_URL}${localizePath(route, "en")}`,
+      changeFrequency,
+      priority: priority * 0.9,
+    }),
+  );
+
+  const englishNoticeRoutes: MetadataRoute.Sitemap = serviceNotices.map((notice) => ({
+    url: `${BASE_URL}${localizePath(`/service/notices/${notice.slug}`, "en")}`,
+    lastModified: notice.date,
+    changeFrequency: "monthly",
+    priority: 0.4,
+  }));
+
+  return [
+    ...staticRoutes,
+    ...englishStaticRoutes,
+    ...noticeRoutes,
+    ...englishNoticeRoutes,
+  ];
 }

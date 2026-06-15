@@ -1,8 +1,11 @@
 import { FooterContactButton } from "@/app/components/FooterContactButton";
 import { Container } from "@/app/components/Container";
+import { LanguageSelector } from "@/app/components/LanguageSelector";
+import { getDictionary, localizePath, type Locale } from "@/lib/i18n";
 
-export function Footer() {
+export function Footer({ locale }: { locale: Locale }) {
   const currentYear = new Date().getFullYear();
+  const dictionary = getDictionary(locale);
 
   return (
     <footer className="bg-white border-t border-neutral-200 mt-12 pb-20 md:pb-0">
@@ -11,37 +14,37 @@ export function Footer() {
           <div>
             <h3 className="font-bold text-neutral-900 mb-4">SYU CAMPUS</h3>
             <p className="text-sm text-neutral-600">
-              삼육대학교 학생을 위한
-              <br />
-              통합 정보 플랫폼
+              {dictionary.footer.tagline}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-neutral-900 mb-3">주요 메뉴</h4>
+            <h4 className="font-semibold text-neutral-900 mb-3">
+              {dictionary.footer.mainMenu}
+            </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="/academic"
+                  href={localizePath("/academic", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
-                  학사 정보
+                  {dictionary.footer.academicInfo}
                 </a>
               </li>
               <li>
                 <a
-                  href="/campus"
+                  href={localizePath("/campus", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
-                  캠퍼스 정보
+                  {dictionary.footer.campusInfo}
                 </a>
               </li>
               <li>
                 <a
-                  href="/more"
+                  href={localizePath("/more", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
-                  더보기
+                  {dictionary.footer.more}
                 </a>
               </li>
             </ul>
@@ -49,7 +52,7 @@ export function Footer() {
 
           <div>
             <h4 className="font-semibold text-neutral-900 mb-3">
-              서비스 문의 및 제안
+              {dictionary.footer.contactHeading}
             </h4>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li>
@@ -60,10 +63,13 @@ export function Footer() {
                   href="mailto:singhic_dev@syu.kr"
                   className="text-neutral-500 hover:text-neutral-700 transition-colors"
                 >
-                  메일로 문의
+                  {dictionary.footer.emailContact}
                 </a>
               </li>
             </ul>
+            <div className="mt-4">
+              <LanguageSelector />
+            </div>
           </div>
         </div>
 
@@ -74,29 +80,29 @@ export function Footer() {
             </p>
             <div className="flex gap-4 text-xs sm:text-sm">
               <a
-                href="/terms"
+                href={localizePath("/terms", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
-                이용약관
+                {dictionary.footer.terms}
               </a>
               <a
-                href="/privacy"
+                href={localizePath("/privacy", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
-                개인정보처리방침
+                {dictionary.footer.privacy}
               </a>
               <a
-                href="/more/privacy"
+                href={localizePath("/more/privacy", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
-                알림 및 개인정보
+                {dictionary.footer.notificationPrivacy}
               </a>
               <a
                 href="https://github.com/syu-kr/campus.syu.kr"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="SYU CAMPUS GitHub 저장소"
-                title="GitHub 저장소"
+                aria-label={dictionary.footer.githubRepo}
+                title={dictionary.footer.githubTitle}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 <svg

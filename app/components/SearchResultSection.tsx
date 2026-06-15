@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import type { CategorizedSearchResults } from "@/lib/home";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { SearchResultCard } from "./SearchResultCard";
 
 interface SearchResultSectionProps {
@@ -14,6 +15,8 @@ export function SearchResultSection({
   categorizedResults,
   searchQuery,
 }: SearchResultSectionProps) {
+  const dictionary = useDictionary();
+
   return (
     <div className="space-y-6">
       {Object.entries(categorizedResults)
@@ -37,7 +40,7 @@ export function SearchResultSection({
                   }}
                   className="text-xs text-primary-600 hover:text-primary-700"
                 >
-                  전체보기 →
+                  {dictionary.search.viewAll} →
                 </Link>
               )}
             </div>
