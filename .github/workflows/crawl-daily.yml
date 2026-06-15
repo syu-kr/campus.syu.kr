@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # 수동 실행 option
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: daily-crawl
@@ -30,8 +30,19 @@ jobs:
           sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
           echo "Timezone set to KST: $(date)"
 
-      - name: Checkout code
+      - name: Validate crawler deploy key secret
+        env:
+          CRAWLER_DEPLOY_KEY: ${{ secrets.CRAWLER_DEPLOY_KEY }}
+        run: |
+          if [ -z "$CRAWLER_DEPLOY_KEY" ]; then
+            echo "CRAWLER_DEPLOY_KEY secret is not configured."
+            exit 1
+          fi
+
+      - name: Checkout code with crawler deploy key
         uses: actions/checkout@v6
+        with:
+          ssh-key: ${{ secrets.CRAWLER_DEPLOY_KEY }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -66,4 +77,5 @@ jobs:
           fi
 
           git commit -m "chore: update daily crawl data (notices and cafeteria menu)"
+          git remote set-url origin "git@github.com:${GITHUB_REPOSITORY}.git"
           git push origin HEAD:main
