@@ -25,9 +25,12 @@ export function NotificationPermissionPrompt() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    const permission = "Notification" in window ? Notification.permission : null;
+
     if (
-      !("Notification" in window) ||
+      !permission ||
       !("serviceWorker" in navigator) ||
+      permission === "denied" ||
       localStorage.getItem(FCM_TOKEN_KEY) ||
       getNotificationPreference()
     ) {
@@ -65,34 +68,35 @@ export function NotificationPermissionPrompt() {
   if (!isVisible) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
-      role="dialog"
-      aria-modal="true"
+    <section
+      className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 md:bottom-6 md:left-auto md:right-6 md:w-[min(28rem,calc(100vw-3rem))]"
       aria-labelledby="notification-permission-title"
     >
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl">
+      <div className="min-w-0 overflow-hidden rounded-xl border border-primary-100 bg-white p-4 shadow-2xl sm:p-5">
         <h2
           id="notification-permission-title"
-          className="text-lg font-bold text-neutral-900"
+          className="text-base font-bold text-neutral-900 sm:text-lg"
         >
           새 소식을 알림으로 받아보시겠어요?
         </h2>
-        <p className="mt-3 text-sm leading-6 text-neutral-600">
+        <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
           서비스 공지와 주요 캠퍼스 소식을 브라우저 알림으로 받을 수 있습니다.
           알림 설정은 알림 및 개인정보 페이지에서 언제든지 변경할 수 있습니다.
         </p>
         {message && (
-          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <p
+            className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"
+            aria-live="polite"
+          >
             {message}
           </p>
         )}
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-4 grid gap-2 sm:flex sm:justify-end">
           <button
             type="button"
             onClick={handleDismiss}
             disabled={isProcessing}
-            className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+            className="w-full rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-60 sm:w-auto"
           >
             알림 받지 않기
           </button>
@@ -100,12 +104,12 @@ export function NotificationPermissionPrompt() {
             type="button"
             onClick={handleEnable}
             disabled={isProcessing}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60"
+            className="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60 sm:w-auto"
           >
             {isProcessing ? "설정 중..." : "알림 설정"}
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

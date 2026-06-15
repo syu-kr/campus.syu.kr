@@ -92,8 +92,11 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
                     {floor.description}
                   </p>
                 ) : (
-                  floor.facilities.map((facility) => (
-                    <div key={facility.id} className="flex items-start gap-3">
+                  floor.facilities.map((facility, facilityIndex) => (
+                    <div
+                      key={`${building.id}-${floor.floor}-${facility.id}-${facilityIndex}`}
+                      className="flex items-start gap-3"
+                    >
                       <div
                         className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
                         style={{

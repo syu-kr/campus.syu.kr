@@ -10,8 +10,11 @@ const scriptSrc = [
   !isProduction ? "'unsafe-eval'" : "",
   "https://www.googletagmanager.com",
   "https://www.gstatic.com",
+  "https://apis.google.com",
   "https://dapi.kakao.com",
   "https://t1.daumcdn.net",
+  // Kakao Maps bootstraps this child script over HTTP in local/dev.
+  !isProduction ? "http://t1.daumcdn.net" : "",
 ].filter(Boolean);
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -33,10 +36,13 @@ const contentSecurityPolicy = [
     "https://*.daumcdn.net",
     "https://*.kakaocdn.net",
     "https://t1.daumcdn.net",
-  ].join(" "),
+    // Kakao map tiles can be served over HTTP by the dev SDK bootstrap.
+    !isProduction ? "http://*.daumcdn.net" : "",
+  ].filter(Boolean).join(" "),
   [
     "connect-src",
     "'self'",
+    !isProduction ? "webpack:" : "",
     "https://www.google-analytics.com",
     "https://*.google-analytics.com",
     "https://region1.google-analytics.com",
@@ -48,7 +54,7 @@ const contentSecurityPolicy = [
     "https://*.kakao.com",
     "https://*.kakaocdn.net",
     "https://*.daumcdn.net",
-  ].join(" "),
+  ].filter(Boolean).join(" "),
   "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
