@@ -196,6 +196,25 @@
     "isExternal": true
   },
   {
+    "id": "certificate-syu-toeic-office-language-courses",
+    "title": "삼육대 토익운영실 어학 강좌",
+    "description": "대학일자리본부 토익운영실의 토익, 토익스피킹, 영어회화, 일본어, 토플 강좌를 확인할 수 있습니다.",
+    "category": "certificate",
+    "url": "https://syu.english.co.kr/index/index.php",
+    "urlLabel": "강좌 보기",
+    "tags": [
+      "토익",
+      "토익스피킹",
+      "영어회화",
+      "일본어",
+      "토플",
+      "어학"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "수강신청과 결제는 로그인이 필요할 수 있으며, 대상 학년과 개설 과정은 시기별로 달라질 수 있습니다."
+  },
+  {
     "id": "certificate-opic-schedule",
     "title": "오픽 일정",
     "description": "OPIc 시험 일정과 대학연합 할인 정보를 확인할 수 있습니다.",
@@ -1180,6 +1199,26 @@
     ],
     "sourceType": "official",
     "isExternal": true
+  },
+  {
+    "id": "campus-life-library-video-courses",
+    "title": "도서관 동영상 강좌",
+    "description": "도서관 로그인 후 어학, 토익·토플 모의고사, IT·자격증 강좌 등을 이용할 수 있습니다.",
+    "category": "campus-life",
+    "url": "https://lib.syu.ac.kr/local/html/224",
+    "urlLabel": "강좌 보기",
+    "tags": [
+      "도서관",
+      "동영상강좌",
+      "토익",
+      "토플",
+      "외국어",
+      "IT",
+      "자격증"
+    ],
+    "sourceType": "official",
+    "isExternal": true,
+    "note": "도서관 로그인이 필요합니다."
   },
   {
     "id": "school-ebook",
