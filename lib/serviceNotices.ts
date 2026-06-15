@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const NOTICES_DIR = path.join(process.cwd(), "public", "service-notices");
+const SERVICE_NOTICE_SLUG_PATTERN = /^[0-9A-Za-z][0-9A-Za-z-]*$/;
 
 export interface ServiceNotice {
   id: string;
@@ -67,6 +68,22 @@ function parseFrontmatter(content: string): {
   return { metadata, body };
 }
 
+function getServiceNoticePath(slug: string): string | null {
+  if (!SERVICE_NOTICE_SLUG_PATTERN.test(slug)) {
+    return null;
+  }
+
+  const noticesDir = path.resolve(NOTICES_DIR);
+  const filePath = path.resolve(noticesDir, `${slug}.md`);
+  const noticesDirPrefix = `${noticesDir}${path.sep}`;
+
+  if (!filePath.startsWith(noticesDirPrefix)) {
+    return null;
+  }
+
+  return filePath;
+}
+
 /**
  * 모든 서비스 공지 조회 (목록)
  */
@@ -115,7 +132,11 @@ export async function getAllServiceNotices(): Promise<ServiceNotice[]> {
 export async function getServiceNoticeBySlug(
   slug: string,
 ): Promise<ServiceNoticeDetail | null> {
-  const filePath = path.join(NOTICES_DIR, `${slug}.md`);
+  const filePath = getServiceNoticePath(slug);
+
+  if (!filePath) {
+    return null;
+  }
 
   if (!fs.existsSync(filePath)) {
     return null;
