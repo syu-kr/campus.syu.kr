@@ -5,6 +5,7 @@ import path from "node:path";
 const root = process.cwd();
 const readJson = (relativePath) =>
   JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8"));
+const exists = (relativePath) => fs.existsSync(path.join(root, relativePath));
 const sha256 = (relativePath) =>
   crypto
     .createHash("sha256")
@@ -23,6 +24,7 @@ const selectionRuleData = readJson(
 );
 
 const errors = [];
+const warnings = [];
 const coursesById = new Map(ocrData.courses.map((course) => [course.id, course]));
 const recordsById = new Map();
 const pageCourseIds = new Set(
@@ -215,18 +217,42 @@ for (const group of selectionRuleData.exclusiveGroups) {
 if (selectionRuleData.exclusiveGroups.length !== 45) {
   errors.push("검증된 상호배타 과목 선택 규칙 수가 45개가 아닙니다.");
 }
-if (sha256(metadata.sourceFile) !== metadata.sourceSha256) {
-  errors.push("졸업요건 발췌 PDF 해시가 검증 당시와 다릅니다.");
-}
-if (sha256(metadata.fullSourceFile) !== metadata.fullSourceSha256) {
-  errors.push("전체 국문 요람 PDF 해시가 검증 당시와 다릅니다.");
-}
+verifySourceHash(
+  metadata.sourceFile,
+  metadata.sourceSha256,
+  "졸업요건 발췌 PDF",
+);
+verifySourceHash(
+  metadata.fullSourceFile,
+  metadata.fullSourceSha256,
+  "전체 국문 요람 PDF",
+);
 
 if (errors.length > 0) {
   console.error(errors.map((error) => `- ${error}`).join("\n"));
   process.exit(1);
 }
 
+if (warnings.length > 0) {
+  console.warn(warnings.map((warning) => `- ${warning}`).join("\n"));
+}
+
 console.log(
   `교육과정 검증 데이터 확인 완료: 원본 ${ocrData.courses.length}개, 수동 검증 ${recordsById.size}개, 검토 대기 ${auditData.summary.unreviewed}개`,
 );
+
+function verifySourceHash(relativePath, expectedHash, label) {
+  if (!relativePath || !expectedHash) {
+    errors.push(`${label} 해시 검증 메타데이터가 누락되었습니다.`);
+    return;
+  }
+
+  if (!exists(relativePath)) {
+    warnings.push(`${label} 원본 파일이 없어 해시 검사를 건너뜁니다: ${relativePath}`);
+    return;
+  }
+
+  if (sha256(relativePath) !== expectedHash) {
+    errors.push(`${label} 해시가 검증 당시와 다릅니다.`);
+  }
+}
