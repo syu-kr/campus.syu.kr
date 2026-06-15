@@ -91,6 +91,7 @@ export default function ShuttleSection() {
   const [lastLocationUpdatedAt, setLastLocationUpdatedAt] =
     useState<Date | null>(null);
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
+  const [isLocationPanelVisible, setIsLocationPanelVisible] = useState(false);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
   const mapComponentRef = useRef<ShuttleMapHandle | null>(null);
 
@@ -112,37 +113,6 @@ export default function ShuttleSection() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  // 버스 위치를 5-10초 랜덤 간격으로 새로고침
-  useEffect(() => {
-    const fetchLocations = async () => {
-      try {
-        const locations = await fetchBusLocations();
-        setBusLocations(locations);
-        setLastLocationUpdatedAt(new Date());
-        setLocationError("");
-      } catch {
-        setLocationError("실시간 위치 정보를 새로 가져오지 못했습니다.");
-      }
-    };
-
-    // 초기 로드
-    fetchLocations();
-
-    // 5-10초 랜덤 간격으로 반복
-    const scheduleNextFetch = () => {
-      const delay = Math.random() * 5000 + 5000; // 5000~10000ms
-      const timeout = setTimeout(() => {
-        fetchLocations();
-        scheduleNextFetch(); // 재귀적으로 다음 요청 스케줄
-      }, delay);
-      return timeout;
-    };
-
-    const timeoutId = scheduleNextFetch();
-
-    return () => clearTimeout(timeoutId);
   }, []);
 
   // 현재 날짜/시간 정보
@@ -246,6 +216,7 @@ export default function ShuttleSection() {
   const selectedScheduleLabel = useSpecialSchedule
     ? "특별운행"
     : selectedRegularButton?.label || "선택한 시간표";
+
   // defaultType 변경 시 selectedType도 자동으로 업데이트 (방학 기간 변경 대응)
   useEffect(() => {
     setSelectedType(defaultType);
@@ -545,6 +516,50 @@ export default function ShuttleSection() {
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
   }, [busesWithSpecialPeriods, dateInfo, now, selectedType]);
 
+  // 버스 위치는 안내를 확인했고, 표시 가능한 시간일 때만 불러온다.
+  useEffect(() => {
+    if (
+      !isLocationPanelVisible ||
+      dateInfo.isWeekend ||
+      !isWithinOperationHours
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const fetchLocations = async () => {
+      try {
+        const locations = await fetchBusLocations();
+        if (!isActive) return;
+
+        setBusLocations(locations);
+        setLastLocationUpdatedAt(new Date());
+        setLocationError("");
+      } catch {
+        if (!isActive) return;
+        setLocationError("실시간 위치 정보를 새로 가져오지 못했습니다.");
+      }
+    };
+
+    const scheduleNextFetch = () => {
+      const delay = Math.random() * 5000 + 5000;
+      timeoutId = setTimeout(() => {
+        fetchLocations();
+        scheduleNextFetch();
+      }, delay);
+    };
+
+    fetchLocations();
+    scheduleNextFetch();
+
+    return () => {
+      isActive = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [dateInfo.isWeekend, isLocationPanelVisible, isWithinOperationHours]);
+
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
@@ -601,69 +616,86 @@ export default function ShuttleSection() {
               <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
                 실시간 버스 위치
               </h2>
-              <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#3b82f6" }}
-                  ></div>
-                  <span className="text-neutral-600">화랑대행</span>
+              {isLocationPanelVisible && (
+                <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: "#3b82f6" }}
+                    ></div>
+                    <span className="text-neutral-600">화랑대행</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: "#10b981" }}
+                    ></div>
+                    <span className="text-neutral-600">석계행</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: "#f59e0b" }}
+                    ></div>
+                    <span className="text-neutral-600">별내행</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: "#8b5cf6" }}
+                    ></div>
+                    <span className="text-neutral-600">구리행</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: "#d0d0d0" }}
+                    ></div>
+                    <span className="text-neutral-600">캠퍼스행</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#10b981" }}
-                  ></div>
-                  <span className="text-neutral-600">석계행</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#f59e0b" }}
-                  ></div>
-                  <span className="text-neutral-600">별내행</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#8b5cf6" }}
-                  ></div>
-                  <span className="text-neutral-600">구리행</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: "#d0d0d0" }}
-                  ></div>
-                  <span className="text-neutral-600">캠퍼스행</span>
-                </div>
-              </div>
+              )}
             </div>
-            <p className="text-xs sm:text-sm text-neutral-600">
-              삼육대학교 셔틀 위치 데이터 기준입니다.
-              <br />
-              5-10초마다 자동으로 업데이트됩니다.
-            </p>
-            {!isWithinOperationHours && (
-              <p className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-700">
-                현재 시간표상 운행 시간 밖입니다. 운행 시간이 되면 위치 정보가
-                표시됩니다.
+            {isLocationPanelVisible ? (
+              <>
+                <p className="text-xs sm:text-sm text-neutral-600">
+                  삼육대학교 셔틀 위치 데이터 기준입니다.
+                  <br />
+                  5-10초마다 자동으로 업데이트됩니다.
+                </p>
+                <p className="mt-1 text-xs text-neutral-500">
+                  마지막 위치 갱신:{" "}
+                  {lastLocationUpdatedAt
+                    ? lastLocationUpdatedAt.toLocaleTimeString("ko-KR")
+                    : "-"}
+                </p>
+                {locationError && (
+                  <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                    {locationError} 기존 정보가 오래되었을 수 있습니다.
+                  </p>
+                )}
+              </>
+            ) : !isWithinOperationHours ? (
+              <p className="text-xs sm:text-sm text-neutral-600">
+                선택한 시간표 기준 운행 시간 밖입니다.
               </p>
-            )}
-            <p className="mt-1 text-xs text-neutral-500">
-              마지막 위치 갱신:{" "}
-              {lastLocationUpdatedAt
-                ? lastLocationUpdatedAt.toLocaleTimeString("ko-KR")
-                : "-"}
-            </p>
-            {locationError && (
-              <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                {locationError} 기존 정보가 오래되었을 수 있습니다.
+            ) : (
+              <p className="text-xs sm:text-sm text-neutral-600">
+                정확도 안내를 확인한 뒤 필요한 경우에만 위치를 표시합니다.
               </p>
             )}
           </div>
 
-          {busLocations.length > 0 ? (
+          {!isWithinOperationHours ? (
+            <ShuttleLocationState
+              title="현재는 위치 표시 시간이 아닙니다"
+              message={`선택한 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.`}
+            />
+          ) : !isLocationPanelVisible ? (
+            <ShuttleLocationDisclosure
+              onConfirm={() => setIsLocationPanelVisible(true)}
+            />
+          ) : busLocations.length > 0 ? (
             <>
               <div
                 id="shuttle-map"
@@ -728,11 +760,10 @@ export default function ShuttleSection() {
               />
             </>
           ) : (
-            <div className="text-center py-6">
-              <p className="text-sm text-neutral-700 mb-3 font-medium">
-                현재 운행 중인 셔틀 위치 정보를 찾을 수 없습니다.
-              </p>
-            </div>
+            <ShuttleLocationState
+              title="현재 운행 중인 셔틀 위치를 찾을 수 없습니다"
+              message="운행 시간표와 실제 위치 데이터가 잠시 다를 수 있습니다. 아래 시간표와 학교 공지를 함께 확인해주세요."
+            />
           )}
         </Card>
       )}
@@ -783,6 +814,7 @@ export default function ShuttleSection() {
       </div>
 
       <Card
+        id="shuttle-schedules"
         className="mb-4 border border-neutral-200 bg-neutral-50"
         hover={false}
       >
@@ -856,9 +888,7 @@ export default function ShuttleSection() {
                       </h2>
                       {routeStops.length > 0 ? (
                         <>
-                          <p className="text-sm text-neutral-600">
-                            순환 노선
-                          </p>
+                          <p className="text-sm text-neutral-600">순환 노선</p>
                           <ol className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
                             {routeStops.map((stop, stopIndex) => (
                               <li
@@ -982,7 +1012,44 @@ export default function ShuttleSection() {
             );
           })}
       </div>
-
     </Container>
+  );
+}
+
+function ShuttleLocationDisclosure({ onConfirm }: { onConfirm: () => void }) {
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-5">
+      <p className="font-semibold text-amber-950">
+        실시간 위치가 정확하지 않을 수 있습니다
+      </p>
+      <p className="mt-2 break-keep text-sm leading-6 text-amber-900">
+        학교 측의 지속적인 제한으로 인해 표시되는 셔틀 위치가 실제 위치와
+        다를 수 있습니다. 이 점을 감안하고 실시간 위치를 확인하시겠습니까?
+      </p>
+      <button
+        type="button"
+        onClick={onConfirm}
+        className="mt-4 inline-flex rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800"
+      >
+        감안하고 위치 보기
+      </button>
+    </div>
+  );
+}
+
+function ShuttleLocationState({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-8 text-center">
+      <p className="font-semibold text-neutral-900">{title}</p>
+      <p className="mx-auto mt-2 w-full max-w-[18rem] whitespace-pre-line break-keep text-sm leading-6 text-neutral-600 sm:max-w-md">
+        {message}
+      </p>
+    </div>
   );
 }

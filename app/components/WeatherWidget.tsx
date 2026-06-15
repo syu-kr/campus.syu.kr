@@ -44,7 +44,16 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
   }
 
   if (error || !weather) {
-    return null;
+    return (
+      <div
+        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
+        role="status"
+        title={error ?? "날씨 정보를 불러올 수 없습니다"}
+      >
+        <span className="font-semibold">날씨</span>
+        <span>--</span>
+      </div>
+    );
   }
 
   return (

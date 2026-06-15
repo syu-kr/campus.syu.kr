@@ -46,7 +46,7 @@ export default function CampusTipSuggestPage() {
     setResultModal(null);
 
     if (shouldReturnToTips) {
-      router.push("/more/campus-tips");
+      router.push("/campus/campus-tips");
     }
   };
 
@@ -137,7 +137,7 @@ export default function CampusTipSuggestPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <Link
-          href="/more/campus-tips"
+          href="/campus/campus-tips"
           className="inline-flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
         >
           ← 캠퍼스 꿀팁

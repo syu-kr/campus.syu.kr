@@ -341,7 +341,10 @@ export function TimetableBuilderClient() {
   }
 
   return (
-    <Container size="full" className="max-w-[88rem] py-6 sm:py-8">
+    <Container
+      size="full"
+      className="min-w-0 max-w-[88rem] overflow-x-hidden py-6 sm:py-8"
+    >
       <div className="mb-6">
         <Link
           href="/academic"
@@ -365,7 +368,7 @@ export function TimetableBuilderClient() {
         </div>
       </div>
 
-      <section className="sticky top-0 z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
+      <section className="sticky top-[73px] z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           <SummaryMetric label="총 학점" value={`${totalCredits}학점`} />
           <SummaryMetric label="선택" value={`${selectedCourses.length}개`} />
@@ -432,8 +435,11 @@ export function TimetableBuilderClient() {
         />
       ) : (
         <div className="space-y-6">
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
-            <Card hover={false} className="border border-neutral-200">
+          <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
+            <Card
+              hover={false}
+              className="min-w-0 overflow-hidden border border-neutral-200"
+            >
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-neutral-900">
@@ -488,7 +494,7 @@ export function TimetableBuilderClient() {
           <button
             type="button"
             onClick={() => setIsPickerOpen(true)}
-            className="fixed bottom-5 right-5 z-30 rounded-full bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-primary-700 lg:hidden"
+            className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 max-w-[calc(100vw-2rem)] rounded-lg bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-primary-700 lg:hidden"
           >
             강의 추가
           </button>
@@ -849,8 +855,8 @@ function TimetableGrid({
   conflictCourseIds: Set<string>;
 }) {
   return (
-    <div className="max-h-[72vh] overflow-y-auto overflow-x-hidden rounded-lg border border-neutral-200 lg:max-h-[760px]">
-      <div className="w-full">
+    <div className="w-full max-w-full max-h-[72vh] overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200 lg:max-h-[760px]">
+      <div className="w-[420px] max-w-none sm:w-full">
         <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))] sm:text-sm">
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
             교시
@@ -939,7 +945,7 @@ function SelectedCoursesPanel({
   onRemove: (course: LectureTimetableCourse) => void;
 }) {
   return (
-    <Card hover={false} className="border border-neutral-200">
+    <Card hover={false} className="min-w-0 border border-neutral-200">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-neutral-900">선택 강의</h2>
         {selectedCourses.length > 0 && (

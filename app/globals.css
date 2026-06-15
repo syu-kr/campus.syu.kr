@@ -27,6 +27,7 @@
     background-color: #f9fafb;
     color: #111827;
     padding-bottom: max(0px, env(safe-area-inset-bottom));
+    overflow-x: hidden;
   }
 
   /* Remove default link styles */

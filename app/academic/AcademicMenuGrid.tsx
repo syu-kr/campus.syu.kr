@@ -21,6 +21,14 @@ const academicMenus = [
     isExternal: false,
   },
   {
+    id: "scholarship",
+    title: "장학금",
+    description: "장학금 공지 및 신청",
+    icon: "award",
+    href: "/academic/scholarship",
+    isExternal: false,
+  },
+  {
     id: "graduation-check",
     title: "졸업요건 확인",
     description: "내 상황에 맞는 졸업요건 체크",
@@ -90,6 +98,7 @@ export function AcademicMenuGrid() {
               href={menu.href}
               target="_blank"
               rel="noopener noreferrer"
+              className="block"
             >
               {cardElement}
             </a>
@@ -97,7 +106,7 @@ export function AcademicMenuGrid() {
         }
 
         return (
-          <Link key={menu.id} href={menu.href}>
+          <Link key={menu.id} href={menu.href} className="block">
             {cardElement}
           </Link>
         );

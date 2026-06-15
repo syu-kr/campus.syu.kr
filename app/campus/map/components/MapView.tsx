@@ -19,6 +19,9 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
   const currentInfoWindowRef = useRef<KakaoInfoWindow | null>(null);
 
   useEffect(() => {
@@ -28,6 +31,8 @@ export function MapView({
       const sdkLoaded = await loadKakaoMapsSdk();
       if (!cancelled && sdkLoaded) {
         setSdkReady(true);
+      } else if (!cancelled) {
+        setLoadState("error");
       }
     })();
 
@@ -43,7 +48,10 @@ export function MapView({
 
     try {
       const kakaoMaps = window.kakao?.maps as KakaoMapsNamespace | undefined;
-      if (!kakaoMaps) return;
+      if (!kakaoMaps) {
+        setLoadState("error");
+        return;
+      }
 
       const container = mapContainer.current;
       const options = {
@@ -56,13 +64,14 @@ export function MapView({
 
       const newMap = new kakaoMaps.Map(container, options);
       setMap(newMap);
+      setLoadState("ready");
 
       requestAnimationFrame(() => {
         newMap.relayout();
         newMap.setCenter(options.center);
       });
     } catch {
-      // Handle map initialization error
+      setLoadState("error");
     }
   }, [sdkReady]);
 
@@ -90,10 +99,26 @@ export function MapView({
 
   return (
     <>
-      <div
-        ref={mapContainer}
-        className="h-[min(60vh,600px)] min-h-[360px] w-full"
-      />
+      {loadState === "error" ? (
+        <MapUnavailableState />
+      ) : (
+        <div className="relative h-[min(60vh,600px)] min-h-[360px] w-full">
+          <div ref={mapContainer} className="h-full w-full" />
+          {loadState === "loading" && (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-50">
+              <div className="w-full max-w-[18rem] px-4 text-center sm:max-w-sm">
+                <p className="font-semibold text-neutral-900">
+                  지도를 불러오는 중입니다
+                </p>
+                <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
+                  잠시만 기다려주세요. 지도가 표시되지 않으면 검색으로 건물
+                  정보를 확인할 수 있습니다.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {map &&
         buildings.map((building) => (
           <BuildingMarker
@@ -109,5 +134,21 @@ export function MapView({
           />
         ))}
     </>
+  );
+}
+
+function MapUnavailableState() {
+  return (
+    <div className="flex h-[min(60vh,600px)] min-h-[360px] w-full items-center justify-center bg-neutral-50 px-4">
+      <div className="w-full max-w-[18rem] text-center sm:max-w-sm">
+        <p className="font-semibold text-neutral-900">
+          지도를 불러오지 못했습니다
+        </p>
+        <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
+          네트워크 상태나 Kakao Maps 설정을 확인해주세요. 지도 없이도 위 검색창과
+          건물 목록으로 시설 정보를 확인할 수 있습니다.
+        </p>
+      </div>
+    </div>
   );
 }

@@ -6,42 +6,21 @@ import { Icon } from "@/app/components/Icon";
 export default function MorePage() {
   const moreMenus = [
     {
-      id: "1",
-      title: "장학금",
-      description: "장학금 공지 및 신청",
-      iconName: "award",
-      href: "/more/scholarship",
-    },
-    {
-      id: "2",
+      id: "service-notices",
       title: "서비스 공지",
       description: "SYU CAMPUS 서비스 공지",
       iconName: "megaphone",
       href: "/service/notices",
     },
     {
-      id: "3",
-      title: "연락처 검색",
-      description: "부서 및 담당자 연락처",
-      iconName: "phone",
-      href: "/more/phone",
-    },
-    {
-      id: "4",
-      title: "캠퍼스 꿀팁",
-      description: "학교생활에 필요한 링크 모음",
-      iconName: "lightbulb",
-      href: "/more/campus-tips",
-    },
-    {
-      id: "5",
+      id: "meet",
       title: "일정 잡기",
       description: "초대 링크로 가능한 시간 찾기",
       iconName: "calendar",
       href: "/more/meet",
     },
     {
-      id: "6",
+      id: "privacy",
       title: "알림 및 개인정보",
       description: "알림 권한과 분석 도구 안내",
       iconName: "info",
@@ -60,7 +39,7 @@ export default function MorePage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {moreMenus.map((menu) => (
-          <Link key={menu.id} href={menu.href}>
+          <Link key={menu.id} href={menu.href} className="block">
             <Card
               hover={false}
               className="cursor-pointer border border-neutral-200 bg-white transition-colors hover:border-primary-300 hover:bg-primary-50"
