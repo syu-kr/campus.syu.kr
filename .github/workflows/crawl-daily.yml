@@ -7,9 +7,7 @@ on:
   workflow_dispatch: # 수동 실행 option
 
 permissions:
-  checks: read
-  contents: read
-  pull-requests: read
+  contents: write
 
 concurrency:
   group: daily-crawl
@@ -34,8 +32,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.CRAWLER_PAT }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -57,18 +53,8 @@ jobs:
       - name: Run cafeteria menu crawler
         run: python scripts/crawl_cafeteria.py
 
-      - name: Create pull request and merge after required checks
-        env:
-          GH_TOKEN: ${{ secrets.CRAWLER_PAT }}
-          CI_TOKEN: ${{ github.token }}
-          BRANCH: automation/daily-crawl
-          PR_TITLE: "chore: update daily crawl data"
+      - name: Commit crawler changes to main
         run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "CRAWLER_PAT secret is not configured."
-            exit 1
-          fi
-
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git config --global --add safe.directory "$PWD"
@@ -79,21 +65,5 @@ jobs:
             exit 0
           fi
 
-          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
-          git checkout -B "$BRANCH"
           git commit -m "chore: update daily crawl data (notices and cafeteria menu)"
-          git push --force-with-lease origin "$BRANCH"
-
-          PR_URL="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')"
-          if [ -z "$PR_URL" ]; then
-            PR_URL="$(gh pr create \
-              --base main \
-              --head "$BRANCH" \
-              --title "$PR_TITLE" \
-              --body "Automated daily crawler data update.")"
-          fi
-
-          echo "Waiting for required checks on $PR_URL"
-          sleep 10
-          GH_TOKEN="$CI_TOKEN" gh pr checks "$PR_URL" --required --watch --fail-fast --interval 10
-          gh pr merge "$PR_URL" --squash --delete-branch
+          git push origin HEAD:main
