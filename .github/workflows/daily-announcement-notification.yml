@@ -34,6 +34,19 @@ jobs:
           API_URL: ${{ secrets.API_URL }}
         run: npm run send-daily-notification
 
-      - name: 📊 Log Result
-        if: always()
-        run: echo "✅ Daily notification job completed at $(date)"
+      - name: 📊 Log Success
+        if: success()
+        run: |
+          echo "✅ Daily notification job completed at $(date)"
+          echo "### Daily notification" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: success" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Completed at: $(date -u)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📊 Log Failure
+        if: failure()
+        run: |
+          echo "❌ Daily notification job failed at $(date)"
+          echo "### Daily notification" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Status: failed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Failed at: $(date -u)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Check the Send Daily Notification step logs before rerunning. Dedupe locks may require manual inspection." >> "$GITHUB_STEP_SUMMARY"
