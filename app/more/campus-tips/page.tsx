@@ -307,10 +307,22 @@ function sortTips(a: CampusTip, b: CampusTip): number {
     (categoryOrder.get(b.category) ?? 99);
   if (categoryDiff !== 0) return categoryDiff;
 
-  const sourceDiff = getSourcePriority(a.sourceType) - getSourcePriority(b.sourceType);
+  const priorityDiff = getTipPriority(a) - getTipPriority(b);
+  if (priorityDiff !== 0) return priorityDiff;
+
+  const sourceDiff =
+    getSourcePriority(a.sourceType) - getSourcePriority(b.sourceType);
   if (sourceDiff !== 0) return sourceDiff;
 
   return a.title.localeCompare(b.title, "ko");
+}
+
+function getTipPriority(tip: CampusTip): number {
+  if (typeof tip.sortPriority === "number") return tip.sortPriority;
+  if (tip.category === "school" && tip.id.startsWith("school-instagram-")) {
+    return 900;
+  }
+  return 500;
 }
 
 function getSourcePriority(sourceType: CampusTipSourceType): number {
