@@ -383,6 +383,187 @@ export const dictionaries = {
         itemCountPrefix: "",
         itemCountSuffix: "개",
       },
+      graduation: {
+        metaTitle: "졸업요건 자가진단 | SYU CAMPUS",
+        metaDescription:
+          "입학년도, 학과, 입학유형에 맞는 졸업요건을 확인하고 이수 현황을 점검하세요.",
+        mobileBadge: "데스크톱 권장",
+        mobileTitle: "졸업요건 자가진단은 큰 화면이 더 편합니다",
+        mobileDescription:
+          "과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도 모바일에서 계속 사용할 수 있습니다.",
+        mobileContinue: "모바일로 계속 사용하기",
+        mobileBack: "이전 페이지로 돌아가기",
+        badges: {
+          selfCheck: "자가진단",
+          referenceOnly: "참고용",
+          lastVerifiedPrefix: "마지막 검증",
+        },
+        title: "졸업요건 자가진단",
+        description:
+          "입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의 이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이 아닙니다.",
+        sourceNoticePrefix: "현재 학점 기준은 ",
+        sourceNoticeSuffix:
+          "을 구조화한 참고값입니다. 자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직 과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시 확인하세요.",
+        contactWrongInfo: "잘못된 정보 문의하기",
+        sections: {
+          selectionTitle: "1. 내 조건 선택",
+          selectionDescription:
+            "입학년도부터 순서대로 선택하세요. 조건을 바꾸면 입력한 진단 내용은 초기화됩니다.",
+          coursesTitle: "2. 검증 과목 선택",
+          coursesDescription:
+            "원문 PDF 전체 페이지 검증이 완료된 학과는 입학년도와 관계없이 현재 검증된 2025년 교육과정을 참고 기준으로 과목 선택 합계를 지원합니다.",
+          creditsTitle: "3. 학점 입력",
+          creditsDescription:
+            "과목 선택으로 계산된 값은 참고용입니다. SU-WINGs의 인정학점, 교양 영역, 자유선택 학점을 확인해 직접 보정하세요.",
+          checklistTitle: "4. 비학점 조건 체크",
+          checklistDescription:
+            "시험, 채플, 실습, 인증 등은 시스템이 자동 확인할 수 없습니다. 직접 확인한 상태를 기록하세요.",
+          resultsTitle: "5. 진단 결과",
+          resultsDescription: "학점과 체크리스트를 분리해서 보여줍니다.",
+          sourcesTitle: "공식 근거",
+          sourcesDescription: "진단에 사용한 자료의 범위와 마지막 확인일입니다.",
+        },
+        labels: {
+          admissionYear: "입학년도",
+          college: "대학",
+          department: "학과",
+          major: "전공",
+          detailMajor: "세부전공",
+          admissionType: "입학유형",
+          majorTrack: "전공형태",
+        },
+        placeholders: {
+          admissionYear: "예: 2024",
+          courseSearch: "과목명 또는 이수구분 검색",
+          checklistPlan: "확인 방법이나 이수 계획을 메모하세요",
+        },
+        helps: {
+          admissionYear:
+            "학번 대신 입학 연도를 입력하세요. 예: 2024년 입학이면",
+          majorRequired: "세부전공 선택 필요",
+          previousCondition: "이전 조건을 먼저 선택하세요.",
+        },
+        empty: {
+          admissionYearFirst: "입학년도를 먼저 선택하세요.",
+          collegeFirst: "대학을 먼저 선택하세요.",
+          departmentAndMajorFirst: "학과와 세부전공을 먼저 선택하세요.",
+          admissionTypeFirst: "입학유형을 먼저 선택하세요.",
+          courseAvailability:
+            "입학년도와 학과를 선택하면 검증 과목 지원 여부가 표시됩니다.",
+          credits: "내 조건을 모두 선택하면 입력할 학점 항목이 표시됩니다.",
+          checklist: "내 조건을 모두 선택하면 확인할 체크리스트가 표시됩니다.",
+          results: "내 조건을 모두 선택하면 진단 결과가 표시됩니다.",
+          courseSearch: "검색 조건에 맞는 과목이 없습니다.",
+        },
+        metrics: {
+          totalChecks: "전체 확인 항목",
+          satisfied: "충족·해당없음",
+          remaining: "남은 확인",
+        },
+        result: {
+          requiredInput: "요구 {required} / 입력 {completed}",
+          requiredCredits: "참고 요구학점 {required}",
+          creditShortage: "{shortage}학점 부족",
+          satisfied: "충족",
+          additionalCheckTitle: "추가 확인 안내",
+          selectAllConditionsWarning:
+            "조건을 모두 선택하면 참고 요건을 확인할 수 있습니다.",
+          admissionYearWarning:
+            "{admissionYear}년 입학생은 현재 {sourceYear}학년도 요람 참고값과 다를 수 있어 학과 확인이 필요합니다.",
+          transfer3Warning:
+            "3학년 편입 졸업학점은 자가진단표와 최신 본부 안내 사이에 차이가 있어 SU-WINGs와 학과사무실 확인이 필요합니다.",
+        },
+        sources: {
+          verifiedSuffix: "확인",
+          openOfficialPage: "공식 페이지 열기",
+        },
+        sidebar: {
+          myConditions: "내 조건",
+          reset: "초기화",
+          print: "출력",
+          principlesTitle: "진단 원칙",
+          principles: [
+            "입력하지 않은 항목은 충족으로 보지 않습니다.",
+            "원문 대조가 끝난 확정 과목만 합계에 사용합니다.",
+            "과목 합계는 SU-WINGs 인정학점으로 직접 보정합니다.",
+            "학과별 시험·실습·인증은 직접 확인합니다.",
+            "입력 내용은 현재 브라우저에만 저장됩니다.",
+          ],
+          contactTitle: "정보 수정 문의",
+          contactDescription:
+            "오탈자, 학과별 기준 차이, 잘못된 과목 정보가 보이면 바로 알려주세요. 확인 후 데이터에 반영하겠습니다.",
+        },
+        courses: {
+          groupLabel: "{year}학년 {semester}학기",
+          verifiedPrefix: "원문 대조 완료 과목",
+          countSuffix: "개",
+          description:
+            "선택한 과목의 합계를 학점 입력란에 반영합니다. 재수강·대체과목·편입 인정학점은 SU-WINGs 기준으로 직접 수정하세요. 택1 및 동일 과목의 양 학기 개설분은 하나만 선택됩니다.",
+          reset: "과목 선택 초기화",
+          selectedCourses: "선택 과목",
+          selectedCredits: "선택 학점",
+          duplicateTitle: "중복 선택은 한 과목만 합산했습니다",
+          autoApply:
+            "자동 반영: 총 취득학점, 교양필수, 전공필수, 전공선택, 주전공. 교양선택의 세부 영역과 자유선택 학점은 과목표만으로 확정할 수 없어 직접 입력해야 합니다.",
+          unavailableReason:
+            "이 학과는 아직 교육과정 전체 페이지 검증이 완료되지 않았습니다.",
+          referenceReason:
+            "{admissionYear}년 입학생도 현재 검증된 {sourceYear}년 교육과정을 기준으로 과목을 선택할 수 있습니다. 실제 적용 교육과정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.",
+        },
+        units: {
+          credit: "학점",
+          item: "개",
+          year: "년",
+        },
+        checklist: {
+          satisfied: "이수",
+          incomplete: "미이수",
+          notApplicable: "해당 없음",
+        },
+        banners: {
+          shortTitle: "부족하거나 미이수인 항목이 있습니다",
+          shortDescription: "부족 학점과 미이수 조건을 확인해 계획을 세우세요.",
+          checkRequiredTitle: "직접 확인할 항목이 남아 있습니다",
+          checkRequiredDescription:
+            "입력하지 않은 조건과 공식 확인이 필요한 내용을 확인하세요.",
+          satisfiedTitle: "입력값 기준으로 모든 항목을 확인했습니다",
+          satisfiedDescription:
+            "최종 졸업 판정은 SU-WINGs와 학과사무실에서 확인하세요.",
+        },
+        admissionTypes: {
+          freshman: "신입생",
+          transfer2: "2학년 편입",
+          transfer3: "3학년 편입",
+          transfer4: "4학년 편입",
+          departmentTransfer: "전과생",
+        },
+        majorTracks: {
+          single: "단일전공",
+          doubleMajor: "복수전공",
+          minor: "부전공",
+          teaching: "교직",
+          lifelongEducator: "평생교육사",
+        },
+        creditCategories: {
+          totalCredits: "총 취득학점",
+          requiredLiberal: "교양필수",
+          coreLiberal: "핵심교양",
+          areaLiberal: "영역별 교양",
+          majorRequired: "전공필수",
+          majorElective: "전공선택",
+          majorTotal: "주전공",
+          doubleMajor: "복수전공",
+          minor: "부전공",
+          teaching: "교직",
+          lifelongEducator: "평생교육사",
+          freeElective: "자유선택",
+        },
+        courseCategories: {
+          교필: "교양필수",
+          전필: "전공필수",
+          전선: "전공선택",
+        },
+      },
       announcements: {
         allTitle: "전체 공지",
         allDescription:
@@ -1578,6 +1759,192 @@ export const dictionaries = {
         noSearchResults: "No search results.",
         itemCountPrefix: "",
         itemCountSuffix: " items",
+      },
+      graduation: {
+        metaTitle: "Graduation Requirement Check | SYU CAMPUS",
+        metaDescription:
+          "Check reference graduation requirements by admission year, department, and admission type.",
+        mobileBadge: "Desktop recommended",
+        mobileTitle: "Graduation checks are easier on a larger screen",
+        mobileDescription:
+          "This page has many course selections and credit inputs. Desktop use is recommended, but you can continue on mobile.",
+        mobileContinue: "Continue on mobile",
+        mobileBack: "Go back",
+        badges: {
+          selfCheck: "Self-check",
+          referenceOnly: "Reference only",
+          lastVerifiedPrefix: "Last verified",
+        },
+        title: "Graduation Requirement Check",
+        description:
+          "Review reference requirements for your admission year and department, then compare them with your SU-WINGs credits and non-credit requirements. This result is not an official graduation decision.",
+        sourceNoticePrefix: "The current credit criteria are reference values structured from ",
+        sourceNoticeSuffix:
+          ". Update times may differ by source. Transfer, department transfer, multi-major, and teaching-track students must check the official sources and department office shown with the result.",
+        contactWrongInfo: "Report incorrect information",
+        sections: {
+          selectionTitle: "1. Select Your Conditions",
+          selectionDescription:
+            "Select each condition in order. Changing a condition resets the entered check data.",
+          coursesTitle: "2. Select Verified Courses",
+          coursesDescription:
+            "For departments whose original PDF pages have been fully verified, course totals are supported using the currently verified 2025 curriculum as a reference, regardless of admission year.",
+          creditsTitle: "3. Enter Credits",
+          creditsDescription:
+            "Course-selected totals are only a reference. Adjust recognized credits, liberal arts areas, and free electives using SU-WINGs.",
+          checklistTitle: "4. Check Non-credit Requirements",
+          checklistDescription:
+            "Exams, chapel, practice, certifications, and similar requirements cannot be verified automatically. Record what you have checked yourself.",
+          resultsTitle: "5. Result",
+          resultsDescription: "Credits and checklist items are shown separately.",
+          sourcesTitle: "Official Sources",
+          sourcesDescription:
+            "The source scope and last verification date used for this check.",
+        },
+        labels: {
+          admissionYear: "Admission Year",
+          college: "College",
+          department: "Department",
+          major: "Major",
+          detailMajor: "Detailed Major",
+          admissionType: "Admission Type",
+          majorTrack: "Major Track",
+        },
+        placeholders: {
+          admissionYear: "e.g. 2024",
+          courseSearch: "Search by course name or category",
+          checklistPlan: "Memo how you will check or complete this item",
+        },
+        helps: {
+          admissionYear:
+            "Enter your admission year instead of your student number. If you entered in 2024:",
+          majorRequired: "Detailed major selection required",
+          previousCondition: "Select the previous condition first.",
+        },
+        empty: {
+          admissionYearFirst: "Select an admission year first.",
+          collegeFirst: "Select a college first.",
+          departmentAndMajorFirst:
+            "Select a department and detailed major first.",
+          admissionTypeFirst: "Select an admission type first.",
+          courseAvailability:
+            "Select an admission year and department to see verified course support.",
+          credits:
+            "Select all conditions to see which credit fields you need to enter.",
+          checklist:
+            "Select all conditions to see the checklist items you need to verify.",
+          results: "Select all conditions to see the diagnosis result.",
+          courseSearch: "No courses match the search condition.",
+        },
+        metrics: {
+          totalChecks: "Total Checks",
+          satisfied: "Satisfied/N/A",
+          remaining: "Remaining",
+        },
+        result: {
+          requiredInput: "Required {required} / Entered {completed}",
+          requiredCredits: "Reference required credits {required}",
+          creditShortage: "{shortage} credits short",
+          satisfied: "Satisfied",
+          additionalCheckTitle: "Additional Checks",
+          selectAllConditionsWarning:
+            "Select all conditions to view reference requirements.",
+          admissionYearWarning:
+            "Students admitted in {admissionYear} may differ from the current {sourceYear} handbook reference values, so department confirmation is required.",
+          transfer3Warning:
+            "Third-year transfer graduation credits may differ between the self-check sheet and the latest office guidance. Check SU-WINGs and your department office.",
+        },
+        sources: {
+          verifiedSuffix: "verified",
+          openOfficialPage: "Open official page",
+        },
+        sidebar: {
+          myConditions: "My Conditions",
+          reset: "Reset",
+          print: "Print",
+          principlesTitle: "Check Principles",
+          principles: [
+            "Unentered items are not treated as satisfied.",
+            "Only fully verified courses are included in the total.",
+            "Adjust course totals manually using SU-WINGs recognized credits.",
+            "Department exams, practice, and certifications must be checked directly.",
+            "Entered data is stored only in this browser.",
+          ],
+          contactTitle: "Report Information Issues",
+          contactDescription:
+            "If you see typos, department-specific differences, or incorrect course data, please let us know. We will review and reflect it in the data.",
+        },
+        courses: {
+          groupLabel: "Year {year}, Semester {semester}",
+          verifiedPrefix: "Verified against original source",
+          countSuffix: " courses",
+          description:
+            "Selected course totals are reflected in the credit fields. Retakes, substitutions, and transfer-recognized credits must be adjusted manually using SU-WINGs. For choose-one or same-course offerings across semesters, only one is selected.",
+          reset: "Reset course selection",
+          selectedCourses: "Selected Courses",
+          selectedCredits: "Selected Credits",
+          duplicateTitle: "Only one duplicate/alternative course is counted",
+          autoApply:
+            "Auto-applied fields: total credits, required liberal arts, required major, elective major, and major total. Liberal arts sub-areas and free electives cannot be finalized from the course table alone and must be entered manually.",
+          unavailableReason:
+            "This department's full curriculum pages have not been verified yet.",
+          referenceReason:
+            "Students admitted in {admissionYear} can use the currently verified {sourceYear} curriculum as a course-selection reference. Always confirm your actual curriculum in SU-WINGs and with your department office.",
+        },
+        units: {
+          credit: " credits",
+          item: " items",
+          year: "",
+        },
+        checklist: {
+          satisfied: "Completed",
+          incomplete: "Incomplete",
+          notApplicable: "Not applicable",
+        },
+        banners: {
+          shortTitle: "Some items are short or incomplete",
+          shortDescription:
+            "Check the credit shortages and incomplete requirements, then plan what to complete.",
+          checkRequiredTitle: "Some items still need direct confirmation",
+          checkRequiredDescription:
+            "Review unentered conditions and items that need official confirmation.",
+          satisfiedTitle: "All entered items have been checked",
+          satisfiedDescription:
+            "Final graduation approval must still be confirmed through SU-WINGs and your department office.",
+        },
+        admissionTypes: {
+          freshman: "Freshman",
+          transfer2: "2nd-year Transfer",
+          transfer3: "3rd-year Transfer",
+          transfer4: "4th-year Transfer",
+          departmentTransfer: "Department Transfer",
+        },
+        majorTracks: {
+          single: "Single Major",
+          doubleMajor: "Double Major",
+          minor: "Minor",
+          teaching: "Teaching Track",
+          lifelongEducator: "Lifelong Educator",
+        },
+        creditCategories: {
+          totalCredits: "Total Earned Credits",
+          requiredLiberal: "Required Liberal Arts",
+          coreLiberal: "Core Liberal Arts",
+          areaLiberal: "Area Liberal Arts",
+          majorRequired: "Required Major",
+          majorElective: "Major Elective",
+          majorTotal: "Major Total",
+          doubleMajor: "Double Major",
+          minor: "Minor",
+          teaching: "Teaching Track",
+          lifelongEducator: "Lifelong Educator",
+          freeElective: "Free Elective",
+        },
+        courseCategories: {
+          교필: "Required Liberal Arts",
+          전필: "Required Major",
+          전선: "Major Elective",
+        },
       },
       announcements: {
         allTitle: "All Notices",

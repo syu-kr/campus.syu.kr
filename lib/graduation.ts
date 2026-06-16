@@ -3,6 +3,12 @@ import curriculumSelectionRuleData from "@/public/data/curriculum-course-selecti
 import verifiedCurriculumData from "@/public/data/curriculum-courses-2025-verified.json";
 import graduationRequirements2025 from "@/public/data/graduation-requirements-2025.json";
 import graduationSourceData from "@/public/data/graduation-sources.json";
+import {
+  DEFAULT_LOCALE,
+  getDictionary,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
 export type AdmissionType =
   | "freshman"
@@ -193,40 +199,6 @@ const VERIFIED_CURRICULUM = verifiedCurriculumData as VerifiedCurriculumData;
 const CURRICULUM_SELECTION_RULES =
   curriculumSelectionRuleData as CurriculumSelectionRuleData;
 
-export const ADMISSION_TYPE_LABELS: Record<AdmissionType, string> = {
-  freshman: "신입생",
-  transfer2: "2학년 편입",
-  transfer3: "3학년 편입",
-  transfer4: "4학년 편입",
-  departmentTransfer: "전과생",
-};
-
-export const MAJOR_TRACK_LABELS: Record<MajorTrack, string> = {
-  single: "단일전공",
-  doubleMajor: "복수전공",
-  minor: "부전공",
-  teaching: "교직",
-  lifelongEducator: "평생교육사",
-};
-
-export const CREDIT_CATEGORY_LABELS: Record<
-  CreditCategoryKey | "totalCredits",
-  string
-> = {
-  totalCredits: "총 취득학점",
-  requiredLiberal: "교양필수",
-  coreLiberal: "핵심교양",
-  areaLiberal: "영역별 교양",
-  majorRequired: "전공필수",
-  majorElective: "전공선택",
-  majorTotal: "주전공",
-  doubleMajor: "복수전공",
-  minor: "부전공",
-  teaching: "교직",
-  lifelongEducator: "평생교육사",
-  freeElective: "자유선택",
-};
-
 const CREDIT_CATEGORY_ORDER: Array<CreditCategoryKey | "totalCredits"> = [
   "totalCredits",
   "requiredLiberal",
@@ -364,7 +336,9 @@ export function getSourcesForSelection(departmentId: string) {
 export function getVerifiedCurriculumAvailability(
   departmentId: string,
   admissionYear: string,
+  locale: Locale = DEFAULT_LOCALE,
 ) {
+  const text = getDictionary(normalizeLocale(locale)).pages.graduation;
   const courses = VERIFIED_CURRICULUM.courses.filter(
     (course) => course.departmentId === departmentId,
   );
@@ -380,7 +354,7 @@ export function getVerifiedCurriculumAvailability(
       sourceYear,
       usesReferenceCurriculum: false,
       courseCount: 0,
-      reason: "이 학과는 아직 교육과정 전체 페이지 검증이 완료되지 않았습니다.",
+      reason: text.courses.unavailableReason,
     };
   }
 
@@ -391,7 +365,9 @@ export function getVerifiedCurriculumAvailability(
     usesReferenceCurriculum,
     courseCount: courses.length,
     reason: usesReferenceCurriculum
-      ? `${admissionYear}년 입학생도 현재 검증된 ${sourceYear}년 교육과정을 기준으로 과목을 선택할 수 있습니다. 실제 적용 교육과정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.`
+      ? text.courses.referenceReason
+          .replace("{admissionYear}", admissionYear)
+          .replace("{sourceYear}", sourceYear)
       : "",
   };
 }
@@ -503,13 +479,16 @@ export function evaluateGraduation(
   completedCredits: CompletedCreditInput,
   checklistAnswers: Record<string, ChecklistAnswer>,
   selection: GraduationSelection,
+  locale: Locale = DEFAULT_LOCALE,
 ): GraduationEvaluationResult {
+  const text = getDictionary(normalizeLocale(locale)).pages.graduation;
+
   if (!requirement) {
     return {
       overallStatus: "checkRequired",
       creditItems: [],
       checklistItems: [],
-      warnings: ["조건을 모두 선택하면 참고 요건을 확인할 수 있습니다."],
+      warnings: [text.result.selectAllConditionsWarning],
       satisfiedCount: 0,
       totalCheckCount: 0,
     };
@@ -524,7 +503,7 @@ export function evaluateGraduation(
     const shortage = Math.max(required - completed, 0);
     return {
       key,
-      label: CREDIT_CATEGORY_LABELS[key],
+      label: text.creditCategories[key],
       required,
       completed,
       shortage,
@@ -551,13 +530,13 @@ export function evaluateGraduation(
   const warnings = [
     ...(selection.admissionYear !== GRADUATION_DATA.metadata.sourceYear
       ? [
-          `${selection.admissionYear}년 입학생은 현재 ${GRADUATION_DATA.metadata.sourceYear}학년도 요람 참고값과 다를 수 있어 학과 확인이 필요합니다.`,
+          text.result.admissionYearWarning
+            .replace("{admissionYear}", selection.admissionYear)
+            .replace("{sourceYear}", GRADUATION_DATA.metadata.sourceYear),
         ]
       : []),
     ...(selection.admissionType === "transfer3"
-      ? [
-          "3학년 편입 졸업학점은 자가진단표와 최신 본부 안내 사이에 차이가 있어 SU-WINGs와 학과사무실 확인이 필요합니다.",
-        ]
+      ? [text.result.transfer3Warning]
       : []),
     ...(requirement.warnings ?? []),
     ...(getDepartmentById(selection.departmentId)?.warnings ?? []),

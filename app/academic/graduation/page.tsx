@@ -7,10 +7,8 @@ import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import {
-  ADMISSION_TYPE_LABELS,
-  CREDIT_CATEGORY_LABELS,
-  MAJOR_TRACK_LABELS,
   evaluateGraduation,
   getAvailableAdmissionTypes,
   getAvailableDepartments,
@@ -36,6 +34,7 @@ import {
   type GraduationSelection,
   type VerifiedCurriculumCourse,
 } from "@/lib/graduation";
+import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 
 const STORAGE_KEY = "syu-campus-graduation-self-check-v2";
 const MOBILE_DESKTOP_NOTICE_KEY =
@@ -58,7 +57,19 @@ interface SavedState {
   plans: Record<string, string>;
 }
 
+type GraduationText = Dictionary["pages"]["graduation"];
+
+function getCourseCategoryLabel(text: GraduationText, category: string) {
+  return (
+    text.courseCategories[category as keyof typeof text.courseCategories] ??
+    category
+  );
+}
+
 export default function GraduationPage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.graduation;
   const metadata = getGraduationMetadata();
   const colleges = getColleges();
   const [selection, setSelection] =
@@ -101,6 +112,7 @@ export default function GraduationPage() {
   const curriculumAvailability = getVerifiedCurriculumAvailability(
     selection.departmentId,
     selection.admissionYear,
+    locale,
   );
   const verifiedCourses = getVerifiedCurriculumCourses(
     selection.departmentId,
@@ -115,6 +127,7 @@ export default function GraduationPage() {
     completedCredits,
     checklistAnswers,
     selection,
+    locale,
   );
   const selectionComplete = isCompleteSelection(selection);
 
@@ -213,7 +226,7 @@ export default function GraduationPage() {
       return;
     }
 
-    window.location.href = "/academic";
+    window.location.href = localizePath("/academic", locale);
   };
 
   const handleReset = () => {
@@ -267,16 +280,15 @@ export default function GraduationPage() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/45 px-4 py-6"
         >
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
-            <Badge color="yellow">데스크톱 권장</Badge>
+            <Badge color="yellow">{text.mobileBadge}</Badge>
             <h2
               id="graduation-mobile-notice-title"
               className="mt-3 text-lg font-bold text-neutral-900"
             >
-              졸업요건 자가진단은 큰 화면이 더 편합니다
+              {text.mobileTitle}
             </h2>
             <p className="mt-2 text-sm leading-6 text-neutral-600">
-              과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도
-              모바일에서 계속 사용할 수 있습니다.
+              {text.mobileDescription}
             </p>
             <div className="mt-5 grid gap-2">
               <button
@@ -284,14 +296,14 @@ export default function GraduationPage() {
                 onClick={handleMobileContinue}
                 className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
               >
-                모바일로 계속 사용하기
+                {text.mobileContinue}
               </button>
               <button
                 type="button"
                 onClick={handleMobileBack}
                 className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
               >
-                이전 페이지로 돌아가기
+                {text.mobileBack}
               </button>
             </div>
           </div>
@@ -300,34 +312,33 @@ export default function GraduationPage() {
 
       <header className="mb-8">
         <div className="mb-3 flex flex-wrap gap-2">
-          <Badge color="blue">자가진단</Badge>
-          <Badge color="yellow">참고용</Badge>
-          <Badge color="gray">마지막 검증 {metadata.lastVerifiedAt}</Badge>
+          <Badge color="blue">{text.badges.selfCheck}</Badge>
+          <Badge color="yellow">{text.badges.referenceOnly}</Badge>
+          <Badge color="gray">
+            {text.badges.lastVerifiedPrefix} {metadata.lastVerifiedAt}
+          </Badge>
         </div>
         <h1 className="text-3xl font-bold text-neutral-900 md:text-4xl">
-          졸업요건 자가진단
+          {text.title}
         </h1>
         <p className="mt-3 text-sm leading-6 text-neutral-600 sm:text-base">
-          입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의
-          이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이
-          아닙니다.
+          {text.description}
         </p>
       </header>
 
       <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-5xl">
-            현재 학점 기준은 {metadata.sourceTitle}을 구조화한 참고값입니다.
-            자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직
-            과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시
-            확인하세요.
+            {text.sourceNoticePrefix}
+            {metadata.sourceTitle}
+            {text.sourceNoticeSuffix}
           </p>
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
             className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
           >
-            잘못된 정보 문의하기
+            {text.contactWrongInfo}
           </button>
         </div>
       </div>
@@ -335,10 +346,10 @@ export default function GraduationPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
         <main className="space-y-6">
           <Section
-            title="1. 내 조건 선택"
-            description="입학년도부터 순서대로 선택하세요. 조건을 바꾸면 입력한 진단 내용은 초기화됩니다."
+            title={text.sections.selectionTitle}
+            description={text.sections.selectionDescription}
           >
-            <FieldLabel label="입학년도">
+            <FieldLabel label={text.labels.admissionYear}>
               <input
                 type="text"
                 inputMode="numeric"
@@ -348,18 +359,18 @@ export default function GraduationPage() {
                 onChange={(event) =>
                   handleAdmissionYearChange(event.target.value)
                 }
-                placeholder="예: 2024"
+                placeholder={text.placeholders.admissionYear}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
               />
               <p className="mt-2 text-xs leading-5 text-neutral-500">
-                학번 대신 입학 연도를 입력하세요. 예: 2024년 입학이면
+                {text.helps.admissionYear}
                 <span className="font-semibold text-neutral-700"> 2024</span>
               </p>
             </FieldLabel>
 
             <ChoiceGroup
-              label="대학"
-              emptyMessage="입학년도를 먼저 선택하세요."
+              label={text.labels.college}
+              emptyMessage={text.empty.admissionYearFirst}
               disabled={!selection.admissionYear}
             >
               {colleges.map((college) => (
@@ -373,8 +384,8 @@ export default function GraduationPage() {
             </ChoiceGroup>
 
             <ChoiceGroup
-              label="학과"
-              emptyMessage="대학을 먼저 선택하세요."
+              label={text.labels.department}
+              emptyMessage={text.empty.collegeFirst}
               disabled={departments.length === 0}
             >
               {departments.map((department) => (
@@ -383,7 +394,9 @@ export default function GraduationPage() {
                   selected={selection.departmentId === department.id}
                   title={department.name}
                   description={
-                    department.majors?.length ? "세부전공 선택 필요" : undefined
+                    department.majors?.length
+                      ? text.helps.majorRequired
+                      : undefined
                   }
                   onClick={() => handleDepartmentSelect(department.id)}
                 />
@@ -391,7 +404,7 @@ export default function GraduationPage() {
             </ChoiceGroup>
 
             {majors.length > 0 && (
-              <ChoiceGroup label="세부전공">
+              <ChoiceGroup label={text.labels.detailMajor}>
                 {majors.map((major) => (
                   <ChoiceButton
                     key={major.id}
@@ -410,8 +423,8 @@ export default function GraduationPage() {
             )}
 
             <ChoiceGroup
-              label="입학유형"
-              emptyMessage="학과와 세부전공을 먼저 선택하세요."
+              label={text.labels.admissionType}
+              emptyMessage={text.empty.departmentAndMajorFirst}
               disabled={
                 !selection.departmentId ||
                 (majors.length > 0 && !selection.majorId)
@@ -421,7 +434,7 @@ export default function GraduationPage() {
                 <ChoiceButton
                   key={type}
                   selected={selection.admissionType === type}
-                  title={ADMISSION_TYPE_LABELS[type]}
+                  title={text.admissionTypes[type]}
                   onClick={() =>
                     updateSelection({
                       admissionType: type,
@@ -433,15 +446,15 @@ export default function GraduationPage() {
             </ChoiceGroup>
 
             <ChoiceGroup
-              label="전공형태"
-              emptyMessage="입학유형을 먼저 선택하세요."
+              label={text.labels.majorTrack}
+              emptyMessage={text.empty.admissionTypeFirst}
               disabled={!selection.admissionType}
             >
               {majorTracks.map((track) => (
                 <ChoiceButton
                   key={track}
                   selected={selection.majorTrack === track}
-                  title={MAJOR_TRACK_LABELS[track]}
+                  title={text.majorTracks[track]}
                   onClick={() => updateSelection({ majorTrack: track })}
                 />
               ))}
@@ -449,11 +462,11 @@ export default function GraduationPage() {
           </Section>
 
           <Section
-            title="2. 검증 과목 선택"
-            description="원문 PDF 전체 페이지 검증이 완료된 학과는 입학년도와 관계없이 현재 검증된 2025년 교육과정을 참고 기준으로 과목 선택 합계를 지원합니다."
+            title={text.sections.coursesTitle}
+            description={text.sections.coursesDescription}
           >
             {!selection.departmentId || !selection.admissionYear ? (
-              <EmptyState message="입학년도와 학과를 선택하면 검증 과목 지원 여부가 표시됩니다." />
+              <EmptyState message={text.empty.courseAvailability} />
             ) : !curriculumAvailability.available ? (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
                 {curriculumAvailability.reason}
@@ -464,6 +477,8 @@ export default function GraduationPage() {
                   courses={verifiedCourses}
                   selectedCourseIds={selectedCourseIds}
                   summary={selectedCourseSummary}
+                  text={text}
+                  locale={locale}
                   onToggle={handleCourseToggle}
                   onReset={handleCourseSelectionReset}
                 />
@@ -472,11 +487,11 @@ export default function GraduationPage() {
           </Section>
 
           <Section
-            title="3. 학점 입력"
-            description="과목 선택으로 계산된 값은 참고용입니다. SU-WINGs의 인정학점, 교양 영역, 자유선택 학점을 확인해 직접 보정하세요."
+            title={text.sections.creditsTitle}
+            description={text.sections.creditsDescription}
           >
             {!requirement ? (
-              <EmptyState message="내 조건을 모두 선택하면 입력할 학점 항목이 표시됩니다." />
+              <EmptyState message={text.empty.credits} />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 {creditKeys.map((key) => (
@@ -489,6 +504,7 @@ export default function GraduationPage() {
                         : Number(requirement.categories[key] ?? 0)
                     }
                     value={completedCredits[key]}
+                    text={text}
                     onChange={(value) =>
                       setCompletedCredits((current) => ({
                         ...current,
@@ -502,11 +518,11 @@ export default function GraduationPage() {
           </Section>
 
           <Section
-            title="4. 비학점 조건 체크"
-            description="시험, 채플, 실습, 인증 등은 시스템이 자동 확인할 수 없습니다. 직접 확인한 상태를 기록하세요."
+            title={text.sections.checklistTitle}
+            description={text.sections.checklistDescription}
           >
             {checklistItems.length === 0 ? (
-              <EmptyState message="내 조건을 모두 선택하면 확인할 체크리스트가 표시됩니다." />
+              <EmptyState message={text.empty.checklist} />
             ) : (
               <div className="space-y-4">
                 {checklistItems.map((item) => (
@@ -516,6 +532,7 @@ export default function GraduationPage() {
                     description={item.description}
                     answer={checklistAnswers[item.id]}
                     plan={plans[item.id] ?? ""}
+                    text={text}
                     onAnswer={(answer) =>
                       setChecklistAnswers((current) => ({
                         ...current,
@@ -532,26 +549,26 @@ export default function GraduationPage() {
           </Section>
 
           <Section
-            title="5. 진단 결과"
-            description="학점과 체크리스트를 분리해서 보여줍니다."
+            title={text.sections.resultsTitle}
+            description={text.sections.resultsDescription}
           >
             {!selectionComplete || !requirement ? (
-              <EmptyState message="내 조건을 모두 선택하면 진단 결과가 표시됩니다." />
+              <EmptyState message={text.empty.results} />
             ) : (
               <div className="space-y-5">
-                <ResultBanner status={evaluation.overallStatus} />
+                <ResultBanner status={evaluation.overallStatus} text={text} />
                 <div className="grid gap-3 sm:grid-cols-3">
                   <SummaryMetric
-                    label="전체 확인 항목"
+                    label={text.metrics.totalChecks}
                     value={evaluation.totalCheckCount}
                   />
                   <SummaryMetric
-                    label="충족·해당없음"
+                    label={text.metrics.satisfied}
                     value={evaluation.satisfiedCount}
                     color="green"
                   />
                   <SummaryMetric
-                    label="남은 확인"
+                    label={text.metrics.remaining}
                     value={
                       evaluation.totalCheckCount - evaluation.satisfiedCount
                     }
@@ -570,13 +587,18 @@ export default function GraduationPage() {
                           {item.label}
                         </p>
                         <p className="mt-0.5 text-xs text-neutral-500">
-                          요구 {item.required} / 입력 {item.completed}
+                          {text.result.requiredInput
+                            .replace("{required}", String(item.required))
+                            .replace("{completed}", String(item.completed))}
                         </p>
                       </div>
                       <Badge color={item.shortage > 0 ? "red" : "green"}>
                         {item.shortage > 0
-                          ? `${item.shortage}학점 부족`
-                          : "충족"}
+                          ? text.result.creditShortage.replace(
+                              "{shortage}",
+                              String(item.shortage),
+                            )
+                          : text.result.satisfied}
                       </Badge>
                     </div>
                   ))}
@@ -585,7 +607,7 @@ export default function GraduationPage() {
                 {evaluation.warnings.length > 0 && (
                   <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
                     <p className="text-sm font-semibold text-blue-900">
-                      추가 확인 안내
+                      {text.result.additionalCheckTitle}
                     </p>
                     <ul className="mt-2 space-y-1.5 text-sm leading-6 text-blue-800">
                       {evaluation.warnings.map((warning) => (
@@ -599,8 +621,8 @@ export default function GraduationPage() {
           </Section>
 
           <Section
-            title="공식 근거"
-            description="진단에 사용한 자료의 범위와 마지막 확인일입니다."
+            title={text.sections.sourcesTitle}
+            description={text.sections.sourcesDescription}
           >
             <div className="space-y-3">
               {sources.map((source) => (
@@ -617,7 +639,9 @@ export default function GraduationPage() {
                         {source.scope}
                       </p>
                     </div>
-                    <Badge color="gray">{source.verifiedAt} 확인</Badge>
+                    <Badge color="gray">
+                      {source.verifiedAt} {text.sources.verifiedSuffix}
+                    </Badge>
                   </div>
                   {source.url && (
                     <a
@@ -626,7 +650,7 @@ export default function GraduationPage() {
                       rel="noopener noreferrer"
                       className="mt-3 inline-block text-sm font-semibold text-primary-700 hover:underline"
                     >
-                      공식 페이지 열기
+                      {text.sources.openOfficialPage}
                     </a>
                   )}
                 </div>
@@ -637,32 +661,37 @@ export default function GraduationPage() {
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card hover={false} className="border border-neutral-200">
-            <h2 className="text-lg font-bold text-neutral-900">내 조건</h2>
+            <h2 className="text-lg font-bold text-neutral-900">
+              {text.sidebar.myConditions}
+            </h2>
             <div className="mt-4 space-y-3 text-sm">
               <SummaryRow
-                label="입학년도"
+                label={text.labels.admissionYear}
                 value={
                   selection.admissionYear
-                    ? `${selection.admissionYear}년`
+                    ? `${selection.admissionYear}${text.units.year}`
                     : undefined
                 }
               />
-              <SummaryRow label="대학" value={selectedCollege?.name} />
-              <SummaryRow label="학과" value={selectedDepartment?.name} />
-              <SummaryRow label="전공" value={selectedMajor?.name} />
+              <SummaryRow label={text.labels.college} value={selectedCollege?.name} />
               <SummaryRow
-                label="입학유형"
+                label={text.labels.department}
+                value={selectedDepartment?.name}
+              />
+              <SummaryRow label={text.labels.major} value={selectedMajor?.name} />
+              <SummaryRow
+                label={text.labels.admissionType}
                 value={
                   selection.admissionType
-                    ? ADMISSION_TYPE_LABELS[selection.admissionType]
+                    ? text.admissionTypes[selection.admissionType]
                     : undefined
                 }
               />
               <SummaryRow
-                label="전공형태"
+                label={text.labels.majorTrack}
                 value={
                   selection.majorTrack
-                    ? MAJOR_TRACK_LABELS[selection.majorTrack]
+                    ? text.majorTracks[selection.majorTrack]
                     : undefined
                 }
               />
@@ -673,7 +702,7 @@ export default function GraduationPage() {
                 onClick={handleReset}
                 className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
               >
-                초기화
+                {text.sidebar.reset}
               </button>
               <button
                 type="button"
@@ -681,19 +710,19 @@ export default function GraduationPage() {
                 disabled={!requirement}
                 className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
               >
-                출력
+                {text.sidebar.print}
               </button>
             </div>
           </Card>
 
           <Card hover={false} className="border border-neutral-200">
-            <h2 className="text-lg font-bold text-neutral-900">진단 원칙</h2>
+            <h2 className="text-lg font-bold text-neutral-900">
+              {text.sidebar.principlesTitle}
+            </h2>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
-              <li>- 입력하지 않은 항목은 충족으로 보지 않습니다.</li>
-              <li>- 원문 대조가 끝난 확정 과목만 합계에 사용합니다.</li>
-              <li>- 과목 합계는 SU-WINGs 인정학점으로 직접 보정합니다.</li>
-              <li>- 학과별 시험·실습·인증은 직접 확인합니다.</li>
-              <li>- 입력 내용은 현재 브라우저에만 저장됩니다.</li>
+              {text.sidebar.principles.map((principle) => (
+                <li key={principle}>- {principle}</li>
+              ))}
             </ul>
           </Card>
 
@@ -702,18 +731,17 @@ export default function GraduationPage() {
             className="border border-primary-100 bg-primary-50"
           >
             <h2 className="text-lg font-bold text-neutral-900">
-              정보 수정 문의
+              {text.sidebar.contactTitle}
             </h2>
             <p className="mt-2 text-sm leading-6 text-neutral-600">
-              오탈자, 학과별 기준 차이, 잘못된 과목 정보가 보이면 바로
-              알려주세요. 확인 후 데이터에 반영하겠습니다.
+              {text.sidebar.contactDescription}
             </p>
             <button
               type="button"
               onClick={() => setIsContactOpen(true)}
               className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
-              잘못된 정보 문의하기
+              {text.contactWrongInfo}
             </button>
           </Card>
         </aside>
@@ -777,7 +805,7 @@ function ChoiceGroup({
     <div className="mt-5 border-t border-neutral-100 pt-5">
       <p className="mb-3 text-sm font-semibold text-neutral-900">{label}</p>
       {disabled ? (
-        <EmptyState message={emptyMessage ?? "이전 조건을 먼저 선택하세요."} />
+        <EmptyState message={emptyMessage ?? ""} />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {children}
@@ -823,26 +851,33 @@ function CurriculumCourseSelector({
   courses,
   selectedCourseIds,
   summary,
+  text,
+  locale,
   onToggle,
   onReset,
 }: {
   courses: VerifiedCurriculumCourse[];
   selectedCourseIds: string[];
   summary: ReturnType<typeof summarizeSelectedCourses>;
+  text: GraduationText;
+  locale: Locale;
   onToggle: (courseId: string) => void;
   onReset: () => void;
 }) {
   const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLocaleLowerCase("ko");
+  const searchLocale = locale === "ko" ? "ko" : "en-US";
+  const normalizedQuery = query.trim().toLocaleLowerCase(searchLocale);
   const filteredCourses = courses.filter(
     (course) =>
       !normalizedQuery ||
-      course.name.toLocaleLowerCase("ko").includes(normalizedQuery) ||
-      course.category.toLocaleLowerCase("ko").includes(normalizedQuery),
+      course.name.toLocaleLowerCase(searchLocale).includes(normalizedQuery) ||
+      course.category.toLocaleLowerCase(searchLocale).includes(normalizedQuery),
   );
   const groupedCourses = new Map<string, VerifiedCurriculumCourse[]>();
   for (const course of filteredCourses) {
-    const label = `${course.year}학년 ${course.semester}학기`;
+    const label = text.courses.groupLabel
+      .replace("{year}", String(course.year))
+      .replace("{semester}", String(course.semester));
     groupedCourses.set(label, [...(groupedCourses.get(label) ?? []), course]);
   }
   const groups = Array.from(groupedCourses);
@@ -853,12 +888,11 @@ function CurriculumCourseSelector({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-semibold text-green-900">
-              원문 대조 완료 과목 {courses.length}개
+              {text.courses.verifiedPrefix} {courses.length}
+              {text.courses.countSuffix}
             </p>
             <p className="mt-1 text-xs leading-5 text-green-800">
-              선택한 과목의 합계를 학점 입력란에 반영합니다.
-              재수강·대체과목·편입 인정학점은 SU-WINGs 기준으로 직접 수정하세요.
-              택1 및 동일 과목의 양 학기 개설분은 하나만 선택됩니다.
+              {text.courses.description}
             </p>
           </div>
           <button
@@ -867,33 +901,39 @@ function CurriculumCourseSelector({
             disabled={selectedCourseIds.length === 0}
             className="rounded-lg border border-green-300 bg-white px-3 py-2 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            과목 선택 초기화
+            {text.courses.reset}
           </button>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <CourseSummaryMetric
-            label="선택 과목"
+            label={text.courses.selectedCourses}
             value={summary.courseCount}
-            unit="개"
+            unit={text.units.item}
           />
-          <CourseSummaryMetric label="선택 학점" value={summary.totalCredits} />
           <CourseSummaryMetric
-            label="교양필수"
+            label={text.courses.selectedCredits}
+            value={summary.totalCredits}
+            unit={text.units.credit}
+          />
+          <CourseSummaryMetric
+            label={text.creditCategories.requiredLiberal}
             value={summary.categoryCredits["교필"] ?? 0}
+            unit={text.units.credit}
           />
           <CourseSummaryMetric
-            label="주전공"
+            label={text.creditCategories.majorTotal}
             value={
               (summary.categoryCredits["전필"] ?? 0) +
               (summary.categoryCredits["전선"] ?? 0)
             }
+            unit={text.units.credit}
           />
         </div>
       </div>
 
       {summary.conflicts.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-          <p className="font-semibold">중복 선택은 한 과목만 합산했습니다</p>
+          <p className="font-semibold">{text.courses.duplicateTitle}</p>
           <ul className="mt-2 space-y-1 text-xs leading-5">
             {summary.conflicts.map((conflict) => (
               <li key={conflict.groupLabel}>
@@ -905,21 +945,19 @@ function CurriculumCourseSelector({
       )}
 
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs leading-5 text-blue-800">
-        자동 반영: 총 취득학점, 교양필수, 전공필수, 전공선택, 주전공. 교양선택의
-        세부 영역과 자유선택 학점은 과목표만으로 확정할 수 없어 직접 입력해야
-        합니다.
+        {text.courses.autoApply}
       </div>
 
       <input
         type="search"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder="과목명 또는 이수구분 검색"
+        placeholder={text.placeholders.courseSearch}
         className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
       />
 
       {groups.length === 0 ? (
-        <EmptyState message="검색 조건에 맞는 과목이 없습니다." />
+        <EmptyState message={text.empty.courseSearch} />
       ) : (
         <div className="space-y-5">
           {groups.map(([label, groupCourses]) => (
@@ -948,11 +986,12 @@ function CurriculumCourseSelector({
                           {course.name}
                         </span>
                         <span className="mt-1 block text-xs text-neutral-500">
-                          {course.category}
+                          {getCourseCategoryLabel(text, course.category)}
                         </span>
                       </span>
                       <Badge color={selected ? "blue" : "gray"}>
-                        {course.credits}학점
+                        {course.credits}
+                        {text.units.credit}
                       </Badge>
                     </button>
                   );
@@ -969,11 +1008,11 @@ function CurriculumCourseSelector({
 function CourseSummaryMetric({
   label,
   value,
-  unit = "학점",
+  unit,
 }: {
   label: string;
   value: number;
-  unit?: string;
+  unit: string;
 }) {
   return (
     <div className="rounded-lg bg-white p-3">
@@ -992,20 +1031,22 @@ function CreditInput({
   creditKey,
   required,
   value,
+  text,
   onChange,
 }: {
   creditKey: CreditCategoryKey | "totalCredits";
   required: number;
   value?: number;
+  text: GraduationText;
   onChange: (value: number | undefined) => void;
 }) {
   return (
     <label className="rounded-lg border border-neutral-200 p-4">
       <span className="block text-sm font-semibold text-neutral-900">
-        {CREDIT_CATEGORY_LABELS[creditKey]}
+        {text.creditCategories[creditKey]}
       </span>
       <span className="mt-1 block text-xs text-neutral-500">
-        참고 요구학점 {required}
+        {text.result.requiredCredits.replace("{required}", String(required))}
       </span>
       <div className="relative mt-3">
         <input
@@ -1024,7 +1065,7 @@ function CreditInput({
           className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 pr-12 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
         />
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500">
-          학점
+          {text.units.credit}
         </span>
       </div>
     </label>
@@ -1036,6 +1077,7 @@ function ChecklistCard({
   description,
   answer,
   plan,
+  text,
   onAnswer,
   onPlan,
 }: {
@@ -1043,13 +1085,14 @@ function ChecklistCard({
   description?: string;
   answer?: ChecklistAnswer;
   plan: string;
+  text: GraduationText;
   onAnswer: (answer: ChecklistAnswer) => void;
   onPlan: (plan: string) => void;
 }) {
   const choices: Array<{ value: ChecklistAnswer; label: string }> = [
-    { value: "satisfied", label: "이수" },
-    { value: "incomplete", label: "미이수" },
-    { value: "notApplicable", label: "해당 없음" },
+    { value: "satisfied", label: text.checklist.satisfied },
+    { value: "incomplete", label: text.checklist.incomplete },
+    { value: "notApplicable", label: text.checklist.notApplicable },
   ];
 
   return (
@@ -1079,32 +1122,36 @@ function ChecklistCard({
         type="text"
         value={plan}
         onChange={(event) => onPlan(event.target.value)}
-        placeholder="확인 방법이나 이수 계획을 메모하세요"
+        placeholder={text.placeholders.checklistPlan}
         className="mt-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
       />
     </div>
   );
 }
 
-function ResultBanner({ status }: { status: EvaluationStatus }) {
+function ResultBanner({
+  status,
+  text,
+}: {
+  status: EvaluationStatus;
+  text: GraduationText;
+}) {
   const config =
     status === "short"
       ? {
-          title: "부족하거나 미이수인 항목이 있습니다",
-          description: "부족 학점과 미이수 조건을 확인해 계획을 세우세요.",
+          title: text.banners.shortTitle,
+          description: text.banners.shortDescription,
           className: "border-red-200 bg-red-50 text-red-900",
         }
       : status === "checkRequired"
         ? {
-            title: "직접 확인할 항목이 남아 있습니다",
-            description:
-              "입력하지 않은 조건과 공식 확인이 필요한 내용을 확인하세요.",
+            title: text.banners.checkRequiredTitle,
+            description: text.banners.checkRequiredDescription,
             className: "border-amber-200 bg-amber-50 text-amber-900",
           }
         : {
-            title: "입력값 기준으로 모든 항목을 확인했습니다",
-            description:
-              "최종 졸업 판정은 SU-WINGs와 학과사무실에서 확인하세요.",
+            title: text.banners.satisfiedTitle,
+            description: text.banners.satisfiedDescription,
             className: "border-green-200 bg-green-50 text-green-900",
           };
 
