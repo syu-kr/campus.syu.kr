@@ -176,14 +176,14 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <Providers>
-          <LocaleProvider locale={locale}>
+        <LocaleProvider locale={locale}>
+          <Providers>
             <Header />
             <main className="min-h-screen pb-20 md:pb-0">{children}</main>
             <Footer locale={locale} />
             <BottomNav />
-          </LocaleProvider>
-        </Providers>
+          </Providers>
+        </LocaleProvider>
       </body>
     </html>
   );

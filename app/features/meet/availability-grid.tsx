@@ -24,7 +24,7 @@ export function TimeRow({
   participantBySlot,
   compact = false,
   readOnly = false,
-  selectableTitle = "선택 가능",
+  selectableTitle = "Selectable",
   onPointerDown,
   onPointerEnter,
 }: TimeRowProps) {
@@ -74,9 +74,14 @@ export function TimeRow({
 export function formatDateTimeLabel(
   value: string | null,
   locale: Locale = "ko",
-  fallback = "마감 시간 정보 없음",
+  fallback?: string,
 ): string {
-  if (!value) return fallback;
+  if (!value) {
+    return (
+      fallback ??
+      (locale === "en" ? "No deadline information" : "마감 시간 정보 없음")
+    );
+  }
 
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
     month: "short",

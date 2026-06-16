@@ -26,7 +26,7 @@ export function LegalPageHeader({
   title,
   description,
   homeHref = "/",
-  homeLabel = "홈으로",
+  homeLabel = "Home",
   noticeTitle,
   notice,
   noticeTone = "blue",

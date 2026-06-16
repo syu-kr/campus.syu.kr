@@ -300,6 +300,9 @@ export const dictionaries = {
       error: "오류",
       warning: "경고",
       info: "정보",
+      close: "닫기",
+      closeModal: "모달 닫기",
+      notificationIconAltSuffix: "알림 아이콘",
       sahmyookUniversity: "삼육대학교",
     },
     submissionResult: {
@@ -1676,6 +1679,9 @@ export const dictionaries = {
       error: "Error",
       warning: "Warning",
       info: "Info",
+      close: "Close",
+      closeModal: "Close modal",
+      notificationIconAltSuffix: "notification icon",
       sahmyookUniversity: "Sahmyook University",
     },
     submissionResult: {
