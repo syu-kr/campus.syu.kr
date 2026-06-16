@@ -57,14 +57,14 @@ function shouldSkipLocaleProxy(pathname: string) {
 }
 
 function getPreferredLocale(request: NextRequest): Locale {
-  const country = getRequestCountry(request);
-  if (country && country !== "KR") {
-    return ENGLISH_LOCALE;
-  }
-
   const cookieLocale = request.cookies.get(LOCALE_COOKIE_NAME)?.value;
   if (isLocale(cookieLocale)) {
     return cookieLocale;
+  }
+
+  const country = getRequestCountry(request);
+  if (country && country !== "KR") {
+    return ENGLISH_LOCALE;
   }
 
   return DEFAULT_LOCALE;

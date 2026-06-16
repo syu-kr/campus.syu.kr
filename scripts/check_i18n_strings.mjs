@@ -20,19 +20,28 @@ const fileWideAllowList = new Map([
     normalizePath("app/terms/page.tsx"),
     "Korean terms are the authoritative legal original.",
   ],
-  [
-    normalizePath("app/more/privacy/page.tsx"),
-    "Maps Korean notification errors from the push-notification helper to locale keys.",
-  ],
-  [
-    normalizePath("app/more/meet/page.tsx"),
-    "Maps Korean server validation errors to locale keys.",
-  ],
-  [
-    normalizePath("app/more/meet/[roomId]/page.tsx"),
-    "Maps Korean server validation errors to locale keys.",
-  ],
 ]);
+
+const blockAllowList = [
+  {
+    file: "app/more/privacy/page.tsx",
+    start: /^const pushErrorKeys: Record</,
+    end: /^};$/,
+    reason: "Maps Korean notification errors from the push-notification helper to locale keys.",
+  },
+  {
+    file: "app/more/meet/page.tsx",
+    start: /^const meetErrorKeys: Record<string, keyof MeetErrors> = {$/,
+    end: /^};$/,
+    reason: "Maps Korean server validation errors to locale keys.",
+  },
+  {
+    file: "app/more/meet/[roomId]/page.tsx",
+    start: /^const meetRoomErrorKeys: Record<string, keyof MeetRoomErrors> = {$/,
+    end: /^};$/,
+    reason: "Maps Korean server validation errors to locale keys.",
+  },
+];
 
 const lineAllowList = [
   {
@@ -102,6 +111,21 @@ const lineAllowList = [
     pattern: /^\s*(월|화|수|목|금|토|일):/,
     reason: "Cafeteria weekday keys come from source data.",
   },
+  {
+    file: "app/more/meet/page.tsx",
+    pattern: /요청이 많습니다.*초/,
+    reason: "Parses a Korean server rate-limit error before localizing it.",
+  },
+  {
+    file: "app/more/meet/page.tsx",
+    pattern: /날짜 범위는 최대.*일까지 가능합니다/,
+    reason: "Parses a Korean server date-range error before localizing it.",
+  },
+  {
+    file: "app/more/meet/[roomId]/page.tsx",
+    pattern: /요청이 많습니다.*초/,
+    reason: "Parses a Korean server rate-limit error before localizing it.",
+  },
 ];
 
 const violations = [];
@@ -116,10 +140,12 @@ for (const filePath of walk(appDir)) {
 
   const content = fs.readFileSync(filePath, "utf8");
   const lines = content.split(/\r?\n/);
+  const blockAllowedLines = getAllowedBlockLineNumbers(relativePath, lines);
 
   lines.forEach((line, index) => {
     if (!koreanPattern.test(line)) return;
     if (isCommentOnlyLine(line)) return;
+    if (blockAllowedLines.has(index)) return;
     if (isAllowedLine(relativePath, line)) return;
 
     violations.push({
@@ -182,4 +208,28 @@ function isAllowedLine(relativePath, line) {
     (entry) =>
       normalizePath(entry.file) === relativePath && entry.pattern.test(line),
   );
+}
+
+function getAllowedBlockLineNumbers(relativePath, lines) {
+  const allowedLines = new Set();
+
+  for (const entry of blockAllowList) {
+    if (normalizePath(entry.file) !== relativePath) continue;
+
+    let isInsideBlock = false;
+    lines.forEach((line, index) => {
+      if (!isInsideBlock && entry.start.test(line)) {
+        isInsideBlock = true;
+      }
+
+      if (!isInsideBlock) return;
+
+      allowedLines.add(index);
+      if (entry.end.test(line)) {
+        isInsideBlock = false;
+      }
+    });
+  }
+
+  return allowedLines;
 }
