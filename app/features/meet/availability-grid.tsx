@@ -1,5 +1,6 @@
 import type { PointerEvent } from "react";
 import type { MeetParticipant } from "@/types/meet";
+import type { Locale } from "@/lib/i18n";
 
 export interface TimeRowProps {
   time: string;
@@ -8,6 +9,7 @@ export interface TimeRowProps {
   participantBySlot: Map<string, MeetParticipant[]>;
   compact?: boolean;
   readOnly?: boolean;
+  selectableTitle?: string;
   onPointerDown: (
     event: PointerEvent<HTMLButtonElement>,
     slot: string,
@@ -22,6 +24,7 @@ export function TimeRow({
   participantBySlot,
   compact = false,
   readOnly = false,
+  selectableTitle = "Selectable",
   onPointerDown,
   onPointerEnter,
 }: TimeRowProps) {
@@ -57,7 +60,7 @@ export function TimeRow({
             title={
               participants.length > 0
                 ? participants.map((participant) => participant.nickname).join(", ")
-                : "선택 가능"
+                : selectableTitle
             }
           >
             {participants.length > 0 ? participants.length : ""}
@@ -68,10 +71,19 @@ export function TimeRow({
   );
 }
 
-export function formatDateTimeLabel(value: string | null): string {
-  if (!value) return "마감 시간 정보 없음";
+export function formatDateTimeLabel(
+  value: string | null,
+  locale: Locale = "ko",
+  fallback?: string,
+): string {
+  if (!value) {
+    return (
+      fallback ??
+      (locale === "en" ? "No deadline information" : "마감 시간 정보 없음")
+    );
+  }
 
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -80,11 +92,11 @@ export function formatDateTimeLabel(value: string | null): string {
   }).format(new Date(value));
 }
 
-export function formatDateLabel(date: string): string {
+export function formatDateLabel(date: string, locale: Locale = "ko"): string {
   if (!date) return "";
 
   const parsed = new Date(`${date}T00:00:00+09:00`);
-  return new Intl.DateTimeFormat("ko-KR", {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
     month: "short",
     day: "numeric",
     weekday: "short",

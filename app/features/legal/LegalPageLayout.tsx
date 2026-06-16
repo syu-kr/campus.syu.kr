@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 interface LegalPageHeaderProps {
   title: string;
   description: string;
+  homeHref?: string;
+  homeLabel?: string;
   noticeTitle?: string;
   notice: string;
   noticeTone?: "blue" | "red";
@@ -23,6 +25,8 @@ const noticeToneClass = {
 export function LegalPageHeader({
   title,
   description,
+  homeHref = "/",
+  homeLabel = "Home",
   noticeTitle,
   notice,
   noticeTone = "blue",
@@ -30,7 +34,7 @@ export function LegalPageHeader({
   return (
     <div className="mb-8">
       <Link
-        href="/"
+        href={homeHref}
         className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 mb-4 transition-colors"
       >
         <svg
@@ -46,7 +50,7 @@ export function LegalPageHeader({
             d="M15 19l-7-7 7-7"
           />
         </svg>
-        홈으로
+        {homeLabel}
       </Link>
       <h1 className="text-3xl font-bold text-neutral-900 mb-2">{title}</h1>
       <p className="text-neutral-600">{description}</p>

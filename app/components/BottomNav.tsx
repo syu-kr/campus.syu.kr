@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "./Icon";
+import { useDictionary, useLocale } from "./LocaleProvider";
+import { localizePath } from "@/lib/i18n";
 
 interface NavItem {
   iconName: string;
@@ -12,27 +14,49 @@ interface NavItem {
   id: string;
 }
 
-const navItems: NavItem[] = [
-  { id: "home", iconName: "home", label: "홈", href: "/" },
-  { id: "academic", iconName: "book-open", label: "학사", href: "/academic" },
-  { id: "campus", iconName: "building", label: "캠퍼스", href: "/campus" },
-  { id: "more", iconName: "more-horizontal", label: "더보기", href: "/more" },
-];
-
 export function BottomNav() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const dictionary = useDictionary();
+  const navItems: NavItem[] = [
+    {
+      id: "home",
+      iconName: "home",
+      label: dictionary.navigation.home,
+      href: "/",
+    },
+    {
+      id: "academic",
+      iconName: "book-open",
+      label: dictionary.navigation.academic,
+      href: "/academic",
+    },
+    {
+      id: "campus",
+      iconName: "building",
+      label: dictionary.navigation.campus,
+      href: "/campus",
+    },
+    {
+      id: "more",
+      iconName: "more-horizontal",
+      label: dictionary.navigation.more,
+      href: "/more",
+    },
+  ];
 
   const isActive = (href: string) => {
     if (!pathname) return false;
-    if (href === "/" && pathname === "/") return true;
-    if (href !== "/" && pathname.startsWith(href)) return true;
+    const localizedHref = localizePath(href, locale);
+    if (href === "/" && pathname === localizedHref) return true;
+    if (href !== "/" && pathname.startsWith(localizedHref)) return true;
     return false;
   };
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 md:hidden"
-      aria-label="메인 내비게이션"
+      aria-label={dictionary.navigation.mainNavigation}
     >
       <div className="grid grid-cols-4 gap-0">
         {navItems.map((item) => {
@@ -40,7 +64,7 @@ export function BottomNav() {
           return (
             <Link
               key={item.id}
-              href={item.href}
+              href={localizePath(item.href, locale)}
               className={clsx(
                 "flex flex-col items-center justify-center py-3 px-2 transition-colors",
                 active

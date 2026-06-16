@@ -1,4 +1,10 @@
 import type { AcademicSchedule, AnnouncementCategory } from "@/types";
+import {
+  DEFAULT_LOCALE,
+  getDictionary,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
 type CategoryLabel = AnnouncementCategory | AcademicSchedule["category"];
 
@@ -50,7 +56,7 @@ function parseDateString(dateString: string): Date | null {
 }
 
 /**
- * 날짜 포맷팅 (YYYY-MM-DD to MM.DD)
+ * Format a date as MM.DD.
  */
 export function formatDate(dateString: string): string {
   const date = parseDateString(dateString);
@@ -62,7 +68,7 @@ export function formatDate(dateString: string): string {
 }
 
 /**
- * 날짜 포맷팅 (YYYY-MM-DD to YYYY.MM.DD)
+ * Format a date as YYYY.MM.DD.
  */
 export function formatDateWithYear(dateString: string): string {
   const date = parseDateString(dateString);
@@ -75,7 +81,7 @@ export function formatDateWithYear(dateString: string): string {
 }
 
 /**
- * 날짜 한글 포맷팅 (2024년 1월 15일)
+ * Format a date in the Korean long-date style.
  */
 function formatDateKorean(dateString: string): string {
   const date = parseDateString(dateString);
@@ -87,24 +93,48 @@ function formatDateKorean(dateString: string): string {
   return `${year}년 ${month}월 ${day}일`;
 }
 
-/**
- * 카테고리 한글 레이블
- */
-export function getCategoryLabel(category: CategoryLabel): string {
-  const labels: Record<CategoryLabel, string> = {
-    academic: "학사공지",
-    scholarship: "장학금",
-    campus: "캠퍼스",
-    registration: "수강신청",
-    exam: "시험",
-    holiday: "휴무",
-    event: "행사",
-  };
-  return labels[category];
+function formatDateLocalized(dateString: string, locale: Locale): string {
+  if (normalizeLocale(locale) === "ko") {
+    return formatDateKorean(dateString);
+  }
+
+  const date = parseDateString(dateString);
+  if (!date) return dateString;
+
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatShortDateLocalized(dateString: string, locale: Locale): string {
+  if (normalizeLocale(locale) === "ko") {
+    return formatDate(dateString);
+  }
+
+  const date = parseDateString(dateString);
+  if (!date) return dateString;
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 /**
- * 카테고리 색상
+ * Return a localized category label.
+ */
+export function getCategoryLabel(
+  category: CategoryLabel,
+  locale: Locale = DEFAULT_LOCALE,
+): string {
+  const dictionary = getDictionary(normalizeLocale(locale));
+  return dictionary.categories[category];
+}
+
+/**
+ * Return a category color token.
  */
 export function getCategoryColor(
   category: AnnouncementCategory,
@@ -121,9 +151,15 @@ export function getCategoryColor(
 }
 
 /**
- * 날짜 범위 바꾸기
+ * Format a date range for display.
  */
-export function formatDateRange(start: string, end: string): string {
-  if (start === end) return formatDateKorean(start);
-  return `${formatDate(start)} ~ ${formatDate(end)}`;
+export function formatDateRange(
+  start: string,
+  end: string,
+  locale: Locale = DEFAULT_LOCALE,
+): string {
+  const normalizedLocale = normalizeLocale(locale);
+  if (start === end) return formatDateLocalized(start, normalizedLocale);
+  const separator = normalizedLocale === "ko" ? " ~ " : " - ";
+  return `${formatShortDateLocalized(start, normalizedLocale)}${separator}${formatShortDateLocalized(end, normalizedLocale)}`;
 }

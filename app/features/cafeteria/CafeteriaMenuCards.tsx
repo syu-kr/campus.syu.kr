@@ -1,11 +1,16 @@
+"use client";
+
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { StateCard } from "@/app/components/StateCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
+import type { Dictionary, Locale } from "@/lib/i18n";
 import type { CafeteriaMenu, MenuItem } from "@/types";
 
 type MealColor = "blue" | "green" | "red";
+type CafeteriaDictionary = Dictionary["pages"]["cafeteria"];
 
 interface MealSectionProps {
   title: string;
@@ -42,13 +47,15 @@ function MealItemCard({ item }: { item: MenuItem }) {
 }
 
 function MealSection({ title, color, items }: MealSectionProps) {
+  const text = useDictionary().pages.cafeteria;
+
   if (isClosedMealItems(items)) {
     return (
       <div>
         <Badge color={color} size="sm" className="mb-2">
           {title}
         </Badge>
-        <p className="text-sm text-neutral-600">운영 없음</p>
+        <p className="text-sm text-neutral-600">{text.closedMeal}</p>
       </div>
     );
   }
@@ -95,13 +102,15 @@ function LunchCorner({
 }
 
 function LunchSection({ lunch, highlighted }: LunchSectionProps) {
+  const text = useDictionary().pages.cafeteria;
+
   if (isClosedMealItems(lunch.a) && isClosedMealItems(lunch.b)) {
     return (
       <div>
         <Badge color="green" size="sm" className="mb-2">
-          중식
+          {text.lunch}
         </Badge>
-        <p className="text-sm text-neutral-600">운영 없음</p>
+        <p className="text-sm text-neutral-600">{text.closedMeal}</p>
       </div>
     );
   }
@@ -109,11 +118,11 @@ function LunchSection({ lunch, highlighted }: LunchSectionProps) {
   return (
     <div>
       <Badge color="green" size="sm" className="mb-2">
-        중식
+        {text.lunch}
       </Badge>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LunchCorner title="A 코너" items={lunch.a} highlighted={highlighted} />
-        <LunchCorner title="B 코너" items={lunch.b} highlighted={highlighted} />
+        <LunchCorner title={text.cornerA} items={lunch.a} highlighted={highlighted} />
+        <LunchCorner title={text.cornerB} items={lunch.b} highlighted={highlighted} />
       </div>
     </div>
   );
@@ -126,12 +135,14 @@ function MenuSections({
   menu: CafeteriaMenu;
   highlighted?: boolean;
 }) {
+  const text = useDictionary().pages.cafeteria;
+
   if (isCafeteriaClosedDay(menu)) {
     return (
       <StateCard
         type="info"
-        title="운영하지 않는 날입니다"
-        message="공휴일 또는 운영하지 않는 날로 식단이 제공되지 않습니다."
+        title={text.closedDayTitle}
+        message={text.closedDayMessage}
       />
     );
   }
@@ -140,26 +151,30 @@ function MenuSections({
 
   return (
     <div className="space-y-4">
-      <MealSection title="조식" color="blue" items={menu.breakfast} />
+      <MealSection title={text.breakfast} color="blue" items={menu.breakfast} />
       <hr className={dividerColor} />
       <LunchSection lunch={menu.lunch} highlighted={highlighted} />
       <hr className={dividerColor} />
-      <MealSection title="석식" color="red" items={menu.dinner} />
+      <MealSection title={text.dinner} color="red" items={menu.dinner} />
     </div>
   );
 }
 
 export function CafeteriaInfoCards() {
+  const text = useDictionary().pages.cafeteria;
+
   return (
     <>
       <Card className="mb-8 bg-blue-50 border border-blue-200">
         <div className="flex items-start gap-3">
           <div>
-            <p className="font-semibold text-blue-900 mb-2">운영 시간</p>
+            <p className="font-semibold text-blue-900 mb-2">
+              {text.operationHours}
+            </p>
             <div className="space-y-1 text-sm text-blue-800">
-              <p>조식: 08:00 ~ 09:30</p>
-              <p>중식: 11:30 ~ 14:00 (A/B 코너 운영)</p>
-              <p>석식: 17:30 ~ 18:30 (금요일 휴무)</p>
+              <p>{text.breakfastHours}</p>
+              <p>{text.lunchHours}</p>
+              <p>{text.dinnerHours}</p>
             </div>
           </div>
         </div>
@@ -174,9 +189,7 @@ export function CafeteriaInfoCards() {
             color="rgb(161, 98, 7)"
           />
           <span>
-            <strong>알레르기 정보:</strong> 음식 알레르기가 있다면 표시된
-            항목을 참고하여 식사를 선택하세요. 제공 데이터 기준이므로 중증
-            알레르기가 있다면 식당에 직접 확인하세요.
+            <strong>{text.allergyTitle}</strong> {text.allergyMessage}
           </span>
         </p>
       </Card>
@@ -185,16 +198,20 @@ export function CafeteriaInfoCards() {
 }
 
 export function CafeteriaNoticeCards() {
+  const text = useDictionary().pages.cafeteria;
+
   return (
     <Card className="mt-8 bg-yellow-50 border border-yellow-200" hover={false}>
       <p className="text-sm text-yellow-900">
-        <strong>알림:</strong> 현재 만나의 집 식단은 제공되지 않습니다.
+        <strong>{text.noticeTitle}</strong> {text.mannaUnavailable}
       </p>
     </Card>
   );
 }
 
 export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
+  const text = useDictionary().pages.cafeteria;
+
   return (
     <Card
       id="today-menu"
@@ -202,7 +219,7 @@ export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
     >
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-green-900">오늘의 메뉴</h2>
+          <h2 className="text-xl font-bold text-green-900">{text.todayMenu}</h2>
           <span className="text-green-700 font-semibold text-lg">
             ({menu.date})
           </span>
@@ -222,6 +239,9 @@ export function WeeklyMenuCard({
   menu: CafeteriaMenu;
   isToday: boolean;
 }) {
+  const text = useDictionary().pages.cafeteria;
+  const locale = useLocale();
+
   const scrollToTodayMenu = () => {
     if (!isToday) return;
 
@@ -240,7 +260,7 @@ export function WeeklyMenuCard({
       clickable={isToday}
       role={isToday ? "button" : undefined}
       tabIndex={isToday ? 0 : undefined}
-      aria-label={isToday ? "오늘의 메뉴로 이동" : undefined}
+      aria-label={isToday ? text.todayMenuAria : undefined}
       onClick={scrollToTodayMenu}
       onKeyDown={(event) => {
         if (!isToday || (event.key !== "Enter" && event.key !== " ")) return;
@@ -256,10 +276,10 @@ export function WeeklyMenuCard({
               isToday ? "text-green-900" : "text-neutral-900"
             }`}
           >
-            {menu.dayOfWeek}요일 ({menu.date})
+            {formatCafeteriaDay(menu.dayOfWeek, locale, text)} ({menu.date})
             {isToday && (
               <span className="ml-2 text-green-700 font-semibold text-base">
-                (오늘)
+                ({text.todayMarker})
               </span>
             )}
           </h2>
@@ -271,11 +291,31 @@ export function WeeklyMenuCard({
 
       {isToday ? (
         <p className="text-sm text-green-800">
-          오늘 식단은 위의 오늘의 메뉴에서 확인하세요.
+          {text.todayMenuRedirect}
         </p>
       ) : (
         <MenuSections menu={menu} highlighted={isToday} />
       )}
     </Card>
   );
+}
+
+function formatCafeteriaDay(
+  dayOfWeek: string,
+  locale: Locale,
+  text: CafeteriaDictionary,
+) {
+  if (locale === "ko") return `${dayOfWeek}${text.daySuffix}`;
+
+  const labels: Record<string, string> = {
+    월: "Mon",
+    화: "Tue",
+    수: "Wed",
+    목: "Thu",
+    금: "Fri",
+    토: "Sat",
+    일: "Sun",
+  };
+
+  return labels[dayOfWeek] ?? dayOfWeek;
 }

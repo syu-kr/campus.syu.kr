@@ -4,6 +4,10 @@ import { buildings } from "../lib/mapData";
 import { BuildingMarker } from "./BuildingMarker";
 import { useEffect, useRef, useState } from "react";
 import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
 
 interface MapViewProps {
   selectedBuilding?: string;
@@ -16,6 +20,9 @@ export function MapView({
   highlightedBuilding,
   onBuildingSelect,
 }: MapViewProps) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.map;
   const mapContainer = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
@@ -108,11 +115,10 @@ export function MapView({
             <div className="absolute inset-0 flex items-center justify-center bg-neutral-50">
               <div className="w-full max-w-[18rem] px-4 text-center sm:max-w-sm">
                 <p className="font-semibold text-neutral-900">
-                  지도를 불러오는 중입니다
+                  {text.loadingTitle}
                 </p>
                 <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
-                  잠시만 기다려주세요. 지도가 표시되지 않으면 검색으로 건물
-                  정보를 확인할 수 있습니다.
+                  {text.loadingMessage}
                 </p>
               </div>
             </div>
@@ -131,6 +137,8 @@ export function MapView({
             map={map}
             onClick={onBuildingSelect}
             onInfoWindowOpen={handleInfoWindowOpen}
+            locale={locale}
+            labels={text}
           />
         ))}
     </>
@@ -138,15 +146,17 @@ export function MapView({
 }
 
 function MapUnavailableState() {
+  const dictionary = useDictionary();
+  const text = dictionary.pages.map;
+
   return (
     <div className="flex h-[min(60vh,600px)] min-h-[360px] w-full items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-[18rem] text-center sm:max-w-sm">
         <p className="font-semibold text-neutral-900">
-          지도를 불러오지 못했습니다
+          {text.unavailableTitle}
         </p>
         <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
-          네트워크 상태나 Kakao Maps 설정을 확인해주세요. 지도 없이도 위 검색창과
-          건물 목록으로 시설 정보를 확인할 수 있습니다.
+          {text.unavailableMessage}
         </p>
       </div>
     </div>

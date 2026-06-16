@@ -9,6 +9,7 @@ import {
   TodayMenuCard,
   WeeklyMenuCard,
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchCafeteriaMenu } from "@/lib/api";
 import { isCafeteriaClosedDay } from "@/lib/cafeteria";
 import { getKoreaNow } from "@/lib/home";
@@ -16,6 +17,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 
 export default function CafeteriaPage() {
+  const dictionary = useDictionary();
+  const text = dictionary.pages.cafeteria;
   const [now, setNow] = useState<Date | null>(null);
 
   // 날짜 기반 표시만 사용하므로 분 단위로 갱신합니다.
@@ -62,16 +65,16 @@ export default function CafeteriaPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          학식
+          {text.title}
         </h1>
-        <p className="text-neutral-600">주간 식단 및 영양정보를 확인하세요</p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       {!isLoading && !todayMenu && todayInfo.isWeekend && (
         <StateCard
           type="info"
           className="mb-8"
-          message="오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다."
+          message={text.weekendMessage}
         />
       )}
 
@@ -82,8 +85,8 @@ export default function CafeteriaPage() {
           <StateCard
             type="warning"
             className="mb-8"
-            title="식단 준비 중입니다"
-            message="월요일 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요."
+            title={text.pendingTitle}
+            message={text.pendingMessage}
           />
         )}
 
@@ -94,7 +97,7 @@ export default function CafeteriaPage() {
           <StateCard
             type="warning"
             className="mb-8"
-            message="오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요."
+            message={text.missingToday}
           />
         )}
 
@@ -102,8 +105,8 @@ export default function CafeteriaPage() {
         <StateCard
           type="info"
           className="mb-8"
-          title="오늘은 운영하지 않습니다"
-          message="공휴일 또는 운영하지 않는 날입니다. 주간 메뉴에서 다른 날짜를 확인해주세요."
+          title={text.closedTodayTitle}
+          message={text.closedTodayMessage}
         />
       )}
 
@@ -114,12 +117,14 @@ export default function CafeteriaPage() {
       <CafeteriaInfoCards />
 
       <div className="mb-8">
-        <h2 className="text-lg font-bold text-neutral-900 mb-4">주간 메뉴</h2>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
+          {text.weeklyMenu}
+        </h2>
         <div className="space-y-6">
           {isLoading && <Skeleton count={3} height="200px" />}
 
           {!isLoading && (!menus || menus.length === 0) && (
-            <StateCard type="info" message="표시할 주간 식단 정보가 없습니다." />
+            <StateCard type="info" message={text.emptyWeekly} />
           )}
 
           {!isLoading &&

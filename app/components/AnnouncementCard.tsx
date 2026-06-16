@@ -10,6 +10,7 @@ import {
   getCategoryColor,
   formatDateWithYear,
 } from "@/lib/utils";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -24,6 +25,8 @@ function AnnouncementCardComponent({
   clickable = true,
   external = false,
 }: AnnouncementCardProps) {
+  const locale = useLocale();
+  const dictionary = useDictionary();
   const content = (
     <Card
       as="article"
@@ -33,16 +36,16 @@ function AnnouncementCardComponent({
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color={getCategoryColor(announcement.category)} size="sm">
-            {getCategoryLabel(announcement.category)}
+            {getCategoryLabel(announcement.category, locale)}
           </Badge>
           {announcement.isPinned && (
             <Badge color="red" size="sm">
-              고정글
+              {dictionary.labels.pinned}
             </Badge>
           )}
           {announcement.isImportant && (
             <Badge color="red" size="sm">
-              공지
+              {dictionary.labels.notice}
             </Badge>
           )}
         </div>
@@ -51,7 +54,7 @@ function AnnouncementCardComponent({
         </h3>
         <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">
           <span>{formatDateWithYear(announcement.date)}</span>
-          <span>{announcement.author || "삼육대학교"}</span>
+          <span>{announcement.author || dictionary.labels.sahmyookUniversity}</span>
         </div>
       </div>
     </Card>

@@ -2,6 +2,8 @@
 
 import { Building } from "../lib/mapData";
 import { useEffect, useRef } from "react";
+import type { Dictionary, Locale } from "@/lib/i18n";
+import { formatMapCountSummary } from "../lib/mapI18n";
 
 interface BuildingMarkerProps {
   building: Building;
@@ -9,6 +11,8 @@ interface BuildingMarkerProps {
   map: KakaoMap;
   onClick?: (buildingId: string) => void;
   onInfoWindowOpen?: (infoWindow: KakaoInfoWindow) => void;
+  locale: Locale;
+  labels: Dictionary["pages"]["map"];
 }
 
 export function BuildingMarker({
@@ -17,6 +21,8 @@ export function BuildingMarker({
   map,
   onClick,
   onInfoWindowOpen,
+  locale,
+  labels,
 }: BuildingMarkerProps) {
   const markerRef = useRef<KakaoMarker | null>(null);
   const infoWindowRef = useRef<KakaoInfoWindow | null>(null);
@@ -71,7 +77,12 @@ export function BuildingMarker({
       const content = `
         <div style="width: 100%; padding: 12px; min-width: 250px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); box-sizing: border-box; border: none; outline: none;">
           <h3 style="font-weight: bold; font-size: 14px; color: #111; margin: 0 0 6px 0;">${building.name}</h3>
-          <p style="font-size: 12px; color: #666; margin: 0;">총 ${building.floors.length}개 층 · ${building.floors.reduce((acc, f) => acc + f.facilities.length, 0)}개 시설</p>
+          <p style="font-size: 12px; color: #666; margin: 0;">${formatMapCountSummary(
+            building.floors.length,
+            building.floors.reduce((acc, f) => acc + f.facilities.length, 0),
+            locale,
+            labels,
+          )}</p>
         </div>
       `;
 
@@ -99,7 +110,7 @@ export function BuildingMarker({
         markerRef.current.setMap(null);
       }
     };
-  }, [building, map, onClick, onInfoWindowOpen]);
+  }, [building, labels, locale, map, onClick, onInfoWindowOpen]);
 
   // isHighlighted 변경 시 InfoWindow 자동 열기/닫기
   useEffect(() => {

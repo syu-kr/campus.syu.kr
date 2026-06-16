@@ -1,9 +1,26 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "캠퍼스공지 | SYU CAMPUS",
-  description: "캠퍼스 공지사항",
-};
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const text = getDictionary(locale).pages.announcements;
+
+  return {
+    title: `${text.campusTitle} | SYU CAMPUS`,
+    description: text.campusDescription,
+  };
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;

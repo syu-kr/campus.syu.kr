@@ -5,15 +5,11 @@ import {
   SubmissionResultModal,
   type SubmissionSummaryItem,
 } from "@/app/components/SubmissionResultModal";
+import { useDictionary } from "@/app/components/LocaleProvider";
+import type { Dictionary } from "@/lib/i18n";
 import type { SiteInquiryType } from "@/types/submissions";
 
-const inquiryTypes: Array<{ value: SiteInquiryType; label: string }> = [
-  { value: "bug", label: "오류 제보" },
-  { value: "suggestion", label: "서비스 제안" },
-  { value: "data-correction", label: "정보 수정 요청" },
-  { value: "feature", label: "기능 요청" },
-  { value: "other", label: "기타" },
-];
+type ContactFormDictionary = Dictionary["pages"]["contactForm"];
 
 interface ContactFormProps {
   defaultPageUrl?: string;
@@ -24,6 +20,9 @@ export function ContactForm({
   defaultPageUrl,
   onSuccessConfirm,
 }: ContactFormProps) {
+  const dictionary = useDictionary();
+  const text = dictionary.pages.contactForm;
+  const inquiryTypes = getInquiryTypes(text);
   const [type, setType] = useState<SiteInquiryType>("suggestion");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -58,13 +57,13 @@ export function ContactForm({
     setResultModal(null);
     setFieldErrors({});
 
-    const clientErrors = validateSiteInquiry({ title, message, pageUrl });
+    const clientErrors = validateSiteInquiry({ title, message, pageUrl }, text);
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
       setResultModal({
         type: "error",
-        title: "입력 내용을 확인해주세요",
-        message: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
+        title: text.validationTitle,
+        message: text.validationMessage,
       });
       return;
     }
@@ -94,21 +93,25 @@ export function ContactForm({
 
       if (!response.ok) {
         if (data.field) {
-          setFieldErrors({ [data.field]: data.error });
+          setFieldErrors({
+            [data.field]: getServerFieldError(data.field, data.error, text),
+          });
         }
-        throw new Error(data.error || "문의를 접수하지 못했습니다");
+        throw new Error(
+          getServerFieldError(data.field, data.error, text) ||
+            text.submitFailed,
+        );
       }
 
       setResultModal({
         type: "success",
-        title: "문의가 접수되었습니다",
-        message:
-          "개별 답장은 어려울 수 있으나 접수된 내용은 서비스 개선에 참고하겠습니다.",
+        title: text.successTitle,
+        message: text.successMessage,
         summary: [
-          { label: "유형", value: submittedType },
-          { label: "제목", value: submittedTitle },
+          { label: text.typeSummary, value: submittedType },
+          { label: text.titleSummary, value: submittedTitle },
           ...(submittedPageUrl
-            ? [{ label: "페이지", value: submittedPageUrl }]
+            ? [{ label: text.pageSummary, value: submittedPageUrl }]
             : []),
         ],
       });
@@ -119,8 +122,8 @@ export function ContactForm({
     } catch (err) {
       setResultModal({
         type: "error",
-        title: "문의를 접수하지 못했습니다",
-        message: err instanceof Error ? err.message : "문의를 접수하지 못했습니다",
+        title: text.submitFailed,
+        message: err instanceof Error ? err.message : text.submitFailed,
       });
     } finally {
       setIsSubmitting(false);
@@ -145,7 +148,7 @@ export function ContactForm({
             htmlFor="inquiry-type"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
-            문의 유형
+            {text.typeLabel}
           </label>
           <select
             id="inquiry-type"
@@ -166,7 +169,7 @@ export function ContactForm({
             htmlFor="inquiry-title"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
-            제목
+            {text.titleLabel}
           </label>
           <input
             id="inquiry-title"
@@ -174,7 +177,7 @@ export function ContactForm({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             maxLength={120}
-            placeholder="예: 셔틀 시간이 이상하게 보여요"
+            placeholder={text.titlePlaceholder}
             aria-invalid={Boolean(fieldErrors.title)}
             aria-describedby={
               fieldErrors.title ? "inquiry-title-error" : undefined
@@ -195,7 +198,7 @@ export function ContactForm({
             htmlFor="inquiry-message"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
-            내용
+            {text.messageLabel}
           </label>
           <textarea
             id="inquiry-message"
@@ -203,7 +206,7 @@ export function ContactForm({
             onChange={(event) => setMessage(event.target.value)}
             rows={7}
             maxLength={2000}
-            placeholder="어떤 문제가 있었는지, 어떤 개선이 필요하다고 느꼈는지 적어주세요."
+            placeholder={text.messagePlaceholder}
             aria-invalid={Boolean(fieldErrors.message)}
             aria-describedby={
               fieldErrors.message ? "inquiry-message-error" : undefined
@@ -224,7 +227,7 @@ export function ContactForm({
             htmlFor="page-url"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
-            관련 페이지 URL
+            {text.pageUrlLabel}
           </label>
           <input
             id="page-url"
@@ -251,9 +254,9 @@ export function ContactForm({
             htmlFor="contact"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
-            연락처
+            {text.contactLabel}
             <span className="ml-1 text-xs font-normal text-neutral-500">
-              선택
+              {text.optional}
             </span>
           </label>
           <input
@@ -262,11 +265,11 @@ export function ContactForm({
             value={contact}
             onChange={(event) => setContact(event.target.value)}
             maxLength={120}
-            placeholder="확인이 필요한 경우 참고할 이메일 또는 연락처"
+            placeholder={text.contactPlaceholder}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
           <p className="mt-1 text-xs text-neutral-500">
-            연락처를 남겨도 개별 답장을 보장하지는 않습니다.
+            {text.contactHelp}
           </p>
         </div>
 
@@ -275,7 +278,7 @@ export function ContactForm({
           disabled={isSubmitting}
           className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
         >
-          {isSubmitting ? "접수 중..." : "문의 등록하기"}
+          {isSubmitting ? text.submitting : text.submit}
         </button>
       </form>
 
@@ -300,22 +303,47 @@ function validateSiteInquiry({
   title: string;
   message: string;
   pageUrl: string;
-}): Record<string, string> {
+}, text: ContactFormDictionary): Record<string, string> {
   const errors: Record<string, string> = {};
 
   if (!title.trim()) {
-    errors.title = "제목을 입력해주세요";
+    errors.title = text.titleRequired;
   }
 
   if (!message.trim()) {
-    errors.message = "문의 내용을 입력해주세요";
+    errors.message = text.messageRequired;
   }
 
   if (pageUrl.trim() && !isValidHttpUrl(pageUrl.trim())) {
-    errors.pageUrl = "관련 페이지 URL 형식이 올바르지 않습니다";
+    errors.pageUrl = text.invalidPageUrl;
   }
 
   return errors;
+}
+
+function getInquiryTypes(text: ContactFormDictionary): Array<{
+  value: SiteInquiryType;
+  label: string;
+}> {
+  return [
+    { value: "bug", label: text.inquiryTypes.bug },
+    { value: "suggestion", label: text.inquiryTypes.suggestion },
+    { value: "data-correction", label: text.inquiryTypes.dataCorrection },
+    { value: "feature", label: text.inquiryTypes.feature },
+    { value: "other", label: text.inquiryTypes.other },
+  ];
+}
+
+function getServerFieldError(
+  field: string | undefined,
+  error: string | undefined,
+  text: ContactFormDictionary,
+) {
+  if (field === "title") return text.titleRequired;
+  if (field === "message") return text.messageRequired;
+  if (field === "pageUrl") return text.invalidPageUrl;
+
+  return error || text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {

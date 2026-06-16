@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface NotificationPayload {
   title: string;
@@ -19,6 +20,8 @@ export function setNotificationHandler(payload: NotificationPayload) {
 }
 
 export function NotificationModal() {
+  const dictionary = useDictionary();
+  const labels = dictionary.labels;
   const [notification, setNotification] = useState<NotificationPayload | null>(
     null,
   );
@@ -75,7 +78,7 @@ export function NotificationModal() {
           {notification.icon && (
             <Image
               src={notification.icon}
-              alt={`${notification.title} 알림 아이콘`}
+              alt={`${notification.title} ${labels.notificationIconAltSuffix}`}
               width={48}
               height={48}
               className="w-12 h-12 rounded-lg flex-shrink-0"
@@ -102,7 +105,7 @@ export function NotificationModal() {
           }}
           className="mt-4 text-sm text-gray-500 hover:text-gray-700"
         >
-          닫기
+          {labels.close}
         </button>
       </div>
     </div>

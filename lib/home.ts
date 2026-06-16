@@ -6,6 +6,13 @@ import type {
   Scholarship,
   ServiceNotice,
 } from "@/types";
+import {
+  DEFAULT_LOCALE,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
 export type TodayInfo = {
   dateStringDot: string;
@@ -71,40 +78,45 @@ export function getTodayInfo(now: Date | null): TodayInfo {
   };
 }
 
-function createEmptySearchCategories(): CategorizedSearchResults {
+function createEmptySearchCategories(
+  locale: Locale = DEFAULT_LOCALE,
+): CategorizedSearchResults {
+  const dictionary = getDictionary(locale);
+
   return {
     academicSchedule: {
-      label: "학사일정",
+      label: dictionary.categories.academicSchedule,
       items: [],
-      linkPath: "/academic/schedule",
+      linkPath: localizePath("/academic/schedule", locale),
     },
     academicAnnouncement: {
-      label: "학사공지",
+      label: dictionary.categories.academicAnnouncement,
       items: [],
-      linkPath: "/academic/announcements",
+      linkPath: localizePath("/academic/announcements", locale),
     },
     campusAnnouncement: {
-      label: "캠퍼스공지",
+      label: dictionary.categories.campusAnnouncement,
       items: [],
-      linkPath: "/campus/announcements",
+      linkPath: localizePath("/campus/announcements", locale),
     },
     scholarship: {
-      label: "장학금",
+      label: dictionary.categories.scholarship,
       items: [],
-      linkPath: "/more/scholarship",
+      linkPath: localizePath("/academic/scholarship", locale),
     },
     phoneNumbers: {
-      label: "연락처",
+      label: dictionary.categories.phoneNumbers,
       items: [],
-      linkPath: "/more/phone",
+      linkPath: localizePath("/campus/phone", locale),
     },
   };
 }
 
 export function categorizeSearchResults(
   searchResults?: HomeSearchResult[],
+  locale: Locale = DEFAULT_LOCALE,
 ): CategorizedSearchResults {
-  const categories = createEmptySearchCategories();
+  const categories = createEmptySearchCategories(normalizeLocale(locale));
 
   if (!searchResults) {
     return categories;

@@ -2,36 +2,50 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
 import {
   FCM_TOKEN_KEY,
   disablePushNotifications,
   enablePushNotifications,
   type PushNotificationStatus,
 } from "@/lib/push-notifications";
+import { localizePath, type Dictionary } from "@/lib/i18n";
 
 type PermissionState = "granted" | "denied" | "default" | "unsupported";
+type NotificationPrivacyDictionary =
+  Dictionary["pages"]["notificationPrivacy"];
 
-const permissionLabels: Record<PermissionState, string> = {
-  granted: "알림 허용됨",
-  denied: "알림 차단됨",
-  default: "아직 선택하지 않음",
-  unsupported: "이 브라우저에서 지원하지 않음",
-};
-
-const statusLabels: Record<PushNotificationStatus, string> = {
-  "requesting-permission":
-    "브라우저 알림 권한을 확인하고 있습니다. 권한 요청창이 보이지 않으면 브라우저 설정을 확인해주세요.",
-  "registering-service-worker": "알림 서비스 워커를 등록하고 있습니다.",
-  "initializing-firebase": "Firebase 알림 서비스를 초기화하고 있습니다.",
-  "requesting-fcm-token": "FCM 토큰을 발급하고 있습니다.",
-  "saving-fcm-token": "발급된 FCM 토큰을 서버에 저장하고 있습니다.",
-  enabled: "알림 설정과 FCM 구독이 완료되었습니다.",
+const pushErrorKeys: Record<
+  string,
+  keyof NotificationPrivacyDictionary["errors"]
+> = {
+  "이 브라우저에서는 알림을 지원하지 않습니다.": "unsupported",
+  "브라우저에서 알림 권한이 차단되었습니다.": "denied",
+  "브라우저 알림 권한이 허용되지 않았습니다.": "notAllowed",
+  "브라우저가 알림 권한 요청창을 표시하지 않았습니다. 브라우저 설정에서 알림을 허용한 뒤 다시 시도해주세요.":
+    "permissionTimeout",
+  "이 브라우저에서는 Firebase 알림을 지원하지 않습니다.":
+    "firebaseUnsupported",
+  "알림 서비스를 초기화하지 못했습니다.": "initFailed",
+  "Firebase VAPID 키가 설정되지 않았습니다.": "vapidMissing",
+  "알림 토큰을 발급하지 못했습니다.": "tokenFailed",
+  "알림 토큰을 저장하지 못했습니다.": "saveFailed",
+  "서버의 알림 토큰을 제거하지 못했습니다.": "deleteFailed",
+  "알림 서비스 워커 준비 시간이 초과되었습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.":
+    "workerTimeout",
 };
 
 export default function NotificationPrivacyPage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.notificationPrivacy;
   const [isReady, setIsReady] = useState(false);
   const [permission, setPermission] = useState<PermissionState>("unsupported");
   const [hasToken, setHasToken] = useState(false);
@@ -58,14 +72,10 @@ export default function NotificationPrivacyPage() {
 
     try {
       await enablePushNotifications({
-        onStatus: (status) => setMessage(statusLabels[status]),
+        onStatus: (status) => setMessage(getStatusLabel(status, text)),
       });
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "알림 설정 중 오류가 발생했습니다.",
-      );
+      setMessage(getPushErrorMessage(error, text, text.enableError));
     } finally {
       refreshStatus();
       setIsProcessing(false);
@@ -78,15 +88,9 @@ export default function NotificationPrivacyPage() {
 
     try {
       await disablePushNotifications();
-      setMessage(
-        "FCM 알림 구독을 해제했습니다. 브라우저 알림 권한은 그대로 유지됩니다.",
-      );
+      setMessage(text.disableSuccess);
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "알림 구독 해제 중 오류가 발생했습니다.",
-      );
+      setMessage(getPushErrorMessage(error, text, text.disableError));
     } finally {
       refreshStatus();
       setIsProcessing(false);
@@ -97,18 +101,16 @@ export default function NotificationPrivacyPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <Link
-          href="/more"
+          href={localizePath("/more", locale)}
           className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900"
         >
           <Icon name="chevron-right" size={16} className="rotate-180" />
-          더보기
+          {text.backToMore}
         </Link>
         <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
-          알림 및 개인정보
+          {text.title}
         </h1>
-        <p className="text-neutral-600">
-          알림 권한, 분석 도구, 개인정보 안내를 한곳에서 확인하세요.
-        </p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       <div className="grid gap-4">
@@ -122,22 +124,24 @@ export default function NotificationPrivacyPage() {
             />
             <div className="min-w-0 flex-1">
               <h2 className="text-base font-semibold text-neutral-900">
-                브라우저 알림 및 FCM 구독 상태
+                {text.statusTitle}
               </h2>
               <p className="mt-2 text-sm leading-6 text-neutral-600">
-                브라우저 알림 권한:{" "}
+                {text.permissionLabel}:{" "}
                 <strong className="text-neutral-900">
-                  {isReady ? permissionLabels[permission] : "확인 중"}
+                  {isReady
+                    ? getPermissionLabel(permission, text)
+                    : text.checking}
                 </strong>
               </p>
               <p className="mt-2 text-sm leading-6 text-neutral-600">
-                FCM 토큰:{" "}
+                {text.tokenLabel}:{" "}
                 <strong className="text-neutral-900">
                   {isReady
                     ? hasToken
-                      ? "발급 및 구독됨"
-                      : "발급되지 않음"
-                    : "확인 중"}
+                      ? text.tokenSubscribed
+                      : text.tokenMissing
+                    : text.checking}
                 </strong>
               </p>
 
@@ -156,9 +160,7 @@ export default function NotificationPrivacyPage() {
                       disabled={isProcessing || permission === "denied"}
                       className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isProcessing
-                        ? "설정 중..."
-                        : "알림 설정 및 FCM 토큰 발급"}
+                      {isProcessing ? text.enableProcessing : text.enableAction}
                     </button>
                   )}
                   {hasToken && (
@@ -168,7 +170,9 @@ export default function NotificationPrivacyPage() {
                       disabled={isProcessing}
                       className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {isProcessing ? "해제 중..." : "FCM 알림 구독 해제"}
+                      {isProcessing
+                        ? text.disableProcessing
+                        : text.disableAction}
                     </button>
                   )}
                 </div>
@@ -176,14 +180,12 @@ export default function NotificationPrivacyPage() {
 
               {isReady && permission === "denied" && (
                 <p className="mt-3 text-sm leading-6 text-amber-700">
-                  브라우저에서 알림이 차단되어 있습니다. 브라우저 설정에서
-                  권한을 허용한 뒤 FCM 토큰을 발급해주세요.
+                  {text.deniedHelp}
                 </p>
               )}
               {isReady && permission === "granted" && !hasToken && (
                 <p className="mt-3 text-sm leading-6 text-neutral-500">
-                  브라우저 권한은 허용되어 있지만 FCM 토큰이 없어 알림은
-                  전송되지 않습니다.
+                  {text.missingTokenHelp}
                 </p>
               )}
             </div>
@@ -192,31 +194,71 @@ export default function NotificationPrivacyPage() {
 
         <Card hover={false} className="border border-neutral-200">
           <h2 className="text-base font-semibold text-neutral-900">
-            분석 도구 사용
+            {text.analyticsTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            서비스 품질 개선과 오류 파악을 위해 Google Analytics가 사용됩니다.
-            분석 데이터는 개인정보처리방침의 목적과 범위 안에서 다룹니다.
+            {text.analyticsDescription}
           </p>
           <Link
-            href="/privacy"
+            href={localizePath("/privacy", locale)}
             className="mt-4 inline-flex rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
           >
-            개인정보처리방침 보기
+            {text.privacyPolicyLink}
           </Link>
         </Card>
 
         <Card hover={false} className="border border-neutral-200 bg-neutral-50">
           <h2 className="text-base font-semibold text-neutral-900">
-            권한 요청 원칙
+            {text.permissionPrincipleTitle}
           </h2>
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            SYU CAMPUS는 사용자의 명시적인 브라우저 권한 없이는 푸시 알림을 보낼
-            수 없습니다. 이미 알림을 허용한 경우에만 알림 토큰을 등록해 서비스
-            공지를 받을 수 있게 합니다.
+            {text.permissionPrincipleDescription}
           </p>
         </Card>
       </div>
     </Container>
   );
+}
+
+function getPermissionLabel(
+  permission: PermissionState,
+  text: NotificationPrivacyDictionary,
+): string {
+  if (permission === "granted") return text.permissionStates.granted;
+  if (permission === "denied") return text.permissionStates.denied;
+  if (permission === "default") return text.permissionStates.default;
+  return text.permissionStates.unsupported;
+}
+
+function getStatusLabel(
+  status: PushNotificationStatus,
+  text: NotificationPrivacyDictionary,
+): string {
+  if (status === "requesting-permission") {
+    return text.statusMessages.requestingPermission;
+  }
+  if (status === "registering-service-worker") {
+    return text.statusMessages.registeringServiceWorker;
+  }
+  if (status === "initializing-firebase") {
+    return text.statusMessages.initializingFirebase;
+  }
+  if (status === "requesting-fcm-token") {
+    return text.statusMessages.requestingFcmToken;
+  }
+  if (status === "saving-fcm-token") {
+    return text.statusMessages.savingFcmToken;
+  }
+  return text.statusMessages.enabled;
+}
+
+function getPushErrorMessage(
+  error: unknown,
+  text: NotificationPrivacyDictionary,
+  fallback: string,
+): string {
+  if (!(error instanceof Error)) return fallback;
+
+  const key = pushErrorKeys[error.message];
+  return key ? text.errors[key] : fallback;
 }

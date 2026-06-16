@@ -3,6 +3,7 @@
 import type { Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
 import { getSearchSnippet, highlightText } from "@/lib/search";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
 
@@ -12,6 +13,8 @@ interface SearchResultCardProps {
 }
 
 export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
+  const dictionary = useDictionary();
+
   if ("phone" in item && "department" in item) {
     return <PhoneSearchResultCard phone={item} query={query} />;
   }
@@ -35,7 +38,7 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
             )}
           </div>
           <Badge color="gray" size="sm">
-            {getScheduleCategoryLabel(item.category)}
+            {dictionary.categories[item.category]}
           </Badge>
         </div>
       </Card>
@@ -54,9 +57,15 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              {announcement.isPinned && <Badge color="red" size="sm">고정글</Badge>}
+              {announcement.isPinned && (
+                <Badge color="red" size="sm">
+                  {dictionary.labels.pinned}
+                </Badge>
+              )}
               {announcement.isImportant && (
-                <Badge color="yellow" size="sm">중요</Badge>
+                <Badge color="yellow" size="sm">
+                  {dictionary.labels.important}
+                </Badge>
               )}
             </div>
             <h4 className="font-medium text-neutral-900 line-clamp-2">
@@ -82,6 +91,8 @@ function PhoneSearchResultCard({
   phone: PhoneNumber;
   query: string;
 }) {
+  const dictionary = useDictionary();
+
   return (
     <Card key={phone.phone}>
       <div className="flex items-center justify-between gap-2">
@@ -97,16 +108,9 @@ function PhoneSearchResultCard({
           href={`tel:${phone.phone}`}
           className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors"
         >
-          전화
+          {dictionary.labels.phone}
         </a>
       </div>
     </Card>
   );
-}
-
-function getScheduleCategoryLabel(category: string): string {
-  if (category === "exam") return "시험";
-  if (category === "registration") return "수강신청";
-  if (category === "holiday") return "휴일";
-  return "행사";
 }

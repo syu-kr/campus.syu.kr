@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useId, useRef } from "react";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface ModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export function Modal({
   bodyClassName = "",
   hideHeader = false,
 }: ModalProps) {
+  const dictionary = useDictionary();
+  const closeLabel = dictionary.labels.closeModal;
   const titleId = useId();
   const descriptionId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -98,7 +101,7 @@ export function Modal({
               onClick={onClose}
               className="sr-only"
             >
-              모달 닫기
+              {closeLabel}
             </button>
           </>
         ) : (
@@ -120,7 +123,7 @@ export function Modal({
               type="button"
               onClick={onClose}
               className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              aria-label="모달 닫기"
+              aria-label={closeLabel}
             >
               x
             </button>

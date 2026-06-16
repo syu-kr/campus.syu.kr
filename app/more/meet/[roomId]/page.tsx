@@ -3,28 +3,30 @@
 import {
   FormEvent,
   PointerEvent,
+  use,
   useCallback,
   useEffect,
   useMemo,
-  use,
   useState,
 } from "react";
 import Link from "next/link";
+
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
-import { Modal } from "@/app/components/Modal";
 import {
-  formatMeetSlot,
-  getMeetDatesFromSlots,
-  getMeetTimesFromSlots,
-} from "@/lib/meet";
-import type { MeetParticipant, MeetRoomResponse } from "@/types/meet";
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
+import { Modal } from "@/app/components/Modal";
 import {
   formatDateLabel,
   formatDateTimeLabel,
   TimeRow,
 } from "@/app/features/meet/availability-grid";
+import { getMeetDatesFromSlots, getMeetTimesFromSlots } from "@/lib/meet";
+import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
+import type { MeetParticipant, MeetRoomResponse } from "@/types/meet";
 
 interface PageProps {
   params: Promise<{
@@ -32,8 +34,31 @@ interface PageProps {
   }>;
 }
 
+type MeetRoomDictionary = Dictionary["pages"]["meetRoom"];
+type MeetRoomErrors = MeetRoomDictionary["errors"];
+
+const meetRoomErrorKeys: Record<string, keyof MeetRoomErrors> = {
+  "일정 방 코드 형식이 올바르지 않습니다": "invalidRoomCode",
+  "일정 방을 찾을 수 없습니다": "roomNotFound",
+  "일정 방 정보를 불러오지 못했습니다": "roomLoadFailed",
+  "참여 정보를 저장하지 못했습니다": "saveFailed",
+  "이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다": "roomClosed",
+  "닉네임은 1자 이상 30자 이하로 입력해주세요": "nicknameInvalid",
+  "이 닉네임의 기존 응답을 수정할 권한이 없습니다. 다른 닉네임을 사용해주세요.":
+    "editForbidden",
+  "이 일정 방의 최대 참여자 수에 도달했습니다": "maxParticipants",
+  "Content-Type은 application/json이어야 합니다.": "contentType",
+  "요청 본문이 너무 큽니다.": "requestTooLarge",
+  "JSON 요청 본문이 올바르지 않습니다.": "invalidJson",
+  "허용되지 않은 출처의 요청입니다.": "forbiddenOrigin",
+  "요청 제한 설정이 완료되지 않았습니다.": "rateLimitConfig",
+};
+
 export default function MeetRoomPage({ params }: PageProps) {
   const { roomId } = use(params);
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.meetRoom;
   const [data, setData] = useState<MeetRoomResponse | null>(null);
   const [nickname, setNickname] = useState("");
   const [availability, setAvailability] = useState<Set<string>>(new Set());
@@ -57,18 +82,16 @@ export default function MeetRoomPage({ params }: PageProps) {
       const roomData = await response.json();
 
       if (!response.ok) {
-        throw new Error(roomData.error || "일정 방을 불러오지 못했습니다");
+        throw new Error(getMeetRoomErrorMessage(roomData.error, text));
       }
 
       setData(roomData);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "일정 방을 불러오지 못했습니다",
-      );
+      setError(err instanceof Error ? err.message : text.loadFailed);
     } finally {
       setIsLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, text]);
 
   useEffect(() => {
     void loadRoom();
@@ -222,7 +245,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   const handleLoadParticipant = () => {
     if (!matchedParticipant) return;
     setAvailability(new Set(matchedParticipant.availability));
-    setStatus("기존 선택을 불러왔습니다.");
+    setStatus(text.loadedStatus);
   };
 
   const saveAvailability = async () => {
@@ -230,12 +253,12 @@ export default function MeetRoomPage({ params }: PageProps) {
     setStatus("");
 
     if (isClosed) {
-      setError("이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다.");
+      setError(text.responseClosed);
       return;
     }
 
     if (availability.size === 0) {
-      setError("가능한 시간을 1개 이상 선택한 뒤 저장해주세요.");
+      setError(text.selectOneError);
       return;
     }
 
@@ -259,7 +282,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "참여 정보를 저장하지 못했습니다");
+        throw new Error(getMeetRoomErrorMessage(result.error, text));
       }
 
       if (typeof result.editToken === "string") {
@@ -271,12 +294,10 @@ export default function MeetRoomPage({ params }: PageProps) {
         setParticipantEditToken(result.editToken);
       }
 
-      setStatus("가능한 시간이 저장되었습니다.");
+      setStatus(text.savedStatus);
       await loadRoom();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "참여 정보를 저장하지 못했습니다",
-      );
+      setError(err instanceof Error ? err.message : text.errors.saveFailed);
     } finally {
       setIsSaving(false);
       setOverwriteConfirmOpen(false);
@@ -298,7 +319,7 @@ export default function MeetRoomPage({ params }: PageProps) {
     return (
       <Container className="py-6 sm:py-8">
         <Card hover={false}>
-          <p className="text-sm text-neutral-600">일정 방을 불러오는 중...</p>
+          <p className="text-sm text-neutral-600">{text.loading}</p>
         </Card>
       </Container>
     );
@@ -308,14 +329,12 @@ export default function MeetRoomPage({ params }: PageProps) {
     return (
       <Container className="py-6 sm:py-8">
         <Card className="border border-red-200 bg-red-50" hover={false}>
-          <p className="text-sm text-red-700">
-            {error || "일정 방을 찾을 수 없습니다."}
-          </p>
+          <p className="text-sm text-red-700">{error || text.notFound}</p>
           <Link
-            href="/more/meet"
+            href={localizePath("/more/meet", locale)}
             className="mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
           >
-            새 방 만들기
+            {text.createRoom}
           </Link>
         </Card>
       </Container>
@@ -326,11 +345,11 @@ export default function MeetRoomPage({ params }: PageProps) {
     <Container className="py-6 sm:py-8">
       <div className="mb-6">
         <Link
-          href="/more/meet"
+          href={localizePath("/more/meet", locale)}
           className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
         >
           <Icon name="chevron-right" size={16} className="rotate-180" />
-          일정 잡기
+          {text.backToMeet}
         </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {data.room.title}
@@ -346,8 +365,12 @@ export default function MeetRoomPage({ params }: PageProps) {
           }`}
         >
           {data.room.acceptingResponses
-            ? `응답 가능: ${formatDateTimeLabel(data.room.responseClosesAt)}까지`
-            : "응답 시간이 마감되어 결과만 볼 수 있습니다."}
+            ? `${text.responseOpenPrefix} ${formatDateTimeLabel(
+                data.room.responseClosesAt,
+                locale,
+                text.missingDeadline,
+              )}${text.responseOpenSuffix}`
+            : text.responseClosed}
         </div>
       </div>
 
@@ -355,52 +378,48 @@ export default function MeetRoomPage({ params }: PageProps) {
         <form onSubmit={handleSubmit} className="min-w-0 space-y-4">
           {!isClosed && (
             <Card hover={false}>
-            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 sm:items-end">
-              <div>
-                <label
-                  htmlFor="nickname"
-                  className="block text-sm font-semibold text-neutral-900 mb-2"
+              <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 sm:items-end">
+                <div>
+                  <label
+                    htmlFor="nickname"
+                    className="block text-sm font-semibold text-neutral-900 mb-2"
+                  >
+                    {text.nickname}
+                  </label>
+                  <input
+                    id="nickname"
+                    type="text"
+                    value={nickname}
+                    onChange={(event) => setNickname(event.target.value)}
+                    maxLength={30}
+                    placeholder={text.nicknamePlaceholder}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLoadParticipant}
+                  disabled={!matchedParticipant}
+                  className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800 hover:border-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  닉네임
-                </label>
-                <input
-                  id="nickname"
-                  type="text"
-                  value={nickname}
-                  onChange={(event) => setNickname(event.target.value)}
-                  maxLength={30}
-                  placeholder="이름을 입력하세요"
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
+                  {text.loadPrevious}
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={handleLoadParticipant}
-                disabled={!matchedParticipant}
-                className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800 hover:border-primary-500 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                기존 선택 불러오기
-              </button>
-            </div>
-            {matchedParticipant && (
-              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                {participantEditToken
-                  ? "같은 닉네임의 기존 응답이 있습니다. 이 브라우저에서 만든 응답이므로 수정할 수 있습니다."
-                  : "같은 닉네임의 기존 응답이 있습니다. 다른 사람의 응답은 수정할 수 없으므로 새 응답으로 저장하려면 닉네임을 다르게 입력하세요."}
-              </p>
-            )}
+              {matchedParticipant && (
+                <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  {participantEditToken ? text.existingOwned : text.existingBlocked}
+                </p>
+              )}
             </Card>
           )}
 
           <Card hover={false} className="p-0 overflow-hidden">
             <div className="border-b border-neutral-200 px-4 py-3">
               <h2 className="text-base font-semibold text-neutral-900">
-                {isClosed ? "결과 보기" : "가능한 시간 선택"}
+                {isClosed ? text.resultTitle : text.selectTitle}
               </h2>
               <p className="text-sm text-neutral-600 mt-1">
-                {isClosed
-                  ? "응답이 마감되어 더 이상 수정할 수 없습니다."
-                  : "칸을 누르거나 드래그해서 가능한 시간을 표시하세요."}
+                {isClosed ? text.resultHelp : text.selectHelp}
               </p>
             </div>
 
@@ -417,14 +436,14 @@ export default function MeetRoomPage({ params }: PageProps) {
                 }}
               >
                 <div className="sticky left-0 z-10 bg-neutral-100 border-b border-r border-neutral-200 p-2 text-xs font-semibold text-neutral-600">
-                  시간
+                  {text.time}
                 </div>
                 {dates.map((date) => (
                   <div
                     key={date}
                     className="border-b border-r border-neutral-200 bg-neutral-100 p-2 text-center text-xs font-semibold text-neutral-800"
                   >
-                    {formatDateLabel(date)}
+                    {formatDateLabel(date, locale)}
                   </div>
                 ))}
 
@@ -436,6 +455,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                     availability={availability}
                     participantBySlot={participantBySlot}
                     readOnly={isClosed}
+                    selectableTitle={text.selectableTitle}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
                   />
@@ -449,7 +469,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                   htmlFor="mobile-date"
                   className="block text-xs font-semibold text-neutral-700 mb-2"
                 >
-                  날짜
+                  {text.date}
                 </label>
                 <select
                   id="mobile-date"
@@ -459,7 +479,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                 >
                   {dates.map((date) => (
                     <option key={date} value={date}>
-                      {formatDateLabel(date)}
+                      {formatDateLabel(date, locale)}
                     </option>
                   ))}
                 </select>
@@ -469,8 +489,8 @@ export default function MeetRoomPage({ params }: PageProps) {
                       key={date}
                       className="rounded-full bg-white px-2 py-1 text-neutral-700 ring-1 ring-neutral-200"
                     >
-                      {formatDateLabel(date)} {selectedCountByDate.get(date) || 0}
-                      칸
+                      {formatDateLabel(date, locale)}{" "}
+                      {formatSlotCount(selectedCountByDate.get(date) || 0, text)}
                     </span>
                   ))}
                 </div>
@@ -486,10 +506,10 @@ export default function MeetRoomPage({ params }: PageProps) {
                 onPointerLeave={handlePointerEnd}
               >
                 <div className="bg-neutral-100 border-b border-r border-neutral-200 p-2 text-xs font-semibold text-neutral-600">
-                  시간
+                  {text.time}
                 </div>
                 <div className="border-b border-neutral-200 bg-neutral-100 p-2 text-center text-xs font-semibold text-neutral-800">
-                  {formatDateLabel(mobileDate || dates[0] || "")}
+                  {formatDateLabel(mobileDate || dates[0] || "", locale)}
                 </div>
                 {times.map((time) => (
                   <TimeRow
@@ -500,6 +520,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                     participantBySlot={participantBySlot}
                     compact
                     readOnly={isClosed}
+                    selectableTitle={text.selectableTitle}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
                   />
@@ -521,7 +542,7 @@ export default function MeetRoomPage({ params }: PageProps) {
 
           {!isClosed && (
             <div className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-700">
-              선택한 가능 시간: {availability.size}칸
+              {text.selectedCountPrefix} {formatSlotCount(availability.size, text)}
             </div>
           )}
 
@@ -536,10 +557,10 @@ export default function MeetRoomPage({ params }: PageProps) {
               className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
             >
               {isSaving
-                ? "저장 중..."
+                ? text.saving
                 : matchedParticipant
-                  ? "기존 응답 덮어쓰기"
-                  : "내 가능 시간 저장"}
+                  ? text.overwriteAction
+                  : text.saveAction}
             </button>
           )}
         </form>
@@ -547,7 +568,7 @@ export default function MeetRoomPage({ params }: PageProps) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card hover={false}>
             <h2 className="text-base font-semibold text-neutral-900 mb-3">
-              가장 많이 겹치는 시간
+              {text.bestSlotsTitle}
             </h2>
             {bestSlots.length > 0 ? (
               <div className="space-y-2">
@@ -557,22 +578,25 @@ export default function MeetRoomPage({ params }: PageProps) {
                     className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
                   >
                     <p className="text-sm font-semibold text-blue-900">
-                      {formatMeetSlot(slot)}
+                      {formatMeetSlotLabel(slot, locale)}
                     </p>
-                    <p className="text-xs text-blue-700">{count}명 가능</p>
+                    <p className="text-xs text-blue-700">
+                      {formatAvailableCount(count, text)}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-neutral-600">
-                아직 선택된 시간이 없습니다.
+                {text.noSelectedSlots}
               </p>
             )}
           </Card>
 
           <Card hover={false}>
             <h2 className="text-base font-semibold text-neutral-900 mb-3">
-              참여자 {data.participants.length}명
+              {text.participantsPrefix} {data.participants.length}
+              {text.participantsSuffix}
             </h2>
             {data.participants.length > 0 ? (
               <div className="space-y-2">
@@ -585,15 +609,13 @@ export default function MeetRoomPage({ params }: PageProps) {
                       {participant.nickname}
                     </span>
                     <span className="text-xs text-neutral-500">
-                      {participant.availability.length}칸
+                      {formatSlotCount(participant.availability.length, text)}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-neutral-600">
-                초대 링크를 공유해 참여를 받아보세요.
-              </p>
+              <p className="text-sm text-neutral-600">{text.inviteEmpty}</p>
             )}
           </Card>
         </div>
@@ -601,15 +623,15 @@ export default function MeetRoomPage({ params }: PageProps) {
 
       <Modal
         isOpen={overwriteConfirmOpen}
-        title="기존 응답을 덮어쓸까요?"
-        description="같은 닉네임으로 저장된 응답이 있습니다."
+        title={text.overwriteTitle}
+        description={text.overwriteDescription}
         onClose={() => setOverwriteConfirmOpen(false)}
         size="sm"
       >
         <div className="space-y-4">
           <p className="text-sm leading-6 text-neutral-600">
-            계속하면 이 닉네임의 기존 가능 시간이 현재 선택한 {availability.size}
-            칸으로 바뀝니다. 새 응답으로 남기려면 닉네임을 다르게 입력하세요.
+            {text.overwriteMessagePrefix} {formatSlotCount(availability.size, text)}
+            {text.overwriteMessageSuffix}
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             <button
@@ -617,20 +639,47 @@ export default function MeetRoomPage({ params }: PageProps) {
               onClick={() => setOverwriteConfirmOpen(false)}
               className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
             >
-              취소
+              {text.cancel}
             </button>
             <button
               type="button"
               onClick={() => void saveAvailability()}
               className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
             >
-              덮어쓰기
+              {text.overwrite}
             </button>
           </div>
         </div>
       </Modal>
     </Container>
   );
+}
+
+function getMeetRoomErrorMessage(
+  error: unknown,
+  text: MeetRoomDictionary,
+): string {
+  if (typeof error !== "string") return text.errors.saveFailed;
+
+  const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
+  if (rateLimitSeconds) {
+    return text.errors.rateLimited.replace("{seconds}", rateLimitSeconds);
+  }
+
+  const key = meetRoomErrorKeys[error];
+  return key ? text.errors[key] : text.errors.saveFailed;
+}
+
+function formatMeetSlotLabel(slot: string, locale: Locale): string {
+  return formatDateTimeLabel(slot, locale, slot);
+}
+
+function formatSlotCount(count: number, text: MeetRoomDictionary): string {
+  return `${count}${text.countSeparator}${text.slotsUnit}`;
+}
+
+function formatAvailableCount(count: number, text: MeetRoomDictionary): string {
+  return `${count}${text.countSeparator}${text.availableCountSuffix}`;
 }
 
 function getParticipantTokenKey(roomId: string, normalizedNickname: string) {

@@ -3,29 +3,31 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
 import {
   SubmissionResultModal,
   type SubmissionSummaryItem,
 } from "@/app/components/SubmissionResultModal";
+import { localizePath, type Dictionary } from "@/lib/i18n";
+import type { CampusTipCategory } from "@/types";
 
-const categories = [
-  { value: "school", label: "학교" },
-  { value: "campus-life", label: "캠퍼스생활" },
-  { value: "finance", label: "금융/장학" },
-  { value: "certificate", label: "자격증" },
-  { value: "activity", label: "공모전/대외활동" },
-  { value: "career", label: "취업" },
-  { value: "culture", label: "문화생활" },
-  { value: "local", label: "별내동" },
-  { value: "reference", label: "참고자료" },
-];
+type CampusTipsDictionary = Dictionary["pages"]["campusTips"];
+type CampusTipSuggestDictionary = Dictionary["pages"]["campusTipsSuggest"];
 
 export default function CampusTipSuggestPage() {
   const router = useRouter();
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.campusTipsSuggest;
+  const categories = getCampusTipCategories(dictionary.pages.campusTips);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("campus-life");
+  const [category, setCategory] = useState<CampusTipCategory>("campus-life");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState("");
@@ -46,7 +48,7 @@ export default function CampusTipSuggestPage() {
     setResultModal(null);
 
     if (shouldReturnToTips) {
-      router.push("/campus/campus-tips");
+      router.push(localizePath("/campus/campus-tips", locale));
     }
   };
 
@@ -55,17 +57,21 @@ export default function CampusTipSuggestPage() {
     setResultModal(null);
     setFieldErrors({});
 
-    const clientErrors = validateCampusTipSuggestion({
-      title,
-      description,
-      url,
-    });
+    const clientErrors = validateCampusTipSuggestion(
+      {
+        title,
+        category,
+        description,
+        url,
+      },
+      text,
+    );
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
       setResultModal({
         type: "error",
-        title: "입력 내용을 확인해주세요",
-        message: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
+        title: text.validationTitle,
+        message: text.validationMessage,
       });
       return;
     }
@@ -96,20 +102,23 @@ export default function CampusTipSuggestPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        const serverError = getServerFieldError(data.field, text);
         if (data.field) {
-          setFieldErrors({ [data.field]: data.error });
+          setFieldErrors({ [data.field]: serverError });
         }
-        throw new Error(data.error || "꿀팁 제보를 접수하지 못했습니다");
+        throw new Error(serverError || text.submitFailed);
       }
 
       setResultModal({
         type: "success",
-        title: "제보가 접수되었습니다",
-        message: "검토 후 캠퍼스 꿀팁에 반영될 수 있습니다.",
+        title: text.successTitle,
+        message: text.successMessage,
         summary: [
-          { label: "제목", value: submittedTitle },
-          { label: "카테고리", value: submittedCategory },
-          ...(submittedUrl ? [{ label: "링크", value: submittedUrl }] : []),
+          { label: text.summaryTitle, value: submittedTitle },
+          { label: text.summaryCategory, value: submittedCategory },
+          ...(submittedUrl
+            ? [{ label: text.summaryLink, value: submittedUrl }]
+            : []),
         ],
       });
       setTitle("");
@@ -122,11 +131,8 @@ export default function CampusTipSuggestPage() {
     } catch (err) {
       setResultModal({
         type: "error",
-        title: "제보를 접수하지 못했습니다",
-        message:
-          err instanceof Error
-            ? err.message
-            : "꿀팁 제보를 접수하지 못했습니다",
+        title: text.submitFailed,
+        message: err instanceof Error ? err.message : text.submitFailed,
       });
     } finally {
       setIsSubmitting(false);
@@ -137,18 +143,15 @@ export default function CampusTipSuggestPage() {
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <Link
-          href="/campus/campus-tips"
+          href={localizePath("/campus/campus-tips", locale)}
           className="inline-flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
         >
-          ← 캠퍼스 꿀팁
+          ← {text.backToTips}
         </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          꿀팁 제보하기
+          {text.title}
         </h1>
-        <p className="text-neutral-600">
-          학교생활에 도움이 되는 정보나 링크를 알려주세요. 검토 후 서비스에
-          반영될 수 있습니다.
-        </p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       <Card hover={false}>
@@ -168,7 +171,7 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-title"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              제목
+              {text.titleLabel}
             </label>
             <input
               id="tip-title"
@@ -176,7 +179,7 @@ export default function CampusTipSuggestPage() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               maxLength={120}
-              placeholder="예: 중앙도서관 프린트 이용 팁"
+              placeholder={text.titlePlaceholder}
               aria-invalid={Boolean(fieldErrors.title)}
               aria-describedby={fieldErrors.title ? "tip-title-error" : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
@@ -195,12 +198,14 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-category"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              카테고리
+              {text.categoryLabel}
             </label>
             <select
               id="tip-category"
               value={category}
-              onChange={(event) => setCategory(event.target.value)}
+              onChange={(event) =>
+                setCategory(event.target.value as CampusTipCategory)
+              }
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               {categories.map((item) => (
@@ -216,7 +221,7 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-description"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              꿀팁 내용
+              {text.descriptionLabel}
             </label>
             <textarea
               id="tip-description"
@@ -224,7 +229,7 @@ export default function CampusTipSuggestPage() {
               onChange={(event) => setDescription(event.target.value)}
               rows={6}
               maxLength={1200}
-              placeholder="무엇을 어디에서 확인할 수 있는지, 왜 유용한지 적어주세요."
+              placeholder={text.descriptionPlaceholder}
               aria-invalid={Boolean(fieldErrors.description)}
               aria-describedby={
                 fieldErrors.description ? "tip-description-error" : undefined
@@ -250,7 +255,7 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-url"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              관련 링크
+              {text.urlLabel}
             </label>
             <input
               id="tip-url"
@@ -258,7 +263,7 @@ export default function CampusTipSuggestPage() {
               value={url}
               onChange={(event) => setUrl(event.target.value)}
               maxLength={500}
-              placeholder="https://..."
+              placeholder={text.urlPlaceholder}
               aria-invalid={Boolean(fieldErrors.url)}
               aria-describedby={fieldErrors.url ? "tip-url-error" : undefined}
               className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 ${
@@ -277,19 +282,17 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-tags"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              태그
+              {text.tagsLabel}
             </label>
             <input
               id="tip-tags"
               type="text"
               value={tags}
               onChange={(event) => setTags(event.target.value)}
-              placeholder="도서관, 프린트, 과제"
+              placeholder={text.tagsPlaceholder}
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
-            <p className="mt-1 text-xs text-neutral-500">
-              쉼표로 구분해주세요.
-            </p>
+            <p className="mt-1 text-xs text-neutral-500">{text.tagsHelp}</p>
           </div>
 
           <div>
@@ -297,7 +300,7 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-note"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              추가 메모
+              {text.noteLabel}
             </label>
             <textarea
               id="tip-note"
@@ -305,7 +308,7 @@ export default function CampusTipSuggestPage() {
               onChange={(event) => setNote(event.target.value)}
               rows={3}
               maxLength={1000}
-              placeholder="운영자가 확인하면 좋을 내용을 적어주세요."
+              placeholder={text.notePlaceholder}
               className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -315,9 +318,9 @@ export default function CampusTipSuggestPage() {
               htmlFor="tip-contact"
               className="block text-sm font-semibold text-neutral-900 mb-2"
             >
-              연락처
+              {text.contactLabel}
               <span className="ml-1 text-xs font-normal text-neutral-500">
-                선택
+                {text.optional}
               </span>
             </label>
             <input
@@ -326,16 +329,18 @@ export default function CampusTipSuggestPage() {
               value={contact}
               onChange={(event) => setContact(event.target.value)}
               maxLength={120}
-              placeholder="확인이 필요한 경우 참고할 이메일 또는 연락처"
+              placeholder={text.contactPlaceholder}
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <p className="mt-1 text-xs leading-5 text-neutral-500">
-              검토 연락용 선택 항목이며, 개별 답변을 보장하지 않습니다. 처리
-              기준은{" "}
-              <Link href="/privacy" className="text-primary-600 hover:text-primary-700">
-                개인정보처리방침
+              {text.contactHelpPrefix}{" "}
+              <Link
+                href={localizePath("/privacy", locale)}
+                className="text-primary-600 hover:text-primary-700"
+              >
+                {text.privacyPolicy}
               </Link>
-              을 따릅니다.
+              {text.contactHelpSuffix}
             </p>
           </div>
 
@@ -344,7 +349,7 @@ export default function CampusTipSuggestPage() {
             disabled={isSubmitting}
             className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
-            {isSubmitting ? "접수 중..." : "꿀팁 제보하기"}
+            {isSubmitting ? text.submitting : text.submit}
           </button>
         </form>
       </Card>
@@ -362,30 +367,68 @@ export default function CampusTipSuggestPage() {
   );
 }
 
-function validateCampusTipSuggestion({
-  title,
-  description,
-  url,
-}: {
-  title: string;
-  description: string;
-  url: string;
-}): Record<string, string> {
+function validateCampusTipSuggestion(
+  {
+    title,
+    category,
+    description,
+    url,
+  }: {
+    title: string;
+    category: CampusTipCategory;
+    description: string;
+    url: string;
+  },
+  text: CampusTipSuggestDictionary,
+): Record<string, string> {
   const errors: Record<string, string> = {};
 
   if (!title.trim()) {
-    errors.title = "제목을 입력해주세요";
+    errors.title = text.titleRequired;
+  }
+
+  if (!category) {
+    errors.category = text.categoryRequired;
   }
 
   if (!description.trim()) {
-    errors.description = "꿀팁 내용을 입력해주세요";
+    errors.description = text.descriptionRequired;
   }
 
   if (url.trim() && !isValidHttpUrl(url.trim())) {
-    errors.url = "관련 링크 형식이 올바르지 않습니다";
+    errors.url = text.invalidUrl;
   }
 
   return errors;
+}
+
+function getCampusTipCategories(text: CampusTipsDictionary): Array<{
+  value: CampusTipCategory;
+  label: string;
+}> {
+  return [
+    { value: "school", label: text.categories.school },
+    { value: "campus-life", label: text.categories.campusLife },
+    { value: "finance", label: text.categories.finance },
+    { value: "certificate", label: text.categories.certificate },
+    { value: "activity", label: text.categories.activity },
+    { value: "career", label: text.categories.career },
+    { value: "culture", label: text.categories.culture },
+    { value: "local", label: text.categories.local },
+    { value: "reference", label: text.categories.reference },
+  ];
+}
+
+function getServerFieldError(
+  field: string | undefined,
+  text: CampusTipSuggestDictionary,
+) {
+  if (field === "title") return text.titleRequired;
+  if (field === "category") return text.categoryRequired;
+  if (field === "description") return text.descriptionRequired;
+  if (field === "url") return text.invalidUrl;
+
+  return text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {

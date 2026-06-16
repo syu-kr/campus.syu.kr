@@ -3,6 +3,7 @@
 import { memo, useEffect } from "react";
 import { type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface WeatherModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ function WeatherModalComponent({
   weather,
   onClose,
 }: WeatherModalProps) {
+  const dictionary = useDictionary();
+
   // Escape 키로 모달 닫기
   useEffect(() => {
     if (!isOpen) return;
@@ -36,34 +39,34 @@ function WeatherModalComponent({
   const getSkyConditionDetail = (skyCondition: number): string => {
     switch (skyCondition) {
       case 1:
-        return "맑음";
+        return dictionary.weather.clear;
       case 3:
-        return "구름많음";
+        return dictionary.weather.partlyCloudy;
       case 4:
-        return "흐림";
+        return dictionary.weather.cloudy;
       default:
-        return "알 수 없음";
+        return dictionary.weather.unknown;
     }
   };
 
   const getPrecipitationDetail = (precipitation: number): string => {
     switch (precipitation) {
       case 0:
-        return "없음";
+        return dictionary.weather.none;
       case 1:
-        return "비";
+        return dictionary.weather.rain;
       case 2:
-        return "비/눈";
+        return dictionary.weather.rainSnow;
       case 3:
-        return "눈";
+        return dictionary.weather.snow;
       case 5:
-        return "이슬비";
+        return dictionary.weather.drizzle;
       case 6:
-        return "빗방울눈날림";
+        return dictionary.weather.rainSnowFlurry;
       case 7:
-        return "눈날림";
+        return dictionary.weather.snowFlurry;
       default:
-        return "알 수 없음";
+        return dictionary.weather.unknown;
     }
   };
 
@@ -94,8 +97,9 @@ function WeatherModalComponent({
                 {weather.temperature}°C
               </div>
               <div className="text-blue-50 text-lg">
-                현재 날씨는 {getSkyConditionDetail(weather.skyCondition)}{" "}
-                입니다.
+                {dictionary.weather.current}{" "}
+                {getSkyConditionDetail(weather.skyCondition)}
+                {dictionary.weather.currentSuffix}
               </div>
             </div>
           </div>
@@ -120,7 +124,7 @@ function WeatherModalComponent({
                 </div>
                 <div>
                   <p className="text-xs font-medium text-neutral-500">
-                    강수형태
+                    {dictionary.weather.precipitation}
                   </p>
                   <p className="text-sm font-semibold text-neutral-800">
                     {getPrecipitationDetail(weather.precipitation)}
@@ -147,7 +151,9 @@ function WeatherModalComponent({
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-neutral-500">풍속</p>
+                  <p className="text-xs font-medium text-neutral-500">
+                    {dictionary.weather.windSpeed}
+                  </p>
                   <p className="text-sm font-semibold text-neutral-800">
                     {weather.windSpeed} m/s
                   </p>
@@ -174,7 +180,7 @@ function WeatherModalComponent({
                 </div>
                 <div>
                   <p className="text-xs font-medium text-neutral-500">
-                    하늘상태
+                    {dictionary.weather.skyCondition}
                   </p>
                   <p className="text-sm font-semibold text-neutral-800">
                     {getSkyConditionDetail(weather.skyCondition)}
@@ -196,9 +202,11 @@ function WeatherModalComponent({
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-neutral-500">위치</p>
+                    <p className="text-xs font-medium text-neutral-500">
+                      {dictionary.weather.location}
+                    </p>
                     <p className="text-sm font-semibold text-neutral-800">
-                      삼육대학교
+                      {dictionary.labels.sahmyookUniversity}
                     </p>
                   </div>
                 </div>
@@ -215,7 +223,7 @@ function WeatherModalComponent({
                   </div>
                   <div>
                     <p className="text-xs font-medium text-neutral-500">
-                      업데이트
+                      {dictionary.weather.updated}
                     </p>
                     <p className="text-sm font-semibold text-neutral-800">
                       {weather.time}
@@ -231,7 +239,7 @@ function WeatherModalComponent({
               onClick={onClose}
               className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors"
             >
-              닫기
+              {dictionary.weather.close}
             </button>
           </div>
         </div>

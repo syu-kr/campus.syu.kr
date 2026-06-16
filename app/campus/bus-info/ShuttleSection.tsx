@@ -17,6 +17,8 @@ import {
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
 import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import type { Locale } from "@/lib/i18n";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -70,6 +72,10 @@ function isReplacementSpecialPeriod(period: {
 }
 
 export default function ShuttleSection() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.busInfo;
+
   const { data: buses, isLoading } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
@@ -130,8 +136,6 @@ export default function ShuttleSection() {
     const date = String(now.getDate()).padStart(2, "0");
     const dateStr = `${year}-${month}-${date}`;
 
-    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-
     return {
       dayOfWeek,
       isWeekend,
@@ -139,10 +143,10 @@ export default function ShuttleSection() {
       currentTime,
       hour,
       minute,
-      dayName: dayNames[dayOfWeek],
+      dayName: formatWeekday(now, locale),
       dateStr,
     };
-  }, [now]);
+  }, [locale, now]);
 
   // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
@@ -185,25 +189,25 @@ export default function ShuttleSection() {
   const dayButtons = [
     {
       type: "mondayToThursday" as const,
-      label: "학기(월-목)",
+      label: text.semesterMonThu,
       isActive:
         !specialScheduleIsCurrent && !dateInfo.isWeekend && !dateInfo.isFriday
-          ? "현재"
+          ? text.current
           : "",
     },
     {
       type: "friday" as const,
-      label: "학기(금)",
-      isActive: !specialScheduleIsCurrent && dateInfo.isFriday ? "현재" : "",
+      label: text.semesterFri,
+      isActive: !specialScheduleIsCurrent && dateInfo.isFriday ? text.current : "",
     },
     {
       type: "mondayToThursdayVacation" as const,
-      label: "방학(월-목)",
+      label: text.vacationMonThu,
       isActive: "",
     },
     {
       type: "fridayVacation" as const,
-      label: "방학(금)",
+      label: text.vacationFri,
       isActive: "",
     },
   ];
@@ -214,8 +218,8 @@ export default function ShuttleSection() {
     ? specialScheduleIsCurrent
     : Boolean(selectedRegularButton?.isActive);
   const selectedScheduleLabel = useSpecialSchedule
-    ? "특별운행"
-    : selectedRegularButton?.label || "선택한 시간표";
+    ? text.specialSchedule
+    : selectedRegularButton?.label || text.selectedSchedule;
 
   // defaultType 변경 시 selectedType도 자동으로 업데이트 (방학 기간 변경 대응)
   useEffect(() => {
@@ -539,7 +543,7 @@ export default function ShuttleSection() {
         setLocationError("");
       } catch {
         if (!isActive) return;
-        setLocationError("실시간 위치 정보를 새로 가져오지 못했습니다.");
+        setLocationError(text.locationError);
       }
     };
 
@@ -558,24 +562,29 @@ export default function ShuttleSection() {
       isActive = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [dateInfo.isWeekend, isLocationPanelVisible, isWithinOperationHours]);
+  }, [
+    dateInfo.isWeekend,
+    isLocationPanelVisible,
+    isWithinOperationHours,
+    text.locationError,
+  ]);
 
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          셔틀버스
+          {text.shuttleTitle}
         </h1>
         <p className="text-neutral-600">
-          캠퍼스 셔틀버스 운행 시간표 (오늘: {dateInfo.dayName}요일)
+          {text.shuttleDescriptionPrefix} ({text.today}: {dateInfo.dayName}
+          {text.weekdaySuffix})
         </p>
       </div>
 
       {dateInfo.isWeekend && (
         <Card className="mb-6 bg-orange-50 border border-orange-300">
           <p className="text-sm text-orange-900">
-            <strong>안내:</strong> 오늘은 주말입니다. 셔틀버스가 운행되지
-            않습니다.
+            <strong>{text.weekendNoticeTitle}</strong> {text.weekendNotice}
           </p>
         </Card>
       )}
@@ -586,7 +595,7 @@ export default function ShuttleSection() {
           <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="mb-3">
               <p className="text-xs sm:text-sm text-green-700 font-semibold mb-2">
-                곧 출발하는 버스
+                {text.upcomingBuses}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -597,10 +606,12 @@ export default function ShuttleSection() {
                   </h3>
                   <div className="space-y-1">
                     <p className="text-sm sm:text-base text-green-800">
-                      <strong>{bus.time}</strong> 출발
+                      <strong>{bus.time}</strong> {text.departs}
                     </p>
                     <p className="text-sm sm:text-base font-semibold text-green-600">
-                      {bus.minutesUntil}분 후 출발
+                      {bus.minutesUntil}
+                      {locale === "ko" ? "" : " "}
+                      {text.departsIn}
                     </p>
                   </div>
                 </div>
@@ -614,7 +625,7 @@ export default function ShuttleSection() {
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
               <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
-                실시간 버스 위치
+                {text.liveLocation}
               </h2>
               {isLocationPanelVisible && (
                 <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
@@ -623,35 +634,43 @@ export default function ShuttleSection() {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: "#3b82f6" }}
                     ></div>
-                    <span className="text-neutral-600">화랑대행</span>
+                    <span className="text-neutral-600">
+                      {formatRouteBoundLabel("화랑대", locale)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: "#10b981" }}
                     ></div>
-                    <span className="text-neutral-600">석계행</span>
+                    <span className="text-neutral-600">
+                      {formatRouteBoundLabel("석계", locale)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: "#f59e0b" }}
                     ></div>
-                    <span className="text-neutral-600">별내행</span>
+                    <span className="text-neutral-600">
+                      {formatRouteBoundLabel("별내", locale)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: "#8b5cf6" }}
                     ></div>
-                    <span className="text-neutral-600">구리행</span>
+                    <span className="text-neutral-600">
+                      {formatRouteBoundLabel("구리", locale)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: "#d0d0d0" }}
                     ></div>
-                    <span className="text-neutral-600">캠퍼스행</span>
+                    <span className="text-neutral-600">{text.campusBound}</span>
                   </div>
                 </div>
               )}
@@ -659,37 +678,39 @@ export default function ShuttleSection() {
             {isLocationPanelVisible ? (
               <>
                 <p className="text-xs sm:text-sm text-neutral-600">
-                  삼육대학교 셔틀 위치 데이터 기준입니다.
+                  {text.liveLocationDescription}
                   <br />
-                  5-10초마다 자동으로 업데이트됩니다.
+                  {text.autoUpdateLocation}
                 </p>
                 <p className="mt-1 text-xs text-neutral-500">
-                  마지막 위치 갱신:{" "}
+                  {text.lastLocationUpdate}:{" "}
                   {lastLocationUpdatedAt
-                    ? lastLocationUpdatedAt.toLocaleTimeString("ko-KR")
+                    ? lastLocationUpdatedAt.toLocaleTimeString(
+                        getLocaleCode(locale),
+                      )
                     : "-"}
                 </p>
                 {locationError && (
                   <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                    {locationError} 기존 정보가 오래되었을 수 있습니다.
+                    {locationError} {text.staleLocationWarning}
                   </p>
                 )}
               </>
             ) : !isWithinOperationHours ? (
               <p className="text-xs sm:text-sm text-neutral-600">
-                선택한 시간표 기준 운행 시간 밖입니다.
+                {text.outsideOperation}
               </p>
             ) : (
               <p className="text-xs sm:text-sm text-neutral-600">
-                정확도 안내를 확인한 뒤 필요한 경우에만 위치를 표시합니다.
+                {text.locationDisclosureHint}
               </p>
             )}
           </div>
 
           {!isWithinOperationHours ? (
             <ShuttleLocationState
-              title="현재는 위치 표시 시간이 아닙니다"
-              message={`선택한 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.`}
+              title={text.locationUnavailableTitle}
+              message={text.locationUnavailableMessage}
             />
           ) : !isLocationPanelVisible ? (
             <ShuttleLocationDisclosure
@@ -715,8 +736,8 @@ export default function ShuttleSection() {
                       4: "구리",
                     };
                     const statusLabels: Record<number, string> = {
-                      1: "학교 → 역",
-                      2: "역 → 학교",
+                      1: text.schoolToStation,
+                      2: text.stationToSchool,
                     };
                     const routeColors: Record<string | number, string> = {
                       1: "bg-blue-100 text-blue-700",
@@ -746,7 +767,7 @@ export default function ShuttleSection() {
                           </p>
                         </div>
                         <span className="text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0">
-                          {statusLabels[bus.status] || "알 수 없음"}
+                          {statusLabels[bus.status] || text.unknown}
                         </span>
                       </div>
                     );
@@ -757,12 +778,18 @@ export default function ShuttleSection() {
                 ref={mapComponentRef}
                 busLocations={busLocations}
                 selectedBusId={selectedBusId}
+                labels={{
+                  status: text.status,
+                  schoolToStation: text.schoolToStation,
+                  stationToSchool: text.stationToSchool,
+                  unknown: text.unknown,
+                }}
               />
             </>
           ) : (
             <ShuttleLocationState
-              title="현재 운행 중인 셔틀 위치를 찾을 수 없습니다"
-              message="운행 시간표와 실제 위치 데이터가 잠시 다를 수 있습니다. 아래 시간표와 학교 공지를 함께 확인해주세요."
+              title={text.locationEmptyTitle}
+              message={text.locationEmptyMessage}
             />
           )}
         </Card>
@@ -803,10 +830,10 @@ export default function ShuttleSection() {
                 : "bg-purple-50 text-purple-800 hover:bg-purple-100"
             }`}
           >
-            특별운행
+            {text.specialSchedule}
             {specialScheduleIsCurrent && (
               <span className="ml-1 text-xs bg-purple-700 text-white px-2 py-0.5 rounded-full">
-                현재
+                {text.current}
               </span>
             )}
           </button>
@@ -819,17 +846,16 @@ export default function ShuttleSection() {
         hover={false}
       >
         <p className="text-sm font-semibold text-neutral-900">
-          현재 시간표 기준: {selectedScheduleLabel}
+          {text.scheduleBase}: {selectedScheduleLabel}
         </p>
         <p className="mt-1 text-xs leading-5 text-neutral-600">
-          셔틀 시간표와 실시간 위치는 제공 데이터 기준입니다. 행사, 교통 상황,
-          학교 공지에 따라 실제 운행과 다를 수 있습니다.
+          {text.scheduleNotice}
         </p>
       </Card>
 
       {activeSpecialPeriods.length > 0 && (
         <Card className="mb-4 bg-purple-50 border-2 border-purple-300 text-sm text-purple-900">
-          <p className="font-bold mb-2">셔틀버스 특수 운행 기간입니다</p>
+          <p className="font-bold mb-2">{text.specialPeriodTitle}</p>
           <ul className="list-disc list-inside space-y-1">
             {activeSpecialPeriods.map((period) => (
               <li key={period.id} className="text-purple-800">
@@ -843,7 +869,7 @@ export default function ShuttleSection() {
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
         <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
-          <p>방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.</p>
+          <p>{text.vacationNotice}</p>
         </Card>
       )}
 
@@ -856,7 +882,7 @@ export default function ShuttleSection() {
             <Card>
               <div className="py-8 text-center">
                 <p className="text-neutral-600">
-                  버스 정보를 불러올 수 없습니다.
+                  {text.noBusInfo}
                 </p>
               </div>
             </Card>
@@ -877,8 +903,8 @@ export default function ShuttleSection() {
                   onClick={() => toggleBusExpand(bus.id)}
                   className="w-full text-left hover:bg-neutral-50 px-1 py-1 rounded-lg transition-all duration-200"
                   aria-expanded={isExpanded}
-                  aria-label={`${bus.routeName} 시간표 ${
-                    isExpanded ? "닫기" : "펼치기"
+                  aria-label={`${bus.routeName} ${text.scheduleToggleLabel} ${
+                    isExpanded ? text.collapse : text.expand
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3 p-3">
@@ -888,7 +914,9 @@ export default function ShuttleSection() {
                       </h2>
                       {routeStops.length > 0 ? (
                         <>
-                          <p className="text-sm text-neutral-600">순환 노선</p>
+                          <p className="text-sm text-neutral-600">
+                            {text.routeLoop}
+                          </p>
                           <ol className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
                             {routeStops.map((stop, stopIndex) => (
                               <li
@@ -939,12 +967,12 @@ export default function ShuttleSection() {
                 {isExpanded && (
                   <div className="border-t border-neutral-200 pt-4 mt-4 animate-in fade-in duration-200">
                     <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
-                      운행 시간
+                      {text.operationTime}
                     </p>
                     {times.length === 0 ? (
                       <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
                         <p className="text-sm text-neutral-600 font-medium">
-                          이 날짜에는 운행되지 않습니다.
+                          {text.noServiceOnDate}
                         </p>
                       </div>
                     ) : (
@@ -1004,7 +1032,7 @@ export default function ShuttleSection() {
                     )}
 
                     <p className="text-xs text-neutral-500 mt-3">
-                      최종 업데이트: {bus.lastUpdated}
+                      {text.lastUpdated}: {bus.lastUpdated}
                     </p>
                   </div>
                 )}
@@ -1017,21 +1045,22 @@ export default function ShuttleSection() {
 }
 
 function ShuttleLocationDisclosure({ onConfirm }: { onConfirm: () => void }) {
+  const text = useDictionary().pages.busInfo;
+
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-5">
       <p className="font-semibold text-amber-950">
-        실시간 위치가 정확하지 않을 수 있습니다
+        {text.locationDisclosureTitle}
       </p>
       <p className="mt-2 break-keep text-sm leading-6 text-amber-900">
-        학교 측의 지속적인 제한으로 인해 표시되는 셔틀 위치가 실제 위치와
-        다를 수 있습니다. 이 점을 감안하고 실시간 위치를 확인하시겠습니까?
+        {text.locationDisclosureMessage}
       </p>
       <button
         type="button"
         onClick={onConfirm}
         className="mt-4 inline-flex rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800"
       >
-        감안하고 위치 보기
+        {text.locationDisclosureAction}
       </button>
     </div>
   );
@@ -1052,4 +1081,18 @@ function ShuttleLocationState({
       </p>
     </div>
   );
+}
+
+function getLocaleCode(locale: Locale) {
+  return locale === "ko" ? "ko-KR" : "en-US";
+}
+
+function formatWeekday(date: Date, locale: Locale) {
+  return new Intl.DateTimeFormat(getLocaleCode(locale), {
+    weekday: "short",
+  }).format(date);
+}
+
+function formatRouteBoundLabel(routeName: string, locale: Locale) {
+  return locale === "ko" ? `${routeName}행` : `${routeName} bound`;
 }

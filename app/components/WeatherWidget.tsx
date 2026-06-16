@@ -3,12 +3,14 @@
 import { useEffect, useState, memo } from "react";
 import { fetchWeather, type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface WeatherWidgetProps {
   onClick?: () => void;
 }
 
 function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
+  const dictionary = useDictionary();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,17 +24,17 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
         if (data) {
           setWeather(data);
         } else {
-          setError("날씨 정보를 불러올 수 없습니다");
+          setError(dictionary.weather.unavailable);
         }
       } catch {
-        setError("날씨 조회 중 오류가 발생했습니다");
+        setError(dictionary.weather.loadError);
       } finally {
         setLoading(false);
       }
     };
 
     loadWeather();
-  }, []);
+  }, [dictionary.weather.loadError, dictionary.weather.unavailable]);
 
   if (loading) {
     return (
@@ -48,9 +50,9 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
       <div
         className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
         role="status"
-        title={error ?? "날씨 정보를 불러올 수 없습니다"}
+        title={error ?? dictionary.weather.unavailable}
       >
-        <span className="font-semibold">날씨</span>
+        <span className="font-semibold">{dictionary.weather.label}</span>
         <span>--</span>
       </div>
     );
@@ -70,23 +72,23 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
         </span>
         <span className="hidden sm:inline text-xs text-neutral-600">
           {weather.precipitation === 1
-            ? "비"
+            ? dictionary.weather.rain
             : weather.precipitation === 2
-              ? "비/눈"
+              ? dictionary.weather.rainSnow
               : weather.precipitation === 3
-                ? "눈"
+                ? dictionary.weather.snow
                 : weather.precipitation === 5
-                  ? "이슬비"
+                  ? dictionary.weather.drizzle
                   : weather.precipitation === 6
-                    ? "빗방울눈날림"
+                    ? dictionary.weather.rainSnowFlurry
                     : weather.precipitation === 7
-                      ? "눈날림"
+                      ? dictionary.weather.snowFlurry
                       : weather.skyCondition === 1
-                        ? "맑음"
+                        ? dictionary.weather.clear
                         : weather.skyCondition === 3
-                          ? "구름많음"
+                          ? dictionary.weather.partlyCloudy
                           : weather.skyCondition === 4
-                            ? "흐림"
+                            ? dictionary.weather.cloudy
                             : ""}
         </span>
       </div>

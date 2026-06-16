@@ -1,15 +1,27 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { searchFacilities, categoryColors, formatFloor } from "../lib/mapData";
+import { searchFacilities, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
+import {
+  formatMapFloor,
+  getFacilityCategoryLabel,
+  formatMapCountSummary,
+} from "../lib/mapI18n";
 
 interface FacilitySearchProps {
   onSelect?: (buildingId: string) => void;
 }
 
 export function FacilitySearch({ onSelect }: FacilitySearchProps) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.map;
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -26,11 +38,11 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
             name="search"
             size={18}
             color="rgb(156, 163, 175)"
-            title="검색"
+            title={text.search}
           />
           <input
             type="text"
-            placeholder="건물명 또는 시설 검색 (예: 도서관, 음악관, 카페...)"
+            placeholder={text.searchPlaceholder}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -46,13 +58,13 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                 setIsOpen(false);
               }}
               className="p-1 hover:bg-neutral-100 rounded"
-              aria-label="검색어 삭제"
+              aria-label={text.clearSearch}
             >
               <Icon
                 name="x"
                 size={16}
                 color="rgb(156, 163, 175)"
-                title="검색어 삭제"
+                title={text.clearSearch}
               />
             </button>
           )}
@@ -63,7 +75,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
         <Card className="absolute top-14 left-0 right-0 z-50 max-h-96 overflow-y-auto shadow-lg">
           {results.length === 0 ? (
             <div className="p-4 text-center text-neutral-500 text-sm">
-              {query ? "검색 결과가 없습니다." : "검색어를 입력하세요."}
+              {query ? text.noResults : text.enterQuery}
             </div>
           ) : (
             <div className="divide-y">
@@ -89,7 +101,10 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                           }}
                         />
                         <span className="text-[10px] text-neutral-500">
-                          {result.facility.category}
+                          {getFacilityCategoryLabel(
+                            result.facility.category,
+                            text,
+                          )}
                         </span>
                       </div>
                     )}
@@ -104,7 +119,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                           </h4>
                           <p className="text-xs text-neutral-600 mt-0.5">
                             {result.building.name}{" "}
-                            {formatFloor(result.floor!.floor)}
+                            {formatMapFloor(result.floor!.floor, locale, text)}
                           </p>
                           {result.facility.description && (
                             <p className="text-xs text-neutral-500 mt-1">
@@ -118,12 +133,15 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                             {result.building.name}
                           </h4>
                           <p className="text-xs text-neutral-600 mt-0.5">
-                            {result.building.floors.length}개 층 ·{" "}
-                            {result.building.floors.reduce(
-                              (acc, f) => acc + f.facilities.length,
-                              0,
+                            {formatMapCountSummary(
+                              result.building.floors.length,
+                              result.building.floors.reduce(
+                                (acc, f) => acc + f.facilities.length,
+                                0,
+                              ),
+                              locale,
+                              text,
                             )}
-                            개 시설
                           </p>
                         </>
                       )}

@@ -7,6 +7,8 @@ import type { ServiceNotice } from "@/types";
 import { AnnouncementCard } from "./AnnouncementCard";
 import { Card } from "./Card";
 import { Icon } from "./Icon";
+import { useLocale } from "./LocaleProvider";
+import { localizePath } from "@/lib/i18n";
 
 interface HomeNoticeCardProps {
   notice: HomeNotice;
@@ -37,8 +39,10 @@ export function ServiceNoticeCard({
 }: {
   notice: ServiceNotice;
 }) {
+  const locale = useLocale();
+
   return (
-    <Link href={`/service/notices/${notice.slug}`}>
+    <Link href={localizePath(`/service/notices/${notice.slug}`, locale)}>
       <Card className="cursor-pointer hover:shadow-card-hover border border-neutral-200">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">

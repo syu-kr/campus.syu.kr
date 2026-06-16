@@ -6,13 +6,22 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import PublicTransitSection from "./PublicTransitSection";
 import clsx from "clsx";
+import { useDictionary } from "@/app/components/LocaleProvider";
+
+function ShuttleSectionLoading() {
+  const dictionary = useDictionary();
+
+  return <div className="py-8">{dictionary.pages.busInfo.loading}</div>;
+}
 
 // 셔틀버스 섹션을 동적 임포트 (코드 분할)
 const ShuttleSection = dynamic(() => import("./ShuttleSection"), {
-  loading: () => <div className="py-8">로딩 중...</div>,
+  loading: () => <ShuttleSectionLoading />,
 });
 
 export default function BusInfoPage() {
+  const dictionary = useDictionary();
+  const text = dictionary.pages.busInfo;
   const [activeTab, setActiveTab] = useState<"shuttle" | "public-transit">(
     "shuttle",
   );
@@ -30,7 +39,7 @@ export default function BusInfoPage() {
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
             )}
           >
-            셔틀버스
+            {text.shuttleTab}
           </button>
           <button
             onClick={() => setActiveTab("public-transit")}
@@ -41,7 +50,7 @@ export default function BusInfoPage() {
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
             )}
           >
-            대중교통
+            {text.publicTransitTab}
           </button>
         </div>
       </Container>

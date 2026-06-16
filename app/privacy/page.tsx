@@ -1,19 +1,239 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import { Metadata } from "next";
-import { LegalPageHeader } from "@/app/features/legal/LegalPageLayout";
+import {
+  LegalPageHeader,
+  LegalSection,
+} from "@/app/features/legal/LegalPageLayout";
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "개인정보처리방침",
-  description: "SYU CAMPUS 개인정보처리방침",
-};
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
 
-export default function PrivacyPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return locale === "en"
+    ? {
+        title: "Privacy Policy",
+        description: "SYU CAMPUS Privacy Policy",
+      }
+    : {
+        title: "개인정보처리방침",
+        description: "SYU CAMPUS 개인정보처리방침",
+      };
+}
+
+function EnglishPrivacyPage() {
+  const legal = getDictionary("en").legal;
+
+  return (
+    <Container className="py-6 sm:py-8">
+      <LegalPageHeader
+        title="Privacy Policy"
+        description="Privacy policy for the SYU CAMPUS service."
+        homeHref={localizePath("/", "en")}
+        homeLabel={legal.home}
+        noticeTitle="Effective Date"
+        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective May 14, 2026."
+      />
+
+      <div className="space-y-6 mb-8">
+        <LegalSection title="1. Purposes of Processing">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              SYU CAMPUS processes personal information only as needed to
+              operate and improve the service.
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
+              <li>Providing and operating service features</li>
+              <li>Analyzing service usage and improving quality</li>
+              <li>Reviewing contact requests, reports, and suggestions</li>
+              <li>Creating schedule coordination links and collecting responses</li>
+              <li>Sending service push notifications when users opt in</li>
+            </ul>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="2. Retention">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              Local settings remain on the user&apos;s device and are deleted when
+              browser data is cleared. Server-side contact, suggestion, schedule,
+              and notification token data is retained only as long as needed for
+              operation, review, or delivery.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Third-party data such as Kakao Maps cookies and Google service data
+              follows each provider&apos;s policies.
+            </p>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="3. Categories of Information">
+          <div className="space-y-3 text-neutral-700">
+            <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
+              <li>Local settings such as theme preference</li>
+              <li>Service logs, access records, IP address, and user agent</li>
+              <li>Kakao Maps SDK cookies used for map and shuttle features</li>
+              <li>Contact, report, campus-tip, and optional contact details entered by users</li>
+              <li>Schedule room titles, descriptions, candidate times, participant nicknames, and availability responses</li>
+              <li>Firebase Cloud Messaging tokens and notification delivery records when notifications are enabled</li>
+            </ul>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="4. Processors and Third-Party Services">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border border-gray-300 p-2 text-left">
+                    Provider
+                  </th>
+                  <th className="border border-gray-300 p-2 text-left">
+                    Purpose
+                  </th>
+                  <th className="border border-gray-300 p-2 text-left">
+                    Retention
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 p-2">Kakao</td>
+                  <td className="border border-gray-300 p-2">
+                    Campus map and location-based map SDK features
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    According to Kakao policies
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 p-2">Google</td>
+                  <td className="border border-gray-300 p-2">
+                    Analytics, Search Console, Firebase, Firestore, and push
+                    notifications
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    According to Google policies
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 p-2">Vercel</td>
+                  <td className="border border-gray-300 p-2">
+                    Hosting and deployment
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    Until the processing purpose is fulfilled or the service
+                    relationship ends
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 p-2">GitHub</td>
+                  <td className="border border-gray-300 p-2">
+                    Source repository and change history management
+                  </td>
+                  <td className="border border-gray-300 p-2">
+                    According to GitHub policies and repository operation
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="5. Cookies, Analytics, and Firebase">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              The service primarily uses local storage for user settings. Kakao
+              Maps SDK may set cookies for map and shuttle features. Google
+              Analytics, Search Console, Firebase, and Firestore may be used for
+              analytics, search visibility, user reports, schedule coordination,
+              and notification delivery.
+            </p>
+            <p className="text-sm text-neutral-600">
+              Blocking third-party cookies may limit map or shuttle-related
+              features.
+            </p>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="6. Security Measures">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              The service uses HTTPS, client-side storage where appropriate,
+              Firebase security controls, environment variable management, and
+              administrator authentication to protect service data within the
+              scope of its operation.
+            </p>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="7. User Rights and Contact">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              Users may request access, correction, deletion, or suspension of
+              processing by contacting the service operator through the contact
+              page or email.
+            </p>
+            <div className="p-3 bg-gray-50 rounded border border-gray-200">
+              <p className="font-semibold text-sm mb-2">Privacy Contact</p>
+              <p className="text-sm text-neutral-600">Team: Development Team</p>
+              <p className="text-sm text-neutral-600">Owner: Sanghyeok Seo</p>
+              <p className="text-sm text-neutral-600">
+                Email: singhic_dev@syu.kr
+              </p>
+            </div>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="8. Remedies and Changes">
+          <div className="space-y-3 text-neutral-700">
+            <p className="text-sm">
+              Users may contact Korean privacy dispute or reporting agencies for
+              remedies where applicable. This policy may change due to legal,
+              governmental, or service operation needs, and important changes
+              will be announced in advance.
+            </p>
+            <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
+              <p className="text-xs text-neutral-600">
+                <strong>Effective date</strong>: March 23, 2026
+                <br />
+                <strong>Last updated</strong>: May 14, 2026
+              </p>
+            </div>
+          </div>
+        </LegalSection>
+      </div>
+    </Container>
+  );
+}
+
+export default async function PrivacyPage() {
+  const locale = await getRequestLocale();
+  const legal = getDictionary(locale).legal;
+
+  if (locale === "en") {
+    return <EnglishPrivacyPage />;
+  }
+
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="개인정보처리방침"
         description="SYU CAMPUS 서비스 개인정보처리방침입니다."
+        homeHref={localizePath("/", locale)}
+        homeLabel={legal.home}
         noticeTitle="시행일"
         notice="본 개인정보처리방침은 2026년 5월 14일부터 적용됩니다."
       />

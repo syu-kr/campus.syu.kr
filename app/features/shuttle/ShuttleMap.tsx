@@ -22,10 +22,16 @@ interface ShuttleMarkerData {
 interface ShuttleMapProps {
   busLocations: BusLocation[];
   selectedBusId: string | null;
+  labels: {
+    status: string;
+    schoolToStation: string;
+    stationToSchool: string;
+    unknown: string;
+  };
 }
 
 export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
-  ({ busLocations, selectedBusId }, ref) => {
+  ({ busLocations, selectedBusId, labels }, ref) => {
     const mapRef = useRef<KakaoMap | null>(null);
     const markersRef = useRef<Map<string, ShuttleMarkerData>>(new Map());
     const currentInfoWindowRef = useRef<KakaoInfoWindow | null>(null);
@@ -90,8 +96,8 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
         4: "구리",
       };
       const statusLabels: Record<number, string> = {
-        1: "학교 → 역",
-        2: "역 → 학교",
+        1: labels.schoolToStation,
+        2: labels.stationToSchool,
       };
 
       markersRef.current.forEach((markerData) => {
@@ -118,8 +124,8 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
             bus.status === 2
               ? "#d0d0d0"
               : routeColors[bus.routeid] || "#999999";
-          const routeName = routeNames[bus.routeid] || "알 수 없음";
-          const statusLabel = statusLabels[bus.status] || "알 수 없음";
+          const routeName = routeNames[bus.routeid] || labels.unknown;
+          const statusLabel = statusLabels[bus.status] || labels.unknown;
           const markerPosition = new kakaoMaps.LatLng(
             bus.latNumber,
             bus.lonNumber,
@@ -139,7 +145,12 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
           marker.setMap(mapRef.current);
 
           const infowindow = new kakaoMaps.InfoWindow({
-            content: createInfoWindowContent(routeName, statusLabel, color),
+            content: createInfoWindowContent(
+              routeName,
+              statusLabel,
+              color,
+              labels.status,
+            ),
             removable: true,
             zIndex: 1,
           });
@@ -172,7 +183,7 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
           mapRef.current.setBounds(bounds, 48, 48, 48, 48);
         });
       }
-    }, [busLocations, mapLoaded]);
+    }, [busLocations, labels, mapLoaded]);
 
     useEffect(() => {
       if (!selectedBusId || !mapRef.current) return;
@@ -214,6 +225,7 @@ function createInfoWindowContent(
   routeName: string,
   statusLabel: string,
   color: string,
+  statusTitle: string,
 ) {
   return `
     <div style="
@@ -226,7 +238,7 @@ function createInfoWindowContent(
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
     ">
       <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px; color: #000;">${routeName}</p>
-      <p style="margin: 0; color: #333;"><span style="font-weight: 600;">상태:</span> <span style="color: ${color}; font-weight: 500;">${statusLabel}</span></p>
+      <p style="margin: 0; color: #333;"><span style="font-weight: 600;">${statusTitle}:</span> <span style="color: ${color}; font-weight: 500;">${statusLabel}</span></p>
     </div>
   `;
 }

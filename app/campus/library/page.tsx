@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
@@ -17,6 +18,9 @@ import { getKoreaNow } from "@/lib/home";
 import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import type { Dictionary, Locale } from "@/lib/i18n";
+
+type LibraryDictionary = Dictionary["pages"]["library"];
 
 function getUsageColor(percentage: number): string {
   if (percentage >= 66) return "bg-red-600"; // 2/3 이상
@@ -24,13 +28,16 @@ function getUsageColor(percentage: number): string {
   return "bg-primary-600"; // 1/3 미만
 }
 
-function getUsageLabel(percentage: number): string {
-  if (percentage >= 66) return "혼잡";
-  if (percentage >= 33) return "보통";
-  return "여유";
+function getUsageLabel(percentage: number, text: LibraryDictionary): string {
+  if (percentage >= 66) return text.crowded;
+  if (percentage >= 33) return text.normal;
+  return text.relaxed;
 }
 
 export default function LibraryPage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.library;
   const [selectedSeason, setSelectedSeason] =
     useState<LibrarySeason>("semester");
   const [seatMapUrl, setSeatMapUrl] = useState<string | null>(null);
@@ -90,26 +97,26 @@ export default function LibraryPage() {
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
   const lastUpdatedTime = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")
+    ? new Date(dataUpdatedAt).toLocaleTimeString(getLocaleCode(locale))
     : "-";
 
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          도서관
+          {text.title}
         </h1>
-        <p className="text-neutral-600">
-          삼육대학교 중앙도서관 정보 및 열람실 현황
-        </p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       <Card className="mb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-neutral-900">열람실 현황</h2>
+          <h2 className="text-lg font-bold text-neutral-900">
+            {text.readingRoomStatus}
+          </h2>
           <div className="flex items-center gap-2">
             <span className="text-xs text-neutral-500">
-              마지막 업데이트: {lastUpdatedTime}
+              {text.lastUpdated}: {lastUpdatedTime}
             </span>
             <button
               type="button"
@@ -117,7 +124,7 @@ export default function LibraryPage() {
               disabled={isFetching}
               className="rounded bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isFetching ? "새로고침..." : "새로고침"}
+              {isFetching ? text.refreshing : text.refresh}
             </button>
           </div>
         </div>
@@ -129,8 +136,8 @@ export default function LibraryPage() {
             type={isError ? "error" : "info"}
             message={
               isError
-                ? "열람실 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요."
-                : "표시할 열람실 좌석 정보가 없습니다."
+                ? text.loadError
+                : text.emptySeats
             }
           />
         ) : (
@@ -153,7 +160,7 @@ export default function LibraryPage() {
                           onClick={() => setSeatMapUrl(roomSeatMapUrl)}
                           className="px-2 py-1 text-xs font-medium rounded bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
                         >
-                          좌석보기
+                          {text.viewSeats}
                         </button>
                       )}
                     </div>
@@ -162,11 +169,12 @@ export default function LibraryPage() {
                         <>
                           {room.strUseSeat}/{room.strTotalSeat}
                           <span className="ml-1 text-neutral-500">
-                            ({usagePercent}%, {getUsageLabel(usagePercent)})
+                            ({usagePercent}%,{" "}
+                            {getUsageLabel(usagePercent, text)})
                           </span>
                         </>
                       ) : (
-                        "좌석 수 확인 필요"
+                        text.seatsCheckNeeded
                       )}
                     </span>
                   </div>
@@ -183,15 +191,17 @@ export default function LibraryPage() {
         )}
 
         <div className="mt-4 text-xs text-neutral-500">
-          <p>• 파란색: 1/3 미만</p>
-          <p>• 주황색: 1/3 ~ 2/3</p>
-          <p>• 빨간색: 2/3 이상</p>
+          <p>• {text.legendBlue}</p>
+          <p>• {text.legendOrange}</p>
+          <p>• {text.legendRed}</p>
         </div>
       </Card>
 
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-neutral-900">운영시간</h2>
+          <h2 className="text-lg font-bold text-neutral-900">
+            {text.operatingHours}
+          </h2>
           <div className="flex gap-2">
             <button
               onClick={() => setSelectedSeason("semester")}
@@ -201,7 +211,7 @@ export default function LibraryPage() {
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
-              학기 중
+              {text.semester}
             </button>
             <button
               onClick={() => setSelectedSeason("vacation")}
@@ -211,7 +221,7 @@ export default function LibraryPage() {
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
-              방학 중
+              {text.vacation}
             </button>
           </div>
         </div>
@@ -235,21 +245,30 @@ export default function LibraryPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-3 mb-2 text-sm">
                       <div>
-                        <span className="text-xs text-neutral-500">월-목</span>
+                        <span className="text-xs text-neutral-500">
+                          {text.monThu}
+                        </span>
                         <p className="font-medium text-neutral-900">
-                          {room.schedule["월-목"]}
+                          {formatScheduleValue(room.schedule["월-목"], text)}
                         </p>
                       </div>
                       <div>
-                        <span className="text-xs text-neutral-500">금</span>
+                        <span className="text-xs text-neutral-500">
+                          {text.friday}
+                        </span>
                         <p className="font-medium text-neutral-900">
-                          {room.schedule["금"]}
+                          {formatScheduleValue(room.schedule["금"], text)}
                         </p>
                       </div>
                       <div>
-                        <span className="text-xs text-neutral-500">일</span>
+                        <span className="text-xs text-neutral-500">
+                          {text.sunday}
+                        </span>
                         <p className="font-medium text-neutral-900">
-                          {room.schedule["일"] || "휴관"}
+                          {formatScheduleValue(
+                            room.schedule["일"] || "휴관",
+                            text,
+                          )}
                         </p>
                       </div>
                     </div>
@@ -266,56 +285,59 @@ export default function LibraryPage() {
         </div>
 
         <Card className="mt-6 bg-neutral-50 border border-neutral-300">
-          <h3 className="font-semibold text-neutral-900 mb-3">주의사항</h3>
+          <h3 className="font-semibold text-neutral-900 mb-3">
+            {text.noticesTitle}
+          </h3>
           <ul className="text-sm text-neutral-700 space-y-1">
-            <li>• 법정 공휴일, 토요일은 폐관합니다.</li>
-            <li>• 스터디룸 이용 시 이용규정을 꼭 확인하시기 바랍니다.</li>
-            <li>
-              • 개관일정은 학술정보원 일정에 따라 변경될 수 있으니 공지사항을
-              확인하시기 바랍니다.
-            </li>
+            <li>• {text.noticeHoliday}</li>
+            <li>• {text.noticeStudyRoom}</li>
+            <li>• {text.noticeSchedule}</li>
           </ul>
         </Card>
       </div>
 
       <Card className="mb-6">
         <h2 className="text-lg font-bold text-neutral-900 mb-4">
-          편의시설 및 서비스
+          {text.facilitiesTitle}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm">도서 대출/반납</span>
+            <span className="text-sm">{text.facilityLoan}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">학습 PC</span>
+            <span className="text-sm">{text.facilityPc}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">학술 데이터베이스</span>
+            <span className="text-sm">{text.facilityDatabase}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">인쇄/스캔</span>
+            <span className="text-sm">{text.facilityPrint}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">휴게실</span>
+            <span className="text-sm">{text.facilityLounge}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm">화장실</span>
+            <span className="text-sm">{text.facilityRestroom}</span>
           </div>
         </div>
       </Card>
 
       <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">이용 안내</h2>
+        <h2 className="text-lg font-bold text-blue-900 mb-4">
+          {text.guideTitle}
+        </h2>
         <div className="space-y-3 text-sm">
           <div>
-            <h3 className="font-semibold text-blue-900 mb-1">도서 대출</h3>
-            <p className="text-blue-800">
-              학생증 제시 후 도서 대출 (1인 5권, 14일)
-            </p>
+            <h3 className="font-semibold text-blue-900 mb-1">
+              {text.loanTitle}
+            </h3>
+            <p className="text-blue-800">{text.loanDescription}</p>
           </div>
           <div>
-            <h3 className="font-semibold text-blue-900 mb-1">열람실 이용</h3>
-            <p className="text-blue-800">학생증 필수 / 개인 물품 관리 책임</p>
+            <h3 className="font-semibold text-blue-900 mb-1">
+              {text.readingRoomUseTitle}
+            </h3>
+            <p className="text-blue-800">{text.readingRoomUseDescription}</p>
           </div>
         </div>
       </Card>
@@ -324,34 +346,44 @@ export default function LibraryPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl h-[80vh] animate-in fade-in duration-200 flex flex-col">
             <div className="flex justify-between items-center p-4 border-b border-neutral-200">
-              <h3 className="text-lg font-bold text-neutral-900">좌석 현황</h3>
+              <h3 className="text-lg font-bold text-neutral-900">
+                {text.seatStatusTitle}
+              </h3>
               <button
                 onClick={() => setSeatMapUrl(null)}
                 className="px-3 py-1.5 text-sm font-medium bg-neutral-200 text-neutral-900 rounded-lg hover:bg-neutral-300 transition-colors"
               >
-                닫기
+                {text.close}
               </button>
             </div>
             <iframe
               src={seatMapUrl}
               className="flex-1 w-full border-0"
-              title="좌석 현황"
+              title={text.seatStatusIframeTitle}
             />
             <div className="border-t border-neutral-200 p-3 text-xs text-neutral-600">
-              좌석 현황은 외부 페이지를 표시합니다. 화면이 보이지 않으면{" "}
+              {text.externalSeatMapPrefix}{" "}
               <a
                 href={seatMapUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-primary-600 hover:text-primary-700"
               >
-                새 탭에서 열기
+                {text.openInNewTab}
               </a>
-              를 사용하세요.
+              {text.externalSeatMapSuffix}
             </div>
           </div>
         </div>
       )}
     </Container>
   );
+}
+
+function getLocaleCode(locale: Locale) {
+  return locale === "ko" ? "ko-KR" : "en-US";
+}
+
+function formatScheduleValue(value: string, text: LibraryDictionary) {
+  return value === "휴관" ? text.closed : value;
 }

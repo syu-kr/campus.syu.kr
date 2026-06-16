@@ -43,6 +43,7 @@ import {
   TodayMenuSection,
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
+import { useLocale } from "@/app/components/LocaleProvider";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -69,6 +70,7 @@ export function HomePageClient({
   initialShuttleSpecialPeriods,
   initialNowIso,
 }: HomePageClientProps) {
+  const locale = useLocale();
   const [selectedCategory, setSelectedCategory] = useState<
     HomeNoticeCategory | undefined
   >(undefined);
@@ -174,8 +176,11 @@ export function HomePageClient({
   }, [schedules, todayInfo.dateStringDot]);
 
   const categorizedResults = useMemo(() => {
-    return categorizeSearchResults(showSearchResults ? searchResults : undefined);
-  }, [showSearchResults, searchResults]);
+    return categorizeSearchResults(
+      showSearchResults ? searchResults : undefined,
+      locale,
+    );
+  }, [locale, showSearchResults, searchResults]);
 
   const homeNotices = useMemo(
     () => getHomeNotices(announcements, serviceNotices, selectedCategory),

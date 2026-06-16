@@ -1,39 +1,58 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "공지사항",
-  description: "SYU CAMPUS 서비스 공지사항",
-};
+async function getCurrentLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getCurrentLocale();
+  const text = getDictionary(locale).pages.serviceNotices;
+
+  return {
+    title: text.metaTitle,
+    description: text.metaDescription,
+  };
+}
 
 export default async function ServiceNoticesPage() {
+  const locale = await getCurrentLocale();
+  const text = getDictionary(locale).pages.serviceNotices;
   const notices = await getAllServiceNotices();
+  const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 
   return (
     <Container>
       <div className="py-6 md:py-8">
         <div className="mb-6 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-2">
-            서비스 공지
+            {text.title}
           </h1>
-          <p className="text-neutral-600">
-            SYU CAMPUS의 소식과 서비스 업데이트를 확인하세요.
-          </p>
+          <p className="text-neutral-600">{text.description}</p>
         </div>
 
         {notices.length === 0 ? (
           <div className="py-12 text-center">
-            <p className="text-neutral-600">아직 서비스 공지가 없습니다.</p>
+            <p className="text-neutral-600">{text.empty}</p>
           </div>
         ) : (
           <div className="space-y-3">
             {notices.map((notice) => (
               <Link
                 key={notice.slug}
-                href={`/service/notices/${notice.slug}`}
+                href={localizePath(`/service/notices/${notice.slug}`, locale)}
                 prefetch={false}
               >
                 <div className="mb-2">
@@ -50,7 +69,9 @@ export default async function ServiceNoticesPage() {
                           <span>{notice.author}</span>
                           <span>•</span>
                           <span>
-                            {new Date(notice.date).toLocaleDateString("ko-KR")}
+                            {new Date(notice.date).toLocaleDateString(
+                              dateLocale,
+                            )}
                           </span>
                         </div>
                       </div>

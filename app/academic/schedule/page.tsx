@@ -7,11 +7,15 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
 
 export default function SchedulePage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.academicSchedule;
   const { data: schedules, isLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
@@ -20,10 +24,9 @@ export default function SchedulePage() {
   });
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2)); // 2026년 3월부터 시작
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2));
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 페이지 로드 시 오늘 날짜 자동 선택
   useEffect(() => {
     const today = new Date();
     const todayStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}`;
@@ -31,13 +34,12 @@ export default function SchedulePage() {
     setCurrentMonth(new Date(today.getFullYear(), today.getMonth()));
   }, []);
 
-  // 월별 그룹화
   const groupedByMonth = useMemo(() => {
     if (!schedules) return {};
 
     const months: Record<string, typeof schedules> = {};
     schedules.forEach((schedule) => {
-      const monthKey = schedule.startDate.substring(0, 7); // YYYY.MM 형식
+      const monthKey = schedule.startDate.substring(0, 7);
       if (!months[monthKey]) {
         months[monthKey] = [];
       }
@@ -47,7 +49,6 @@ export default function SchedulePage() {
     return months;
   }, [schedules]);
 
-  // 선택된 날짜의 일정
   const selectedDateSchedules = useMemo(() => {
     if (!schedules || !selectedDate) return [];
     return schedules.filter(
@@ -57,13 +58,11 @@ export default function SchedulePage() {
     );
   }, [schedules, selectedDate]);
 
-  // 현재 월의 달력 생성
   const monthSchedules = useMemo(() => {
     if (!schedules) return new Map();
 
     const map = new Map<string, boolean>();
     schedules.forEach((schedule) => {
-      // 각 일정의 시작일부터 종료일까지 모든 날짜에 표시
       const [startYear, startMonth, startDay] = schedule.startDate.split(".");
       const [endYear, endMonth, endDay] = schedule.endDate.split(".");
 
@@ -89,7 +88,6 @@ export default function SchedulePage() {
     return map;
   }, [schedules]);
 
-  // 현재 월의 시험 일정 확인
   const hasExamInMonth = useMemo(() => {
     if (!schedules) return new Set<string>();
 
@@ -122,7 +120,6 @@ export default function SchedulePage() {
     return examDates;
   }, [schedules]);
 
-  // 달력 렌더링
   const renderCalendar = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -131,9 +128,8 @@ export default function SchedulePage() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const days = [];
-    const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
+    const weekDays = text.weekDays;
 
-    // 요일 헤더
     days.push(
       <div key="header" className="mb-2 grid grid-cols-7 gap-1 sm:mb-3 sm:gap-2">
         {weekDays.map((day) => (
@@ -147,13 +143,11 @@ export default function SchedulePage() {
       </div>,
     );
 
-    // 빈 칸
     const cells = [];
     for (let i = 0; i < firstDay; i++) {
       cells.push(<div key={`empty-${i}`} />);
     }
 
-    // 날짜
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}.${String(month + 1).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
       const hasEvent = monthSchedules.has(dateStr);
@@ -177,11 +171,11 @@ export default function SchedulePage() {
             <div className="mt-0.5 flex min-w-0 shrink-0 justify-center sm:mt-1">
               {hasExam ? (
                 <span className="max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
-                  시험
+                  {text.exam}
                 </span>
               ) : (
                 <span className="max-w-full whitespace-nowrap rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-blue-700 sm:text-[10px]">
-                  일정
+                  {text.schedule}
                 </span>
               )}
             </div>
@@ -198,14 +192,29 @@ export default function SchedulePage() {
 
     return days;
   };
+  const selectedDateLabel = selectedDate
+    ? formatDateRange(selectedDate, selectedDate, locale)
+    : "";
+  const selectedDateTitle = `${text.selectedDatePrefix}${selectedDateLabel}${text.selectedDateSuffix}`;
+  const currentMonthLabel =
+    locale === "ko"
+      ? `${currentMonth.getFullYear()}년 ${String(currentMonth.getMonth() + 1).padStart(2, "0")}월`
+      : currentMonth.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+        });
+  const formatItemCount = (count: number) =>
+    `${text.itemCountPrefix}${count}${text.itemCountSuffix}`;
+  const getScheduleTypeLabel = (category: string) =>
+    category === "exam" ? text.exam : text.schedule;
 
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-          학사일정
+          {text.title}
         </h1>
-        <p className="text-neutral-600">2026학년도 학사일정을 확인하세요</p>
+        <p className="text-neutral-600">{text.description}</p>
       </div>
 
       {isLoading ? (
@@ -228,8 +237,7 @@ export default function SchedulePage() {
                 ←
               </button>
               <h2 className="text-lg font-semibold text-neutral-900">
-                {currentMonth.getFullYear()}년{" "}
-                {String(currentMonth.getMonth() + 1).padStart(2, "0")}월
+                {currentMonthLabel}
               </h2>
               <button
                 onClick={() =>
@@ -249,11 +257,11 @@ export default function SchedulePage() {
             <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                <span>시험</span>
+                <span>{text.exam}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span>행사</span>
+                <span>{text.event}</span>
               </div>
             </div>
           </Card>
@@ -262,10 +270,12 @@ export default function SchedulePage() {
             <>
               <Card className="p-6 bg-blue-50 border border-blue-200">
                 <h3 className="font-semibold text-neutral-900 mb-3">
-                  {selectedDate}의 일정
+                  {selectedDateTitle}
                 </h3>
                 {selectedDateSchedules.length === 0 ? (
-                  <p className="text-sm text-neutral-600">일정이 없습니다.</p>
+                  <p className="text-sm text-neutral-600">
+                    {text.noSchedulesOnDate}
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {selectedDateSchedules.map((schedule) => (
@@ -274,7 +284,7 @@ export default function SchedulePage() {
                         className="text-sm text-neutral-700 flex items-start gap-2"
                       >
                         <span className="text-xs font-semibold text-primary-600 mt-1 px-2 py-1 rounded bg-primary-50">
-                          {schedule.category === "exam" ? "시험" : "일정"}
+                          {getScheduleTypeLabel(schedule.category)}
                         </span>
                         <div>
                           <p className="font-medium">{schedule.title}</p>
@@ -282,6 +292,7 @@ export default function SchedulePage() {
                             {formatDateRange(
                               schedule.startDate,
                               schedule.endDate,
+                              locale,
                             )}
                           </p>
                         </div>
@@ -298,7 +309,7 @@ export default function SchedulePage() {
             <div className="flex items-center gap-2 mb-4">
               <input
                 type="text"
-                placeholder="일정 검색..."
+                placeholder={text.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -307,7 +318,7 @@ export default function SchedulePage() {
                 <button
                   onClick={() => setSearchQuery("")}
                   className="px-3 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
-                  title="검색 초기화"
+                  title={text.resetSearch}
                 >
                   ✕
                 </button>
@@ -329,17 +340,16 @@ export default function SchedulePage() {
                     return (
                       <div className="text-center py-6">
                         <p className="text-sm text-neutral-600">
-                          검색 결과가 없습니다.
+                          {text.noSearchResults}
                         </p>
                       </div>
                     );
                   }
 
-                  // 월별로 그룹화
                   const searchGroupedByMonth: Record<string, typeof schedules> =
                     {};
                   filteredSchedules.forEach((schedule) => {
-                    const monthKey = schedule.startDate.substring(0, 7); // YYYY.MM
+                    const monthKey = schedule.startDate.substring(0, 7);
                     if (!searchGroupedByMonth[monthKey]) {
                       searchGroupedByMonth[monthKey] = [];
                     }
@@ -355,7 +365,7 @@ export default function SchedulePage() {
                             {month}
                           </h3>
                           <span className="text-xs text-neutral-600">
-                            ({items?.length || 0}개)
+                            ({formatItemCount(items?.length || 0)})
                           </span>
                         </div>
                         <div className="space-y-2">
@@ -375,13 +385,12 @@ export default function SchedulePage() {
                                     {formatDateRange(
                                       schedule.startDate,
                                       schedule.endDate,
+                                      locale,
                                     )}
                                   </p>
                                 </div>
                                 <div className="text-xs font-semibold text-neutral-600">
-                                  {schedule.category === "exam"
-                                    ? "시험"
-                                    : "일정"}
+                                  {getScheduleTypeLabel(schedule.category)}
                                 </div>
                               </div>
                             </Card>
@@ -404,7 +413,7 @@ export default function SchedulePage() {
                       {month}
                     </h2>
                     <span className="text-sm text-neutral-600">
-                      ({items?.length || 0}개)
+                      ({formatItemCount(items?.length || 0)})
                     </span>
                   </div>
                   <div className="space-y-3">
@@ -424,11 +433,12 @@ export default function SchedulePage() {
                               {formatDateRange(
                                 schedule.startDate,
                                 schedule.endDate,
+                                locale,
                               )}
                             </p>
                           </div>
                           <div className="text-xs font-semibold text-neutral-600">
-                            {schedule.category === "exam" ? "시험" : "일정"}
+                            {getScheduleTypeLabel(schedule.category)}
                           </div>
                         </div>
                       </Card>

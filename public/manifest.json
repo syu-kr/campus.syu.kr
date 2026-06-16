@@ -1,7 +1,7 @@
 {
   "name": "SYU CAMPUS",
   "short_name": "SYU CAMPUS",
-  "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
+  "description": "Sahmyook University campus information platform for notices, meals, schedules, and student tools",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -26,9 +26,9 @@
   ],
   "shortcuts": [
     {
-      "name": "공지사항",
-      "short_name": "공지",
-      "description": "학사공지 확인",
+      "name": "Notices",
+      "short_name": "Notices",
+      "description": "Check academic and campus notices",
       "url": "/academic/announcements",
       "icons": [
         {
@@ -39,9 +39,9 @@
       ]
     },
     {
-      "name": "학식",
-      "short_name": "학식",
-      "description": "학생식당 메뉴 확인",
+      "name": "Cafeteria",
+      "short_name": "Meals",
+      "description": "Check cafeteria menus",
       "url": "/campus/cafeteria",
       "icons": [
         {
@@ -52,9 +52,9 @@
       ]
     },
     {
-      "name": "학사일정",
-      "short_name": "일정",
-      "description": "학사일정 확인",
+      "name": "Academic Schedule",
+      "short_name": "Schedule",
+      "description": "Check the academic schedule",
       "url": "/academic/schedule",
       "icons": [
         {
@@ -65,9 +65,9 @@
       ]
     },
     {
-      "name": "캠퍼스 지도",
-      "short_name": "지도",
-      "description": "캠퍼스 건물 및 시설 위치 확인",
+      "name": "Campus Map",
+      "short_name": "Map",
+      "description": "Find campus buildings and facilities",
       "url": "/campus/map",
       "icons": [
         {
