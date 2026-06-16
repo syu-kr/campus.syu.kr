@@ -1,9 +1,34 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "일정 잡기 | SYU CAMPUS",
-  description: "초대 링크로 함께 가능한 시간을 찾는 일정 잡기",
-};
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
+
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const dictionary = getDictionary(locale);
+
+  return {
+    title: `${dictionary.pages.meet.title} | SYU CAMPUS`,
+    description: dictionary.pages.meet.metaDescription,
+    openGraph: {
+      title: `${dictionary.pages.meet.title} | SYU CAMPUS`,
+      description: dictionary.pages.meet.metaDescription,
+      type: "website",
+      url: `https://campus.syu.kr${localizePath("/more/meet", locale)}`,
+    },
+  };
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
