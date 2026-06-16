@@ -27,6 +27,7 @@ env:
   NEXT_PUBLIC_FIREBASE_VAPID_KEY: "ci-placeholder"
   NEXT_PUBLIC_KAKAO_MAP_KEY: "ci-placeholder"
   PUSH_API_KEY: "ci-placeholder"
+  RATE_LIMIT_SECRET: "ci-placeholder-rate-limit-secret"
 
 jobs:
   verify:
@@ -41,7 +42,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20.19.0"
+          node-version: "22.12.0"
           cache: npm
 
       - name: Setup Python

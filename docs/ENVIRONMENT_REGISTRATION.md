@@ -47,6 +47,11 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 - 같은 환경 내에서는 모든 서버리스 인스턴스가 같은 값을 사용해야 하므로 Vercel 환경 변수로 고정합니다.
 - 값을 교체하면 기존 rate limit 문서와 다른 HMAC 문서 ID가 생성됩니다. 긴급 상황이 아니라면 자주 회전하지 않습니다.
 - Production에서는 `RATE_LIMIT_SECRET`이 없으면 요청 제한 공용 저장소를 쓰는 API가 503으로 실패합니다.
+- 값을 새로 등록하거나 교체한 뒤에는 Vercel Production을 다시 배포해야 서버리스 런타임에 반영됩니다.
+
+## Vercel Runtime
+
+Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.12 이상으로 맞춥니다. Admin API는 `firebase-admin@14`를 사용하며, 이 패키지는 Node.js 22 이상을 요구합니다. Node.js 20 런타임으로 배포하면 Firebase ID token 검증 단계에서 Admin SDK 의존성 로딩이 실패할 수 있습니다.
 
 ## Vercel Public Variables
 
