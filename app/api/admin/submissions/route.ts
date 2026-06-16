@@ -150,10 +150,6 @@ async function requireAdmin(req: NextRequest) {
     throw new AdminAuthError("관리자 권한이 없습니다", 403);
   }
 
-  if (!decodedToken.email_verified) {
-    throw new AdminAuthError("관리자 이메일 인증이 필요합니다", 403);
-  }
-
   return decodedToken;
 }
 
