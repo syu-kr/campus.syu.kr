@@ -1,9 +1,34 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "알림 및 개인정보 | SYU CAMPUS",
-  description: "SYU CAMPUS의 브라우저 알림 권한과 분석 도구 사용 안내입니다.",
-};
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
+
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const dictionary = getDictionary(locale);
+
+  return {
+    title: `${dictionary.pages.notificationPrivacy.title} | SYU CAMPUS`,
+    description: dictionary.pages.notificationPrivacy.metaDescription,
+    openGraph: {
+      title: `${dictionary.pages.notificationPrivacy.title} | SYU CAMPUS`,
+      description: dictionary.pages.notificationPrivacy.metaDescription,
+      type: "website",
+      url: `https://campus.syu.kr${localizePath("/more/privacy", locale)}`,
+    },
+  };
+}
 
 export default function NotificationPrivacyLayout({
   children,

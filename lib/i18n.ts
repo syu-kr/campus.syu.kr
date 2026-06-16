@@ -929,6 +929,90 @@ export const dictionaries = {
         descriptionRequired: "꿀팁 내용을 입력해주세요",
         invalidUrl: "관련 링크 형식이 올바르지 않습니다",
       },
+      notificationPrivacy: {
+        title: "알림 및 개인정보",
+        description: "알림 권한, 분석 도구, 개인정보 안내를 한곳에서 확인하세요.",
+        metaDescription:
+          "SYU CAMPUS의 브라우저 알림 권한과 분석 도구 사용 안내입니다.",
+        backToMore: "더보기",
+        statusTitle: "브라우저 알림 및 FCM 구독 상태",
+        permissionLabel: "브라우저 알림 권한",
+        tokenLabel: "FCM 토큰",
+        checking: "확인 중",
+        permissionStates: {
+          granted: "알림 허용됨",
+          denied: "알림 차단됨",
+          default: "아직 선택하지 않음",
+          unsupported: "이 브라우저에서 지원하지 않음",
+        },
+        statusMessages: {
+          requestingPermission:
+            "브라우저 알림 권한을 확인하고 있습니다. 권한 요청창이 보이지 않으면 브라우저 설정을 확인해주세요.",
+          registeringServiceWorker: "알림 서비스 워커를 등록하고 있습니다.",
+          initializingFirebase: "Firebase 알림 서비스를 초기화하고 있습니다.",
+          requestingFcmToken: "FCM 토큰을 발급하고 있습니다.",
+          savingFcmToken: "발급된 FCM 토큰을 서버에 저장하고 있습니다.",
+          enabled: "알림 설정과 FCM 구독이 완료되었습니다.",
+        },
+        tokenSubscribed: "발급 및 구독됨",
+        tokenMissing: "발급되지 않음",
+        enableProcessing: "설정 중...",
+        enableAction: "알림 설정 및 FCM 토큰 발급",
+        disableProcessing: "해제 중...",
+        disableAction: "FCM 알림 구독 해제",
+        deniedHelp:
+          "브라우저에서 알림이 차단되어 있습니다. 브라우저 설정에서 권한을 허용한 뒤 FCM 토큰을 발급해주세요.",
+        missingTokenHelp:
+          "브라우저 권한은 허용되어 있지만 FCM 토큰이 없어 알림은 전송되지 않습니다.",
+        analyticsTitle: "분석 도구 사용",
+        analyticsDescription:
+          "서비스 품질 개선과 오류 파악을 위해 Google Analytics가 사용됩니다. 분석 데이터는 개인정보처리방침의 목적과 범위 안에서 다룹니다.",
+        privacyPolicyLink: "개인정보처리방침 보기",
+        permissionPrincipleTitle: "권한 요청 원칙",
+        permissionPrincipleDescription:
+          "SYU CAMPUS는 사용자의 명시적인 브라우저 권한 없이는 푸시 알림을 보낼 수 없습니다. 이미 알림을 허용한 경우에만 알림 토큰을 등록해 서비스 공지를 받을 수 있게 합니다.",
+        enableError: "알림 설정 중 오류가 발생했습니다.",
+        disableSuccess:
+          "FCM 알림 구독을 해제했습니다. 브라우저 알림 권한은 그대로 유지됩니다.",
+        disableError: "알림 구독 해제 중 오류가 발생했습니다.",
+        errors: {
+          unsupported: "이 브라우저에서는 알림을 지원하지 않습니다.",
+          denied: "브라우저에서 알림 권한이 차단되었습니다.",
+          notAllowed: "브라우저 알림 권한이 허용되지 않았습니다.",
+          permissionTimeout:
+            "브라우저가 알림 권한 요청창을 표시하지 않았습니다. 브라우저 설정에서 알림을 허용한 뒤 다시 시도해주세요.",
+          firebaseUnsupported:
+            "이 브라우저에서는 Firebase 알림을 지원하지 않습니다.",
+          initFailed: "알림 서비스를 초기화하지 못했습니다.",
+          vapidMissing: "Firebase VAPID 키가 설정되지 않았습니다.",
+          tokenFailed: "알림 토큰을 발급하지 못했습니다.",
+          saveFailed: "알림 토큰을 저장하지 못했습니다.",
+          deleteFailed: "서버의 알림 토큰을 제거하지 못했습니다.",
+          workerTimeout:
+            "알림 서비스 워커 준비 시간이 초과되었습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.",
+        },
+      },
+      scholarship: {
+        title: "장학금",
+        description: "교내/외 장학금 정보를 확인하세요",
+        metaDescription: "삼육대학교 장학금 공지와 신청 정보를 확인하세요.",
+        searchPlaceholder: "장학금 이름 또는 설명으로 검색...",
+        countSeparator: "",
+        foundItems: "개 항목 찾음",
+        searchQuery: "검색어",
+        emptySearch: "검색 결과가 없습니다.",
+        empty: "해당하는 장학금이 없습니다",
+        pinned: "고정글",
+        descriptionLabel: "설명",
+        fallbackDescription: "자세한 내용은 링크를 통해 확인하세요.",
+        externalAction: "외부 사이트에서 자세히 보기",
+        previous: "이전",
+        next: "다음",
+        importantPrefix: "중요:",
+        importantMessage: "장학금 신청 기간과 자격요건을 반드시 확인하세요.",
+        importantDetail:
+          "자세한 정보는 학생지원팀 또는 각 기관의 공식 안내를 참고하시기 바랍니다.",
+      },
       contactForm: {
         inquiryTypes: {
           bug: "오류 제보",
@@ -1856,6 +1940,95 @@ export const dictionaries = {
         categoryRequired: "Please choose a category",
         descriptionRequired: "Please enter the tip details",
         invalidUrl: "The related link format is invalid",
+      },
+      notificationPrivacy: {
+        title: "Notifications and Privacy",
+        description:
+          "Review notification permissions, analytics, and privacy information in one place.",
+        metaDescription:
+          "Information about SYU CAMPUS browser notification permissions and analytics tools.",
+        backToMore: "More",
+        statusTitle: "Browser Notification and FCM Subscription Status",
+        permissionLabel: "Browser notification permission",
+        tokenLabel: "FCM token",
+        checking: "Checking",
+        permissionStates: {
+          granted: "Notifications allowed",
+          denied: "Notifications blocked",
+          default: "Not selected yet",
+          unsupported: "Not supported in this browser",
+        },
+        statusMessages: {
+          requestingPermission:
+            "Checking browser notification permission. If no prompt appears, check your browser settings.",
+          registeringServiceWorker:
+            "Registering the notification service worker.",
+          initializingFirebase: "Initializing Firebase notifications.",
+          requestingFcmToken: "Requesting an FCM token.",
+          savingFcmToken: "Saving the issued FCM token on the server.",
+          enabled: "Notification settings and FCM subscription are complete.",
+        },
+        tokenSubscribed: "Issued and subscribed",
+        tokenMissing: "Not issued",
+        enableProcessing: "Setting up...",
+        enableAction: "Enable notifications and issue FCM token",
+        disableProcessing: "Disabling...",
+        disableAction: "Disable FCM subscription",
+        deniedHelp:
+          "Notifications are blocked in your browser. Allow notifications in browser settings, then issue an FCM token.",
+        missingTokenHelp:
+          "Browser permission is allowed, but notifications cannot be sent because there is no FCM token.",
+        analyticsTitle: "Analytics Tools",
+        analyticsDescription:
+          "Google Analytics is used to improve service quality and identify errors. Analytics data is handled within the purposes and scope of the Privacy Policy.",
+        privacyPolicyLink: "View Privacy Policy",
+        permissionPrincipleTitle: "Permission Request Principle",
+        permissionPrincipleDescription:
+          "SYU CAMPUS cannot send push notifications without explicit browser permission. Only after notifications are allowed can a token be registered to receive service notices.",
+        enableError: "An error occurred while setting up notifications.",
+        disableSuccess:
+          "FCM notification subscription has been disabled. Browser notification permission is unchanged.",
+        disableError:
+          "An error occurred while disabling the notification subscription.",
+        errors: {
+          unsupported: "This browser does not support notifications.",
+          denied: "Notification permission is blocked in the browser.",
+          notAllowed: "Browser notification permission was not allowed.",
+          permissionTimeout:
+            "The browser did not show a notification permission prompt. Allow notifications in browser settings, then try again.",
+          firebaseUnsupported:
+            "This browser does not support Firebase notifications.",
+          initFailed: "Could not initialize the notification service.",
+          vapidMissing: "Firebase VAPID key is not configured.",
+          tokenFailed: "Could not issue a notification token.",
+          saveFailed: "Could not save the notification token.",
+          deleteFailed: "Could not remove the server notification token.",
+          workerTimeout:
+            "Timed out while waiting for the notification service worker. Refresh the page and try again.",
+        },
+      },
+      scholarship: {
+        title: "Scholarships",
+        description: "Check internal and external scholarship information",
+        metaDescription:
+          "Check Sahmyook University scholarship notices and application information.",
+        searchPlaceholder: "Search by scholarship name or description...",
+        countSeparator: " ",
+        foundItems: "items found",
+        searchQuery: "query",
+        emptySearch: "No results found.",
+        empty: "No scholarships are available.",
+        pinned: "Pinned",
+        descriptionLabel: "Description",
+        fallbackDescription: "Open the link for more details.",
+        externalAction: "View details on external site",
+        previous: "Previous",
+        next: "Next",
+        importantPrefix: "Important:",
+        importantMessage:
+          "Always check the scholarship application period and eligibility requirements.",
+        importantDetail:
+          "For details, refer to Student Support or each institution's official notice.",
       },
       contactForm: {
         inquiryTypes: {
