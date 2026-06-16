@@ -4,13 +4,35 @@ import {
   LegalPageHeader,
   LegalSection,
 } from "@/app/features/legal/LegalPageLayout";
-import { Metadata } from "next";
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
-export const metadata: Metadata = {
-  title: "이용약관",
-  description: "SYU CAMPUS 이용약관",
-};
+async function getRequestLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+
+  return locale === "en"
+    ? {
+        title: "Terms of Use",
+        description: "SYU CAMPUS Terms of Use",
+      }
+    : {
+        title: "이용약관",
+        description: "SYU CAMPUS 이용약관",
+      };
+}
 
 const serviceItems = [
   {
@@ -68,6 +90,33 @@ const liabilityLimits = [
   "기타 제공자의 합리적 통제 범위 밖의 원인",
 ];
 
+const englishServiceItems = [
+  {
+    title: "Academic Information",
+    description:
+      "Academic notices, schedules, department notices, graduation checks, and timetable tools",
+  },
+  {
+    title: "Campus Information",
+    description:
+      "Campus notices, maps, shuttle information, cafeteria menus, library seat status, and campus facilities",
+  },
+  {
+    title: "Student Tools",
+    description:
+      "Scholarship notices, campus tips, contact/suggestion forms, schedule coordination, notifications, search, and PWA support",
+  },
+];
+
+const englishProhibitedActions = [
+  "Posting, distributing, or sharing illegal content",
+  "Infringing another person's privacy or personal information",
+  "Interfering with normal service operation",
+  "Malicious crawling, scraping, automation, or server load generation",
+  "Unauthorized access, hacking, or system intrusion",
+  "Any other illegal or unfair use of the service",
+];
+
 function NumberedParagraph({
   number,
   children,
@@ -82,12 +131,173 @@ function NumberedParagraph({
   );
 }
 
-export default function TermsPage() {
+function EnglishTermsPage() {
+  const legal = getDictionary("en").legal;
+
+  return (
+    <Container className="py-6 sm:py-8">
+      <LegalPageHeader
+        title="Terms of Use"
+        description="Terms for using the SYU CAMPUS service. Effective May 14, 2026."
+        homeHref={localizePath("/", "en")}
+        homeLabel={legal.home}
+        noticeTitle="Important Notice"
+        noticeTone="red"
+        notice="SYU CAMPUS is not an official Sahmyook University service. This English version is provided for convenience; if it differs from the Korean version, the Korean version applies."
+      />
+
+      <div className="space-y-6 mb-8">
+        <LegalSection title="Article 1. Purpose">
+          <p className="text-neutral-700 leading-relaxed">
+            These Terms define the rights and obligations between SYU KR and
+            users regarding the use of SYU CAMPUS, a web platform that helps
+            Sahmyook University students check academic and campus information.
+          </p>
+        </LegalSection>
+
+        <LegalSection title="Article 2. Definitions">
+          <div className="space-y-3 text-neutral-700">
+            {[
+              [
+                "Service",
+                "The SYU CAMPUS web platform that provides integrated academic, campus, and notice information.",
+              ],
+              [
+                "User",
+                "A person who uses the service after agreeing to these Terms.",
+              ],
+              [
+                "Provider",
+                "SYU KR, the operator and maintainer of the SYU CAMPUS service.",
+              ],
+            ].map(([title, description], index) => (
+              <div key={title}>
+                <p className="font-semibold mb-1">
+                  {index + 1}. {title}
+                </p>
+                <p className="text-sm text-neutral-600">{description}</p>
+              </div>
+            ))}
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 3. Service Scope">
+          <div className="space-y-3 text-neutral-700">
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded mb-3">
+              <p className="text-sm text-orange-900 font-semibold flex items-center gap-2">
+                <Icon
+                  name="alert-circle"
+                  size={16}
+                  color="rgb(194, 65, 12)"
+                  className="flex-shrink-0"
+                />
+                Reference-only information
+              </p>
+              <p className="text-xs text-orange-800 mt-1">
+                Notices, schedules, cafeteria data, bus data, and other
+                information are provided for reference only. Always verify
+                important information on official Sahmyook University websites.
+              </p>
+            </div>
+            <p>
+              <span className="font-semibold">1.</span> The service may provide
+              the following features:
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
+              {englishServiceItems.map((item) => (
+                <li key={item.title}>
+                  <strong>{item.title}</strong>: {item.description}
+                </li>
+              ))}
+            </ul>
+            <NumberedParagraph number={2}>
+              Information may be collected from publicly available university
+              sources or maintained as JSON data.
+            </NumberedParagraph>
+            <NumberedParagraph number={3}>
+              The provider may change, pause, or terminate service features when
+              operationally necessary after prior notice where practical.
+            </NumberedParagraph>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 4. User Responsibilities">
+          <div className="space-y-2 text-neutral-700">
+            <p>Users must not engage in the following actions:</p>
+            <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
+              {englishProhibitedActions.map((action) => (
+                <li key={action}>{action}</li>
+              ))}
+            </ul>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 5. Data and Privacy">
+          <div className="space-y-3 text-neutral-700">
+            <NumberedParagraph number={1}>
+              The service may store basic settings in local storage on the
+              user&apos;s device.
+            </NumberedParagraph>
+            <NumberedParagraph number={2}>
+              Contact, suggestion, campus-tip, schedule coordination, and push
+              notification features may store user-provided data or notification
+              tokens only for service operation and improvement.
+            </NumberedParagraph>
+            <NumberedParagraph number={3}>
+              Privacy details are governed by the Privacy Policy.
+            </NumberedParagraph>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 6. Limitation of Liability">
+          <div className="space-y-3 text-neutral-700">
+            <p>
+              To the fullest extent permitted by law, the provider is not liable
+              for damages caused by user misuse, network or system issues,
+              changes in university systems or policies, third-party actions, or
+              inaccuracies in external data unless caused by intentional
+              misconduct or gross negligence.
+            </p>
+            <p className="text-sm text-neutral-600">
+              External information such as cafeteria menus, library status,
+              shuttle information, and notices may differ from the original
+              source because of source delays, changes, or errors.
+            </p>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 7. Changes and Governing Law">
+          <div className="space-y-3 text-neutral-700">
+            <NumberedParagraph number={1}>
+              The provider may update these Terms when necessary and will post
+              notice of material changes in advance.
+            </NumberedParagraph>
+            <NumberedParagraph number={2}>
+              These Terms are governed by the laws of the Republic of Korea, and
+              disputes may be submitted to the competent courts of Korea.
+            </NumberedParagraph>
+          </div>
+        </LegalSection>
+      </div>
+    </Container>
+  );
+}
+
+export default async function TermsPage() {
+  const locale = await getRequestLocale();
+  const legal = getDictionary(locale).legal;
+
+  if (locale === "en") {
+    return <EnglishTermsPage />;
+  }
+
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="이용약관"
         description="SYU CAMPUS 서비스 이용약관입니다. 2026년 5월 14일 시행"
+        homeHref={localizePath("/", locale)}
+        homeLabel={legal.home}
         noticeTitle="중요 공지"
         noticeTone="red"
         notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 제공되는 모든 자료는 참고용이며, 정확한 정보는 학교 공식 웹사이트를 참고하시기 바랍니다."
