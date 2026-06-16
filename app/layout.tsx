@@ -146,7 +146,7 @@ export default async function RootLayout({
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
 
   return (
-    <html lang={locale}>
+    <html lang={locale} data-scroll-behavior="smooth">
       <head>
         <meta
           name="google-site-verification"
