@@ -50,14 +50,6 @@ export function getBuildingById(id: string): Building | undefined {
   return buildings.find((b) => b.id === id);
 }
 
-// 층수를 포매팅하는 함수
-export function formatFloor(floorNumber: number): string {
-  if (floorNumber < 0) {
-    return `지하${Math.abs(floorNumber)}층`;
-  }
-  return `${floorNumber}층`;
-}
-
 // 시설 및 건물명 검색 함수
 export function searchFacilities(query: string): Array<{
   building: Building;

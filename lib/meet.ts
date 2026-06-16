@@ -132,11 +132,6 @@ export function filterValidAvailability(
   return Array.from(deduped).sort();
 }
 
-export function formatMeetSlot(slot: string): string {
-  const [date, timeWithZone] = slot.split("T");
-  return `${date} ${timeWithZone.slice(0, 5)}`;
-}
-
 export function getMeetDatesFromSlots(slots: string[]): string[] {
   return Array.from(new Set(slots.map((slot) => slot.slice(0, 10))));
 }
