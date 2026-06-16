@@ -148,9 +148,14 @@ export default function ShuttleSection() {
     };
   }, [locale, now]);
 
+  const isVacationToday = useMemo(
+    () => isShuttleVacationDate(dateInfo.dateStr, specialPeriods),
+    [dateInfo.dateStr, specialPeriods],
+  );
+
   // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
-    if (isShuttleVacationDate(dateInfo.dateStr, specialPeriods)) {
+    if (isVacationToday) {
       return dateInfo.isFriday
         ? ("fridayVacation" as const)
         : ("mondayToThursdayVacation" as const);
@@ -159,7 +164,7 @@ export default function ShuttleSection() {
     if (dateInfo.isWeekend) return "mondayToThursday"; // 주말이면 월요일 시간표 표시
     if (dateInfo.isFriday) return "friday";
     return "mondayToThursday";
-  }, [dateInfo, specialPeriods]);
+  }, [dateInfo.isFriday, dateInfo.isWeekend, isVacationToday]);
 
   const [selectedType, setSelectedType] = useState<
     | "mondayToThursday"
@@ -186,29 +191,42 @@ export default function ShuttleSection() {
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0;
   const specialScheduleIsCurrent = activeReplacementSpecialPeriods.length > 0;
+  const currentRegularScheduleType = dateInfo.isWeekend ? null : defaultType;
   const dayButtons = [
     {
       type: "mondayToThursday" as const,
       label: text.semesterMonThu,
       isActive:
-        !specialScheduleIsCurrent && !dateInfo.isWeekend && !dateInfo.isFriday
+        !specialScheduleIsCurrent &&
+        currentRegularScheduleType === "mondayToThursday"
           ? text.current
           : "",
     },
     {
       type: "friday" as const,
       label: text.semesterFri,
-      isActive: !specialScheduleIsCurrent && dateInfo.isFriday ? text.current : "",
+      isActive:
+        !specialScheduleIsCurrent && currentRegularScheduleType === "friday"
+          ? text.current
+          : "",
     },
     {
       type: "mondayToThursdayVacation" as const,
       label: text.vacationMonThu,
-      isActive: "",
+      isActive:
+        !specialScheduleIsCurrent &&
+        currentRegularScheduleType === "mondayToThursdayVacation"
+          ? text.current
+          : "",
     },
     {
       type: "fridayVacation" as const,
       label: text.vacationFri,
-      isActive: "",
+      isActive:
+        !specialScheduleIsCurrent &&
+        currentRegularScheduleType === "fridayVacation"
+          ? text.current
+          : "",
     },
   ];
   const selectedRegularButton = dayButtons.find(
