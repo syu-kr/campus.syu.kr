@@ -14,7 +14,7 @@ on:
         default: main
         type: string
       verify_before_sync:
-        description: Run lint, type-check, and build before syncing
+        description: Run dependency audit and full check before syncing
         required: false
         default: true
         type: boolean
@@ -25,7 +25,7 @@ on:
         required: true
         type: string
       verify_before_sync:
-        description: Run lint, type-check, and build before syncing
+        description: Run dependency audit and full check before syncing
         required: false
         default: true
         type: boolean
@@ -106,7 +106,7 @@ jobs:
         if: inputs.verify_before_sync
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "20.19.0"
           cache: npm
 
       - name: Setup Python
@@ -115,29 +115,21 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Use pinned npm
+        if: inputs.verify_before_sync
+        run: npm install -g npm@10.9.4
+
       - name: Install dependencies
         if: inputs.verify_before_sync
         run: npm ci
 
-      - name: Lint
+      - name: Audit dependencies
         if: inputs.verify_before_sync
-        run: npm run lint
+        run: npm audit --audit-level=moderate
 
-      - name: Type check
+      - name: Check
         if: inputs.verify_before_sync
-        run: npm run type-check
-
-      - name: Check unused code
-        if: inputs.verify_before_sync
-        run: npm run check:unused
-
-      - name: Check Python crawler syntax
-        if: inputs.verify_before_sync
-        run: npm run check:python
-
-      - name: Build
-        if: inputs.verify_before_sync
-        run: npm run build
+        run: npm run check
 
       - name: Clone destination repository
         env:

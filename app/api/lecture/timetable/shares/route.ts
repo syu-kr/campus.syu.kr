@@ -21,6 +21,7 @@ const RATE_LIMIT = {
 };
 
 const MAX_SHARED_COURSES = 120;
+const SHARE_ID_BYTES = 12;
 const SHARE_ID_ATTEMPTS = 5;
 const SHARE_EXPIRY_DAYS = 90;
 
@@ -78,7 +79,7 @@ async function createUniqueShareId() {
   const db = getFirestore();
 
   for (let attempt = 0; attempt < SHARE_ID_ATTEMPTS; attempt += 1) {
-    const shareId = randomBytes(6).toString("base64url");
+    const shareId = randomBytes(SHARE_ID_BYTES).toString("base64url");
     const snapshot = await db.collection("timetable_shares").doc(shareId).get();
 
     if (!snapshot.exists) return shareId;

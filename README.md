@@ -4,8 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwind-css)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.3-06B6D4?logo=tailwind-css)](https://tailwindcss.com/)
 
 > 이 프로젝트는 삼육대학교 공식 서비스가 아닌 비공식 학생 편의 서비스입니다.
 
@@ -22,7 +22,7 @@
 
 ### 요구사항
 
-- Node.js 20.9 이상
+- Node.js 20.19 이상
 - npm
 - Python 3.11 이상: 크롤러 검사 및 실행 시 필요
 
@@ -60,7 +60,7 @@ npm run check
 
 - Next.js 16 App Router
 - React 19, TypeScript
-- Tailwind CSS 3.4
+- Tailwind CSS 4.3
 - TanStack Query 5
 - Firebase, Firebase Admin SDK, Firebase Cloud Messaging
 - Kakao Maps API

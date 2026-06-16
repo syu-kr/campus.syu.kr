@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { fetchJson } from "@/lib/fetch-json";
 import { normalizeLectureTimetablePayload } from "@/lib/lecture-timetable";
 import { requireServerEnv } from "@/lib/server/env";
 import type { LectureTimetableDataset } from "@/lib/lecture-timetable";
@@ -9,6 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const LECTURE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+const LECTURE_REQUEST_TIMEOUT_MS = 20_000;
 
 let cachedTimetable:
   | {
@@ -80,15 +80,27 @@ export async function GET() {
 }
 
 async function fetchLectureTimetable(): Promise<LectureTimetableDataset> {
-  const payload = await fetchJson<unknown>(
+  const payload = await fetchLectureTimetablePayload(
     requireServerEnv("LECTURE_TIMETABLE_URL"),
-    {
-      fallback: undefined,
-      noStore: false,
-      next: { revalidate: 60 * 60 * 6 },
-      timeoutMs: 20_000,
-    },
   );
 
   return normalizeLectureTimetablePayload(payload);
+}
+
+async function fetchLectureTimetablePayload(url: string): Promise<unknown> {
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(LECTURE_REQUEST_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Lecture timetable API returned ${response.status}`);
+  }
+
+  const payload = await response.json();
+  if (payload == null) {
+    throw new Error("Lecture timetable API returned empty payload");
+  }
+
+  return payload;
 }

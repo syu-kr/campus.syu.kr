@@ -1,3 +1,5 @@
+import { isIP } from "node:net";
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -40,8 +42,56 @@ export function checkRateLimit(
 }
 
 export function getRateLimitKey(req: Request, scope: string): string {
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  const realIp = req.headers.get("x-real-ip");
-  const ip = realIp || forwardedFor?.split(",")[0]?.trim() || "unknown";
+  const ip = getClientIp(req.headers) || "unknown";
   return `${scope}:${ip}`;
+}
+
+function getClientIp(headers: Headers): string | null {
+  return (
+    readFirstValidIp(headers.get("x-vercel-forwarded-for")) ||
+    readLastValidIp(headers.get("x-forwarded-for")) ||
+    readFirstValidIp(headers.get("x-real-ip"))
+  );
+}
+
+function readFirstValidIp(value: string | null): string | null {
+  if (!value) return null;
+
+  for (const candidate of splitIpHeader(value)) {
+    const ip = normalizeIpCandidate(candidate);
+    if (ip) return ip;
+  }
+
+  return null;
+}
+
+function readLastValidIp(value: string | null): string | null {
+  if (!value) return null;
+
+  const candidates = splitIpHeader(value);
+  for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    const ip = normalizeIpCandidate(candidates[index]);
+    if (ip) return ip;
+  }
+
+  return null;
+}
+
+function splitIpHeader(value: string): string[] {
+  return value
+    .split(",")
+    .map((candidate) => candidate.trim())
+    .filter(Boolean);
+}
+
+function normalizeIpCandidate(value: string): string | null {
+  let candidate = value.replace(/^"|"$/g, "");
+
+  if (candidate.startsWith("[") && candidate.includes("]")) {
+    candidate = candidate.slice(1, candidate.indexOf("]"));
+  } else {
+    candidate = candidate.replace(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/, "$1");
+  }
+
+  return isIP(candidate) ? candidate : null;
 }
