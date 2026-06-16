@@ -7,10 +7,15 @@ import Link from "next/link";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import {
+  useDictionary,
+  useLocale,
+} from "@/app/components/LocaleProvider";
+import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
-import { SearchBar } from "@/app/components/SearchBar";
 import { fetchCampusTips } from "@/lib/api";
+import { localizePath, type Dictionary } from "@/lib/i18n";
 import { usePagination } from "@/lib/use-pagination";
 import type {
   CampusTip,
@@ -22,46 +27,29 @@ const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 const ITEMS_PER_PAGE = 12;
 
-const categoryFilters: Array<{
-  key: CampusTipCategory | "all";
-  label: string;
-}> = [
-  { key: "all", label: "전체" },
-  { key: "school", label: "학교" },
-  { key: "campus-life", label: "캠퍼스생활" },
-  { key: "finance", label: "금융/장학" },
-  { key: "certificate", label: "자격증" },
-  { key: "activity", label: "공모전/대외활동" },
-  { key: "career", label: "취업" },
-  { key: "culture", label: "문화생활" },
-  { key: "local", label: "별내동" },
-  { key: "reference", label: "참고자료" },
+type CampusTipsDictionary = Dictionary["pages"]["campusTips"];
+
+const categoryFilters: Array<CampusTipCategory | "all"> = [
+  "all",
+  "school",
+  "campus-life",
+  "finance",
+  "certificate",
+  "activity",
+  "career",
+  "culture",
+  "local",
+  "reference",
 ];
 
 const categoryOrder = new Map(
-  categoryFilters.map((category, index) => [category.key, index]),
+  categoryFilters.map((category, index) => [category, index]),
 );
 
-const categoryLabels: Record<CampusTipCategory, string> = {
-  school: "학교",
-  "campus-life": "캠퍼스생활",
-  finance: "금융/장학",
-  certificate: "자격증",
-  activity: "공모전/대외활동",
-  career: "취업",
-  culture: "문화생활",
-  local: "별내동",
-  reference: "참고자료",
-};
-
-const sourceLabels: Record<CampusTipSourceType, string> = {
-  official: "공식",
-  public: "공공",
-  community: "커뮤니티",
-  external: "외부",
-};
-
 export default function CampusTipsPage() {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.campusTips;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     CampusTipCategory | "all"
@@ -87,8 +75,8 @@ export default function CampusTipsPage() {
           tip.title,
           tip.description,
           tip.note,
-          categoryLabels[tip.category],
-          sourceLabels[tip.sourceType],
+          getCategoryLabel(tip.category, text),
+          getSourceLabel(tip.sourceType, text),
           ...tip.tags,
         ]
           .filter(Boolean)
@@ -96,8 +84,8 @@ export default function CampusTipsPage() {
           .toLowerCase();
         return searchable.includes(query);
       })
-      .sort(sortTips);
-  }, [searchQuery, selectedCategory, tips]);
+      .sort((a, b) => sortTips(a, b, locale));
+  }, [locale, searchQuery, selectedCategory, text, tips]);
 
   const {
     currentPage,
@@ -120,23 +108,27 @@ export default function CampusTipsPage() {
     setCurrentPage(1);
   };
 
+  const firstVisibleItem = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const lastVisibleItem = Math.min(
+    currentPage * ITEMS_PER_PAGE,
+    filteredTips.length,
+  );
+
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
-              캠퍼스 꿀팁
+              {text.title}
             </h1>
-            <p className="text-neutral-600">
-              학교생활, 진로, 대외활동, 지역 정보를 한곳에서 찾아보세요
-            </p>
+            <p className="text-neutral-600">{text.description}</p>
           </div>
           <Link
-            href="/campus/campus-tips/suggest"
+            href={localizePath("/campus/campus-tips/suggest", locale)}
             className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
-            꿀팁 제보하기
+            {text.suggestAction}
           </Link>
         </div>
       </div>
@@ -144,7 +136,7 @@ export default function CampusTipsPage() {
       <SearchBar
         className="mb-4"
         defaultValue={searchQuery}
-        placeholder="수윙스, 토익, 공모전, 별내, 장학, 포트폴리오..."
+        placeholder={text.searchPlaceholder}
         onSearch={handleSearchChange}
         onClear={() => handleSearchChange("")}
         searchOnChange
@@ -154,16 +146,18 @@ export default function CampusTipsPage() {
         <div className="flex min-w-max gap-2 pb-1">
           {categoryFilters.map((category) => (
             <button
-              key={category.key}
+              key={category}
               type="button"
-              onClick={() => handleCategoryChange(category.key)}
+              onClick={() => handleCategoryChange(category)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                selectedCategory === category.key
+                selectedCategory === category
                   ? "bg-primary-600 text-white"
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
               }`}
             >
-              {category.label}
+              {category === "all"
+                ? text.categories.all
+                : getCategoryLabel(category, text)}
             </button>
           ))}
         </div>
@@ -171,13 +165,15 @@ export default function CampusTipsPage() {
 
       {!isLoading && (
         <div className="mb-4 text-sm text-neutral-600">
-          {filteredTips.length}개 항목 찾음
-          {searchQuery && ` (검색어: "${searchQuery}")`}
+          {filteredTips.length}
+          {text.countSeparator}
+          {text.foundItems}
+          {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
           {filteredTips.length > 0 && (
             <span className="ml-2">
-              - {(currentPage - 1) * ITEMS_PER_PAGE + 1} ~{" "}
-              {Math.min(currentPage * ITEMS_PER_PAGE, filteredTips.length)}개
-              표시
+              - {firstVisibleItem} ~ {lastVisibleItem}
+              {text.countSeparator}
+              {text.showingSuffix}
             </span>
           )}
         </div>
@@ -185,8 +181,7 @@ export default function CampusTipsPage() {
 
       {!isLoading && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-          공식 배지가 없는 자료는 외부 또는 커뮤니티 자료일 수 있습니다. 중요한
-          신청, 비용, 일정은 반드시 공식 사이트에서 다시 확인하세요.
+          {text.sourceNotice}
         </div>
       )}
 
@@ -194,10 +189,7 @@ export default function CampusTipsPage() {
         {isLoading && <Skeleton count={6} />}
 
         {!isLoading && filteredTips.length === 0 && (
-          <StateCard
-            type="info"
-            message="검색 결과가 없습니다. 다른 키워드나 카테고리를 선택해보세요."
-          />
+          <StateCard type="info" message={text.emptyMessage} />
         )}
 
         {!isLoading &&
@@ -214,10 +206,10 @@ export default function CampusTipsPage() {
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <Badge color={getCategoryBadgeColor(tip.category)}>
-                        {categoryLabels[tip.category]}
+                        {getCategoryLabel(tip.category, text)}
                       </Badge>
                       <Badge color={getSourceBadgeColor(tip.sourceType)}>
-                        {sourceLabels[tip.sourceType]}
+                        {getSourceLabel(tip.sourceType, text)}
                       </Badge>
                     </div>
                     <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
@@ -243,7 +235,7 @@ export default function CampusTipsPage() {
                     </div>
                   </div>
                   <span className="shrink-0 text-sm font-medium text-primary-600">
-                    {tip.urlLabel || "외부 사이트 열기"}
+                    {tip.urlLabel || text.externalUrlFallback}
                   </span>
                 </div>
               </Card>
@@ -259,9 +251,9 @@ export default function CampusTipsPage() {
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="이전 페이지"
+              aria-label={text.previousPage}
             >
-              이전
+              {text.previous}
             </button>
 
             {pageNumbers.map((pageNum) => (
@@ -286,14 +278,16 @@ export default function CampusTipsPage() {
               }
               disabled={currentPage === totalPages}
               className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label="다음 페이지"
+              aria-label={text.nextPage}
             >
-              다음
+              {text.next}
             </button>
           </div>
 
           <p className="text-sm text-neutral-600">
-            {currentPage} / {totalPages} 페이지
+            {text.pageIndicatorPrefix}
+            {currentPage} / {totalPages}
+            {text.pageIndicatorSuffix}
           </p>
         </div>
       )}
@@ -301,7 +295,7 @@ export default function CampusTipsPage() {
   );
 }
 
-function sortTips(a: CampusTip, b: CampusTip): number {
+function sortTips(a: CampusTip, b: CampusTip, locale: string): number {
   const categoryDiff =
     (categoryOrder.get(a.category) ?? 99) -
     (categoryOrder.get(b.category) ?? 99);
@@ -314,7 +308,32 @@ function sortTips(a: CampusTip, b: CampusTip): number {
     getSourcePriority(a.sourceType) - getSourcePriority(b.sourceType);
   if (sourceDiff !== 0) return sourceDiff;
 
-  return a.title.localeCompare(b.title, "ko");
+  return a.title.localeCompare(b.title, locale);
+}
+
+function getCategoryLabel(
+  category: CampusTipCategory,
+  text: CampusTipsDictionary,
+): string {
+  if (category === "school") return text.categories.school;
+  if (category === "campus-life") return text.categories.campusLife;
+  if (category === "finance") return text.categories.finance;
+  if (category === "certificate") return text.categories.certificate;
+  if (category === "activity") return text.categories.activity;
+  if (category === "career") return text.categories.career;
+  if (category === "culture") return text.categories.culture;
+  if (category === "local") return text.categories.local;
+  return text.categories.reference;
+}
+
+function getSourceLabel(
+  sourceType: CampusTipSourceType,
+  text: CampusTipsDictionary,
+): string {
+  if (sourceType === "official") return text.sources.official;
+  if (sourceType === "public") return text.sources.public;
+  if (sourceType === "community") return text.sources.community;
+  return text.sources.external;
 }
 
 function getTipPriority(tip: CampusTip): number {

@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { Modal } from "@/app/components/Modal";
+import { useDictionary } from "@/app/components/LocaleProvider";
 
 export interface SubmissionSummaryItem {
   label: string;
@@ -23,6 +24,8 @@ export function SubmissionResultModal({
   summary = [],
   onClose,
 }: SubmissionResultModalProps) {
+  const dictionary = useDictionary();
+  const text = dictionary.submissionResult;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   return (
@@ -44,7 +47,7 @@ export function SubmissionResultModal({
               : "bg-red-50 text-red-700"
           }`}
         >
-          {type === "success" ? "접수 완료" : "접수 실패"}
+          {type === "success" ? text.successBadge : text.errorBadge}
         </div>
         <h2
           id="submission-result-title"
@@ -74,7 +77,7 @@ export function SubmissionResultModal({
           onClick={onClose}
           className="mt-5 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >
-          확인
+          {text.confirm}
         </button>
       </div>
     </Modal>

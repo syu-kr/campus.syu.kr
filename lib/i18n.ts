@@ -302,6 +302,11 @@ export const dictionaries = {
       info: "정보",
       sahmyookUniversity: "삼육대학교",
     },
+    submissionResult: {
+      successBadge: "접수 완료",
+      errorBadge: "접수 실패",
+      confirm: "확인",
+    },
     pages: {
       announcements: {
         allTitle: "전체 공지",
@@ -669,6 +674,261 @@ export const dictionaries = {
         page: "페이지",
         notice: "안내: 더 많은 전화번호는 학교 홈페이지를 참고하세요.",
       },
+      gym: {
+        title: "체육시설",
+        description: "건강한 신체에 건강한 정신이 깃듭니다",
+        metaDescription:
+          "삼육대학교 체육시설과 체육문화센터 이용 정보를 확인하세요.",
+        locationContact: "위치 및 연락처",
+        location: "위치",
+        locationName: "삼육대학교 체육문화센터",
+        notice:
+          "운영시간, 요금, 환불정책은 변경될 수 있습니다. 등록이나 대관 전에는 체육문화센터 공식 안내 또는 전화로 최신 정보를 확인하세요.",
+        sections: {
+          firstFloor: "체육관 1층",
+          secondFloor: "체육관 2층",
+          outdoor: "종합운동장",
+        },
+        firstFloor: [
+          {
+            name: "수영장",
+            description: "성인풀 25m × 5레인, 유아풀",
+            specs: "수심: 성인 1.2~1.5m, 유아 0.7m",
+          },
+          {
+            name: "헬스장",
+            description: "83평 규모",
+            specs: "런닝머신 외 49종 기구, 체력측정실 운영",
+          },
+          {
+            name: "골프연습장",
+            description: "실내 골프 연습",
+            specs: "일반타석 6대(좌타석 1대), 스크린타석 2대",
+          },
+          {
+            name: "탁구장",
+            description: "34평 규모",
+            specs: "탁구대 5대 설치",
+          },
+          {
+            name: "무도관",
+            description: "64평 규모",
+            specs: "필라테스, 한국무용, 어린이발레 강습",
+          },
+        ],
+        secondFloor: [
+          {
+            name: "주경기장",
+            description: "324평 규모",
+            specs: "농구코트 1면, 배구코트 1면, 배드민턴코트 4면",
+          },
+          {
+            name: "스쿼시장",
+            description: "83평 규모",
+            specs: "스쿼시 코트",
+          },
+        ],
+        outdoor: [
+          {
+            name: "인조잔디축구장",
+            description: "실외 축구 경기",
+            specs: "국제 규격 축구장",
+          },
+          {
+            name: "농구장",
+            description: "실외 농구 경기",
+            specs: "표준 농구 코트",
+          },
+          {
+            name: "배구장/족구장",
+            description: "실외 네트 스포츠",
+            specs: "배구 및 족구 경기용",
+          },
+          {
+            name: "육상트랙",
+            description: "실외 육상 시설",
+            specs: "370m 트랙",
+          },
+        ],
+        contactInfo: [
+          { title: "고객센터", phone: "02-3399-3711" },
+          { title: "대관 문의", phone: "02-3399-3713" },
+          { title: "등록 문의", phone: "02-3399-3715" },
+        ],
+        usage: {
+          title: "이용안내",
+          registrationTitle: "등록 안내",
+          registrationItems: [
+            "기존회원: 매월 20일부터 등록",
+            "신규회원: 매월 25일부터 (선착순 마감)",
+          ],
+          registrationTimeTitle: "등록시간",
+          registrationTimeItems: ["월~목: 06:30 ~ 07:30", "금: 06:30 ~ 11:50"],
+          refundTitle: "환불정책",
+          refundItems: [
+            "접수 후 개강 전: 10% 위약금 공제",
+            "개강 후 환불: 위약금 + 강좌일수 공제",
+            "환불 신청: 매월 15일까지",
+          ],
+          classChangeTitle: "반 변경",
+          classChangeItems: [
+            "동일 종목 내 시간대 변경만 가능",
+            "신청: 매월 7일까지",
+            "정원 허락 범위 내에서 가능",
+          ],
+        },
+        program: {
+          title: "프로그램 및 자세한 정보",
+          description:
+            "다양한 체육 프로그램과 상세한 이용 정보는 아래 버튼을 눌러 확인하세요.",
+          programLink: "프로그램 보기",
+          facilitiesLink: "시설 상세정보",
+        },
+      },
+      healthCenter: {
+        title: "건강증진센터",
+        description: "건강한 대학생활을 위한 1차 건강관리를 지원합니다",
+        metaDescription:
+          "삼육대학교 건강증진센터 위치, 운영시간, 제공 서비스를 확인하세요.",
+        locationContact: "위치 및 연락처",
+        location: "위치",
+        locationName: "체육문화센터 1층 로비",
+        phone: "전화",
+        emergencyNotice:
+          "응급 상황에서는 보건실 안내를 기다리지 말고 119 또는 교내 비상 연락망을 이용하세요. 운영시간과 제공 서비스는 변경될 수 있으므로 방문 전 전화로 확인하는 것이 안전합니다.",
+        operatingHours: "운영시간",
+        vacationNoticeLine1: "※ 방학 중 근무시간이 변동될 수 있습니다.",
+        vacationNoticeLine2: "※ 방학 중에는 점심시간에 운영하지 않습니다.",
+        schedule: [
+          { day: "월~목", time: "08:30 ~ 17:30" },
+          { day: "금", time: "08:30 ~ 15:00" },
+          { day: "점심시간", time: "12:00 ~ 13:00" },
+          { day: "토, 일, 법정휴일", time: "휴무" },
+        ],
+        servicesTitle: "제공 서비스",
+        services: [
+          { title: "외상처치", description: "상처 및 외상 응급처치 제공" },
+          { title: "의약품 제공", description: "일반의약품 제공 및 투약 교육" },
+          { title: "건강 측정", description: "혈압, 혈당, 체온 측정" },
+          { title: "신체 계측", description: "키, 몸무게 계측" },
+          { title: "안정실", description: "남녀 안정실 각 3침상" },
+          { title: "심장제세동기", description: "AED 비치 및 응급 대비" },
+        ],
+        processTitle: "이용절차",
+        processSteps: [
+          { num: "01", title: "방문", desc: "보건실 방문" },
+          { num: "02", title: "기록", desc: "방문기록지 작성" },
+          { num: "03", title: "설명", desc: "증상 설명" },
+          { num: "04", title: "처치", desc: "처치 및 의약품 제공" },
+        ],
+        noticesTitle: "주요 안내",
+        notices: [
+          {
+            title: "보건증 발급",
+            body: "보건증은 시, 군, 구에서 운영하는 보건소에서 검사 후 발급받을 수 있습니다.",
+            note: "※ 대학교 보건실에서는 발급되지 않습니다.",
+          },
+          {
+            title: "안정실 운영",
+            body: "남녀 안정실을 각각 3침상으로 운영합니다.",
+            note: "※ 방학 중이나 일요일 점심시간에는 운영하지 않습니다.",
+          },
+          {
+            title: "구급약품낭 대여",
+            body: "교직원행사나 학교주최행사에서 대여 가능합니다.",
+            note: "대여료: 2만원 (반납 시 환급)",
+          },
+          {
+            title: "심장자동제세동기(AED)",
+            body: "보건실에 AED가 비치되어 있습니다. 누구든지 사용 가능합니다.",
+            note: "",
+          },
+        ],
+      },
+      campusTips: {
+        title: "캠퍼스 꿀팁",
+        description:
+          "학교생활, 진로, 대외활동, 지역 정보를 한곳에서 찾아보세요",
+        metaDescription: "학교생활, 진로, 대외활동, 지역 정보 링크 모음",
+        suggestAction: "꿀팁 제보하기",
+        searchPlaceholder:
+          "수윙스, 토익, 공모전, 별내, 장학, 포트폴리오...",
+        countSeparator: "",
+        foundItems: "개 항목 찾음",
+        searchQuery: "검색어",
+        showingSuffix: "개 표시",
+        sourceNotice:
+          "공식 배지가 없는 자료는 외부 또는 커뮤니티 자료일 수 있습니다. 중요한 신청, 비용, 일정은 반드시 공식 사이트에서 다시 확인하세요.",
+        emptyMessage:
+          "검색 결과가 없습니다. 다른 키워드나 카테고리를 선택해보세요.",
+        externalUrlFallback: "외부 사이트 열기",
+        previousPage: "이전 페이지",
+        previous: "이전",
+        nextPage: "다음 페이지",
+        next: "다음",
+        pageIndicatorPrefix: "",
+        pageIndicatorSuffix: " 페이지",
+        categories: {
+          all: "전체",
+          school: "학교",
+          campusLife: "캠퍼스생활",
+          finance: "금융/장학",
+          certificate: "자격증",
+          activity: "공모전/대외활동",
+          career: "취업",
+          culture: "문화생활",
+          local: "별내동",
+          reference: "참고자료",
+        },
+        sources: {
+          official: "공식",
+          public: "공공",
+          community: "커뮤니티",
+          external: "외부",
+        },
+      },
+      campusTipsSuggest: {
+        title: "꿀팁 제보하기",
+        description:
+          "학교생활에 도움이 되는 정보나 링크를 알려주세요. 검토 후 서비스에 반영될 수 있습니다.",
+        metaDescription:
+          "캠퍼스 꿀팁 자료에 추가할 링크와 내용을 제보하는 페이지입니다.",
+        backToTips: "캠퍼스 꿀팁",
+        validationTitle: "입력 내용을 확인해주세요",
+        validationMessage: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
+        submitFailed: "제보를 접수하지 못했습니다",
+        successTitle: "제보가 접수되었습니다",
+        successMessage: "검토 후 캠퍼스 꿀팁에 반영될 수 있습니다.",
+        summaryTitle: "제목",
+        summaryCategory: "카테고리",
+        summaryLink: "링크",
+        titleLabel: "제목",
+        titlePlaceholder: "예: 중앙도서관 프린트 이용 팁",
+        categoryLabel: "카테고리",
+        descriptionLabel: "꿀팁 내용",
+        descriptionPlaceholder:
+          "무엇을 어디에서 확인할 수 있는지, 왜 유용한지 적어주세요.",
+        urlLabel: "관련 링크",
+        urlPlaceholder: "https://...",
+        tagsLabel: "태그",
+        tagsPlaceholder: "도서관, 프린트, 과제",
+        tagsHelp: "쉼표로 구분해주세요.",
+        noteLabel: "추가 메모",
+        notePlaceholder: "운영자가 확인하면 좋을 내용을 적어주세요.",
+        contactLabel: "연락처",
+        optional: "선택",
+        contactPlaceholder: "확인이 필요한 경우 참고할 이메일 또는 연락처",
+        contactHelpPrefix:
+          "검토 연락용 선택 항목이며, 개별 답변을 보장하지 않습니다. 처리 기준은",
+        privacyPolicy: "개인정보처리방침",
+        contactHelpSuffix: "을 따릅니다.",
+        submitting: "접수 중...",
+        submit: "꿀팁 제보하기",
+        titleRequired: "제목을 입력해주세요",
+        categoryRequired: "카테고리를 선택해주세요",
+        descriptionRequired: "꿀팁 내용을 입력해주세요",
+        invalidUrl: "관련 링크 형식이 올바르지 않습니다",
+      },
       contactForm: {
         inquiryTypes: {
           bug: "오류 제보",
@@ -944,6 +1204,11 @@ export const dictionaries = {
       warning: "Warning",
       info: "Info",
       sahmyookUniversity: "Sahmyook University",
+    },
+    submissionResult: {
+      successBadge: "Submitted",
+      errorBadge: "Submission Failed",
+      confirm: "OK",
     },
     pages: {
       announcements: {
@@ -1322,6 +1587,275 @@ export const dictionaries = {
         page: "page",
         notice:
           "Notice: For more phone numbers, please refer to the university website.",
+      },
+      gym: {
+        title: "Sports Facilities",
+        description: "Healthy bodies support healthy minds",
+        metaDescription:
+          "Check Sahmyook University sports facilities and Sports Culture Center information.",
+        locationContact: "Location and Contact",
+        location: "Location",
+        locationName: "Sahmyook University Sports Culture Center",
+        notice:
+          "Operating hours, fees, and refund policies may change. Before registering or reserving a facility, check the latest official Sports Culture Center notice or call the center.",
+        sections: {
+          firstFloor: "Gymnasium 1F",
+          secondFloor: "Gymnasium 2F",
+          outdoor: "Sports Field",
+        },
+        firstFloor: [
+          {
+            name: "Swimming Pool",
+            description: "25 m adult pool with 5 lanes, plus a children's pool",
+            specs: "Depth: adults 1.2-1.5 m, children 0.7 m",
+          },
+          {
+            name: "Fitness Center",
+            description: "About 83 pyeong",
+            specs:
+              "Treadmills and 49 other machines, with a fitness assessment room",
+          },
+          {
+            name: "Golf Practice Range",
+            description: "Indoor golf practice",
+            specs: "6 regular bays (1 left-handed), 2 screen-golf bays",
+          },
+          {
+            name: "Table Tennis Room",
+            description: "About 34 pyeong",
+            specs: "5 table tennis tables",
+          },
+          {
+            name: "Martial Arts Studio",
+            description: "About 64 pyeong",
+            specs: "Pilates, Korean dance, and children's ballet classes",
+          },
+        ],
+        secondFloor: [
+          {
+            name: "Main Court",
+            description: "About 324 pyeong",
+            specs:
+              "1 basketball court, 1 volleyball court, 4 badminton courts",
+          },
+          {
+            name: "Squash Court",
+            description: "About 83 pyeong",
+            specs: "Squash courts",
+          },
+        ],
+        outdoor: [
+          {
+            name: "Artificial Turf Soccer Field",
+            description: "Outdoor soccer",
+            specs: "International-standard soccer field",
+          },
+          {
+            name: "Basketball Court",
+            description: "Outdoor basketball",
+            specs: "Standard basketball court",
+          },
+          {
+            name: "Volleyball/Jokgu Court",
+            description: "Outdoor net sports",
+            specs: "For volleyball and jokgu",
+          },
+          {
+            name: "Track",
+            description: "Outdoor track facility",
+            specs: "370 m track",
+          },
+        ],
+        contactInfo: [
+          { title: "Customer Center", phone: "02-3399-3711" },
+          { title: "Facility Rental", phone: "02-3399-3713" },
+          { title: "Registration", phone: "02-3399-3715" },
+        ],
+        usage: {
+          title: "Usage Guide",
+          registrationTitle: "Registration",
+          registrationItems: [
+            "Existing members: registration opens on the 20th of each month",
+            "New members: registration opens on the 25th of each month, first come first served",
+          ],
+          registrationTimeTitle: "Registration Hours",
+          registrationTimeItems: ["Mon-Thu: 06:30 - 07:30", "Fri: 06:30 - 11:50"],
+          refundTitle: "Refund Policy",
+          refundItems: [
+            "After registration and before classes begin: 10% penalty deducted",
+            "After classes begin: penalty plus used class days deducted",
+            "Refund requests: by the 15th of each month",
+          ],
+          classChangeTitle: "Class Changes",
+          classChangeItems: [
+            "Only time changes within the same program are allowed",
+            "Requests: by the 7th of each month",
+            "Available only when capacity allows",
+          ],
+        },
+        program: {
+          title: "Programs and Details",
+          description:
+            "Use the links below to check sports programs and detailed facility information.",
+          programLink: "View Programs",
+          facilitiesLink: "Facility Details",
+        },
+      },
+      healthCenter: {
+        title: "Health Center",
+        description:
+          "Primary health support for a safe and healthy campus life",
+        metaDescription:
+          "Check Sahmyook University Health Center location, hours, and services.",
+        locationContact: "Location and Contact",
+        location: "Location",
+        locationName: "Sports Culture Center 1F lobby",
+        phone: "Phone",
+        emergencyNotice:
+          "In an emergency, call 119 or use the campus emergency contact network instead of waiting for Health Center guidance. Hours and services may change, so calling before visiting is recommended.",
+        operatingHours: "Operating Hours",
+        vacationNoticeLine1: "※ Vacation-period hours may change.",
+        vacationNoticeLine2: "※ During vacations, the center closes for lunch.",
+        schedule: [
+          { day: "Mon-Thu", time: "08:30 - 17:30" },
+          { day: "Fri", time: "08:30 - 15:00" },
+          { day: "Lunch break", time: "12:00 - 13:00" },
+          { day: "Sat, Sun, legal holidays", time: "Closed" },
+        ],
+        servicesTitle: "Services",
+        services: [
+          { title: "Wound Care", description: "First aid for wounds and injuries" },
+          {
+            title: "Medicine Support",
+            description: "Basic over-the-counter medicine and guidance",
+          },
+          {
+            title: "Health Checks",
+            description: "Blood pressure, blood sugar, and temperature checks",
+          },
+          { title: "Body Measurements", description: "Height and weight checks" },
+          { title: "Rest Rooms", description: "3 beds each for men and women" },
+          {
+            title: "AED",
+            description: "Automated external defibrillator for emergencies",
+          },
+        ],
+        processTitle: "How to Use",
+        processSteps: [
+          { num: "01", title: "Visit", desc: "Visit the Health Center" },
+          { num: "02", title: "Record", desc: "Fill out the visit record" },
+          { num: "03", title: "Explain", desc: "Describe your symptoms" },
+          { num: "04", title: "Care", desc: "Receive care or medicine" },
+        ],
+        noticesTitle: "Important Notes",
+        notices: [
+          {
+            title: "Health Certificate",
+            body: "Health certificates can be issued after testing at a public health center operated by a city, county, or district office.",
+            note: "※ University health offices do not issue these certificates.",
+          },
+          {
+            title: "Rest Room Use",
+            body: "Separate men's and women's rest rooms are operated with 3 beds each.",
+            note: "※ Not available during vacation periods or Sunday lunch hours.",
+          },
+          {
+            title: "First-aid Kit Rental",
+            body: "First-aid kits can be rented for faculty/staff events or school-hosted events.",
+            note: "Rental fee: KRW 20,000, refunded on return",
+          },
+          {
+            title: "Automated External Defibrillator (AED)",
+            body: "An AED is available in the Health Center and can be used by anyone.",
+            note: "",
+          },
+        ],
+      },
+      campusTips: {
+        title: "Campus Tips",
+        description:
+          "Find school life, career, activity, and local information in one place",
+        metaDescription:
+          "Useful links for school life, careers, activities, and local information",
+        suggestAction: "Suggest a Tip",
+        searchPlaceholder:
+          "SU-Wings, TOEIC, contests, Byeollae, scholarships, portfolio...",
+        countSeparator: " ",
+        foundItems: "items found",
+        searchQuery: "query",
+        showingSuffix: "shown",
+        sourceNotice:
+          "Items without an official badge may come from external or community sources. Always recheck important applications, costs, and schedules on the official site.",
+        emptyMessage:
+          "No results found. Try another keyword or category.",
+        externalUrlFallback: "Open external site",
+        previousPage: "Previous page",
+        previous: "Previous",
+        nextPage: "Next page",
+        next: "Next",
+        pageIndicatorPrefix: "Page ",
+        pageIndicatorSuffix: "",
+        categories: {
+          all: "All",
+          school: "School",
+          campusLife: "Campus Life",
+          finance: "Finance/Scholarships",
+          certificate: "Certificates",
+          activity: "Contests/Activities",
+          career: "Career",
+          culture: "Culture",
+          local: "Byeollae",
+          reference: "References",
+        },
+        sources: {
+          official: "Official",
+          public: "Public",
+          community: "Community",
+          external: "External",
+        },
+      },
+      campusTipsSuggest: {
+        title: "Suggest a Tip",
+        description:
+          "Share useful information or links for campus life. After review, it may be added to the service.",
+        metaDescription:
+          "Suggest a link or note to add to the Campus Tips collection.",
+        backToTips: "Campus Tips",
+        validationTitle: "Please check your input",
+        validationMessage: "Fix the highlighted fields and submit again.",
+        submitFailed: "Could not submit your tip",
+        successTitle: "Tip submitted",
+        successMessage: "After review, it may be added to Campus Tips.",
+        summaryTitle: "Title",
+        summaryCategory: "Category",
+        summaryLink: "Link",
+        titleLabel: "Title",
+        titlePlaceholder: "Example: Printing tips for the Central Library",
+        categoryLabel: "Category",
+        descriptionLabel: "Tip details",
+        descriptionPlaceholder:
+          "Tell us what to check, where to find it, and why it is useful.",
+        urlLabel: "Related link",
+        urlPlaceholder: "https://...",
+        tagsLabel: "Tags",
+        tagsPlaceholder: "library, printing, assignment",
+        tagsHelp: "Separate tags with commas.",
+        noteLabel: "Additional note",
+        notePlaceholder: "Add anything the admin should check.",
+        contactLabel: "Contact",
+        optional: "Optional",
+        contactPlaceholder:
+          "Email or contact information if confirmation is needed",
+        contactHelpPrefix:
+          "This is optional contact information for review and does not guarantee an individual reply. Processing follows the",
+        privacyPolicy: "Privacy Policy",
+        contactHelpSuffix: ".",
+        submitting: "Submitting...",
+        submit: "Suggest a tip",
+        titleRequired: "Please enter a title",
+        categoryRequired: "Please choose a category",
+        descriptionRequired: "Please enter the tip details",
+        invalidUrl: "The related link format is invalid",
       },
       contactForm: {
         inquiryTypes: {
