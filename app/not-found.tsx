@@ -2,25 +2,24 @@
 
 import { ContactModal } from "./components/ContactModal";
 import { Icon } from "./components/Icon";
+import { useDictionary, useLocale } from "./components/LocaleProvider";
+import { localizePath } from "@/lib/i18n";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const funMessages = [
-  "어... 여기 아무것도 없네요",
-  "이 페이지는 숨바꼭질 중입니다",
-  "404... 404... 어디 있어요?",
-  "이 길은 막혔어요",
-  "404 Not Found in the system\n404 The new era era",
-  "페이지가 방학을 가버렸나 봐요",
-];
-
 export default function NotFound() {
-  const [funMessage, setFunMessage] = useState("어... 여기 아무것도 없네요");
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const [funMessage, setFunMessage] = useState("");
   const [isContactOpen, setIsContactOpen] = useState(false);
 
   useEffect(() => {
-    setFunMessage(funMessages[Math.floor(Math.random() * funMessages.length)]);
-  }, []);
+    const messages = dictionary.notFound.funMessages;
+    setFunMessage(
+      messages[Math.floor(Math.random() * messages.length)] ??
+        dictionary.notFound.defaultFunMessage,
+    );
+  }, [dictionary.notFound.defaultFunMessage, dictionary.notFound.funMessages]);
 
   return (
     <div className="min-h-screen flex flex-col overflow-hidden">
@@ -72,16 +71,16 @@ export default function NotFound() {
               404
             </h1>
             <p className="text-lg md:text-xl text-gray-700 font-bold mb-2 whitespace-pre-line">
-              {funMessage}
+              {funMessage || dictionary.notFound.defaultFunMessage}
             </p>
             <p className="text-gray-500 text-sm">
-              찾으시던 페이지가 존재하지 않거나 이동된 것 같아요.
+              {dictionary.notFound.description}
             </p>
           </div>
 
           <div className="space-y-3 mb-8">
             <Link
-              href="/"
+              href={localizePath("/", locale)}
               className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95 text-lg group"
             >
               <Icon
@@ -90,7 +89,7 @@ export default function NotFound() {
                 color="white"
                 className="group-hover:animate-bounce-x"
               />
-              <span>홈으로 돌아가기</span>
+              <span>{dictionary.notFound.homeAction}</span>
               <Icon
                 name="chevron-right"
                 size={20}
@@ -110,17 +109,18 @@ export default function NotFound() {
                 color="rgb(29, 78, 216)"
                 className="group-hover:scale-110 transition-transform"
               />
-              <span>사이트 문의하기</span>
+              <span>{dictionary.notFound.contactAction}</span>
             </button>
           </div>
 
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 text-left">
             <p className="text-sm font-bold text-gray-800 mb-3">
-              페이지를 찾지 못했어요
+              {dictionary.notFound.helpTitle}
             </p>
             <ul className="text-sm text-gray-700 space-y-2 font-medium">
-              <li>URL에 오타가 있는지 확인해 주세요.</li>
-              <li>계속 문제가 생기면 사이트 문의하기로 알려주세요.</li>
+              {dictionary.notFound.helpItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </div>
         </div>

@@ -307,7 +307,64 @@ export const dictionaries = {
       errorBadge: "접수 실패",
       confirm: "확인",
     },
+    pagination: {
+      previous: "이전",
+      next: "다음",
+    },
+    notificationPrompt: {
+      statusMessages: {
+        "requesting-permission":
+          "브라우저 알림 권한을 확인하고 있습니다. 권한 요청창이 보이지 않으면 브라우저 설정을 확인해주세요.",
+        "registering-service-worker": "알림 서비스 워커를 등록하고 있습니다.",
+        "initializing-firebase": "Firebase 알림 서비스를 초기화하고 있습니다.",
+        "requesting-fcm-token": "FCM 토큰을 발급하고 있습니다.",
+        "saving-fcm-token": "발급된 FCM 토큰을 서버에 저장하고 있습니다.",
+        enabled: "알림 설정이 완료되었습니다.",
+      },
+      errorFallback: "알림 설정 중 오류가 발생했습니다.",
+      title: "새 소식을 알림으로 받아보시겠어요?",
+      description:
+        "서비스 공지와 주요 캠퍼스 소식을 브라우저 알림으로 받을 수 있습니다. 알림 설정은 알림 및 개인정보 페이지에서 언제든지 변경할 수 있습니다.",
+      dismiss: "알림 받지 않기",
+      processing: "설정 중...",
+      enable: "알림 설정",
+    },
+    notFound: {
+      funMessages: [
+        "어... 여기 아무것도 없네요",
+        "이 페이지는 숨바꼭질 중입니다",
+        "404... 404... 어디 있어요?",
+        "이 길은 막혔어요",
+        "404 Not Found in the system\n404 The new era era",
+        "페이지가 방학을 가버렸나 봐요",
+      ],
+      defaultFunMessage: "어... 여기 아무것도 없네요",
+      description: "찾으시던 페이지가 존재하지 않거나 이동된 것 같아요.",
+      homeAction: "홈으로 돌아가기",
+      contactAction: "사이트 문의하기",
+      helpTitle: "페이지를 찾지 못했어요",
+      helpItems: [
+        "URL에 오타가 있는지 확인해 주세요.",
+        "계속 문제가 생기면 사이트 문의하기로 알려주세요.",
+      ],
+    },
+    legal: {
+      home: "홈으로",
+    },
     pages: {
+      serviceNotices: {
+        metaTitle: "공지사항",
+        metaDescription: "SYU CAMPUS 서비스 공지사항",
+        title: "서비스 공지",
+        description: "SYU CAMPUS의 소식과 서비스 업데이트를 확인하세요.",
+        empty: "아직 서비스 공지가 없습니다.",
+        notFound: "공지를 찾을 수 없습니다.",
+        backToList: "목록으로 돌아가기",
+        author: "작성자:",
+        date: "작성일:",
+        detailFallbackTitle: "공지사항",
+        detailFallbackDescription: "공지사항 상세",
+      },
       announcements: {
         allTitle: "전체 공지",
         allDescription:
@@ -1427,7 +1484,65 @@ export const dictionaries = {
       errorBadge: "Submission Failed",
       confirm: "OK",
     },
+    pagination: {
+      previous: "Previous",
+      next: "Next",
+    },
+    notificationPrompt: {
+      statusMessages: {
+        "requesting-permission":
+          "Checking browser notification permission. If no prompt appears, check your browser settings.",
+        "registering-service-worker":
+          "Registering the notification service worker.",
+        "initializing-firebase": "Initializing Firebase notifications.",
+        "requesting-fcm-token": "Requesting an FCM token.",
+        "saving-fcm-token": "Saving the issued FCM token on the server.",
+        enabled: "Notification setup is complete.",
+      },
+      errorFallback: "An error occurred while setting up notifications.",
+      title: "Would you like to receive updates?",
+      description:
+        "You can receive service notices and important campus updates through browser notifications. Notification settings can be changed anytime from Notifications and Privacy.",
+      dismiss: "Not now",
+      processing: "Setting up...",
+      enable: "Enable notifications",
+    },
+    notFound: {
+      funMessages: [
+        "There is nothing here yet",
+        "This page seems to have moved",
+        "404... where did it go?",
+        "This path is blocked",
+        "404 Not Found in the system\n404 The new era era",
+        "This page may be on break",
+      ],
+      defaultFunMessage: "There is nothing here yet",
+      description: "The page you are looking for does not exist or has moved.",
+      homeAction: "Go Home",
+      contactAction: "Contact Us",
+      helpTitle: "We could not find this page",
+      helpItems: [
+        "Check whether the URL has a typo.",
+        "If the problem continues, please let us know through Contact Us.",
+      ],
+    },
+    legal: {
+      home: "Home",
+    },
     pages: {
+      serviceNotices: {
+        metaTitle: "Service Notices",
+        metaDescription: "SYU CAMPUS service notices and updates",
+        title: "Service Notices",
+        description: "Check SYU CAMPUS news and service updates.",
+        empty: "There are no service notices yet.",
+        notFound: "Notice not found.",
+        backToList: "Back to list",
+        author: "Author:",
+        date: "Published:",
+        detailFallbackTitle: "Notice",
+        detailFallbackDescription: "Notice detail",
+      },
       announcements: {
         allTitle: "All Notices",
         allDescription:

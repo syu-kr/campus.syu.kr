@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import {
   getAllServiceNotices,
@@ -6,6 +7,13 @@ import {
 } from "@/lib/serviceNotices";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
+import {
+  LOCALE_HEADER_NAME,
+  getDictionary,
+  localizePath,
+  normalizeLocale,
+  type Locale,
+} from "@/lib/i18n";
 import ReactMarkdown from "react-markdown";
 
 interface ServiceNoticeDetailPageProps {
@@ -15,6 +23,11 @@ interface ServiceNoticeDetailPageProps {
 }
 
 export const dynamicParams = false;
+
+async function getCurrentLocale(): Promise<Locale> {
+  const headerStore = await headers();
+  return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
 
 export async function generateStaticParams() {
   const notices = await getAllServiceNotices();
@@ -27,11 +40,13 @@ export async function generateMetadata({
   params,
 }: ServiceNoticeDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const locale = await getCurrentLocale();
+  const text = getDictionary(locale).pages.serviceNotices;
   const notice = await getServiceNoticeBySlug(slug);
 
   return {
-    title: notice?.title || "공지사항",
-    description: notice?.content || "공지사항 상세",
+    title: notice?.title || text.detailFallbackTitle,
+    description: notice?.content || text.detailFallbackDescription,
   };
 }
 
@@ -39,19 +54,22 @@ export default async function ServiceNoticeDetailPage({
   params,
 }: ServiceNoticeDetailPageProps) {
   const { slug } = await params;
+  const locale = await getCurrentLocale();
+  const text = getDictionary(locale).pages.serviceNotices;
   const notice = await getServiceNoticeBySlug(slug);
+  const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 
   if (!notice) {
     return (
       <Container>
         <div className="py-8">
-          <p className="text-neutral-600 mb-4">공지를 찾을 수 없습니다.</p>
+          <p className="text-neutral-600 mb-4">{text.notFound}</p>
           <Link
-            href="/service/notices"
+            href={localizePath("/service/notices", locale)}
             prefetch={false}
             className="text-primary-600 hover:text-primary-700 font-medium"
           >
-            ← 목록으로 돌아가기
+            ← {text.backToList}
           </Link>
         </div>
       </Container>
@@ -62,7 +80,7 @@ export default async function ServiceNoticeDetailPage({
     <Container>
       <div className="py-6 md:py-8">
         <Link
-          href="/service/notices"
+          href={localizePath("/service/notices", locale)}
           prefetch={false}
           className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
         >
@@ -79,7 +97,7 @@ export default async function ServiceNoticeDetailPage({
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          목록으로 돌아가기
+          {text.backToList}
         </Link>
 
         <Card className="mb-6 md:mb-8">
@@ -90,16 +108,18 @@ export default async function ServiceNoticeDetailPage({
 
             <div className="flex flex-wrap items-center gap-3 md:gap-4 py-4 border-b border-neutral-200 mb-6">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-600">작성자:</span>
+                <span className="text-sm text-neutral-600">
+                  {text.author}
+                </span>
                 <span className="text-sm font-medium text-neutral-900">
                   {notice.author}
                 </span>
               </div>
               <span className="text-neutral-300">•</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-600">작성일:</span>
+                <span className="text-sm text-neutral-600">{text.date}</span>
                 <time className="text-sm font-medium text-neutral-900">
-                  {new Date(notice.date).toLocaleDateString("ko-KR", {
+                  {new Date(notice.date).toLocaleDateString(dateLocale, {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
@@ -139,6 +159,16 @@ export default async function ServiceNoticeDetailPage({
                   blockquote: ({ ...props }) => (
                     <blockquote
                       className="border-l-4 border-primary-600 pl-4 italic text-neutral-600 mb-4"
+                      {...props}
+                    />
+                  ),
+                  a: ({ href, ...props }) => (
+                    <a
+                      href={
+                        href && href.startsWith("/")
+                          ? localizePath(href, locale)
+                          : href
+                      }
                       {...props}
                     />
                   ),

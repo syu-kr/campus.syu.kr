@@ -1,5 +1,7 @@
 "use client";
 
+import { useDictionary } from "@/app/components/LocaleProvider";
+
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
@@ -13,6 +15,8 @@ export function PaginationControls({
   onPageChange,
   pageRange = 5,
 }: PaginationControlsProps) {
+  const dictionary = useDictionary();
+
   if (totalPages <= 1) return null;
 
   const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
@@ -31,7 +35,7 @@ export function PaginationControls({
         disabled={currentPage === 1}
         className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-50 md:px-3"
       >
-        이전
+        {dictionary.pagination.previous}
       </button>
 
       {pageNumbers.map((page) => (
@@ -71,7 +75,7 @@ export function PaginationControls({
         disabled={currentPage === totalPages}
         className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-50 md:px-3"
       >
-        다음
+        {dictionary.pagination.next}
       </button>
     </div>
   );
