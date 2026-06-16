@@ -5,7 +5,7 @@
   "description": "삼육대학교 통합 정보 플랫폼 - 공지사항, 학식, 학사일정 한눈에 확인",
   "private": true,
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.12.0"
   },
   "overrides": {
     "postcss": "8.5.15",

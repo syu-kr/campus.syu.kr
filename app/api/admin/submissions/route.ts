@@ -136,6 +136,9 @@ async function requireAdmin(req: NextRequest) {
     decodedToken = await getAuth().verifyIdToken(token, true);
   } catch (error) {
     console.error("[Admin API] Firebase ID token verification failed", error);
+    if (isAdminAuthInfrastructureError(error)) {
+      throw new AdminAuthError("관리자 인증 설정을 확인해 주세요", 503);
+    }
     throw new AdminAuthError("유효한 로그인이 필요합니다", 401);
   }
   const allowedEmails = readAllowedEmails();
@@ -151,6 +154,23 @@ async function requireAdmin(req: NextRequest) {
   }
 
   return decodedToken;
+}
+
+function isAdminAuthInfrastructureError(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const code =
+    "code" in error && typeof error.code === "string" ? error.code : "";
+  const message = error instanceof Error ? error.message : "";
+
+  return (
+    code === "ERR_REQUIRE_ESM" ||
+    message.includes("Failed to load external module firebase-admin") ||
+    message.includes("require() of ES Module") ||
+    message.includes("Error fetching Json Web Keys")
+  );
 }
 
 function readBearerToken(req: NextRequest) {
