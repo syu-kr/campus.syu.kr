@@ -120,12 +120,12 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 
 ## Firebase Console Configuration
 
-Firestore Rules는 저장소 루트의 `firestore.rules`를 기준으로 배포합니다. Firebase 콘솔에서 직접 붙여넣어 publish해도 되고, Firebase CLI를 쓰는 경우에는 아래처럼 rules만 배포합니다.
+Firestore Rules는 저장소 루트의 `firestore.rules`를 기준으로 배포합니다. 복합 인덱스는 `firestore.indexes.json`을 기준으로 배포합니다. Firebase 콘솔에서 직접 반영해도 되고, Firebase CLI를 쓰는 경우에는 아래처럼 rules와 indexes를 함께 배포합니다.
 
-현재 저장소는 Firestore indexes를 코드로 관리하지 않습니다. 운영 인덱스를 실수로 건드리지 않도록 `firebase deploy --only firestore` 대신 `firebase deploy --only firestore:rules`만 사용합니다.
+`firebase deploy --only firestore`는 TTL 정책 등 콘솔 관리 항목을 의도치 않게 건드릴 수 있으므로 사용하지 않습니다.
 
 ```powershell
-firebase deploy --only firestore:rules
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 새 컬렉션을 추가하면 먼저 rules 파일에서 client read/write가 차단되어 있는지 확인하고, 콘솔에 수동 반영한 내용도 repo 파일과 같은 상태로 유지합니다.

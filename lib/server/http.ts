@@ -52,7 +52,7 @@ export function apiServerErrorResponse(error: unknown, fallbackMessage: string) 
 export async function enforceRateLimit(
   req: Request,
   scope: string,
-  options: { limit: number; windowMs: number },
+  options: { limit: number; windowMs: number; persistent?: boolean },
 ) {
   const rateLimitKey = getRateLimitKey(req, scope);
   const localResult = checkRateLimit(rateLimitKey, options);
@@ -62,6 +62,10 @@ export async function enforceRateLimit(
       `요청이 많습니다. ${localResult.retryAfterSeconds}초 후 다시 시도해주세요.`,
       429,
     );
+  }
+
+  if (options.persistent === false) {
+    return;
   }
 
   const secret =
@@ -118,7 +122,7 @@ export async function readJsonBody<T = unknown>(
   }
 }
 
-function enforceSameOrigin(req: Request) {
+export function enforceSameOrigin(req: Request) {
   const origin = req.headers.get("origin");
   if (!origin) return;
 

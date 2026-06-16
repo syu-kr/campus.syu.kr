@@ -30,6 +30,8 @@ const GOOGLE_ANALYTICS_SCRIPT = `
   gtag('js', new Date());
   gtag('config', '${GOOGLE_ANALYTICS_ID}');
 `;
+const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
+
 function getWebsiteSchema(locale: Locale) {
   const dictionary = getDictionary(locale);
 
@@ -140,6 +142,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const locale = await getRequestLocale();
+  const headerStore = await headers();
+  const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
 
   return (
     <html lang={locale}>
@@ -157,11 +161,13 @@ export default async function RootLayout({
         />
 
         <Script
+          nonce={nonce}
           src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
           strategy="afterInteractive"
         />
         <Script
           id="google-analytics"
+          nonce={nonce}
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: GOOGLE_ANALYTICS_SCRIPT,
@@ -169,6 +175,7 @@ export default async function RootLayout({
         />
         <Script
           id="website-schema"
+          nonce={nonce}
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(getWebsiteSchema(locale)),

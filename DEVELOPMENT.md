@@ -6,7 +6,7 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ### 요구사항
 
-- Node.js 20.9 이상
+- Node.js 20.19 이상
 - npm
 - Python 3.11 이상: 크롤러 실행 시 필요
 
@@ -30,12 +30,15 @@ npm run check:i18n                # 공개 UI 한국어 하드코딩 검사
 npm run check:unused              # 미사용 파일, export, 의존성 검사
 npm run check:python              # Python 크롤러 문법 검사
 npm run build                     # 프로덕션 빌드
+npm run check                     # lint, type-check, i18n, unused, data, build 전체 검사
+npm audit --audit-level=moderate  # 의존성 보안 취약점 검사
 npm run build:analyze             # 번들 분석
 npm run send-daily-notification   # 일일 공지 알림
 npm run cleanup-tokens            # 오래된 FCM 토큰 정리
 npm run cleanup-expired-firestore # 만료된 Firestore 문서 정리
 npm run cleanup-meet-rooms        # 위 정리 명령의 이전 호환 별칭
 npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at 일회성 보정
+npm run notification-lock -- <dedupeKey> # 알림 dedupe lock 조회/복구
 ```
 
 ## 프로젝트 구조
@@ -203,10 +206,10 @@ python scripts/crawl_phone.py
 - `timetable_shares`
 - `api_rate_limits`
 
-Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 운영 반영 시 Firebase 콘솔에서 직접 붙여넣어 publish하거나, 아래 명령으로 rules만 배포합니다. 현재 저장소는 Firestore indexes를 코드로 관리하지 않습니다.
+Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 복합 인덱스는 `firestore.indexes.json`에서 관리합니다. 운영 반영 시 rules와 indexes를 함께 배포합니다.
 
 ```bash
-firebase deploy --only firestore:rules
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 ## 배포
@@ -217,7 +220,7 @@ firebase deploy --only firestore:rules
 
 ```text
 syu-kr/campus.syu.kr main push
-  -> CI: lint, type-check, build
+  -> CI: dependency audit, npm run check
   -> Sync to Vercel Repository
   -> singhic/syu-campus main 동기화
   -> Vercel 배포
@@ -225,25 +228,31 @@ syu-kr/campus.syu.kr main push
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
 daily/monthly crawler가 `public/data/` 변경 커밋을 만들면, 해당 워크플로 안에서 검증과 동기화 워크플로를 호출해 개인 레포와 Vercel 배포까지 이어집니다. 데이터 변경이 없으면 동기화도 건너뜁니다.
-`sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 lint, type-check, unused check, Python syntax check, build를 통과해야 개인 Vercel 레포에 push합니다.
+`sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 dependency audit과 `npm run check`를 통과해야 개인 Vercel 레포에 push합니다.
 
 `main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 예약 크롤러가 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 **GitHub Actions 앱**만 추가합니다. 그 외 사용자와 앱에는 bypass를 허용하지 않습니다.
 
 배포 전 확인:
 
 ```bash
-npm run lint
-npm run type-check
-npm run build
+npm audit --audit-level=moderate
+npm run check
 ```
 
 GitHub Actions는 다음 용도로 사용합니다.
 
-- CI: lint, type-check, build
-- sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 검증 필수
+- CI: dependency audit, npm run check
+- sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 dependency audit과 `npm run check` 필수
 - daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
 - daily notification: 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
+
+알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.
+
+```bash
+npm run notification-lock -- daily-summary:YYYY-MM-DD
+npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-failed
+```
 
 ## 개발 규칙
 
@@ -253,7 +262,7 @@ GitHub Actions는 다음 용도로 사용합니다.
 - 공유 로직은 `lib/`, 공유 타입은 `types/`에 둡니다.
 - 운영 데이터에 더미/mock 데이터를 넣지 않습니다.
 - 외부 API 실패 시 화면이 빈 상태나 안내 상태로 안전하게 내려가야 합니다.
-- 변경 후 `npm run check`를 실행합니다.
+- 변경 후 `npm audit --audit-level=moderate`와 `npm run check`를 실행합니다.
 
 ## 문제 해결
 
@@ -277,4 +286,4 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 ## 최종 업데이트
 
-2026-06-15
+2026-06-16

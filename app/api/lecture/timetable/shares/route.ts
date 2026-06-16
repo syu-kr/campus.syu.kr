@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ApiError,
   apiServerErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   getUserAgent,
   readJsonBody,
@@ -21,6 +22,7 @@ const RATE_LIMIT = {
 };
 
 const MAX_SHARED_COURSES = 120;
+const SHARE_ID_BYTES = 12;
 const SHARE_ID_ATTEMPTS = 5;
 const SHARE_EXPIRY_DAYS = 90;
 
@@ -32,8 +34,9 @@ interface ShareRequestBody {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
+    enforceSameOrigin(req);
     await enforceRateLimit(req, "lecture_timetable_shares", RATE_LIMIT);
+    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
     const courseIds = normalizeCourseIds(body.courseIds);
     const year = normalizeOptionalString(body.year, 20);
     const semester = normalizeOptionalString(body.semester, 40);
@@ -78,7 +81,7 @@ async function createUniqueShareId() {
   const db = getFirestore();
 
   for (let attempt = 0; attempt < SHARE_ID_ATTEMPTS; attempt += 1) {
-    const shareId = randomBytes(6).toString("base64url");
+    const shareId = randomBytes(SHARE_ID_BYTES).toString("base64url");
     const snapshot = await db.collection("timetable_shares").doc(shareId).get();
 
     if (!snapshot.exists) return shareId;

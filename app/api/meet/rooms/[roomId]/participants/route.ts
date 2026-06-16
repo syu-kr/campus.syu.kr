@@ -5,6 +5,7 @@ import { admin, getFirestore, nowTimestamp } from "@/lib/server/firestore";
 import {
   ApiError,
   apiServerErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   readJsonBody,
   rateLimitResponse,
@@ -26,8 +27,9 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
     const { roomId } = await params;
     assertValidRoomId(roomId);
-    const body = await readJsonBody<Record<string, unknown>>(req, 32 * 1024);
+    enforceSameOrigin(req);
     await enforceRateLimit(req, `meet-participants:${roomId}`, RATE_LIMIT);
+    const body = await readJsonBody<Record<string, unknown>>(req, 32 * 1024);
     const nickname = String(body.nickname || "").trim();
     const editToken =
       typeof body.editToken === "string" ? body.editToken.trim() : "";
