@@ -12,6 +12,7 @@ import {
 const RATE_LIMIT = {
   limit: 120,
   windowMs: 60 * 60 * 1000,
+  persistent: false,
 };
 
 interface RouteContext {
