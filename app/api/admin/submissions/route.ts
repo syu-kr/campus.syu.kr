@@ -211,16 +211,10 @@ async function readCollection(
   query =
     status === "all"
       ? query.orderBy("created_at", "desc")
-      : query.where("status", "==", status);
-  const snapshot =
-    status === "all"
-      ? await query.limit(MAX_SUBMISSIONS_PER_COLLECTION).get()
-      : await query.get();
+      : query.where("status", "==", status).orderBy("created_at", "desc");
+  const snapshot = await query.limit(MAX_SUBMISSIONS_PER_COLLECTION).get();
 
-  return snapshot.docs
-    .map(mapper)
-    .sort(compareCreatedAtDesc)
-    .slice(0, MAX_SUBMISSIONS_PER_COLLECTION);
+  return snapshot.docs.map(mapper).sort(compareCreatedAtDesc);
 }
 
 async function readSubmissionCounts(

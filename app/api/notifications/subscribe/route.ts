@@ -4,6 +4,7 @@ import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   apiErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   getUserAgent,
   readJsonBody,
@@ -22,11 +23,12 @@ const TOKEN_RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
+    enforceSameOrigin(req);
+    await enforceRateLimit(req, "notification-subscribe", RATE_LIMIT);
     const { fcm_token } = await readJsonBody<{ fcm_token?: unknown }>(
       req,
       8 * 1024,
     );
-    await enforceRateLimit(req, "notification-subscribe", RATE_LIMIT);
 
     if (!isValidFcmToken(fcm_token)) {
       return NextResponse.json(
@@ -82,11 +84,12 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    enforceSameOrigin(req);
+    await enforceRateLimit(req, "notification-unsubscribe", RATE_LIMIT);
     const { fcm_token } = await readJsonBody<{ fcm_token?: unknown }>(
       req,
       8 * 1024,
     );
-    await enforceRateLimit(req, "notification-unsubscribe", RATE_LIMIT);
 
     if (!isValidFcmToken(fcm_token)) {
       return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSubmissionErrorField, normalizeSiteInquiry } from "@/lib/submissions";
 import {
   apiErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   getUserAgent,
   readJsonBody,
@@ -17,8 +18,9 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
-    const input = normalizeSiteInquiry(await readJsonBody(req, 8 * 1024));
+    enforceSameOrigin(req);
     await enforceRateLimit(req, "site_inquiries", RATE_LIMIT);
+    const input = normalizeSiteInquiry(await readJsonBody(req, 8 * 1024));
 
     const db = getFirestore();
     const now = nowTimestamp();

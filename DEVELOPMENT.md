@@ -38,6 +38,7 @@ npm run cleanup-tokens            # 오래된 FCM 토큰 정리
 npm run cleanup-expired-firestore # 만료된 Firestore 문서 정리
 npm run cleanup-meet-rooms        # 위 정리 명령의 이전 호환 별칭
 npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at 일회성 보정
+npm run notification-lock -- <dedupeKey> # 알림 dedupe lock 조회/복구
 ```
 
 ## 프로젝트 구조
@@ -205,10 +206,10 @@ python scripts/crawl_phone.py
 - `timetable_shares`
 - `api_rate_limits`
 
-Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 운영 반영 시 Firebase 콘솔에서 직접 붙여넣어 publish하거나, 아래 명령으로 rules만 배포합니다. 현재 저장소는 Firestore indexes를 코드로 관리하지 않습니다.
+Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 복합 인덱스는 `firestore.indexes.json`에서 관리합니다. 운영 반영 시 rules와 indexes를 함께 배포합니다.
 
 ```bash
-firebase deploy --only firestore:rules
+firebase deploy --only firestore:rules,firestore:indexes
 ```
 
 ## 배포
@@ -245,6 +246,13 @@ GitHub Actions는 다음 용도로 사용합니다.
 - daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
 - daily notification: 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
+
+알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.
+
+```bash
+npm run notification-lock -- daily-summary:YYYY-MM-DD
+npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-failed
+```
 
 ## 개발 규칙
 

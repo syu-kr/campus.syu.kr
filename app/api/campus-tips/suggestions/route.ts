@@ -5,6 +5,7 @@ import {
 } from "@/lib/submissions";
 import {
   apiErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   getUserAgent,
   readJsonBody,
@@ -20,8 +21,9 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
-    const input = normalizeCampusTipSuggestion(await readJsonBody(req, 8 * 1024));
+    enforceSameOrigin(req);
     await enforceRateLimit(req, "campus_tip_suggestions", RATE_LIMIT);
+    const input = normalizeCampusTipSuggestion(await readJsonBody(req, 8 * 1024));
 
     const db = getFirestore();
     const now = nowTimestamp();

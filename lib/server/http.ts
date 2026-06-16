@@ -122,7 +122,7 @@ export async function readJsonBody<T = unknown>(
   }
 }
 
-function enforceSameOrigin(req: Request) {
+export function enforceSameOrigin(req: Request) {
   const origin = req.headers.get("origin");
   if (!origin) return;
 

@@ -3,64 +3,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
-const isProduction = process.env.NODE_ENV === "production";
-const scriptSrc = [
-  "'self'",
-  "'unsafe-inline'",
-  !isProduction ? "'unsafe-eval'" : "",
-  "https://www.googletagmanager.com",
-  "https://www.gstatic.com",
-  "https://apis.google.com",
-  "https://dapi.kakao.com",
-  "https://t1.daumcdn.net",
-  // Kakao Maps bootstraps this child script over HTTP in local/dev.
-  !isProduction ? "http://t1.daumcdn.net" : "",
-].filter(Boolean);
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  `script-src ${scriptSrc.join(" ")}`,
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
-  [
-    "img-src",
-    "'self'",
-    "data:",
-    "blob:",
-    "https://www.googletagmanager.com",
-    "https://*.googleusercontent.com",
-    "https://*.gstatic.com",
-    "https://*.daumcdn.net",
-    "https://*.kakaocdn.net",
-    "https://t1.daumcdn.net",
-    // Kakao map tiles can be served over HTTP by the dev SDK bootstrap.
-    !isProduction ? "http://*.daumcdn.net" : "",
-  ].filter(Boolean).join(" "),
-  [
-    "connect-src",
-    "'self'",
-    !isProduction ? "webpack:" : "",
-    "https://www.google-analytics.com",
-    "https://*.google-analytics.com",
-    "https://region1.google-analytics.com",
-    "https://analytics.google.com",
-    "https://*.googleapis.com",
-    "https://firebaseinstallations.googleapis.com",
-    "https://fcmregistrations.googleapis.com",
-    "https://*.firebaseio.com",
-    "https://*.kakao.com",
-    "https://*.kakaocdn.net",
-    "https://*.daumcdn.net",
-  ].filter(Boolean).join(" "),
-  "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
-  "worker-src 'self' blob:",
-  "manifest-src 'self'",
-  isProduction ? "upgrade-insecure-requests" : "",
-].filter(Boolean).join("; ");
-
 const nextConfig = {
   reactStrictMode: true,
   turbopack: {
@@ -128,10 +70,6 @@ const nextConfig = {
   headers: async () => {
     const securityHeaders = [
       {
-        key: "Content-Security-Policy",
-        value: contentSecurityPolicy,
-      },
-      {
         key: "Permissions-Policy",
         value: "camera=(), microphone=(), geolocation=()",
       },
@@ -183,6 +121,10 @@ const nextConfig = {
       {
         source: "/api/:path*",
         headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+          },
           {
             key: "X-Robots-Tag",
             value: "noindex, nofollow",

@@ -35,7 +35,8 @@
     "cleanup-tokens": "ts-node --project tsconfig.json scripts/cleanup_old_tokens.ts",
     "cleanup-expired-firestore": "ts-node --project tsconfig.json scripts/cleanup_meet_rooms.ts",
     "cleanup-meet-rooms": "ts-node --project tsconfig.json scripts/cleanup_meet_rooms.ts",
-    "backfill-meet-participant-expiry": "ts-node --project tsconfig.json scripts/backfill_meet_participant_expiry.ts"
+    "backfill-meet-participant-expiry": "ts-node --project tsconfig.json scripts/backfill_meet_participant_expiry.ts",
+    "notification-lock": "ts-node --project tsconfig.json scripts/notification_send_lock.ts"
   },
   "dependencies": {
     "@fontsource/pretendard": "^5.2.5",

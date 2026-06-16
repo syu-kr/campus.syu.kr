@@ -14,6 +14,8 @@ import {
 } from "@/lib/i18n";
 
 const PUBLIC_FILE_PATTERN = /\/[^/]+\.[^/]+$/;
+const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
+const isProduction = process.env.NODE_ENV === "production";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -79,12 +81,15 @@ function getRequestCountry(request: NextRequest): string | null {
 }
 
 function nextWithLocale(request: NextRequest, locale: Locale) {
-  const requestHeaders = getLocaleHeaders(request, locale);
-  return NextResponse.next({
+  const nonce = createNonce();
+  const requestHeaders = getLocaleHeaders(request, locale, nonce);
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  return withContentSecurityPolicy(response, nonce);
 }
 
 function rewriteWithLocale(
@@ -92,19 +97,100 @@ function rewriteWithLocale(
   rewriteUrl: URL,
   locale: Locale,
 ) {
-  const requestHeaders = getLocaleHeaders(request, locale);
-  return NextResponse.rewrite(rewriteUrl, {
+  const nonce = createNonce();
+  const requestHeaders = getLocaleHeaders(request, locale, nonce);
+  const response = NextResponse.rewrite(rewriteUrl, {
     request: {
       headers: requestHeaders,
     },
   });
+
+  return withContentSecurityPolicy(response, nonce);
 }
 
-function getLocaleHeaders(request: NextRequest, locale: Locale) {
+function getLocaleHeaders(
+  request: NextRequest,
+  locale: Locale,
+  nonce: string,
+) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(LOCALE_HEADER_NAME, locale);
   requestHeaders.set(PATHNAME_HEADER_NAME, request.nextUrl.pathname);
+  requestHeaders.set(CSP_NONCE_HEADER_NAME, nonce);
   return requestHeaders;
+}
+
+function createNonce() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
+}
+
+function withContentSecurityPolicy(response: NextResponse, nonce: string) {
+  response.headers.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
+  return response;
+}
+
+function buildContentSecurityPolicy(nonce: string) {
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    !isProduction ? "'unsafe-eval'" : "",
+    "https://www.googletagmanager.com",
+    "https://www.gstatic.com",
+    "https://apis.google.com",
+    "https://dapi.kakao.com",
+    "https://t1.daumcdn.net",
+    !isProduction ? "http://t1.daumcdn.net" : "",
+  ].filter(Boolean);
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    `script-src ${scriptSrc.join(" ")}`,
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
+    [
+      "img-src",
+      "'self'",
+      "data:",
+      "blob:",
+      "https://www.googletagmanager.com",
+      "https://*.googleusercontent.com",
+      "https://*.gstatic.com",
+      "https://*.daumcdn.net",
+      "https://*.kakaocdn.net",
+      "https://t1.daumcdn.net",
+      !isProduction ? "http://*.daumcdn.net" : "",
+    ].filter(Boolean).join(" "),
+    [
+      "connect-src",
+      "'self'",
+      !isProduction ? "webpack:" : "",
+      "https://www.google-analytics.com",
+      "https://*.google-analytics.com",
+      "https://region1.google-analytics.com",
+      "https://analytics.google.com",
+      "https://*.googleapis.com",
+      "https://firebaseinstallations.googleapis.com",
+      "https://fcmregistrations.googleapis.com",
+      "https://*.firebaseio.com",
+      "https://*.kakao.com",
+      "https://*.kakaocdn.net",
+      "https://*.daumcdn.net",
+    ].filter(Boolean).join(" "),
+    "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    isProduction ? "upgrade-insecure-requests" : "",
+  ]
+    .filter(Boolean)
+    .join("; ");
 }
 
 export const config = {

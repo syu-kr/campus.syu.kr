@@ -157,9 +157,8 @@ jobs:
             --exclude ".github/workflows/" \
             --exclude ".next/" \
             --exclude "node_modules/" \
-            --exclude ".env" \
-            --exclude ".env.local" \
-            --exclude ".env.*.local" \
+            --include ".env.example" \
+            --exclude ".env*" \
             --exclude "tsconfig.tsbuildinfo" \
             --exclude ".cache/" \
             --exclude ".cache_ggshield" \

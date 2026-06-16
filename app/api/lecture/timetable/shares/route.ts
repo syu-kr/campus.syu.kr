@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   ApiError,
   apiServerErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   getUserAgent,
   readJsonBody,
@@ -33,8 +34,9 @@ interface ShareRequestBody {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
+    enforceSameOrigin(req);
     await enforceRateLimit(req, "lecture_timetable_shares", RATE_LIMIT);
+    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
     const courseIds = normalizeCourseIds(body.courseIds);
     const year = normalizeOptionalString(body.year, 20);
     const semester = normalizeOptionalString(body.semester, 40);

@@ -8,6 +8,7 @@ import {
 } from "@/lib/server/firestore";
 import {
   apiErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   readJsonBody,
   rateLimitResponse,
@@ -22,6 +23,7 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
+    enforceSameOrigin(req);
     await enforceRateLimit(req, "meet_rooms", RATE_LIMIT);
     const input = normalizeMeetRoomInput(await readJsonBody(req, 8 * 1024));
     const slots = buildMeetSlots(input);
