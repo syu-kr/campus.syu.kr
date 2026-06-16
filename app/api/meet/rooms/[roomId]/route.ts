@@ -1,8 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { buildMeetSlots } from "@/lib/meet";
 import type { MeetParticipant, MeetRoom, MeetRoomResponse } from "@/types/meet";
 import { admin, getFirestore, timestampToIso } from "@/lib/server/firestore";
-import { ApiError, apiServerErrorResponse } from "@/lib/server/http";
+import {
+  ApiError,
+  apiServerErrorResponse,
+  enforceRateLimit,
+  rateLimitResponse,
+} from "@/lib/server/http";
+
+const RATE_LIMIT = {
+  limit: 120,
+  windowMs: 60 * 60 * 1000,
+};
 
 interface RouteContext {
   params: Promise<{
@@ -10,12 +20,14 @@ interface RouteContext {
   }>;
 }
 
-export async function GET(_req: Request, { params }: RouteContext) {
+export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { roomId } = await params;
     if (!/^[A-Za-z0-9_-]{8,32}$/.test(roomId)) {
       throw new ApiError("일정 방 코드 형식이 올바르지 않습니다", 400);
     }
+
+    await enforceRateLimit(req, `meet-room:${roomId}`, RATE_LIMIT);
 
     const db = getFirestore();
     const roomDoc = await db.collection("meet_rooms").doc(roomId).get();
@@ -91,6 +103,9 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
     return NextResponse.json(response);
   } catch (error) {
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
+
     return apiServerErrorResponse(error, "일정 방 정보를 불러오지 못했습니다");
   }
 }

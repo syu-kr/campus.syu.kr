@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import type {
   Firestore,
+  Query,
   QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
-import { apiErrorResponse, readJsonBody } from "@/lib/server/http";
+import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/server/http";
 import type {
   AdminSubmissionKind,
   AdminSubmissionItem,
@@ -22,6 +23,7 @@ const VALID_STATUSES: SubmissionStatus[] = [
   "done",
 ];
 const VALID_KINDS: AdminSubmissionKind[] = ["inquiry", "campus-tip"];
+const MAX_SUBMISSIONS_PER_COLLECTION = 100;
 
 export async function GET(req: NextRequest) {
   try {
@@ -84,9 +86,18 @@ export async function PATCH(req: NextRequest) {
     );
     const db = getFirestore();
 
-    await db.collection(collection).doc(id).update({
-      status,
-      updated_at: nowTimestamp(),
+    const submissionRef = db.collection(collection).doc(id);
+    await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(submissionRef);
+
+      if (!snapshot.exists) {
+        throw new ApiError("제출 항목을 찾을 수 없습니다", 404);
+      }
+
+      transaction.update(submissionRef, {
+        status,
+        updated_at: nowTimestamp(),
+      });
     });
 
     return NextResponse.json({ success: true });
@@ -134,11 +145,13 @@ async function requireAdmin(req: NextRequest) {
     throw new AdminAuthError("관리자 설정이 완료되지 않았습니다", 503);
   }
 
-  if (
-    !decodedToken.email ||
-    !allowedEmails.includes(decodedToken.email.toLowerCase())
-  ) {
+  const normalizedEmail = decodedToken.email?.toLowerCase();
+  if (!normalizedEmail || !allowedEmails.includes(normalizedEmail)) {
     throw new AdminAuthError("관리자 권한이 없습니다", 403);
+  }
+
+  if (!decodedToken.email_verified) {
+    throw new AdminAuthError("관리자 이메일 인증이 필요합니다", 403);
   }
 
   return decodedToken;
@@ -155,7 +168,7 @@ function readBearerToken(req: NextRequest) {
 }
 
 function readAllowedEmails() {
-  return [
+  return Array.from(new Set([
     process.env.ADMIN_EMAILS,
     process.env.ADMIN_EMAIL,
     process.env.admin_email,
@@ -164,7 +177,7 @@ function readAllowedEmails() {
     .join(",")
     .split(",")
     .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+    .filter(Boolean)));
 }
 
 async function readSubmissions(
@@ -198,13 +211,14 @@ async function readCollection(
   status: "all" | SubmissionStatus,
   mapper: (doc: QueryDocumentSnapshot) => AdminSubmissionItem,
 ) {
-  const query =
+  let query: Query = db.collection(collection);
+  query =
     status === "all"
-      ? db.collection(collection).orderBy("created_at", "desc")
-      : db.collection(collection).where("status", "==", status);
-  const snapshot = await query.get();
+      ? query.orderBy("created_at", "desc")
+      : query.where("status", "==", status);
+  const snapshot = await query.limit(MAX_SUBMISSIONS_PER_COLLECTION).get();
 
-  return snapshot.docs.map(mapper);
+  return snapshot.docs.map(mapper).sort(compareCreatedAtDesc);
 }
 
 async function readSubmissionCounts(
@@ -244,15 +258,23 @@ async function countByStatus(
 }
 
 function readKindFilter(value: string | null): "all" | AdminSubmissionKind {
-  return VALID_KINDS.includes(value as AdminSubmissionKind)
-    ? (value as AdminSubmissionKind)
-    : "all";
+  if (!value || value === "all") return "all";
+
+  if (VALID_KINDS.includes(value as AdminSubmissionKind)) {
+    return value as AdminSubmissionKind;
+  }
+
+  throw new ApiError("제출 유형이 올바르지 않습니다", 400);
 }
 
 function readStatusFilter(value: string | null): "all" | SubmissionStatus {
-  return VALID_STATUSES.includes(value as SubmissionStatus)
-    ? (value as SubmissionStatus)
-    : "all";
+  if (!value || value === "all") return "all";
+
+  if (VALID_STATUSES.includes(value as SubmissionStatus)) {
+    return value as SubmissionStatus;
+  }
+
+  throw new ApiError("처리 상태가 올바르지 않습니다", 400);
 }
 
 function mapInquiry(

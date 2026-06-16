@@ -26,7 +26,7 @@ export function normalizeMeetRoomInput(input: unknown): MeetRoomInput {
   const dateEnd = String(body.dateEnd || body.date_end || "").trim();
   const timeStart = String(body.timeStart || body.time_start || "").trim();
   const timeEnd = String(body.timeEnd || body.time_end || "").trim();
-  const slotMinutes = Number(body.slotMinutes || body.slot_minutes || 30);
+  const slotMinutes = Number(body.slotMinutes ?? body.slot_minutes ?? 30);
 
   if (!title || title.length > 80) {
     throw new Error("방 제목은 1자 이상 80자 이하로 입력해주세요");
@@ -56,7 +56,7 @@ function assertValidMeetRange({
   timeEnd,
   slotMinutes,
 }: Omit<MeetRoomInput, "title" | "description">) {
-  if (!DATE_PATTERN.test(dateStart) || !DATE_PATTERN.test(dateEnd)) {
+  if (!isValidDateString(dateStart) || !isValidDateString(dateEnd)) {
     throw new Error("날짜 형식이 올바르지 않습니다");
   }
 
@@ -64,7 +64,10 @@ function assertValidMeetRange({
     throw new Error("시간 형식이 올바르지 않습니다");
   }
 
-  if (!ALLOWED_MEET_SLOT_MINUTES.includes(slotMinutes as 15 | 30 | 60)) {
+  if (
+    !Number.isInteger(slotMinutes) ||
+    !ALLOWED_MEET_SLOT_MINUTES.includes(slotMinutes as 15 | 30 | 60)
+  ) {
     throw new Error("시간 간격은 15분, 30분, 60분 중 하나여야 합니다");
   }
 
@@ -143,6 +146,12 @@ export function getMeetTimesFromSlots(slots: string[]): string[] {
 function parseTimeToMinutes(time: string): number {
   const [hour, minute] = time.split(":").map(Number);
   return hour * 60 + minute;
+}
+
+function isValidDateString(date: string): boolean {
+  if (!DATE_PATTERN.test(date)) return false;
+
+  return parseDateAsUtc(date).toISOString().slice(0, 10) === date;
 }
 
 function formatMinutes(totalMinutes: number): string {

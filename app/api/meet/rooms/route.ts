@@ -22,8 +22,8 @@ const RATE_LIMIT = {
 
 export async function POST(req: NextRequest) {
   try {
-    const input = normalizeMeetRoomInput(await readJsonBody(req, 8 * 1024));
     await enforceRateLimit(req, "meet_rooms", RATE_LIMIT);
+    const input = normalizeMeetRoomInput(await readJsonBody(req, 8 * 1024));
     const slots = buildMeetSlots(input);
 
     const db = getFirestore();
