@@ -26,6 +26,7 @@ npm run dev
 npm run dev                       # 개발 서버
 npm run lint                      # ESLint
 npm run type-check                # TypeScript 검사
+npm run check:i18n                # 공개 UI 한국어 하드코딩 검사
 npm run check:unused              # 미사용 파일, export, 의존성 검사
 npm run check:python              # Python 크롤러 문법 검사
 npm run build                     # 프로덕션 빌드

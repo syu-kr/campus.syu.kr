@@ -52,6 +52,7 @@ npm run check
 - [SECURITY.md](./SECURITY.md): 보안 취약점 제보 방법
 - [PERFORMANCE.md](./PERFORMANCE.md): 번들 및 성능 점검 가이드
 - [NOTICE.md](./NOTICE.md): 로고, 상표, 크롤링 데이터 관련 고지
+- [docs/I18N_POLICY.md](./docs/I18N_POLICY.md): `/en` 로케일 운영 정책과 번역 범위
 - [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙과 TTL 운영
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
 
