@@ -6,6 +6,7 @@ import { getSearchSnippet, highlightText } from "@/lib/search";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
+import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
@@ -71,9 +72,19 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
             <h4 className="font-medium text-neutral-900 line-clamp-2">
               {highlightText(announcement.title, query)}
             </h4>
-            <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
-              {highlightText(getSearchSnippet(announcement.content, query), query)}
-            </p>
+            {announcement.aiSummary?.summary ? (
+              <AnnouncementAiSummary
+                aiSummary={announcement.aiSummary}
+                compact
+              />
+            ) : (
+              <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
+                {highlightText(
+                  getSearchSnippet(announcement.content, query),
+                  query,
+                )}
+              </p>
+            )}
             <p className="mt-2 text-xs text-neutral-500">
               {announcement.author} · {announcement.date}
             </p>

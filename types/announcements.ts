@@ -5,6 +5,22 @@ export type AnnouncementCategory =
 
 export type HomeNoticeCategory = AnnouncementCategory | "service";
 
+export interface AnnouncementAiSummary {
+  summary: string;
+  target: string;
+  deadline: string;
+  requiredAction: string;
+  keywords: string[];
+  importance: "low" | "normal" | "high";
+  confidence: "low" | "medium" | "high";
+  generatedAt: string;
+  sourceHash: string;
+  inputHash?: string;
+  contentSource?: "detail" | "json" | "metadata";
+  detailContentHash?: string;
+  model?: string;
+}
+
 export interface Announcement {
   id: string;
   title: string;
@@ -16,6 +32,7 @@ export interface Announcement {
   isImportant: boolean;
   isPinned?: boolean;
   url?: string;
+  aiSummary?: AnnouncementAiSummary;
 }
 
 export interface ServiceNotice {

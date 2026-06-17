@@ -1,6 +1,7 @@
 import { readFile } from "fs/promises";
 import path from "path";
 import type { Announcement, AnnouncementCategory } from "@/types";
+import { attachAnnouncementAiSummaries } from "./announcement-ai";
 
 export interface AnnouncementQuery {
   category?: AnnouncementCategory | "all";
@@ -66,7 +67,9 @@ export async function getAnnouncementPage({
     .sort(category === "all" ? sortAnnouncementsByDate : sortAnnouncements);
 
   const start = (normalizedPage - 1) * normalizedLimit;
-  const items = filtered.slice(start, start + normalizedLimit);
+  const items = await attachAnnouncementAiSummaries(
+    filtered.slice(start, start + normalizedLimit),
+  );
 
   return {
     items,
@@ -82,14 +85,17 @@ export async function getAnnouncementSummary(limit = 12) {
     CATEGORY_ORDER.map((sourceCategory) => readAnnouncements(sourceCategory)),
   );
 
-  return sourceItems
-    .flat()
-    .sort(sortAnnouncementsByDate)
-    .slice(0, limit)
-    .map((item) => ({
-      ...item,
-      content: item.content ? item.content.slice(0, 240) : "",
-    }));
+  const items = await attachAnnouncementAiSummaries(
+    sourceItems
+      .flat()
+      .sort(sortAnnouncementsByDate)
+      .slice(0, limit),
+  );
+
+  return items.map((item) => ({
+    ...item,
+    content: item.content ? item.content.slice(0, 240) : "",
+  }));
 }
 
 async function readAnnouncements(
