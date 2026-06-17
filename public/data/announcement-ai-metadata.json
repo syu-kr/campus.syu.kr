@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-17T15:33:27.244Z",
+  "generatedAt": "2026-06-17T15:59:54.383Z",
   "items": {
     "academic:url:00473643ec4812bf": {
       "summary": "2026-1학기 졸업대상 재학생을 위한 2차 이수구분 변경신청이 5월 26일부터 6월 5일까지 학과사무실 방문으로 접수됩니다.",
@@ -360,24 +360,24 @@
       "detailContentHash": "02e006576d173320"
     },
     "academic:url:2c7ae75fbdde3846": {
-      "summary": "2026-2학기 국가장학금 1차 신청이 2026.05.22~06.22까지 진행되며, 재학생은 반드시 1차 신청해야 하고 2차 신청 시 심사에서 탈락할 수 있습니다.",
-      "target": "대한민국 국적 재학생, 복학생, 재입학생 (휴학생·외국인 학생 제외)",
-      "deadline": "2026.06.22 18시 (신청 마감), 서류제출 마감 2026.06.29 18시",
-      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 1차 신청 후 가구원 동의 및 서류 제출",
+      "summary": "2026-2학기 국가장학금 1차 신청이 6월 22일(월) 오후 6시 마감이며, 재학생은 반드시 1차 신청해야 합니다.",
+      "target": "대한민국 국적 재학생, 복학생, 2학기 재입학생 (휴학생·외국인 제외)",
+      "deadline": "2026.06.22(월) 18:00 (가구원동의 및 서류제출: 2026.06.29(월) 18:00)",
+      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 1차 신청 후 가구원 정보제공 동의 및 서류 제출",
       "keywords": [
         "국가장학금",
-        "2026-2학기",
         "1차 신청",
+        "재학생 필수",
         "한국장학재단",
         "소득분위",
         "가구원 동의",
-        "재학생 필수"
+        "서류제출"
       ],
       "importance": "high",
       "confidence": "high",
-      "generatedAt": "2026-06-17T15:01:32.257Z",
-      "sourceHash": "25999eb70cb9c32c",
-      "inputHash": "3da657248016d80b",
+      "generatedAt": "2026-06-17T15:56:08.052Z",
+      "sourceHash": "aa506b45af37a733",
+      "inputHash": "3d322f7f5b59c87e",
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "eb09fb9e1e8b7867"
@@ -426,6 +426,29 @@
       "contentSource": "detail",
       "detailContentHash": "68ae8bf5ea58c704"
     },
+    "academic:url:2e10c079b1049bed": {
+      "summary": "2026년 8월 졸업예정자 중 교원자격증 취득 희망자는 2026년 6월 18일부터 7월 16일까지 무시험검정원서 및 서류를 해당 사무실에 제출해야 합니다.",
+      "target": "2025 후기(2026년 8월) 졸업예정자 중 교원자격 취득 희망자",
+      "deadline": "2026.07.16(목) 17:30",
+      "requiredAction": "Su-wings에서 무시험검정 신청 후 원서 출력, 마약류 검사결과서 등 필수 서류를 교직과 또는 유아교육과 사무실에 원본 제출",
+      "keywords": [
+        "교원자격증",
+        "무시험검정",
+        "졸업예정자",
+        "서류 제출",
+        "2026년 8월 졸업",
+        "교직과정",
+        "마약류 검사"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:56:26.265Z",
+      "sourceHash": "d57e57673cce43a5",
+      "inputHash": "3d752ba2478da313",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "0f9ff78965dc54d4"
+    },
     "academic:url:2f17f332464806bb": {
       "summary": "2026-1학기 국가장학금 2차 신청이 2026년 3월 17일 18시까지 진행되며, 신편입생·재입학생·복학생·1차 미신청 재학생은 한국장학재단 홈페이지 또는 앱에서 신청해야 합니다.",
       "target": "2026-1학기 신편입생, 재입학생, 복학생 및 1차 신청을 놓친 재학생",
@@ -450,6 +473,29 @@
       "contentSource": "detail",
       "detailContentHash": "018351ceb5e8f8cb"
     },
+    "academic:url:331b83ed2de4f2f5": {
+      "summary": "2026학년도 전기 시간제등록생을 모집하며, 원서접수 마감은 1월 23일(금)이고 이메일(onestop@syu.ac.kr)로 서류를 제출해야 합니다.",
+      "target": "고등학교 졸업자 또는 동등 이상 학력 인정자 중 시간제등록 희망자",
+      "deadline": "2026.01.23",
+      "requiredAction": "입학원서 및 제출서류를 이메일(onestop@syu.ac.kr)로 접수하고 전형료 20,000원을 1월 19일~23일 사이에 납부",
+      "keywords": [
+        "시간제등록생",
+        "모집",
+        "원서접수",
+        "제출서류",
+        "전형료",
+        "수강신청",
+        "학사지원팀"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:58:02.695Z",
+      "sourceHash": "1197ec767858c012",
+      "inputHash": "798dc147eddd8c7e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "36f5d23edb509aac"
+    },
     "academic:url:36d255d9566da383": {
       "summary": "자퇴를 원하는 학생은 자퇴원서 출력 후 도서관·지도교수·학과장 날인을 받아 학사지원팀(바울관 101호)에 대면 제출해야 합니다.",
       "target": "자퇴 신청 희망 학생",
@@ -472,6 +518,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "256084e3a9d067a2"
+    },
+    "academic:url:372dc6a3287b4ec1": {
+      "summary": "2026-1학기 본교 재학생 대상 학점교류대학 수강신청 일정 안내로, 교류 희망 대학의 추천 마감일 이틀 전까지 학사지원팀(바울관 101호)에 신청서를 제출해야 합니다.",
+      "target": "삼육대학교 본교 재학생 (신입생 1학년 1학기, 편입생, 휴학생, 초과학기생 제외)",
+      "deadline": "대학별 상이 (가장 빠른 마감: 2026.01.14. 동국대 / 가장 늦은 마감: 2026.02.27. 강서대)",
+      "requiredAction": "교류 희망 대학 학사공지 확인 후 신청서 작성 및 담당교수 확인, 추천 마감 이틀 전까지 학사지원팀 제출",
+      "keywords": [
+        "학점교류",
+        "수강신청",
+        "타대학",
+        "학사지원팀",
+        "신청서 제출",
+        "추천마감일",
+        "6학점 제한"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:57:21.232Z",
+      "sourceHash": "e208b4957676a61e",
+      "inputHash": "bd343b8cd4adefc5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d28739dd76d538e1"
     },
     "academic:url:38b9d99ff81f8053": {
       "summary": "2026학년도 2학기 재입학 신청이 7월 6일(월) 10시부터 7월 23일(목) 17시까지 SU-WINGs 온라인으로 진행되며, 제적자 중 재입학 희망자는 기간 내 신청해야 합니다.",
@@ -697,6 +766,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "c0a45b98bfd77532"
+    },
+    "academic:url:4dee050761ac887f": {
+      "summary": "인사혁신처 2026년 지역인재 7급 수습직원 선발을 위해 본교 추천 대상자(10명)를 모집하며, 지원서 접수는 1월 21일까지 대학일자리본부에 제출해야 합니다.",
+      "target": "학과성적 상위 10% 이내 졸업자 또는 졸업예정자(2023년 졸업자부터)",
+      "deadline": "2026.01.21(수) 지원서 접수 마감",
+      "requiredAction": "자격요건 확인 후 제출서류 준비하여 2026.01.21까지 대학일자리본부(학생회관 2층)에 접수",
+      "keywords": [
+        "지역인재 7급",
+        "수습직원",
+        "학교장 추천",
+        "국가공무원",
+        "취업지원",
+        "지원서 접수",
+        "추천심사"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:57:09.828Z",
+      "sourceHash": "85166134728cd2cf",
+      "inputHash": "fa2ff44a83302dc2",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "9c5a411086279eed"
     },
     "academic:url:4e73e8ffa12164d1": {
       "summary": "신입학·편입학 장애학생은 2월 9일~19일 사이 필수 서류를 이메일로 제출하여 장애학생지원센터에 등록하면 등록금 감면 및 학습·생활지원을 받을 수 있습니다.",
@@ -985,6 +1077,29 @@
       "contentSource": "detail",
       "detailContentHash": "bf67fa7b8ad821cc"
     },
+    "academic:url:70b74d41d6fa9c2b": {
+      "summary": "2025학년도 전기 학위수여식이 2026년 2월 12일 오전 10시 30분 선교70주년기념관 대강당에서 개최되며, 학위복 배부·반납 및 학위증 수령 일정을 확인해야 합니다.",
+      "target": "2025학년도 전기 졸업 예정 학생",
+      "deadline": "학위복 반납: 2026.2.13.(금) 14:00까지 (이후 추가 반납 불가)",
+      "requiredAction": "학위복 배부(2.9~2.13) 및 반납(2.12~2.13) 기한 준수, 학위증은 각 학과사무실에서 개별 수령",
+      "keywords": [
+        "학위수여식",
+        "졸업식",
+        "학위복 배부",
+        "학위복 반납",
+        "학위증 수령",
+        "제증명서 발급",
+        "대중교통 이용 권고"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:56:48.986Z",
+      "sourceHash": "3562a2b09af8070b",
+      "inputHash": "9bbc9f8c889f6bb2",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1fa4450ecbd6d1c1"
+    },
     "academic:url:70d7b1722b96fe92": {
       "summary": "2026-1학기 HOPE CAMP 추가 모집으로, 6월 2일(화) 오후 5시~9시 30분 교내 캠핑장에서 당일 진행되며 선착순 12명 무료 참여 가능합니다.",
       "target": "재학생 (선착순 12명, 학기 중 1회 참여 가능)",
@@ -1006,6 +1121,30 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "3408c34d2c533ca7"
+    },
+    "academic:url:74b574aabcaf0383": {
+      "summary": "2026학년도 1학기 전과 신청 안내로, 재학생은 학과별 신청 기간(1.15~1.22) 내 SU-WINGs에서 온라인으로 신청할 수 있습니다.",
+      "target": "2026학년도 1학기 재학 예정 재학생(간호학과·물리치료학과·유아교육과·약학과 제외)",
+      "deadline": "2026.01.19(월) 12:00 (아트앤디자인·음악학과) / 2026.01.22(목) 17:00 (일반학과)",
+      "requiredAction": "SU-WINGs [전과신청] 메뉴에서 변경 전공 선택 후 학과별 신청 기간 내 온라인 신청",
+      "keywords": [
+        "전과 신청",
+        "SU-WINGs",
+        "신청 자격",
+        "학과별 마감",
+        "실기·면접",
+        "합격 발표",
+        "장학금 반환",
+        "이수학점"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:58:57.418Z",
+      "sourceHash": "ceea7fc9ab15df81",
+      "inputHash": "7a39baa5385bb160",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "0e51156aa1031bdc"
     },
     "academic:url:7566590083a536a8": {
       "summary": "리더십센터가 학교 텃밭에서 식물·채소를 재배하고 지역사회에 기부하는 'People's Grocery+' 프로그램 참가자 25명을 선착순 모집합니다(신청 마감 3/26).",
@@ -1029,6 +1168,30 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "fc84105266cc7d95"
+    },
+    "academic:url:79ec96e9d21be3c2": {
+      "summary": "2026학년도 1학기 다전공(복수·부·연계·마이크로전공) 신청을 SU-WINGs에서 진행하며, 일반 학생은 1월 15일~2월 11일, 졸업대상자는 1월 23일까지 신청해야 합니다.",
+      "target": "재학생(다전공 신청 희망자), 2025학년도 전기 졸업대상자",
+      "deadline": "일반 학생: 2026.02.11(수) 17:00 / 2025학년도 전기 졸업대상자: 2026.01.23(금) 15:00",
+      "requiredAction": "SU-WINGs [다전공 신청] 메뉴에서 학번 입력 후 전공 선택 및 신청 버튼 클릭",
+      "keywords": [
+        "다전공 신청",
+        "복수전공",
+        "부전공",
+        "연계전공",
+        "마이크로전공",
+        "SU-WINGs",
+        "신청 자격",
+        "2026학년도 1학기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:58:44.800Z",
+      "sourceHash": "7c85570bc611d2d9",
+      "inputHash": "ed05af5ca63a09d0",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "810d97db75092e95"
     },
     "academic:url:7b817b0c0c131eab": {
       "summary": "2026-1학기 전공·교양 이중설강 제도 운영 안내로, 인간관계심리학·동물자원과학개론 2개 과목을 전공 또는 교양으로 선택 수강신청할 수 있습니다.",
@@ -1251,6 +1414,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "566f8f489aa1a62f"
+    },
+    "academic:url:9159297df5d31272": {
+      "summary": "4학년 졸업예정자는 2026년 1월 12일~13일에 반드시 이수구분 변경을 신청해야 하며, 해당 기간 외에는 신청이 불가합니다.",
+      "target": "2025학년도 전기 졸업 예정 4학년 재학생",
+      "deadline": "2026.01.13 17:00",
+      "requiredAction": "SU-WINGs [학생]→[성적정보]→[성적이수구분변경신청]에서 1월 12일~13일 기간 내 신청",
+      "keywords": [
+        "이수구분변경",
+        "졸업예정자",
+        "4학년",
+        "조기신청",
+        "SU-WINGs",
+        "졸업사정",
+        "전공과목"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:57:45.174Z",
+      "sourceHash": "9ed45464e8fb96f3",
+      "inputHash": "83e290f102d70463",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "187bd6628d296190"
     },
     "academic:url:9242273d842e6662": {
       "summary": "2026-1학기 글로컬영어 I 일부 분반(1648·1649·1650)이 YBM 토익반으로 대체 운영되며, 해당 학생에게는 문자가 발송되었습니다.",
@@ -1838,6 +2024,27 @@
       "contentSource": "detail",
       "detailContentHash": "7151b9c2df6239f4"
     },
+    "academic:url:b928aeb36d6190dd": {
+      "summary": "2025-2학기 기말 강의평가가 12월 30일까지 진행되며, 미참여 시 해당 학기 성적조회가 불가하므로 반드시 참여해야 합니다.",
+      "target": "2025학년도 2학기 수강 중인 전체 학생",
+      "deadline": "2025년 12월 30일",
+      "requiredAction": "수윙스(SU-WINGs) 로그인 후 [학부] 수업정보 > 강의평가 메뉴에서 모든 수강 과목 평가 완료",
+      "keywords": [
+        "기말 강의평가",
+        "성적조회 제한",
+        "수윙스",
+        "강의평가 기간",
+        "2025-2학기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:59:54.380Z",
+      "sourceHash": "f35ad6e631a4dc9d",
+      "inputHash": "323a67f02551bc53",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "bf47ce56febd904c"
+    },
     "academic:url:ba9aad5d4b904733": {
       "summary": "2026학년도 교직과정 이수예정자 선발 안내로, 2학년 재학생은 3월 16일~4월 15일 18시까지, 3·4학년 재학생은 교직 복수전공 이수 신청을 해야 합니다.",
       "target": "2026학년도 2학년 재학생(교직과정 이수 신청), 3·4학년 재학생(교직 복수전공 이수 신청)",
@@ -2062,6 +2269,26 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "932900800d0ec14a"
+    },
+    "academic:url:cbd6f39adc8beb66": {
+      "summary": "재학생 교육 만족도 조사 이벤트 당첨자 발표 안내로, 당첨자는 개별 연락을 받으며 추첨 과정은 총학생회 인스타그램 라이브 저장본에서 확인 가능합니다.",
+      "target": "재학생 교육 만족도 조사 참여자",
+      "deadline": "unknown",
+      "requiredAction": "당첨 여부는 개별 안내 확인, 추첨 과정은 총학생회 인스타그램 라이브 저장본 확인",
+      "keywords": [
+        "교육 만족도 조사",
+        "이벤트 당첨자",
+        "총학생회 인스타그램",
+        "추첨 결과"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:59:05.894Z",
+      "sourceHash": "609c5329dd2ba7a2",
+      "inputHash": "6c7d893bb23d717e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "306478cd3f02961f"
     },
     "academic:url:cceb861312fa67e5": {
       "summary": "삼육대 재학생 10명 대상 AI 드론 창업 캠프가 6월 18~19일 에스라관 105호에서 열리며, 드론 제작·AI 융합·창업 역량 개발 프로그램으로 구성됩니다.",
@@ -2774,6 +3001,27 @@
       "contentSource": "detail",
       "detailContentHash": "0726ed39147d3180"
     },
+    "campus:url:8dfd856c69c664e7": {
+      "summary": "2026년 경기푸른미래관 입사생 선발 지원자를 모집하며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인할 수 있습니다.",
+      "target": "경기푸른미래관 입사 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "첨부파일 확인 후 해당 기관 홈페이지에서 지원 방법 확인 및 신청",
+      "keywords": [
+        "경기푸른미래관",
+        "입사생 선발",
+        "지원자 모집",
+        "2026년",
+        "기숙사"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:59:29.703Z",
+      "sourceHash": "eab99b06dec80b7e",
+      "inputHash": "3cb6d1db95efe8de",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "8448a9967ef3aa8a"
+    },
     "campus:url:a7c6707e6abaec57": {
       "summary": "교육부에서 안내하는 여름철 계곡·해수욕장 등 수상 안전사고 예방 및 대처요령 자료가 첨부파일로 제공됩니다.",
       "target": "전체 학생",
@@ -3006,6 +3254,27 @@
       "contentSource": "detail",
       "detailContentHash": "498a7ac72130ba70"
     },
+    "scholarship:url:023d284c99aea7b7": {
+      "summary": "2026년 1학기 농림축산식품부 대학장학금 선발 안내로, 상세 내용은 첨부파일 확인 또는 해당 기관 홈페이지를 참고해야 합니다.",
+      "target": "unknown",
+      "deadline": "unknown",
+      "requiredAction": "첨부파일 확인 후 농어촌희망재단 홈페이지 또는 해당 기관에 직접 문의",
+      "keywords": [
+        "농어촌희망재단",
+        "농림축산식품부",
+        "대학장학금",
+        "2026년 1학기",
+        "장학생 선발"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:59:37.405Z",
+      "sourceHash": "b0788bd893238923",
+      "inputHash": "699229da8e3a685c",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1f2a4b5cd1d69e63"
+    },
     "scholarship:url:05071ce1e9d4927c": {
       "summary": "사단법인 점프의 2026 MG 청년누리 장학생 모집 안내로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인해야 합니다.",
       "target": "unknown",
@@ -3135,6 +3404,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "86f571a969bed188"
+    },
+    "scholarship:url:0e0fb46d5227b603": {
+      "summary": "경기도 대학생 학자금 대출이자 지원사업(2026년 상반기) 안내로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인 가능합니다.",
+      "target": "경기도 거주 대학생 학자금 대출 이용자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지의 첨부파일 또는 해당 기관 홈페이지를 통해 지원 요건 및 신청 방법 확인",
+      "keywords": [
+        "경기도",
+        "학자금 대출이자 지원",
+        "2026년 상반기",
+        "장학",
+        "대학생 지원"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:57:53.943Z",
+      "sourceHash": "b88c4b2e92fbca51",
+      "inputHash": "44d091902b578567",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "106df7a584dccedc"
     },
     "scholarship:url:0e1b30286fd41c89": {
       "summary": "울산광역시 우듬지 인재키움 장학생을 모집하며, 상세 내용은 첨부파일 확인 후 해당 기관에 문의하거나 홈페이지를 참고해야 합니다.",
@@ -3481,6 +3771,27 @@
       "contentSource": "detail",
       "detailContentHash": "a87e52dd50e5169e"
     },
+    "scholarship:url:2a8877b2a960dc6d": {
+      "summary": "한국장애인재활협회에서 2026 SK(주) AX 행복장학생을 모집하며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인할 수 있습니다.",
+      "target": "장애인 학생 (원문 확인 필요)",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 첨부파일 확인 또는 한국장애인재활협회 홈페이지에서 모집 상세 내용 확인 후 해당 기관에 신청",
+      "keywords": [
+        "행복장학생",
+        "SK AX 장학금",
+        "한국장애인재활협회",
+        "2026 장학생 모집",
+        "외부 장학금"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:59:21.639Z",
+      "sourceHash": "907914cbb3574b4d",
+      "inputHash": "664dafeff2231d19",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "a0ce7e6e0a376cae"
+    },
     "scholarship:url:2a9fbab2f556af6e": {
       "summary": "한국장학재단 학자금 지원 구간 체계가 2027년부터 현행 10개 구간(1~10구간)에서 5개 구간(가~마 구간)으로 개편될 예정입니다.",
       "target": "국가장학금 등 학자금 지원 대상 학생",
@@ -3503,25 +3814,24 @@
       "detailContentHash": "5229db8d2779e314"
     },
     "scholarship:url:2c7ae75fbdde3846": {
-      "summary": "2026-2학기 국가장학금 1차 신청이 2026.06.22.(월) 18시까지 진행되며, 재학생은 반드시 1차 신청해야 심사 탈락을 피할 수 있습니다.",
-      "target": "대한민국 국적 재학생(신입생·편입생·재입학생·복학생 포함), 휴학생 중 복학예정자",
-      "deadline": "2026.06.22.(월) 18시 (가구원동의 및 서류제출: 2026.06.29.(월) 18시)",
-      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 1차 신청 후 가구원 정보제공 동의 및 서류 제출",
+      "summary": "2026-2학기 국가장학금 1차 신청 기간은 5/22~6/22(월) 오후 6시이며, 재학생은 반드시 1차 신청해야 합니다.",
+      "target": "대한민국 국적 재학생, 복학생, 2학기 재입학생 (휴학생·외국인 제외)",
+      "deadline": "2026.06.22(월) 18:00 (가구원 동의 및 서류제출: 2026.06.29 18:00)",
+      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 기간 내 국가장학금 신청 및 가구원 정보제공 동의·서류 제출",
       "keywords": [
         "국가장학금",
         "1차 신청",
         "재학생 필수",
         "한국장학재단",
-        "가구원 동의",
-        "서류제출",
         "소득분위",
-        "2026-2학기"
+        "가구원 동의",
+        "서류제출"
       ],
       "importance": "high",
       "confidence": "high",
-      "generatedAt": "2026-06-17T15:01:40.398Z",
-      "sourceHash": "a88cfd63677438ec",
-      "inputHash": "6ecfd1396ee81ed0",
+      "generatedAt": "2026-06-17T15:56:16.823Z",
+      "sourceHash": "ab8a0cf1e62282df",
+      "inputHash": "97023f96359c202c",
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "eb09fb9e1e8b7867"
@@ -3769,6 +4079,50 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "bafdd66359963c83"
+    },
+    "scholarship:url:43005b1425acec63": {
+      "summary": "은평구민장학재단의 2026년 지역사회기여 장학생 모집 사전 안내이며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인 가능합니다.",
+      "target": "은평구 관련 장학생 지원 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 첨부파일 확인 또는 은평구민장학재단 홈페이지 방문 후 문의",
+      "keywords": [
+        "은평구민장학재단",
+        "지역사회기여",
+        "장학생 모집",
+        "사전 안내",
+        "2026년 장학금"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-17T15:57:28.988Z",
+      "sourceHash": "56775a6ed6c7ea0b",
+      "inputHash": "d414c0adc6177e3e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "56d830cb00ea1008"
+    },
+    "scholarship:url:45478e9277a4233f": {
+      "summary": "2025년 2학기 국가근로장학 추가모집(11차) 안내로, 지원서를 2026년 1월 13일 낮 12시까지 이메일로 제출해야 합니다.",
+      "target": "2025-2학기 국가근로장학사업 기신청자(정규 및 2차 신청자), 소득분위 9구간 이하, 직전학기 70점 이상",
+      "deadline": "2026년 1월 13일(화) 낮 12시",
+      "requiredAction": "지정 양식 다운로드 후 작성, digi0224@syu.ac.kr로 PDF 파일 이메일 제출(파일명 규칙 준수)",
+      "keywords": [
+        "국가근로장학",
+        "추가모집",
+        "이메일 접수",
+        "지원서 제출",
+        "소득분위",
+        "면접",
+        "근로지 신청"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:56:38.092Z",
+      "sourceHash": "d39214f61a9addf6",
+      "inputHash": "e27acd1ea49cdd0f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1488bdb64339e18f"
     },
     "scholarship:url:49e055d6f3d37137": {
       "summary": "2026년 대통령과학장학금 신규장학생을 선발하며, 이공계 재학생 및 신입생은 2026년 4월 22일 18시까지 한국장학재단 홈페이지에서 온라인 신청해야 합니다.",
@@ -4117,6 +4471,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "89c88f7bdf12900b"
+    },
+    "scholarship:url:737256276c9933d0": {
+      "summary": "2026-1학기 농촌출신 대학생 학자금융자(무이자) 신청 기간이 1월 5일~20일(1차)이며, 한국장학재단 홈페이지 또는 앱에서 신청 가능합니다.",
+      "target": "농어촌 출신 또는 농어업 종사 보호자를 둔 대학생, 농식품인재 대상학과 재학생",
+      "deadline": "1차: 2026.01.20 / 2차: 2026.02.27",
+      "requiredAction": "한국장학재단 홈페이지(kosaf.go.kr) 또는 앱에서 농촌학자금융자 신청 후 기간 내 서류 제출",
+      "keywords": [
+        "농촌출신대학생",
+        "학자금융자",
+        "무이자",
+        "한국장학재단",
+        "서류제출",
+        "농식품인재",
+        "신청기간"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:58:15.231Z",
+      "sourceHash": "f59fafed06eb08c3",
+      "inputHash": "9d005bb4e015910a",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "2c0b9f244dedbcdd"
     },
     "scholarship:url:748ce8ceb1c0cf16": {
       "summary": "KEC과학교육재단 2026년도 산학장학생 후보자 모집으로, 신청 서류를 3월 17일(화) 낮 12시까지 학생처 학생복지팀(학생회관 3층 301호)에 제출해야 합니다.",
@@ -4648,6 +5025,26 @@
       "contentSource": "detail",
       "detailContentHash": "620945db58ff3d6f"
     },
+    "scholarship:url:b2161b0a5348b281": {
+      "summary": "부산진구장학회 제30회 일반장학생 선발 공고로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인해야 합니다.",
+      "target": "부산진구 관련 장학생 신청 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "첨부파일 또는 부산진구장학회 홈페이지에서 상세 내용 확인 후 해당 기관에 문의",
+      "keywords": [
+        "부산진구장학회",
+        "일반장학생",
+        "장학생 선발",
+        "외부장학금"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:58:33.641Z",
+      "sourceHash": "e38c94fe54c0ef19",
+      "inputHash": "3e85a2a986f2566a",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "8ea787217d622912"
+    },
     "scholarship:url:b47ba111b66addf5": {
       "summary": "논산시장학회에서 2026년 학업장려 장학생을 선발하며, 상세 내용은 첨부파일 확인 후 해당 기관에 문의해야 합니다.",
       "target": "논산시 관련 장학 신청 희망 학생",
@@ -4842,6 +5239,26 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "7ca6fe798212a165"
+    },
+    "scholarship:url:c54281ceb8ad143a": {
+      "summary": "엔지니어링 인재육성재단 제1기 장학생 모집 안내로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인할 수 있습니다.",
+      "target": "unknown",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지의 첨부파일 확인 또는 해당 기관 홈페이지 방문 후 신청 방법 확인",
+      "keywords": [
+        "엔지니어링 인재육성재단",
+        "장학생 모집",
+        "외부 장학금",
+        "제1기"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:59:13.407Z",
+      "sourceHash": "02364bc4cbeb0836",
+      "inputHash": "bc3236de71ee04cf",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ccbc6f69e402d0b1"
     },
     "scholarship:url:c61c2991463f0170": {
       "summary": "삼원장학재단 제24기 전기(2026년 1학기) 장학생 선발을 안내하며, 상세 내용은 첨부파일 확인 후 해당 기관에 문의해야 합니다.",
@@ -5167,6 +5584,28 @@
       "contentSource": "detail",
       "detailContentHash": "575b90bdfc294c4a"
     },
+    "scholarship:url:d9dbef72243fb883": {
+      "summary": "2026-1학기 신입생 등록금대출 신청 안내로, 납부마감일 전 한국장학재단 홈페이지 또는 앱에서 미리 학자금대출을 신청해야 합니다.",
+      "target": "2026-1학기 대학 신입생군 등록예정자",
+      "deadline": "unknown",
+      "requiredAction": "한국장학재단 홈페이지(또는 모바일앱)에서 등록금 납부마감일 이전에 학자금대출 신청 및 실행",
+      "keywords": [
+        "한국장학재단",
+        "신입생",
+        "등록금대출",
+        "학자금대출",
+        "대출신청",
+        "대출실행"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:56:58.568Z",
+      "sourceHash": "1e63e1db51800495",
+      "inputHash": "c7e5ecf4ec392369",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "f2dc4abbdcb4077c"
+    },
     "scholarship:url:dc0aec64a239d4c4": {
       "summary": "농어촌희망재단의 2026년 2학기 농림축산식품부 청년창업농장학금 장학생 선발 안내로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지를 확인해야 합니다.",
       "target": "청년창업농 관련 장학금 신청 희망 학생",
@@ -5275,6 +5714,30 @@
       "contentSource": "detail",
       "detailContentHash": "dfe6820ff5cc3be5"
     },
+    "scholarship:url:e3b9eef182281589": {
+      "summary": "2026-1학기 한국장학재단 학자금대출(일반상환/취업후상환) 신청이 2026년 1월 5일부터 시작되며, 신청 시 반드시 해당 학기 학년·학과를 정확히 입력해야 합니다.",
+      "target": "2026-1학기 학자금대출 신청 희망 학생(재학생, 신입생, 편입생, 초과학기생 포함)",
+      "deadline": "2026.05.20(수) 18시 (등록금대출·생활비대출 신청 마감 기준)",
+      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 2026-1학기 학년·학과 입력 후 신청",
+      "keywords": [
+        "학자금대출",
+        "한국장학재단",
+        "등록금대출",
+        "생활비대출",
+        "취업후상환",
+        "일반상환",
+        "대출신청",
+        "2026-1학기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-17T15:58:25.459Z",
+      "sourceHash": "b0680c01cc318a95",
+      "inputHash": "7ffe7df078a893d3",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1a294099b4b943a1"
+    },
     "scholarship:url:e4513027a3266a86": {
       "summary": "초록우산 재단의 2026년 스타벅스 청년인재 12기 모집 안내로, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인해야 합니다.",
       "target": "장학금 신청 희망 학생",
@@ -5358,6 +5821,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "e3df1721ab57e4c2"
+    },
+    "scholarship:url:e884828b3d1ed2bd": {
+      "summary": "사랑의 열매에서 2025년 하반기 바로바로론 사랑나눔 장학생을 모집하며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지를 통해 확인해야 합니다.",
+      "target": "장학금 신청 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "첨부파일 확인 후 해당 기관(사랑의 열매) 홈페이지 또는 문의처를 통해 신청",
+      "keywords": [
+        "사랑의 열매",
+        "바로바로론",
+        "사랑나눔 장학금",
+        "2025 하반기",
+        "장학생 모집"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-17T15:59:45.406Z",
+      "sourceHash": "0eb22050869c1c59",
+      "inputHash": "741050992d4f1c2d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "2a34db2f188d65d9"
     },
     "scholarship:url:ea0946e0ff45a40f": {
       "summary": "농어촌희망재단이 2026년 여름방학 지역돌봄 지원사업에 참여할 대학생 봉사자를 선발하며, 이중참여는 불가합니다.",
@@ -5468,6 +5952,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "ae08c4690ef8a25e"
+    },
+    "scholarship:url:eec6b923c3237e1c": {
+      "summary": "울산광역시 거주 대학(원)생을 대상으로 2026년 상반기 학자금 대출 이자지원사업을 안내하며, 상세 내용은 첨부파일 또는 울산광역시 홈페이지에서 확인 가능합니다.",
+      "target": "울산광역시 거주 대학(원)생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 첨부파일 확인 후 울산광역시 해당 기관 홈페이지에서 신청 방법 확인",
+      "keywords": [
+        "울산광역시",
+        "학자금 대출 이자지원",
+        "대학원생",
+        "2026년 상반기",
+        "장학금"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-17T15:57:36.679Z",
+      "sourceHash": "70b48ae3369f435f",
+      "inputHash": "481e10a6e83a7394",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "17ad7021e08e94ef"
     },
     "scholarship:url:ef636db1f3063448": {
       "summary": "강북구 꿈드림 학습멘토링 멘토를 모집하며, 자세한 내용은 첨부파일 또는 해당 기관 홈페이지를 통해 확인해야 합니다.",
