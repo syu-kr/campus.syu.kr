@@ -515,12 +515,12 @@ function sliceBalancedElement(html, startIndex, tagName) {
 function htmlToReadableText(html) {
   const withoutNoise = html
     .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[\s\S]*?<\/style>/gi, " ")
-    .replace(/<noscript\b[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<svg\b[\s\S]*?<\/svg>/gi, " ")
-    .replace(/<iframe\b[\s\S]*?<\/iframe>/gi, " ")
-    .replace(/<form\b[\s\S]*?<\/form>/gi, " ");
+    .replace(stripElementContentPattern("script"), " ")
+    .replace(stripElementContentPattern("style"), " ")
+    .replace(stripElementContentPattern("noscript"), " ")
+    .replace(stripElementContentPattern("svg"), " ")
+    .replace(stripElementContentPattern("iframe"), " ")
+    .replace(stripElementContentPattern("form"), " ");
   const withBreaks = withoutNoise
     .replace(/<(br|hr)\b[^>]*>/gi, "\n")
     .replace(/<\/(p|div|li|tr|h[1-6]|table|section|article)>/gi, "\n")
@@ -536,17 +536,60 @@ function htmlToReadableText(html) {
 }
 
 function decodeHtmlEntities(value) {
-  return value
-    .replace(/&nbsp;|&#160;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) =>
-      String.fromCharCode(Number.parseInt(code, 16)),
-    );
+  return value.replace(
+    /&(nbsp|amp|lt|gt|quot|apos|#39|#160|#\d+|#x[0-9a-f]+);/gi,
+    (entity) => decodeHtmlEntity(entity),
+  );
+}
+
+function stripElementContentPattern(tagName) {
+  return new RegExp(
+    `<${escapeRegExp(tagName)}\\b[\\s\\S]*?<\\/${escapeRegExp(tagName)}\\s*>`,
+    "gi",
+  );
+}
+
+function decodeHtmlEntity(entity) {
+  const normalized = entity.toLowerCase();
+
+  switch (normalized) {
+    case "&nbsp;":
+    case "&#160;":
+      return " ";
+    case "&amp;":
+      return "&";
+    case "&lt;":
+      return "<";
+    case "&gt;":
+      return ">";
+    case "&quot;":
+      return '"';
+    case "&apos;":
+    case "&#39;":
+      return "'";
+    default:
+      return decodeNumericHtmlEntity(normalized) || entity;
+  }
+}
+
+function decodeNumericHtmlEntity(entity) {
+  const hexMatch = entity.match(/^&#x([0-9a-f]+);$/i);
+  const decimalMatch = entity.match(/^&#(\d+);$/);
+  const codePoint = hexMatch
+    ? Number.parseInt(hexMatch[1], 16)
+    : decimalMatch
+      ? Number.parseInt(decimalMatch[1], 10)
+      : NaN;
+
+  if (!Number.isInteger(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+    return "";
+  }
+
+  try {
+    return String.fromCodePoint(codePoint);
+  } catch {
+    return "";
+  }
 }
 
 function isNoiseLine(line) {
