@@ -34,6 +34,33 @@ export interface SiteInquiryInput {
 
 export type AdminSubmissionKind = "inquiry" | "campus-tip";
 
+export type AdminSubmissionAiCategory =
+  | "bug"
+  | "data-correction"
+  | "feature-request"
+  | "campus-tip"
+  | "abuse-spam"
+  | "privacy-security"
+  | "other";
+
+export type AdminSubmissionAiUrgency =
+  | "low"
+  | "normal"
+  | "high"
+  | "critical";
+
+export type AdminSubmissionAiConfidence = "low" | "medium" | "high";
+
+export interface AdminSubmissionAiClassification {
+  category: AdminSubmissionAiCategory;
+  urgency: AdminSubmissionAiUrgency;
+  handlingHint: string;
+  confidence: AdminSubmissionAiConfidence;
+  generatedAt: string;
+  sourceHash: string;
+  model?: string;
+}
+
 export interface AdminSubmissionItem {
   id: string;
   kind: AdminSubmissionKind;
@@ -51,6 +78,7 @@ export interface AdminSubmissionItem {
   url?: string;
   tags?: string[];
   note?: string;
+  aiClassification?: AdminSubmissionAiClassification;
 }
 
 export class SubmissionValidationError extends Error {

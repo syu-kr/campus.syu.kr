@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import type {
+  AdminSubmissionAiClassification,
   AdminSubmissionItem,
   AdminSubmissionKind,
   SubmissionStatus,
@@ -47,6 +48,29 @@ const categoryLabels: Record<string, string> = {
   reference: "참고자료",
 };
 
+const aiCategoryLabels: Record<string, string> = {
+  bug: "오류",
+  "data-correction": "정보 수정",
+  "feature-request": "기능 요청",
+  "campus-tip": "꿀팁 제보",
+  "abuse-spam": "스팸/무관",
+  "privacy-security": "개인정보/보안",
+  other: "기타",
+};
+
+const aiUrgencyLabels: Record<string, string> = {
+  low: "낮음",
+  normal: "보통",
+  high: "높음",
+  critical: "긴급",
+};
+
+const aiConfidenceLabels: Record<string, string> = {
+  low: "낮음",
+  medium: "중간",
+  high: "높음",
+};
+
 const emptyCounts: Record<SubmissionStatus, number> = {
   pending: 0,
   reviewing: 0,
@@ -74,6 +98,7 @@ export default function AdminPage() {
     useState<Record<SubmissionStatus, number>>(emptyCounts);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [classifyingKey, setClassifyingKey] = useState("");
   const [pageError, setPageError] = useState("");
 
   useEffect(() => {
@@ -235,6 +260,53 @@ export default function AdminPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const classifySubmission = async (item: AdminSubmissionItem) => {
+    if (!user) return;
+
+    const key = `${item.kind}-${item.id}`;
+    setClassifyingKey(key);
+    setPageError("");
+
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/admin/submissions/classify", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: item.id, kind: item.kind }),
+      });
+      const data = await readAdminApiResponse<{
+        error?: string;
+        classification?: AdminSubmissionAiClassification;
+        reused?: boolean;
+      }>(response);
+
+      if (!response.ok || !data.classification) {
+        throw new Error(data.error || "AI 분류를 생성하지 못했습니다");
+      }
+
+      setSubmissions((items) =>
+        items.map((current) =>
+          current.id === item.id && current.kind === item.kind
+            ? {
+                ...current,
+                aiClassification: data.classification,
+                updatedAt: current.updatedAt,
+              }
+            : current,
+        ),
+      );
+    } catch (error) {
+      setPageError(
+        error instanceof Error ? error.message : "AI 분류를 생성하지 못했습니다",
+      );
+    } finally {
+      setClassifyingKey("");
     }
   };
 
@@ -452,9 +524,21 @@ export default function AdminPage() {
                         ? item.message
                         : item.description}
                     </p>
-                    <span className="mt-3 inline-flex rounded-md bg-white px-2 py-1 text-xs font-semibold text-primary-700 ring-1 ring-primary-100">
-                      {statusLabel(item.status)}
-                    </span>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex rounded-md bg-white px-2 py-1 text-xs font-semibold text-primary-700 ring-1 ring-primary-100">
+                        {statusLabel(item.status)}
+                      </span>
+                      {item.aiClassification && (
+                        <span
+                          className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ring-1 ${aiUrgencyClass(
+                            item.aiClassification.urgency,
+                          )}`}
+                        >
+                          {aiUrgencyLabels[item.aiClassification.urgency]} /{" "}
+                          {aiCategoryLabels[item.aiClassification.category]}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))
               )}
@@ -464,7 +548,14 @@ export default function AdminPage() {
           <SubmissionDetail
             item={selectedSubmission}
             isSaving={isSaving}
+            isClassifying={
+              selectedSubmission
+                ? classifyingKey ===
+                  `${selectedSubmission.kind}-${selectedSubmission.id}`
+                : false
+            }
             onStatusChange={updateStatus}
+            onClassify={classifySubmission}
           />
         </section>
       </div>
@@ -475,14 +566,18 @@ export default function AdminPage() {
 function SubmissionDetail({
   item,
   isSaving,
+  isClassifying,
   onStatusChange,
+  onClassify,
 }: {
   item: AdminSubmissionItem | null;
   isSaving: boolean;
+  isClassifying: boolean;
   onStatusChange: (
     item: AdminSubmissionItem,
     status: SubmissionStatus,
   ) => Promise<void>;
+  onClassify: (item: AdminSubmissionItem) => Promise<void>;
 }) {
   if (!item) {
     return (
@@ -563,26 +658,92 @@ function SubmissionDetail({
           />
         </div>
 
-        <aside className="space-y-3">
-          <h3 className="text-sm font-bold text-neutral-900">처리 상태</h3>
-          {statuses.map((status) => (
-            <button
-              key={status.value}
-              type="button"
-              disabled={isSaving}
-              onClick={() => void onStatusChange(item, status.value)}
-              className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                item.status === status.value
-                  ? "border-primary-500 bg-primary-50 text-primary-700"
-                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-              }`}
-            >
-              {status.label}
-            </button>
-          ))}
+        <aside className="space-y-5">
+          <AiClassificationPanel
+            item={item}
+            isClassifying={isClassifying}
+            onClassify={onClassify}
+          />
+
+          <section className="space-y-3">
+            <h3 className="text-sm font-bold text-neutral-900">처리 상태</h3>
+            {statuses.map((status) => (
+              <button
+                key={status.value}
+                type="button"
+                disabled={isSaving}
+                onClick={() => void onStatusChange(item, status.value)}
+                className={`w-full rounded-lg border px-3 py-2.5 text-left text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                  item.status === status.value
+                    ? "border-primary-500 bg-primary-50 text-primary-700"
+                    : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
+                }`}
+              >
+                {status.label}
+              </button>
+            ))}
+          </section>
         </aside>
       </div>
     </article>
+  );
+}
+
+function AiClassificationPanel({
+  item,
+  isClassifying,
+  onClassify,
+}: {
+  item: AdminSubmissionItem;
+  isClassifying: boolean;
+  onClassify: (item: AdminSubmissionItem) => Promise<void>;
+}) {
+  const classification = item.aiClassification;
+
+  return (
+    <section className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h3 className="text-sm font-bold text-neutral-900">AI 분류</h3>
+        <button
+          type="button"
+          disabled={isClassifying}
+          onClick={() => void onClassify(item)}
+          className="rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isClassifying ? "분류 중" : classification ? "분류 확인" : "분류"}
+        </button>
+      </div>
+
+      {classification ? (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`rounded-md px-2 py-1 text-xs font-semibold ring-1 ${aiUrgencyClass(
+                classification.urgency,
+              )}`}
+            >
+              긴급도 {aiUrgencyLabels[classification.urgency]}
+            </span>
+            <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-neutral-700 ring-1 ring-neutral-200">
+              {aiCategoryLabels[classification.category]}
+            </span>
+            <span className="rounded-md bg-white px-2 py-1 text-xs font-semibold text-neutral-700 ring-1 ring-neutral-200">
+              신뢰도 {aiConfidenceLabels[classification.confidence]}
+            </span>
+          </div>
+          <p className="rounded-md bg-white p-3 text-sm leading-6 text-neutral-700 ring-1 ring-neutral-200">
+            {classification.handlingHint}
+          </p>
+          <p className="text-xs text-neutral-500">
+            생성 {formatDateTime(classification.generatedAt)}
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm leading-6 text-neutral-600">
+          분류 결과가 아직 없습니다.
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -618,6 +779,19 @@ function DetailItem({ label, value }: { label: string; value: string }) {
       </dd>
     </div>
   );
+}
+
+function aiUrgencyClass(value: string) {
+  switch (value) {
+    case "critical":
+      return "bg-red-50 text-red-700 ring-red-200";
+    case "high":
+      return "bg-orange-50 text-orange-700 ring-orange-200";
+    case "low":
+      return "bg-neutral-50 text-neutral-600 ring-neutral-200";
+    default:
+      return "bg-blue-50 text-blue-700 ring-blue-200";
+  }
 }
 
 function statusLabel(value: SubmissionStatus) {

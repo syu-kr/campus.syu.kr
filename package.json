@@ -30,6 +30,7 @@
     "check:curriculum": "node scripts/check_curriculum_data.mjs",
     "audit:curriculum": "python scripts/audit_curriculum_courses.py",
     "build:verified-curriculum": "python scripts/build_verified_curriculum.py",
+    "generate:announcement-ai": "node scripts/generate_announcement_ai_summaries.mjs",
     "check": "npm run lint && npm run type-check && npm run check:i18n && npm run check:unused && npm run check:python && npm run check:graduation && npm run check:curriculum && npm run build",
     "send-daily-notification": "ts-node --project tsconfig.json scripts/send-daily-notification.ts",
     "cleanup-tokens": "ts-node --project tsconfig.json scripts/cleanup_old_tokens.ts",

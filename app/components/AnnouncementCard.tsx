@@ -11,6 +11,7 @@ import {
   formatDateWithYear,
 } from "@/lib/utils";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -52,6 +53,9 @@ function AnnouncementCardComponent({
         <h3 className="font-semibold text-neutral-900 line-clamp-2">
           {announcement.title}
         </h3>
+        {announcement.aiSummary?.summary && (
+          <AnnouncementAiSummary aiSummary={announcement.aiSummary} />
+        )}
         <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">
           <span>{formatDateWithYear(announcement.date)}</span>
           <span>{announcement.author || dictionary.labels.sahmyookUniversity}</span>

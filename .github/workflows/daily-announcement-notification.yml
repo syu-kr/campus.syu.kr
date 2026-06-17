@@ -35,6 +35,12 @@ jobs:
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
           PUSH_API_KEY: ${{ secrets.PUSH_API_KEY }}
           API_URL: ${{ secrets.API_URL }}
+          SUPILOT_PUSH_COPY_API_KEY: ${{ secrets.SUPILOT_PUSH_COPY_API_KEY }}
+          SUPILOT_PUSH_COPY_API_BASE_URL: ${{ vars.SUPILOT_PUSH_COPY_API_BASE_URL }}
+          SUPILOT_API_BASE_URL: ${{ vars.SUPILOT_API_BASE_URL }}
+          SUPILOT_PUSH_COPY_TIMEOUT_MS: ${{ vars.SUPILOT_PUSH_COPY_TIMEOUT_MS }}
+          SUPILOT_PUSH_COPY_MAX_RETRIES: ${{ vars.SUPILOT_PUSH_COPY_MAX_RETRIES }}
+          SUPILOT_PUSH_COPY_RETRY_BASE_MS: ${{ vars.SUPILOT_PUSH_COPY_RETRY_BASE_MS }}
         run: npm run send-daily-notification
 
       - name: 📊 Log Success
