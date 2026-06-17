@@ -10,7 +10,7 @@ const OUTPUT_FILE = path.join(DATA_DIR, "announcement-ai-metadata.json");
 const API_BASE_URL =
   process.env.SUPILOT_ANNOUNCEMENT_API_BASE_URL ||
   process.env.SUPILOT_API_BASE_URL ||
-  "https://supilot.syu.ac.kr/api";
+  "https://aitutor.syu.ac.kr/api";
 const API_KEY =
   process.env.SUPILOT_ANNOUNCEMENT_API_KEY || process.env.SUPILOT_API_KEY || "";
 const MODEL_NAME = "claude-sonnet-4-6";
@@ -36,7 +36,7 @@ async function main() {
     return;
   }
 
-  const limit = readNumberEnv("ANNOUNCEMENT_AI_LIMIT", DEFAULT_LIMIT);
+  const limit = readLimitEnv("ANNOUNCEMENT_AI_LIMIT", DEFAULT_LIMIT);
   const delayMs = readNumberEnv("ANNOUNCEMENT_AI_DELAY_MS", DEFAULT_DELAY_MS);
   const timeoutMs = readNumberEnv("ANNOUNCEMENT_AI_TIMEOUT_MS", DEFAULT_TIMEOUT_MS);
   const detailFetchTimeoutMs = readNumberEnv(
@@ -800,7 +800,19 @@ function sortObjectByKey(value) {
 }
 
 function readNumberEnv(name, fallback) {
-  const value = Number.parseInt(process.env[name] || "", 10);
+  const raw = process.env[name]?.trim();
+  if (!raw) return fallback;
+
+  const value = Number.parseInt(raw, 10);
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
+function readLimitEnv(name, fallback) {
+  const raw = process.env[name]?.trim().toLowerCase();
+  if (!raw) return fallback;
+  if (["all", "unlimited", "none"].includes(raw)) return Number.POSITIVE_INFINITY;
+
+  const value = Number.parseInt(raw, 10);
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
