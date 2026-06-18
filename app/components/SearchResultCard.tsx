@@ -48,50 +48,54 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
 
   const announcement = item as Announcement;
   return (
-    <a
-      href={announcement.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block"
-    >
-      <Card key={announcement.id} className="hover:shadow-card-hover">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              {announcement.isPinned && (
-                <Badge color="red" size="sm">
-                  {dictionary.labels.pinned}
-                </Badge>
-              )}
-              {announcement.isImportant && (
-                <Badge color="yellow" size="sm">
-                  {dictionary.labels.important}
-                </Badge>
-              )}
-            </div>
-            <h4 className="font-medium text-neutral-900 line-clamp-2">
-              {highlightText(announcement.title, query)}
-            </h4>
-            {announcement.aiSummary?.summary ? (
-              <AnnouncementAiSummary
-                aiSummary={announcement.aiSummary}
-                compact
-              />
-            ) : (
-              <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
-                {highlightText(
-                  getSearchSnippet(announcement.content, query),
-                  query,
-                )}
-              </p>
+    <Card key={announcement.id} clickable={Boolean(announcement.url)} className="relative">
+      {announcement.url && (
+        <a
+          href={announcement.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0 z-10 rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          aria-label={announcement.title}
+        >
+          <span className="sr-only">{announcement.title}</span>
+        </a>
+      )}
+      <div
+        className={
+          announcement.url
+            ? "pointer-events-none relative z-20 flex items-start justify-between gap-3"
+            : "flex items-start justify-between gap-3"
+        }
+      >
+        <div className="min-w-0 flex-1">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {announcement.isPinned && (
+              <Badge color="red" size="sm">
+                {dictionary.labels.pinned}
+              </Badge>
             )}
-            <p className="mt-2 text-xs text-neutral-500">
-              {announcement.author} · {announcement.date}
-            </p>
+            {announcement.isImportant && (
+              <Badge color="yellow" size="sm">
+                {dictionary.labels.important}
+              </Badge>
+            )}
           </div>
+          <h4 className="font-medium text-neutral-900 line-clamp-2">
+            {highlightText(announcement.title, query)}
+          </h4>
+          {announcement.aiSummary?.summary ? (
+            <AnnouncementAiSummary aiSummary={announcement.aiSummary} compact />
+          ) : (
+            <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
+              {highlightText(getSearchSnippet(announcement.content, query), query)}
+            </p>
+          )}
+          <p className="mt-2 text-xs text-neutral-500">
+            {announcement.author} · {announcement.date}
+          </p>
         </div>
-      </Card>
-    </a>
+      </div>
+    </Card>
   );
 }
 

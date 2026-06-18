@@ -28,13 +28,43 @@ function AnnouncementCardComponent({
 }: AnnouncementCardProps) {
   const locale = useLocale();
   const dictionary = useDictionary();
+  const overlayLabel = `${announcement.title} ${dictionary.labels.notice}`;
+  const overlayClassName =
+    "absolute inset-0 z-10 rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2";
   const content = (
     <Card
       as="article"
-      clickable={clickable}
-      className={href ? "hover:shadow-card-hover" : ""}
+      clickable={Boolean(href) && clickable}
+      className={href ? "relative" : ""}
     >
-      <div className="flex flex-col gap-3">
+      {href &&
+        (external ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={overlayClassName}
+            aria-label={overlayLabel}
+          >
+            <span className="sr-only">{overlayLabel}</span>
+          </a>
+        ) : (
+          <Link
+            href={href}
+            prefetch={false}
+            className={overlayClassName}
+            aria-label={overlayLabel}
+          >
+            <span className="sr-only">{overlayLabel}</span>
+          </Link>
+        ))}
+      <div
+        className={
+          href
+            ? "pointer-events-none relative z-20 flex flex-col gap-3"
+            : "flex flex-col gap-3"
+        }
+      >
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color={getCategoryColor(announcement.category)} size="sm">
             {getCategoryLabel(announcement.category, locale)}
@@ -63,21 +93,6 @@ function AnnouncementCardComponent({
       </div>
     </Card>
   );
-
-  if (href) {
-    if (external) {
-      return (
-        <a href={href} target="_blank" rel="noopener noreferrer">
-          {content}
-        </a>
-      );
-    }
-    return (
-      <Link href={href} prefetch={false}>
-        {content}
-      </Link>
-    );
-  }
 
   return content;
 }
