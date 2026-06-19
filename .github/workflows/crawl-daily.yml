@@ -40,7 +40,7 @@ jobs:
           fi
 
       - name: Checkout code with crawler deploy key
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ssh-key: ${{ secrets.CRAWLER_DEPLOY_KEY }}
 
