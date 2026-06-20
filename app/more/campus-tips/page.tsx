@@ -2,20 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { CampusTipSuggestionForm } from "@/app/more/campus-tips/CampusTipSuggestionForm";
 import {
   useDictionary,
   useLocale,
 } from "@/app/components/LocaleProvider";
+import { Modal } from "@/app/components/Modal";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchCampusTips } from "@/lib/api";
-import { localizePath, type Dictionary } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
 import { usePagination } from "@/lib/use-pagination";
 import type {
   CampusTip,
@@ -50,10 +51,12 @@ export default function CampusTipsPage() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.campusTips;
+  const suggestText = dictionary.pages.campusTipsSuggest;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     CampusTipCategory | "all"
   >("all");
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
   const { data: tips = [], isLoading } = useQuery({
     queryKey: ["campus-tips"],
@@ -124,12 +127,13 @@ export default function CampusTipsPage() {
             </h1>
             <p className="text-neutral-600">{text.description}</p>
           </div>
-          <Link
-            href={localizePath("/campus/campus-tips/suggest", locale)}
+          <button
+            type="button"
+            onClick={() => setIsSuggestionModalOpen(true)}
             className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
             {text.suggestAction}
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -291,6 +295,19 @@ export default function CampusTipsPage() {
           </p>
         </div>
       )}
+
+      <Modal
+        isOpen={isSuggestionModalOpen}
+        title={suggestText.title}
+        description={suggestText.description}
+        onClose={() => setIsSuggestionModalOpen(false)}
+        size="lg"
+      >
+        <CampusTipSuggestionForm
+          idPrefix="tip-modal"
+          onSuccessConfirm={() => setIsSuggestionModalOpen(false)}
+        />
+      </Modal>
     </Container>
   );
 }
