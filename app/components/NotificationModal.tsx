@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
 
 interface NotificationPayload {
@@ -26,14 +26,27 @@ export function NotificationModal() {
     null,
   );
   const [isVisible, setIsVisible] = useState(false);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     notificationSetter = (payload) => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+
       setNotification(payload);
       setIsVisible(true);
-      setTimeout(() => {
+      hideTimeoutRef.current = setTimeout(() => {
         setIsVisible(false);
+        hideTimeoutRef.current = null;
       }, 5000);
+    };
+
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+      notificationSetter = null;
     };
   }, []);
 
@@ -51,6 +64,10 @@ export function NotificationModal() {
   }, [isVisible]);
 
   const handleClose = () => {
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
     setIsVisible(false);
   };
 
