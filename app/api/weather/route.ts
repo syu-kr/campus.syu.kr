@@ -6,10 +6,12 @@ export const dynamic = "force-dynamic";
 
 const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
 const WEATHER_REQUEST_TIMEOUT_MS = 10 * 1000;
+const WEATHER_STALE_RETENTION_MS = 60 * 60 * 1000;
 
 let cachedWeather:
   | {
       data: WeatherResponse;
+      fetchedAt: number;
       expiresAt: number;
     }
   | undefined;
@@ -28,8 +30,9 @@ interface WeatherResponse {
 }
 
 export async function GET() {
+  const now = Date.now();
+
   try {
-    const now = Date.now();
     if (cachedWeather && cachedWeather.expiresAt > now) {
       return weatherJson(cachedWeather.data);
     }
@@ -41,11 +44,21 @@ export async function GET() {
     const weatherData = await pendingWeather;
     cachedWeather = {
       data: weatherData,
+      fetchedAt: Date.now(),
       expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
     };
 
     return weatherJson(weatherData);
-  } catch {
+  } catch (error) {
+    console.error("Failed to fetch weather:", error);
+
+    if (
+      cachedWeather &&
+      cachedWeather.fetchedAt + WEATHER_STALE_RETENTION_MS > now
+    ) {
+      return weatherJson(cachedWeather.data, true);
+    }
+
     return NextResponse.json(
       { error: "서버 오류가 발생했습니다" },
       { status: 502 },
@@ -261,10 +274,17 @@ function getPrecipitationSky(precipitation: number) {
   return 1;
 }
 
-function weatherJson(data: WeatherResponse) {
-  return NextResponse.json(data, {
-    headers: {
-      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+function weatherJson(data: WeatherResponse, stale = false) {
+  return NextResponse.json(
+    {
+      ...data,
+      stale,
     },
-  });
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        ...(stale ? { "X-Weather-Stale": "1" } : {}),
+      },
+    },
+  );
 }

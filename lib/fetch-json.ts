@@ -8,6 +8,7 @@ export type FetchJsonOptions<T> = Omit<RequestInit, "cache"> & {
   fallback: T;
   noStore?: boolean;
   next?: NextFetchOptions;
+  throwOnError?: boolean;
   timeoutMs?: number;
 };
 
@@ -17,6 +18,7 @@ export async function fetchJson<T>(
     fallback,
     noStore = true,
     next,
+    throwOnError = false,
     timeoutMs,
     ...init
   }: FetchJsonOptions<T>,
@@ -38,12 +40,18 @@ export async function fetchJson<T>(
     const response = await fetch(input, requestInit);
 
     if (!response.ok) {
+      if (throwOnError) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
       return fallback;
     }
 
     const data = await response.json();
     return (data ?? fallback) as T;
-  } catch {
+  } catch (error) {
+    if (throwOnError) {
+      throw error;
+    }
     return fallback;
   } finally {
     if (timeoutId) {

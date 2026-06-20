@@ -626,6 +626,8 @@ export const dictionaries = {
         shareLoaded: "공유 시간표를 불러왔습니다.",
         shareCreateFailed: "공유 링크를 만들지 못했습니다.",
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
+        shareCreatedCopyFailed:
+          "공유 링크를 만들었습니다. 브라우저 권한 문제로 자동 복사는 되지 않았습니다.",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
         shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
         loadFailedTitle: "강의 정보를 불러올 수 없습니다",
@@ -2033,6 +2035,8 @@ export const dictionaries = {
         shareLoaded: "Shared timetable loaded.",
         shareCreateFailed: "Could not create a share link.",
         shareCreated: "Share link created and copied to clipboard.",
+        shareCreatedCopyFailed:
+          "Share link created. Your browser blocked automatic copying.",
         shareLoading: "Loading shared timetable.",
         shareLoadFailed: "Could not load the shared timetable.",
         loadFailedTitle: "Could not load course information",
