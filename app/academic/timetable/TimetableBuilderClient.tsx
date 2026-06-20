@@ -327,13 +327,23 @@ export function TimetableBuilderClient() {
       const nextUrl = `${pathname}?share=${encodeURIComponent(share.shareId)}`;
       router.replace(nextUrl, { scroll: false });
 
+      let didCopy = false;
       if (typeof window !== "undefined") {
         const absoluteUrl = `${window.location.origin}${nextUrl}`;
-        await navigator.clipboard?.writeText(absoluteUrl);
+        if (navigator.clipboard?.writeText) {
+          try {
+            await navigator.clipboard.writeText(absoluteUrl);
+            didCopy = true;
+          } catch {
+            didCopy = false;
+          }
+        }
       }
 
       setAppliedShareId(share.shareId);
-      setShareMessage(text.shareCreated);
+      setShareMessage(
+        didCopy ? text.shareCreated : text.shareCreatedCopyFailed,
+      );
     } catch {
       setShareMessage(text.shareCreateFailed);
     } finally {
