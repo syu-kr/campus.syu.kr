@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-19T17:25:27.886Z",
+  "generatedAt": "2026-06-20T03:46:05.929Z",
   "items": {
     "academic:url:0036436fd6d7b705": {
       "summary": "2025학년도 1학기 신입생·편입생은 2025년 2월 24일(월) 오후 3시 이후 SU-WINGs에서 학번 조회 및 비밀번호 설정이 가능합니다.",
@@ -1075,6 +1075,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "23d7c8a1753a8019"
+    },
+    "academic:url:09aa23a866d8ba75": {
+      "summary": "2021년 4월 27일부터 9주차 중간고사 대면시험이 비대면시험으로 전환되며, 실험·실습·실기·캡스톤디자인 교과목은 대면수업이 유지됩니다.",
+      "target": "전체 재학생 및 교수",
+      "deadline": "2021.04.27",
+      "requiredAction": "비대면시험 전환 여부 확인 후 해당 과목 시험 방식에 맞게 준비, 등교 시 체온 측정소 발열체크 필수",
+      "keywords": [
+        "중간고사",
+        "비대면시험 전환",
+        "코로나-19",
+        "9주차",
+        "대면수업 유지",
+        "발열체크",
+        "실험실습실기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:45:40.227Z",
+      "sourceHash": "362f71c3df3405a5",
+      "inputHash": "9c8ae351f5a7c246",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "383148b79adbec65"
     },
     "academic:url:09de21eb333086d7": {
       "summary": "2024학년도 후기 졸업 예정자(2025년 8월)는 졸업 요건 충족을 위해 다전공 포기/변경 신청을 1차 마감(5.16. 12:00) 전 완료해야 합니다.",
@@ -5982,6 +6005,28 @@
       "contentSource": "detail",
       "detailContentHash": "ecc25757e962356d"
     },
+    "academic:url:391394f29d3a233e": {
+      "summary": "2021-1학기 학·석사연계과정 재학생 대상 수기공모전으로, 참여자에게 생활비성 장학금이 지급되며 제출 마감은 6월 22일 오후 5시입니다.",
+      "target": "2021학년도 1학기 기준 학·석사연계과정 신청 후 대학원(석사) 강좌 이수 중인 재학생",
+      "deadline": "2021년 06월 22일(화) 오후 5시",
+      "requiredAction": "수기공모 양식 작성(최소 4페이지 이상) 후 바울관 학사지원팀 방문 제출 또는 intermajor@syu.ac.kr 이메일 제출",
+      "keywords": [
+        "학석사연계과정",
+        "수기공모",
+        "대학혁신지원사업",
+        "생활비성 장학금",
+        "공모전",
+        "제출 마감"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:43:52.940Z",
+      "sourceHash": "774d20ab3df540e8",
+      "inputHash": "07551a0538b0ed7a",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "538a3f4c431eca21"
+    },
     "academic:url:39d56ff8b2bc8c2b": {
       "summary": "2023년 8월 10일 도서관 개방 및 8월 11일(금) 도서관 휴관 일정을 안내합니다.",
       "target": "도서관 이용 학생",
@@ -7340,6 +7385,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "1d0a5020d99f0fcf"
+    },
+    "academic:url:4626a5dac6e96765": {
+      "summary": "2021-1학기 중간 강의평가가 4월 20일부터 5월 16일까지 실시되며, 미참여 시 해당 학기 성적 조회가 불가합니다.",
+      "target": "2021학년도 1학기 수강 중인 전체 학생",
+      "deadline": "2021년 05월 16일(일)",
+      "requiredAction": "SU-WINGs 로그인 후 좌측 서비스 > [학부] 수업정보 > 강의평가 메뉴에서 기간 내 평가 완료",
+      "keywords": [
+        "중간 강의평가",
+        "SU-WINGs",
+        "성적 조회 제한",
+        "강의평가 기간",
+        "익명 보장",
+        "수강신청 참고"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:45:50.103Z",
+      "sourceHash": "d05cd7e759750fae",
+      "inputHash": "ff11ee1f28a53b0d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "b810f12d9c46d764"
     },
     "academic:url:4632505c53d28533": {
       "summary": "2022-2학기 글로컬영어Ⅱ 수강신청 및 분반 기준을 안내하며, 1학년은 학과 배정시간에, 2-4학년은 공통(교양)란에서 신청해야 합니다.",
@@ -11214,6 +11281,28 @@
       "contentSource": "detail",
       "detailContentHash": "61de02f69fa72225"
     },
+    "academic:url:68b42c25150d9d87": {
+      "summary": "2021학년도 하계 국내봉사대(총 10팀)를 모집하며, 5월 21일(금) 오전 11:59까지 서류를 이메일 및 사무실에 제출해야 합니다.",
+      "target": "본교 모든 재학생(학과별 봉사대 7팀, 학생주도형 3팀)",
+      "deadline": "2021년 5월 21일(금) 오전 11:59",
+      "requiredAction": "참가신청서·사업계획서·부모동의서 작성 후 이메일(service@syu.ac.kr) 및 사회봉사단 사무실(바울관 111호)에 기한 내 제출",
+      "keywords": [
+        "하계 국내봉사대",
+        "봉사 모집",
+        "사회봉사단",
+        "학점 이수",
+        "참가신청서",
+        "코로나19 대응"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:43:19.882Z",
+      "sourceHash": "28c021aeb4849a71",
+      "inputHash": "d1e91e33aff34f3f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "6a3c623a26307c82"
+    },
     "academic:url:6944e3b9f9e3aec2": {
       "summary": "2021-2학기 비대면 수업이 8주차(10월 26일)까지 연장되며, 실험·실습·실기 교과목은 대면 수업이 권장됩니다.",
       "target": "2021-2학기 재학 중인 전체 학생 및 교강사",
@@ -13755,6 +13844,29 @@
       "contentSource": "detail",
       "detailContentHash": "33d58e928e18cf2b"
     },
+    "academic:url:7e62ef3878884deb": {
+      "summary": "교내 확진자 발생으로 4월 22일(목) 3교시부터 4월 26일(월)까지 모든 대면시험 및 수업이 비대면으로 전환됩니다.",
+      "target": "전체 재학생",
+      "deadline": "2021.04.26",
+      "requiredAction": "4월 22일 3교시 이후 예정된 대면시험 및 수업의 비대면 전환 여부를 확인하고 원문 공지를 통해 세부 사항 확인",
+      "keywords": [
+        "대면시험 비대면 전환",
+        "확진자 발생",
+        "다니엘관 폐쇄",
+        "요한관 폐쇄",
+        "방역소독",
+        "긴급공지",
+        "수업 운영 변경"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:45:58.523Z",
+      "sourceHash": "082d5d4abe3e9bd6",
+      "inputHash": "5507831115301d8a",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fa647e7a919fd5fc"
+    },
     "academic:url:7e6c16f4fe3bee52": {
       "summary": "2023학년도 2학기 채플 운영 관련 안내이며, 세부 내용은 원문 공지를 확인하세요.",
       "target": "채플 수강 대상 학생",
@@ -14504,6 +14616,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "7e40ccaf9b7836b6"
+    },
+    "academic:url:86e8a7776659c379": {
+      "summary": "국제교육원이 주최하는 2021 외국인 말하기 대회(글로벌투게더)로, 한국인 멘토와 국제학생 멘티가 팀을 이뤄 5월 28일 대회에 참가하며 신청 마감은 5월 14일 오후 1시입니다.",
+      "target": "한국인 학생(멘토) 및 국제학생(멘티)",
+      "deadline": "2021년 5월 14일(금) 오후 1시",
+      "requiredAction": "신청서 양식 다운로드 후 작성하여 korean@syu.ac.kr로 메일 제출, 5월 17~18일 줌 오리엔테이션 필수 참석",
+      "keywords": [
+        "외국인 말하기 대회",
+        "글로벌투게더",
+        "국제학생",
+        "한국인 멘토",
+        "줌 오리엔테이션",
+        "대학혁신지원사업",
+        "발표 PPT"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:44:38.250Z",
+      "sourceHash": "767b92a3396351bd",
+      "inputHash": "65fe6edd8e68f078",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1b33642855b572fc"
     },
     "academic:url:87017c23dcd7182b": {
       "summary": "SW중심대학사업단이 2023년 1월 30일~2월 3일 SW 창업 캠프를 운영하며, 2022-2학기 재학생을 대상으로 1월 23일까지 신청을 받습니다.",
@@ -16325,6 +16460,27 @@
       "contentSource": "detail",
       "detailContentHash": "8f7a6d5e1331d956"
     },
+    "academic:url:971ebcf38ee20071": {
+      "summary": "교육부 대학 특별방역관리주간(4.21~5.11) 운영에 따라 코로나19 예방 중요 행동수칙 준수를 전체 학생 및 교직원에게 안내합니다.",
+      "target": "전체 학생 및 교직원",
+      "deadline": "unknown",
+      "requiredAction": "코로나19 예방 행동수칙 확인 및 준수",
+      "keywords": [
+        "코로나19",
+        "예방 행동수칙",
+        "특별방역관리주간",
+        "감염예방",
+        "대학방역"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-20T03:44:01.734Z",
+      "sourceHash": "dd0ef9252148be1a",
+      "inputHash": "51bf494e9033b65c",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "3e0e84c2a692e9a0"
+    },
     "academic:url:97391ce132a19fb4": {
       "summary": "2025-2학기 2차 폐강과목이 공고되었으며, 해당 과목 수강생은 2025년 9월 9일(화) 17시까지 이메일로 수강변경신청서를 제출해야 합니다.",
       "target": "2025-2학기 폐강과목 수강 신청자",
@@ -16919,6 +17075,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "9e0e899178d7c451"
+    },
+    "academic:url:9bdb5720eb3e88a3": {
+      "summary": "한국대학사회봉사협의회 40기 WFK 청년봉사단 온라인 해외봉사 단원을 모집하며, 지원서 접수 마감은 2021년 5월 14일(금) 12:00입니다.",
+      "target": "대학 재학생 및 휴학생",
+      "deadline": "2021년 5월 14일(금) 12:00",
+      "requiredAction": "대사협 홈페이지에서 회원가입 후 지원서 작성 및 증빙서류 업로드하여 제출",
+      "keywords": [
+        "WFK 청년봉사단",
+        "온라인 해외봉사",
+        "단원 모집",
+        "아시아·아프리카",
+        "지원서 접수",
+        "재학생·휴학생"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:44:17.368Z",
+      "sourceHash": "1d7758f3e0b97483",
+      "inputHash": "c899dfdafa4af929",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "36c84f5b998178d7"
     },
     "academic:url:9c0ce48dc4f3d96b": {
       "summary": "2021 교양영어 수강후기 공모전 수상자 발표로, 장학금은 본인 명의 계좌로 2~3주 내 입금되며 상장은 1월 18일부터 수령 가능합니다.",
@@ -21769,6 +21947,29 @@
       "contentSource": "detail",
       "detailContentHash": "5fec6e4ff68941a8"
     },
+    "academic:url:c8829c39abf379e4": {
+      "summary": "한국대학사회봉사협의회 2021년 하계 온라인 해외봉사 프로그램을 모집하며, 신청은 2021년 5월 21일 12시까지 사회봉사단과 협의 후 대사협 홈페이지에서 가능합니다.",
+      "target": "해외봉사 프로그램 신청 희망 학생",
+      "deadline": "2021.05.21 12:00",
+      "requiredAction": "사회봉사단(바울관 111호, 02-3399-3264)과 협의 후 신청서 및 관련 서류를 대사협 홈페이지에 업로드",
+      "keywords": [
+        "해외봉사",
+        "온라인봉사",
+        "한국대학사회봉사협의회",
+        "하계봉사",
+        "WFK",
+        "봉사프로그램모집",
+        "지원금"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:44:27.447Z",
+      "sourceHash": "3084a3ad3eaad9e4",
+      "inputHash": "1977540aca61da48",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "dacf02fdc995ce92"
+    },
     "academic:url:c8bcd1a7a09263b5": {
       "summary": "예비군 훈련 참가 학생은 사전에 담당 교수에게 일정을 알리고, 훈련 후 훈련 통지서와 교육 필증을 학과 사무실 및 교수에게 제출해야 합니다.",
       "target": "예비군 훈련에 참가하는 재학생",
@@ -23997,6 +24198,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "a7826f472d5d2fa0"
+    },
+    "academic:url:dc344b6e93d9b294": {
+      "summary": "컴퓨팅사고력 SW코딩자격 4차시험(5월 10일) 접수가 4월 29일 오전 10시부터 5월 3일까지 진행되며, PC로만 선착순 접수 가능합니다.",
+      "target": "컴퓨팅사고력 SW코딩자격 시험 응시 희망 학생",
+      "deadline": "2021-05-03 23:59",
+      "requiredAction": "PC에서 교시별 접수 링크에 접속하여 기간 내 선착순 접수",
+      "keywords": [
+        "SW코딩자격",
+        "컴퓨팅사고력",
+        "4차시험",
+        "선착순접수",
+        "시험접수",
+        "5월10일"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:44:46.666Z",
+      "sourceHash": "2429bf6550c9788f",
+      "inputHash": "0eac0384fa87b3ee",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "990b2eb6396f321d"
     },
     "academic:url:dc3d8b83c06f732c": {
       "summary": "설 명절 기간(2023.1.21~24) 도서관이 휴관하오니 이용에 참고하시기 바랍니다.",
@@ -30133,6 +30356,29 @@
       "contentSource": "detail",
       "detailContentHash": "93dbf29c2d4ec63c"
     },
+    "campus:url:9cf2b94ca10d0548": {
+      "summary": "하남시사회적경제지원센터 SNS기자단 '소이단' 1기를 2021년 5월 12일 18시까지 모집하며, 만 19~29세 청년이 지원할 수 있습니다.",
+      "target": "글쓰기·사진·영상 제작에 관심 있는 만 19세 이상 29세 이하 청년 (대면활동 가능자)",
+      "deadline": "2021년 5월 12일(수) 18시",
+      "requiredAction": "원문 공지에서 지원 방법 확인 후 모집 기간 내 서류 제출",
+      "keywords": [
+        "SNS기자단",
+        "소이단 1기",
+        "하남시사회적경제지원센터",
+        "청년 모집",
+        "활동비 지원",
+        "서류심사",
+        "사회적경제"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:43:28.602Z",
+      "sourceHash": "04e873abc6e267f5",
+      "inputHash": "8e8b1f09e989908b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5292335958c8de2b"
+    },
     "campus:url:9fbcb6a8d7986445": {
       "summary": "서울런 멘토단 활동 학생을 모집하며, 2021년 8월 19일 17시까지 신청서 등 서류를 이메일로 제출해야 합니다.",
       "target": "서울 소재 대학(원)생(휴학생 포함), 직전학기 학점 C0 이상",
@@ -31592,6 +31838,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f51299139229fcf1"
+    },
+    "campus:url:f95352005f342bb3": {
+      "summary": "노원구건강가정다문화가족지원센터가 서울 거주 청년 1인가구를 대상으로 5월 13일~6월 10일 매주 목요일 온라인 집단상담 프로그램 '토닥토닥'을 운영합니다.",
+      "target": "서울시 거주 청년(20~30대) 1인가구 및 예비 1인가구 5명",
+      "deadline": "unknown",
+      "requiredAction": "전화(070-4613-0623) 또는 구글 폼으로 신청",
+      "keywords": [
+        "1인가구",
+        "집단상담",
+        "토닥토닥",
+        "대인관계",
+        "노원구",
+        "온라인 교육",
+        "청년"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-20T03:44:55.220Z",
+      "sourceHash": "41e71280b5553124",
+      "inputHash": "eb66786c05ecfc46",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "621c44c31a22b4f6"
     },
     "campus:url:f97a6c4e72b3f71d": {
       "summary": "서울시 청년월세 한시 특별지원 사업을 학생처에서 안내하며, 원문 공지에서 상세 내용을 확인할 수 있습니다.",
@@ -34694,6 +34963,25 @@
       "contentSource": "detail",
       "detailContentHash": "c90d03a7b313ab43"
     },
+    "scholarship:url:1a2a9489c4c69e20": {
+      "summary": "서울장학재단의 2021년 독립유공자 후손 장학금 장학생 선발 공고로, 해당 대상자는 원문을 확인하여 신청 방법 및 기간을 확인하세요.",
+      "target": "독립유공자 후손 재학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 신청 자격 및 방법 확인 후 기간 내 신청",
+      "keywords": [
+        "서울장학재단",
+        "독립유공자 후손",
+        "장학금",
+        "장학생 선발"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:45:23.663Z",
+      "sourceHash": "be25f1c72e84c57a",
+      "inputHash": "babe5a20c8d430ff",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
     "scholarship:url:1a41873ce7d42f65": {
       "summary": "2023년 2학기 가계곤란 기혼자 장학금 신청 안내로, 해당 학생은 원문 공지에서 신청 기간 및 방법을 확인하세요.",
       "target": "가계가 곤란한 기혼 재학생",
@@ -37573,6 +37861,26 @@
       "generatedAt": "2026-06-17T20:27:45.096Z",
       "sourceHash": "cbb150535b0fef6b",
       "inputHash": "46284ae879146e47",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:355108960072c2dd": {
+      "summary": "2021-1학기 코로나19 특별 근로장학생 신청기간이 연장되었으니 원문 공지를 확인하여 기간 내 신청하세요.",
+      "target": "코로나19 특별 근로장학금 신청 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 연장된 신청기간 확인 후 기간 내 신청",
+      "keywords": [
+        "코로나19",
+        "특별 근로장학생",
+        "신청기간 연장",
+        "2021-1학기",
+        "장학금"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:43:42.504Z",
+      "sourceHash": "32a19e6fb0aff266",
+      "inputHash": "08388572061daaf7",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
@@ -40633,6 +40941,25 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
+    "scholarship:url:54cb8a32b52b9f41": {
+      "summary": "2021-1학기 학과사랑장학금 신청 안내로, 원문 공지를 통해 신청 방법 및 기간을 확인하세요.",
+      "target": "2021-1학기 재학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 신청 기간 및 방법 확인 후 기간 내 신청",
+      "keywords": [
+        "학과사랑장학금",
+        "장학금 신청",
+        "2021-1학기",
+        "학생처"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:42:48.777Z",
+      "sourceHash": "c44a57435471f52b",
+      "inputHash": "5f862683c92ac272",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
     "scholarship:url:5537d08729354d0e": {
       "summary": "2022-2학기 국제화능력향상장학금 신청 기간은 10월 6일~12월 31일이며, 공인어학성적 기준 충족 시 SU-WINGs에서 신청 가능합니다.",
       "target": "공인어학시험 성적 보유 재학생(외국어특기자 입학생·재외국민·외국인유학생 제외, 2학년 이상)",
@@ -42935,6 +43262,45 @@
       "contentSource": "detail",
       "detailContentHash": "a7c43bf1c82435c7"
     },
+    "scholarship:url:6a3c8ffc5cee5d23": {
+      "summary": "2021년 상반기 전주시 대학생 학자금 대출이자 지원사업 안내로, 관심 있는 학생은 원문 공지를 확인하세요.",
+      "target": "전주시 거주 또는 관련 대학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 신청 자격 및 방법 확인",
+      "keywords": [
+        "전주시",
+        "학자금 대출",
+        "이자 지원",
+        "대학생 장학"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:45:16.209Z",
+      "sourceHash": "db0f21dbd78c205b",
+      "inputHash": "9d690b7942e8be54",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:6a7d7d60bbea871f": {
+      "summary": "2021년 국가우수장학(인문100년) 신규장학생 사전신청 기간이 연장되었으니 원문 공지를 확인하세요.",
+      "target": "국가우수장학(인문100년) 신규장학생 신청 희망자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 연장된 사전신청 기간 및 방법 확인 후 신청",
+      "keywords": [
+        "국가우수장학",
+        "인문100년",
+        "신규장학생",
+        "사전신청",
+        "신청기간 연장"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:42:55.230Z",
+      "sourceHash": "ec129829ffc79341",
+      "inputHash": "830ce104f140e4a5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
     "scholarship:url:6ae828dccd3a63ea": {
       "summary": "충청남도인재육성재단 4차산업인재 장학생 모집 안내로, 관심 있는 학생은 원문 공지에서 자격 및 신청 방법을 확인하세요.",
       "target": "충청남도 출신 또는 4차산업 관련 전공 학생(불명확)",
@@ -43056,6 +43422,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "c58d0b24b2016d14"
+    },
+    "scholarship:url:6cb9775d4c124e9b": {
+      "summary": "2022년도 풀브라이트 장학 프로그램(교수·전문가 장학프로그램 등 3개 과정) 안내로, 원문 공지에서 세부 내용을 확인하세요.",
+      "target": "교수 및 전문가 등 풀브라이트 장학 프로그램 지원 희망자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 확인 후 해당 과정 신청 방법 및 일정 파악",
+      "keywords": [
+        "풀브라이트",
+        "장학 프로그램",
+        "교수 장학",
+        "전문가 장학",
+        "미국 유학",
+        "2022년도"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:46:05.901Z",
+      "sourceHash": "c9c7f68e71875b42",
+      "inputHash": "99efeb676f33a157",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
     },
     "scholarship:url:6cd4910e191567f3": {
       "summary": "2022년 1학기 지헌장학재단 제20기 전기 장학생을 모집하오니 해당자는 원문 공지를 확인하세요.",
@@ -43469,6 +43856,25 @@
       "generatedAt": "2026-06-17T20:55:07.748Z",
       "sourceHash": "96e08615c0ec5f28",
       "inputHash": "08a6b88063c93d77",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:7205c6b7d61a2703": {
+      "summary": "2021-1학기 나눔장학금 2차 선발결과가 안내되었으니 원문 공지를 통해 결과를 확인하세요.",
+      "target": "나눔장학금 2차 신청자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 선발 결과 확인",
+      "keywords": [
+        "나눔장학금",
+        "2차 선발결과",
+        "2021-1학기",
+        "장학금 안내"
+      ],
+      "importance": "low",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:43:08.495Z",
+      "sourceHash": "b7d96e2190288a80",
+      "inputHash": "b0b36a363b08b15d",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
@@ -47663,6 +48069,25 @@
       "contentSource": "detail",
       "detailContentHash": "762ea88f89b4abbf"
     },
+    "scholarship:url:96043ddeacd1fef2": {
+      "summary": "2021년 상반기 군산시 대학생 학자금 대출 이자지원 공고로, 해당 학생은 원문 공지를 통해 신청 방법 및 자격을 확인하세요.",
+      "target": "군산시 거주 또는 관련 대학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 확인 후 신청 방법 및 자격 요건 파악",
+      "keywords": [
+        "군산시",
+        "학자금 대출",
+        "이자지원",
+        "장학금"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:44:08.266Z",
+      "sourceHash": "f98296f2415e004f",
+      "inputHash": "fd53caf0976fc4db",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
     "scholarship:url:96bc971d70c442f8": {
       "summary": "새마을금고재단이 주거비 지원이 필요한 전국 청년 100명을 대상으로 월 최대 35만원씩 6개월간 월세를 지원하는 장학사업 7기를 모집합니다.",
       "target": "만 18세 이상 주거비 지원이 필요한 전국 청년(기초수급자·차상위·장애인 등 우대)",
@@ -48495,6 +48920,25 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "e00f35f63d83a28f"
+    },
+    "scholarship:url:9ee660866a5743b9": {
+      "summary": "2021-1학기 국가장학금 2차 지급 안내로, 대상 학생은 원문 공지를 통해 지급 관련 사항을 확인하시기 바랍니다.",
+      "target": "2021-1학기 국가장학금 수혜 대상 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 지급 일정 및 세부 내용 확인",
+      "keywords": [
+        "국가장학금",
+        "장학금 지급",
+        "2021-1학기",
+        "2차 지급"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:45:02.450Z",
+      "sourceHash": "8bbcbf6348cd685d",
+      "inputHash": "55418f4cb92fb3c8",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
     },
     "scholarship:url:9efc81f303b85223": {
       "summary": "2024-1학기 국가근로장학사업 8차 추가모집으로, 한국장학재단 신청자는 6월 2일 23시까지 이메일로 지원서를 제출해야 합니다.",
@@ -49451,6 +49895,27 @@
       "generatedAt": "2026-06-17T20:26:56.043Z",
       "sourceHash": "184a2fea44d8feaf",
       "inputHash": "fb31a7f1f06730db",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:aa9633a10db9159c": {
+      "summary": "2021-1학기 가족장학, 기혼자 장학, 자매학교진흥장학, 글로벌봉사장학 선발 결과가 발표되었으니 원문 공지에서 확인하세요.",
+      "target": "해당 장학금 신청자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 본인 선발 여부 확인",
+      "keywords": [
+        "가족장학",
+        "기혼자 장학",
+        "자매학교진흥장학",
+        "글로벌봉사장학",
+        "선발결과",
+        "2021-1학기"
+      ],
+      "importance": "low",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:43:02.225Z",
+      "sourceHash": "ce69208883329ddb",
+      "inputHash": "d58042f82e812dc3",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
@@ -50541,6 +51006,25 @@
       "generatedAt": "2026-06-17T21:16:13.010Z",
       "sourceHash": "295d30d50ab03677",
       "inputHash": "899e29c8d1db9e83",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:b2f8807d61cdc0d0": {
+      "summary": "노원소방서 대학생 의용소방대 모집 공고로, 관심 있는 학생은 원문 공지를 확인하세요.",
+      "target": "대학생(삼육대학교 재학생 추정 불가, 원문 확인 필요)",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 확인 후 모집 관련 신청 방법 및 일정 파악",
+      "keywords": [
+        "노원소방서",
+        "의용소방대",
+        "대학생 모집",
+        "학생처"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:45:09.517Z",
+      "sourceHash": "a769f7c494b68531",
+      "inputHash": "8d294c2fb3b26feb",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
@@ -53596,6 +54080,25 @@
       "generatedAt": "2026-06-19T17:24:07.704Z",
       "sourceHash": "23351f5cf753b7a7",
       "inputHash": "76de308377abd912",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
+    },
+    "scholarship:url:cc9951a7c47142cc": {
+      "summary": "서울장학재단의 2021년 서울희망대학 장학금 신청 안내로, 원문 공지에서 신청 자격 및 방법을 확인하세요.",
+      "target": "서울 소재 대학 재학생 또는 해당 장학금 신청 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 확인 후 신청 자격 검토 및 기간 내 신청",
+      "keywords": [
+        "서울장학재단",
+        "서울희망대학 장학금",
+        "장학금 신청",
+        "2021년"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:45:30.943Z",
+      "sourceHash": "297a2eeb7855a052",
+      "inputHash": "404c8780979828ac",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
     },
@@ -58477,6 +58980,26 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "c02cfa6fbd2d1e75"
+    },
+    "scholarship:url:f7a44a85fdae4ec3": {
+      "summary": "김제시 거주 대학생을 대상으로 2021년 상반기 학자금 대출이자 지원 신청을 안내하는 공지입니다.",
+      "target": "김제시 거주 대학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 신청 기간 및 방법 확인 후 기간 내 신청",
+      "keywords": [
+        "김제시",
+        "학자금 대출",
+        "이자 지원",
+        "장학",
+        "신청 안내"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-20T03:43:35.555Z",
+      "sourceHash": "02f23af4dfb7d54c",
+      "inputHash": "e4759ffe74bcd6f3",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "metadata"
     },
     "scholarship:url:f7a65aa457c29a13": {
       "summary": "수림재단 제11회 동교인재상 선발 안내로, 상세 내용은 첨부파일 확인 및 해당 재단 직접 문의가 필요합니다.",
