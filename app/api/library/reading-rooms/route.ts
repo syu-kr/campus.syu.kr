@@ -83,14 +83,34 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
   let match;
 
   while ((match = roomRegex.exec(text)) !== null) {
+    const totalSeat = parseInt(match[2], 10);
+    const useSeat = parseInt(match[3], 10);
+    const remainSeat = parseInt(match[4], 10);
+
+    if (
+      !Number.isFinite(totalSeat) ||
+      !Number.isFinite(useSeat) ||
+      !Number.isFinite(remainSeat)
+    ) {
+      throw new Error("Reading room API returned invalid seat counts");
+    }
+
     rooms.push({
       id: rooms.length,
       strRoomNm: match[1],
-      strTotalSeat: parseInt(match[2]),
-      strUseSeat: parseInt(match[3]),
-      strRemainSeat: parseInt(match[4]),
+      strTotalSeat: totalSeat,
+      strUseSeat: useSeat,
+      strRemainSeat: remainSeat,
       lastUpdated: new Date().toISOString(),
     });
+  }
+
+  if (rooms.length === 0) {
+    throw new Error(
+      text.trim().length > 0
+        ? "Reading room API returned no parseable room items"
+        : "Reading room API returned an empty response",
+    );
   }
 
   return rooms;
