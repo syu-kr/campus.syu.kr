@@ -175,6 +175,7 @@ interface CreditEvaluationItem {
   required: number;
   completed: number;
   shortage: number;
+  sourceIds: string[];
   status: "satisfied" | "short";
 }
 
@@ -507,6 +508,7 @@ export function evaluateGraduation(
       required,
       completed,
       shortage,
+      sourceIds: ["syu-graduation-guide", "graduation-self-check-sheet"],
       status: shortage > 0 ? ("short" as const) : ("satisfied" as const),
     };
   });
