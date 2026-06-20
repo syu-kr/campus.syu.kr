@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import clsx from "clsx";
 
 import { Badge } from "@/app/components/Badge";
@@ -39,6 +40,8 @@ import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 const STORAGE_KEY = "syu-campus-graduation-self-check-v2";
 const MOBILE_DESKTOP_NOTICE_KEY =
   "syu-campus-graduation-mobile-desktop-notice-v1";
+const EXPORT_FILE_VERSION = 2;
+const SHARE_HASH_PREFIX = "graduation-progress=";
 
 const INITIAL_SELECTION: GraduationSelection = {
   admissionYear: "",
@@ -57,13 +60,219 @@ interface SavedState {
   plans: Record<string, string>;
 }
 
+interface ExportedSavedState {
+  app: "syu-campus";
+  feature: "graduation-self-check";
+  version: number;
+  exportedAt: string;
+  state: SavedState;
+}
+
 type GraduationText = Dictionary["pages"]["graduation"];
+type PersistenceMessageKey = keyof GraduationText["sidebar"]["messages"];
+type GraduationSourceList = ReturnType<typeof getSourcesForSelection>;
+
+const VALID_ADMISSION_TYPES = [
+  "freshman",
+  "transfer2",
+  "transfer3",
+  "transfer4",
+  "departmentTransfer",
+] as const;
+const VALID_MAJOR_TRACKS = [
+  "single",
+  "doubleMajor",
+  "minor",
+  "teaching",
+  "lifelongEducator",
+] as const;
+const VALID_CREDIT_KEYS = [
+  "totalCredits",
+  "requiredLiberal",
+  "coreLiberal",
+  "areaLiberal",
+  "majorRequired",
+  "majorElective",
+  "majorTotal",
+  "doubleMajor",
+  "minor",
+  "teaching",
+  "lifelongEducator",
+  "freeElective",
+] as const;
+const VALID_CHECKLIST_ANSWERS = [
+  "satisfied",
+  "incomplete",
+  "notApplicable",
+] as const;
 
 function getCourseCategoryLabel(text: GraduationText, category: string) {
   return (
     text.courseCategories[category as keyof typeof text.courseCategories] ??
     category
   );
+}
+
+function createSavedState(
+  selection: GraduationSelection,
+  completedCredits: CompletedCreditInput,
+  selectedCourseIds: string[],
+  checklistAnswers: Record<string, ChecklistAnswer>,
+  plans: Record<string, string>,
+): SavedState {
+  return {
+    selection,
+    completedCredits,
+    selectedCourseIds,
+    checklistAnswers,
+    plans,
+  };
+}
+
+function parseSavedStateFromHash(hash: string): SavedState | null {
+  const value = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (!value.startsWith(SHARE_HASH_PREFIX)) return null;
+
+  return parseSavedStatePayload(
+    JSON.parse(decodeSharePayload(value.slice(SHARE_HASH_PREFIX.length))),
+  );
+}
+
+function buildShareUrl(state: SavedState) {
+  const url = new URL(window.location.href);
+  const payload: ExportedSavedState = {
+    app: "syu-campus",
+    feature: "graduation-self-check",
+    version: EXPORT_FILE_VERSION,
+    exportedAt: new Date().toISOString(),
+    state,
+  };
+
+  url.hash = `${SHARE_HASH_PREFIX}${encodeSharePayload(payload)}`;
+  return url.toString();
+}
+
+function encodeSharePayload(payload: unknown) {
+  const bytes = new TextEncoder().encode(JSON.stringify(payload));
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function decodeSharePayload(value: string) {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(
+    normalized.length + ((4 - (normalized.length % 4)) % 4),
+    "=",
+  );
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+
+  return new TextDecoder().decode(bytes);
+}
+
+function parseSavedStatePayload(payload: unknown): SavedState {
+  const candidate =
+    isRecord(payload) && isRecord(payload.state) ? payload.state : payload;
+
+  if (!isRecord(candidate)) {
+    throw new Error("Invalid graduation saved state");
+  }
+
+  return {
+    selection: normalizeSelection(candidate.selection),
+    completedCredits: normalizeCompletedCredits(candidate.completedCredits),
+    selectedCourseIds: normalizeStringArray(candidate.selectedCourseIds),
+    checklistAnswers: normalizeChecklistAnswers(candidate.checklistAnswers),
+    plans: normalizeStringRecord(candidate.plans),
+  };
+}
+
+function normalizeSelection(value: unknown): GraduationSelection {
+  const record = isRecord(value) ? value : {};
+  const admissionType = readUnion(record.admissionType, VALID_ADMISSION_TYPES);
+  const majorTrack = readUnion(record.majorTrack, VALID_MAJOR_TRACKS);
+  const majorId = readString(record.majorId);
+
+  return {
+    admissionYear: readString(record.admissionYear).replace(/\D/g, "").slice(0, 4),
+    collegeId: readString(record.collegeId),
+    departmentId: readString(record.departmentId),
+    majorId: majorId || undefined,
+    admissionType: admissionType ?? "",
+    majorTrack: majorTrack ?? "",
+  };
+}
+
+function normalizeCompletedCredits(value: unknown): CompletedCreditInput {
+  const record = isRecord(value) ? value : {};
+  const credits: CompletedCreditInput = {};
+
+  VALID_CREDIT_KEYS.forEach((key) => {
+    const credit = Number(record[key]);
+    if (Number.isFinite(credit) && credit >= 0) {
+      credits[key] = credit;
+    }
+  });
+
+  return credits;
+}
+
+function normalizeChecklistAnswers(value: unknown) {
+  const record = isRecord(value) ? value : {};
+  const answers: Record<string, ChecklistAnswer> = {};
+
+  Object.entries(record).forEach(([key, answer]) => {
+    const normalized = readUnion(answer, VALID_CHECKLIST_ANSWERS);
+    if (normalized) {
+      answers[key] = normalized;
+    }
+  });
+
+  return answers;
+}
+
+function normalizeStringRecord(value: unknown) {
+  const record = isRecord(value) ? value : {};
+
+  return Object.fromEntries(
+    Object.entries(record).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
+function normalizeStringArray(value: unknown) {
+  return Array.from(
+    new Set(
+      Array.isArray(value)
+        ? value.filter((item): item is string => typeof item === "string")
+        : [],
+    ),
+  );
+}
+
+function readUnion<T extends readonly string[]>(
+  value: unknown,
+  candidates: T,
+): T[number] | undefined {
+  return typeof value === "string" && candidates.includes(value)
+    ? value
+    : undefined;
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 export default function GraduationPage() {
@@ -84,6 +293,10 @@ export default function GraduationPage() {
   const [restored, setRestored] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [persistenceMessage, setPersistenceMessage] =
+    useState<PersistenceMessageKey | null>(null);
+  const [shareFallbackUrl, setShareFallbackUrl] = useState("");
+  const importFileInputRef = useRef<HTMLInputElement>(null);
 
   const departments = selection.collegeId
     ? getAvailableDepartments(selection.collegeId)
@@ -130,35 +343,52 @@ export default function GraduationPage() {
     locale,
   );
   const selectionComplete = isCompleteSelection(selection);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as SavedState;
-        setSelection(saved.selection);
-        setCompletedCredits(saved.completedCredits);
-        setSelectedCourseIds(saved.selectedCourseIds ?? []);
-        setChecklistAnswers(saved.checklistAnswers);
-        setPlans(saved.plans);
-      }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setRestored(true);
-    }
+  const applySavedState = useCallback((saved: SavedState) => {
+    setSelection(saved.selection);
+    setCompletedCredits(saved.completedCredits);
+    setSelectedCourseIds(saved.selectedCourseIds ?? []);
+    setChecklistAnswers(saved.checklistAnswers);
+    setPlans(saved.plans);
   }, []);
 
   useEffect(() => {
+    try {
+      const sharedState = parseSavedStateFromHash(window.location.hash);
+      if (sharedState) {
+        applySavedState(sharedState);
+        setPersistenceMessage("shareLoaded");
+        return;
+      }
+
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        applySavedState(parseSavedStatePayload(JSON.parse(raw)));
+      }
+    } catch {
+      if (window.location.hash.includes(SHARE_HASH_PREFIX)) {
+        setPersistenceMessage("shareLoadFailed");
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    } finally {
+      setRestored(true);
+    }
+  }, [applySavedState]);
+
+  useEffect(() => {
     if (!restored) return;
-    const saved: SavedState = {
-      selection,
-      completedCredits,
-      selectedCourseIds,
-      checklistAnswers,
-      plans,
-    };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(
+        createSavedState(
+          selection,
+          completedCredits,
+          selectedCourseIds,
+          checklistAnswers,
+          plans,
+        ),
+      ),
+    );
   }, [
     checklistAnswers,
     completedCredits,
@@ -233,6 +463,71 @@ export default function GraduationPage() {
     setSelection(INITIAL_SELECTION);
     resetProgress();
     window.localStorage.removeItem(STORAGE_KEY);
+    setPersistenceMessage(null);
+    setShareFallbackUrl("");
+  };
+
+  const getCurrentSavedState = () =>
+    createSavedState(
+      selection,
+      completedCredits,
+      selectedCourseIds,
+      checklistAnswers,
+      plans,
+    );
+
+  const handleExport = () => {
+    const exported: ExportedSavedState = {
+      app: "syu-campus",
+      feature: "graduation-self-check",
+      version: EXPORT_FILE_VERSION,
+      exportedAt: new Date().toISOString(),
+      state: getCurrentSavedState(),
+    };
+    const blob = new Blob([JSON.stringify(exported, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = `syu-campus-graduation-${date}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setShareFallbackUrl("");
+    setPersistenceMessage("exported");
+  };
+
+  const handleImportFile = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const imported = parseSavedStatePayload(JSON.parse(await file.text()));
+      applySavedState(imported);
+      setShareFallbackUrl("");
+      setPersistenceMessage("imported");
+    } catch {
+      setPersistenceMessage("importFailed");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleShareProgress = async () => {
+    const url = buildShareUrl(getCurrentSavedState());
+    setShareFallbackUrl("");
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setPersistenceMessage("shareCopied");
+    } catch {
+      setShareFallbackUrl(url);
+      setPersistenceMessage("shareCopyFailed");
+    }
   };
 
   const handleCourseToggle = (courseId: string) => {
@@ -580,7 +875,7 @@ export default function GraduationPage() {
                   {evaluation.creditItems.map((item) => (
                     <div
                       key={item.key}
-                      className="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 p-3 text-sm"
+                      className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div>
                         <p className="font-semibold text-neutral-900">
@@ -591,6 +886,11 @@ export default function GraduationPage() {
                             .replace("{required}", String(item.required))
                             .replace("{completed}", String(item.completed))}
                         </p>
+                        <EvidenceLine
+                          sourceIds={item.sourceIds}
+                          sources={sources}
+                          text={text}
+                        />
                       </div>
                       <Badge color={item.shortage > 0 ? "red" : "green"}>
                         {item.shortage > 0
@@ -599,6 +899,36 @@ export default function GraduationPage() {
                               String(item.shortage),
                             )
                           : text.result.satisfied}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-sm font-bold text-neutral-900">
+                    {text.result.checklistResultTitle}
+                  </h3>
+                  {evaluation.checklistItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-3 rounded-lg border border-neutral-200 p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="font-semibold text-neutral-900">
+                          {item.label}
+                        </p>
+                        <p className="mt-0.5 text-xs text-neutral-500">
+                          {text.result.answerPrefix}{" "}
+                          {formatChecklistAnswer(item.answer, text)}
+                        </p>
+                        <EvidenceLine
+                          sourceIds={item.sourceIds}
+                          sources={sources}
+                          text={text}
+                        />
+                      </div>
+                      <Badge color={getEvaluationBadgeColor(item.status)}>
+                        {getEvaluationStatusLabel(item.status, text)}
                       </Badge>
                     </div>
                   ))}
@@ -713,6 +1043,51 @@ export default function GraduationPage() {
                 {text.sidebar.print}
               </button>
             </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              >
+                {text.sidebar.exportPlan}
+              </button>
+              <button
+                type="button"
+                onClick={() => importFileInputRef.current?.click()}
+                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              >
+                {text.sidebar.importPlan}
+              </button>
+            </div>
+            <input
+              ref={importFileInputRef}
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+            <button
+              type="button"
+              onClick={() => void handleShareProgress()}
+              disabled={!selectionComplete}
+              className="mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            >
+              {text.sidebar.shareProgress}
+            </button>
+            {persistenceMessage && (
+              <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs leading-5 text-neutral-600">
+                {text.sidebar.messages[persistenceMessage]}
+              </p>
+            )}
+            {shareFallbackUrl && (
+              <input
+                type="text"
+                readOnly
+                value={shareFallbackUrl}
+                onFocus={(event) => event.target.select()}
+                className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-700"
+              />
+            )}
           </Card>
 
           <Card hover={false} className="border border-neutral-200">
@@ -1183,6 +1558,59 @@ function SummaryMetric({
       <p className="mt-1 text-2xl font-bold">{value}</p>
     </div>
   );
+}
+
+function EvidenceLine({
+  sourceIds,
+  sources,
+  text,
+}: {
+  sourceIds: string[];
+  sources: GraduationSourceList;
+  text: GraduationText;
+}) {
+  const sourceMap = new Map(sources.map((source) => [source.id, source]));
+  const matchedSources = sourceIds
+    .map((id) => sourceMap.get(id))
+    .filter((source): source is GraduationSourceList[number] => Boolean(source));
+
+  if (matchedSources.length === 0) return null;
+
+  return (
+    <p className="mt-1 text-xs leading-5 text-neutral-500">
+      {text.result.evidencePrefix}{" "}
+      {matchedSources
+        .map(
+          (source) =>
+            `${source.title} (${source.verifiedAt} ${text.sources.verifiedSuffix})`,
+        )
+        .join(", ")}
+    </p>
+  );
+}
+
+function formatChecklistAnswer(
+  answer: ChecklistAnswer | undefined,
+  text: GraduationText,
+) {
+  if (!answer) return text.result.answerUnknown;
+
+  return text.checklist[answer];
+}
+
+function getEvaluationStatusLabel(
+  status: EvaluationStatus,
+  text: GraduationText,
+) {
+  if (status === "satisfied") return text.result.satisfied;
+  if (status === "short") return text.result.incomplete;
+  return text.result.checkRequired;
+}
+
+function getEvaluationBadgeColor(status: EvaluationStatus) {
+  if (status === "satisfied") return "green";
+  if (status === "short") return "red";
+  return "yellow";
 }
 
 function SummaryRow({ label, value }: { label: string; value?: string }) {

@@ -3,6 +3,7 @@ import http from "node:http";
 import https from "node:https";
 import type { BusLocation } from "@/types";
 import { requireServerEnv } from "@/lib/server/env";
+import type { LiveDataResponse } from "@/types/live-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -180,7 +181,9 @@ export async function GET() {
         error: "셔틀 위치 정보를 불러오지 못했습니다",
         data: [],
         timestamp: new Date().toISOString(),
-      },
+        stale: false,
+        sourceStatus: "error",
+      } satisfies LiveDataResponse<BusLocation[]>,
       {
         status: 502,
         headers: PUBLIC_CACHE_HEADERS,
@@ -201,7 +204,8 @@ function shuttleJson(
       data: locations,
       timestamp,
       stale,
-    },
+      sourceStatus: stale ? "stale" : "fresh",
+    } satisfies LiveDataResponse<BusLocation[]>,
     {
       headers: {
         ...PUBLIC_CACHE_HEADERS,

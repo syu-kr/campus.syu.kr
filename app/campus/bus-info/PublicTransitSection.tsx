@@ -2,6 +2,7 @@
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetch-json";
@@ -11,6 +12,7 @@ import clsx from "clsx";
 import BusDetailModal from "./BusDetailModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n";
+import type { LiveDataResponse } from "@/types/live-data";
 
 interface EnrichedBusArrival extends BusArrival {
   minArrivalTime: number; // 첫번째 도착까지 초 단위
@@ -18,6 +20,21 @@ interface EnrichedBusArrival extends BusArrival {
 
 type BusInfoDictionary = Dictionary["pages"]["busInfo"];
 type TransitStopLabelKey = keyof BusInfoDictionary["stopLabels"];
+type SerializedBusArrivalsAtStop = Omit<BusArrivalsAtStop, "lastUpdated"> & {
+  lastUpdated: string;
+};
+type TransitStatusPayload = LiveDataResponse<BusArrivalsAtStop[]>;
+type SerializedTransitStatusPayload =
+  LiveDataResponse<SerializedBusArrivalsAtStop[]>;
+
+const EMPTY_TRANSIT_STATUS: TransitStatusPayload = {
+  success: false,
+  source: "public-transit-arrivals",
+  data: [],
+  timestamp: "",
+  stale: false,
+  sourceStatus: "error",
+};
 
 const TRANSIT_STOPS = [
   { id: "jungmun-up", labelKey: "jungmunUp" },
@@ -33,7 +50,6 @@ export default function PublicTransitSection() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
-  const localeCode = locale === "ko" ? "ko-KR" : "en-US";
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
   const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
   const [selectedBusDirection, setSelectedBusDirection] = useState<
@@ -43,34 +59,42 @@ export default function PublicTransitSection() {
 
   // 10초마다 자동 갱신
   const {
-    data: arrivals = [],
+    data: transitStatus = EMPTY_TRANSIT_STATUS,
     isLoading,
     isFetching,
     error,
-    dataUpdatedAt,
     refetch,
   } = useQuery({
     queryKey: ["public-transit-arrivals", locale],
     queryFn: async () => {
-      const json = await fetchJson<{
-        success: boolean;
-        data: Array<BusArrivalsAtStop & { lastUpdated: string }>;
-      }>("/api/bus/public-transit", { fallback: { success: false, data: [] } });
+      const json = await fetchJson<SerializedTransitStatusPayload>(
+        "/api/bus/public-transit",
+        {
+          fallback: {
+            ...EMPTY_TRANSIT_STATUS,
+            data: [],
+          },
+        },
+      );
 
       if (!json.success) {
-        throw new Error(text.transitLoadFailed);
+        throw new Error(json.error ?? text.transitLoadFailed);
       }
 
-      return (json.data || []).map((item) => ({
-        ...item,
-        lastUpdated: new Date(item.lastUpdated),
-      }));
+      return {
+        ...json,
+        data: (json.data || []).map((item) => ({
+          ...item,
+          lastUpdated: new Date(item.lastUpdated),
+        })),
+      };
     },
     staleTime: 10000,
     gcTime: 60 * 1000,
     refetchInterval: 10000,
     refetchIntervalInBackground: false,
   });
+  const arrivals = transitStatus.data;
 
   const selectedStop = useMemo(
     () =>
@@ -114,10 +138,6 @@ export default function PublicTransitSection() {
     [sortedArrivals],
   );
 
-  const lastRefreshTime = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString(localeCode)
-    : "-";
-
   return (
     <Container className="py-4 sm:py-8">
       <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 sm:p-6 border border-blue-100">
@@ -129,9 +149,13 @@ export default function PublicTransitSection() {
             <p className="text-xs sm:text-sm text-neutral-600 mb-3">
               {text.publicTransitDescription}
             </p>
-            <p className="text-xs text-neutral-500">
-              {text.lastRefresh}: {lastRefreshTime}
-            </p>
+            <LiveDataStatusBadge
+              locale={locale}
+              sourceLabel={dictionary.liveData.sources.publicTransit}
+              timestamp={transitStatus.timestamp}
+              stale={transitStatus.stale}
+              sourceStatus={error ? "error" : transitStatus.sourceStatus}
+            />
             <p className="mt-2 text-xs leading-5 text-neutral-500">
               {text.transitSourceNotice}
               <br />

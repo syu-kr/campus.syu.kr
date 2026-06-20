@@ -141,6 +141,22 @@ export const dictionaries = {
       cloudy: "흐림",
       unknown: "알 수 없음",
     },
+    liveData: {
+      updated: "마지막 업데이트",
+      source: "원본",
+      unavailable: "-",
+      statuses: {
+        fresh: "정상",
+        stale: "이전 정보",
+        error: "오류",
+      },
+      sources: {
+        weather: "기상청",
+        library: "중앙도서관",
+        shuttle: "삼육대 셔틀",
+        publicTransit: "공공데이터",
+      },
+    },
     home: {
       frequentMenuTitle: "자주 사용하는 메뉴",
       relatedLinksTitle: "주요 서비스 바로가기",
@@ -491,6 +507,12 @@ export const dictionaries = {
           requiredCredits: "참고 요구학점 {required}",
           creditShortage: "{shortage}학점 부족",
           satisfied: "충족",
+          incomplete: "미충족",
+          checkRequired: "확인 필요",
+          checklistResultTitle: "비학점·추가 조건",
+          answerPrefix: "입력",
+          answerUnknown: "미입력",
+          evidencePrefix: "근거",
           additionalCheckTitle: "추가 확인 안내",
           selectAllConditionsWarning:
             "조건을 모두 선택하면 참고 요건을 확인할 수 있습니다.",
@@ -507,6 +529,21 @@ export const dictionaries = {
           myConditions: "내 조건",
           reset: "초기화",
           print: "출력",
+          exportPlan: "내보내기",
+          importPlan: "가져오기",
+          shareProgress: "진행률 공유 링크 복사",
+          messages: {
+            exported: "저장된 계획을 JSON 파일로 내보냈습니다.",
+            imported: "저장된 계획을 가져왔습니다.",
+            importFailed:
+              "파일을 읽지 못했습니다. 졸업요건 저장 파일인지 확인해 주세요.",
+            shareCopied: "진행률 공유 링크를 클립보드에 복사했습니다.",
+            shareCopyFailed:
+              "자동 복사에 실패했습니다. 아래 링크를 선택해 직접 복사해 주세요.",
+            shareLoaded: "공유된 졸업요건 진행률을 불러왔습니다.",
+            shareLoadFailed:
+              "공유 링크를 읽지 못했습니다. 링크가 잘렸거나 만료되었을 수 있습니다.",
+          },
           principlesTitle: "진단 원칙",
           principles: [
             "입력하지 않은 항목은 충족으로 보지 않습니다.",
@@ -628,6 +665,7 @@ export const dictionaries = {
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
         shareCreatedCopyFailed:
           "공유 링크를 만들었습니다. 브라우저 권한 문제로 자동 복사는 되지 않았습니다.",
+        shareFallbackInputLabel: "직접 복사할 공유 링크",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
         shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
         loadFailedTitle: "강의 정보를 불러올 수 없습니다",
@@ -666,6 +704,8 @@ export const dictionaries = {
         selectedEmpty: "선택한 강의가 없습니다.",
         totalSummaryPrefix: "총",
         conflictBadge: "충돌",
+        conflictSummaryTitle: "시간 충돌 강의",
+        conflictSummaryMore: "외 추가 충돌이 있습니다.",
         gradeSuffix: "학년",
         dayLabels: {
           mon: "월",
@@ -1546,6 +1586,22 @@ export const dictionaries = {
       cloudy: "Cloudy",
       unknown: "Unknown",
     },
+    liveData: {
+      updated: "Last update",
+      source: "Source",
+      unavailable: "-",
+      statuses: {
+        fresh: "Fresh",
+        stale: "Stale",
+        error: "Error",
+      },
+      sources: {
+        weather: "KMA",
+        library: "Central Library",
+        shuttle: "SYU Shuttle",
+        publicTransit: "Public data",
+      },
+    },
     home: {
       frequentMenuTitle: "Frequently Used",
       relatedLinksTitle: "Main Services",
@@ -1900,6 +1956,12 @@ export const dictionaries = {
           requiredCredits: "Reference required credits {required}",
           creditShortage: "{shortage} credits short",
           satisfied: "Satisfied",
+          incomplete: "Incomplete",
+          checkRequired: "Check required",
+          checklistResultTitle: "Non-credit and Additional Conditions",
+          answerPrefix: "Input",
+          answerUnknown: "Not entered",
+          evidencePrefix: "Evidence",
           additionalCheckTitle: "Additional Checks",
           selectAllConditionsWarning:
             "Select all conditions to view reference requirements.",
@@ -1916,6 +1978,21 @@ export const dictionaries = {
           myConditions: "My Conditions",
           reset: "Reset",
           print: "Print",
+          exportPlan: "Export",
+          importPlan: "Import",
+          shareProgress: "Copy Progress Share Link",
+          messages: {
+            exported: "Saved plan exported as a JSON file.",
+            imported: "Saved plan imported.",
+            importFailed:
+              "Could not read the file. Check that it is a graduation check save file.",
+            shareCopied: "Progress share link copied to the clipboard.",
+            shareCopyFailed:
+              "Automatic copy failed. Select and copy the link below.",
+            shareLoaded: "Shared graduation progress loaded.",
+            shareLoadFailed:
+              "Could not read the share link. It may be truncated or expired.",
+          },
           principlesTitle: "Check Principles",
           principles: [
             "Unentered items are not treated as satisfied.",
@@ -2037,6 +2114,7 @@ export const dictionaries = {
         shareCreated: "Share link created and copied to clipboard.",
         shareCreatedCopyFailed:
           "Share link created. Your browser blocked automatic copying.",
+        shareFallbackInputLabel: "Share link to copy manually",
         shareLoading: "Loading shared timetable.",
         shareLoadFailed: "Could not load the shared timetable.",
         loadFailedTitle: "Could not load course information",
@@ -2075,6 +2153,8 @@ export const dictionaries = {
         selectedEmpty: "No courses selected.",
         totalSummaryPrefix: "Total",
         conflictBadge: "Conflict",
+        conflictSummaryTitle: "Time Conflicts",
+        conflictSummaryMore: "more conflicts.",
         gradeSuffix: "year",
         dayLabels: {
           mon: "Mon",

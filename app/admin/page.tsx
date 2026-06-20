@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -12,6 +19,8 @@ import type {
   AdminSubmissionAiClassification,
   AdminSubmissionItem,
   AdminSubmissionKind,
+  AdminSubmissionPageResponse,
+  AdminSubmissionPagination,
   SubmissionStatus,
 } from "@/types/submissions";
 
@@ -79,6 +88,35 @@ const emptyCounts: Record<SubmissionStatus, number> = {
   done: 0,
 };
 
+const PAGE_LIMIT = 20;
+const emptyPagination: AdminSubmissionPagination = {
+  page: 1,
+  limit: PAGE_LIMIT,
+  total: 0,
+  totalPages: 1,
+};
+
+const responseTemplates = [
+  {
+    id: "received",
+    label: "접수 안내",
+    build: (item: AdminSubmissionItem) =>
+      `안녕하세요. SYU Campus 운영팀입니다.\n\n보내주신 ${kindLabels[item.kind]}은(는) 정상 접수되었고, 담당자가 내용을 확인하고 있습니다.\n\n제목: ${item.title}\n접수일: ${formatDateTime(item.createdAt)}\n\n확인 후 필요한 경우 추가로 연락드리겠습니다. 감사합니다.`,
+  },
+  {
+    id: "need-more-info",
+    label: "추가 정보 요청",
+    build: (item: AdminSubmissionItem) =>
+      `안녕하세요. SYU Campus 운영팀입니다.\n\n보내주신 ${kindLabels[item.kind]}을(를) 확인했으나 정확한 처리를 위해 추가 정보가 필요합니다.\n\n제목: ${item.title}\n필요한 정보: 문제가 발생한 화면, 발생 시각, 재현 방법 또는 참고 링크\n\n가능한 범위에서 회신해 주시면 이어서 확인하겠습니다. 감사합니다.`,
+  },
+  {
+    id: "completed",
+    label: "처리 완료",
+    build: (item: AdminSubmissionItem) =>
+      `안녕하세요. SYU Campus 운영팀입니다.\n\n보내주신 ${kindLabels[item.kind]} 검토가 완료되었습니다.\n\n제목: ${item.title}\n처리 결과: 반영 완료 또는 처리 완료\n\n서비스 개선에 도움을 주셔서 감사합니다.`,
+  },
+] as const;
+
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
@@ -86,20 +124,26 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [submissions, setSubmissions] = useState<AdminSubmissionItem[]>([]);
-  const [selectedId, setSelectedId] = useState("");
+  const [selectedKey, setSelectedKey] = useState("");
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [kindFilter, setKindFilter] = useState<"all" | AdminSubmissionKind>(
     "all",
   );
   const [statusFilter, setStatusFilter] = useState<"all" | SubmissionStatus>(
     "pending",
   );
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] =
+    useState<AdminSubmissionPagination>(emptyPagination);
   const [query, setQuery] = useState("");
+  const [bulkStatus, setBulkStatus] = useState<SubmissionStatus>("reviewing");
   const [counts, setCounts] =
     useState<Record<SubmissionStatus, number>>(emptyCounts);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [classifyingKey, setClassifyingKey] = useState("");
   const [pageError, setPageError] = useState("");
+  const [pageNotice, setPageNotice] = useState("");
 
   useEffect(() => {
     return onAuthStateChanged(auth, (nextUser) => {
@@ -136,20 +180,36 @@ export default function AdminPage() {
   }, [kindFilter, query, statusFilter, submissions]);
 
   const selectedSubmission =
-    filteredSubmissions.find((item) => item.id === selectedId) ||
+    filteredSubmissions.find((item) => submissionKey(item) === selectedKey) ||
     filteredSubmissions[0] ||
     null;
+  const selectedItems = useMemo(
+    () =>
+      filteredSubmissions.filter((item) =>
+        selectedKeys.has(submissionKey(item)),
+      ),
+    [filteredSubmissions, selectedKeys],
+  );
+  const allVisibleSelected =
+    filteredSubmissions.length > 0 &&
+    filteredSubmissions.every((item) => selectedKeys.has(submissionKey(item)));
 
   useEffect(() => {
     if (!selectedSubmission) {
-      setSelectedId("");
+      setSelectedKey("");
       return;
     }
 
-    if (selectedSubmission.id !== selectedId) {
-      setSelectedId(selectedSubmission.id);
+    const nextKey = submissionKey(selectedSubmission);
+    if (nextKey !== selectedKey) {
+      setSelectedKey(nextKey);
     }
-  }, [selectedId, selectedSubmission]);
+  }, [selectedKey, selectedSubmission]);
+
+  useEffect(() => {
+    setPage(1);
+    setSelectedKeys(new Set());
+  }, [kindFilter, statusFilter]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -169,22 +229,23 @@ export default function AdminPage() {
 
       setIsLoading(true);
       setPageError("");
+      setPageNotice("");
 
       try {
         const token = await currentUser.getIdToken();
         const params = new URLSearchParams({
           kind: kindFilter,
           status: statusFilter,
+          page: String(page),
+          limit: String(PAGE_LIMIT),
         });
         const response = await fetch(`/api/admin/submissions?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
-        const data = await readAdminApiResponse<{
-          error?: string;
-          submissions?: AdminSubmissionItem[];
-          counts?: Partial<Record<SubmissionStatus, number>>;
-        }>(response);
+        const data = await readAdminApiResponse<
+          Partial<AdminSubmissionPageResponse> & { error?: string }
+        >(response);
 
         if (!response.ok) {
           throw new Error(data.error || "목록을 불러오지 못했습니다");
@@ -192,6 +253,8 @@ export default function AdminPage() {
 
         setSubmissions(data.submissions || []);
         setCounts({ ...emptyCounts, ...(data.counts || {}) });
+        setPagination(data.pagination || emptyPagination);
+        setSelectedKeys(new Set());
       } catch (error) {
         setPageError(
           error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
@@ -200,7 +263,7 @@ export default function AdminPage() {
         setIsLoading(false);
       }
     },
-    [kindFilter, statusFilter, user],
+    [kindFilter, page, statusFilter, user],
   );
 
   useEffect(() => {
@@ -216,6 +279,7 @@ export default function AdminPage() {
 
     setIsSaving(true);
     setPageError("");
+    setPageNotice("");
 
     try {
       const token = await user.getIdToken();
@@ -254,6 +318,90 @@ export default function AdminPage() {
         [item.status]: Math.max(0, current[item.status] - 1),
         [status]: current[status] + 1,
       }));
+      if (statusFilter !== "all" && status !== statusFilter) {
+        setPagination((current) => ({
+          ...current,
+          total: Math.max(0, current.total - 1),
+          totalPages: Math.max(
+            1,
+            Math.ceil(Math.max(0, current.total - 1) / current.limit),
+          ),
+        }));
+      }
+      setSelectedKeys((current) => {
+        const next = new Set(current);
+        next.delete(submissionKey(item));
+        return next;
+      });
+      setPageNotice("처리 상태를 변경했습니다.");
+    } catch (error) {
+      setPageError(
+        error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const toggleSubmissionSelection = (item: AdminSubmissionItem) => {
+    const key = submissionKey(item);
+    setSelectedKeys((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllVisibleSelection = () => {
+    setSelectedKeys((current) => {
+      const next = new Set(current);
+
+      if (allVisibleSelected) {
+        filteredSubmissions.forEach((item) => next.delete(submissionKey(item)));
+      } else {
+        filteredSubmissions.forEach((item) => next.add(submissionKey(item)));
+      }
+
+      return next;
+    });
+  };
+
+  const updateSelectedStatuses = async () => {
+    if (!user || selectedItems.length === 0) return;
+
+    setIsSaving(true);
+    setPageError("");
+    setPageNotice("");
+
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/admin/submissions", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: selectedItems.map((item) => ({
+            id: item.id,
+            kind: item.kind,
+          })),
+          status: bulkStatus,
+        }),
+      });
+      const data = await readAdminApiResponse<{ error?: string }>(response);
+
+      if (!response.ok) {
+        throw new Error(data.error || "상태를 변경하지 못했습니다");
+      }
+
+      setSelectedKeys(new Set());
+      await loadSubmissions();
+      setPageNotice(`${selectedItems.length}개 항목의 상태를 변경했습니다.`);
     } catch (error) {
       setPageError(
         error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
@@ -269,6 +417,7 @@ export default function AdminPage() {
     const key = `${item.kind}-${item.id}`;
     setClassifyingKey(key);
     setPageError("");
+    setPageNotice("");
 
     try {
       const token = await user.getIdToken();
@@ -474,18 +623,72 @@ export default function AdminPage() {
           />
         </section>
 
+        {selectedItems.length > 0 && (
+          <section className="mb-4 flex flex-col gap-3 rounded-lg border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-950 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-semibold">
+              {selectedItems.length}개 항목 선택됨
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={bulkStatus}
+                onChange={(event) =>
+                  setBulkStatus(event.target.value as SubmissionStatus)
+                }
+                className="rounded-md border border-primary-200 bg-white px-2.5 py-2 text-sm text-neutral-900"
+              >
+                {statuses.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => void updateSelectedStatuses()}
+                className="rounded-md bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                일괄 상태 변경
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedKeys(new Set())}
+                className="rounded-md border border-primary-200 bg-white px-3 py-2 text-sm font-semibold text-primary-800 hover:bg-primary-100"
+              >
+                선택 해제
+              </button>
+            </div>
+          </section>
+        )}
+
         {pageError && (
           <p className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {pageError}
           </p>
         )}
 
+        {pageNotice && (
+          <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {pageNotice}
+          </p>
+        )}
+
         <section className="grid gap-5 lg:grid-cols-[420px_minmax(0,1fr)]">
           <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-              <h2 className="text-sm font-bold text-neutral-900">
-                접수 목록 {filteredSubmissions.length}
-              </h2>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  disabled={filteredSubmissions.length === 0}
+                  onChange={() => toggleAllVisibleSelection()}
+                  aria-label="현재 페이지 항목 전체 선택"
+                  className="h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                />
+                <h2 className="text-sm font-bold text-neutral-900">
+                  접수 목록 {filteredSubmissions.length} / {pagination.total}
+                </h2>
+              </div>
               {isLoading && (
                 <span className="text-xs text-neutral-500">불러오는 중</span>
               )}
@@ -497,51 +700,94 @@ export default function AdminPage() {
                   조건에 맞는 접수 내역이 없습니다.
                 </p>
               ) : (
-                filteredSubmissions.map((item) => (
-                  <button
-                    key={`${item.kind}-${item.id}`}
-                    type="button"
-                    onClick={() => setSelectedId(item.id)}
-                    className={`block w-full border-b border-neutral-100 px-4 py-4 text-left hover:bg-neutral-50 ${
-                      selectedSubmission?.id === item.id
-                        ? "bg-primary-50"
-                        : "bg-white"
-                    }`}
-                  >
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <span className="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700">
-                        {kindLabels[item.kind]}
-                      </span>
-                      <span className="text-xs text-neutral-500">
-                        {formatDateTime(item.createdAt)}
-                      </span>
+                filteredSubmissions.map((item) => {
+                  const key = submissionKey(item);
+                  const isSelected = selectedKeys.has(key);
+                  const isFocused = selectedSubmission
+                    ? submissionKey(selectedSubmission) === key
+                    : false;
+
+                  return (
+                    <div
+                      key={key}
+                      className={`flex gap-3 border-b border-neutral-100 px-4 py-4 hover:bg-neutral-50 ${
+                        isFocused ? "bg-primary-50" : "bg-white"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSubmissionSelection(item)}
+                        aria-label={`${item.title} 선택`}
+                        className="mt-1 h-4 w-4 flex-shrink-0 rounded border-neutral-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setSelectedKey(key)}
+                        className="min-w-0 flex-1 text-left"
+                      >
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700">
+                            {kindLabels[item.kind]}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            {formatDateTime(item.createdAt)}
+                          </span>
+                        </div>
+                        <strong className="line-clamp-2 text-sm text-neutral-950">
+                          {item.title}
+                        </strong>
+                        <p className="mt-2 line-clamp-2 text-sm leading-5 text-neutral-600">
+                          {item.kind === "inquiry"
+                            ? item.message
+                            : item.description}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span className="inline-flex rounded-md bg-white px-2 py-1 text-xs font-semibold text-primary-700 ring-1 ring-primary-100">
+                            {statusLabel(item.status)}
+                          </span>
+                          {item.aiClassification && (
+                            <span
+                              className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ring-1 ${aiUrgencyClass(
+                                item.aiClassification.urgency,
+                              )}`}
+                            >
+                              {aiUrgencyLabels[item.aiClassification.urgency]} /{" "}
+                              {aiCategoryLabels[item.aiClassification.category]}
+                            </span>
+                          )}
+                        </div>
+                      </button>
                     </div>
-                    <strong className="line-clamp-2 text-sm text-neutral-950">
-                      {item.title}
-                    </strong>
-                    <p className="mt-2 line-clamp-2 text-sm leading-5 text-neutral-600">
-                      {item.kind === "inquiry"
-                        ? item.message
-                        : item.description}
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="inline-flex rounded-md bg-white px-2 py-1 text-xs font-semibold text-primary-700 ring-1 ring-primary-100">
-                        {statusLabel(item.status)}
-                      </span>
-                      {item.aiClassification && (
-                        <span
-                          className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ring-1 ${aiUrgencyClass(
-                            item.aiClassification.urgency,
-                          )}`}
-                        >
-                          {aiUrgencyLabels[item.aiClassification.urgency]} /{" "}
-                          {aiCategoryLabels[item.aiClassification.category]}
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                ))
+                  );
+                })
               )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3 border-t border-neutral-200 px-4 py-3 text-sm">
+              <button
+                type="button"
+                disabled={page <= 1 || isLoading}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                이전
+              </button>
+              <span className="text-neutral-600">
+                {pagination.page} / {pagination.totalPages}
+              </span>
+              <button
+                type="button"
+                disabled={page >= pagination.totalPages || isLoading}
+                onClick={() =>
+                  setPage((current) =>
+                    Math.min(pagination.totalPages, current + 1),
+                  )
+                }
+                className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                다음
+              </button>
             </div>
           </div>
 
@@ -665,6 +911,8 @@ function SubmissionDetail({
             onClassify={onClassify}
           />
 
+          <ResponseTemplatePanel item={item} />
+
           <section className="space-y-3">
             <h3 className="text-sm font-bold text-neutral-900">처리 상태</h3>
             {statuses.map((status) => (
@@ -747,6 +995,90 @@ function AiClassificationPanel({
   );
 }
 
+function ResponseTemplatePanel({ item }: { item: AdminSubmissionItem }) {
+  const [activeTemplateId, setActiveTemplateId] = useState<
+    (typeof responseTemplates)[number]["id"]
+  >(responseTemplates[0].id);
+  const [templateText, setTemplateText] = useState(() =>
+    responseTemplates[0].build(item),
+  );
+  const [copyStatus, setCopyStatus] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const template =
+      responseTemplates.find((entry) => entry.id === activeTemplateId) ||
+      responseTemplates[0];
+
+    setTemplateText(template.build(item));
+    setCopyStatus("");
+  }, [activeTemplateId, item]);
+
+  const copyTemplate = async () => {
+    setCopyStatus("");
+
+    try {
+      await navigator.clipboard.writeText(templateText);
+      setCopyStatus("템플릿을 클립보드에 복사했습니다.");
+    } catch {
+      textareaRef.current?.focus();
+      textareaRef.current?.select();
+      setCopyStatus("자동 복사에 실패했습니다. 선택된 텍스트를 복사해 주세요.");
+    }
+  };
+
+  return (
+    <section className="rounded-lg border border-neutral-200 bg-white p-4">
+      <div className="mb-3">
+        <h3 className="text-sm font-bold text-neutral-900">답변 템플릿</h3>
+        <p className="mt-1 text-xs leading-5 text-neutral-500">
+          접수 항목에 맞춰 문안을 만들고 필요한 곳에 붙여넣을 수 있습니다.
+        </p>
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-2">
+        {responseTemplates.map((template) => (
+          <button
+            key={template.id}
+            type="button"
+            onClick={() => setActiveTemplateId(template.id)}
+            className={`rounded-md px-2.5 py-1.5 text-xs font-semibold ${
+              activeTemplateId === template.id
+                ? "bg-primary-600 text-white"
+                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+            }`}
+          >
+            {template.label}
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        ref={textareaRef}
+        value={templateText}
+        onChange={(event) => {
+          setTemplateText(event.target.value);
+          setCopyStatus("");
+        }}
+        rows={8}
+        className="w-full resize-y rounded-lg border border-neutral-300 bg-neutral-50 px-3 py-2 text-xs leading-5 text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary-500"
+      />
+
+      <button
+        type="button"
+        onClick={() => void copyTemplate()}
+        className="mt-3 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+      >
+        템플릿 복사
+      </button>
+
+      {copyStatus && (
+        <p className="mt-2 text-xs leading-5 text-neutral-600">{copyStatus}</p>
+      )}
+    </section>
+  );
+}
+
 function DetailBlock({
   title,
   content,
@@ -792,6 +1124,10 @@ function aiUrgencyClass(value: string) {
     default:
       return "bg-blue-50 text-blue-700 ring-blue-200";
   }
+}
+
+function submissionKey(item: Pick<AdminSubmissionItem, "id" | "kind">) {
+  return `${item.kind}:${item.id}`;
 }
 
 function statusLabel(value: SubmissionStatus) {

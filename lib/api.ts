@@ -12,6 +12,10 @@ import {
 } from "@/types";
 import { fetchJson } from "./fetch-json";
 import { sortSearchResults } from "./search";
+import type {
+  LiveDataResponse,
+  LiveDataSourceStatus,
+} from "@/types/live-data";
 
 export interface AnnouncementPageResponse {
   items: Announcement[];
@@ -371,9 +375,14 @@ export async function fetchCampusTips(): Promise<CampusTip[]> {
 }
 
 // 버스 실시간 위치 API
-interface ShuttleLocationPayload {
+interface RawShuttleLocationPayload {
   success?: boolean;
+  source?: string;
   data?: unknown[];
+  timestamp?: string;
+  stale?: boolean;
+  sourceStatus?: LiveDataSourceStatus;
+  error?: string;
 }
 
 function toBusLocation(item: unknown): BusLocation | null {
@@ -401,13 +410,23 @@ function toBusLocation(item: unknown): BusLocation | null {
   };
 }
 
-export async function fetchBusLocations(): Promise<BusLocation[]> {
-  const response = await fetchJson<ShuttleLocationPayload>(
+function isLiveDataSourceStatus(value: unknown): value is LiveDataSourceStatus {
+  return value === "fresh" || value === "stale" || value === "error";
+}
+
+export async function fetchBusLocationStatus(): Promise<
+  LiveDataResponse<BusLocation[]>
+> {
+  const response = await fetchJson<RawShuttleLocationPayload>(
     "/api/bus/shuttle",
     {
       fallback: {
         success: false,
+        source: "shuttle",
         data: [],
+        timestamp: new Date().toISOString(),
+        stale: false,
+        sourceStatus: "error",
       },
       method: "GET",
       credentials: "same-origin",
@@ -421,13 +440,31 @@ export async function fetchBusLocations(): Promise<BusLocation[]> {
   );
 
   if (!response.success) {
-    throw new Error("셔틀 위치 정보를 불러오지 못했습니다.");
+    throw new Error(response.error ?? "셔틀 위치 정보를 불러오지 못했습니다.");
   }
 
-  return (Array.isArray(response.data) ? response.data : [])
+  const locations = (Array.isArray(response.data) ? response.data : [])
     .map(toBusLocation)
     .filter((item): item is BusLocation => item !== null)
     .filter((bus) => bus.status !== 0);
+
+  const stale = Boolean(response.stale);
+
+  return {
+    success: true,
+    source: typeof response.source === "string" ? response.source : "shuttle",
+    data: locations,
+    timestamp:
+      typeof response.timestamp === "string"
+        ? response.timestamp
+        : new Date().toISOString(),
+    stale,
+    sourceStatus: isLiveDataSourceStatus(response.sourceStatus)
+      ? response.sourceStatus
+      : stale
+        ? "stale"
+        : "fresh",
+  };
 }
 
 export {

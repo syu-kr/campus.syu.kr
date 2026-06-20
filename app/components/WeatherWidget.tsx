@@ -92,6 +92,11 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
                             : ""}
         </span>
       </div>
+      {weather.stale && (
+        <span className="rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+          {dictionary.liveData.statuses.stale}
+        </span>
+      )}
     </button>
   );
 }

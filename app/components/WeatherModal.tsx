@@ -3,7 +3,8 @@
 import { memo, useEffect } from "react";
 import { type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 interface WeatherModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ function WeatherModalComponent({
   onClose,
 }: WeatherModalProps) {
   const dictionary = useDictionary();
+  const locale = useLocale();
 
   // Escape 키로 모달 닫기
   useEffect(() => {
@@ -231,6 +233,14 @@ function WeatherModalComponent({
                   </div>
                 </div>
               </div>
+              <LiveDataStatusBadge
+                locale={locale}
+                sourceLabel={dictionary.liveData.sources.weather}
+                timestamp={weather.timestamp}
+                stale={weather.stale}
+                sourceStatus={weather.sourceStatus}
+                className="mt-4"
+              />
             </div>
           </div>
 

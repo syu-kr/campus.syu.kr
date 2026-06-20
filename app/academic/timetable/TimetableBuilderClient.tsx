@@ -82,6 +82,16 @@ interface CompletionGroupStat {
   count: number;
 }
 
+interface TimetableConflictPair {
+  firstCourse: LectureTimetableCourse;
+  secondCourse: LectureTimetableCourse;
+  slots: Array<{
+    day: LectureDay;
+    startPeriod: number;
+    endPeriod: number;
+  }>;
+}
+
 const emptyTimetableResponse: TimetableApiResponse = {
   success: false,
   data: { courses: [] },
@@ -109,6 +119,7 @@ export function TimetableBuilderClient() {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isCreatingShare, setIsCreatingShare] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
+  const [shareFallbackUrl, setShareFallbackUrl] = useState("");
 
   const {
     data: response = emptyTimetableResponse,
@@ -285,6 +296,7 @@ export function TimetableBuilderClient() {
   function replaceSelectedCourses(nextIds: string[], options = { clearShare: true }) {
     setSelectedCourseIds(Array.from(new Set(nextIds)));
     setShareMessage("");
+    setShareFallbackUrl("");
     if (options.clearShare) clearShareFromUrl();
   }
 
@@ -302,6 +314,7 @@ export function TimetableBuilderClient() {
 
     setIsCreatingShare(true);
     setShareMessage("");
+    setShareFallbackUrl("");
 
     try {
       const share = await fetchJson<CreateShareResponse>(
@@ -321,6 +334,7 @@ export function TimetableBuilderClient() {
 
       if (!share.success || !share.shareId) {
         setShareMessage(share.error ?? text.shareCreateFailed);
+        setShareFallbackUrl("");
         return;
       }
 
@@ -328,8 +342,9 @@ export function TimetableBuilderClient() {
       router.replace(nextUrl, { scroll: false });
 
       let didCopy = false;
+      let absoluteUrl = "";
       if (typeof window !== "undefined") {
-        const absoluteUrl = `${window.location.origin}${nextUrl}`;
+        absoluteUrl = `${window.location.origin}${nextUrl}`;
         if (navigator.clipboard?.writeText) {
           try {
             await navigator.clipboard.writeText(absoluteUrl);
@@ -344,8 +359,10 @@ export function TimetableBuilderClient() {
       setShareMessage(
         didCopy ? text.shareCreated : text.shareCreatedCopyFailed,
       );
+      setShareFallbackUrl(didCopy ? "" : absoluteUrl);
     } catch {
       setShareMessage(text.shareCreateFailed);
+      setShareFallbackUrl("");
     } finally {
       setIsCreatingShare(false);
     }
@@ -436,6 +453,38 @@ export function TimetableBuilderClient() {
                 shareResponse.error ||
                 text.shareLoadFailed}
           </p>
+        )}
+        {shareFallbackUrl && (
+          <input
+            type="text"
+            readOnly
+            value={shareFallbackUrl}
+            aria-label={text.shareFallbackInputLabel}
+            onFocus={(event) => event.target.select()}
+            className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-700"
+          />
+        )}
+        {conflictSummary.pairs.length > 0 && (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+            <p className="font-bold">{text.conflictSummaryTitle}</p>
+            <ul className="mt-2 space-y-1.5 text-xs leading-5">
+              {conflictSummary.pairs.slice(0, 3).map((pair) => (
+                <li key={`${pair.firstCourse.id}-${pair.secondCourse.id}`}>
+                  <span className="font-semibold">
+                    {pair.firstCourse.courseName} / {pair.secondCourse.courseName}
+                  </span>
+                  <span className="ml-1 text-red-800">
+                    {formatConflictSlots(pair.slots, text)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {conflictSummary.pairs.length > 3 && (
+              <p className="mt-2 text-xs">
+                {conflictSummary.pairs.length - 3} {text.conflictSummaryMore}
+              </p>
+            )}
+          </div>
         )}
       </section>
 
@@ -1234,19 +1283,28 @@ function formatCompletionType(value: string, text: TimetableDictionary) {
 
 function getConflictSummary(courses: LectureTimetableCourse[]) {
   const courseIds = new Set<string>();
-  let pairCount = 0;
+  const pairs: TimetableConflictPair[] = [];
 
   courses.forEach((course, courseIndex) => {
     courses.slice(courseIndex + 1).forEach((otherCourse) => {
-      if (hasTimeConflict(course.timeSlots, otherCourse.timeSlots)) {
+      const conflictSlots = getTimeConflictSlots(
+        course.timeSlots,
+        otherCourse.timeSlots,
+      );
+
+      if (conflictSlots.length > 0) {
         courseIds.add(course.id);
         courseIds.add(otherCourse.id);
-        pairCount += 1;
+        pairs.push({
+          firstCourse: course,
+          secondCourse: otherCourse,
+          slots: conflictSlots,
+        });
       }
     });
   });
 
-  return { courseIds, pairCount };
+  return { courseIds, pairCount: pairs.length, pairs };
 }
 
 function getCompletionStats(courses: LectureTimetableCourse[]) {
@@ -1286,18 +1344,52 @@ function getCompletionGroupId(
   return group?.id ?? "other";
 }
 
-function hasTimeConflict(
+function getTimeConflictSlots(
   firstSlots: LectureTimeSlot[],
   secondSlots: LectureTimeSlot[],
 ) {
-  return firstSlots.some((firstSlot) =>
-    secondSlots.some(
-      (secondSlot) =>
-        firstSlot.day === secondSlot.day &&
-        firstSlot.startPeriod <= secondSlot.endPeriod &&
-        secondSlot.startPeriod <= firstSlot.endPeriod,
-    ),
-  );
+  const conflicts: TimetableConflictPair["slots"] = [];
+
+  firstSlots.forEach((firstSlot) => {
+    secondSlots.forEach((secondSlot) => {
+      if (firstSlot.day !== secondSlot.day) return;
+
+      const startPeriod = Math.max(
+        firstSlot.startPeriod,
+        secondSlot.startPeriod,
+      );
+      const endPeriod = Math.min(firstSlot.endPeriod, secondSlot.endPeriod);
+
+      if (startPeriod <= endPeriod) {
+        conflicts.push({
+          day: firstSlot.day,
+          startPeriod,
+          endPeriod,
+        });
+      }
+    });
+  });
+
+  return conflicts;
+}
+
+function formatConflictSlots(
+  slots: TimetableConflictPair["slots"],
+  text: TimetableDictionary,
+) {
+  return slots
+    .map((slot) => {
+      const periodLabel =
+        slot.startPeriod === slot.endPeriod
+          ? formatPeriodLabel(slot.startPeriod, text)
+          : `${formatPeriodLabel(slot.startPeriod, text)}-${formatPeriodLabel(
+              slot.endPeriod,
+              text,
+            )}`;
+
+      return `${getDayLabel(slot.day, text)} ${periodLabel}`;
+    })
+    .join(", ");
 }
 
 function includesPeriod(

@@ -7,10 +7,12 @@ export const dynamic = "force-dynamic";
 const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
 const WEATHER_REQUEST_TIMEOUT_MS = 10 * 1000;
 const WEATHER_STALE_RETENTION_MS = 60 * 60 * 1000;
+const WEATHER_SOURCE = "kma-weather";
 
 let cachedWeather:
   | {
       data: WeatherResponse;
+      timestamp: string;
       fetchedAt: number;
       expiresAt: number;
     }
@@ -34,7 +36,7 @@ export async function GET() {
 
   try {
     if (cachedWeather && cachedWeather.expiresAt > now) {
-      return weatherJson(cachedWeather.data);
+      return weatherJson(cachedWeather.data, cachedWeather.timestamp);
     }
 
     pendingWeather ??= fetchWeatherFromKma().finally(() => {
@@ -42,13 +44,15 @@ export async function GET() {
     });
 
     const weatherData = await pendingWeather;
+    const timestamp = new Date().toISOString();
     cachedWeather = {
       data: weatherData,
+      timestamp,
       fetchedAt: Date.now(),
       expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
     };
 
-    return weatherJson(weatherData);
+    return weatherJson(weatherData, timestamp);
   } catch (error) {
     console.error("Failed to fetch weather:", error);
 
@@ -56,11 +60,17 @@ export async function GET() {
       cachedWeather &&
       cachedWeather.fetchedAt + WEATHER_STALE_RETENTION_MS > now
     ) {
-      return weatherJson(cachedWeather.data, true);
+      return weatherJson(cachedWeather.data, cachedWeather.timestamp, true);
     }
 
     return NextResponse.json(
-      { error: "서버 오류가 발생했습니다" },
+      {
+        error: "서버 오류가 발생했습니다",
+        source: WEATHER_SOURCE,
+        timestamp: new Date().toISOString(),
+        stale: false,
+        sourceStatus: "error",
+      },
       { status: 502 },
     );
   }
@@ -274,11 +284,14 @@ function getPrecipitationSky(precipitation: number) {
   return 1;
 }
 
-function weatherJson(data: WeatherResponse, stale = false) {
+function weatherJson(data: WeatherResponse, timestamp: string, stale = false) {
   return NextResponse.json(
     {
       ...data,
+      source: WEATHER_SOURCE,
+      timestamp,
       stale,
+      sourceStatus: stale ? "stale" : "fresh",
     },
     {
       headers: {

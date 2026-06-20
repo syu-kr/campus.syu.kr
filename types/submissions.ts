@@ -81,6 +81,19 @@ export interface AdminSubmissionItem {
   aiClassification?: AdminSubmissionAiClassification;
 }
 
+export interface AdminSubmissionPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface AdminSubmissionPageResponse {
+  submissions: AdminSubmissionItem[];
+  counts: Record<SubmissionStatus, number>;
+  pagination: AdminSubmissionPagination;
+}
+
 export class SubmissionValidationError extends Error {
   field: string;
 
