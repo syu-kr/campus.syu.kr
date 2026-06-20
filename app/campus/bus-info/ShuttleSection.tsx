@@ -3,11 +3,12 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { Skeleton } from "@/app/components/Skeleton";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchShuttleBuses,
-  fetchBusLocations,
+  fetchBusLocationStatus,
   fetchShuttleSpecialPeriods,
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
@@ -19,6 +20,7 @@ import {
 import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
+import type { LiveDataSourceStatus } from "@/types/live-data";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -96,6 +98,9 @@ export default function ShuttleSection() {
   const [locationError, setLocationError] = useState("");
   const [lastLocationUpdatedAt, setLastLocationUpdatedAt] =
     useState<Date | null>(null);
+  const [isLocationStale, setIsLocationStale] = useState(false);
+  const [locationSourceStatus, setLocationSourceStatus] =
+    useState<LiveDataSourceStatus>("fresh");
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
   const [isLocationPanelVisible, setIsLocationPanelVisible] = useState(false);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
@@ -553,15 +558,18 @@ export default function ShuttleSection() {
 
     const fetchLocations = async () => {
       try {
-        const locations = await fetchBusLocations();
+        const locationStatus = await fetchBusLocationStatus();
         if (!isActive) return;
 
-        setBusLocations(locations);
-        setLastLocationUpdatedAt(new Date());
+        setBusLocations(locationStatus.data);
+        setLastLocationUpdatedAt(new Date(locationStatus.timestamp));
+        setIsLocationStale(locationStatus.stale);
+        setLocationSourceStatus(locationStatus.sourceStatus);
         setLocationError("");
       } catch {
         if (!isActive) return;
         setLocationError(text.locationError);
+        setLocationSourceStatus("error");
       }
     };
 
@@ -700,17 +708,19 @@ export default function ShuttleSection() {
                   <br />
                   {text.autoUpdateLocation}
                 </p>
-                <p className="mt-1 text-xs text-neutral-500">
-                  {text.lastLocationUpdate}:{" "}
-                  {lastLocationUpdatedAt
-                    ? lastLocationUpdatedAt.toLocaleTimeString(
-                        getLocaleCode(locale),
-                      )
-                    : "-"}
-                </p>
-                {locationError && (
+                <LiveDataStatusBadge
+                  locale={locale}
+                  sourceLabel={dictionary.liveData.sources.shuttle}
+                  timestamp={lastLocationUpdatedAt}
+                  stale={isLocationStale}
+                  sourceStatus={locationSourceStatus}
+                  className="mt-2"
+                />
+                {(locationError || isLocationStale) && (
                   <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                    {locationError} {text.staleLocationWarning}
+                    {locationError
+                      ? `${locationError} ${text.staleLocationWarning}`
+                      : text.staleLocationWarning}
                   </p>
                 )}
               </>

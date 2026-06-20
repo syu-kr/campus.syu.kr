@@ -1,17 +1,24 @@
 import { NextResponse } from "next/server";
 import { fetchPublicTransitArrivals } from "@/lib/api";
 import type { BusArrivalsAtStop } from "@/types";
+import type {
+  LiveDataResponse,
+  LiveDataSourceStatus,
+} from "@/types/live-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const TRANSIT_CACHE_TTL_MS = 10 * 1000;
 const TRANSIT_STALE_RETENTION_MS = 2 * 60 * 1000;
+const TRANSIT_SOURCE = "public-transit-arrivals";
 
 let cachedArrivals:
   | {
       data: BusArrivalsAtStop[];
       timestamp: string;
+      stale: boolean;
+      sourceStatus: LiveDataSourceStatus;
       expiresAt: number;
       fallbackUntil: number;
     }
@@ -19,16 +26,19 @@ let cachedArrivals:
 let pendingArrivals: Promise<BusArrivalsAtStop[]> | undefined;
 
 export async function GET() {
-  try {
-    const now = Date.now();
+  const now = Date.now();
 
+  try {
     if (cachedArrivals && cachedArrivals.expiresAt > now) {
       return NextResponse.json(
         {
           success: true,
+          source: TRANSIT_SOURCE,
           data: cachedArrivals.data,
           timestamp: cachedArrivals.timestamp,
-        },
+          stale: cachedArrivals.stale,
+          sourceStatus: cachedArrivals.sourceStatus,
+        } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
         {
           headers: {
             "Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
@@ -43,18 +53,23 @@ export async function GET() {
     });
 
     const freshArrivals = await pendingArrivals;
-    const arrivals =
-      cachedArrivals && cachedArrivals.fallbackUntil > now
-        ? preserveMissingRoutes(freshArrivals, cachedArrivals.data)
-        : freshArrivals;
-    const timestamp = new Date().toISOString();
     const freshRouteCount = countRoutes(freshArrivals);
     const cachedRouteCount = cachedArrivals
       ? countRoutes(cachedArrivals.data)
       : 0;
+    const usedRouteFallback =
+      Boolean(cachedArrivals && cachedArrivals.fallbackUntil > now) &&
+      freshRouteCount < cachedRouteCount;
+    const arrivals =
+      usedRouteFallback && cachedArrivals
+        ? preserveMissingRoutes(freshArrivals, cachedArrivals.data)
+        : freshArrivals;
+    const timestamp = new Date().toISOString();
     cachedArrivals = {
       data: arrivals,
       timestamp,
+      stale: usedRouteFallback,
+      sourceStatus: usedRouteFallback ? "stale" : "fresh",
       expiresAt: Date.now() + TRANSIT_CACHE_TTL_MS,
       fallbackUntil:
         !cachedArrivals || freshRouteCount >= cachedRouteCount
@@ -65,9 +80,12 @@ export async function GET() {
     return NextResponse.json(
       {
         success: true,
+        source: TRANSIT_SOURCE,
         data: arrivals,
         timestamp,
-      },
+        stale: usedRouteFallback,
+        sourceStatus: usedRouteFallback ? "stale" : "fresh",
+      } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
       {
         headers: {
           "Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
@@ -77,14 +95,35 @@ export async function GET() {
   } catch (error) {
     console.error("Failed to fetch public transit arrivals:", error);
 
+    if (cachedArrivals && cachedArrivals.fallbackUntil > now) {
+      return NextResponse.json(
+        {
+          success: true,
+          source: TRANSIT_SOURCE,
+          data: cachedArrivals.data,
+          timestamp: cachedArrivals.timestamp,
+          stale: true,
+          sourceStatus: "stale",
+        } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=10, stale-while-revalidate=20",
+          },
+        },
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
+        source: TRANSIT_SOURCE,
         error: "대중교통 도착 정보를 불러오지 못했습니다",
         data: [],
         timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+        stale: false,
+        sourceStatus: "error",
+      } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
+      { status: 502 },
     );
   }
 }

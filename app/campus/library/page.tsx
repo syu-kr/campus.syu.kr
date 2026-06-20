@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -18,9 +19,20 @@ import { getKoreaNow } from "@/lib/home";
 import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import type { Dictionary, Locale } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
+import type { LiveDataResponse } from "@/types/live-data";
 
 type LibraryDictionary = Dictionary["pages"]["library"];
+type ReadingRoomStatusPayload = LiveDataResponse<ReadingRoom[]>;
+
+const EMPTY_READING_ROOM_STATUS: ReadingRoomStatusPayload = {
+  success: false,
+  source: "library-reading-room",
+  data: [],
+  timestamp: "",
+  stale: false,
+  sourceStatus: "error",
+};
 
 function getUsageColor(percentage: number): string {
   if (percentage >= 66) return "bg-red-600"; // 2/3 이상
@@ -61,23 +73,33 @@ export default function LibraryPage() {
   });
 
   const {
-    data: rooms = [],
+    data: readingRoomStatus = EMPTY_READING_ROOM_STATUS,
     isLoading,
     isFetching,
     isError,
-    dataUpdatedAt,
     refetch,
   } = useQuery({
     queryKey: ["library-reading-rooms"],
-    queryFn: () =>
-      fetchJson<ReadingRoom[]>("/api/library/reading-rooms", {
-        fallback: [],
-        throwOnError: true,
-      }),
+    queryFn: async () => {
+      const payload = await fetchJson<ReadingRoomStatusPayload>(
+        "/api/library/reading-rooms",
+        {
+          fallback: EMPTY_READING_ROOM_STATUS,
+          throwOnError: true,
+        },
+      );
+
+      if (!payload.success) {
+        throw new Error(payload.error ?? text.loadError);
+      }
+
+      return payload;
+    },
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });
+  const rooms = readingRoomStatus.data;
 
   const defaultSeason = useMemo<LibrarySeason>(() => {
     if (!now) return "semester";
@@ -97,9 +119,6 @@ export default function LibraryPage() {
   }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
-  const lastUpdatedTime = dataUpdatedAt
-    ? new Date(dataUpdatedAt).toLocaleTimeString(getLocaleCode(locale))
-    : "-";
 
   return (
     <Container className="py-6 sm:py-8">
@@ -115,10 +134,14 @@ export default function LibraryPage() {
           <h2 className="text-lg font-bold text-neutral-900">
             {text.readingRoomStatus}
           </h2>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-neutral-500">
-              {text.lastUpdated}: {lastUpdatedTime}
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <LiveDataStatusBadge
+              locale={locale}
+              sourceLabel={dictionary.liveData.sources.library}
+              timestamp={readingRoomStatus.timestamp}
+              stale={readingRoomStatus.stale}
+              sourceStatus={isError ? "error" : readingRoomStatus.sourceStatus}
+            />
             <button
               type="button"
               onClick={() => refetch()}
@@ -379,10 +402,6 @@ export default function LibraryPage() {
       )}
     </Container>
   );
-}
-
-function getLocaleCode(locale: Locale) {
-  return locale === "ko" ? "ko-KR" : "en-US";
 }
 
 function formatScheduleValue(value: string, text: LibraryDictionary) {

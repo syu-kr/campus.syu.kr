@@ -1,6 +1,7 @@
 import { fetchJson } from "./fetch-json";
+import type { LiveDataMeta } from "@/types/live-data";
 
-export interface WeatherData {
+export interface WeatherData extends LiveDataMeta {
   temperature: number; // 기온
   skyCondition: number; // 하늘상태 (1:맑음, 3:구름많음, 4:흐림)
   precipitation: number; // 강수형태 (0:없음, 1:비, 2:비/눈, 3:눈, 5:빗방울/이슬비, 6:빗방울눈날림, 7:눈날림)
@@ -68,6 +69,12 @@ function isWeatherData(data: unknown): data is WeatherData {
     typeof weather.latitude === "number" &&
     typeof weather.longitude === "number" &&
     typeof weather.gridX === "number" &&
-    typeof weather.gridY === "number"
+    typeof weather.gridY === "number" &&
+    typeof weather.source === "string" &&
+    typeof weather.timestamp === "string" &&
+    typeof weather.stale === "boolean" &&
+    (weather.sourceStatus === "fresh" ||
+      weather.sourceStatus === "stale" ||
+      weather.sourceStatus === "error")
   );
 }

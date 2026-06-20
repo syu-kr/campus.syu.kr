@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { requireServerEnv } from "@/lib/server/env";
+import type { LiveDataResponse } from "@/types/live-data";
 
 // 🚀 빌드 최적화: 이 라우트를 동적으로 처리 (빌드 시간 단축)
 export const dynamic = "force-dynamic";
 
 const LIBRARY_CACHE_TTL_MS = 60 * 1000;
 const LIBRARY_STALE_RETENTION_MS = 30 * 60 * 1000;
+const LIBRARY_SOURCE = "library-reading-room";
 let cachedRooms:
   | {
       rooms: ReadingRoom[];
+      timestamp: string;
       fetchedAt: number;
       expiresAt: number;
     }
@@ -29,7 +32,7 @@ export async function GET() {
 
   try {
     if (cachedRooms && cachedRooms.expiresAt > now) {
-      return libraryJson(cachedRooms.rooms);
+      return libraryJson(cachedRooms.rooms, cachedRooms.timestamp);
     }
 
     pendingRooms ??= fetchReadingRooms().finally(() => {
@@ -37,13 +40,15 @@ export async function GET() {
     });
 
     const rooms = await pendingRooms;
+    const timestamp = new Date().toISOString();
     cachedRooms = {
       rooms,
+      timestamp,
       fetchedAt: Date.now(),
       expiresAt: Date.now() + LIBRARY_CACHE_TTL_MS,
     };
 
-    return libraryJson(rooms);
+    return libraryJson(rooms, timestamp);
   } catch (error) {
     console.error("Failed to fetch reading rooms:", error);
 
@@ -51,11 +56,19 @@ export async function GET() {
       cachedRooms &&
       cachedRooms.fetchedAt + LIBRARY_STALE_RETENTION_MS > now
     ) {
-      return libraryJson(cachedRooms.rooms, true);
+      return libraryJson(cachedRooms.rooms, cachedRooms.timestamp, true);
     }
 
     return NextResponse.json(
-      { error: "Failed to fetch reading room status" },
+      {
+        success: false,
+        source: LIBRARY_SOURCE,
+        data: [],
+        timestamp: new Date().toISOString(),
+        stale: false,
+        sourceStatus: "error",
+        error: "Failed to fetch reading room status",
+      } satisfies LiveDataResponse<ReadingRoom[]>,
       {
         status: 502,
         headers: {
@@ -116,11 +129,25 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
   return rooms;
 }
 
-function libraryJson(rooms: ReadingRoom[], stale = false) {
-  return NextResponse.json(rooms, {
-    headers: {
-      "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
-      ...(stale ? { "X-Library-Stale": "1" } : {}),
+function libraryJson(
+  rooms: ReadingRoom[],
+  timestamp: string,
+  stale = false,
+) {
+  return NextResponse.json(
+    {
+      success: true,
+      source: LIBRARY_SOURCE,
+      data: rooms,
+      timestamp,
+      stale,
+      sourceStatus: stale ? "stale" : "fresh",
+    } satisfies LiveDataResponse<ReadingRoom[]>,
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        ...(stale ? { "X-Library-Stale": "1" } : {}),
+      },
     },
-  });
+  );
 }

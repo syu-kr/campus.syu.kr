@@ -141,6 +141,22 @@ export const dictionaries = {
       cloudy: "흐림",
       unknown: "알 수 없음",
     },
+    liveData: {
+      updated: "마지막 업데이트",
+      source: "원본",
+      unavailable: "-",
+      statuses: {
+        fresh: "정상",
+        stale: "이전 정보",
+        error: "오류",
+      },
+      sources: {
+        weather: "기상청",
+        library: "중앙도서관",
+        shuttle: "삼육대 셔틀",
+        publicTransit: "공공데이터",
+      },
+    },
     home: {
       frequentMenuTitle: "자주 사용하는 메뉴",
       relatedLinksTitle: "주요 서비스 바로가기",
@@ -1545,6 +1561,22 @@ export const dictionaries = {
       partlyCloudy: "Mostly cloudy",
       cloudy: "Cloudy",
       unknown: "Unknown",
+    },
+    liveData: {
+      updated: "Last update",
+      source: "Source",
+      unavailable: "-",
+      statuses: {
+        fresh: "Fresh",
+        stale: "Stale",
+        error: "Error",
+      },
+      sources: {
+        weather: "KMA",
+        library: "Central Library",
+        shuttle: "SYU Shuttle",
+        publicTransit: "Public data",
+      },
     },
     home: {
       frequentMenuTitle: "Frequently Used",
