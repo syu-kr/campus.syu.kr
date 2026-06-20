@@ -11,6 +11,7 @@ export const fetchCache = "force-no-store";
 
 const SHUTTLE_LOCATION_SOURCE = "shuttle";
 const SHUTTLE_CACHE_TTL_MS = 3 * 1000;
+const SHUTTLE_STALE_RETENTION_MS = 60 * 1000;
 const PUBLIC_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=3, stale-while-revalidate=10",
 };
@@ -18,6 +19,7 @@ let cachedLocations:
   | {
       locations: BusLocation[];
       timestamp: string;
+      fetchedAt: number;
       expiresAt: number;
     }
   | undefined;
@@ -136,8 +138,9 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
 }
 
 export async function GET() {
+  const now = Date.now();
+
   try {
-    const now = Date.now();
     if (cachedLocations && cachedLocations.expiresAt > now) {
       return shuttleJson(cachedLocations.locations, cachedLocations.timestamp);
     }
@@ -151,12 +154,24 @@ export async function GET() {
     cachedLocations = {
       locations,
       timestamp,
+      fetchedAt: Date.now(),
       expiresAt: Date.now() + SHUTTLE_CACHE_TTL_MS,
     };
 
     return shuttleJson(locations, timestamp);
   } catch (error) {
     console.error("Failed to fetch shuttle bus locations:", error);
+
+    if (
+      cachedLocations &&
+      cachedLocations.fetchedAt + SHUTTLE_STALE_RETENTION_MS > now
+    ) {
+      return shuttleJson(
+        cachedLocations.locations,
+        cachedLocations.timestamp,
+        true,
+      );
+    }
 
     return NextResponse.json(
       {
@@ -174,19 +189,25 @@ export async function GET() {
   }
 }
 
-function shuttleJson(locations: BusLocation[], timestamp: string) {
+function shuttleJson(
+  locations: BusLocation[],
+  timestamp: string,
+  stale = false,
+) {
   return NextResponse.json(
     {
       success: true,
       source: SHUTTLE_LOCATION_SOURCE,
       data: locations,
       timestamp,
+      stale,
     },
     {
       headers: {
         ...PUBLIC_CACHE_HEADERS,
         "X-Shuttle-Source": SHUTTLE_LOCATION_SOURCE,
         "X-Shuttle-Fetched-At": timestamp,
+        ...(stale ? { "X-Shuttle-Stale": "1" } : {}),
       },
     },
   );

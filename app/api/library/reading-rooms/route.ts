@@ -5,9 +5,11 @@ import { requireServerEnv } from "@/lib/server/env";
 export const dynamic = "force-dynamic";
 
 const LIBRARY_CACHE_TTL_MS = 60 * 1000;
+const LIBRARY_STALE_RETENTION_MS = 30 * 60 * 1000;
 let cachedRooms:
   | {
       rooms: ReadingRoom[];
+      fetchedAt: number;
       expiresAt: number;
     }
   | undefined;
@@ -23,8 +25,9 @@ interface ReadingRoom {
 }
 
 export async function GET() {
+  const now = Date.now();
+
   try {
-    const now = Date.now();
     if (cachedRooms && cachedRooms.expiresAt > now) {
       return libraryJson(cachedRooms.rooms);
     }
@@ -36,12 +39,21 @@ export async function GET() {
     const rooms = await pendingRooms;
     cachedRooms = {
       rooms,
+      fetchedAt: Date.now(),
       expiresAt: Date.now() + LIBRARY_CACHE_TTL_MS,
     };
 
     return libraryJson(rooms);
   } catch (error) {
     console.error("Failed to fetch reading rooms:", error);
+
+    if (
+      cachedRooms &&
+      cachedRooms.fetchedAt + LIBRARY_STALE_RETENTION_MS > now
+    ) {
+      return libraryJson(cachedRooms.rooms, true);
+    }
+
     return NextResponse.json(
       { error: "Failed to fetch reading room status" },
       {
@@ -84,10 +96,11 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
   return rooms;
 }
 
-function libraryJson(rooms: ReadingRoom[]) {
+function libraryJson(rooms: ReadingRoom[], stale = false) {
   return NextResponse.json(rooms, {
     headers: {
       "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      ...(stale ? { "X-Library-Stale": "1" } : {}),
     },
   });
 }
