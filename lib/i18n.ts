@@ -665,6 +665,7 @@ export const dictionaries = {
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
         shareCreatedCopyFailed:
           "공유 링크를 만들었습니다. 브라우저 권한 문제로 자동 복사는 되지 않았습니다.",
+        shareFallbackInputLabel: "직접 복사할 공유 링크",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
         shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
         loadFailedTitle: "강의 정보를 불러올 수 없습니다",
@@ -703,6 +704,8 @@ export const dictionaries = {
         selectedEmpty: "선택한 강의가 없습니다.",
         totalSummaryPrefix: "총",
         conflictBadge: "충돌",
+        conflictSummaryTitle: "시간 충돌 강의",
+        conflictSummaryMore: "외 추가 충돌이 있습니다.",
         gradeSuffix: "학년",
         dayLabels: {
           mon: "월",
@@ -2111,6 +2114,7 @@ export const dictionaries = {
         shareCreated: "Share link created and copied to clipboard.",
         shareCreatedCopyFailed:
           "Share link created. Your browser blocked automatic copying.",
+        shareFallbackInputLabel: "Share link to copy manually",
         shareLoading: "Loading shared timetable.",
         shareLoadFailed: "Could not load the shared timetable.",
         loadFailedTitle: "Could not load course information",
@@ -2149,6 +2153,8 @@ export const dictionaries = {
         selectedEmpty: "No courses selected.",
         totalSummaryPrefix: "Total",
         conflictBadge: "Conflict",
+        conflictSummaryTitle: "Time Conflicts",
+        conflictSummaryMore: "more conflicts.",
         gradeSuffix: "year",
         dayLabels: {
           mon: "Mon",
