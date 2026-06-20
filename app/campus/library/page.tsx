@@ -72,6 +72,7 @@ export default function LibraryPage() {
     queryFn: () =>
       fetchJson<ReadingRoom[]>("/api/library/reading-rooms", {
         fallback: [],
+        throwOnError: true,
       }),
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
