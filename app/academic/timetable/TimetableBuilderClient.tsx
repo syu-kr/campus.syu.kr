@@ -116,6 +116,7 @@ export function TimetableBuilderClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
   const [appliedShareId, setAppliedShareId] = useState("");
+  const [createdShareId, setCreatedShareId] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isCreatingShare, setIsCreatingShare] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
@@ -150,7 +151,7 @@ export function TimetableBuilderClient() {
           timeoutMs: 12_000,
         },
       ),
-    enabled: Boolean(shareId),
+    enabled: Boolean(shareId) && shareId !== createdShareId,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -162,6 +163,11 @@ export function TimetableBuilderClient() {
   useEffect(() => {
     if (!shareId) {
       if (appliedShareId) setAppliedShareId("");
+      if (createdShareId) setCreatedShareId("");
+      return;
+    }
+
+    if (shareId === createdShareId) {
       return;
     }
 
@@ -178,7 +184,14 @@ export function TimetableBuilderClient() {
       setAppliedShareId(shareId);
       setShareMessage(text.shareLoaded);
     }
-  }, [appliedShareId, courseById, shareId, shareResponse, text.shareLoaded]);
+  }, [
+    appliedShareId,
+    courseById,
+    createdShareId,
+    shareId,
+    shareResponse,
+    text.shareLoaded,
+  ]);
 
   const selectedCourses = useMemo(
     () =>
@@ -285,11 +298,13 @@ export function TimetableBuilderClient() {
     locale,
     text,
   );
+  const shouldLoadShareFromUrl = Boolean(shareId && shareId !== createdShareId);
 
   function clearShareFromUrl() {
     if (shareId) {
       router.replace(pathname, { scroll: false });
       setAppliedShareId("");
+      setCreatedShareId("");
     }
   }
 
@@ -339,6 +354,8 @@ export function TimetableBuilderClient() {
       }
 
       const nextUrl = `${pathname}?share=${encodeURIComponent(share.shareId)}`;
+      setCreatedShareId(share.shareId);
+      setAppliedShareId(share.shareId);
       router.replace(nextUrl, { scroll: false });
 
       let didCopy = false;
@@ -355,7 +372,6 @@ export function TimetableBuilderClient() {
         }
       }
 
-      setAppliedShareId(share.shareId);
       setShareMessage(
         didCopy ? text.shareCreated : text.shareCreatedCopyFailed,
       );
@@ -445,13 +461,16 @@ export function TimetableBuilderClient() {
             ))}
           </div>
         )}
-        {(shareMessage || isShareFetching || (shareId && !shareResponse.success)) && (
+        {(shareMessage ||
+          (shouldLoadShareFromUrl &&
+            (isShareFetching || !shareResponse.success))) && (
           <p className="mt-3 text-sm font-medium text-neutral-600">
-            {isShareFetching
+            {shouldLoadShareFromUrl && isShareFetching
               ? text.shareLoading
               : shareMessage ||
-                shareResponse.error ||
-                text.shareLoadFailed}
+                (shouldLoadShareFromUrl
+                  ? shareResponse.error || text.shareLoadFailed
+                  : "")}
           </p>
         )}
         {shareFallbackUrl && (
