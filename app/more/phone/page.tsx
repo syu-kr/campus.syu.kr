@@ -9,6 +9,7 @@ import {
 } from "@/app/components/LocaleProvider";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
+import { PhoneCallButton } from "@/app/components/PhoneCallButton";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
@@ -41,7 +42,8 @@ export default function DirectoryPage() {
     return phoneData.filter(
       (item) =>
         item.department.toLowerCase().includes(lowerQuery) ||
-        item.phone.includes(searchQuery),
+        item.phone.includes(searchQuery) ||
+        item.description?.toLowerCase().includes(lowerQuery),
     );
   }, [searchQuery, phoneData]);
 
@@ -116,13 +118,17 @@ export default function DirectoryPage() {
                     {item.department}
                   </h3>
                   <p className="text-sm text-neutral-600">{item.phone}</p>
+                  {item.description && (
+                    <p className="mt-1 text-sm text-neutral-500">
+                      {item.description}
+                    </p>
+                  )}
                 </div>
-                <a
-                  href={`tel:${item.phone}`}
-                  className="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
-                >
-                  {text.call}
-                </a>
+                <PhoneCallButton
+                  department={item.department}
+                  phone={item.phone}
+                  phoneNumbers={item.phoneNumbers}
+                />
               </div>
             </Card>
           ))

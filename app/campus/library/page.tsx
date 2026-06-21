@@ -31,7 +31,7 @@ const EMPTY_READING_ROOM_STATUS: ReadingRoomStatusPayload = {
   data: [],
   timestamp: "",
   stale: false,
-  sourceStatus: "error",
+  sourceStatus: "fresh",
 };
 
 function getUsageColor(percentage: number): string {
@@ -119,6 +119,16 @@ export default function LibraryPage() {
   }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
+  const renderRefreshButton = (className = "") => (
+    <button
+      type="button"
+      onClick={() => refetch()}
+      disabled={isFetching}
+      className={`shrink-0 whitespace-nowrap rounded bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+    >
+      {isFetching ? text.refreshing : text.refresh}
+    </button>
+  );
 
   return (
     <Container className="py-6 sm:py-8">
@@ -130,26 +140,24 @@ export default function LibraryPage() {
       </div>
 
       <Card className="mb-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-neutral-900">
-            {text.readingRoomStatus}
-          </h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <LiveDataStatusBadge
-              locale={locale}
-              sourceLabel={dictionary.liveData.sources.library}
-              timestamp={readingRoomStatus.timestamp}
-              stale={readingRoomStatus.stale}
-              sourceStatus={isError ? "error" : readingRoomStatus.sourceStatus}
-            />
-            <button
-              type="button"
-              onClick={() => refetch()}
-              disabled={isFetching}
-              className="rounded bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isFetching ? text.refreshing : text.refresh}
-            </button>
+        <div className="mb-4 space-y-3 sm:flex sm:items-center sm:justify-between sm:space-y-0">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="min-w-0 text-lg font-bold text-neutral-900">
+              {text.readingRoomStatus}
+            </h2>
+            {renderRefreshButton("sm:hidden")}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+            {!isLoading && (
+              <LiveDataStatusBadge
+                locale={locale}
+                sourceLabel={dictionary.liveData.sources.library}
+                timestamp={readingRoomStatus.timestamp}
+                stale={readingRoomStatus.stale}
+                sourceStatus={isError ? "error" : readingRoomStatus.sourceStatus}
+              />
+            )}
+            {renderRefreshButton("hidden sm:inline-flex")}
           </div>
         </div>
 

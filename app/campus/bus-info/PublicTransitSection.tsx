@@ -33,7 +33,7 @@ const EMPTY_TRANSIT_STATUS: TransitStatusPayload = {
   data: [],
   timestamp: "",
   stale: false,
-  sourceStatus: "error",
+  sourceStatus: "fresh",
 };
 
 const TRANSIT_STOPS = [
@@ -149,13 +149,15 @@ export default function PublicTransitSection() {
             <p className="text-xs sm:text-sm text-neutral-600 mb-3">
               {text.publicTransitDescription}
             </p>
-            <LiveDataStatusBadge
-              locale={locale}
-              sourceLabel={dictionary.liveData.sources.publicTransit}
-              timestamp={transitStatus.timestamp}
-              stale={transitStatus.stale}
-              sourceStatus={error ? "error" : transitStatus.sourceStatus}
-            />
+            {!isLoading && (
+              <LiveDataStatusBadge
+                locale={locale}
+                sourceLabel={dictionary.liveData.sources.publicTransit}
+                timestamp={transitStatus.timestamp}
+                stale={transitStatus.stale}
+                sourceStatus={error ? "error" : transitStatus.sourceStatus}
+              />
+            )}
             <p className="mt-2 text-xs leading-5 text-neutral-500">
               {text.transitSourceNotice}
               <br />

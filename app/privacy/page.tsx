@@ -44,7 +44,7 @@ function EnglishPrivacyPage() {
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Effective Date"
-        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective May 14, 2026."
+        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated June 21, 2026."
       />
 
       <div className="space-y-6 mb-8">
@@ -59,19 +59,42 @@ function EnglishPrivacyPage() {
               <li>Analyzing service usage and improving quality</li>
               <li>Reviewing contact requests, reports, and suggestions</li>
               <li>Creating schedule coordination links and collecting responses</li>
+              <li>Creating timetable share links selected by users</li>
               <li>Sending service push notifications when users opt in</li>
+              <li>
+                Supporting internal admin triage with AI-assisted classification
+                when configured
+              </li>
             </ul>
           </div>
         </LegalSection>
 
         <LegalSection title="2. Retention">
           <div className="space-y-3 text-neutral-700">
-            <p className="text-sm">
-              Local settings remain on the user&apos;s device and are deleted when
-              browser data is cleared. Server-side contact, suggestion, schedule,
-              and notification token data is retained only as long as needed for
-              operation, review, or delivery.
-            </p>
+            <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
+              <li>
+                Local settings remain on the user&apos;s device and are deleted
+                when browser data is cleared.
+              </li>
+              <li>
+                Contact requests and campus-tip suggestions are retained until
+                the review or service-improvement purpose is fulfilled.
+              </li>
+              <li>
+                Schedule coordination rooms, participant responses, and
+                timetable share links are retained for up to 90 days.
+              </li>
+              <li>
+                Notification tokens are retained until the user disables
+                notifications, the token becomes invalid, or delivery is no
+                longer needed.
+              </li>
+              <li>
+                Rate-limit counters are retained for the configured request
+                window, and notification send locks may be retained for up to 14
+                days to prevent duplicate sends.
+              </li>
+            </ul>
             <p className="text-sm text-neutral-600">
               Third-party data such as Kakao Maps cookies and Google service data
               follows each provider&apos;s policies.
@@ -87,7 +110,14 @@ function EnglishPrivacyPage() {
               <li>Kakao Maps SDK cookies used for map and shuttle features</li>
               <li>Contact, report, campus-tip, and optional contact details entered by users</li>
               <li>Schedule room titles, descriptions, candidate times, participant nicknames, and availability responses</li>
+              <li>Schedule response edit-token hashes used to protect edits</li>
+              <li>Timetable share course IDs, year, semester, and user agent</li>
               <li>Firebase Cloud Messaging tokens and notification delivery records when notifications are enabled</li>
+              <li>Rate-limit counters and notification duplicate-send locks</li>
+              <li>
+                Admin-only AI classification metadata for contact requests or
+                suggestions, when generated
+              </li>
             </ul>
           </div>
         </LegalSection>
@@ -150,9 +180,26 @@ function EnglishPrivacyPage() {
               </tbody>
             </table>
           </div>
+          <div className="mt-4 space-y-3 text-sm text-neutral-700">
+            <p className="font-semibold">Third-party provision</p>
+            <p>
+              The service does not provide personal information to third parties
+              except where the user has consented, where required by law, or
+              where processing is necessary through the processors listed above.
+            </p>
+            <p className="font-semibold">Overseas or external processing</p>
+            <p>
+              Google, Vercel, GitHub, Kakao, and a configured AI classification
+              API may process data on servers located outside Korea or in regions
+              operated under each provider&apos;s policy. The categories of data
+              are limited to the minimum needed for hosting, analytics,
+              Firebase/Firestore storage, map features, notification delivery,
+              repository operation, and redacted admin triage.
+            </p>
+          </div>
         </LegalSection>
 
-        <LegalSection title="5. Cookies, Analytics, and Firebase">
+        <LegalSection title="5. Cookies, Analytics, Firebase, and AI Classification">
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               The service primarily uses local storage for user settings. Kakao
@@ -164,6 +211,13 @@ function EnglishPrivacyPage() {
             <p className="text-sm text-neutral-600">
               Blocking third-party cookies may limit map or shuttle-related
               features.
+            </p>
+            <p className="text-sm text-neutral-600">
+              When the admin classification feature is enabled, selected contact
+              request or suggestion content may be sent to a configured AI
+              classification API after contact details and obvious identifiers
+              are redacted where possible. The result is stored only as
+              admin-facing triage metadata.
             </p>
           </div>
         </LegalSection>
@@ -209,7 +263,7 @@ function EnglishPrivacyPage() {
               <p className="text-xs text-neutral-600">
                 <strong>Effective date</strong>: March 23, 2026
                 <br />
-                <strong>Last updated</strong>: May 14, 2026
+                <strong>Last updated</strong>: June 21, 2026
               </p>
             </div>
           </div>
@@ -235,7 +289,7 @@ export default async function PrivacyPage() {
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 5월 14일부터 적용됩니다."
+        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 6월 21일 최종 개정되었습니다."
       />
 
       <div className="space-y-6 mb-8">
@@ -258,7 +312,9 @@ export default async function PrivacyPage() {
                 <li>고객 문의 및 불만사항 처리</li>
                 <li>사용자 제보 및 문의 내용 검토와 서비스 개선 반영</li>
                 <li>일정 잡기 초대 링크 생성 및 참여자 가능 시간 취합</li>
+                <li>사용자가 선택한 시간표 공유 링크 생성 및 조회</li>
                 <li>사용자가 허용한 경우 서비스 공지 푸시 알림 발송</li>
+                <li>운영자 문의·제보 검토를 위한 AI 분류 보조</li>
               </ul>
             </div>
           </div>
@@ -310,8 +366,8 @@ export default async function PrivacyPage() {
                   5. 일정 잡기 정보
                 </p>
                 <p className="text-sm text-neutral-600">
-                  일정 방 만료 또는 운영상 보존 필요가 없어진 시점까지 보존하며,
-                  만료된 일정 방은 정리될 수 있습니다.
+                  일정 방 생성 시점부터 90일까지 보존하며, 만료된 일정 방과
+                  참여자 응답은 정리될 수 있습니다.
                 </p>
               </div>
               <div>
@@ -323,6 +379,51 @@ export default async function PrivacyPage() {
                   토큰이 유효하지 않은 경우 삭제될 수 있습니다.
                 </p>
               </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  7. 시간표 공유 정보
+                </p>
+                <p className="text-sm text-neutral-600">
+                  공유 링크 생성 시점부터 90일까지 보존하며, 만료된 공유 링크는
+                  조회되지 않고 정리될 수 있습니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  8. 요청 제한 및 알림 중복 방지 기록
+                </p>
+                <p className="text-sm text-neutral-600">
+                  요청 제한 카운터는 해당 요청 제한 구간이 끝날 때까지, 알림
+                  중복 발송 방지 기록은 생성 시점부터 최대 14일까지 보존될 수
+                  있습니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  9. AI 분류 결과
+                </p>
+                <p className="text-sm text-neutral-600">
+                  문의 및 제보 항목의 운영자 검토 목적 달성 시까지 원 접수
+                  항목과 함께 보존되며, 운영상 필요가 없어진 경우 삭제합니다.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-neutral-50 border border-neutral-200 rounded">
+              <p className="font-semibold text-sm mb-2">파기 절차 및 방법</p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
+                <li>
+                  서버에 저장된 정보는 보유 목적이 달성되거나 만료 시 Firestore
+                  TTL 또는 예약 정리 작업을 통해 삭제합니다.
+                </li>
+                <li>
+                  로컬 스토리지 정보는 사용자가 브라우저 데이터 삭제, 알림 구독
+                  해제, 또는 서비스 내 설정 변경을 통해 삭제할 수 있습니다.
+                </li>
+                <li>
+                  법령상 보존 의무가 있는 경우에는 해당 기간 동안 별도 보관 후
+                  파기합니다.
+                </li>
+              </ul>
             </div>
           </div>
         </Card>
@@ -381,6 +482,7 @@ export default async function PrivacyPage() {
                 <li>후보 날짜와 시간대</li>
                 <li>참여자 닉네임</li>
                 <li>참여자가 선택한 가능 시간</li>
+                <li>응답 수정을 위한 편집 토큰 해시</li>
               </ul>
             </div>
             <div>
@@ -391,6 +493,26 @@ export default async function PrivacyPage() {
                 <li>Firebase Cloud Messaging 알림 토큰</li>
                 <li>알림 구독 시점과 토큰 갱신 시점</li>
                 <li>알림 발송 결과 및 실패 기록</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                7. 시간표 공유 정보 (선택항목)
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
+                <li>공유 링크에 포함된 강의 식별자 목록</li>
+                <li>학년도 및 학기 정보</li>
+                <li>공유 링크 생성 시점의 브라우저 정보(User-Agent)</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                8. 서비스 운영 및 보안 정보
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
+                <li>요청 제한 카운터와 만료 시각</li>
+                <li>알림 중복 발송 방지 잠금 및 발송 기록</li>
+                <li>운영자 검토를 위한 AI 분류 결과와 생성 시점</li>
               </ul>
             </div>
           </div>
@@ -459,6 +581,110 @@ export default async function PrivacyPage() {
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                <p className="font-semibold text-sm text-blue-900 mb-2">
+                  개인정보 제3자 제공
+                </p>
+                <p className="text-sm text-blue-900">
+                  본 서비스는 이용자의 개인정보를 제3자에게 제공하지 않습니다.
+                  다만, 이용자가 사전에 동의한 경우, 법령에 특별한 규정이 있는
+                  경우, 또는 본 조의 수탁업체를 통한 업무처리에 필요한 경우에는
+                  해당 범위 안에서 처리될 수 있습니다.
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 p-2 text-left">
+                        업체
+                      </th>
+                      <th className="border border-gray-300 p-2 text-left">
+                        국외 처리 가능 항목
+                      </th>
+                      <th className="border border-gray-300 p-2 text-left">
+                        목적
+                      </th>
+                      <th className="border border-gray-300 p-2 text-left">
+                        보유 및 이용 기간
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Google</td>
+                      <td className="border border-gray-300 p-2">
+                        분석 이벤트, Firebase/Firestore 저장 정보, FCM 토큰 및
+                        발송 기록
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        분석, 데이터 저장, 푸시 알림 발송
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        Google 정책 및 본 방침의 보유기간에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Vercel</td>
+                      <td className="border border-gray-300 p-2">
+                        접속 로그, 요청 처리에 필요한 서비스 데이터
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        서비스 호스팅 및 배포
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        Vercel 정책 및 서비스 운영 기간에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">GitHub</td>
+                      <td className="border border-gray-300 p-2">
+                        저장소 이슈, 배포 자동화 로그, 운영자가 직접 등록한 변경
+                        이력
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        소스코드 및 운영 이력 관리
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        GitHub 정책 및 저장소 운영 기간에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Kakao</td>
+                      <td className="border border-gray-300 p-2">
+                        지도 SDK 사용 과정에서 Kakao가 처리하는 쿠키 및 기기 정보
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        캠퍼스 지도 및 위치 기반 지도 기능 제공
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        Kakao 정책에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">
+                        설정된 AI 분류 API
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        마스킹 처리된 문의·제보 제목, 내용, 링크, 태그, 운영자
+                        메모
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        운영자 문의·제보 분류 보조
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        해당 API 제공자의 정책 및 분류 처리 목적 달성 시까지
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-neutral-500">
+                위 업체는 각 사업자가 운영하는 국가 또는 리전의 서버에서 정보를
+                처리할 수 있습니다.
+              </p>
             </div>
           </div>
         </Card>
@@ -588,7 +814,7 @@ export default async function PrivacyPage() {
 
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
-            제6조 Google 분석도구
+            제6조 Google 분석도구 및 외부 처리 도구
           </h2>
           <div className="space-y-4 text-neutral-700">
             <div>
@@ -681,6 +907,41 @@ export default async function PrivacyPage() {
                   <span className="text-neutral-600">
                     {" "}
                     서비스 운영, 사용자 제보 검토, 일정 조율, 푸시 알림 발송
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div>
+              <p className="font-semibold text-sm mb-2">
+                4. 운영자 AI 분류 보조
+              </p>
+              <p className="text-sm text-neutral-600 mb-2">
+                운영자가 문의 및 제보를 빠르게 검토할 수 있도록, 설정된 경우 AI
+                분류 API를 이용해 접수 항목의 카테고리, 긴급도, 처리 힌트를
+                생성할 수 있습니다.
+              </p>
+              <div className="p-3 bg-gray-50 rounded border border-gray-200">
+                <p className="text-sm">
+                  <span className="font-semibold">처리 정보:</span>
+                  <span className="text-neutral-600">
+                    {" "}
+                    마스킹 처리된 문의·제보 제목, 내용, 링크, 태그, 운영자
+                    메모와 AI 분류 결과
+                  </span>
+                </p>
+                <p className="text-sm mt-1">
+                  <span className="font-semibold">목적:</span>
+                  <span className="text-neutral-600">
+                    {" "}
+                    운영자 검토 우선순위 판단 및 처리 방향 분류
+                  </span>
+                </p>
+                <p className="text-sm mt-1">
+                  <span className="font-semibold">보호조치:</span>
+                  <span className="text-neutral-600">
+                    {" "}
+                    이메일, 전화번호, 식별번호 등 명백한 개인정보는 가능한
+                    범위에서 마스킹한 뒤 전송합니다.
                   </span>
                 </p>
               </div>
@@ -841,7 +1102,7 @@ export default async function PrivacyPage() {
               <p className="text-xs text-neutral-600">
                 <strong>시행일</strong>: 2026년 3월 23일
                 <br />
-                <strong>최종 개정일</strong>: 2026년 5월 14일
+                <strong>최종 개정일</strong>: 2026년 6월 21일
               </p>
             </div>
           </div>
