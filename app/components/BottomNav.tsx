@@ -55,7 +55,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label={dictionary.navigation.mainNavigation}
     >
       <div className="grid grid-cols-4 gap-0">
