@@ -37,7 +37,8 @@ export async function generateMetadata(): Promise<Metadata> {
 const serviceItems = [
   {
     title: "학사정보",
-    description: "학사공지, 학사일정, 학과공지, 졸업요건 간편확인",
+    description:
+      "학사공지, 학사일정, 학과공지, 졸업요건 간편확인, 시간표 짜기 및 공유",
   },
   {
     title: "캠퍼스정보",
@@ -94,7 +95,7 @@ const englishServiceItems = [
   {
     title: "Academic Information",
     description:
-      "Academic notices, schedules, department notices, graduation checks, and timetable tools",
+      "Academic notices, schedules, department notices, graduation checks, timetable tools, and timetable sharing",
   },
   {
     title: "Campus Information",
@@ -138,7 +139,7 @@ function EnglishTermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="Terms of Use"
-        description="Terms for using the SYU CAMPUS service. Effective May 14, 2026."
+        description="Terms for using the SYU CAMPUS service. Effective March 23, 2026. Last updated June 21, 2026."
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Important Notice"
@@ -244,6 +245,20 @@ function EnglishTermsPage() {
               tokens only for service operation and improvement.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
+              Timetable sharing may store selected course IDs, year, semester,
+              and request metadata for creating and loading share links.
+            </NumberedParagraph>
+            <NumberedParagraph number={4}>
+              Campus-tip submissions and contact requests may be reviewed,
+              classified, edited for safety or clarity, rejected, or removed at
+              the provider&apos;s discretion.
+            </NumberedParagraph>
+            <NumberedParagraph number={5}>
+              The provider may use AI-assisted admin classification for internal
+              triage after redacting contact details or obvious identifiers
+              where practical.
+            </NumberedParagraph>
+            <NumberedParagraph number={6}>
               Privacy details are governed by the Privacy Policy.
             </NumberedParagraph>
           </div>
@@ -295,7 +310,7 @@ export default async function TermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="이용약관"
-        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 5월 14일 시행"
+        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 23일 시행, 2026년 6월 21일 개정"
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="중요 공지"
@@ -413,17 +428,36 @@ export default async function TermsPage() {
               저장될 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={4}>
+              시간표 공유 기능을 이용하는 경우, 선택한 강의 식별자, 학년도,
+              학기, 공유 링크 생성 시점의 브라우저 정보가 링크 생성과 조회를
+              위해 서버에 저장될 수 있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={5}>
               푸시 알림을 허용한 경우, 알림 발송을 위한 브라우저 알림 토큰이
               저장될 수 있습니다. 알림 권한은 브라우저 설정에서 언제든지 변경할
               수 있습니다.
             </NumberedParagraph>
-            <NumberedParagraph number={5}>
+            <NumberedParagraph number={6}>
               저장된 문의 및 제보 내용은 개별 답변을 보장하지 않으며, 제공자의
               판단에 따라 서비스 개선과 데이터 수정에 참고됩니다.
             </NumberedParagraph>
-            <NumberedParagraph number={6}>
+            <NumberedParagraph number={7}>
+              캠퍼스 꿀팁 제보 및 문의 내용은 운영자 검토 과정에서 분류, 보류,
+              비공개, 삭제, 안전성 검토, 표현 정리 등의 처리가 이루어질 수
+              있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={8}>
+              운영자는 문의 및 제보의 우선순위와 처리 방향을 판단하기 위해,
+              명백한 개인정보를 가능한 범위에서 마스킹한 뒤 AI 분류 보조 도구를
+              사용할 수 있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={9}>
               서비스의 검색 노출 최적화를 위해 Google Search Console을 통해
               사이트 데이터를 수집할 수 있습니다.
+            </NumberedParagraph>
+            <NumberedParagraph number={10}>
+              개인정보 처리의 구체적인 항목, 보유기간, 위탁, 국외 처리, 파기
+              방법은 개인정보처리방침에 따릅니다.
             </NumberedParagraph>
           </div>
         </LegalSection>
