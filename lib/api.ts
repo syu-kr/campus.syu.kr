@@ -329,7 +329,8 @@ async function searchPhoneNumberSource(
   return phoneNumbers.filter(
     (phone) =>
       includesQuery(phone.department, lowerQuery) ||
-      phone.phone?.includes(rawQuery),
+      phone.phone?.includes(rawQuery) ||
+      includesQuery(phone.description, lowerQuery),
   );
 }
 

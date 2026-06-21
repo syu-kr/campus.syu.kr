@@ -2,281 +2,450 @@
   {
     "department": "교무처 학사지원팀",
     "phone": "02-3399-3153",
-    "description": "졸업·학적·수업·증명서"
+    "description": "졸업·학적·수업·증명서",
+    "phoneNumbers": [
+      "02-3399-3153"
+    ]
   },
   {
     "department": "교무처 교수지원팀",
     "phone": "02-3399-3359",
-    "description": "교수·조교관련"
+    "description": "교수·조교관련",
+    "phoneNumbers": [
+      "02-3399-3359"
+    ]
   },
   {
     "department": "교양교육원",
     "phone": "02-3399-1924",
-    "description": "교양"
+    "description": "교양",
+    "phoneNumbers": [
+      "02-3399-1924"
+    ]
   },
   {
     "department": "학생처 학생복지팀",
     "phone": "02-3399-3225",
-    "description": "교내장학"
+    "description": "교내장학",
+    "phoneNumbers": [
+      "02-3399-3225"
+    ]
   },
   {
     "department": "학생처 학생복지팀",
     "phone": "02-3399-3227",
-    "description": "교외장학, 근로"
+    "description": "교외장학, 근로",
+    "phoneNumbers": [
+      "02-3399-3227"
+    ]
   },
   {
     "department": "학생처 학생복지팀",
     "phone": "02-3399-3226",
-    "description": "국가장학/학자금대출"
+    "description": "국가장학/학자금대출",
+    "phoneNumbers": [
+      "02-3399-3226"
+    ]
   },
   {
     "department": "교목처 교목팀",
     "phone": "02-3399-3328 02-3399-3334",
-    "description": "채플"
+    "description": "채플",
+    "phoneNumbers": [
+      "02-3399-3328",
+      "02-3399-3334"
+    ]
   },
   {
     "department": "교목처 리더십센터",
     "phone": "02-3399-3078",
-    "description": "MVP+교육, HOPE 캠프"
+    "description": "MVP+교육, HOPE 캠프",
+    "phoneNumbers": [
+      "02-3399-3078"
+    ]
   },
   {
     "department": "생활건강증진원 금주금연클리닉",
     "phone": "02-3399-3185",
-    "description": "금연금주예방교육, 금연클리닉"
+    "description": "금연금주예방교육, 금연클리닉",
+    "phoneNumbers": [
+      "02-3399-3185"
+    ]
   },
   {
     "department": "글로컬사회혁신원",
     "phone": "02-3399-3263",
-    "description": "사회봉사과목, 사회봉사 비교과활동"
+    "description": "사회봉사과목, 사회봉사 비교과활동",
+    "phoneNumbers": [
+      "02-3399-3263"
+    ]
   },
   {
     "department": "교육혁신원 교수학습개발센터",
     "phone": "02-3399-3376",
-    "description": "학습지원"
+    "description": "학습지원",
+    "phoneNumbers": [
+      "02-3399-3376"
+    ]
   },
   {
     "department": "교육혁신원 교수학습개발센터",
     "phone": "02-3399-3374",
-    "description": "교수지원"
+    "description": "교수지원",
+    "phoneNumbers": [
+      "02-3399-3374"
+    ]
   },
   {
     "department": "교육혁신원 원격교육지원센터",
     "phone": "02-3399-3030",
-    "description": "이클래스, 전자출석"
+    "description": "이클래스, 전자출석",
+    "phoneNumbers": [
+      "02-3399-3030"
+    ]
   },
   {
     "department": "학술정보원 학술정보팀",
     "phone": "02-3399-3055",
-    "description": "도서관"
+    "description": "도서관",
+    "phoneNumbers": [
+      "02-3399-3055"
+    ]
   },
   {
     "department": "학술정보원 정보전산팀",
     "phone": "02-3399-3215",
-    "description": "SU-WINGs, SU-Talk"
+    "description": "SU-WINGs, SU-Talk",
+    "phoneNumbers": [
+      "02-3399-3215"
+    ]
   },
   {
     "department": "학생상담센터",
     "phone": "02-3399-3239",
-    "description": "개인상담, 심리검사, 집단상담"
+    "description": "개인상담, 심리검사, 집단상담",
+    "phoneNumbers": [
+      "02-3399-3239"
+    ]
   },
   {
     "department": "장애학생지원센터",
     "phone": "02-3399-3238",
-    "description": "장애학생 교수-학습지원, 학습도우미 연결"
+    "description": "장애학생 교수-학습지원, 학습도우미 연결",
+    "phoneNumbers": [
+      "02-3399-3238"
+    ]
   },
   {
     "department": "SU인권센터",
     "phone": "02-3399-3239",
-    "description": "성희롱, 성폭력, 성매매관련 상담/신고"
+    "description": "성희롱, 성폭력, 성매매관련 상담/신고",
+    "phoneNumbers": [
+      "02-3399-3239"
+    ]
   },
   {
     "department": "대학일자리본부 취업진로지원센터",
     "phone": "02-3399-3237",
-    "description": "취업프로그램, 상담"
+    "description": "취업프로그램, 상담",
+    "phoneNumbers": [
+      "02-3399-3237"
+    ]
   },
   {
     "department": "대학일자리본부 스타트업지원센터",
     "phone": "02-3399-3912",
-    "description": "창업프로그램, 컨설팅"
+    "description": "창업프로그램, 컨설팅",
+    "phoneNumbers": [
+      "02-3399-3912"
+    ]
   },
   {
     "department": "대학일자리본부 현장실습지원센터",
     "phone": "02-3399-3241",
-    "description": "현장실습(인턴십)"
+    "description": "현장실습(인턴십)",
+    "phoneNumbers": [
+      "02-3399-3241"
+    ]
   },
   {
     "department": "재무처",
     "phone": "02-3399-3443",
-    "description": "등록금"
+    "description": "등록금",
+    "phoneNumbers": [
+      "02-3399-3443"
+    ]
   },
   {
     "department": "입학처 입학팀",
     "phone": "02-3399-3365",
-    "description": "입학"
+    "description": "입학",
+    "phoneNumbers": [
+      "02-3399-3365"
+    ]
   },
   {
     "department": "생활교육원",
     "phone": "02-3399-3662",
-    "description": "시온관, 에덴관, 살렘관, 브니엘관, RC프로그램"
+    "description": "시온관, 에덴관, 살렘관, 브니엘관, RC프로그램",
+    "phoneNumbers": [
+      "02-3399-3662"
+    ]
   },
   {
     "department": "건강증진센터",
     "phone": "02-3399-3182",
-    "description": "보건실"
+    "description": "보건실",
+    "phoneNumbers": [
+      "02-3399-3182"
+    ]
   },
   {
     "department": "사무처 총무인사팀",
     "phone": "02-3399-3457",
-    "description": "직원 인사, 주차"
+    "description": "직원 인사, 주차",
+    "phoneNumbers": [
+      "02-3399-3457"
+    ]
   },
   {
     "department": "사무처 건축안전관리팀",
     "phone": "02-3399-3119",
-    "description": "연구실 안전"
+    "description": "연구실 안전",
+    "phoneNumbers": [
+      "02-3399-3119"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3502",
-    "description": "경비"
+    "description": "경비",
+    "phoneNumbers": [
+      "02-3399-3502"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3471",
-    "description": "시설관리"
+    "description": "시설관리",
+    "phoneNumbers": [
+      "02-3399-3471"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3461",
-    "description": "관재"
+    "description": "관재",
+    "phoneNumbers": [
+      "02-3399-3461"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3481",
-    "description": "미화"
+    "description": "미화",
+    "phoneNumbers": [
+      "02-3399-3481"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3161",
-    "description": "교육미디어환경구축"
+    "description": "교육미디어환경구축",
+    "phoneNumbers": [
+      "02-3399-3161"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3162",
-    "description": "교육미디어관리/운영"
+    "description": "교육미디어관리/운영",
+    "phoneNumbers": [
+      "02-3399-3162"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3163",
-    "description": "행사지원(대강당, 홍명기홀, 장근청홀)"
+    "description": "행사지원(대강당, 홍명기홀, 장근청홀)",
+    "phoneNumbers": [
+      "02-3399-3163"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3218",
-    "description": "전자교탁/빔프로젝트 A/S"
+    "description": "전자교탁/빔프로젝트 A/S",
+    "phoneNumbers": [
+      "02-3399-3218"
+    ]
   },
   {
     "department": "사무처 시설관리팀",
     "phone": "02-3399-3219",
-    "description": "컴퓨터/유,무선인터넷 A/S"
+    "description": "컴퓨터/유,무선인터넷 A/S",
+    "phoneNumbers": [
+      "02-3399-3219"
+    ]
   },
   {
     "department": "대외국제처 대외협력팀",
     "phone": "02-3399-1004",
-    "description": "발전기금"
+    "description": "발전기금",
+    "phoneNumbers": [
+      "02-3399-1004"
+    ]
   },
   {
     "department": "브랜드전략본부 커뮤니케이션팀",
     "phone": "02-3399-3810",
-    "description": "홍보"
+    "description": "홍보",
+    "phoneNumbers": [
+      "02-3399-3810"
+    ]
   },
   {
     "department": "산학협력단",
     "phone": "02-3399-3902",
-    "description": "산학협력"
+    "description": "산학협력",
+    "phoneNumbers": [
+      "02-3399-3902"
+    ]
   },
   {
     "department": "예비군대대",
     "phone": "02-3399-3202",
-    "description": "예비군"
+    "description": "예비군",
+    "phoneNumbers": [
+      "02-3399-3202"
+    ]
   },
   {
     "department": "국제교육원",
     "phone": "02-3399-3608",
-    "description": "외국인학생지원"
+    "description": "외국인학생지원",
+    "phoneNumbers": [
+      "02-3399-3608"
+    ]
   },
   {
     "department": "국제교육원 한국어학당",
     "phone": "02-3399-3602",
-    "description": "한국어과정 학생지원"
+    "description": "한국어과정 학생지원",
+    "phoneNumbers": [
+      "02-3399-3602"
+    ]
   },
   {
     "department": "평생교육원",
     "phone": "02-3399-1200",
-    "description": "평생교육프로그램"
+    "description": "평생교육프로그램",
+    "phoneNumbers": [
+      "02-3399-1200"
+    ]
   },
   {
     "department": "체육문화센터",
     "phone": "02-3399-3711",
-    "description": "체육문화센터 이용"
+    "description": "체육문화센터 이용",
+    "phoneNumbers": [
+      "02-3399-3711"
+    ]
   },
   {
     "department": "대학원",
     "phone": "02-3399-3016",
-    "description": "대학원 입학, 졸업, 입학, 수업, 증명서 등"
+    "description": "대학원 입학, 졸업, 입학, 수업, 증명서 등",
+    "phoneNumbers": [
+      "02-3399-3016"
+    ]
   },
   {
     "department": "총학생회",
     "phone": "02-3399-3761",
-    "description": "학생자치기구"
+    "description": "학생자치기구",
+    "phoneNumbers": [
+      "02-3399-3761"
+    ]
   },
   {
     "department": "생활관식당",
     "phone": "02-3399-3417",
-    "description": "생활관, 교직원 식당"
+    "description": "생활관, 교직원 식당",
+    "phoneNumbers": [
+      "02-3399-3417"
+    ]
   },
   {
     "department": "박물관",
     "phone": "02-3399-3065",
-    "description": "박물관 전시"
+    "description": "박물관 전시",
+    "phoneNumbers": [
+      "02-3399-3065"
+    ]
   },
   {
     "department": "글로벌예술영재교육원",
     "phone": "02-3399-1836",
-    "description": "글로벌영재교육원 프로그램"
+    "description": "글로벌영재교육원 프로그램",
+    "phoneNumbers": [
+      "02-3399-1836"
+    ]
   },
   {
     "department": "공통기기실험실",
     "phone": "02-3399-3735",
-    "description": "연구장비"
+    "description": "연구장비",
+    "phoneNumbers": [
+      "02-3399-3735"
+    ]
   },
   {
     "department": "총동문회",
     "phone": "02-3399-3790",
-    "description": "총동문회 가입, 총동문회비 납부"
+    "description": "총동문회 가입, 총동문회비 납부",
+    "phoneNumbers": [
+      "02-3399-3790"
+    ]
   },
   {
     "department": "학생편의시설",
     "phone": "02-3399-3400",
-    "description": "SU Lounge(학생식당)"
+    "description": "SU Lounge(학생식당)",
+    "phoneNumbers": [
+      "02-3399-3400"
+    ]
   },
   {
     "department": "학생편의시설",
     "phone": "02-3399-3404",
-    "description": "현대문구(바울관 지하)"
+    "description": "현대문구(바울관 지하)",
+    "phoneNumbers": [
+      "02-3399-3404"
+    ]
   },
   {
     "department": "학생편의시설",
     "phone": "02-3399-3413",
-    "description": "우리은행"
+    "description": "우리은행",
+    "phoneNumbers": [
+      "02-3399-3413"
+    ]
   },
   {
     "department": "학생편의시설",
     "phone": "02-3399-3406",
-    "description": "현대슬기샘(서점/바울관 지하)"
+    "description": "현대슬기샘(서점/바울관 지하)",
+    "phoneNumbers": [
+      "02-3399-3406"
+    ]
   },
   {
     "department": "학생편의시설",
     "phone": "02-3399-3418",
-    "description": "우편취급국"
+    "description": "우편취급국",
+    "phoneNumbers": [
+      "02-3399-3418"
+    ]
   }
 ]

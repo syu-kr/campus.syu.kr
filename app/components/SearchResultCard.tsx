@@ -7,6 +7,7 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
+import { PhoneCallButton } from "./PhoneCallButton";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
@@ -118,13 +119,20 @@ function PhoneSearchResultCard({
           <p className="text-sm text-primary-600 font-semibold mt-1">
             {highlightText(phone.phone, query)}
           </p>
+          {phone.description && (
+            <p className="mt-1 text-xs text-neutral-600 line-clamp-2">
+              {highlightText(phone.description, query)}
+            </p>
+          )}
         </div>
-        <a
-          href={`tel:${phone.phone}`}
-          className="px-3 py-2 bg-primary-600 text-white text-xs rounded hover:bg-primary-700 transition-colors"
+        <PhoneCallButton
+          department={phone.department}
+          phone={phone.phone}
+          phoneNumbers={phone.phoneNumbers}
+          className="inline-flex items-center justify-center gap-1.5 rounded bg-primary-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-primary-700"
         >
           {dictionary.labels.phone}
-        </a>
+        </PhoneCallButton>
       </div>
     </Card>
   );

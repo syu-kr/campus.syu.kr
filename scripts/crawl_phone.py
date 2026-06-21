@@ -12,12 +12,45 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import os
+import re
 
 from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
+
+PHONE_NUMBER_PATTERN = re.compile(
+    r"(?:\+82[\s-]?)?0\d{1,2}[\s)./-]?\d{3,4}[\s.-]?\d{4}"
+)
 
 
 def phone_key(phone_info):
     return f"{phone_info.get('department', '')}|{phone_info.get('description', '')}"
+
+
+def normalize_display_phone_number(value):
+    return re.sub(r"-+", "-", re.sub(r"[().]", "-", re.sub(r"\s+", "-", value.strip()))).strip("-")
+
+
+def extract_phone_numbers(value):
+    numbers = [
+        normalize_display_phone_number(match.group(0))
+        for match in PHONE_NUMBER_PATTERN.finditer(value or "")
+    ]
+    return list(dict.fromkeys(number for number in numbers if number))
+
+
+def normalize_phone_info(phone_info):
+    normalized = {
+        "department": phone_info.get("department", "").strip(),
+        "phone": phone_info.get("phone", "").strip(),
+    }
+    description = phone_info.get("description")
+    if description:
+        normalized["description"] = description.strip()
+
+    phone_numbers = extract_phone_numbers(normalized["phone"])
+    if phone_numbers:
+        normalized["phoneNumbers"] = phone_numbers
+
+    return normalized
 
 def crawl_phone_numbers():
     """전화번호 크롤링 (증분 업데이트)"""
@@ -57,11 +90,11 @@ def crawl_phone_numbers():
             description_elem = elem.select_one(".desc, .description")
             
             if department and phone:
-                phones.append({
+                phones.append(normalize_phone_info({
                     "department": department.get_text(strip=True),
                     "phone": phone.get_text(strip=True),
                     "description": description_elem.get_text(strip=True) if description_elem else None
-                })
+                }))
         
         # 테이블 형식이 없으면 테이블에서 추출
         if not phones:
@@ -82,20 +115,20 @@ def crawl_phone_numbers():
                         current_department = department
                     
                     if department and phone:
-                        phones.append({
+                        phones.append(normalize_phone_info({
                             "department": department,
                             "phone": phone,
                             "description": description or None
-                        })
+                        }))
                 elif len(cells) >= 2 and current_department:
                     description = cell_texts[0]
                     phone = cell_texts[1]
                     if phone:
-                        phones.append({
+                        phones.append(normalize_phone_info({
                             "department": current_department,
                             "phone": phone,
                             "description": description or None
-                        })
+                        }))
         
         if not phones:
             raise RuntimeError("전화번호 테이블에서 연락처를 찾지 못했습니다.")
@@ -114,14 +147,15 @@ def crawl_phone_numbers():
             key = phone_key(phone_info)
             dept = phone_info['department']
             if key in existing_phones:
+                existing_phone_info = normalize_phone_info(existing_phones[key])
                 # 기존 부서 - 번호가 달라졌으면 업데이트
-                if existing_phones[key]['phone'] != phone_info['phone']:
-                    print(f"  🔄 {dept}: {existing_phones[key]['phone']} → {phone_info['phone']}")
+                if existing_phone_info != phone_info:
+                    print(f"  🔄 {dept}: {existing_phone_info['phone']} → {phone_info['phone']}")
                     updated_count += 1
                     new_phones.append(phone_info)
                 else:
                     # 번호가 같으면 기존 데이터 유지
-                    new_phones.append(existing_phones[key])
+                    new_phones.append(existing_phone_info)
             else:
                 # 새로운 부서
                 print(f"  ✨ 신규 부서: {dept}")
