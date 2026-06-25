@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-24T17:13:18.770Z",
+  "generatedAt": "2026-06-25T17:21:32.181Z",
   "items": {
     "academic:url:0036436fd6d7b705": {
       "summary": "2025학년도 1학기 신입생·편입생은 2025년 2월 24일(월) 오후 3시 이후 SU-WINGs에서 학번 조회 및 비밀번호 설정이 가능합니다.",
@@ -781,6 +781,29 @@
       "contentSource": "detail",
       "detailContentHash": "89df851f8eed1e1c"
     },
+    "academic:url:05d11174a7072dfc": {
+      "summary": "2021년 삼육대 TOEFL ITP 시험 일정(1월~12월, 총 10회)과 접수 방법, 유의사항을 안내합니다.",
+      "target": "TOEFL ITP 응시 희망 학생",
+      "deadline": "회차별 상이 (1회차 접수마감: 2021년 1월 13일)",
+      "requiredAction": "http://b2b.toeic.co.kr/syu 에서 회차별 접수기간 내 온라인 접수 및 응시료 30,000원 납부",
+      "keywords": [
+        "TOEFL ITP",
+        "시험 일정",
+        "접수 방법",
+        "응시료",
+        "성적표 발급",
+        "교환학생",
+        "다니엘관"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:19:54.089Z",
+      "sourceHash": "a3d7f5dd783e4e33",
+      "inputHash": "b59c927f50a8f81d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "70d4f1cbf24ead9c"
+    },
     "academic:url:061d39eabde29be3": {
       "summary": "2022학년도 하계 계절학기 폐강과목이 공고되었으며, 다른 과목으로 변경 희망 학생은 6월 7일 17시까지 학사지원센터에 직접 방문해 신청해야 합니다.",
       "target": "2022학년도 하계 계절학기 폐강과목 수강신청 학생",
@@ -1436,6 +1459,29 @@
       "contentSource": "detail",
       "detailContentHash": "1a480d897d13905b"
     },
+    "academic:url:0c52b11e55d7ab3e": {
+      "summary": "2021학년도 1학기 복학 신청 기간은 1월 18일~2월 26일이며, SU-WINGs에서 신청하고 2월 15일~19일 등록을 완료해야 합니다.",
+      "target": "2021학년도 1학기 복학 예정 학생",
+      "deadline": "2021년 2월 26일(금) 낮 12:00 (복학 신청), 2021년 2월 19일(금) (등록 마감)",
+      "requiredAction": "SU-WINGs 접속 후 복학신청 및 등록기간 내 등록 완료 (미등록 시 제적 처리)",
+      "keywords": [
+        "복학신청",
+        "등록기간",
+        "SU-WINGs",
+        "수강신청",
+        "세부전공신청",
+        "제적주의",
+        "개강일"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:03.751Z",
+      "sourceHash": "3c7bb71364f6fc49",
+      "inputHash": "8806487e62364674",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "474fbb73d8f04699"
+    },
     "academic:url:0c811f7bdfd4bedf": {
       "summary": "2023-2학기 재학생 핵심역량 진단검사가 11월 30일까지 연장 실시되며, 선착순 1,000명에게 SU-Point 3,000원이 지급됩니다.",
       "target": "삼육대학교 학부(과) 재학생",
@@ -1887,6 +1933,29 @@
       "contentSource": "detail",
       "detailContentHash": "dbbaf5601e303772"
     },
+    "academic:url:10b89454d4f04d67": {
+      "summary": "2020학년도 2학기 연계전공 이수구분 신청을 원하는 학생은 2021년 1월 20일부터 29일까지 신청서를 이메일 또는 방문 제출해야 합니다.",
+      "target": "2020학년도 2학기까지 연계전공을 이수한 학생(중독연계 제외)",
+      "deadline": "2021년 01월 29일(금) 12시",
+      "requiredAction": "연계전공 이수구분 신청서 작성 후 이메일(intermajor@syu.ac.kr) 발송 또는 바울관 104호 방문 제출",
+      "keywords": [
+        "연계전공",
+        "이수구분",
+        "신청서 제출",
+        "이메일 제출",
+        "방문 제출",
+        "신청기간",
+        "졸업학점"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:18:34.717Z",
+      "sourceHash": "f251fef0411fe3a6",
+      "inputHash": "05314ee13c6501b4",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c47cf200e846f2b4"
+    },
     "academic:url:10e27f0b69e1cabd": {
       "summary": "2023학년도 후기 학위수여식이 2024년 8월 9일(금) 오전 11시 요한관 홍명기홀에서 열리며, 학위복 배부·반납 및 학위증 수령 일정이 안내됩니다.",
       "target": "2023학년도 후기 졸업생",
@@ -2331,6 +2400,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f68c7425a464a2a1"
+    },
+    "academic:url:16d4f783ff33620d": {
+      "summary": "2021학년도 1학기 연계전공 신청은 1월 18일 10시부터 2월 19일 15시까지 SU-WINGS에서 가능하며, 2학기 이상·30학점 이상·평점 2.5 이상인 학생이 대상입니다.",
+      "target": "2학기 이상, 30학점 이상 이수하고 전 학년 평균평점 2.5 이상인 재학생",
+      "deadline": "2021년 02월 19일(금) 15시",
+      "requiredAction": "SU-WINGS > 학사정보 > 연계전공 신청에서 기간 내 신청 또는 포기신청",
+      "keywords": [
+        "연계전공 신청",
+        "연계전공 포기",
+        "SU-WINGS",
+        "2021학년도 1학기",
+        "신청자격",
+        "학사지원팀"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:19:43.730Z",
+      "sourceHash": "b903dc249a38a762",
+      "inputHash": "819d6a302fed6022",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "84c55d75ecdd18d2"
     },
     "academic:url:178e2f5ea5659618": {
       "summary": "2018-2학기부터 위치기반 전자출석 시스템 도입으로, 수톡 앱을 통해 강의실 내에서 난수표 또는 QR코드로 출석해야 합니다.",
@@ -4141,6 +4232,29 @@
       "contentSource": "detail",
       "detailContentHash": "2fd265b45445071e"
     },
+    "academic:url:2910e83010acad98": {
+      "summary": "2021-1학기 재학생 예비수강신청(2/1~2/3)과 본수강신청(2/8~2/10)이 예정되어 있으며, 신·편입생은 별도 공지 예정입니다.",
+      "target": "2021-1학기 재학생(신·편입생 제외)",
+      "deadline": "본수강신청 마감: 2021년 2월 10일(수) 17시",
+      "requiredAction": "sugang.suwings.syu.ac.kr에서 예비수강신청(2/1~2/3) 및 본수강신청(2/8~2/10) 기간에 직접 신청",
+      "keywords": [
+        "2021-1학기",
+        "수강신청",
+        "예비수강신청",
+        "본수강신청",
+        "수강편람",
+        "수강중도포기",
+        "재학생"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:18:25.862Z",
+      "sourceHash": "c9d71eb506030863",
+      "inputHash": "d4b7a2192941fff1",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e83643f312999abc"
+    },
     "academic:url:291389b28d26ae82": {
       "summary": "2023년 2학기 채플셀 운영에 관한 안내로, 원문 공지에서 세부 내용을 확인하시기 바랍니다.",
       "target": "채플 수강 대상 학생",
@@ -5319,6 +5433,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "00dadb91fe43809a"
+    },
+    "academic:url:31707f3c345e1430": {
+      "summary": "2020 삼육마을 프로젝트 성과발표회가 유튜브 온라인 스트리밍으로 진행되며, 참가 신청 마감은 2021년 1월 13일(수)입니다.",
+      "target": "삼육마을 프로젝트에 관심 있는 누구나, 돌봄 특강 수강 희망자",
+      "deadline": "2021.01.13(수)",
+      "requiredAction": "원문 공지의 참가신청 링크를 통해 마감 전 신청",
+      "keywords": [
+        "삼육마을 프로젝트",
+        "성과발표회",
+        "캡스톤 디자인",
+        "사회공헌",
+        "유튜브 스트리밍",
+        "참가신청"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:19:12.630Z",
+      "sourceHash": "924da5fe7cd19a7c",
+      "inputHash": "d21fb87c13f2d596",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "bd5950df05e69aab"
     },
     "academic:url:318d3b8ed1707037": {
       "summary": "글로컬사회혁신원 콘서바토리 연습실은 SU-Talk으로 예약하며, 운영시간·당일 신청 가능 여부 등 이용 규칙을 원문에서 확인할 수 있습니다.",
@@ -7350,6 +7486,28 @@
       "contentSource": "detail",
       "detailContentHash": "e8aea62836993af0"
     },
+    "academic:url:4275bcca4ac585bd": {
+      "summary": "삼육BookStory 도서톡톡 공모전 수상자는 12월 29일부터 바울관 106호에서 상장을 수령하고, 장학금은 2~3주 내 본인 계좌로 지급 예정입니다.",
+      "target": "삼육BookStory 도서톡톡 공모전 수상자",
+      "deadline": "2021년 4월 (상장 수령 마감, 이후 폐기 예정)",
+      "requiredAction": "바울관 106호 방문하여 상장 수령 (2021년 4월 이전), 장학금은 학사 등록 본인 계좌로 자동 지급 예정",
+      "keywords": [
+        "도서톡톡 공모전",
+        "심사결과",
+        "수상자",
+        "상장 수령",
+        "장학금 지급",
+        "바울관 106호"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:21.129Z",
+      "sourceHash": "1f3fcc0e5eaf8b59",
+      "inputHash": "198348ad56b926ab",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d0e4f10a3afaa8f1"
+    },
     "academic:url:42842db5744a0019": {
       "summary": "삼육대 재학생 30명 대상 도시농업 프로젝트 'People's Grocery' 추가모집으로, 9월 25일까지 비교과 홈페이지에서 신청 가능합니다.",
       "target": "삼육대학교 재학생 30명",
@@ -8360,6 +8518,28 @@
       "contentSource": "detail",
       "detailContentHash": "43c18d6d556e87d0"
     },
+    "academic:url:4aea1b6d2aea5a73": {
+      "summary": "삼육도서100선 서평쓰기 공모전 심사결과가 발표되었으며, 수상자는 상장을 바울관 106호에서 수령하고 장학금은 2~3주 내 지급 예정입니다.",
+      "target": "삼육도서100선 서평쓰기 공모전 수상자",
+      "deadline": "2021년 4월 (상장 폐기 전 수령 권장)",
+      "requiredAction": "바울관 106호 방문하여 상장 수령 (12월 23일부터 가능, 2021년 4월 전 수령 필요)",
+      "keywords": [
+        "서평쓰기 공모전",
+        "심사결과",
+        "수상자",
+        "상장 수령",
+        "장학금 지급",
+        "바울관 106호"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:21:06.488Z",
+      "sourceHash": "8e15693ac3b83a5d",
+      "inputHash": "9de6d60a112a7f5b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "dab378d3de07c18a"
+    },
     "academic:url:4afca3300bad523e": {
       "summary": "2021-1학기 학부·대학원 재학생·복학생·재입학생 등록금 납부기간은 2021년 2월 15일(월)~19일(금)이며, 고지서는 SUWings에서 출력 가능합니다.",
       "target": "학부·대학원 재학생, 복학생, 재입학생",
@@ -8494,6 +8674,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f3b71e52d9a8f09c"
+    },
+    "academic:url:4c5b3af2f1a90267": {
+      "summary": "12월 23일 0시부터 1월 3일까지 서울·경기·인천 5인 이상 사적모임 집합금지 행정명령이 시행되며, 계절학기는 비대면 원칙으로 운영됩니다.",
+      "target": "전체 재학생 및 교직원",
+      "deadline": "2021.01.03",
+      "requiredAction": "5인 이상 사적모임 금지 준수, 방역수칙 및 개인 위생수칙 철저 준수",
+      "keywords": [
+        "코로나19",
+        "사적모임 집합금지",
+        "방역수칙",
+        "계절학기 비대면",
+        "선별진료소",
+        "거리두기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:21:14.761Z",
+      "sourceHash": "e25964ce5ad3abab",
+      "inputHash": "d7f26d92152d6527",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "67fcf8628a5aad83"
     },
     "academic:url:4c5bd429cc071313": {
       "summary": "2023-1학기 군 복무 중 학점 취득을 위한 이러닝 과정 안내로, 수강신청은 2월 14일부터 3월 13일까지 나라사랑포털에서 진행됩니다.",
@@ -10393,6 +10595,28 @@
       "contentSource": "detail",
       "detailContentHash": "534de738abc4fb73"
     },
+    "academic:url:5bf12f3a2536a806": {
+      "summary": "2021 신입생 온라인 오리엔테이션(MVP CAMP)이 3월 2일~4일 유튜브 실시간 방송으로 진행되며, 수강신청 안내 및 대학 생활 관련 프로그램이 포함됩니다.",
+      "target": "2021학년도 신입생",
+      "deadline": "2021.03.02 ~ 2021.03.04",
+      "requiredAction": "유튜브 또는 http://mvp.syu.ac.kr/ 접속하여 온라인 MVP CAMP 시청",
+      "keywords": [
+        "MVP CAMP",
+        "신입생 오리엔테이션",
+        "온라인 행사",
+        "유튜브 실시간",
+        "수강신청 안내",
+        "인성교육원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:19:02.768Z",
+      "sourceHash": "388387d50831f959",
+      "inputHash": "b38b3275e51a4a5d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "2b2589ffc5d1be71"
+    },
     "academic:url:5bfaf908d970c18c": {
       "summary": "2021-1학기 학부 초과 학기자 등록금 납부기간은 3월 9일(화)~12일(금)이며, 종합정보시스템에서 고지서 출력 후 가상계좌 또는 우리은행 창구에서 납부해야 합니다.",
       "target": "2021-1학기 학부 전체 재학생 (학자금대출자, 9학기 이상 초과 학기자 포함)",
@@ -11714,6 +11938,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "820627b52e7c13d3"
+    },
+    "academic:url:66afc1f863fbd07f": {
+      "summary": "스미스인문주간 독서감상문 공모전 수상자는 12월 24일부터 바울관 106호에서 상장을 수령할 수 있으며, 장학금은 2~3주 내 본인 계좌로 지급될 예정입니다.",
+      "target": "스미스인문주간 독서감상문 공모전 수상자",
+      "deadline": "2021년 4월 (상장 수령 마감, 이후 폐기)",
+      "requiredAction": "바울관 106호 방문하여 상장 수령 (12월 24일부터 가능, 2021년 4월 이전)",
+      "keywords": [
+        "독서감상문 공모전",
+        "스미스인문주간",
+        "상장 수령",
+        "장학금 지급",
+        "바울관 106호"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:58.023Z",
+      "sourceHash": "eae4ae9bdaeccef9",
+      "inputHash": "8db0bdf8102fd297",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ab51d1baace98189"
     },
     "academic:url:66eaffb919ad4932": {
       "summary": "2023-2학기 MVP 인증 장학금 신청 기간은 2024년 1월 12일까지이며, 4학기 이상 재학생이 SU-Plus에서 신청 가능합니다.",
@@ -13469,6 +13714,27 @@
       "inputHash": "21ec0239c9414081",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
+    },
+    "academic:url:74de4266899b3a51": {
+      "summary": "2020 삼육마을프로젝트 수기 공모전으로, 비교과통합센터에 제출하며 문의는 바울관 111호 인성교육원으로 하면 됩니다.",
+      "target": "삼육마을프로젝트 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "비교과통합센터에 수기 제출 및 문의(바울관 111호 인성교육원, 02-3399-3076/3078)",
+      "keywords": [
+        "삼육마을프로젝트",
+        "수기 공모전",
+        "비교과통합센터",
+        "인성교육원",
+        "리더십센터"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:20:40.201Z",
+      "sourceHash": "d47cc2cde46ad729",
+      "inputHash": "da7c653faeea5954",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "404cb581b73427f2"
     },
     "academic:url:74ff78f339a781ab": {
       "summary": "2022-2학기 인생설계와 진로II 수업은 9/13(화)부터 시작되며, 교재 수령 및 필수과제(이력서 작성, 진로상담, 커리어 로드맵) 완료가 필요합니다.",
@@ -16629,6 +16895,28 @@
       "contentSource": "detail",
       "detailContentHash": "0af9ada39fa5fb04"
     },
+    "academic:url:8f042d162d32eeb3": {
+      "summary": "2021학년도 COVID-19 대응 비대면 봉사활동 아이디어 공모전으로, 팀(3인 이하) 또는 개인 신청이 가능하며 계획서 최소 3장 이상 제출 및 자필 서명 필수입니다.",
+      "target": "봉사활동 아이디어 공모전 참여 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "계획서 최소 3장 작성 후 자필 서명하여 제출, 팀 신청 시 팀원 전원 개별 신청 및 팀명 기재",
+      "keywords": [
+        "비대면 봉사활동",
+        "아이디어 공모전",
+        "COVID-19",
+        "계획서 제출",
+        "팀 신청",
+        "자필 서명"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:19:23.659Z",
+      "sourceHash": "2596fd0961c301e6",
+      "inputHash": "c54cea605f62367d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "48e665c24807647c"
+    },
     "academic:url:8f0de5b3fb95ce75": {
       "summary": "2022년 2학기 기말고사 기간(12/8~14) 중 스쿨버스 막차가 18:40, 19:00으로 연장 운행되며, 방학 중 버스는 2023년 1월 13일까지 운행됩니다.",
       "target": "스쿨버스 이용 학생",
@@ -17344,6 +17632,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "63d359f896606460"
+    },
+    "academic:url:95b0f31ca5502942": {
+      "summary": "2020년 귀속 연말정산 교육비 세액공제 내역이 국세청 간소화 서비스에 업로드되었으며, 교육비납입증명서는 1월 18일부터 SU-WINGs에서 출력 가능합니다.",
+      "target": "2020년도 등록금을 납부한 학생 및 해당 학생 가족",
+      "deadline": "2021.01.18(교육비납입증명서 조회 시작일)",
+      "requiredAction": "국세청 연말정산 간소화 서비스(hometax.go.kr) 확인 또는 SU-WINGs에서 교육비납입증명서 출력",
+      "keywords": [
+        "연말정산",
+        "교육비 세액공제",
+        "국세청 간소화 서비스",
+        "교육비납입증명서",
+        "SU-WINGs",
+        "장학금 공제 제외",
+        "한국장학재단 대출"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:18:52.945Z",
+      "sourceHash": "30cb7f9659d0749a",
+      "inputHash": "07cd4a08b3321bda",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "2e53b60080e8c5bc"
     },
     "academic:url:95b9ab0205705dd2": {
       "summary": "삼육대학교 학칙 일부 개정안을 공고하며, 의견이 있는 학생은 2026년 6월 22일까지 학사지원팀 이메일로 제출할 수 있습니다.",
@@ -20747,6 +21058,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "57e563e98a0c9db5"
+    },
+    "academic:url:b1c54c4785b43065": {
+      "summary": "교양영어 수강후기 공모전 심사결과가 발표되었으며, 수상자에게 축하 안내가 제공됩니다.",
+      "target": "교양영어 수강후기 공모전 참가자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 수상 결과 확인",
+      "keywords": [
+        "교양영어",
+        "수강후기 공모전",
+        "심사결과",
+        "스미스학부대학",
+        "수상 안내"
+      ],
+      "importance": "low",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:18:42.445Z",
+      "sourceHash": "ed4ac268e3549ee1",
+      "inputHash": "da1f9803f31e0a0a",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "df61ba325a1ed7a4"
     },
     "academic:url:b2306935d23ccd69": {
       "summary": "2025-1학기 등록금 분납 3차 납부 기간은 4월 28일(월)~5월 2일(금)이며, 분납 신청 재학생은 기간 내 우리은행 또는 가상계좌로 납부해야 합니다.",
@@ -26971,6 +27303,29 @@
       "contentSource": "detail",
       "detailContentHash": "ccb32f3515b0965d"
     },
+    "academic:url:e6ce777e0e2956b0": {
+      "summary": "2020-2학기 방학 중 학사일정으로 성적확인, 수강신청, 등록, 휴복학 신청 등 주요 일정이 안내되었습니다.",
+      "target": "전체 재학생",
+      "deadline": "2021.02.26(금) 12:00 (휴·복학 만기일)",
+      "requiredAction": "성적 확인, 수강신청, 등록, 휴복학 신청 등 해당 일정을 원문에서 확인 후 기간 내 처리",
+      "keywords": [
+        "학사일정",
+        "수강신청",
+        "성적확인",
+        "동계계절학기",
+        "휴복학",
+        "재학생등록",
+        "졸업사정회"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:30.891Z",
+      "sourceHash": "933bb0c32a01d724",
+      "inputHash": "0514e96a9385f782",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "4b91f45984c7e41f"
+    },
     "academic:url:e6e2819ed85f2732": {
       "summary": "인성교육원 U2CAN 프로그램으로 재학생·대학원생 대상 악기 레슨(피아노 등 9종, 165,000원/악기)을 모집하며, 수강료 입금 마감은 2021.03.28.입니다.",
       "target": "재학생 및 대학원생",
@@ -27706,6 +28061,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "d5469ce03feb3f30"
+    },
+    "academic:url:edd3c3569cb78d49": {
+      "summary": "2021-1학기 생활교육원 입사 신청 안내로, 신청 전 입사신청안내문 숙지 후 생활교육원 홈페이지에서 신청 기간 및 상세 내용을 확인해야 합니다.",
+      "target": "2021-1학기 생활교육원 입사 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "생활교육원 홈페이지(https://url.kr/bm1jow)에서 신청 기간 및 입사신청안내문 확인 후 신청",
+      "keywords": [
+        "생활교육원",
+        "입사신청",
+        "기숙사",
+        "전인교육",
+        "RC교육",
+        "2021-1학기"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:18:16.062Z",
+      "sourceHash": "e06730c292bdb835",
+      "inputHash": "63b45625a8355793",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "4a030a0fbb6c6990"
     },
     "academic:url:ee0d9a6bc4928a13": {
       "summary": "대학일상회복지원단의 연락처가 변경되었으니 원문 공지에서 변경된 연락처를 확인하세요.",
@@ -28531,6 +28908,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "872ad082f20f85ad"
+    },
+    "academic:url:f67c09460303905b": {
+      "summary": "학칙시행세칙 개정(안)에 의견이 있는 경우 2021년 1월 7일(목)까지 의견서를 작성하여 교무처 이메일로 제출하세요.",
+      "target": "학칙시행세칙 개정(안)에 의견이 있는 구성원",
+      "deadline": "2021.01.07",
+      "requiredAction": "의견서 작성 후 prof_data@syu.ac.kr 으로 이메일 제출",
+      "keywords": [
+        "학칙시행세칙",
+        "개정안",
+        "의견서 제출",
+        "교무처",
+        "학칙 개정"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:12.422Z",
+      "sourceHash": "6ab80b12aa77b6e2",
+      "inputHash": "0bbbbfa1a2404892",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "8772d09bef652d96"
     },
     "academic:url:f6bfdb2d04aed061": {
       "summary": "2024년 캡스톤디자인 교과목 수강팀을 대상으로 제6회 경진대회를 개최하며, 참가 신청은 11월 8일 24시까지 이메일로 접수합니다.",
@@ -31972,6 +32370,28 @@
       "contentSource": "detail",
       "detailContentHash": "b28b4cc68beb6682"
     },
+    "campus:url:86222471a0f145dd": {
+      "summary": "학생식당(파인하우스)이 코로나19 및 방학 중 시설 점검으로 2020년 12월 25일부터 2021년 1월 24일까지 임시 휴점합니다.",
+      "target": "학생식당 이용 학생",
+      "deadline": "unknown",
+      "requiredAction": "휴점 기간 동안 학생식당 이용 불가 확인",
+      "keywords": [
+        "학생식당",
+        "파인하우스",
+        "임시 휴점",
+        "코로나19",
+        "시설 점검",
+        "방학"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:20:48.564Z",
+      "sourceHash": "fc43bd9f5ab91c13",
+      "inputHash": "8aed17d92cf03bc9",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "eb1e4cf09e514399"
+    },
     "campus:url:87c51cf09c29f247": {
       "summary": "학생처에서 온라인 대관신청 서비스 변경 사항을 안내하며, 관련 매뉴얼 PDF가 첨부되어 있습니다.",
       "target": "강의실 및 시설 대관 신청 희망 학생",
@@ -32184,6 +32604,28 @@
       "contentSource": "detail",
       "detailContentHash": "a76641459a252ccf"
     },
+    "campus:url:96ad9dde1fd7539e": {
+      "summary": "한국고용정보원이 2021년 5월 28일 개최 예정인 고용패널조사 학술대회에 참여할 연구자 및 대학원생의 논문을 공모합니다.",
+      "target": "연구자 및 대학원생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 제출 방법 및 마감일 확인 후 연구계획서 및 이력서 제출",
+      "keywords": [
+        "고용패널조사",
+        "학술대회",
+        "논문 공모",
+        "대학원생",
+        "한국고용정보원",
+        "연구계획서"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:21:32.155Z",
+      "sourceHash": "1f3d6949f926b35a",
+      "inputHash": "5eedabb35b89cf39",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "314e2a168a0c43a2"
+    },
     "campus:url:96eb4d45dba64c6f": {
       "summary": "대학교재 불법복제 관련 안내로, 시정권고 사례 영상을 통해 불법복제 행위를 안내합니다.",
       "target": "전체 학생",
@@ -32267,6 +32709,25 @@
       "contentSource": "detail",
       "detailContentHash": "19888996df16faa9"
     },
+    "campus:url:9c9f42d433f4802a": {
+      "summary": "병역명문가 신청 또는 추천 관련 안내로, 자세한 내용은 원문 공지를 확인하세요.",
+      "target": "병역명문가 해당자 또는 관심 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 URL에서 세부 내용 확인",
+      "keywords": [
+        "병역명문가",
+        "병역",
+        "취업지원팀"
+      ],
+      "importance": "low",
+      "confidence": "low",
+      "generatedAt": "2026-06-25T17:17:58.914Z",
+      "sourceHash": "e14c3bfa457d4114",
+      "inputHash": "45711707f97f5f7e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "51bd1111f6c35e45"
+    },
     "campus:url:9cdfdcc6a6b6803f": {
       "summary": "중랑문화재단이 운영하는 '나대기 프로젝트' 문화인력양성 교육프로그램 참가자를 10월 11일까지 모집합니다.",
       "target": "교육예술에 관심이 있거나 예술교육 경험이 있는 예술전공자 15명",
@@ -32311,6 +32772,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "5292335958c8de2b"
+    },
+    "campus:url:9d9003721ea38faf": {
+      "summary": "보건의료통합봉사회(IHCO)는 보건의료계 대학생 중심의 비영리단체로, 의료복지 사각지대 재가방문 봉사 및 코로나19 예방 물품 전달 활동을 소개하는 홍보 공지입니다.",
+      "target": "보건의료계 전공 및 봉사 관심 대학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 참여 방법 확인",
+      "keywords": [
+        "보건의료통합봉사회",
+        "IHCO",
+        "재가방문봉사",
+        "의료복지 사각지대",
+        "코로나19 예방",
+        "비영리민간단체"
+      ],
+      "importance": "low",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:19:32.833Z",
+      "sourceHash": "96fcbd311bb8cbb6",
+      "inputHash": "32a73931d604928f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "b9627b6f20cddc60"
     },
     "campus:url:9fbcb6a8d7986445": {
       "summary": "서울런 멘토단 활동 학생을 모집하며, 2021년 8월 19일 17시까지 신청서 등 서류를 이메일로 제출해야 합니다.",
@@ -32398,6 +32881,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "8c697d65e41bbcac"
+    },
+    "campus:url:a81c995e78b24c54": {
+      "summary": "영주시인재육성장학회가 영주 출신 서울 소재 대학생을 대상으로 홍제행복기숙사 입사생을 선발하여 기숙사비를 지원합니다.",
+      "target": "영주 지역 출신 서울 소재 대학 재학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 선발 조건 및 신청 방법 확인 후 지원",
+      "keywords": [
+        "홍제행복기숙사",
+        "입사생 선발",
+        "기숙사비 지원",
+        "영주 출신",
+        "영주시인재육성장학회"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-25T17:21:22.762Z",
+      "sourceHash": "54e43dd51df17f68",
+      "inputHash": "e3af89f36d0a66a2",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d11e0b707288d048"
     },
     "campus:url:a8fc1513c7214e75": {
       "summary": "GH 기회수도파트너스(도민주주단) 모집 안내로, 지원신청서 양식이 첨부되어 있으며 원문 확인 후 신청 가능합니다.",
@@ -32995,6 +33499,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "7ca6fe798212a165"
+    },
+    "campus:url:c461509a1fb00dcc": {
+      "summary": "재단법인 동천이 상반기 활동할 23기 프로보노 어시스턴트(PA)를 2월 7일까지 모집합니다.",
+      "target": "공익법률지원(로펌 사회공헌, NPO, 난민, 장애인, 청소년 등)에 관심 있는 학생",
+      "deadline": "2021.02.07",
+      "requiredAction": "동천 홈페이지 공지사항 또는 첨부 공고문·지원서 확인 후 지원",
+      "keywords": [
+        "동천",
+        "프로보노 어시스턴트",
+        "PA 모집",
+        "공익법률지원",
+        "NPO",
+        "사회공헌"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-25T17:18:07.289Z",
+      "sourceHash": "7f10fd41812036a9",
+      "inputHash": "c1c1d0c85109b69d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c53e0030f8d6da5d"
     },
     "campus:url:c762f449b6e4704e": {
       "summary": "학생처에서 캠퍼스 안심 소식지를 안내하며, 관련 내용은 원문 링크에서 확인할 수 있습니다.",
@@ -34988,6 +35514,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "d5fa45e4881607ec"
+    },
+    "scholarship:url:077d8788d62e9acf": {
+      "summary": "엔젤루트국제교류장학회에서 교육청 안내 사업 일본어학연수 장학생을 선발하오니, 첨부파일 및 해당 기관 홈페이지를 확인하여 문의하시기 바랍니다.",
+      "target": "일본어학연수 장학생 신청 희망 학생",
+      "deadline": "unknown",
+      "requiredAction": "공지 첨부파일 확인 후 엔젤루트국제교류장학회 홈페이지 또는 해당 기관에 직접 문의",
+      "keywords": [
+        "엔젤루트국제교류장학회",
+        "일본어학연수",
+        "장학생 선발",
+        "교육청 안내 사업",
+        "국제교류장학"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-25T17:17:50.532Z",
+      "sourceHash": "b84dcd8d6df37f94",
+      "inputHash": "f6034478e99d479f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e0526ba4de326319"
     },
     "scholarship:url:0786fa4ff21ecf53": {
       "summary": "헝가리 정부초청 장학 프로그램(Stipendium Hungaricum) 2024/2025 모집으로, 수업료·생활비·기숙사·의료비 지원 혜택이 제공되며 지원서 마감은 2024년 1월 15일 14시(헝가리 시간)입니다.",
