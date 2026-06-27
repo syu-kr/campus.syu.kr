@@ -184,7 +184,7 @@ function buildContentSecurityPolicy(nonce: string) {
       "https://*.kakaocdn.net",
       "https://*.daumcdn.net",
     ].filter(Boolean).join(" "),
-    "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
+    "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://libmo.syu.ac.kr",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     isProduction ? "upgrade-insecure-requests" : "",
