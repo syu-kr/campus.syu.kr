@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const FIREBASE_COMPAT_VERSION = "12.11.0";
+const FIREBASE_COMPAT_VERSION = "12.15.0";
 
 export async function GET() {
   const firebaseConfig = {
