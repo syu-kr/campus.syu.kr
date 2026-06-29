@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-28T16:20:44.972Z",
+  "generatedAt": "2026-06-29T17:47:42.889Z",
   "items": {
     "academic:url:0036436fd6d7b705": {
       "summary": "2025학년도 1학기 신입생·편입생은 2025년 2월 24일(월) 오후 3시 이후 SU-WINGs에서 학번 조회 및 비밀번호 설정이 가능합니다.",
@@ -1456,6 +1456,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "dc341cfdcd922860"
+    },
+    "academic:url:0abf7afdf3a72dbd": {
+      "summary": "인성교육원 U2CAN 프로그램으로 재학생 대상 음악 레슨(성악·피아노 등 10종) 수강 신청을 받으며, 수강료 165,000원을 9월 27일까지 입금해야 신청이 완료됩니다.",
+      "target": "재학생",
+      "deadline": "2020.09.27 (수강료 입금 마감)",
+      "requiredAction": "레슨 종류 선택 후 신청과 동시에 우리은행 계좌(1005-401-271-702)에 165,000원 본인 이름으로 입금",
+      "keywords": [
+        "U2CAN",
+        "음악 레슨",
+        "수강료 입금",
+        "인성교육원",
+        "재학생 모집",
+        "레슨 신청"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:44:41.815Z",
+      "sourceHash": "f9375ed8fcce4b0e",
+      "inputHash": "87fa1955844c938b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fcc797bb379c8da7"
     },
     "academic:url:0adad85da2c23f6f": {
       "summary": "2026년 2월 졸업 예정자 중 다전공(복수·부·연계·마이크로전공) 신청 또는 포기가 필요한 학생은 10월 31일 15시까지 SU-WINGs에서 신청하세요.",
@@ -3515,6 +3537,29 @@
       "contentSource": "detail",
       "detailContentHash": "d75207e69ccf195f"
     },
+    "academic:url:1ecd4ac8a491f3c1": {
+      "summary": "2026학년도 2학기 주전공 신청 안내로, 1차는 7월 13일~23일, 2차는 8월 10일~20일에 SU-WINGs에서 신청 가능합니다.",
+      "target": "인공지능융합학부 4학년 진급 예정자, 컴퓨터공학부 2학년 진급 예정자, 항공관광외국어학부 4학년 진급 예정자",
+      "deadline": "1차: 2026.07.23(목) 23:59 / 2차: 2026.08.20(목) 23:59",
+      "requiredAction": "SU-WINGs 접속 후 [주전공 신청] 메뉴에서 학번 입력 및 신청 전공 선택 후 신청 버튼 클릭",
+      "keywords": [
+        "주전공 신청",
+        "2026학년도 2학기",
+        "SU-WINGs",
+        "인공지능융합학부",
+        "컴퓨터공학부",
+        "항공관광외국어학부",
+        "학적"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:43:51.548Z",
+      "sourceHash": "8ec25622ba5d9505",
+      "inputHash": "d9f0b2c2c6ced638",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "b84ed719b067f453"
+    },
     "academic:url:1ef5cf4b4c3c44e6": {
       "summary": "2021-2학기 중간 강의평가 실시 안내이며, 첨부 안내문을 통해 세부 일정 및 방법을 확인할 수 있습니다.",
       "target": "2021-2학기 재학생",
@@ -5294,6 +5339,29 @@
       "contentSource": "detail",
       "detailContentHash": "981975e82a9aca37"
     },
+    "academic:url:2e4c21726656a63f": {
+      "summary": "삼육대 재학생을 대상으로 독후감 제출 시 마일리지를 제공하는 제7회 HomoBookUS 인증제를 2020년 12월 18일까지 운영합니다.",
+      "target": "본교 재학생",
+      "deadline": "2020년 12월 18일(금)",
+      "requiredAction": "삼육도서 100선 중 책을 읽고 독후감 1부 제출, 만족도 조사 완료(~12/18)",
+      "keywords": [
+        "HomoBookUS 인증제",
+        "독후감 제출",
+        "마일리지",
+        "독서 인성함양",
+        "스미스학부대학",
+        "삼육도서 100선",
+        "인증서"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:45:50.326Z",
+      "sourceHash": "187dcbed171fbcb3",
+      "inputHash": "57f351a3ec6eecda",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ae83aa27ea0ea002"
+    },
     "academic:url:2e5c46a5add9dcd3": {
       "summary": "2025년 8월 졸업예정자 중 교원자격증 취득 희망자는 2025년 5월 12일부터 6월 13일 12시까지 무시험검정원서 및 관련 서류를 해당 부서에 원본 제출해야 합니다.",
       "target": "2024 후기(2025년 8월) 졸업예정자 중 교원자격 취득 희망자",
@@ -5585,6 +5653,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "06e0d515b2475bea"
+    },
+    "academic:url:306f89c6bec52348": {
+      "summary": "2020학년도 2학기 수강과목 중도포기 신청을 2020년 9월 22일(화) 오전 10시부터 9월 24일(목) 오후 5시까지 SU-WINGs에서 온라인으로 신청할 수 있습니다.",
+      "target": "재학생 (학점등록 학생 및 9학기 이상 신청자 제외)",
+      "deadline": "2020년 09월 24일(목) 오후 5시",
+      "requiredAction": "SU-WINGs(suwings.syu.ac.kr) 로그인 후 수강정보 → 수강중도포기신청 메뉴에서 신청",
+      "keywords": [
+        "수강과목 중도포기",
+        "수강취소",
+        "SU-WINGs",
+        "신청기간",
+        "재학생",
+        "최소학점 12학점"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:45:29.125Z",
+      "sourceHash": "e7e022b925b6edd6",
+      "inputHash": "5010817ce48e434f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c45b7feca00497a9"
     },
     "academic:url:3078626c576bbb16": {
       "summary": "2023-1학기 국가장학금 1차 신청이 2022.11.24~12.29 진행되며, 재학생은 반드시 1차 신청해야 심사에서 탈락하지 않습니다.",
@@ -6814,6 +6904,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "538a3f4c431eca21"
+    },
+    "academic:url:395162899bd88b78": {
+      "summary": "2020-2학기 MVP+ CM 프로그램 참가자 모집으로, 팀을 구성해 실행계획서를 작성·제출하면 온라인 미디어 콘텐츠 제작 활동에 참여할 수 있습니다.",
+      "target": "삼육대학교 재학생(19학번 이상)",
+      "deadline": "unknown",
+      "requiredAction": "팀 구성 후 실행계획서 작성 및 신청 페이지에 제출",
+      "keywords": [
+        "MVP+ CM모집",
+        "온라인 미디어 콘텐츠",
+        "팀 신청",
+        "실행계획서",
+        "비교과 프로그램",
+        "6대역량",
+        "리더십센터"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-29T17:44:50.095Z",
+      "sourceHash": "bbefc5a53c587fa9",
+      "inputHash": "95a7f4507b5893ed",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "dbcfc1b38a734088"
     },
     "academic:url:39743481d3e96d01": {
       "summary": "인성교육원 리더십센터에서 2021-1학기 People's Grocery+ 참가자를 모집합니다. 링크 또는 QR코드로 지원 가능합니다.",
@@ -11324,6 +11437,27 @@
       "contentSource": "detail",
       "detailContentHash": "5ae5f5e3cfa1af84"
     },
+    "academic:url:5cfbb80660262a5a": {
+      "summary": "코로나19 증상 발생 시 반드시 지켜야 할 10가지 행동수칙을 안내하는 공지입니다.",
+      "target": "전체 학생 및 교직원",
+      "deadline": "unknown",
+      "requiredAction": "코로나19 증상 발생 시 원문 공지의 10가지 행동수칙 확인 및 준수",
+      "keywords": [
+        "코로나19",
+        "행동수칙",
+        "증상 대응",
+        "방역 지침",
+        "대학일상회복지원단"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-29T17:44:22.210Z",
+      "sourceHash": "ea7056218e34ff61",
+      "inputHash": "c845eeaa7cbfdfe4",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "569ea2beadb49cb9"
+    },
     "academic:url:5d17ddc8c55dcbdc": {
       "summary": "2022-2 교양영어 수강후기 공모전 수상자를 발표하며, 장학금은 본인 명의 계좌로 입금되고 상장은 1월 30일부터 바울관 106호에서 수령 가능합니다.",
       "target": "2022-2 교양영어 수강후기 공모전 수상자",
@@ -15671,6 +15805,26 @@
       "contentSource": "detail",
       "detailContentHash": "649bbd6be4e26a14"
     },
+    "academic:url:7f16ffdbaf10ee6a": {
+      "summary": "코로나19 증상 발생 시 지켜야 할 10가지 행동수칙을 안내하는 공지입니다.",
+      "target": "전체 학생",
+      "deadline": "unknown",
+      "requiredAction": "코로나19 증상 발생 시 10가지 행동수칙 확인 및 준수",
+      "keywords": [
+        "코로나19",
+        "행동수칙",
+        "예방",
+        "증상 대응"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-29T17:44:31.032Z",
+      "sourceHash": "3eb902abecfd7759",
+      "inputHash": "777c36f3944af916",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e1d89cd4d46d7ada"
+    },
     "academic:url:7f53d7ee0b2a2eaf": {
       "summary": "학생식당 파인하우스가 2021년 10월 12일(화)부터 정상운영 중이니 이용 바랍니다.",
       "target": "전체 학생",
@@ -17278,6 +17432,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "5f368a4b9cb6e9ee"
+    },
+    "academic:url:8cc5dd2876a4b4bf": {
+      "summary": "제5회 삼육토론대회 참가 신청을 2020년 10월 30일까지 비교과통합관리시스템에서 온라인으로 접수하며, 시상 시 장학금이 지급됩니다.",
+      "target": "삼육대학교 재학생",
+      "deadline": "2020년 10월 30일(금) - 참가 신청서 및 개요서 온라인 제출 마감",
+      "requiredAction": "비교과통합관리시스템에 참가 신청서 및 개요서 온라인 제출 (첨부파일 양식 참조)",
+      "keywords": [
+        "삼육토론대회",
+        "토론대회 신청",
+        "비교과통합관리시스템",
+        "장학금 시상",
+        "찬반토론",
+        "스미스학부대학"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:45:19.094Z",
+      "sourceHash": "d526facfb73d938c",
+      "inputHash": "80db40b2753d71ae",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d14edba2b2bf89fc"
     },
     "academic:url:8d7fd38e546d84a1": {
       "summary": "2026년 4월 22일(수) 시스템 점검으로 인터넷 증명서 발급 서비스가 일시 중단되므로, 사전 발급 또는 무인증명발급기를 이용하세요.",
@@ -20918,6 +21094,29 @@
       "contentSource": "detail",
       "detailContentHash": "d4d019f7bbef0f31"
     },
+    "academic:url:a8d3a6a2936b5e79": {
+      "summary": "글로컬사회혁신원이 2020학년도 동계 국내봉사대 참가 팀(학과별 10팀·학생주도형 4팀)을 모집하며, 신청 기간은 10월 16일 정오까지입니다.",
+      "target": "본교 모든 학과 재학생 및 지도교수",
+      "deadline": "2020년 10월 16일(금) 오후 12:00",
+      "requiredAction": "참가신청서·사업계획서·학생참가신청서·부모동의서 작성 후 이메일 및 사회봉사단 사무실(바울관 111호)에 기한 내 제출",
+      "keywords": [
+        "동계 국내봉사대",
+        "사회봉사단",
+        "모집공고",
+        "학점이수",
+        "봉사 신청",
+        "코로나19 대응",
+        "전공연계봉사"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:45:41.123Z",
+      "sourceHash": "3f97909cd68a3aa3",
+      "inputHash": "105e764eff4f4ee5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "b2fa3044d96b34f3"
+    },
     "academic:url:a8f094bad2eaf44f": {
       "summary": "2021학년도 1학기 정기 연구실 안전교육을 3월 3일부터 1학기 기말고사 전까지 safetyedu.org에서 이수해야 합니다.",
       "target": "간호학과·약학과·컴퓨터공학부 등 이공계 대학생, 대학원생, 전임 및 비전임 교원, 기타연구원",
@@ -21898,6 +22097,30 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "28cb48761034de13"
+    },
+    "academic:url:b07aac5cac7cf6a1": {
+      "summary": "2020-2학기 스미스인문주간 온라인 특강을 e-class에서 9월 21일~10월 30일 운영하며, 참여 후 소감문과 설문조사 제출 시 비교과 마일리지 및 수료증을 받을 수 있습니다.",
+      "target": "삼육대학교 재학생 (스미스학부대학 포함 전체)",
+      "deadline": "2020년 10월 30일",
+      "requiredAction": "e-class에서 '스미스인문주간 특강' 수강신청 후 특강 참여, 비교과통합시스템에서 소감문 제출 및 설문조사 완료",
+      "keywords": [
+        "스미스인문주간",
+        "온라인 특강",
+        "e-class",
+        "비교과 마일리지",
+        "수료증",
+        "소감문 제출",
+        "설문조사",
+        "혁신지원사업"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:45:09.027Z",
+      "sourceHash": "2158538a8beeb820",
+      "inputHash": "09f3e7872ef7bb3d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "818abd9b3f857a82"
     },
     "academic:url:b0bd6bf5ca1f13b9": {
       "summary": "2025-1학기 인생설계와 진로I 수업은 3/4(화)부터 시작되며, e-Book 교재 사용 및 5종검사·진로상담 필수 과제를 완료해야 합니다.",
@@ -24090,6 +24313,28 @@
       "contentSource": "detail",
       "detailContentHash": "0c0378c3bfabb9db"
     },
+    "academic:url:c1a80c78da9184c6": {
+      "summary": "스미스학부대학이 재학생 대상 독서감상문 공모전을 개최하며, 9월 14일부터 12월 4일까지 비교과통합관리시스템에서 신청 후 작품을 제출할 수 있습니다.",
+      "target": "삼육대학교 재학생 (휴학생·졸업생·졸업예정자 제외)",
+      "deadline": "2020년 12월 4일(금)",
+      "requiredAction": "비교과통합관리시스템 또는 스미스학부대학 홈페이지에서 신청 후 독서감상문 파일 제출 (파일명에 성명·학과·도서명 기재 필수)",
+      "keywords": [
+        "독서감상문",
+        "공모전",
+        "스미스인문주간",
+        "비교과통합관리시스템",
+        "장학금 시상",
+        "혁신지원사업"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:00.338Z",
+      "sourceHash": "8ac7c5bd9922be5a",
+      "inputHash": "836a0b152f719a4b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "25bee2ae93161187"
+    },
     "academic:url:c1c3abed6df6a693": {
       "summary": "2023 SU 아이디어톤 대회 참가자를 모집하며, 삼육대 재학생 40명(10팀)을 대상으로 6월 16일 13시까지 신청 가능합니다.",
       "target": "삼육대학교 재학생 (40명, 팀당 4명)",
@@ -26181,6 +26426,27 @@
       "contentSource": "detail",
       "detailContentHash": "d467b70b4644fd2d"
     },
+    "academic:url:d28670cd56f5dd3d": {
+      "summary": "2020-2학기 인생설계와 진로2 온라인 강의용 교재가 PDF로 제공되며, 실물 교재는 우편 발송되어 이번 주 중 도착 예정입니다.",
+      "target": "인생설계와 진로2 수강생",
+      "deadline": "unknown",
+      "requiredAction": "공지 URL에서 PDF 교재 다운로드 후 수업 준비",
+      "keywords": [
+        "인생설계와 진로2",
+        "온라인 강의 교재",
+        "PDF 교재",
+        "우편 발송",
+        "2020-2학기"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:47:25.564Z",
+      "sourceHash": "8b7cac1db4f1f43c",
+      "inputHash": "f0ea1c365a9ade3d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fe48a08b2b393ad5"
+    },
     "academic:url:d28fcc5935f73fa7": {
       "summary": "2021학년도 신입 이공계 학생 대상 국가우수(이공계)장학금 성적우수 유형 추천장학생을 선발하며, 신청 마감은 2021년 4월 19일(월) 오후 5시입니다.",
       "target": "2021학년도 수시·정시 신입학 이공계 학생(컴퓨터공학부, 지능정보융합학부 등 해당 학과)",
@@ -26812,6 +27078,27 @@
       "contentSource": "detail",
       "detailContentHash": "43a90211ac1dd9e0"
     },
+    "academic:url:d7f9bcc72c263b7b": {
+      "summary": "2020-2학기 People's Grocery+ 홈파밍편 참가자를 모집하며, 지원을 원하는 학생은 원문 링크를 통해 신청할 수 있습니다.",
+      "target": "unknown",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 링크를 통해 지원 신청",
+      "keywords": [
+        "People's Grocery+",
+        "홈파밍",
+        "참가자 모집",
+        "인성교육원",
+        "ACE+"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-06-29T17:46:48.674Z",
+      "sourceHash": "1c251dc33158ae1d",
+      "inputHash": "de00bdfc4d2e5310",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c6c650313a3e17af"
+    },
     "academic:url:d8134325967f6cef": {
       "summary": "2026-1학기 기말 강의평가를 6월 30일까지 수윙스(SU-WINGs)에서 실시하며, 미참여 시 해당 학기 성적조회가 불가합니다.",
       "target": "2026-1학기 수강 전체 학생",
@@ -26946,6 +27233,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f9f0576d91ab5e02"
+    },
+    "academic:url:d909e98cc43aa7eb": {
+      "summary": "2020-2학기 전공교과목 최종(2차) 폐강과목이 2020년 9월 8일 16:00 기준으로 확정 공고되었으니 수강 중인 과목 포함 여부를 확인하세요.",
+      "target": "2020-2학기 해당 전공교과목 수강 신청자",
+      "deadline": "unknown",
+      "requiredAction": "폐강 과목 목록에서 본인 수강 과목 포함 여부 확인 후 필요 시 수강 변경 조치",
+      "keywords": [
+        "폐강",
+        "전공교과목",
+        "2020-2학기",
+        "수강변경",
+        "확정공고"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:47:17.885Z",
+      "sourceHash": "f830765a35621074",
+      "inputHash": "35fed71b582e8a12",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5b8c7feb6397b74b"
     },
     "academic:url:d92640fcec5a7183": {
       "summary": "2023-2학기 군 복무 중 학점 취득을 위한 e-러닝 과정 수강신청이 8월 17일부터 9월 15일까지 나라사랑포털에서 진행됩니다.",
@@ -28918,6 +29226,28 @@
       "contentSource": "detail",
       "detailContentHash": "f26379a1fbe8193f"
     },
+    "academic:url:e9a7fcc29e1c5076": {
+      "summary": "2020-2학기 삼육마을 프로젝트 리더(CM)를 모집하며, 취약계층 돌봄 서비스 팀 프로젝트를 이끌 학생을 9월 23일까지 모집합니다.",
+      "target": "삼육마을 CM 경력자, 사회공헌프로젝트 수상자, 돌봄 교육 이수자 등 자격조건 해당 학생",
+      "deadline": "2020.09.23 17:00",
+      "requiredAction": "공지 내 링크를 통해 신청기간(~9/23 17:00) 내 CM 지원서 제출",
+      "keywords": [
+        "삼육마을",
+        "프로젝트 리더",
+        "CM 모집",
+        "돌봄 서비스",
+        "봉사시간",
+        "리더십센터"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:47:08.079Z",
+      "sourceHash": "b5700b4b818b3653",
+      "inputHash": "69f569145845ba7f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d658fbfcb717218f"
+    },
     "academic:url:e9ad6f5d9e67ca58": {
       "summary": "2023학년도 2학기 서비스러닝 전공교과목(G-S-L) 모집 결과로 건축학과·물리치료학과가 선정되었으며, 추후 진행사항은 별도 공지 예정입니다.",
       "target": "서비스러닝 전공교과목(G-S-L) 지원 학과 및 관련 학생",
@@ -29279,6 +29609,29 @@
       "contentSource": "detail",
       "detailContentHash": "9544e1a5cdaa0632"
     },
+    "academic:url:ec7e2190b4eff572": {
+      "summary": "2020-2학기 실험·실습·실기 교과목은 9월 15일(화) 3주차부터 20명 이하 대면수업으로 진행되며, 등교 시 발열체크·마스크 착용 등 방역 지침을 준수해야 합니다.",
+      "target": "실험·실습·실기 교과목 수강 학생",
+      "deadline": "2020.09.15. (대면수업 시작일)",
+      "requiredAction": "수업계획서에서 수업방법 확인 후 등교 시 선별진료소 발열체크·마스크 착용 준수, 코로나 관련 상황 시 담당교수에게 즉시 보고",
+      "keywords": [
+        "실험·실습·실기",
+        "대면수업",
+        "방역지침",
+        "발열체크",
+        "마스크 착용",
+        "코로나-19",
+        "수업계획서"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:39.881Z",
+      "sourceHash": "51256d8fb13f34fb",
+      "inputHash": "fb401d2dcb2621ed",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "a1d606639c9a4837"
+    },
     "academic:url:ecbb89ef1b9182cb": {
       "summary": "2026-1학기 등록금 분납 2차 납부 기간은 3월 25일(수) 10시~3월 31일(화)이며, 분납 신청 재학생은 SU-wings에서 고지서 출력 후 우리은행에 납부해야 합니다.",
       "target": "분납 신청 재학생",
@@ -29580,6 +29933,29 @@
       "inputHash": "aa58fcbb0eff05a1",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
+    },
+    "academic:url:ef607f3119980d38": {
+      "summary": "스미스학부대학 제8회 커리어 오픈 스토리 공모전으로, 2020년 11월 30일까지 비교과통합관리시스템에 포트폴리오를 온라인 제출하면 되며 총 10명에게 장학금이 수여됩니다.",
+      "target": "삼육대학교 재학생(스미스학부대학 대상)",
+      "deadline": "2020.11.30",
+      "requiredAction": "비교과통합관리시스템에 참가신청서 및 포트폴리오 자료 온라인 제출 후 원본 증빙자료 스미스학부대학 제출",
+      "keywords": [
+        "커리어 오픈 스토리 공모전",
+        "포트폴리오 제출",
+        "비교과통합관리시스템",
+        "장학금 시상",
+        "스미스학부대학",
+        "공개 발표",
+        "취업 활동"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:10.112Z",
+      "sourceHash": "c3ec1273147658ff",
+      "inputHash": "13bedf8a579b3fc3",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "849890a5e03d9182"
     },
     "academic:url:efdf20e21116cfca": {
       "summary": "2022학년도 하계 계절학기 지역사회공헌 교과목 이수를 위해 수강신청, e-Class 동영상 시청, 봉사활동 40시간, 수윙스 확인서 등록 4가지를 모두 기한 내 완료해야 합니다.",
@@ -29921,6 +30297,28 @@
       "contentSource": "detail",
       "detailContentHash": "9881748cd7536c1e"
     },
+    "academic:url:f1fd35459179bd25": {
+      "summary": "삼육대 재학생 대상 독서 UCC 공모전으로, 10월 30일까지 동영상을 제작·제출하면 총 10명에게 상금 300만원이 지급됩니다.",
+      "target": "삼육대학교 재학생(휴학생·졸업생·졸업예정자 제외)",
+      "deadline": "2020년 10월 30일(금)",
+      "requiredAction": "비교과통합관리시스템에서 신청 후 UCC 동영상을 yeesk12409@syu.ac.kr로 제출",
+      "keywords": [
+        "도서 UCC 공모전",
+        "독서 스피치",
+        "동영상 제출",
+        "상금 300만원",
+        "비교과통합관리시스템",
+        "스미스학부대학"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:19.895Z",
+      "sourceHash": "ba19c325ed7138f9",
+      "inputHash": "3c0a6477f91bbffc",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "d6cd405551e615b9"
+    },
     "academic:url:f205791f1e970df0": {
       "summary": "2025-2학기 파견교환학생(프랑스·영국·스페인 등 다수 국가) 모집 공고로, 평점 3.2 이상·어학성적 충족 학생은 suwings.syu.ac.kr에서 지원서를 작성해야 합니다.",
       "target": "전학년 평균평점 3.2 이상, 어학 요건 충족 재학생",
@@ -30033,6 +30431,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "18a84868ec2f4679"
+    },
+    "academic:url:f2dc45ca237a9838": {
+      "summary": "스미스학부대학 주최 독서 서평쓰기 공모전으로, 삼육도서100선 중 원하는 도서를 읽고 서평을 작성해 11월 30일까지 제출하면 최대 50만원 상금을 받을 수 있습니다.",
+      "target": "삼육대학교 학생(스미스학부대학 공모전 참여 희망자)",
+      "deadline": "2020년 11월 30일(월)",
+      "requiredAction": "비교과통합관리시스템에서 신청 후 서평 파일(A4 1~3p, 한글 또는 WORD) 업로드 제출 및 만족도 조사 참여",
+      "keywords": [
+        "독서 서평 공모전",
+        "삼육도서100선",
+        "비교과통합관리시스템",
+        "서평 제출",
+        "상금 200만원",
+        "스미스학부대학",
+        "블라인드 심사"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:29.641Z",
+      "sourceHash": "580b968f3a927f58",
+      "inputHash": "d4cccb370723b5c5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fd0f2eec7cb669e1"
     },
     "academic:url:f301e775df4cb291": {
       "summary": "2026-1학기 글로컬영어Ⅰ 수강생은 2월 22일~25일 오후 2시까지 온라인 레벨테스트를 필수 응시해야 하며, 미응시 시 수강이 불가합니다.",
@@ -32031,6 +32452,29 @@
       "contentSource": "detail",
       "detailContentHash": "08bb4da69e68d84a"
     },
+    "campus:url:2a782790bcc442ee": {
+      "summary": "코로나-19 확산으로 학생상담센터 대면업무가 무기한 축소 운영되며, 상담 및 심리검사는 온라인·매체상담으로만 신청 가능합니다.",
+      "target": "학생상담센터 이용 희망 학생 전체",
+      "deadline": "무기한 연장(대면업무 재개 시 별도 공지 예정)",
+      "requiredAction": "상담 및 심리검사는 상담소 홈페이지(https://www.syu.ac.kr/slcc/)에서 온라인 신청, 문의는 전화(02-3399-3242) 또는 이메일(open79@syu.ac",
+      "keywords": [
+        "학생상담센터",
+        "코로나-19",
+        "대면업무 축소",
+        "온라인 상담 신청",
+        "매체상담",
+        "심리검사",
+        "사회적 거리두기"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:47:34.964Z",
+      "sourceHash": "6ba54377e6b9ec9b",
+      "inputHash": "20f2c40cb79c1291",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "63a69d3d4b89564b"
+    },
     "campus:url:2d39ed0cca7b49a0": {
       "summary": "2024년 1월 육군·해군·해병대·공군 현역병 모집 계획으로, 군별 모집분야·접수기간·합격자 발표일·입영월·모집인원이 안내됩니다.",
       "target": "현역병 입대를 희망하는 학생",
@@ -32454,6 +32898,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "03b38f152c5a5ab9"
+    },
+    "campus:url:4730f20d5f1c3ef0": {
+      "summary": "교육혁신원이 2020년 1학기 학부교육실태 파악을 위해 재학생 대상 K-NSSE 설문 참여를 요청하며, 참여 이벤트도 진행됩니다.",
+      "target": "재학생 전체",
+      "deadline": "unknown",
+      "requiredAction": "링크(https://ko.surveymonkey.com/r/SYUKNSSE20) 접속 후 설문 참여 (10~15분 소요)",
+      "keywords": [
+        "K-NSSE",
+        "학부교육실태조사",
+        "설문참여",
+        "교육혁신원",
+        "이벤트",
+        "재학생"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:46:57.510Z",
+      "sourceHash": "88b76edf14c2a83e",
+      "inputHash": "68f8dfeb82b5a10c",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "6ee2546d381b3128"
     },
     "campus:url:48a17373e53721ea": {
       "summary": "평생교육원이 병역법에 따라 학적변동자 개인정보(성명, 주민번호 등)를 제3자에게 제공한 내역을 공고합니다.",
@@ -33936,6 +34402,27 @@
       "contentSource": "detail",
       "detailContentHash": "b28b4cc68beb6682"
     },
+    "campus:url:85b3a5d86d8295b5": {
+      "summary": "학생상담센터가 중앙자살예방센터의 자살예방 홍보물을 안내하며, 위기 상황에서 기억해야 할 3가지 사항을 공유합니다.",
+      "target": "전체 학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지에서 자살예방 홍보 내용 확인",
+      "keywords": [
+        "자살예방",
+        "홍보물",
+        "중앙자살예방센터",
+        "학생상담센터",
+        "위기지원"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-29T17:47:42.854Z",
+      "sourceHash": "e925f43c0755c544",
+      "inputHash": "6aea89b3b93a2944",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e9fa5cc09ec7e5d7"
+    },
     "campus:url:86222471a0f145dd": {
       "summary": "학생식당(파인하우스)이 코로나19 및 방학 중 시설 점검으로 2020년 12월 25일부터 2021년 1월 24일까지 임시 휴점합니다.",
       "target": "학생식당 이용 학생",
@@ -35386,6 +35873,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "199263fd5ba3ef8c"
+    },
+    "campus:url:d4a471eb16079db2": {
+      "summary": "파인하우스가 코로나19로 중단했던 영업을 9월 16일(수)부터 정상 재개했으니 교내 복지시설을 이용해 주세요.",
+      "target": "전체 학생",
+      "deadline": "unknown",
+      "requiredAction": "교내 파인하우스 및 복지시설 이용",
+      "keywords": [
+        "파인하우스",
+        "정상영업",
+        "코로나19",
+        "교내 복지시설",
+        "학생처"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:44:58.436Z",
+      "sourceHash": "78b33ada47383a23",
+      "inputHash": "43a8f054945480b7",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "34958591f41db6ff"
     },
     "campus:url:d6ae1c7771d020fd": {
       "summary": "2023년 4월 육군·해군·해병대·공군 현역병 모집계획으로, 군별 모집분야·접수기간·합격자 발표일·입영월 정보를 안내합니다.",
@@ -37774,6 +38282,30 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f7fd4ae5d26228ae"
+    },
+    "scholarship:url:0c60a3a9871819d1": {
+      "summary": "2026-2학기 한국장학재단 학자금대출(일반상환/취업후상환) 신청이 7월 1일부터 시작되며, 신청 시 반드시 2026-2학기 학년·학과를 입력해야 합니다.",
+      "target": "학자금대출 신청 희망 학생(등록금·생활비 대출 포함)",
+      "deadline": "2026.11.17.(화) 18시 (등록금·생활비대출 신청 마감)",
+      "requiredAction": "한국장학재단 홈페이지(www.kosaf.go.kr) 또는 모바일 앱에서 2026-2학기 학년·학과 입력 후 신청",
+      "keywords": [
+        "학자금대출",
+        "한국장학재단",
+        "등록금대출",
+        "생활비대출",
+        "취업후상환",
+        "일반상환",
+        "대출신청",
+        "2026-2학기"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-06-29T17:44:03.748Z",
+      "sourceHash": "8c33d9720750d5b7",
+      "inputHash": "e76d21581553206d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "212c72d0e02b6bcc"
     },
     "scholarship:url:0c7731e454838c7f": {
       "summary": "서울장학재단이 2026년 상반기 서울인재대학장학생을 선발하며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인 가능합니다.",
@@ -50707,6 +51239,29 @@
       "inputHash": "5aa72dad35513d03",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
+    },
+    "scholarship:url:869cae521b26a091": {
+      "summary": "2026-2학기 농촌출신 대학생 대상 한국장학재단 농촌학자금 무이자 융자 신청 안내로, 한국장학재단 홈페이지 또는 앱에서 신청 가능합니다.",
+      "target": "농어촌 거주 보호자 자녀, 농어업 종사자 본인·자녀, 농식품인재 대상학과 재학 대학생",
+      "deadline": "unknown",
+      "requiredAction": "한국장학재단 홈페이지(kosaf.go.kr) 또는 모바일 앱에서 농촌출신 학자금대출 신청 및 관련 서류 제출",
+      "keywords": [
+        "농촌출신 학자금융자",
+        "한국장학재단",
+        "무이자 융자",
+        "등록금 전액",
+        "농어업인 자녀",
+        "서류제출",
+        "2026-2학기"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-06-29T17:44:14.495Z",
+      "sourceHash": "b16adc13c3cc9a0e",
+      "inputHash": "6be1f4a738c33d3d",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "f7ded768ed561fc4"
     },
     "scholarship:url:86b7bc5f07d840b1": {
       "summary": "2024년 1학기 국가근로 9차 추가모집 합격자는 사전교육에 반드시 참석하고, 근로 시작 전 서약서·사이버오리엔테이션·출근부 앱 설치 등 준비사항을 완료해야 합니다.",
