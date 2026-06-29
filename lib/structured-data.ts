@@ -20,6 +20,11 @@ export type SchemaOrgDocument<TNode extends SchemaOrgNode> = TNode & {
   "@context": typeof SCHEMA_CONTEXT;
 };
 
+export type FAQPageQuestion = {
+  questionName: string;
+  acceptedAnswerText: string;
+};
+
 export function createWebSiteSchema(
   locale: Locale,
 ): SchemaOrgDocument<SchemaOrgNode> {
@@ -33,6 +38,31 @@ export function createWebSiteSchema(
     url: SITE_ORIGIN,
     description: dictionary.meta.schemaDescription,
     inLanguage: dictionary.meta.inLanguage,
+  };
+}
+
+export function createFAQPageSchema({
+  mainEntity,
+  inLanguage,
+  url,
+}: {
+  mainEntity: FAQPageQuestion[];
+  inLanguage: string;
+  url?: string;
+}): SchemaOrgDocument<SchemaOrgNode> {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "FAQPage",
+    ...(url ? { url } : {}),
+    inLanguage,
+    mainEntity: mainEntity.map((item) => ({
+      "@type": "Question",
+      name: item.questionName,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.acceptedAnswerText,
+      },
+    })),
   };
 }
 

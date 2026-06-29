@@ -740,6 +740,20 @@ export const dictionaries = {
         publicTransitTab: "대중교통",
         loading: "로딩 중...",
         shuttleTitle: "셔틀버스",
+        answer: {
+          eyebrow: "바로 답변",
+          title: "다음 셔틀 한눈에 보기",
+          question: "오늘 삼육대학교 셔틀버스는 언제 출발하나요?",
+          source: "출처: 삼육대학교 셔틀 시간표 데이터",
+          updatedPrefix: "기준",
+          weekend:
+            "오늘은 주말입니다. 삼육대학교 셔틀버스가 운행되지 않습니다.",
+          noMore:
+            "오늘 남은 셔틀 출발편이 없습니다. 전체 시간표에서 다음 운행일을 확인하세요.",
+          nextDeparture:
+            "다음 셔틀은 {routeName} 노선 {time} 출발이며 약 {minutes}분 남았습니다.",
+          departureItem: "{time} 출발, 약 {minutes}분 후",
+        },
         shuttleDescriptionPrefix: "캠퍼스 셔틀버스 운행 시간표",
         today: "오늘",
         weekdaySuffix: "요일",
@@ -859,6 +873,26 @@ export const dictionaries = {
         description: "주간 식단 및 영양정보를 확인하세요",
         metaDescription:
           "삼육대학교 주간 식단과 오늘의 학식 정보를 확인하세요.",
+        answer: {
+          eyebrow: "바로 답변",
+          title: "오늘 학식 한눈에 보기",
+          question: "오늘 삼육대학교 학식은 무엇인가요?",
+          source: "출처: 삼육대학교 SU-Lounge 식단 데이터",
+          updatedPrefix: "기준",
+          unavailable: "정보 없음",
+          mealSeparator: ", ",
+          mealPairSeparator: ": ",
+          menu:
+            "{date} {location} 오늘 학식은 {items}입니다.",
+          weekend:
+            "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
+          pending:
+            "오늘 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요.",
+          missing:
+            "오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
+          closed:
+            "오늘은 공휴일 또는 운영하지 않는 날로 식단이 제공되지 않습니다.",
+        },
         weekendMessage:
           "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
         pendingTitle: "식단 준비 중입니다",
@@ -2191,6 +2225,20 @@ export const dictionaries = {
         publicTransitTab: "Public Transit",
         loading: "Loading...",
         shuttleTitle: "Shuttle Bus",
+        answer: {
+          eyebrow: "Direct answer",
+          title: "Next shuttle at a glance",
+          question: "When does the Sahmyook University shuttle leave today?",
+          source: "Source: Sahmyook University shuttle timetable data",
+          updatedPrefix: "As of",
+          weekend:
+            "It is the weekend today. Sahmyook University shuttle buses are not running.",
+          noMore:
+            "There are no remaining shuttle departures today. Check the full timetable for the next operating day.",
+          nextDeparture:
+            "The next shuttle is the {routeName} route at {time}, about {minutes} minutes from now.",
+          departureItem: "{time} departure, about {minutes} min later",
+        },
         shuttleDescriptionPrefix: "Campus shuttle timetable",
         today: "Today",
         weekdaySuffix: "",
@@ -2312,6 +2360,26 @@ export const dictionaries = {
         description: "Check weekly menus and nutrition information",
         metaDescription:
           "Check Sahmyook University weekly cafeteria menus and today's meals.",
+        answer: {
+          eyebrow: "Direct answer",
+          title: "Today's cafeteria at a glance",
+          question: "What is today's Sahmyook University cafeteria menu?",
+          source: "Source: Sahmyook University SU-Lounge menu data",
+          updatedPrefix: "As of",
+          unavailable: "Unavailable",
+          mealSeparator: ", ",
+          mealPairSeparator: ": ",
+          menu:
+            "Today's cafeteria menu for {date} at {location}: {items}.",
+          weekend:
+            "It is the weekend today. Weekend menu information may not be available.",
+          pending:
+            "Today's menu data is still being prepared. Please check again shortly.",
+          missing:
+            "Today's menu is unavailable. Check another date in the weekly menu.",
+          closed:
+            "Menus are not provided today because the cafeteria is closed or it is a non-operating day.",
+        },
         weekendMessage:
           "It is the weekend today. Weekend menu information may not be available.",
         pendingTitle: "Menu is being prepared",
