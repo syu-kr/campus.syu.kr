@@ -78,6 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
       languages: {
         ko: koreanPath,
         en: englishPath,
+        "x-default": koreanPath,
       },
     },
     robots: {

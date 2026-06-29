@@ -25,12 +25,15 @@ export async function generateMetadata(): Promise<Metadata> {
       index: false,
       follow: true,
     },
+    alternates: {
+      canonical: localizePath("/campus/campus-tips/suggest", locale),
+    },
     openGraph: {
       title: `${dictionary.pages.campusTipsSuggest.title} | SYU CAMPUS`,
       description: dictionary.pages.campusTipsSuggest.metaDescription,
       type: "website",
       url: `https://campus.syu.kr${localizePath(
-        "/more/campus-tips/suggest",
+        "/campus/campus-tips/suggest",
         locale,
       )}`,
     },

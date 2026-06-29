@@ -64,20 +64,7 @@ function getPreferredLocale(request: NextRequest): Locale {
     return cookieLocale;
   }
 
-  const country = getRequestCountry(request);
-  if (country && country !== "KR") {
-    return ENGLISH_LOCALE;
-  }
-
   return DEFAULT_LOCALE;
-}
-
-function getRequestCountry(request: NextRequest): string | null {
-  return (
-    request.headers.get("x-vercel-ip-country") ||
-    request.headers.get("cf-ipcountry") ||
-    request.headers.get("x-country-code")
-  )?.toUpperCase() ?? null;
 }
 
 function nextWithLocale(request: NextRequest, locale: Locale) {

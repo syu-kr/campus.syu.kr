@@ -21,12 +21,19 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `${dictionary.pages.scholarship.title} | SYU CAMPUS`,
     description: dictionary.pages.scholarship.metaDescription,
+    alternates: {
+      canonical: localizePath("/academic/scholarship", locale),
+    },
+    robots: {
+      index: false,
+      follow: true,
+    },
     openGraph: {
       title: `${dictionary.pages.scholarship.title} | SYU CAMPUS`,
       description: dictionary.pages.scholarship.metaDescription,
       type: "website",
       url: `https://campus.syu.kr${localizePath(
-        "/more/scholarship",
+        "/academic/scholarship",
         locale,
       )}`,
     },
