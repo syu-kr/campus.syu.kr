@@ -13,6 +13,7 @@ import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import {
   evaluateGraduation,
   getAvailableAdmissionTypes,
@@ -289,6 +290,7 @@ export default function GraduationPageClient({
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.graduation;
+  const trustText = dictionary.trust;
   const metadata = getGraduationMetadata();
   const colleges = getColleges();
   const [selection, setSelection] =
@@ -631,8 +633,31 @@ export default function GraduationPageClient({
         </p>
       </header>
 
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <AnswerSummaryCard summary={answerSummary} />
+        <SourceTrustPanel
+          badges={[
+            { color: "yellow", label: trustText.unofficialBadge },
+            { color: "green", label: trustText.officialFirstBadge },
+          ]}
+          description={trustText.description}
+          items={[
+            {
+              label: trustText.sourceLabel,
+              value: answerSummary.source,
+            },
+            {
+              label: trustText.updatedLabel,
+              value: answerSummary.updatedAt,
+            },
+            {
+              label: trustText.verificationLabel,
+              value: trustText.officialVerificationValue,
+            },
+          ]}
+          note={trustText.note}
+          title={trustText.title}
+        />
       </div>
 
       <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">

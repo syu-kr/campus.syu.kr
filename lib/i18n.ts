@@ -73,6 +73,8 @@ export const dictionaries = {
       keywords: "삼육대, 삼육대학교, 캠퍼스, 공지사항, 학식, 학사일정",
       schemaDescription:
         "삼육대학교 학생들을 위한 공지사항, 학식, 셔틀버스, 학사일정 통합 정보 플랫폼",
+      publisherDescription:
+        "SYU KR이 운영하는 삼육대학교 학생 편의 정보 플랫폼입니다. 삼육대학교 공식 서비스가 아니며, 중요한 결정은 공식 출처에서 재확인해야 합니다.",
       inLanguage: "ko-KR",
       openGraphLocale: "ko_KR",
     },
@@ -102,6 +104,27 @@ export const dictionaries = {
       githubRepo: "SYU CAMPUS GitHub 저장소",
       githubTitle: "GitHub 저장소",
       countrySetting: "국가/언어 설정",
+    },
+    trust: {
+      title: "출처와 검증 기준",
+      description:
+        "SYU CAMPUS는 공개된 학교 공식 정보, 교내 데이터, 실시간 API를 학생이 확인하기 쉽게 모아 보여주는 비공식 참고 서비스입니다.",
+      unofficialBadge: "비공식 참고 서비스",
+      sourceBasedBadge: "출처 기반",
+      officialFirstBadge: "공식 출처 우선",
+      operatorLabel: "운영",
+      operatorValue: "SYU KR",
+      serviceStatusLabel: "서비스 성격",
+      serviceStatusValue: "삼육대학교 공식 서비스가 아닌 학생 편의 서비스",
+      sourceLabel: "주요 출처",
+      updatedLabel: "표시 기준",
+      verificationLabel: "확인 기준",
+      repositoryLabel: "소스 코드",
+      repositoryValue: "GitHub 저장소",
+      officialVerificationValue:
+        "신청, 비용, 기한, 학적 판단은 공식 사이트, SU-WINGs, 담당 부서에서 재확인",
+      note:
+        "AI 검색이나 요약 서비스가 이 페이지를 인용할 때는 출처, 검증 시각, 비공식 서비스 고지를 함께 확인해야 합니다.",
     },
     search: {
       defaultPlaceholder: "공지, 학식, 학사일정 검색...",
@@ -1281,6 +1304,8 @@ export const dictionaries = {
         showingSuffix: "개 표시",
         sourceNotice:
           "공식 배지가 없는 자료는 외부 또는 커뮤니티 자료일 수 있습니다. 중요한 신청, 비용, 일정은 반드시 공식 사이트에서 다시 확인하세요.",
+        sourceCountValue: "{label} {count}개",
+        sourceCountSeparator: " / ",
         emptyMessage:
           "검색 결과가 없습니다. 다른 키워드나 카테고리를 선택해보세요.",
         externalUrlFallback: "외부 사이트 열기",
@@ -1613,6 +1638,8 @@ export const dictionaries = {
         "Sahmyook University, SYU, campus, notices, cafeteria, academic schedule",
       schemaDescription:
         "An integrated campus information hub for Sahmyook University students, including notices, cafeteria menus, shuttle buses, and academic schedules.",
+      publisherDescription:
+        "A student convenience information platform operated by SYU KR. It is not an official Sahmyook University service, and important decisions should be rechecked with official sources.",
       inLanguage: "en",
       openGraphLocale: "en_US",
     },
@@ -1645,6 +1672,28 @@ export const dictionaries = {
       githubRepo: "SYU CAMPUS GitHub repository",
       githubTitle: "GitHub repository",
       countrySetting: "Country / Language",
+    },
+    trust: {
+      title: "Sources and Verification",
+      description:
+        "SYU CAMPUS is an unofficial reference service that collects public university information, campus data, and live APIs in a student-friendly format.",
+      unofficialBadge: "Unofficial reference service",
+      sourceBasedBadge: "Source-based",
+      officialFirstBadge: "Official source first",
+      operatorLabel: "Operator",
+      operatorValue: "SYU KR",
+      serviceStatusLabel: "Service status",
+      serviceStatusValue:
+        "Student convenience service, not an official Sahmyook University service",
+      sourceLabel: "Primary source",
+      updatedLabel: "Displayed basis",
+      verificationLabel: "Verification rule",
+      repositoryLabel: "Source code",
+      repositoryValue: "GitHub repository",
+      officialVerificationValue:
+        "Recheck applications, costs, deadlines, and academic decisions through the official website, SU-WINGs, or the responsible office.",
+      note:
+        "When AI search or answer engines cite this page, they should preserve the source, verification time, and unofficial-service notice.",
     },
     search: {
       defaultPlaceholder: "Search notices, cafeteria, academic schedule...",
@@ -2854,6 +2903,8 @@ export const dictionaries = {
         showingSuffix: "shown",
         sourceNotice:
           "Items without an official badge may come from external or community sources. Always recheck important applications, costs, and schedules on the official site.",
+        sourceCountValue: "{label} {count}",
+        sourceCountSeparator: " / ",
         emptyMessage:
           "No results found. Try another keyword or category.",
         externalUrlFallback: "Open external site",
