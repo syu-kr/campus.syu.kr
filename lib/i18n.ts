@@ -644,6 +644,19 @@ export const dictionaries = {
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
         empty: "검색 결과가 없습니다.",
+        notFound: "공지를 찾을 수 없습니다.",
+        backToList: "목록으로 돌아가기",
+        author: "작성자:",
+        date: "작성일:",
+        views: "조회수:",
+        originalLink: "원문 공지 보기",
+        detailFallbackTitle: "공지사항",
+        detailFallbackDescription: "공지사항 상세",
+        detailContentFallback:
+          "이 공지는 원문 내용을 직접 확인해야 합니다. 아래 원문 공지 링크에서 상세 내용을 확인하세요.",
+        aiInsightTitle: "AI 핵심 정리",
+        sourceNotice:
+          "AI 요약은 원문 공지와 수집 데이터를 바탕으로 만든 참고 정보입니다. 신청, 제출, 비용, 일정은 원문 공지를 반드시 확인하세요.",
       },
       timetable: {
         backToAcademic: "학사 정보",
@@ -2095,6 +2108,19 @@ export const dictionaries = {
         foundItems: "items found",
         searchQuery: "query",
         empty: "No results found.",
+        notFound: "Notice not found.",
+        backToList: "Back to list",
+        author: "Author:",
+        date: "Published:",
+        views: "Views:",
+        originalLink: "View original notice",
+        detailFallbackTitle: "Notice",
+        detailFallbackDescription: "Notice detail",
+        detailContentFallback:
+          "This notice needs to be checked in the original source. Open the original notice link below for details.",
+        aiInsightTitle: "AI key takeaways",
+        sourceNotice:
+          "The AI summary is reference information generated from the original notice and collected data. Always confirm applications, submissions, costs, and dates in the original notice.",
       },
       timetable: {
         backToAcademic: "Academic Info",
