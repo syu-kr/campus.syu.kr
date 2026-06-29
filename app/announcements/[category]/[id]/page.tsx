@@ -12,6 +12,7 @@ import {
 } from "@/lib/server/announcements";
 import {
   LOCALE_HEADER_NAME,
+  createLocalizedAlternates,
   getDictionary,
   localizePath,
   normalizeLocale,
@@ -77,9 +78,7 @@ export async function generateMetadata({
   return {
     title: `${announcement.title} | SYU CAMPUS`,
     description,
-    alternates: {
-      canonical: localizePath(detailPath, locale),
-    },
+    alternates: createLocalizedAlternates(detailPath, locale),
     openGraph: {
       title: `${announcement.title} | SYU CAMPUS`,
       description,

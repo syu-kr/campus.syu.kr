@@ -65,6 +65,19 @@ export function localizePath(href: string, locale: Locale): string {
   return `${localizedPathname}${query}${hash}`;
 }
 
+export function createLocalizedAlternates(pathname: string, locale: Locale) {
+  const koreanPath = stripLocalePrefix(pathname);
+
+  return {
+    canonical: localizePath(koreanPath, locale),
+    languages: {
+      ko: koreanPath,
+      en: localizePath(koreanPath, ENGLISH_LOCALE),
+      "x-default": koreanPath,
+    },
+  };
+}
+
 export const dictionaries = {
   ko: {
     meta: {

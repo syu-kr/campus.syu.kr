@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 
 import {
   LOCALE_HEADER_NAME,
+  createLocalizedAlternates,
   getDictionary,
   localizePath,
   normalizeLocale,
@@ -21,9 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `${dictionary.pages.phone.metaTitle} | SYU CAMPUS`,
     description: dictionary.pages.phone.metaDescription,
-    alternates: {
-      canonical: localizePath("/campus/phone", locale),
-    },
+    alternates: createLocalizedAlternates("/campus/phone", locale),
     robots: {
       index: false,
       follow: true,

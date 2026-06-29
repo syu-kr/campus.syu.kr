@@ -10,10 +10,9 @@ import { Providers } from "./providers";
 import {
   LOCALE_HEADER_NAME,
   PATHNAME_HEADER_NAME,
+  createLocalizedAlternates,
   getDictionary,
-  localizePath,
   normalizeLocale,
-  stripLocalePrefix,
   type Locale,
 } from "@/lib/i18n";
 import { createSiteIdentitySchema } from "@/lib/structured-data";
@@ -48,9 +47,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const pathname = await getRequestPathname();
   const dictionary = getDictionary(locale);
-  const canonicalPath = localizePath(stripLocalePrefix(pathname), locale);
-  const koreanPath = stripLocalePrefix(pathname);
-  const englishPath = localizePath(koreanPath, "en");
 
   return {
     metadataBase: new URL("https://campus.syu.kr"),
@@ -62,14 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: dictionary.meta.description,
     keywords: dictionary.meta.keywords,
     authors: [{ name: "SYU KR" }],
-    alternates: {
-      canonical: canonicalPath,
-      languages: {
-        ko: koreanPath,
-        en: englishPath,
-        "x-default": koreanPath,
-      },
-    },
+    alternates: createLocalizedAlternates(pathname, locale),
     robots: {
       index: true,
       follow: true,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
   LOCALE_HEADER_NAME,
+  createLocalizedAlternates,
   getDictionary,
   localizePath,
   normalizeLocale,
@@ -19,9 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: text.metaTitle,
     description: text.metaDescription,
-    alternates: {
-      canonical: localizePath("/academic/schedule", locale),
-    },
+    alternates: createLocalizedAlternates("/academic/schedule", locale),
     openGraph: {
       title: text.metaTitle,
       description: text.metaDescription,
