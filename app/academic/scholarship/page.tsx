@@ -1,3 +1,3 @@
-import ScholarshipPage from "@/app/more/scholarship/page";
+import ScholarshipPage from "@/app/features/scholarship/ScholarshipPageClient";
 
 export default ScholarshipPage;

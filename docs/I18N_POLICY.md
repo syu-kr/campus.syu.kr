@@ -9,7 +9,7 @@ This document defines what should be translated, what should remain as source da
 - `ko`: default locale and primary product language.
 - `en`: global English UI available through `/en`.
 
-The proxy uses the request country header to route non-Korea traffic to `/en` when no explicit locale path or saved language preference is already present. Users can change the language from the footer country/language selector, and that saved preference takes priority over country-based routing.
+The Korean route is the default entry point for all new visitors and crawlers. The English UI is available through the explicit `/en` route, and users can change the language from the footer country/language selector. A saved language preference may route the user back to `/en`, but request country headers must not automatically redirect anonymous traffic because that can prevent search crawlers from seeing both localized URL versions.
 
 ## Translation scope
 

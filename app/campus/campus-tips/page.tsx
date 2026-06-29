@@ -1,3 +1,3 @@
-import CampusTipsPage from "@/app/more/campus-tips/page";
+import CampusTipsPage from "@/app/features/campus-tips/CampusTipsPageClient";
 
 export default CampusTipsPage;

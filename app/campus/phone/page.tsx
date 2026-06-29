@@ -1,3 +1,3 @@
-import PhonePage from "@/app/more/phone/page";
+import PhonePage from "@/app/features/phone/DirectoryPageClient";
 
 export default PhonePage;
