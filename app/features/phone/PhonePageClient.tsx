@@ -4,6 +4,10 @@ import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
 import {
+  AnswerSummaryCard,
+  type AnswerSummary,
+} from "@/app/components/AnswerSummaryCard";
+import {
   useDictionary,
   useLocale,
 } from "@/app/components/LocaleProvider";
@@ -14,11 +18,20 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
 import { usePagination } from "@/lib/use-pagination";
+import type { PhoneNumber } from "@/types";
 
 const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 
-export default function DirectoryPage() {
+type PhonePageClientProps = {
+  answerSummary: AnswerSummary;
+  initialPhoneNumbers: PhoneNumber[];
+};
+
+export default function PhonePageClient({
+  answerSummary,
+  initialPhoneNumbers,
+}: PhonePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.phone;
@@ -29,6 +42,7 @@ export default function DirectoryPage() {
   const { data: phoneData, isLoading } = useQuery({
     queryKey: ["phone-numbers"],
     queryFn: () => fetchPhoneNumbers(),
+    initialData: initialPhoneNumbers,
     staleTime: ONE_HOUR,
     gcTime: ONE_DAY,
   });
@@ -73,6 +87,10 @@ export default function DirectoryPage() {
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
+      <div className="mb-6">
+        <AnswerSummaryCard summary={answerSummary} />
+      </div>
+
       <SearchBar
         className="mb-6"
         defaultValue={searchQuery}
@@ -111,7 +129,7 @@ export default function DirectoryPage() {
         ) : (
           !isLoading &&
           paginatedDirectory.map((item) => (
-            <Card key={item.phone}>
+            <Card key={`${item.department}-${item.phone}`}>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
                   <h3 className="text-lg font-bold text-neutral-900 mb-1">

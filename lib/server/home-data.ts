@@ -3,6 +3,7 @@ import path from "path";
 import type {
   AcademicSchedule,
   CafeteriaMenu,
+  PhoneNumber,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
 } from "@/types";
@@ -59,6 +60,10 @@ export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
 
 export function getHomeAcademicSchedules(): Promise<AcademicSchedule[]> {
   return readPublicData<AcademicSchedule[]>("schedules-major.json", []);
+}
+
+export function getHomePhoneNumbers(): Promise<PhoneNumber[]> {
+  return readPublicData<PhoneNumber[]>("phone-numbers.json", []);
 }
 
 export function getHomeShuttleBuses(): Promise<ShuttleBusSchedule[]> {

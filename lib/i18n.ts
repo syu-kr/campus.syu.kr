@@ -424,6 +424,25 @@ export const dictionaries = {
         noSearchResults: "검색 결과가 없습니다.",
         itemCountPrefix: "",
         itemCountSuffix: "개",
+        answer: {
+          eyebrow: "AI 답변 요약",
+          title: "오늘 학사일정",
+          question: "오늘 삼육대학교 학사일정이 있나요?",
+          source: "출처: 2026학년도 학사일정 데이터",
+          updatedPrefix: "확인 시각",
+          dateLabel: "기준일",
+          todayCountLabel: "오늘 일정",
+          nextScheduleLabel: "다음 일정",
+          today:
+            "{date} 기준 진행 중인 주요 학사일정은 {items}입니다. {next}",
+          noToday:
+            "{date} 기준 등록된 주요 학사일정은 없습니다. {next}",
+          nextSchedule: "가장 가까운 다음 일정은 {date}의 {title}입니다.",
+          noNext: "다가오는 학사일정을 데이터에서 찾지 못했습니다.",
+          noNextShort: "없음",
+          itemSeparator: ", ",
+          moreSuffix: " 외 {count}개",
+        },
       },
       graduation: {
         metaTitle: "졸업요건 자가진단 | SYU CAMPUS",
@@ -446,6 +465,19 @@ export const dictionaries = {
         sourceNoticePrefix: "현재 학점 기준은 ",
         sourceNoticeSuffix:
           "을 구조화한 참고값입니다. 자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직 과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시 확인하세요.",
+        answer: {
+          eyebrow: "AI 답변 요약",
+          title: "졸업요건 확인 방법",
+          question: "삼육대학교 졸업요건은 어디서 확인하나요?",
+          body:
+            "입학년도, 단과대학, 학과, 입학유형, 전공 형태를 선택하면 {sourceTitle} 기준의 참고 졸업요건과 확인 필요 항목을 볼 수 있습니다. 이 데이터는 {lastVerifiedAt}에 마지막으로 검증되었으며, 최종 졸업 판정은 반드시 SU-WINGs와 학과사무실에서 확인해야 합니다.",
+          source: "출처: {sourceTitle}",
+          updatedPrefix: "확인 시각",
+          sourceLabel: "기준 자료",
+          verifiedLabel: "마지막 검증",
+          cautionLabel: "최종 확인",
+          cautionValue: "SU-WINGs 및 학과사무실 확인 필요",
+        },
         contactWrongInfo: "잘못된 정보 문의하기",
         sections: {
           selectionTitle: "1. 내 조건 선택",
@@ -1046,6 +1078,23 @@ export const dictionaries = {
         next: "다음",
         page: "페이지",
         notice: "안내: 더 많은 전화번호는 학교 홈페이지를 참고하세요.",
+        answer: {
+          eyebrow: "AI 답변 요약",
+          title: "대표 연락처 검색",
+          question: "삼육대학교 학적·수업·증명서 문의는 어디로 전화하나요?",
+          body:
+            "현재 {count}개 연락처를 부서명, 업무 설명, 전화번호로 검색할 수 있습니다. 졸업·학적·수업·증명서 문의는 {department}({description}) {phone}에서 확인하세요.",
+          emptyBody:
+            "현재 표시할 연락처 데이터가 없습니다. 학교 홈페이지의 공식 전화번호부를 확인하세요.",
+          source: "출처: 교내 전화번호 데이터",
+          updatedPrefix: "확인 시각",
+          totalLabel: "등록 연락처",
+          totalValue: "{count}개",
+          academicLabel: "학적·수업·증명서",
+          scholarshipLabel: "장학 문의",
+          contactValue: "{department} · {description} · {phone}",
+          noDescription: "업무 설명 없음",
+        },
       },
       gym: {
         title: "체육시설",
@@ -1918,6 +1967,25 @@ export const dictionaries = {
         noSearchResults: "No search results.",
         itemCountPrefix: "",
         itemCountSuffix: " items",
+        answer: {
+          eyebrow: "AI answer summary",
+          title: "Today's academic schedule",
+          question: "Are there any Sahmyook University academic schedules today?",
+          source: "Source: 2026 academic schedule data",
+          updatedPrefix: "Checked",
+          dateLabel: "Reference date",
+          todayCountLabel: "Today's schedules",
+          nextScheduleLabel: "Next schedule",
+          today:
+            "On {date}, active major academic schedules are {items}. {next}",
+          noToday:
+            "No major academic schedules are registered for {date}. {next}",
+          nextSchedule: "The nearest upcoming schedule is {title} on {date}.",
+          noNext: "No upcoming academic schedule was found in the data.",
+          noNextShort: "None",
+          itemSeparator: ", ",
+          moreSuffix: " and {count} more",
+        },
       },
       graduation: {
         metaTitle: "Graduation Requirement Check | SYU CAMPUS",
@@ -1940,6 +2008,19 @@ export const dictionaries = {
         sourceNoticePrefix: "The current credit criteria are reference values structured from ",
         sourceNoticeSuffix:
           ". Update times may differ by source. Transfer, department transfer, multi-major, and teaching-track students must check the official sources and department office shown with the result.",
+        answer: {
+          eyebrow: "AI answer summary",
+          title: "How to check graduation requirements",
+          question: "Where can I check Sahmyook University graduation requirements?",
+          body:
+            "Select your admission year, college, department, admission type, and major track to review reference graduation requirements and items that still need confirmation based on {sourceTitle}. This data was last verified on {lastVerifiedAt}; final graduation approval must be confirmed through SU-WINGs and your department office.",
+          source: "Source: {sourceTitle}",
+          updatedPrefix: "Checked",
+          sourceLabel: "Reference source",
+          verifiedLabel: "Last verified",
+          cautionLabel: "Final confirmation",
+          cautionValue: "Check SU-WINGs and the department office",
+        },
         contactWrongInfo: "Report incorrect information",
         sections: {
           selectionTitle: "1. Select Your Conditions",
@@ -2556,6 +2637,24 @@ export const dictionaries = {
         page: "page",
         notice:
           "Notice: For more phone numbers, please refer to the university website.",
+        answer: {
+          eyebrow: "AI answer summary",
+          title: "Campus contact search",
+          question:
+            "Where should I call for Sahmyook University academic records, classes, or certificates?",
+          body:
+            "You can search {count} contacts by department, work description, or phone number. For graduation, academic records, classes, or certificates, check {department} ({description}) at {phone}.",
+          emptyBody:
+            "No contact data is available here right now. Check the official university phone directory.",
+          source: "Source: campus phone directory data",
+          updatedPrefix: "Checked",
+          totalLabel: "Registered contacts",
+          totalValue: "{count} contacts",
+          academicLabel: "Records, classes, certificates",
+          scholarshipLabel: "Scholarships",
+          contactValue: "{department} · {description} · {phone}",
+          noDescription: "No description",
+        },
       },
       gym: {
         title: "Sports Facilities",
