@@ -14,6 +14,7 @@ import {
 import { Modal } from "@/app/components/Modal";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
+import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchCampusTips } from "@/lib/api";
 import type { Dictionary } from "@/lib/i18n";
@@ -27,6 +28,12 @@ import type {
 const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 const ITEMS_PER_PAGE = 12;
+const sourceTypes: CampusTipSourceType[] = [
+  "official",
+  "public",
+  "external",
+  "community",
+];
 
 type CampusTipsDictionary = Dictionary["pages"]["campusTips"];
 
@@ -52,6 +59,7 @@ export default function CampusTipsPage() {
   const locale = useLocale();
   const text = dictionary.pages.campusTips;
   const suggestText = dictionary.pages.campusTipsSuggest;
+  const trustText = dictionary.trust;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     CampusTipCategory | "all"
@@ -89,6 +97,10 @@ export default function CampusTipsPage() {
       })
       .sort((a, b) => sortTips(a, b, locale));
   }, [locale, searchQuery, selectedCategory, text, tips]);
+  const sourceSummary = useMemo(
+    () => formatCampusTipSourceCounts(tips, text, locale),
+    [locale, text, tips],
+  );
 
   const {
     currentPage,
@@ -184,8 +196,30 @@ export default function CampusTipsPage() {
       )}
 
       {!isLoading && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800">
-          {text.sourceNotice}
+        <div className="mb-4">
+          <SourceTrustPanel
+            badges={[
+              { color: "yellow", label: trustText.unofficialBadge },
+              { color: "blue", label: trustText.sourceBasedBadge },
+            ]}
+            description={trustText.description}
+            items={[
+              {
+                label: trustText.serviceStatusLabel,
+                value: trustText.serviceStatusValue,
+              },
+              {
+                label: trustText.sourceLabel,
+                value: sourceSummary,
+              },
+              {
+                label: trustText.verificationLabel,
+                value: trustText.officialVerificationValue,
+              },
+            ]}
+            note={text.sourceNotice}
+            title={trustText.title}
+          />
         </div>
       )}
 
@@ -353,6 +387,29 @@ function getSourceLabel(
   return text.sources.external;
 }
 
+function formatCampusTipSourceCounts(
+  tips: CampusTip[],
+  text: CampusTipsDictionary,
+  locale: string,
+) {
+  const countBySource = new Map<CampusTipSourceType, number>();
+  tips.forEach((tip) => {
+    countBySource.set(
+      tip.sourceType,
+      (countBySource.get(tip.sourceType) ?? 0) + 1,
+    );
+  });
+
+  return sourceTypes
+    .map((sourceType) =>
+      applyTemplate(text.sourceCountValue, {
+        count: (countBySource.get(sourceType) ?? 0).toLocaleString(locale),
+        label: getSourceLabel(sourceType, text),
+      }),
+    )
+    .join(text.sourceCountSeparator);
+}
+
 function getTipPriority(tip: CampusTip): number {
   if (typeof tip.sortPriority === "number") return tip.sortPriority;
   if (tip.category === "school" && tip.id.startsWith("school-instagram-")) {
@@ -386,4 +443,11 @@ function getSourceBadgeColor(
   if (sourceType === "public") return "green";
   if (sourceType === "community") return "yellow";
   return "gray";
+}
+
+function applyTemplate(template: string, values: Record<string, string>) {
+  return Object.entries(values).reduce(
+    (result, [key, value]) => result.replaceAll(`{${key}}`, value),
+    template,
+  );
 }

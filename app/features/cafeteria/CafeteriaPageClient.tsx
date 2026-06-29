@@ -9,6 +9,7 @@ import {
 } from "@/app/components/AnswerSummaryCard";
 import { Container } from "@/app/components/Container";
 import { Skeleton } from "@/app/components/Skeleton";
+import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import { StateCard } from "@/app/components/StateCard";
 import {
   CafeteriaInfoCards,
@@ -35,6 +36,7 @@ export function CafeteriaPageClient({
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
   const text = dictionary.pages.cafeteria;
+  const trustText = dictionary.trust;
   const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
 
   useEffect(() => {
@@ -70,8 +72,31 @@ export function CafeteriaPageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-8 space-y-4">
         <AnswerSummaryCard summary={answerSummary} />
+        <SourceTrustPanel
+          badges={[
+            { color: "yellow", label: trustText.unofficialBadge },
+            { color: "blue", label: trustText.sourceBasedBadge },
+          ]}
+          description={trustText.description}
+          items={[
+            {
+              label: trustText.serviceStatusLabel,
+              value: trustText.serviceStatusValue,
+            },
+            {
+              label: trustText.sourceLabel,
+              value: answerSummary.source,
+            },
+            {
+              label: trustText.updatedLabel,
+              value: answerSummary.updatedAt,
+            },
+          ]}
+          note={trustText.note}
+          title={trustText.title}
+        />
       </div>
 
       {!isLoading && !todayMenu && todayInfo.isWeekend && (

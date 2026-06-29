@@ -2,9 +2,13 @@ import { getDictionary, type Locale } from "@/lib/i18n";
 
 const SITE_ORIGIN = "https://campus.syu.kr";
 const SITE_NAME = "SYU CAMPUS";
+const PUBLISHER_NAME = "SYU KR";
+const GITHUB_REPOSITORY_URL = "https://github.com/syu-kr/campus.syu.kr";
+const SAHMYOOK_UNIVERSITY_URL = "https://www.syu.ac.kr/";
 
 const SCHEMA_CONTEXT = "https://schema.org";
 const WEBSITE_SCHEMA_ID = `${SITE_ORIGIN}/#website`;
+const PUBLISHER_SCHEMA_ID = `${SITE_ORIGIN}/#publisher`;
 
 type JsonLdPrimitive = string | number | boolean | null;
 export type JsonLdValue = JsonLdPrimitive | JsonLdObject | JsonLdValue[];
@@ -25,7 +29,7 @@ export type FAQPageQuestion = {
   acceptedAnswerText: string;
 };
 
-export function createWebSiteSchema(
+function createWebSiteSchema(
   locale: Locale,
 ): SchemaOrgDocument<SchemaOrgNode> {
   const dictionary = getDictionary(locale);
@@ -38,6 +42,56 @@ export function createWebSiteSchema(
     url: SITE_ORIGIN,
     description: dictionary.meta.schemaDescription,
     inLanguage: dictionary.meta.inLanguage,
+    isAccessibleForFree: true,
+    publisher: {
+      "@id": PUBLISHER_SCHEMA_ID,
+    },
+    sameAs: [GITHUB_REPOSITORY_URL],
+  };
+}
+
+export function createSiteIdentitySchema(locale: Locale): JsonLdValue {
+  const dictionary = getDictionary(locale);
+  const website = createWebSiteSchema(locale);
+
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": PUBLISHER_SCHEMA_ID,
+        name: PUBLISHER_NAME,
+        url: SITE_ORIGIN,
+        description: dictionary.meta.publisherDescription,
+        sameAs: [GITHUB_REPOSITORY_URL],
+        knowsAbout: [
+          "Sahmyook University campus information",
+          "Sahmyook University academic schedule",
+          "Sahmyook University shuttle and cafeteria information",
+        ],
+      },
+      {
+        ...website,
+        "@context": undefined,
+        about: {
+          "@type": "CollegeOrUniversity",
+          name: "Sahmyook University",
+          url: SAHMYOOK_UNIVERSITY_URL,
+        },
+        isBasedOn: [
+          {
+            "@type": "WebSite",
+            name: "Sahmyook University",
+            url: SAHMYOOK_UNIVERSITY_URL,
+          },
+          {
+            "@type": "WebSite",
+            name: "SYU CAMPUS GitHub repository",
+            url: GITHUB_REPOSITORY_URL,
+          },
+        ],
+      },
+    ],
   };
 }
 

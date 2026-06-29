@@ -16,7 +16,7 @@ import {
   stripLocalePrefix,
   type Locale,
 } from "@/lib/i18n";
-import { createWebSiteSchema } from "@/lib/structured-data";
+import { createSiteIdentitySchema } from "@/lib/structured-data";
 import "./globals.css";
 
 // Pretendard 폰트 import - 필요한 weight만 로드
@@ -163,9 +163,9 @@ export default async function RootLayout({
           }}
         />
         <StructuredDataScript
-          id="website-schema"
+          id="site-identity-schema"
           nonce={nonce}
-          data={createWebSiteSchema(locale)}
+          data={createSiteIdentitySchema(locale)}
         />
       </head>
       <body>

@@ -7,6 +7,7 @@ import {
   AnswerSummaryCard,
   type AnswerSummary,
 } from "@/app/components/AnswerSummaryCard";
+import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import {
   useDictionary,
   useLocale,
@@ -35,6 +36,7 @@ export default function PhonePageClient({
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.phone;
+  const trustText = dictionary.trust;
   const numberLocale = locale === "ko" ? "ko-KR" : "en-US";
   const ITEMS_PER_PAGE = 10;
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,8 +89,31 @@ export default function PhonePageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <AnswerSummaryCard summary={answerSummary} />
+        <SourceTrustPanel
+          badges={[
+            { color: "yellow", label: trustText.unofficialBadge },
+            { color: "blue", label: trustText.sourceBasedBadge },
+          ]}
+          description={trustText.description}
+          items={[
+            {
+              label: trustText.serviceStatusLabel,
+              value: trustText.serviceStatusValue,
+            },
+            {
+              label: trustText.sourceLabel,
+              value: answerSummary.source,
+            },
+            {
+              label: trustText.updatedLabel,
+              value: answerSummary.updatedAt,
+            },
+          ]}
+          note={trustText.note}
+          title={trustText.title}
+        />
       </div>
 
       <SearchBar
