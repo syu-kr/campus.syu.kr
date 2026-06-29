@@ -60,7 +60,7 @@ const lineAllowList = [
     reason: "Korean metadata keywords for the ko branch.",
   },
   {
-    file: "app/academic/schedule/page.tsx",
+    file: "app/features/academic/SchedulePageClient.tsx",
     pattern: /currentMonth\.getFullYear\(\).*년.*월/,
     reason: "Korean month label in the ko branch.",
   },
@@ -70,7 +70,7 @@ const lineAllowList = [
     reason: "Korean fallback is only used for the ko locale.",
   },
   {
-    file: "app/academic/graduation/page.tsx",
+    file: "app/features/academic/GraduationPageClient.tsx",
     pattern: /categoryCredits\["(교필|전필|전선)"\]/,
     reason: "Graduation category keys come from source data.",
   },
