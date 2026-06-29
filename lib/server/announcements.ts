@@ -98,6 +98,19 @@ export async function getAnnouncementSummary(limit = 12) {
   }));
 }
 
+export async function getAnnouncementById(
+  category: AnnouncementCategory,
+  id: string,
+) {
+  const announcements = await readAnnouncements(category);
+  const announcement = announcements.find((item) => item.id === id);
+
+  if (!announcement) return null;
+
+  const [withAiSummary] = await attachAnnouncementAiSummaries([announcement]);
+  return withAiSummary ?? announcement;
+}
+
 async function readAnnouncements(
   category: AnnouncementCategory,
 ): Promise<Announcement[]> {

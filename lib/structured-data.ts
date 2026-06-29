@@ -25,6 +25,16 @@ export type FAQPageQuestion = {
   acceptedAnswerText: string;
 };
 
+export type ArticleSchemaInput = {
+  authorName: string;
+  datePublished?: string;
+  description: string;
+  headline: string;
+  inLanguage: string;
+  keywords?: string[];
+  url: string;
+};
+
 export function createWebSiteSchema(
   locale: Locale,
 ): SchemaOrgDocument<SchemaOrgNode> {
@@ -63,6 +73,31 @@ export function createFAQPageSchema({
         text: item.acceptedAnswerText,
       },
     })),
+  };
+}
+
+export function createArticleSchema({
+  authorName,
+  datePublished,
+  description,
+  headline,
+  inLanguage,
+  keywords,
+  url,
+}: ArticleSchemaInput): SchemaOrgDocument<SchemaOrgNode> {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "Article",
+    headline,
+    description,
+    url,
+    inLanguage,
+    ...(datePublished ? { datePublished } : {}),
+    author: {
+      "@type": "Organization",
+      name: authorName,
+    },
+    ...(keywords && keywords.length > 0 ? { keywords } : {}),
   };
 }
 

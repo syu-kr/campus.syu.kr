@@ -8,8 +8,10 @@ import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { getAnnouncementDetailPath } from "@/lib/announcement-paths";
 import { fetchAnnouncementPage } from "@/lib/api";
+import { localizePath } from "@/lib/i18n";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
@@ -29,6 +31,7 @@ export function AnnouncementListPage({
   errorMessage,
 }: AnnouncementListPageProps) {
   const dictionary = useDictionary();
+  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -96,8 +99,10 @@ export function AnnouncementListPage({
             <div key={announcement.id} className="mb-2">
               <AnnouncementCard
                 announcement={announcement}
-                href={announcement.url}
-                external
+                href={localizePath(
+                  getAnnouncementDetailPath(announcement),
+                  locale,
+                )}
               />
             </div>
           ))}
