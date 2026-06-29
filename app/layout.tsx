@@ -5,6 +5,7 @@ import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
 import { LocaleProvider } from "./components/LocaleProvider";
+import { StructuredDataScript } from "./components/StructuredDataScript";
 import { Providers } from "./providers";
 import {
   LOCALE_HEADER_NAME,
@@ -15,6 +16,7 @@ import {
   stripLocalePrefix,
   type Locale,
 } from "@/lib/i18n";
+import { createWebSiteSchema } from "@/lib/structured-data";
 import "./globals.css";
 
 // Pretendard 폰트 import - 필요한 weight만 로드
@@ -31,19 +33,6 @@ const GOOGLE_ANALYTICS_SCRIPT = `
   gtag('config', '${GOOGLE_ANALYTICS_ID}');
 `;
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
-
-function getWebsiteSchema(locale: Locale) {
-  const dictionary = getDictionary(locale);
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "SYU CAMPUS",
-    url: "https://campus.syu.kr",
-    description: dictionary.meta.schemaDescription,
-    inLanguage: dictionary.meta.inLanguage,
-  };
-}
 
 async function getRequestLocale(): Promise<Locale> {
   const headerStore = await headers();
@@ -174,13 +163,10 @@ export default async function RootLayout({
             __html: GOOGLE_ANALYTICS_SCRIPT,
           }}
         />
-        <Script
+        <StructuredDataScript
           id="website-schema"
           nonce={nonce}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(getWebsiteSchema(locale)),
-          }}
+          data={createWebSiteSchema(locale)}
         />
       </head>
       <body>
