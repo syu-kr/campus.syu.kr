@@ -43,14 +43,12 @@ const PUBLIC_ROUTES = [
   { route: "/terms", changeFrequency: "yearly", priority: 0.6 },
 ] as const;
 
+type PublicRoute = (typeof PUBLIC_ROUTES)[number];
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const serviceNotices = await getAllServiceNotices();
-  const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(
-    ({ route, changeFrequency, priority }) => ({
-      url: `${BASE_URL}${route}`,
-      changeFrequency,
-      priority,
-    }),
+  const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) =>
+    createSitemapEntry(route, "ko"),
   );
 
   const noticeRoutes: MetadataRoute.Sitemap = serviceNotices.map((notice) => ({
@@ -58,22 +56,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: notice.date,
     changeFrequency: "monthly",
     priority: 0.5,
+    alternates: createAlternates(`/service/notices/${notice.slug}`),
   }));
 
-  const englishStaticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(
-    ({ route, changeFrequency, priority }) => ({
-      url: `${BASE_URL}${localizePath(route, "en")}`,
-      changeFrequency,
-      priority: priority * 0.9,
-    }),
+  const englishStaticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) =>
+    createSitemapEntry(route, "en"),
   );
 
-  const englishNoticeRoutes: MetadataRoute.Sitemap = serviceNotices.map((notice) => ({
-    url: `${BASE_URL}${localizePath(`/service/notices/${notice.slug}`, "en")}`,
-    lastModified: notice.date,
-    changeFrequency: "monthly",
-    priority: 0.4,
-  }));
+  const englishNoticeRoutes: MetadataRoute.Sitemap = serviceNotices.map(
+    (notice) => ({
+      url: `${BASE_URL}${localizePath(`/service/notices/${notice.slug}`, "en")}`,
+      lastModified: notice.date,
+      changeFrequency: "monthly",
+      priority: 0.4,
+      alternates: createAlternates(`/service/notices/${notice.slug}`),
+    }),
+  );
 
   return [
     ...staticRoutes,
@@ -81,4 +79,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...noticeRoutes,
     ...englishNoticeRoutes,
   ];
+}
+
+function createSitemapEntry(
+  { route, changeFrequency, priority }: PublicRoute,
+  locale: "ko" | "en",
+): MetadataRoute.Sitemap[number] {
+  return {
+    url: `${BASE_URL}${locale === "en" ? localizePath(route, "en") : route}`,
+    changeFrequency,
+    priority: locale === "en" ? priority * 0.9 : priority,
+    alternates: createAlternates(route),
+  };
+}
+
+function createAlternates(route: string): MetadataRoute.Sitemap[number]["alternates"] {
+  return {
+    languages: {
+      ko: `${BASE_URL}${route}`,
+      en: `${BASE_URL}${localizePath(route, "en")}`,
+      "x-default": `${BASE_URL}${route}`,
+    },
+  };
 }
