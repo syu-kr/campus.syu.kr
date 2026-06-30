@@ -13,6 +13,8 @@ type BadgeColor = "blue" | "red" | "green" | "yellow" | "purple" | "gray";
 interface AnnouncementAiSummaryProps {
   aiSummary: AnnouncementAiSummaryData;
   compact?: boolean;
+  showPreview?: boolean;
+  variant?: "action" | "preview";
 }
 
 const importanceBadgeColor: Record<AiImportance, BadgeColor> = {
@@ -30,6 +32,8 @@ const cardToneClass: Record<AiImportance, string> = {
 export function AnnouncementAiSummary({
   aiSummary,
   compact = false,
+  showPreview = true,
+  variant = "action",
 }: AnnouncementAiSummaryProps) {
   const dictionary = useDictionary();
   const [isOpen, setIsOpen] = useState(false);
@@ -41,9 +45,11 @@ export function AnnouncementAiSummary({
       <button
         type="button"
         className={
-          compact
-            ? "pointer-events-auto mt-2 w-full rounded-md text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-            : `pointer-events-auto w-full rounded-md border p-3 text-left transition-colors hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${cardToneClass[aiSummary.importance]}`
+          variant === "preview"
+            ? "pointer-events-auto w-full rounded-md bg-neutral-50 px-3 py-2 text-left transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            : compact
+              ? "pointer-events-auto mt-2 w-full rounded-md text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              : `pointer-events-auto w-full rounded-md border p-3 text-left transition-colors hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${cardToneClass[aiSummary.importance]}`
         }
         aria-haspopup="dialog"
         aria-expanded={isOpen}
@@ -53,26 +59,47 @@ export function AnnouncementAiSummary({
           setIsOpen(true);
         }}
       >
-        <div className="mb-1 flex flex-wrap items-center gap-2">
-          <Badge color="blue" size="sm">
-            {dictionary.labels.aiSummary}
-          </Badge>
-          <Badge color={importanceBadgeColor[aiSummary.importance]} size="sm">
-            {dictionary.labels.aiImportance[aiSummary.importance]}
-          </Badge>
-          <span className="ml-auto text-xs font-medium text-primary-700">
-            {labels.open}
-          </span>
-        </div>
-        <p
-          className={
-            compact
-              ? "line-clamp-2 text-xs text-neutral-600"
-              : "line-clamp-2 text-sm leading-6 text-neutral-700"
-          }
-        >
-          {aiSummary.summary}
-        </p>
+        {variant === "preview" ? (
+          <div className="flex items-start gap-2">
+            <span
+              aria-hidden="true"
+              className="mt-0.5 shrink-0 rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-700"
+            >
+              AI
+            </span>
+            <p className="line-clamp-2 text-xs leading-5 text-neutral-600">
+              {aiSummary.summary}
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <Badge color="blue" size="sm">
+                {dictionary.labels.aiSummary}
+              </Badge>
+              <Badge
+                color={importanceBadgeColor[aiSummary.importance]}
+                size="sm"
+              >
+                {dictionary.labels.aiImportance[aiSummary.importance]}
+              </Badge>
+              <span className="ml-auto text-xs font-medium text-primary-700">
+                {labels.open}
+              </span>
+            </div>
+            {showPreview && (
+              <p
+                className={
+                  compact
+                    ? "line-clamp-2 text-xs text-neutral-600"
+                    : "line-clamp-2 text-sm leading-6 text-neutral-700"
+                }
+              >
+                {aiSummary.summary}
+              </p>
+            )}
+          </>
+        )}
       </button>
 
       {isOpen &&

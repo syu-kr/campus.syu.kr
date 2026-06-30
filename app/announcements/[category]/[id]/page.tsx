@@ -129,7 +129,7 @@ export default async function AnnouncementDetailPage({
       <Container>
         <div className="py-6 md:py-8">
           <Link
-            href={localizePath(getAnnouncementListPath(announcement), locale)}
+            href={localizePath("/announcements", locale)}
             prefetch={false}
             className="mb-6 inline-flex items-center gap-2 font-medium text-primary-600 transition-colors hover:text-primary-700"
           >
@@ -304,12 +304,6 @@ function getAnnouncementDetailPath(announcement: Announcement) {
   return `/announcements/${announcement.category}/${encodeURIComponent(
     announcement.id,
   )}`;
-}
-
-function getAnnouncementListPath(announcement: Announcement) {
-  if (announcement.category === "academic") return "/academic/announcements";
-  if (announcement.category === "campus") return "/campus/announcements";
-  return "/announcements";
 }
 
 function formatAiDetail(value: string, fallback: string) {

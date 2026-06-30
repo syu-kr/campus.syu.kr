@@ -8,7 +8,6 @@ import { AnnouncementCard } from "./AnnouncementCard";
 import { Card } from "./Card";
 import { Icon } from "./Icon";
 import { useLocale } from "./LocaleProvider";
-import { getAnnouncementDetailPath } from "@/lib/announcement-paths";
 import { localizePath } from "@/lib/i18n";
 
 interface HomeNoticeCardProps {
@@ -16,14 +15,14 @@ interface HomeNoticeCardProps {
 }
 
 export function HomeNoticeCard({ notice }: HomeNoticeCardProps) {
-  const locale = useLocale();
-
   if (notice.type === "announcement") {
     return (
       <div key={notice.data.id} className="mb-2">
         <AnnouncementCard
           announcement={notice.data}
-          href={localizePath(getAnnouncementDetailPath(notice.data), locale)}
+          aiSummaryMode="preview"
+          href={notice.data.url}
+          external={Boolean(notice.data.url)}
         />
       </div>
     );
