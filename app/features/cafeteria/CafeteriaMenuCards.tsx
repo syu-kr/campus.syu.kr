@@ -210,22 +210,37 @@ export function CafeteriaClosedCard({
 
 export function CafeteriaInfoCards() {
   const text = useDictionary().pages.cafeteria;
+  const operatingHours = [
+    splitOperatingHour(text.breakfastHours),
+    splitOperatingHour(text.lunchHours),
+    splitOperatingHour(text.dinnerHours),
+  ];
 
   return (
     <>
       <Card className="mb-6 border border-neutral-200 shadow-none" hover={false}>
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
             <Icon name="clock" size={18} color="currentColor" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="mb-2 font-semibold text-neutral-900">
               {text.operationHours}
             </p>
-            <div className="grid gap-1 text-sm leading-6 text-neutral-600 sm:grid-cols-3">
-              <p>{text.breakfastHours}</p>
-              <p>{text.lunchHours}</p>
-              <p>{text.dinnerHours}</p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {operatingHours.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2.5"
+                >
+                  <p className="text-xs font-semibold text-neutral-500">
+                    {item.label}
+                  </p>
+                  <p className="mt-1 break-keep text-sm font-medium leading-5 text-neutral-800">
+                    {item.detail || item.label}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -246,6 +261,19 @@ export function CafeteriaInfoCards() {
       </div>
     </>
   );
+}
+
+function splitOperatingHour(value: string) {
+  const separatorIndex = value.indexOf(":");
+
+  if (separatorIndex === -1) {
+    return { label: value, detail: "" };
+  }
+
+  return {
+    label: value.slice(0, separatorIndex).trim(),
+    detail: value.slice(separatorIndex + 1).trim(),
+  };
 }
 
 export function CafeteriaNoticeCards() {
