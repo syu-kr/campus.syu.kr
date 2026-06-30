@@ -38,7 +38,6 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
             name="search"
             size={18}
             color="rgb(156, 163, 175)"
-            title={text.search}
           />
           <input
             type="text"
@@ -53,18 +52,18 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
           />
           {query && (
             <button
+              type="button"
               onClick={() => {
                 setQuery("");
                 setIsOpen(false);
               }}
-              className="p-1 hover:bg-neutral-100 rounded"
+              className="rounded p-1 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               aria-label={text.clearSearch}
             >
               <Icon
                 name="x"
                 size={16}
                 color="rgb(156, 163, 175)"
-                title={text.clearSearch}
               />
             </button>
           )}
@@ -82,12 +81,13 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
               {results.map((result, idx) => (
                 <button
                   key={`${result.building.id}-${result.facility?.id || "building"}-${idx}`}
+                  type="button"
                   onClick={() => {
                     onSelect?.(result.building.id);
                     setQuery("");
                     setIsOpen(false);
                   }}
-                  className="w-full p-3 hover:bg-neutral-50 text-left transition-colors"
+                  className="w-full p-3 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
                 >
                   <div className="flex items-start gap-3">
                     {result.facility && (

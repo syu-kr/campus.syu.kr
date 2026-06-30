@@ -23,24 +23,24 @@ export default function GymPage() {
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <Card className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">
+      <Card className="mb-6 border border-neutral-200 bg-white" hover={false}>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
           {text.locationContact}
         </h2>
         <div className="space-y-4">
           <div>
-            <p className="font-semibold text-blue-900">{text.location}</p>
-            <p className="text-blue-800">{text.locationName}</p>
+            <p className="font-semibold text-neutral-900">{text.location}</p>
+            <p className="text-neutral-700">{text.locationName}</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-blue-200">
+          <div className="grid grid-cols-1 gap-3 border-t border-neutral-200 pt-3 sm:grid-cols-3">
             {text.contactInfo.map((info) => (
               <div key={info.title}>
-                <p className="text-xs font-medium text-blue-700 mb-1">
+                <p className="mb-1 text-xs font-medium text-neutral-500">
                   {info.title}
                 </p>
                 <a
                   href={`tel:${info.phone.replace(/-/g, "")}`}
-                  className="text-blue-600 hover:underline font-semibold"
+                  className="font-semibold text-primary-700 hover:underline"
                 >
                   {info.phone}
                 </a>
@@ -50,7 +50,10 @@ export default function GymPage() {
         </div>
       </Card>
 
-      <Card className="mb-6 border border-amber-200 bg-amber-50" hover={false}>
+      <Card
+        className="mb-6 border border-amber-200 bg-amber-50/70"
+        hover={false}
+      >
         <p className="text-sm leading-6 text-amber-900">{text.notice}</p>
       </Card>
 
@@ -64,8 +67,8 @@ export default function GymPage() {
       />
       <FacilitySection title={text.sections.outdoor} facilities={text.outdoor} />
 
-      <Card className="mb-6 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200">
-        <h2 className="text-lg font-bold text-amber-900 mb-4">
+      <Card className="mb-6 border border-neutral-200 bg-white" hover={false}>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
           {text.usage.title}
         </h2>
         <div className="space-y-4 text-sm">
@@ -88,11 +91,11 @@ export default function GymPage() {
         </div>
       </Card>
 
-      <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
-        <h2 className="text-lg font-bold text-green-900 mb-3">
+      <Card className="mb-6 border border-neutral-200 bg-white" hover={false}>
+        <h2 className="text-lg font-bold text-neutral-900 mb-3">
           {text.program.title}
         </h2>
-        <p className="text-green-800 text-sm mb-4">
+        <p className="mb-4 text-sm text-neutral-700">
           {text.program.description}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -100,7 +103,7 @@ export default function GymPage() {
             href="https://www.syu.ac.kr/sportscenter/program/program-guide/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             {text.program.programLink}
           </a>
@@ -108,7 +111,7 @@ export default function GymPage() {
             href="https://www.syu.ac.kr/sportscenter/facilities/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             {text.program.facilitiesLink}
           </a>
@@ -158,8 +161,8 @@ function UsageBlock({
 }) {
   return (
     <div>
-      <h3 className="font-semibold text-amber-900 mb-2">{title}</h3>
-      <ul className="text-amber-800 space-y-1 ml-4 list-disc">
+      <h3 className="font-semibold text-neutral-900 mb-2">{title}</h3>
+      <ul className="text-neutral-700 space-y-1 ml-4 list-disc">
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}

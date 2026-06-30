@@ -142,7 +142,6 @@ export default async function CampusPage() {
                       size={28}
                       strokeWidth={1.75}
                       color="currentColor"
-                      title={menu.title}
                     />
                   </span>
                 </div>

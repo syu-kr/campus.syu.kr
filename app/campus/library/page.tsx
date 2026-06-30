@@ -5,6 +5,7 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { Modal } from "@/app/components/Modal";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
@@ -189,8 +190,9 @@ export default function LibraryPage() {
                       </strong>
                       {roomSeatMapUrl && (
                         <button
+                          type="button"
                           onClick={() => setSeatMapUrl(roomSeatMapUrl)}
-                          className="px-2 py-1 text-xs font-medium rounded bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
+                          className="rounded bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                         >
                           {text.viewSeats}
                         </button>
@@ -236,6 +238,7 @@ export default function LibraryPage() {
           </h2>
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => setSelectedSeason("semester")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "semester"
@@ -246,6 +249,7 @@ export default function LibraryPage() {
               {text.semester}
             </button>
             <button
+              type="button"
               onClick={() => setSelectedSeason("vacation")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "vacation"
@@ -354,43 +358,40 @@ export default function LibraryPage() {
         </div>
       </Card>
 
-      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200">
-        <h2 className="text-lg font-bold text-blue-900 mb-4">
+      <Card className="border border-neutral-200 bg-white" hover={false}>
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
           {text.guideTitle}
         </h2>
         <div className="space-y-3 text-sm">
           <div>
-            <h3 className="font-semibold text-blue-900 mb-1">
+            <h3 className="font-semibold text-neutral-900 mb-1">
               {text.loanTitle}
             </h3>
-            <p className="text-blue-800">{text.loanDescription}</p>
+            <p className="text-neutral-700">{text.loanDescription}</p>
           </div>
           <div>
-            <h3 className="font-semibold text-blue-900 mb-1">
+            <h3 className="font-semibold text-neutral-900 mb-1">
               {text.readingRoomUseTitle}
             </h3>
-            <p className="text-blue-800">{text.readingRoomUseDescription}</p>
+            <p className="text-neutral-700">
+              {text.readingRoomUseDescription}
+            </p>
           </div>
         </div>
       </Card>
 
-      {seatMapUrl && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl h-[80vh] animate-in fade-in duration-200 flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b border-neutral-200">
-              <h3 className="text-lg font-bold text-neutral-900">
-                {text.seatStatusTitle}
-              </h3>
-              <button
-                onClick={() => setSeatMapUrl(null)}
-                className="px-3 py-1.5 text-sm font-medium bg-neutral-200 text-neutral-900 rounded-lg hover:bg-neutral-300 transition-colors"
-              >
-                {text.close}
-              </button>
-            </div>
+      <Modal
+        isOpen={Boolean(seatMapUrl)}
+        title={text.seatStatusTitle}
+        onClose={() => setSeatMapUrl(null)}
+        size="lg"
+        bodyClassName="p-0"
+      >
+        {seatMapUrl && (
+          <>
             <iframe
               src={seatMapUrl}
-              className="flex-1 w-full border-0"
+              className="h-[70vh] w-full border-0"
               title={text.seatStatusIframeTitle}
             />
             <div className="border-t border-neutral-200 p-3 text-xs text-neutral-600">
@@ -405,9 +406,9 @@ export default function LibraryPage() {
               </a>
               {text.externalSeatMapSuffix}
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </Container>
   );
 }

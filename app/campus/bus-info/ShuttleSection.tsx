@@ -12,7 +12,13 @@ import {
   fetchShuttleSpecialPeriods,
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
-import { useState, useMemo, useEffect, useRef } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  type KeyboardEvent,
+} from "react";
 import {
   ShuttleMap,
   type ShuttleMapHandle,
@@ -116,6 +122,21 @@ export default function ShuttleSection() {
       }
       return newSet;
     });
+  };
+
+  const selectLiveBus = (busId: string) => {
+    setSelectedBusId(busId);
+    mapComponentRef.current?.openMarker(busId);
+  };
+
+  const handleLiveBusKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    busId: string,
+  ) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    selectLiveBus(busId);
   };
 
   useEffect(() => {
@@ -608,8 +629,11 @@ export default function ShuttleSection() {
       </div>
 
       {dateInfo.isWeekend && (
-        <Card className="mb-6 bg-orange-50 border border-orange-300">
-          <p className="text-sm text-orange-900">
+        <Card
+          className="mb-6 border border-amber-200 bg-amber-50/70"
+          hover={false}
+        >
+          <p className="text-sm text-amber-900">
             <strong>{text.weekendNoticeTitle}</strong> {text.weekendNotice}
           </p>
         </Card>
@@ -618,23 +642,29 @@ export default function ShuttleSection() {
       {!dateInfo.isWeekend &&
         isWithinOperationHours &&
         nextBusesWithin30Min.length > 0 && (
-          <Card className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50">
+          <Card
+            className="mb-6 border border-neutral-200 bg-white"
+            hover={false}
+          >
             <div className="mb-3">
-              <p className="text-xs sm:text-sm text-green-700 font-semibold mb-2">
+              <p className="mb-2 text-xs font-semibold text-neutral-600 sm:text-sm">
                 {text.upcomingBuses}
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {nextBusesWithin30Min.map((bus, idx) => (
-                <div key={idx} className="bg-white rounded-lg p-3 sm:p-4">
-                  <h3 className="text-base sm:text-lg font-bold text-green-900 mb-2">
+                <div
+                  key={idx}
+                  className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 sm:p-4"
+                >
+                  <h3 className="mb-2 text-base font-bold text-neutral-900 sm:text-lg">
                     {bus.routeName}
                   </h3>
                   <div className="space-y-1">
-                    <p className="text-sm sm:text-base text-green-800">
+                    <p className="text-sm text-neutral-700 sm:text-base">
                       <strong>{bus.time}</strong> {text.departs}
                     </p>
-                    <p className="text-sm sm:text-base font-semibold text-green-600">
+                    <p className="text-sm font-semibold text-primary-700 sm:text-base">
                       {bus.minutesUntil}
                       {locale === "ko" ? "" : " "}
                       {text.departsIn}
@@ -783,11 +813,14 @@ export default function ShuttleSection() {
                     return (
                       <div
                         key={bus.id}
-                        onClick={() => {
-                          setSelectedBusId(bus.id);
-                          mapComponentRef.current?.openMarker(bus.id);
-                        }}
-                        className={`p-3 sm:p-4 rounded-lg flex justify-between items-center gap-3 cursor-pointer transition-all hover:shadow-md ${bgColor}`}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${routeNames[bus.routeid]} ${statusLabels[bus.status] || text.unknown}`}
+                        onClick={() => selectLiveBus(bus.id)}
+                        onKeyDown={(event) =>
+                          handleLiveBusKeyDown(event, bus.id)
+                        }
+                        className={`flex cursor-pointer items-center justify-between gap-3 rounded-lg p-3 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:p-4 ${bgColor}`}
                       >
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-sm sm:text-base truncate">
@@ -827,6 +860,7 @@ export default function ShuttleSection() {
         {dayButtons.map((btn) => (
           <button
             key={btn.type}
+            type="button"
             onClick={() => {
               setSelectedType(btn.type);
               setUseSpecialSchedule(false);
@@ -882,7 +916,10 @@ export default function ShuttleSection() {
       </Card>
 
       {activeSpecialPeriods.length > 0 && (
-        <Card className="mb-4 bg-purple-50 border-2 border-purple-300 text-sm text-purple-900">
+        <Card
+          className="mb-4 border border-purple-200 bg-purple-50/70 text-sm text-purple-900"
+          hover={false}
+        >
           <p className="font-bold mb-2">{text.specialPeriodTitle}</p>
           <ul className="list-disc list-inside space-y-1">
             {activeSpecialPeriods.map((period) => (
@@ -896,7 +933,10 @@ export default function ShuttleSection() {
 
       {(selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
-        <Card className="mb-4 bg-yellow-50 border border-yellow-200 text-sm text-yellow-900">
+        <Card
+          className="mb-4 border border-amber-200 bg-amber-50/70 text-sm text-amber-900"
+          hover={false}
+        >
           <p>{text.vacationNotice}</p>
         </Card>
       )}
@@ -928,8 +968,9 @@ export default function ShuttleSection() {
             return (
               <Card key={bus.id} className="overflow-hidden">
                 <button
+                  type="button"
                   onClick={() => toggleBusExpand(bus.id)}
-                  className="w-full text-left hover:bg-neutral-50 px-1 py-1 rounded-lg transition-all duration-200"
+                  className="w-full rounded-lg px-1 py-1 text-left transition-all duration-200 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   aria-expanded={isExpanded}
                   aria-label={`${bus.routeName} ${text.scheduleToggleLabel} ${
                     isExpanded ? text.collapse : text.expand
@@ -980,6 +1021,8 @@ export default function ShuttleSection() {
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
                       >
                         <path
                           strokeLinecap="round"
@@ -1086,7 +1129,7 @@ function ShuttleLocationDisclosure({ onConfirm }: { onConfirm: () => void }) {
       <button
         type="button"
         onClick={onConfirm}
-        className="mt-4 inline-flex rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800"
+        className="mt-4 inline-flex rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:ring-offset-2"
       >
         {text.locationDisclosureAction}
       </button>
