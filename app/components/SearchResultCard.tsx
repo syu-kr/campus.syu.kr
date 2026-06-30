@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import type { Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
 import { getSearchSnippet, highlightText } from "@/lib/search";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { localizePath } from "@/lib/i18n";
+import { getCategoryLabel } from "@/lib/utils";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Badge } from "./Badge";
 import { Card } from "./Card";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
@@ -16,6 +19,7 @@ interface SearchResultCardProps {
 
 export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
   const dictionary = useDictionary();
+  const locale = useLocale();
 
   if ("phone" in item && "department" in item) {
     return <PhoneSearchResultCard phone={item} query={query} />;
@@ -23,27 +27,33 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
 
   if ("startDate" in item) {
     return (
-      <Card key={item.id}>
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <h4 className="font-medium text-neutral-900">
-              {highlightText(item.title, query)}
-            </h4>
-            <p className="text-xs text-neutral-600 mt-1">
-              {item.startDate}
-              {item.startDate !== item.endDate ? ` ~ ${item.endDate}` : ""}
-            </p>
-            {item.description && (
-              <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
-                {highlightText(getSearchSnippet(item.description, query), query)}
+      <Link
+        href={localizePath("/academic/schedule", locale)}
+        className="block rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        aria-label={item.title}
+      >
+        <Card key={item.id} clickable className="border border-neutral-200">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1">
+              <h4 className="font-medium text-neutral-900">
+                {highlightText(item.title, query)}
+              </h4>
+              <p className="mt-1 text-xs text-neutral-600">
+                {item.startDate}
+                {item.startDate !== item.endDate ? ` ~ ${item.endDate}` : ""}
               </p>
-            )}
+              {item.description && (
+                <p className="mt-2 line-clamp-2 text-xs text-neutral-600">
+                  {highlightText(getSearchSnippet(item.description, query), query)}
+                </p>
+              )}
+            </div>
+            <Badge color="gray" size="sm">
+              {getCategoryLabel(item.category, locale)}
+            </Badge>
           </div>
-          <Badge color="gray" size="sm">
-            {dictionary.categories[item.category]}
-          </Badge>
-        </div>
-      </Card>
+        </Card>
+      </Link>
     );
   }
 

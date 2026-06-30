@@ -9,6 +9,7 @@ import {
 } from "@/app/components/HomeNoticeCard";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
@@ -175,8 +176,8 @@ export function TodayMenuSection({
           !todayInfo.isWeekend &&
           todayMenu &&
           isCafeteriaClosedDay(todayMenu) && (
-            <StateCard
-              type="info"
+            <CafeteriaClosedCard
+              compact
               title={dictionary.home.dashboard.closedMenuTitle}
               message={dictionary.home.dashboard.closedMenuMessage}
               action={<ViewFullMenuLink />}
@@ -409,11 +410,16 @@ function TodayMenuCard({ todayMenu }: { todayMenu: CafeteriaMenu }) {
 
   return (
     <Link href={localizePath("/campus/cafeteria", locale)}>
-      <Card className="cursor-pointer border-2 border-green-400 bg-gradient-to-r from-green-50 to-green-100 hover:shadow-card-hover">
+      <Card className="cursor-pointer border border-neutral-200 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-1 text-sm font-semibold text-green-700">
-              {dictionary.home.dashboard.todayMenu}
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge color="green" size="sm">
+                {dictionary.home.dashboard.todayMenu}
+              </Badge>
+              <span className="text-xs font-medium text-neutral-500">
+                {todayMenu.date}
+              </span>
             </div>
             <h3 className="mb-2 font-semibold text-neutral-900">
               {todayMenu.location}
@@ -462,16 +468,16 @@ function PendingMenuCard() {
 
   return (
     <Link href={localizePath("/campus/cafeteria", locale)}>
-      <Card className="cursor-pointer border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-yellow-100 hover:shadow-card-hover">
+      <Card className="cursor-pointer border border-neutral-200 bg-neutral-50 hover:shadow-card-hover">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="mb-1 text-sm font-semibold text-yellow-700">
+            <Badge color="yellow" size="sm" className="mb-2">
               {dictionary.home.dashboard.todayMenu}
-            </div>
+            </Badge>
             <h3 className="mb-2 font-semibold text-neutral-900">
               {dictionary.home.dashboard.pendingMenuTitle}
             </h3>
-            <p className="text-sm text-yellow-700">
+            <p className="text-sm leading-6 text-neutral-600">
               {dictionary.home.dashboard.pendingMenuMessage}
             </p>
           </div>

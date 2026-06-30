@@ -28,29 +28,31 @@ export function StateCard({
       textColor: "text-red-700",
     },
     warning: {
-      bg: "bg-orange-50",
-      border: "border-orange-300",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
       iconName: "alert-triangle",
-      iconColor: "text-orange-600",
-      titleColor: "text-orange-900",
-      textColor: "text-orange-700",
+      iconColor: "text-amber-700",
+      titleColor: "text-amber-950",
+      textColor: "text-amber-800",
     },
     info: {
-      bg: "bg-blue-50",
-      border: "border-blue-300",
+      bg: "bg-neutral-50",
+      border: "border-neutral-200",
       iconName: "info",
-      iconColor: "text-blue-600",
-      titleColor: "text-blue-900",
-      textColor: "text-blue-700",
+      iconColor: "text-neutral-500",
+      titleColor: "text-neutral-900",
+      textColor: "text-neutral-600",
     },
   };
 
   const config = stateConfig[type];
+  const role =
+    type === "error" ? "alert" : type === "warning" ? "status" : undefined;
 
   return (
     <div
       className={`${config.bg} border ${config.border} rounded-lg p-4 ${className}`}
-      role="alert"
+      role={role}
     >
       <div className="flex gap-3">
         <div className={`flex-shrink-0 mt-0.5 ${config.iconColor}`}>
