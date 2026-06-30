@@ -42,6 +42,8 @@ export function LegalPageHeader({
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
         >
           <path
             strokeLinecap="round"

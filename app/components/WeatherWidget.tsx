@@ -58,10 +58,17 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
     );
   }
 
+  const weatherDescription = getWeatherDescription(
+    weather,
+    dictionary.weather,
+  );
+
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer active:scale-95"
+      className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-neutral-100"
+      aria-label={`${dictionary.weather.label}: ${weather.temperature}°C ${weatherDescription}`}
     >
       <div className="w-6 h-6 flex-shrink-0">
         <WeatherIcon weather={weather} />
@@ -71,25 +78,7 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
           {weather.temperature}°C
         </span>
         <span className="hidden sm:inline text-xs text-neutral-600">
-          {weather.precipitation === 1
-            ? dictionary.weather.rain
-            : weather.precipitation === 2
-              ? dictionary.weather.rainSnow
-              : weather.precipitation === 3
-                ? dictionary.weather.snow
-                : weather.precipitation === 5
-                  ? dictionary.weather.drizzle
-                  : weather.precipitation === 6
-                    ? dictionary.weather.rainSnowFlurry
-                    : weather.precipitation === 7
-                      ? dictionary.weather.snowFlurry
-                      : weather.skyCondition === 1
-                        ? dictionary.weather.clear
-                        : weather.skyCondition === 3
-                          ? dictionary.weather.partlyCloudy
-                          : weather.skyCondition === 4
-                            ? dictionary.weather.cloudy
-                            : ""}
+          {weatherDescription}
         </span>
       </div>
       {weather.stale && (
@@ -99,6 +88,22 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
       )}
     </button>
   );
+}
+
+function getWeatherDescription(
+  weather: WeatherData,
+  dictionary: ReturnType<typeof useDictionary>["weather"],
+) {
+  if (weather.precipitation === 1) return dictionary.rain;
+  if (weather.precipitation === 2) return dictionary.rainSnow;
+  if (weather.precipitation === 3) return dictionary.snow;
+  if (weather.precipitation === 5) return dictionary.drizzle;
+  if (weather.precipitation === 6) return dictionary.rainSnowFlurry;
+  if (weather.precipitation === 7) return dictionary.snowFlurry;
+  if (weather.skyCondition === 1) return dictionary.clear;
+  if (weather.skyCondition === 3) return dictionary.partlyCloudy;
+  if (weather.skyCondition === 4) return dictionary.cloudy;
+  return dictionary.unknown;
 }
 
 export const WeatherWidget = memo(WeatherWidgetComponent);

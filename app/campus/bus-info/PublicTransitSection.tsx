@@ -7,7 +7,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetch-json";
 import { BusArrivalsAtStop, BusArrival } from "@/types";
-import { useState, useMemo } from "react";
+import { useState, useMemo, type KeyboardEvent } from "react";
 import clsx from "clsx";
 import BusDetailModal from "./BusDetailModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -138,9 +138,25 @@ export default function PublicTransitSection() {
     [sortedArrivals],
   );
 
+  const openBusDetail = (arrival: BusArrival) => {
+    setSelectedBus(arrival);
+    setSelectedBusDirection(selectedStop?.stop.direction as "up" | "down");
+    setIsModalOpen(true);
+  };
+
+  const handleBusCardKeyDown = (
+    event: KeyboardEvent<HTMLDivElement>,
+    arrival: BusArrival,
+  ) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    event.preventDefault();
+    openBusDetail(arrival);
+  };
+
   return (
     <Container className="py-4 sm:py-8">
-      <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 sm:p-6 border border-blue-100">
+      <div className="mb-6 rounded-lg border border-neutral-200 bg-white p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
@@ -170,7 +186,7 @@ export default function PublicTransitSection() {
             disabled={isFetching}
             title={text.refresh}
             aria-label={text.refreshTransit}
-            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-blue-200 bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-primary-700 shadow-sm transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshIcon className={isFetching ? "animate-spin" : undefined} />
           </button>
@@ -185,6 +201,7 @@ export default function PublicTransitSection() {
           message={text.infoUnavailableMessage}
           action={
             <button
+              type="button"
               onClick={() => refetch()}
               className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
             >
@@ -200,11 +217,12 @@ export default function PublicTransitSection() {
             {TRANSIT_STOPS.map((stop) => (
               <button
                 key={stop.id}
+                type="button"
                 onClick={() => setSelectedStopId(stop.id)}
                 className={clsx(
                   "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
                   selectedStopId === stop.id
-                    ? "bg-blue-500 text-white shadow-md scale-100"
+                    ? "bg-primary-600 text-white shadow-sm"
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
                 )}
               >
@@ -283,15 +301,13 @@ export default function PublicTransitSection() {
             return (
               <Card
                 key={`${arrival.routeId}-${idx}`}
-                onClick={() => {
-                  setSelectedBus(arrival);
-                  setSelectedBusDirection(
-                    selectedStop?.stop.direction as "up" | "down",
-                  );
-                  setIsModalOpen(true);
-                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`${arrival.routeName} ${statusLabel} ${fixedDestination}`}
+                onClick={() => openBusDetail(arrival)}
+                onKeyDown={(event) => handleBusCardKeyDown(event, arrival)}
                 className={clsx(
-                  "p-3 sm:p-4 hover:shadow-card-hover transition-shadow border-l-4 cursor-pointer",
+                  "p-3 sm:p-4 hover:shadow-card-hover transition-shadow border-l-4 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
                   isNoInfo
                     ? "border-l-gray-300 hover:bg-gray-50"
                     : arrival.locationNo1 === 1
@@ -423,6 +439,7 @@ function RefreshIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      focusable="false"
     >
       <polyline points="1 4 1 10 7 10" />
       <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />

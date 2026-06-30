@@ -63,8 +63,9 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
           <div className="flex items-center gap-3">
             {showBack && (
               <button
+                type="button"
                 onClick={onBackClick || (() => window.history.back())}
-                className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+                className="rounded-lg p-2 transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                 aria-label={dictionary.navigation.back}
               >
                 <svg
@@ -72,6 +73,8 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
                 >
                   <path
                     strokeLinecap="round"

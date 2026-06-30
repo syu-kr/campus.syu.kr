@@ -56,12 +56,12 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
 
   return (
     <div className="space-y-3">
-      <Card className="bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-blue-500">
+      <Card className="border border-neutral-200 bg-white" hover={false}>
         <div className="flex items-start gap-3">
           <Icon
             name="map-pin"
             size={20}
-            color="rgb(37, 99, 235)"
+            color="rgb(82, 82, 82)"
             className="flex-shrink-0 mt-0.5"
           />
           <div>
@@ -84,83 +84,94 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
       </Card>
 
       <div className="space-y-2">
-        {building.floors.map((floor) => (
-          <Card key={floor.floor} className="p-0 overflow-hidden">
-            <button
-              onClick={() => toggleFloor(floor.floor)}
-              className="w-full p-4 hover:bg-neutral-50 transition-colors flex items-center justify-between"
-            >
-              <h3 className="font-semibold text-neutral-900">
-                {formatMapFloor(floor.floor, locale, text)}
-              </h3>
-              <Icon
-                name="chevron-down"
-                size={18}
-                color="rgb(156, 163, 175)"
-                className={`transition-transform ${
-                  expandedFloors.has(floor.floor) ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+        {building.floors.map((floor) => {
+          const isExpanded = expandedFloors.has(floor.floor);
+          const panelId = `${building.id}-floor-${floor.floor}`;
 
-            {expandedFloors.has(floor.floor) && (
-              <div className="border-t border-neutral-200 bg-neutral-50 p-4 space-y-3">
-                {floor.facilities.length === 0 ? (
-                  <p className="text-neutral-600 text-sm italic">
-                    {floor.description}
-                  </p>
-                ) : (
-                  floor.facilities.map((facility, facilityIndex) => (
-                    <div
-                      key={`${building.id}-${floor.floor}-${facility.id}-${facilityIndex}`}
-                      className="flex items-start gap-3"
-                    >
+          return (
+            <Card key={floor.floor} className="p-0 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleFloor(floor.floor)}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset"
+                aria-expanded={isExpanded}
+                aria-controls={panelId}
+              >
+                <h3 className="font-semibold text-neutral-900">
+                  {formatMapFloor(floor.floor, locale, text)}
+                </h3>
+                <Icon
+                  name="chevron-down"
+                  size={18}
+                  color="rgb(156, 163, 175)"
+                  className={`transition-transform ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isExpanded && (
+                <div
+                  id={panelId}
+                  className="border-t border-neutral-200 bg-neutral-50 p-4 space-y-3"
+                >
+                  {floor.facilities.length === 0 ? (
+                    <p className="text-neutral-600 text-sm italic">
+                      {floor.description}
+                    </p>
+                  ) : (
+                    floor.facilities.map((facility, facilityIndex) => (
                       <div
-                        className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
-                        style={{
-                          backgroundColor:
-                            categoryColors[facility.category] || "#95A5A6",
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-neutral-900 text-sm">
-                            {facility.name}
-                          </p>
-                          <Badge
-                            color={
-                              facility.category === "식당"
-                                ? "red"
-                                : facility.category === "카페"
-                                  ? "yellow"
-                                  : facility.category === "의료"
-                                    ? "green"
-                                    : facility.category === "도서관"
-                                      ? "yellow"
-                                      : facility.category === "체육"
-                                        ? "green"
-                                        : facility.category === "편의"
-                                          ? "blue"
-                                          : "gray"
-                            }
-                            size="sm"
-                          >
-                            {getFacilityCategoryLabel(facility.category, text)}
-                          </Badge>
+                        key={`${building.id}-${floor.floor}-${facility.id}-${facilityIndex}`}
+                        className="flex items-start gap-3"
+                      >
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
+                          style={{
+                            backgroundColor:
+                              categoryColors[facility.category] || "#95A5A6",
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-neutral-900 text-sm">
+                              {facility.name}
+                            </p>
+                            <Badge
+                              color={
+                                facility.category === "식당"
+                                  ? "red"
+                                  : facility.category === "카페"
+                                    ? "yellow"
+                                    : facility.category === "의료"
+                                      ? "green"
+                                      : facility.category === "도서관"
+                                        ? "yellow"
+                                        : facility.category === "체육"
+                                          ? "green"
+                                          : facility.category === "편의"
+                                            ? "blue"
+                                            : "gray"
+                              }
+                              size="sm"
+                            >
+                              {getFacilityCategoryLabel(facility.category, text)}
+                            </Badge>
+                          </div>
+                          {facility.description && (
+                            <p className="text-xs text-neutral-600 mt-1">
+                              {facility.description}
+                            </p>
+                          )}
                         </div>
-                        {facility.description && (
-                          <p className="text-xs text-neutral-600 mt-1">
-                            {facility.description}
-                          </p>
-                        )}
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </Card>
-        ))}
+                    ))
+                  )}
+                </div>
+              )}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
