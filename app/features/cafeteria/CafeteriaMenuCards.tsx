@@ -4,7 +4,6 @@ import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { StateCard } from "@/app/components/StateCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { CafeteriaMenu, MenuItem } from "@/types";
@@ -139,8 +138,8 @@ function MenuSections({
 
   if (isCafeteriaClosedDay(menu)) {
     return (
-      <StateCard
-        type="info"
+      <CafeteriaClosedCard
+        compact
         title={text.closedDayTitle}
         message={text.closedDayMessage}
       />
@@ -157,6 +156,51 @@ function MenuSections({
       <hr className={dividerColor} />
       <MealSection title={text.dinner} color="red" items={menu.dinner} />
     </div>
+  );
+}
+
+export function CafeteriaClosedCard({
+  title,
+  message,
+  className = "",
+  compact = false,
+}: {
+  title: string;
+  message: string;
+  className?: string;
+  compact?: boolean;
+}) {
+  const content = (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+        <Icon name="utensils" size={18} color="currentColor" />
+      </div>
+      <div className="min-w-0">
+        <h3 className="mb-1 text-base font-semibold text-neutral-900">
+          {title}
+        </h3>
+        <p className="text-sm leading-6 text-neutral-600">{message}</p>
+      </div>
+    </div>
+  );
+
+  if (compact) {
+    return (
+      <div
+        className={`rounded-lg border border-neutral-200 bg-neutral-50 p-4 ${className}`}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Card
+      hover={false}
+      className={`border border-neutral-200 bg-neutral-50 shadow-none ${className}`}
+    >
+      {content}
+    </Card>
   );
 }
 

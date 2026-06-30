@@ -7,6 +7,7 @@ import { Container } from "@/app/components/Container";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import {
+  CafeteriaClosedCard,
   CafeteriaInfoCards,
   CafeteriaNoticeCards,
   TodayMenuCard,
@@ -96,8 +97,7 @@ export function CafeteriaPageClient({
         )}
 
       {!isLoading && todayMenu && isCafeteriaClosedDay(todayMenu) && (
-        <StateCard
-          type="info"
+        <CafeteriaClosedCard
           className="mb-8"
           title={text.closedTodayTitle}
           message={text.closedTodayMessage}
