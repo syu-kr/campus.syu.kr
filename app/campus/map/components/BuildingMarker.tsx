@@ -41,7 +41,7 @@ export function BuildingMarker({
 
       const uniqueId = `marker-${building.id}-${Date.now()}`;
       const svgMarker = `
-        <svg width="40" height="48" viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
+        <svg width="40" height="48" viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
           <defs>
             <linearGradient id="grad-${uniqueId}" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />

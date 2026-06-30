@@ -7,7 +7,6 @@ interface StateCardProps {
   message: string;
   action?: React.ReactNode;
   className?: string;
-  stateLabel?: string;
 }
 
 export function StateCard({
@@ -16,7 +15,6 @@ export function StateCard({
   message,
   action,
   className = "",
-  stateLabel,
 }: StateCardProps) {
   const stateConfig = {
     error: {
@@ -60,7 +58,6 @@ export function StateCard({
             name={config.iconName}
             size={20}
             color="currentColor"
-            title={stateLabel ?? type}
           />
         </div>
         <div className="flex-1">

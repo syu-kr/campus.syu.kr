@@ -110,6 +110,7 @@ export function Footer({ locale }: { locale: Locale }) {
                   viewBox="0 0 24 24"
                   fill="currentColor"
                   aria-hidden="true"
+                  focusable="false"
                 >
                   <path
                     fillRule="evenodd"

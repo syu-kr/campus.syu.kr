@@ -214,7 +214,7 @@ ShuttleMap.displayName = "ShuttleMap";
 
 function createBusMarkerSvg(color: string) {
   return `
-    <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg">
+    <svg width="30" height="37" viewBox="0 0 30 37" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
       <path d="M15 0C7 0 0 7 0 15c0 11 15 22 15 22s15-11 15-22c0-8-7-15-15-15z" fill="${color}"/>
       <circle cx="15" cy="15" r="6" fill="white"/>
     </svg>

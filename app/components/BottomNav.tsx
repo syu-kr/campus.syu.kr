@@ -72,13 +72,11 @@ export function BottomNav() {
                   : "text-neutral-600 hover:text-neutral-900",
               )}
               aria-current={active ? "page" : undefined}
-              title={item.label}
             >
               <Icon
                 name={item.iconName}
                 size={24}
                 color="currentColor"
-                title={item.label}
               />
               <div className="text-xs mt-1">{item.label}</div>
             </Link>

@@ -63,7 +63,13 @@ function SunIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <circle cx="12" cy="12" r="5" fill={color.sun} />
       {[
         ["12", "1", "12", "3"],
@@ -107,7 +113,13 @@ function PartlyCloudyIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <circle cx="6" cy="6" r="2.5" fill={color.sun} />
       <path
         d="M5 12C5 11.17 5.51 10.47 6.24 10.16C6.92 8.21 8.68 6.8 10.8 6.8C13.42 6.8 15.57 8.62 15.87 11H16.8C18.24 11 19.4 12.16 19.4 13.6C19.4 15.04 18.24 16.2 16.8 16.2H6C4.9 16.2 4 15.3 4 14.2C4 13.12 4.84 12.23 5.91 12.06"
@@ -125,7 +137,13 @@ function CloudyIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <CloudShape color={color.cloud} />
       <path
         d="M8 18.2C8 17.1 8.9 16.2 10 16.2C10.15 14.7 11.3 13.5 12.8 13.5C14 13.5 15 14.3 15.3 15.4C16.3 15.5 17.1 16.3 17.1 17.4C17.1 18.6 16.14 19.6 15 19.6H9C8.45 19.6 8 19.15 8 18.6V18.2Z"
@@ -143,7 +161,13 @@ function RainIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <CloudShape color={color.cloud} />
       {[5, 9, 13].map((x) => (
         <line
@@ -169,7 +193,13 @@ function SleetIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <CloudShape color={color.cloud} />
       {[5, 13].map((x) => (
         <line
@@ -196,7 +226,13 @@ function SnowIcon({
   color: IconColors;
 }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
       <CloudShape color={color.cloud} />
       {[6, 10, 14].map((x) => (
         <g key={x} stroke={color.rain} strokeWidth="1.4" strokeLinecap="round">
