@@ -48,7 +48,6 @@ export default async function SchedulePage() {
         })}
       />
       <SchedulePageClient
-        answerSummary={answerSummary}
         initialDateStringDot={todayInfo.dateStringDot}
         initialSchedules={initialSchedules}
       />

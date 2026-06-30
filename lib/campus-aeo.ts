@@ -1,9 +1,8 @@
-import type { AnswerSummary } from "@/app/components/AnswerSummaryCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import type { TodayInfo } from "@/lib/home";
 import type { CurrentShuttleSummary } from "@/lib/shuttle-schedule";
-import type { CafeteriaMenu, MenuItem } from "@/types";
+import type { AnswerSummary, CafeteriaMenu, MenuItem } from "@/types";
 
 function getTodayCafeteriaMenu(
   menus: CafeteriaMenu[],
