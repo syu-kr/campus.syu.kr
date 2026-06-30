@@ -15,6 +15,7 @@ import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
+  aiSummaryMode?: "action" | "preview";
   href?: string;
   clickable?: boolean;
   external?: boolean;
@@ -22,6 +23,7 @@ interface AnnouncementCardProps {
 
 function AnnouncementCardComponent({
   announcement,
+  aiSummaryMode = "action",
   href,
   clickable = true,
   external = false,
@@ -83,7 +85,13 @@ function AnnouncementCardComponent({
         <h3 className="font-semibold text-neutral-900 line-clamp-2">
           {announcement.title}
         </h3>
-        {announcement.aiSummary?.summary && (
+        {announcement.aiSummary?.summary && aiSummaryMode === "preview" && (
+          <AnnouncementAiSummary
+            aiSummary={announcement.aiSummary}
+            variant="preview"
+          />
+        )}
+        {announcement.aiSummary?.summary && aiSummaryMode === "action" && (
           <AnnouncementAiSummary aiSummary={announcement.aiSummary} />
         )}
         <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">

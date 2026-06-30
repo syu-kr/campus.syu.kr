@@ -2,14 +2,12 @@ import type {
   AcademicSchedule,
   Announcement,
   PhoneNumber,
-  Scholarship,
 } from "@/types";
 import type { ReactNode } from "react";
 
 export type SearchableResult =
   | Announcement
   | AcademicSchedule
-  | Scholarship
   | PhoneNumber;
 
 export function highlightText(text: string, query: string): ReactNode {

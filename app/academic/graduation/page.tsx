@@ -45,7 +45,7 @@ export default async function GraduationPage() {
           url: `${SITE_ORIGIN}${localizePath("/academic/graduation", locale)}`,
         })}
       />
-      <GraduationPageClient answerSummary={answerSummary} />
+      <GraduationPageClient />
     </>
   );
 }

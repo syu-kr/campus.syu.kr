@@ -1,10 +1,10 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { StateCard } from "@/app/components/StateCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { CafeteriaMenu, MenuItem } from "@/types";
@@ -139,8 +139,8 @@ function MenuSections({
 
   if (isCafeteriaClosedDay(menu)) {
     return (
-      <StateCard
-        type="info"
+      <CafeteriaClosedCard
+        compact
         title={text.closedDayTitle}
         message={text.closedDayMessage}
       />
@@ -160,18 +160,69 @@ function MenuSections({
   );
 }
 
+export function CafeteriaClosedCard({
+  title,
+  message,
+  action,
+  className = "",
+  compact = false,
+}: {
+  title: string;
+  message: string;
+  action?: ReactNode;
+  className?: string;
+  compact?: boolean;
+}) {
+  const content = (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+        <Icon name="utensils" size={18} color="currentColor" />
+      </div>
+      <div className="min-w-0">
+        <h3 className="mb-1 text-base font-semibold text-neutral-900">
+          {title}
+        </h3>
+        <p className="text-sm leading-6 text-neutral-600">{message}</p>
+        {action && <div className="mt-3">{action}</div>}
+      </div>
+    </div>
+  );
+
+  if (compact) {
+    return (
+      <div
+        className={`rounded-lg border border-neutral-200 bg-neutral-50 p-4 ${className}`}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Card
+      hover={false}
+      className={`border border-neutral-200 bg-neutral-50 shadow-none ${className}`}
+    >
+      {content}
+    </Card>
+  );
+}
+
 export function CafeteriaInfoCards() {
   const text = useDictionary().pages.cafeteria;
 
   return (
     <>
-      <Card className="mb-8 bg-blue-50 border border-blue-200">
+      <Card className="mb-6 border border-neutral-200 shadow-none" hover={false}>
         <div className="flex items-start gap-3">
-          <div>
-            <p className="font-semibold text-blue-900 mb-2">
+          <div className="mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500">
+            <Icon name="clock" size={18} color="currentColor" />
+          </div>
+          <div className="min-w-0">
+            <p className="mb-2 font-semibold text-neutral-900">
               {text.operationHours}
             </p>
-            <div className="space-y-1 text-sm text-blue-800">
+            <div className="grid gap-1 text-sm leading-6 text-neutral-600 sm:grid-cols-3">
               <p>{text.breakfastHours}</p>
               <p>{text.lunchHours}</p>
               <p>{text.dinnerHours}</p>
@@ -180,8 +231,8 @@ export function CafeteriaInfoCards() {
         </div>
       </Card>
 
-      <Card className="mb-8 bg-amber-50 border border-amber-200">
-        <p className="text-sm text-amber-900 flex items-start gap-2">
+      <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3">
+        <p className="flex items-start gap-2 text-sm leading-6 text-amber-900">
           <Icon
             name="alert-circle"
             size={16}
@@ -192,7 +243,7 @@ export function CafeteriaInfoCards() {
             <strong>{text.allergyTitle}</strong> {text.allergyMessage}
           </span>
         </p>
-      </Card>
+      </div>
     </>
   );
 }
@@ -201,11 +252,11 @@ export function CafeteriaNoticeCards() {
   const text = useDictionary().pages.cafeteria;
 
   return (
-    <Card className="mt-8 bg-yellow-50 border border-yellow-200" hover={false}>
-      <p className="text-sm text-yellow-900">
+    <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
+      <p className="text-sm leading-6 text-neutral-700">
         <strong>{text.noticeTitle}</strong> {text.mannaUnavailable}
       </p>
-    </Card>
+    </div>
   );
 }
 
@@ -215,19 +266,25 @@ export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
   return (
     <Card
       id="today-menu"
-      className="mb-8 scroll-mt-24 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-400"
+      className="mb-8 scroll-mt-24 border border-neutral-200 shadow-none"
+      hover={false}
     >
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-xl font-bold text-green-900">{text.todayMenu}</h2>
-          <span className="text-green-700 font-semibold text-lg">
-            ({menu.date})
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <Badge color="green" size="sm">
+            {text.todayMarker}
+          </Badge>
+          <h2 className="text-xl font-bold text-neutral-900">
+            {text.todayMenu}
+          </h2>
+          <span className="text-sm font-medium text-neutral-500">
+            {menu.date}
           </span>
         </div>
-        <p className="text-sm text-green-700">{menu.location}</p>
+        <p className="text-sm text-neutral-600">{menu.location}</p>
       </div>
 
-      <MenuSections menu={menu} highlighted />
+      <MenuSections menu={menu} />
     </Card>
   );
 }
@@ -254,7 +311,7 @@ export function WeeklyMenuCard({
     <Card
       className={
         isToday
-          ? "border-2 border-green-400 bg-green-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
+          ? "border border-neutral-200 bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
           : ""
       }
       clickable={isToday}
@@ -271,26 +328,22 @@ export function WeeklyMenuCard({
     >
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h2
-            className={`text-lg font-bold ${
-              isToday ? "text-green-900" : "text-neutral-900"
-            }`}
-          >
+          <h2 className="text-lg font-bold text-neutral-900">
             {formatCafeteriaDay(menu.dayOfWeek, locale, text)} ({menu.date})
             {isToday && (
-              <span className="ml-2 text-green-700 font-semibold text-base">
+              <span className="ml-2 text-base font-semibold text-primary-700">
                 ({text.todayMarker})
               </span>
             )}
           </h2>
         </div>
-        <p className={`text-sm ${isToday ? "text-green-700" : "text-neutral-600"}`}>
+        <p className="text-sm text-neutral-600">
           {menu.location}
         </p>
       </div>
 
       {isToday ? (
-        <p className="text-sm text-green-800">
+        <p className="text-sm text-neutral-600">
           {text.todayMenuRedirect}
         </p>
       ) : (

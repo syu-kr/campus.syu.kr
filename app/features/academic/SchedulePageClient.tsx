@@ -3,11 +3,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
-import {
-  AnswerSummaryCard,
-  type AnswerSummary,
-} from "@/app/components/AnswerSummaryCard";
-import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
@@ -19,20 +14,17 @@ const THIRTY_MINUTES = 30 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
 
 type SchedulePageClientProps = {
-  answerSummary: AnswerSummary;
   initialDateStringDot: string;
   initialSchedules: AcademicSchedule[];
 };
 
 export default function SchedulePageClient({
-  answerSummary,
   initialDateStringDot,
   initialSchedules,
 }: SchedulePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
-  const trustText = dictionary.trust;
   const { data: schedules, isLoading } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
@@ -233,33 +225,6 @@ export default function SchedulePageClient({
           {text.title}
         </h1>
         <p className="text-neutral-600">{text.description}</p>
-      </div>
-
-      <div className="mb-6 space-y-4">
-        <AnswerSummaryCard summary={answerSummary} />
-        <SourceTrustPanel
-          badges={[
-            { color: "yellow", label: trustText.unofficialBadge },
-            { color: "blue", label: trustText.sourceBasedBadge },
-          ]}
-          description={trustText.description}
-          items={[
-            {
-              label: trustText.serviceStatusLabel,
-              value: trustText.serviceStatusValue,
-            },
-            {
-              label: trustText.sourceLabel,
-              value: answerSummary.source,
-            },
-            {
-              label: trustText.updatedLabel,
-              value: answerSummary.updatedAt,
-            },
-          ]}
-          note={trustText.note}
-          title={trustText.title}
-        />
       </div>
 
       {isLoading ? (

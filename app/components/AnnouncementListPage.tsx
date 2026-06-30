@@ -8,17 +8,16 @@ import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
-import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { getAnnouncementDetailPath } from "@/lib/announcement-paths";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage } from "@/lib/api";
-import { localizePath } from "@/lib/i18n";
+import type { AnnouncementCategory } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 interface AnnouncementListPageProps {
-  category: "all" | "academic" | "campus";
+  category: AnnouncementCategory | "all";
   title: string;
   description: string;
   errorMessage: string;
@@ -31,7 +30,6 @@ export function AnnouncementListPage({
   errorMessage,
 }: AnnouncementListPageProps) {
   const dictionary = useDictionary();
-  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -99,10 +97,8 @@ export function AnnouncementListPage({
             <div key={announcement.id} className="mb-2">
               <AnnouncementCard
                 announcement={announcement}
-                href={localizePath(
-                  getAnnouncementDetailPath(announcement),
-                  locale,
-                )}
+                href={announcement.url}
+                external={Boolean(announcement.url)}
               />
             </div>
           ))}

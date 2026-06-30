@@ -48,7 +48,6 @@ export default async function CafeteriaPage() {
         })}
       />
       <CafeteriaPageClient
-        answerSummary={answerSummary}
         initialMenus={initialMenus}
         initialNowIso={now.toISOString()}
       />

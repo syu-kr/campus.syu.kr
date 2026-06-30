@@ -54,7 +54,6 @@ export async function PhonePage({ canonicalPath }: PhonePageProps) {
         })}
       />
       <PhonePageClient
-        answerSummary={answerSummary}
         initialPhoneNumbers={initialPhoneNumbers}
       />
     </>

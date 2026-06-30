@@ -7,7 +7,6 @@ import {
   ShuttleSpecialPeriods,
   BusLocation,
   CampusTip,
-  Scholarship,
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
@@ -221,48 +220,10 @@ export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriod
   }
 }
 
-// 장학금 API
-export async function fetchScholarships(
-  type?: "internal" | "external",
-): Promise<Scholarship[]> {
-  try {
-    // API에서 실제 데이터 가져오기
-    const notices = await fetchJson<Announcement[]>(
-      "/data/announcements-scholarship.json",
-      { fallback: [] },
-    );
-
-    const scholarshipData: Scholarship[] = notices
-      .filter((notice) => {
-        if (type === "internal") {
-          return notice.title.includes("국내") || notice.title.includes("교내");
-        } else if (type === "external") {
-          return notice.title.includes("국외") || notice.title.includes("교외");
-        }
-        return true;
-      })
-      .map((notice) => ({
-        id: notice.id,
-        name: notice.title,
-        type: (type || "internal") as "internal" | "external",
-        description: notice.content || "",
-        amount: 0,
-        deadline: notice.author || notice.date, // author 필드에 실제 작성 날짜가 있음
-        eligibility: "", // 공지사항에서 직접 추출 불가
-        url: notice.url, // 외부 링크 추가
-        isPinned: notice.isPinned || false, // 고정글 여부 추가
-      }));
-
-    return scholarshipData;
-  } catch {
-    return [];
-  }
-}
-
 // 검색 API - 개선됨 (전체 데이터 통합 검색)
 export async function searchAll(
   query: string,
-): Promise<(Announcement | AcademicSchedule | Scholarship | PhoneNumber)[]> {
+): Promise<(Announcement | AcademicSchedule | PhoneNumber)[]> {
   if (!query.trim()) {
     return [];
   }
@@ -290,7 +251,6 @@ export async function searchAll(
 type SearchAllResult =
   | Announcement
   | AcademicSchedule
-  | Scholarship
   | PhoneNumber;
 
 async function searchSchedules(query: string): Promise<AcademicSchedule[]> {

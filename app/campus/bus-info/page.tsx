@@ -58,7 +58,7 @@ export default async function BusInfoPage() {
           url: `${SITE_ORIGIN}${localizePath("/campus/bus-info", locale)}`,
         })}
       />
-      <BusInfoPageClient shuttleAnswerSummary={answerSummary} />
+      <BusInfoPageClient />
     </>
   );
 }

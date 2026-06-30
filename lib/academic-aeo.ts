@@ -1,8 +1,7 @@
-import type { AnswerSummary } from "@/app/components/AnswerSummaryCard";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { isScheduleOnDate, type TodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
-import type { AcademicSchedule, PhoneNumber } from "@/types";
+import type { AcademicSchedule, AnswerSummary, PhoneNumber } from "@/types";
 
 type GraduationMetadata = {
   sourceTitle: string;

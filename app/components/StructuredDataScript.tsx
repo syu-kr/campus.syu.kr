@@ -18,6 +18,7 @@ export function StructuredDataScript({
     <script
       id={id}
       nonce={nonce}
+      suppressHydrationWarning
       type="application/ld+json"
       dangerouslySetInnerHTML={{
         __html: serializeJsonLd(data),

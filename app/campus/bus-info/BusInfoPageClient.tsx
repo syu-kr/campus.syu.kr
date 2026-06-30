@@ -4,12 +4,7 @@ import clsx from "clsx";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-import {
-  AnswerSummaryCard,
-  type AnswerSummary,
-} from "@/app/components/AnswerSummaryCard";
 import { Container } from "@/app/components/Container";
-import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import PublicTransitSection from "./PublicTransitSection";
 
@@ -23,49 +18,15 @@ const ShuttleSection = dynamic(() => import("./ShuttleSection"), {
   loading: () => <ShuttleSectionLoading />,
 });
 
-export default function BusInfoPageClient({
-  shuttleAnswerSummary,
-}: {
-  shuttleAnswerSummary: AnswerSummary;
-}) {
+export default function BusInfoPageClient() {
   const dictionary = useDictionary();
   const text = dictionary.pages.busInfo;
-  const trustText = dictionary.trust;
   const [activeTab, setActiveTab] = useState<"shuttle" | "public-transit">(
     "shuttle",
   );
 
   return (
     <>
-      <Container className="py-5 sm:py-6">
-        <div className="space-y-4">
-          <AnswerSummaryCard summary={shuttleAnswerSummary} />
-          <SourceTrustPanel
-            badges={[
-              { color: "yellow", label: trustText.unofficialBadge },
-              { color: "blue", label: trustText.sourceBasedBadge },
-            ]}
-            description={trustText.description}
-            items={[
-              {
-                label: trustText.serviceStatusLabel,
-                value: trustText.serviceStatusValue,
-              },
-              {
-                label: trustText.sourceLabel,
-                value: shuttleAnswerSummary.source,
-              },
-              {
-                label: trustText.updatedLabel,
-                value: shuttleAnswerSummary.updatedAt,
-              },
-            ]}
-            note={trustText.note}
-            title={trustText.title}
-          />
-        </div>
-      </Container>
-
       <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
         <div className="flex gap-2">
           <button

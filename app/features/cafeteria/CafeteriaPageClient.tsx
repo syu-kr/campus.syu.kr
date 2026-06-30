@@ -3,15 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import {
-  AnswerSummaryCard,
-  type AnswerSummary,
-} from "@/app/components/AnswerSummaryCard";
 import { Container } from "@/app/components/Container";
 import { Skeleton } from "@/app/components/Skeleton";
-import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import { StateCard } from "@/app/components/StateCard";
 import {
+  CafeteriaClosedCard,
   CafeteriaInfoCards,
   CafeteriaNoticeCards,
   TodayMenuCard,
@@ -24,19 +20,16 @@ import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import type { CafeteriaMenu } from "@/types";
 
 interface CafeteriaPageClientProps {
-  answerSummary: AnswerSummary;
   initialMenus: CafeteriaMenu[];
   initialNowIso: string;
 }
 
 export function CafeteriaPageClient({
-  answerSummary,
   initialMenus,
   initialNowIso,
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
   const text = dictionary.pages.cafeteria;
-  const trustText = dictionary.trust;
   const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
 
   useEffect(() => {
@@ -72,33 +65,6 @@ export function CafeteriaPageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <div className="mb-8 space-y-4">
-        <AnswerSummaryCard summary={answerSummary} />
-        <SourceTrustPanel
-          badges={[
-            { color: "yellow", label: trustText.unofficialBadge },
-            { color: "blue", label: trustText.sourceBasedBadge },
-          ]}
-          description={trustText.description}
-          items={[
-            {
-              label: trustText.serviceStatusLabel,
-              value: trustText.serviceStatusValue,
-            },
-            {
-              label: trustText.sourceLabel,
-              value: answerSummary.source,
-            },
-            {
-              label: trustText.updatedLabel,
-              value: answerSummary.updatedAt,
-            },
-          ]}
-          note={trustText.note}
-          title={trustText.title}
-        />
-      </div>
-
       {!isLoading && !todayMenu && todayInfo.isWeekend && (
         <StateCard
           type="info"
@@ -131,8 +97,7 @@ export function CafeteriaPageClient({
         )}
 
       {!isLoading && todayMenu && isCafeteriaClosedDay(todayMenu) && (
-        <StateCard
-          type="info"
+        <CafeteriaClosedCard
           className="mb-8"
           title={text.closedTodayTitle}
           message={text.closedTodayMessage}

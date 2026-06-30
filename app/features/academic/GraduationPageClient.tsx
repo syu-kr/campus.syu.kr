@@ -4,16 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import clsx from "clsx";
 
-import {
-  AnswerSummaryCard,
-  type AnswerSummary,
-} from "@/app/components/AnswerSummaryCard";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { SourceTrustPanel } from "@/app/components/SourceTrustPanel";
 import {
   evaluateGraduation,
   getAvailableAdmissionTypes,
@@ -76,10 +71,6 @@ interface ExportedSavedState {
 type GraduationText = Dictionary["pages"]["graduation"];
 type PersistenceMessageKey = keyof GraduationText["sidebar"]["messages"];
 type GraduationSourceList = ReturnType<typeof getSourcesForSelection>;
-
-type GraduationPageClientProps = {
-  answerSummary: AnswerSummary;
-};
 
 const VALID_ADMISSION_TYPES = [
   "freshman",
@@ -284,13 +275,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-export default function GraduationPageClient({
-  answerSummary,
-}: GraduationPageClientProps) {
+export default function GraduationPageClient() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.graduation;
-  const trustText = dictionary.trust;
   const metadata = getGraduationMetadata();
   const colleges = getColleges();
   const [selection, setSelection] =
@@ -632,33 +620,6 @@ export default function GraduationPageClient({
           {text.description}
         </p>
       </header>
-
-      <div className="mb-6 space-y-4">
-        <AnswerSummaryCard summary={answerSummary} />
-        <SourceTrustPanel
-          badges={[
-            { color: "yellow", label: trustText.unofficialBadge },
-            { color: "green", label: trustText.officialFirstBadge },
-          ]}
-          description={trustText.description}
-          items={[
-            {
-              label: trustText.sourceLabel,
-              value: answerSummary.source,
-            },
-            {
-              label: trustText.updatedLabel,
-              value: answerSummary.updatedAt,
-            },
-            {
-              label: trustText.verificationLabel,
-              value: trustText.officialVerificationValue,
-            },
-          ]}
-          note={trustText.note}
-          title={trustText.title}
-        />
-      </div>
 
       <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
         <div className="flex flex-wrap items-center justify-between gap-3">
