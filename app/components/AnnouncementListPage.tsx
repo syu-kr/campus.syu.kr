@@ -10,13 +10,14 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage } from "@/lib/api";
+import type { AnnouncementCategory } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 interface AnnouncementListPageProps {
-  category: "all" | "academic" | "campus";
+  category: AnnouncementCategory | "all";
   title: string;
   description: string;
   errorMessage: string;

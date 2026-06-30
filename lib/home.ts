@@ -3,7 +3,6 @@ import type {
   Announcement,
   HomeNoticeCategory,
   PhoneNumber,
-  Scholarship,
   ServiceNotice,
 } from "@/types";
 import {
@@ -24,7 +23,6 @@ export type TodayInfo = {
 export type HomeSearchResult =
   | Announcement
   | AcademicSchedule
-  | Scholarship
   | PhoneNumber;
 
 export type HomeNotice =

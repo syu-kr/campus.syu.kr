@@ -5,5 +5,4 @@ export * from "./cafeteria";
 export * from "./campus-tips";
 export * from "./submissions";
 export * from "./phone";
-export * from "./scholarship";
 export * from "./transit";
