@@ -8,6 +8,10 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { localizePath } from "@/lib/i18n";
 
 const PWA_INSTALL_DISMISSED_KEY = "syu-campus:pwa-install-dismissed";
+const FREQUENT_MENU_ICON_COLOR = "rgb(37, 99, 235)";
+const FREQUENT_MENU_ICON_SIZE = 32;
+const FREQUENT_MENU_COMPACT_ICON_SIZE = 36;
+const FREQUENT_MENU_ICON_STROKE_WIDTH = 1.85;
 
 export function FrequentMenuGrid() {
   const locale = useLocale();
@@ -16,6 +20,7 @@ export function FrequentMenuGrid() {
     {
       id: "1",
       iconName: "utensils",
+      iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
       label: dictionary.home.menu.cafeteria,
       path: "/campus/cafeteria",
     },
@@ -28,12 +33,14 @@ export function FrequentMenuGrid() {
     {
       id: "3",
       iconName: "lightbulb",
+      iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
       label: dictionary.home.menu.campusTips,
       path: "/campus/campus-tips",
     },
     {
       id: "4",
       iconName: "award",
+      iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
       label: dictionary.home.menu.scholarship,
       path: "/academic/scholarship",
     },
@@ -65,9 +72,10 @@ export function FrequentMenuGrid() {
           >
             <Icon
               name={menu.iconName}
-              size={32}
-              color="rgb(37, 99, 235)"
-              className="mb-2"
+              size={menu.iconSize ?? FREQUENT_MENU_ICON_SIZE}
+              color={FREQUENT_MENU_ICON_COLOR}
+              strokeWidth={FREQUENT_MENU_ICON_STROKE_WIDTH}
+              className="mb-2 flex h-9 w-9 items-center justify-center"
             />
             <span className="text-center text-xs font-medium text-neutral-900">
               {menu.label}
