@@ -13,6 +13,7 @@ export interface ServiceNotice {
   date: string;
   author: string;
   excerpt?: string;
+  description?: string;
 }
 
 export interface ServiceNoticeDetail extends ServiceNotice {
@@ -84,6 +85,34 @@ function getServiceNoticePath(slug: string): string | null {
   return filePath;
 }
 
+function createPlainTextExcerpt(content: string, maxLength: number): string {
+  const plainText = content
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^([-*_])\1{2,}$/.test(line))
+    .map((line) =>
+      line
+        .replace(/^#{1,6}\s+/, "")
+        .replace(/^[-*+]\s+/, "")
+        .replace(/^\d+\.\s+/, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .replace(/[*_`>#~]/g, "")
+        .trim(),
+    )
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (plainText.length <= maxLength) {
+    return plainText;
+  }
+
+  return `${plainText.slice(0, maxLength).trimEnd()}...`;
+}
+
 /**
  * 모든 서비스 공지 조회 (목록)
  */
@@ -105,12 +134,7 @@ export async function getAllServiceNotices(): Promise<ServiceNotice[]> {
       // 파일명에서 ID 추출 (001-service-launch.md → 001)
       const id = file.split("-")[0];
       const slug = file.replace(".md", "");
-
-      // 첫 줄을 excerpt로 사용 (첫 300자)
-      const excerpt = body
-        .replace(/^# .*\n/, "")
-        .split("\n")[0]
-        .substring(0, 300);
+      const descriptionSource = metadata.description || body;
 
       return {
         id,
@@ -118,7 +142,8 @@ export async function getAllServiceNotices(): Promise<ServiceNotice[]> {
         title: metadata.title || "무제",
         date: metadata.date || new Date().toISOString().split("T")[0],
         author: metadata.author || "시스템",
-        excerpt: excerpt || "",
+        excerpt: createPlainTextExcerpt(descriptionSource, 300),
+        description: createPlainTextExcerpt(descriptionSource, 160),
       };
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -144,6 +169,7 @@ export async function getServiceNoticeBySlug(
 
   const content = fs.readFileSync(filePath, "utf-8");
   const { metadata, body } = parseFrontmatter(content);
+  const descriptionSource = metadata.description || body;
 
   // 파일명에서 ID 추출
   const id = slug.split("-")[0];
@@ -154,6 +180,8 @@ export async function getServiceNoticeBySlug(
     title: metadata.title || "무제",
     date: metadata.date || new Date().toISOString().split("T")[0],
     author: metadata.author || "시스템",
+    excerpt: createPlainTextExcerpt(descriptionSource, 300),
+    description: createPlainTextExcerpt(descriptionSource, 160),
     content: body,
   };
 }
