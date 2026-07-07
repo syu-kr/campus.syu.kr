@@ -46,7 +46,7 @@ export async function generateMetadata({
 
   return {
     title: notice?.title || text.detailFallbackTitle,
-    description: notice?.content || text.detailFallbackDescription,
+    description: notice?.description || text.detailFallbackDescription,
   };
 }
 
