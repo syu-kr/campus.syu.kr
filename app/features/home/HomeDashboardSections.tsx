@@ -153,12 +153,15 @@ export function TodayMenuSection({
   isLoading,
   todayInfo,
   todayMenu,
+  hasStaleMenuData = false,
 }: {
   isLoading: boolean;
   todayInfo: TodayInfo;
   todayMenu: CafeteriaMenu | null;
+  hasStaleMenuData?: boolean;
 }) {
   const dictionary = useDictionary();
+  const showStaleMenu = hasStaleMenuData && !todayInfo.isWeekend;
 
   return (
     <div>
@@ -172,7 +175,16 @@ export function TodayMenuSection({
             action={<ViewFullMenuLink />}
           />
         )}
+        {!isLoading && showStaleMenu && (
+          <StateCard
+            type="warning"
+            title={dictionary.home.dashboard.staleMenuTitle}
+            message={dictionary.home.dashboard.staleMenuMessage}
+            action={<ViewFullMenuLink />}
+          />
+        )}
         {!isLoading &&
+          !showStaleMenu &&
           !todayInfo.isWeekend &&
           todayMenu &&
           isCafeteriaClosedDay(todayMenu) && (
@@ -184,16 +196,19 @@ export function TodayMenuSection({
             />
           )}
         {!isLoading &&
+          !showStaleMenu &&
           !todayInfo.isWeekend &&
           todayMenu &&
           !isCafeteriaClosedDay(todayMenu) && (
             <TodayMenuCard todayMenu={todayMenu} />
           )}
         {!isLoading &&
+          !showStaleMenu &&
           !todayInfo.isWeekend &&
           todayInfo.dayOfWeek === 1 &&
           !todayMenu && <PendingMenuCard />}
         {!isLoading &&
+          !showStaleMenu &&
           !todayInfo.isWeekend &&
           todayInfo.dayOfWeek !== 1 &&
           !todayMenu && (

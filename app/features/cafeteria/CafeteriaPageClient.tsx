@@ -15,7 +15,10 @@ import {
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchCafeteriaMenu } from "@/lib/api";
-import { isCafeteriaClosedDay } from "@/lib/cafeteria";
+import {
+  isCafeteriaClosedDay,
+  isCafeteriaMenuDataStale,
+} from "@/lib/cafeteria";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import type { CafeteriaMenu } from "@/types";
 
@@ -50,11 +53,22 @@ export function CafeteriaPageClient({
   });
 
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
+  const hasStaleMenuData = useMemo(
+    () => isCafeteriaMenuDataStale(menus, todayInfo.dateStringDash),
+    [menus, todayInfo.dateStringDash],
+  );
+  const shouldShowStaleToday =
+    hasStaleMenuData && !todayInfo.isWeekend;
 
   const todayMenu = useMemo(() => {
-    if (!menus || todayInfo.isWeekend) return null;
+    if (!menus || todayInfo.isWeekend || hasStaleMenuData) return null;
     return menus.find((menu) => menu.date === todayInfo.dateStringDash) ?? null;
-  }, [menus, todayInfo.dateStringDash, todayInfo.isWeekend]);
+  }, [
+    hasStaleMenuData,
+    menus,
+    todayInfo.dateStringDash,
+    todayInfo.isWeekend,
+  ]);
 
   return (
     <Container className="py-6 sm:py-8">
@@ -73,7 +87,17 @@ export function CafeteriaPageClient({
         />
       )}
 
+      {!isLoading && shouldShowStaleToday && (
+        <StateCard
+          type="warning"
+          className="mb-8"
+          title={text.staleMenuTitle}
+          message={text.staleMenuMessage}
+        />
+      )}
+
       {!isLoading &&
+        !shouldShowStaleToday &&
         !todayMenu &&
         !todayInfo.isWeekend &&
         todayInfo.dayOfWeek === 1 && (
@@ -86,6 +110,7 @@ export function CafeteriaPageClient({
         )}
 
       {!isLoading &&
+        !shouldShowStaleToday &&
         !todayMenu &&
         !todayInfo.isWeekend &&
         todayInfo.dayOfWeek !== 1 && (
@@ -117,11 +142,20 @@ export function CafeteriaPageClient({
         <div className="space-y-6">
           {isLoading && <Skeleton count={3} height="200px" />}
 
-          {!isLoading && (!menus || menus.length === 0) && (
+          {!isLoading && hasStaleMenuData && (
+            <StateCard
+              type="warning"
+              title={text.staleMenuTitle}
+              message={text.staleMenuMessage}
+            />
+          )}
+
+          {!isLoading && !hasStaleMenuData && (!menus || menus.length === 0) && (
             <StateCard type="info" message={text.emptyWeekly} />
           )}
 
           {!isLoading &&
+            !hasStaleMenuData &&
             menus &&
             menus.length > 0 &&
             menus.map((menu) => (
