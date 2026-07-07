@@ -112,6 +112,16 @@ const nextConfig = {
       "/api/meet/:path*",
       "/api/lecture/timetable/shares/:path*",
     ];
+    const noIndexPrivatePageHeaders = [
+      {
+        key: "Cache-Control",
+        value: "private, no-store",
+      },
+      {
+        key: "X-Robots-Tag",
+        value: "noindex, nofollow",
+      },
+    ];
 
     return [
       {
@@ -137,30 +147,12 @@ const nextConfig = {
       })),
       {
         source: "/admin/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "private, no-store",
-          },
-          {
-            key: "X-Robots-Tag",
-            value: "noindex, nofollow",
-          },
-        ],
+        headers: noIndexPrivatePageHeaders,
       },
-      {
-        source: "/more/meet/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "private, no-store",
-          },
-          {
-            key: "X-Robots-Tag",
-            value: "noindex, nofollow",
-          },
-        ],
-      },
+      ...["/more/meet/:roomId", "/en/more/meet/:roomId"].map((source) => ({
+        source,
+        headers: noIndexPrivatePageHeaders,
+      })),
       {
         source: "/sw.js",
         headers: [
