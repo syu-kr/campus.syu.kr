@@ -37,8 +37,6 @@ interface DailyNotificationContext {
 
 interface KoreaDayWindow {
   dateKey: string;
-  start: Date;
-  end: Date;
 }
 
 interface DailyPushCopy {
@@ -55,109 +53,33 @@ const DEFAULT_PUSH_COPY_TIMEOUT_MS = 12000;
 const DEFAULT_PUSH_COPY_MAX_RETRIES = 2;
 const DEFAULT_PUSH_COPY_RETRY_BASE_MS = 1500;
 const MAX_ANNOUNCEMENT_ITEMS_FOR_AI = 12;
+const DAILY_ANNOUNCEMENT_SOURCES: Record<string, string> = {
+  academic: "announcements-academic.json",
+  scholarship: "announcements-scholarship.json",
+};
 
 async function getAnnouncementStats(
   targetWindow: KoreaDayWindow,
 ): Promise<AnnouncementStats[]> {
-
-  const categories = ["academic", "scholarship"];
-  const results: AnnouncementStats[] = [];
-  let db: admin.firestore.Firestore | null = null;
-  let firestoreUnavailableReason = "";
-
-  try {
-    db = await initializeScriptFirestore();
-  } catch (error) {
-    firestoreUnavailableReason =
-      error instanceof Error ? error.message : String(error);
-    console.warn(
-      "Firestore 공지 통계 조회를 사용할 수 없어 JSON fallback으로 진행합니다:",
-      firestoreUnavailableReason,
-    );
-  }
-
-  for (const category of categories) {
-    // Firestore 시도
-    let success = false;
-    if (db) {
-      try {
-        const snapshot = await db
-          .collection("announcements")
-          .where("category", "==", category)
-          .where(
-            "created_at",
-            ">=",
-            admin.firestore.Timestamp.fromDate(targetWindow.start),
-          )
-          .where(
-            "created_at",
-            "<",
-            admin.firestore.Timestamp.fromDate(targetWindow.end),
-          )
-          .orderBy("created_at", "desc")
-          .get();
-
-        const items = snapshot.docs.map((doc) => {
-          const data = doc.data();
-
-          return {
-            category,
-            title: readAnnouncementTitle(data.title),
-            date: targetWindow.dateKey,
-          };
-        });
-
-        results.push({
-          category,
-          count: snapshot.size,
-          titles: items.map((item) => item.title).filter(Boolean).slice(0, 3),
-          items: items.filter((item) => item.title).slice(0, 8),
-        });
-
-        success = true;
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error);
-        console.warn(
-          `${category} Firestore 공지 통계 조회 실패, JSON fallback 사용:`,
-          reason,
-        );
-      }
-    }
-
-    // Firestore 실패 시 JSON 파일에서 로드
-    if (!success) {
-      const jsonData = await getAnnouncementStatsFromJSON(
-        category,
-        targetWindow,
-      );
-      results.push(jsonData);
-    }
-  }
-
-  return results;
+  return Promise.all(
+    Object.entries(DAILY_ANNOUNCEMENT_SOURCES).map(([category, filename]) =>
+      getAnnouncementStatsFromJSON(category, filename, targetWindow),
+    ),
+  );
 }
 
 async function getAnnouncementStatsFromJSON(
   category: string,
+  filename: string,
   targetWindow: KoreaDayWindow,
 ): Promise<AnnouncementStats> {
-  const fileMap: { [key: string]: string } = {
-    academic: "announcements-academic.json",
-    scholarship: "announcements-scholarship.json",
-  };
+  const filepath = path.join(process.cwd(), "public/data", filename);
 
-  const filename = fileMap[category];
-  if (!filename) {
-    return { category, count: 0, titles: [], items: [] };
+  if (!fs.existsSync(filepath)) {
+    throw new Error(`공지 JSON 파일을 찾을 수 없습니다: ${filepath}`);
   }
 
   try {
-    const filepath = path.join(process.cwd(), "public/data", filename);
-
-    if (!fs.existsSync(filepath)) {
-      return { category, count: 0, titles: [], items: [] };
-    }
-
     const rawData = fs.readFileSync(filepath, "utf-8");
     const announcements: AnnouncementData[] = JSON.parse(rawData);
 
@@ -181,8 +103,9 @@ async function getAnnouncementStatsFromJSON(
       titles: items.map((item) => item.title).slice(0, 3),
       items: items.slice(0, 8),
     };
-  } catch {
-    return { category, count: 0, titles: [], items: [] };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`${filename} 공지 JSON을 읽지 못했습니다: ${reason}`);
   }
 }
 
@@ -422,6 +345,7 @@ async function logNotificationRecord(
     dedupeKey: context.dedupeKey,
     koreaDate: context.koreaDate,
     targetDate: context.targetDate,
+    dataSource: "public-data-json",
     timestamp: admin.firestore.Timestamp.now(),
     stats: {
       academic: stats.find((s) => s.category === "academic")?.count || 0,
@@ -479,12 +403,9 @@ function createDailyNotificationContext(
 function createPreviousKoreaDayWindow(now: Date): KoreaDayWindow {
   const todayStart = startOfKoreaDate(getKoreaDateParts(now));
   const start = new Date(todayStart.getTime() - 86400000);
-  const end = todayStart;
 
   return {
     dateKey: formatKoreaDate(start),
-    start,
-    end,
   };
 }
 

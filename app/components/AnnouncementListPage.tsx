@@ -74,7 +74,7 @@ export function AnnouncementListPage({
         searchOnChange
       />
 
-      {!isLoading && (
+      {!isLoading && !isError && (
         <div className="mb-4 text-sm text-neutral-600">
           {localeAwareResultCount(total, dictionary.pages.announcements.foundItems)}
           {searchQuery &&
@@ -84,7 +84,7 @@ export function AnnouncementListPage({
 
       <div className="mb-6 space-y-3">
         {isLoading && <Skeleton count={5} />}
-        {!isLoading && announcements.length === 0 && (
+        {!isLoading && (isError || announcements.length === 0) && (
           <StateCard
             type={isError ? "error" : "info"}
             message={
@@ -104,7 +104,7 @@ export function AnnouncementListPage({
           ))}
       </div>
 
-      {!isLoading && (
+      {!isLoading && !isError && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}

@@ -150,6 +150,10 @@ export const dictionaries = {
       noResultsTitle: "검색 결과가 없습니다",
       noResultsMessage:
         "와 일치하는 결과가 없습니다. 공지 제목, 일정명, 부서명, 전화번호로 검색할 수 있습니다.",
+      loadFailedTitle: "검색 정보를 불러오지 못했습니다",
+      loadFailedMessage:
+        "잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요.",
+      retry: "다시 검색",
       cancel: "검색 취소",
       viewAll: "전체보기",
     },
@@ -245,6 +249,9 @@ export const dictionaries = {
           "공휴일 또는 운영하지 않는 날입니다. 전체 식단에서 다른 날짜를 확인해보세요.",
         missingMenu:
           "오늘 식단 정보가 없습니다. 전체 식단에서 다른 날짜를 확인해보세요.",
+        staleMenuTitle: "식단 정보 갱신 대기 중입니다",
+        staleMenuMessage:
+          "현재 주간 식단이 아직 갱신되지 않아 이전 주 데이터를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
         pendingMenuTitle: "식단 준비 중입니다",
         pendingMenuMessage: "데이터가 준비되고 있습니다. 잠시만 기다려주세요.",
         fullMenu: "전체 식단 보기",
@@ -907,6 +914,8 @@ export const dictionaries = {
         infoUnavailableTitle: "정보를 가져올 수 없습니다",
         infoUnavailableMessage:
           "API 키가 설정되지 않았거나 일시적 오류가 발생했습니다.",
+        transitPartialUnavailableMessage:
+          "일부 실시간 제공처 조회가 지연되어 현재 선택한 정류장 정보가 비어 있을 수 있습니다. 잠시 후 다시 시도해 주세요.",
         retry: "재시도",
         noTransitInfo: "현재 표시 가능한 운행 정보가 없습니다.",
         noActiveBus: "현재 운행중인 버스는 없습니다.",
@@ -981,6 +990,9 @@ export const dictionaries = {
           "월요일 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요.",
         missingToday:
           "오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
+        staleMenuTitle: "식단 정보 갱신 대기 중입니다",
+        staleMenuMessage:
+          "현재 주간 식단이 아직 갱신되지 않아 이전 주 데이터를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
         closedTodayTitle: "오늘은 운영하지 않습니다",
         closedTodayMessage:
           "공휴일 또는 운영하지 않는 날입니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
@@ -1515,6 +1527,8 @@ export const dictionaries = {
         inviteLinkTitle: "초대 링크",
         copied: "복사됨",
         copyLink: "링크 복사",
+        copyFailed:
+          "자동 복사에 실패했습니다. 위 링크를 직접 선택해 복사해주세요.",
         goToRoom: "방으로 이동",
         endDateBeforeStart: "종료 날짜는 시작 날짜보다 빠를 수 없습니다.",
         dateRangeMax: "날짜 범위는 최대 {max}일까지 가능합니다.",
@@ -1719,6 +1733,10 @@ export const dictionaries = {
       noResultsTitle: "No results found",
       noResultsMessage:
         "did not match any results. You can search by notice title, schedule name, department, or phone number.",
+      loadFailedTitle: "Could not load search data",
+      loadFailedMessage:
+        "Please try again shortly or check your network connection.",
+      retry: "Search again",
       cancel: "Cancel search",
       viewAll: "View all",
     },
@@ -1813,6 +1831,9 @@ export const dictionaries = {
           "The cafeteria is closed for a holiday or non-operating day. Check the full menu for other dates.",
         missingMenu:
           "Today's menu is unavailable. Check the full menu for other dates.",
+        staleMenuTitle: "Menu update pending",
+        staleMenuMessage:
+          "This week's menu has not been updated yet, so previous-week data is hidden. Please check again shortly.",
         pendingMenuTitle: "Menu is being prepared",
         pendingMenuMessage: "The data is being prepared. Please check again soon.",
         fullMenu: "View full menu",
@@ -2481,6 +2502,8 @@ export const dictionaries = {
         infoUnavailableTitle: "Information unavailable",
         infoUnavailableMessage:
           "The API key is not configured or a temporary error occurred.",
+        transitPartialUnavailableMessage:
+          "Some real-time providers are delayed, so the selected stop may be missing arrival information. Please try again shortly.",
         retry: "Retry",
         noTransitInfo: "No transit information is available to display.",
         noActiveBus: "No buses are currently running.",
@@ -2556,6 +2579,9 @@ export const dictionaries = {
           "Monday menu data is still being prepared. Please check again shortly.",
         missingToday:
           "Today's menu is unavailable. Check another date in the weekly menu.",
+        staleMenuTitle: "Menu update pending",
+        staleMenuMessage:
+          "This week's menu has not been updated yet, so previous-week data is hidden. Please check again shortly.",
         closedTodayTitle: "Closed today",
         closedTodayMessage:
           "The cafeteria is closed for a holiday or non-operating day. Check another date in the weekly menu.",
@@ -3120,6 +3146,8 @@ export const dictionaries = {
         inviteLinkTitle: "Invite Link",
         copied: "Copied",
         copyLink: "Copy link",
+        copyFailed:
+          "Automatic copy failed. Select and copy the link above.",
         goToRoom: "Go to room",
         endDateBeforeStart: "The end date cannot be earlier than the start date.",
         dateRangeMax: "The date range can be up to {max} days.",

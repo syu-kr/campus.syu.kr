@@ -270,7 +270,7 @@ GitHub Actions는 다음 용도로 사용합니다.
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 dependency audit과 `npm run check` 필수
 - daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
-- daily notification: 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
+- daily notification: `public/data/announcements-*.json`의 학사/장학 공지를 기준일별로 집계해 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
 
 알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.
 

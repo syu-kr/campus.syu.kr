@@ -29,3 +29,23 @@ export function isCafeteriaClosedDay(menu: CafeteriaMenu) {
   );
 }
 
+function getLatestCafeteriaMenuDate(
+  menus: CafeteriaMenu[] | undefined,
+) {
+  if (!menus || menus.length === 0) {
+    return null;
+  }
+
+  return menus.reduce<string | null>((latest, menu) => {
+    if (!menu.date) return latest;
+    return !latest || menu.date > latest ? menu.date : latest;
+  }, null);
+}
+
+export function isCafeteriaMenuDataStale(
+  menus: CafeteriaMenu[] | undefined,
+  todayDate: string,
+) {
+  const latestMenuDate = getLatestCafeteriaMenuDate(menus);
+  return Boolean(latestMenuDate && latestMenuDate < todayDate);
+}
