@@ -45,6 +45,16 @@ const nextConfig = {
   ],
   redirects: async () => [
     {
+      source: "/index",
+      destination: "/",
+      permanent: true,
+    },
+    {
+      source: "/en/index",
+      destination: "/en",
+      permanent: true,
+    },
+    {
       source: "/more/scholarship",
       destination: "/academic/scholarship",
       permanent: true,

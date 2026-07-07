@@ -32,6 +32,10 @@ export function stripLocalePrefix(pathname: string): string {
   return pathname || "/";
 }
 
+function normalizeCanonicalPathname(pathname: string): string {
+  return pathname === "/index" ? "/" : pathname;
+}
+
 export function localizePath(href: string, locale: Locale): string {
   if (
     href.startsWith("http://") ||
@@ -66,7 +70,7 @@ export function localizePath(href: string, locale: Locale): string {
 }
 
 export function createLocalizedAlternates(pathname: string, locale: Locale) {
-  const koreanPath = stripLocalePrefix(pathname);
+  const koreanPath = normalizeCanonicalPathname(stripLocalePrefix(pathname));
 
   return {
     canonical: localizePath(koreanPath, locale),
