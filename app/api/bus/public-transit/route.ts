@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchPublicTransitArrivals } from "@/lib/api";
+import type { PublicTransitArrivalsResult } from "@/lib/public-transit";
 import type { BusArrivalsAtStop } from "@/types";
 import type {
   LiveDataResponse,
@@ -19,11 +20,12 @@ let cachedArrivals:
       timestamp: string;
       stale: boolean;
       sourceStatus: LiveDataSourceStatus;
+      error?: string;
       expiresAt: number;
       fallbackUntil: number;
     }
   | undefined;
-let pendingArrivals: Promise<BusArrivalsAtStop[]> | undefined;
+let pendingArrivals: Promise<PublicTransitArrivalsResult> | undefined;
 
 export async function GET() {
   const now = Date.now();
@@ -38,6 +40,7 @@ export async function GET() {
           timestamp: cachedArrivals.timestamp,
           stale: cachedArrivals.stale,
           sourceStatus: cachedArrivals.sourceStatus,
+          error: cachedArrivals.error,
         } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
         {
           headers: {
@@ -52,7 +55,8 @@ export async function GET() {
       pendingArrivals = undefined;
     });
 
-    const freshArrivals = await pendingArrivals;
+    const freshTransit = await pendingArrivals;
+    const freshArrivals = freshTransit.data;
     const freshRouteCount = countRoutes(freshArrivals);
     const cachedRouteCount = cachedArrivals
       ? countRoutes(cachedArrivals.data)
@@ -65,11 +69,16 @@ export async function GET() {
         ? preserveMissingRoutes(freshArrivals, cachedArrivals.data)
         : freshArrivals;
     const timestamp = new Date().toISOString();
+    const stale = usedRouteFallback || freshTransit.stale;
+    const sourceStatus: LiveDataSourceStatus = stale
+      ? "stale"
+      : freshTransit.sourceStatus;
     cachedArrivals = {
       data: arrivals,
       timestamp,
-      stale: usedRouteFallback,
-      sourceStatus: usedRouteFallback ? "stale" : "fresh",
+      stale,
+      sourceStatus,
+      error: freshTransit.error,
       expiresAt: Date.now() + TRANSIT_CACHE_TTL_MS,
       fallbackUntil:
         !cachedArrivals || freshRouteCount >= cachedRouteCount
@@ -83,8 +92,9 @@ export async function GET() {
         source: TRANSIT_SOURCE,
         data: arrivals,
         timestamp,
-        stale: usedRouteFallback,
-        sourceStatus: usedRouteFallback ? "stale" : "fresh",
+        stale,
+        sourceStatus,
+        error: freshTransit.error,
       } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
       {
         headers: {
@@ -104,6 +114,7 @@ export async function GET() {
           timestamp: cachedArrivals.timestamp,
           stale: true,
           sourceStatus: "stale",
+          error: cachedArrivals.error,
         } satisfies LiveDataResponse<BusArrivalsAtStop[]>,
         {
           headers: {

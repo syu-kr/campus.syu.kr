@@ -95,6 +95,8 @@ export default function PublicTransitSection() {
     refetchIntervalInBackground: false,
   });
   const arrivals = transitStatus.data;
+  const hasTransitSourceIssue =
+    transitStatus.stale || transitStatus.sourceStatus === "error";
 
   const selectedStop = useMemo(
     () =>
@@ -211,7 +213,7 @@ export default function PublicTransitSection() {
         />
       )}
 
-      {!isLoading && (
+      {!isLoading && !error && (
         <div className="mb-4 -mx-4 px-4 overflow-x-auto">
           <div className="flex gap-2 min-w-max pb-2">
             {TRANSIT_STOPS.map((stop) => (
@@ -241,10 +243,15 @@ export default function PublicTransitSection() {
             </Card>
           ))}
         </div>
-      ) : sortedArrivals.length === 0 ? (
+      ) : error ? null : sortedArrivals.length === 0 ? (
         <StateCard
-          type="info"
-          message={text.noTransitInfo}
+          type={hasTransitSourceIssue ? "warning" : "info"}
+          title={hasTransitSourceIssue ? text.infoUnavailableTitle : undefined}
+          message={
+            hasTransitSourceIssue
+              ? text.transitPartialUnavailableMessage
+              : text.noTransitInfo
+          }
         />
       ) : (
         <div className="space-y-3">

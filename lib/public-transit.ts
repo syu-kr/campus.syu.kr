@@ -3,6 +3,7 @@ import {
   BusArrival,
   BusArrivalsAtStop,
 } from "@/types";
+import type { LiveDataSourceStatus } from "@/types/live-data";
 import { fetchJson } from "./fetch-json";
 import { requireServerEnv } from "./server/env";
 
@@ -29,6 +30,20 @@ type GyeonggiArrivalResponse = {
 };
 
 const PUBLIC_TRANSIT_REQUEST_TIMEOUT_MS = 8000;
+
+type PublicTransitSourceFailure = {
+  provider: BusStop["region"];
+  stopId: string;
+  message: string;
+};
+
+export type PublicTransitArrivalsResult = {
+  data: BusArrivalsAtStop[];
+  stale: boolean;
+  sourceStatus: LiveDataSourceStatus;
+  error?: string;
+  failures: PublicTransitSourceFailure[];
+};
 
 async function fetchWithTimeout(
   input: RequestInfo | URL,
@@ -221,7 +236,7 @@ async function fetchSeoulBusArrivals(
       .filter((item): item is BusArrival => item !== null);
   } catch (error) {
     console.error("Failed to fetch Seoul bus arrivals:", error);
-    return [];
+    throw error;
   }
 }
 
@@ -293,8 +308,8 @@ async function fetchGyeonggiBusArrivals(
               crowded2: item.crowded2,
             };
           }) as BusArrival[];
-      } catch {
-        return [];
+      } catch (error) {
+        throw error;
       }
     });
 
@@ -315,32 +330,48 @@ async function fetchGyeonggiBusArrivals(
     return Array.from(routeMap.values());
   } catch (error) {
     console.error("Failed to fetch Gyeonggi bus arrivals:", error);
-    return [];
+    throw error;
   }
 }
 
 // 대중교통 도착 정보 통합 조회 (모든 정류장)
-export async function fetchPublicTransitArrivals(): Promise<
-  BusArrivalsAtStop[]
-> {
+export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrivalsResult> {
   const results: BusArrivalsAtStop[] = [];
   const stopMap = new Map<string, BusArrivalsAtStop>();
+  const failures: PublicTransitSourceFailure[] = [];
+  let attemptedFetches = 0;
 
   // 병렬로 모든 정류장의 도착정보 조회
   const promises = PUBLIC_TRANSIT_STOPS.map(async (stop) => {
     let arrivals: BusArrival[] = [];
+    let provider: BusStop["region"] = stop.region;
 
-    if (stop.region === "seoul" && stop.seoulArsId) {
-      arrivals = await fetchSeoulBusArrivals(stop.seoulArsId, stop.name);
-    } else if (
-      stop.region === "gyeonggi" &&
-      stop.gyeonggiStationIds &&
-      stop.gyeonggiStationIds.length > 0
-    ) {
-      arrivals = await fetchGyeonggiBusArrivals(
-        stop.gyeonggiStationIds,
-        stop.name,
-      );
+    try {
+      if (stop.region === "seoul" && stop.seoulArsId) {
+        attemptedFetches += 1;
+        provider = "seoul";
+        arrivals = await fetchSeoulBusArrivals(stop.seoulArsId, stop.name);
+      } else if (
+        stop.region === "gyeonggi" &&
+        stop.gyeonggiStationIds &&
+        stop.gyeonggiStationIds.length > 0
+      ) {
+        attemptedFetches += 1;
+        provider = "gyeonggi";
+        arrivals = await fetchGyeonggiBusArrivals(
+          stop.gyeonggiStationIds,
+          stop.name,
+        );
+      }
+    } catch (error) {
+      failures.push({
+        provider,
+        stopId: stop.id,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unknown public transit source failure",
+      });
     }
 
     // noLine 또는 빈 응답 제거
@@ -402,6 +433,10 @@ export async function fetchPublicTransitArrivals(): Promise<
 
   await Promise.all(promises);
 
+  if (attemptedFetches > 0 && failures.length === attemptedFetches) {
+    throw new Error("All public transit arrival sources failed");
+  }
+
   // 맵의 값들을 배열로 변환
   Array.from(stopMap.values()).forEach((item) => {
     // 도착 시간순으로 정렬
@@ -413,5 +448,14 @@ export async function fetchPublicTransitArrivals(): Promise<
     results.push(item);
   });
 
-  return results;
+  return {
+    data: results,
+    stale: failures.length > 0,
+    sourceStatus: failures.length > 0 ? "stale" : "fresh",
+    error:
+      failures.length > 0
+        ? "일부 대중교통 도착 정보 제공처를 조회하지 못했습니다."
+        : undefined,
+    failures,
+  };
 }
