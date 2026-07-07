@@ -14,12 +14,64 @@ import json
 import re
 import os
 import html
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
 
 CLOSED_LABEL = "운영 없음"
 CLOSED_TEXTS = {"운영없음", "운영 없음", "휴무", "없음", "-", "미운영"}
+NO_MENU_TEXT = "메뉴 정보가 없습니다"
+KOREAN_DAYS = ("월", "화", "수", "목", "금", "토", "일")
+
+
+def parse_week_range(text):
+    """'2026.07.06 ~ 2026.07.10' 형식의 주차 범위 파싱"""
+    match = re.search(
+        r"(\d{4})\.(\d{1,2})\.(\d{1,2})\s*~\s*"
+        r"(\d{4})\.(\d{1,2})\.(\d{1,2})",
+        text,
+    )
+    if not match:
+        return []
+
+    start_year, start_month, start_day, end_year, end_month, end_day = map(
+        int,
+        match.groups(),
+    )
+    try:
+        start_date = datetime(start_year, start_month, start_day).date()
+        end_date = datetime(end_year, end_month, end_day).date()
+    except ValueError:
+        return []
+
+    if end_date < start_date:
+        return []
+
+    days = (end_date - start_date).days + 1
+    if days > 7:
+        return []
+
+    return [
+        (
+            (start_date + timedelta(days=offset)).strftime("%Y-%m-%d"),
+            KOREAN_DAYS[(start_date + timedelta(days=offset)).weekday()],
+        )
+        for offset in range(days)
+    ]
+
+
+def current_week_dates():
+    """페이지에서 주차 범위를 못 읽을 때 현재 월~금 날짜 생성"""
+    today = datetime.now().date()
+    monday = today - timedelta(days=today.weekday())
+    return [
+        (
+            (monday + timedelta(days=offset)).strftime("%Y-%m-%d"),
+            KOREAN_DAYS[(monday + timedelta(days=offset)).weekday()],
+        )
+        for offset in range(5)
+    ]
+
 
 def parse_korean_date(date_str):
     """'3월 16일 (월)' 형식의 날짜 파싱"""
@@ -96,6 +148,37 @@ def closed_meals():
     }
 
 
+def closed_menu(date, day):
+    return {
+        "date": date,
+        "day": day,
+        "meals": closed_meals(),
+    }
+
+
+def write_cafeteria_result(data_path, menus):
+    result = {
+        "id": "cafeteria-sulounge",
+        "name": "SU-Lounge",
+        "weekStart": menus[0]["date"] if menus else "",
+        "menus": menus,
+        "lastUpdated": datetime.now().isoformat(),
+    }
+    write_json_atomic(data_path, result)
+
+
+def write_no_menu_result(data_path, soup):
+    page_text = soup.get_text(" ", strip=True)
+    dates = parse_week_range(page_text) or current_week_dates()
+    menus = [closed_menu(date, day) for date, day in dates]
+
+    print("ℹ️  공식 페이지에 메뉴 정보가 없어 운영 없음으로 저장합니다.")
+    for date, day in dates:
+        print(f"   - {date} ({day})")
+
+    write_cafeteria_result(data_path, menus)
+
+
 def crawl_cafeteria_menu():
     """학식 메뉴 크롤링"""
     data_path = "public/data/cafeteria-menu.json"
@@ -129,6 +212,10 @@ def crawl_cafeteria_menu():
         # 주간 메뉴 테이블 찾기
         table = soup.select_one(".weekly-menu-table")
         if not table:
+            if NO_MENU_TEXT in soup.get_text(" ", strip=True):
+                write_no_menu_result(data_path, soup)
+                print("✅ 학식 메뉴 없음 상태 저장 완료")
+                return
             raise RuntimeError("weekly-menu-table을 찾을 수 없습니다.")
         
         # 헤더에서 날짜 추출
@@ -217,16 +304,7 @@ def crawl_cafeteria_menu():
         if len(menus) < len(dates):
             raise RuntimeError("학식 날짜 수와 메뉴 수가 일치하지 않습니다.")
         
-        # JSON 구조 생성
-        result = {
-            "id": "cafeteria-sulounge",
-            "name": "SU-Lounge",
-            "weekStart": dates[0][0] if dates else "",
-            "menus": menus,
-            "lastUpdated": datetime.now().isoformat()
-        }
-        
-        write_json_atomic(data_path, result)
+        write_cafeteria_result(data_path, menus)
         
         print(f"✅ 학식 메뉴 저장 완료 (신규: {new_count}개, 업데이트: {updated_count}개)")
     
