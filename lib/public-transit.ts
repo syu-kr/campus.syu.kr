@@ -37,6 +37,12 @@ type PublicTransitSourceFailure = {
   message: string;
 };
 
+type GyeonggiArrivalResult = {
+  arrivals: BusArrival[];
+  partialFailure: boolean;
+  failureMessage?: string;
+};
+
 export type PublicTransitArrivalsResult = {
   data: BusArrivalsAtStop[];
   stale: boolean;
@@ -244,7 +250,7 @@ async function fetchSeoulBusArrivals(
 async function fetchGyeonggiBusArrivals(
   stationIds: string[],
   expectedStopName: string,
-): Promise<BusArrival[]> {
+): Promise<GyeonggiArrivalResult> {
   try {
     const serviceKey = requireServerEnv("PUBLIC_DATA_SERVICE_KEY");
     const baseUrl = requireServerEnv("GYEONGGI_BUS_ARRIVAL_URL");
@@ -266,7 +272,7 @@ async function fetchGyeonggiBusArrivals(
 
         const items = data.response?.msgBody?.busArrivalList || [];
 
-        return items
+        const arrivals = items
           .filter((item) => {
             const itemStationId = String(item.stationId ?? "");
             // 정류장 번호/정류장명(삼육대 포함) 검증
@@ -308,18 +314,29 @@ async function fetchGyeonggiBusArrivals(
               crowded2: item.crowded2,
             };
           }) as BusArrival[];
+
+        return { arrivals, failed: false };
       } catch (error) {
-        throw error;
+        console.error(
+          `Failed to fetch Gyeonggi bus arrivals for station ${stationId}:`,
+          error,
+        );
+        return { arrivals: [] as BusArrival[], failed: true };
       }
     });
 
     const results = await Promise.all(promises);
+    const failedRequests = results.filter((result) => result.failed).length;
+
+    if (failedRequests === results.length && results.length > 0) {
+      throw new Error("All Gyeonggi station arrival requests failed");
+    }
 
     // 모든 결과 병합 및 중복 제거
     const routeMap = new Map<string, BusArrival>();
 
     results.forEach((batch) => {
-      batch.forEach((arrival) => {
+      batch.arrivals.forEach((arrival) => {
         const key = arrival.routeId || arrival.routeName;
         if (!routeMap.has(key)) {
           routeMap.set(key, arrival);
@@ -327,7 +344,14 @@ async function fetchGyeonggiBusArrivals(
       });
     });
 
-    return Array.from(routeMap.values());
+    return {
+      arrivals: Array.from(routeMap.values()),
+      partialFailure: failedRequests > 0,
+      failureMessage:
+        failedRequests > 0
+          ? "Some Gyeonggi station arrival requests failed"
+          : undefined,
+    };
   } catch (error) {
     console.error("Failed to fetch Gyeonggi bus arrivals:", error);
     throw error;
@@ -358,10 +382,20 @@ export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrival
       ) {
         attemptedFetches += 1;
         provider = "gyeonggi";
-        arrivals = await fetchGyeonggiBusArrivals(
+        const result = await fetchGyeonggiBusArrivals(
           stop.gyeonggiStationIds,
           stop.name,
         );
+        arrivals = result.arrivals;
+        if (result.partialFailure) {
+          failures.push({
+            provider,
+            stopId: stop.id,
+            message:
+              result.failureMessage ??
+              "Some Gyeonggi station arrival requests failed",
+          });
+        }
       }
     } catch (error) {
       failures.push({

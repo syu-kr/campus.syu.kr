@@ -29,7 +29,7 @@ export function isCafeteriaClosedDay(menu: CafeteriaMenu) {
   );
 }
 
-export function getLatestCafeteriaMenuDate(
+function getLatestCafeteriaMenuDate(
   menus: CafeteriaMenu[] | undefined,
 ) {
   if (!menus || menus.length === 0) {
