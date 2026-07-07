@@ -18,6 +18,43 @@ def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
     hash_value = hashlib.md5(key.encode()).hexdigest()[:12]
     return f"schedule-{hash_value}"
 
+def normalize_schedule_date(year: str, month: str, date_part: str) -> str:
+    """달력의 일/월.일 표기를 YYYY.MM.DD로 정규화"""
+    parts = [part.strip() for part in date_part.split(".") if part.strip()]
+    if len(parts) == 2:
+        schedule_month, day = parts
+    else:
+        schedule_month, day = month, parts[0]
+
+    return f"{int(year):04d}.{int(schedule_month):02d}.{int(day):02d}"
+
+def bump_date_year(date_text: str) -> str:
+    year, month, day = date_text.split(".")
+    return f"{int(year) + 1:04d}.{month}.{day}"
+
+def parse_schedule_dates(year: str, month: str, date_text: str) -> tuple[str, str]:
+    """범위가 12월~1월처럼 다음 해로 넘어가면 종료 연도를 보정"""
+    if "~" not in date_text:
+        date = normalize_schedule_date(year, month, date_text)
+        return date, date
+
+    parts = [p.strip() for p in date_text.split("~")]
+    if len(parts) != 2:
+        raise ValueError(f"Invalid schedule date text: {date_text}")
+
+    start_date = normalize_schedule_date(year, month, parts[0])
+    end_date = normalize_schedule_date(year, month, parts[1])
+
+    if end_date < start_date:
+        end_date = bump_date_year(end_date)
+
+    return start_date, end_date
+
+def is_valid_schedule_range(schedule: dict) -> bool:
+    start_date = schedule.get("startDate", "")
+    end_date = schedule.get("endDate", "")
+    return bool(start_date and end_date and start_date <= end_date)
+
 def crawl_schedule():
     """학사일정 크롤링 (증분 업데이트 - 개선)"""
     
@@ -105,27 +142,7 @@ def crawl_schedule():
                     continue
                 
                 # Parse dates
-                start_date = ""
-                end_date = ""
-                
-                if "~" in date_text:
-                    parts = [p.strip() for p in date_text.split("~")]
-                    if len(parts) == 2:
-                        start_part = parts[0]
-                        end_part = parts[1]
-                        
-                        if "." in start_part:
-                            start_date = f"{year}.{start_part}"
-                        else:
-                            start_date = f"{year}.{month}.{start_part}"
-                        
-                        if "." in end_part:
-                            end_date = f"{year}.{end_part}"
-                        else:
-                            end_date = f"{year}.{month}.{end_part}"
-                else:
-                    start_date = f"{year}.{date_text}"
-                    end_date = start_date
+                start_date, end_date = parse_schedule_dates(year, month, date_text)
                 
                 # Check for duplicates within current session
                 unique_key = f"{event_text}|{start_date}|{end_date}"
@@ -166,6 +183,12 @@ def crawl_schedule():
         
         # 기존 데이터 중 새 데이터에 없는 항목 추가
         for key, schedule in existing_schedules.items():
+            if not is_valid_schedule_range(schedule):
+                print(
+                    f"    ⚠️  DROP INVALID RANGE: {schedule.get('title')} "
+                    f"({schedule.get('startDate')} ~ {schedule.get('endDate')})"
+                )
+                continue
             if key not in new_schedules_by_key:
                 all_schedules.append(schedule)
         
