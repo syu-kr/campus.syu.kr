@@ -13,7 +13,6 @@ import {
 } from "@/app/components/LocaleProvider";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 
-const today = new Date().toISOString().slice(0, 10);
 const MAX_DATE_COUNT = 14;
 
 type MeetDictionary = Dictionary["pages"]["meet"];
@@ -44,10 +43,11 @@ export default function MeetCreatePage() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.meet;
+  const [initialDate] = useState(() => formatKoreaDateInput());
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [dateStart, setDateStart] = useState(today);
-  const [dateEnd, setDateEnd] = useState(today);
+  const [dateStart, setDateStart] = useState(initialDate);
+  const [dateEnd, setDateEnd] = useState(initialDate);
   const [timeStart, setTimeStart] = useState("09:00");
   const [timeEnd, setTimeEnd] = useState("22:00");
   const [slotMinutes, setSlotMinutes] = useState(30);
@@ -58,6 +58,7 @@ export default function MeetCreatePage() {
   const [joinError, setJoinError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState("");
   const [mode, setMode] = useState<"join" | "create">("join");
 
   const rangeValidation = useMemo(
@@ -73,6 +74,7 @@ export default function MeetCreatePage() {
     event.preventDefault();
     setError("");
     setCopied(false);
+    setCopyError("");
 
     if (!rangeValidation.isValid) {
       setError(text.rangeInvalid);
@@ -128,8 +130,14 @@ export default function MeetCreatePage() {
   const handleCopy = async () => {
     if (!inviteUrl) return;
 
-    await navigator.clipboard.writeText(inviteUrl);
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopied(true);
+      setCopyError("");
+    } catch {
+      setCopied(false);
+      setCopyError(text.copyFailed);
+    }
   };
 
   return (
@@ -419,6 +427,11 @@ export default function MeetCreatePage() {
                 >
                   {copied ? text.copied : text.copyLink}
                 </button>
+                {copyError && (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    {copyError}
+                  </p>
+                )}
                 <Link
                   href={localizePath(`/more/meet/${roomId}`, locale)}
                   className="rounded-lg border border-green-300 bg-white px-4 py-2 text-center text-sm font-semibold text-green-800 hover:border-green-500"
@@ -504,6 +517,20 @@ function localizeInviteUrl(value: string, locale: Locale): string {
   } catch {
     return localizePath(value, locale);
   }
+}
+
+function formatKoreaDateInput(date = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const values = Object.fromEntries(
+    parts.map((part) => [part.type, part.value]),
+  );
+
+  return `${values.year}-${values.month}-${values.day}`;
 }
 
 function getDateCount(dateStart: string, dateEnd: string): number {
