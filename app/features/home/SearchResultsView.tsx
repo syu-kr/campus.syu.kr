@@ -11,8 +11,10 @@ interface SearchResultsViewProps {
   searchResults?: HomeSearchResult[];
   categorizedResults: CategorizedSearchResults;
   isLoading: boolean;
+  isError: boolean;
   onSearch: (query: string) => void;
   onClear: () => void;
+  onRetry: () => void;
 }
 
 export function SearchResultsView({
@@ -20,8 +22,10 @@ export function SearchResultsView({
   searchResults,
   categorizedResults,
   isLoading,
+  isError,
   onSearch,
   onClear,
+  onRetry,
 }: SearchResultsViewProps) {
   const dictionary = useDictionary();
 
@@ -57,7 +61,24 @@ export function SearchResultsView({
         </div>
       )}
 
-      {!isLoading && (!searchResults || searchResults.length === 0) && (
+      {!isLoading && isError && (
+        <StateCard
+          type="error"
+          title={dictionary.search.loadFailedTitle}
+          message={dictionary.search.loadFailedMessage}
+          action={
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+            >
+              {dictionary.search.retry}
+            </button>
+          }
+        />
+      )}
+
+      {!isLoading && !isError && (!searchResults || searchResults.length === 0) && (
         <StateCard
           type="info"
           title={dictionary.search.noResultsTitle}
@@ -74,7 +95,7 @@ export function SearchResultsView({
         />
       )}
 
-      {!isLoading && searchResults && searchResults.length > 0 && (
+      {!isLoading && !isError && searchResults && searchResults.length > 0 && (
         <SearchResultSection
           categorizedResults={categorizedResults}
           searchQuery={searchQuery}

@@ -80,6 +80,7 @@ export async function fetchAnnouncementPage({
       totalPages: 1,
     },
     noStore: Boolean(query),
+    throwOnError: true,
   });
 }
 
@@ -230,22 +231,18 @@ export async function searchAll(
 
   const lowerQuery = query.toLowerCase();
 
-  try {
-    const results = await Promise.all([
-      searchSchedules(lowerQuery),
-      searchAnnouncementApi(lowerQuery),
-      searchPhoneNumberSource(query, lowerQuery),
-    ]);
+  const results = await Promise.all([
+    searchSchedules(lowerQuery),
+    searchAnnouncementApi(lowerQuery),
+    searchPhoneNumberSource(query, lowerQuery),
+  ]);
 
-    const uniqueResults = sortSearchResults(
-      dedupeSearchResults(results.flat()),
-      query,
-    );
+  const uniqueResults = sortSearchResults(
+    dedupeSearchResults(results.flat()),
+    query,
+  );
 
-    return uniqueResults.slice(0, 100); // 최대 100개로 제한
-  } catch {
-    return [];
-  }
+  return uniqueResults.slice(0, 100); // 최대 100개로 제한
 }
 
 type SearchAllResult =
@@ -256,7 +253,7 @@ type SearchAllResult =
 async function searchSchedules(query: string): Promise<AcademicSchedule[]> {
   const schedules = await fetchJson<AcademicSchedule[]>(
     "/data/schedules-major.json",
-    { fallback: [] },
+    { fallback: [], throwOnError: true },
   );
 
   return schedules.filter(
@@ -283,7 +280,12 @@ async function searchPhoneNumberSource(
 ): Promise<PhoneNumber[]> {
   const phoneNumbers = await fetchJson<PhoneNumber[]>(
     "/data/phone-numbers.json",
-    { fallback: [], noStore: false, next: { revalidate: 604800 } },
+    {
+      fallback: [],
+      noStore: false,
+      next: { revalidate: 604800 },
+      throwOnError: true,
+    },
   );
 
   return phoneNumbers.filter(

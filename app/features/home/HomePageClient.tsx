@@ -22,6 +22,7 @@ import {
   getTodayInfo,
   isScheduleOnDate,
 } from "@/lib/home";
+import { isCafeteriaMenuDataStale } from "@/lib/cafeteria";
 import type {
   AcademicSchedule,
   Announcement,
@@ -143,7 +144,12 @@ export function HomePageClient({
     gcTime: THIRTY_MINUTES,
   });
 
-  const { data: searchResults, isLoading: searchLoading } = useQuery({
+  const {
+    data: searchResults,
+    isLoading: searchLoading,
+    isError: searchError,
+    refetch: refetchSearch,
+  } = useQuery({
     queryKey: ["search", searchQuery],
     queryFn: () => searchAll(searchQuery),
     enabled: showSearchResults && searchQuery.trim().length > 0,
@@ -162,11 +168,15 @@ export function HomePageClient({
   }, []);
 
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
+  const hasStaleCafeteriaData = useMemo(
+    () => isCafeteriaMenuDataStale(cafeteria, todayInfo.dateStringDash),
+    [cafeteria, todayInfo.dateStringDash],
+  );
 
   const todayMenu = useMemo(() => {
-    if (!cafeteria) return null;
+    if (!cafeteria || hasStaleCafeteriaData) return null;
     return cafeteria.find((menu) => menu.date === todayInfo.dateStringDash);
-  }, [cafeteria, todayInfo]);
+  }, [cafeteria, hasStaleCafeteriaData, todayInfo.dateStringDash]);
 
   const todaySchedules = useMemo(() => {
     if (!schedules) return [];
@@ -194,8 +204,10 @@ export function HomePageClient({
         searchResults={searchResults}
         categorizedResults={categorizedResults}
         isLoading={searchLoading}
+        isError={searchError}
         onSearch={handleSearch}
         onClear={handleSearchClear}
+        onRetry={() => refetchSearch()}
       />
     );
   }
@@ -208,6 +220,7 @@ export function HomePageClient({
         isLoading={cafeteriaLoading}
         todayInfo={todayInfo}
         todayMenu={todayMenu ?? null}
+        hasStaleMenuData={hasStaleCafeteriaData}
       />
       <TodayShuttleSection
         isLoading={shuttleBusesLoading || shuttleSpecialPeriodsLoading}
