@@ -26,6 +26,8 @@ const SOURCES = [
   { category: "academic", file: "announcements-academic.json" },
   { category: "campus", file: "announcements-campus-life.json" },
   { category: "scholarship", file: "announcements-scholarship.json" },
+  { category: "campus", file: "announcements-events.json" },
+  { category: "campus", file: "announcements-departments.json" },
 ];
 
 async function main() {
@@ -261,7 +263,7 @@ async function readAnnouncements() {
         id: String(item.id || ""),
         title: String(item.title || ""),
         content: String(item.content || ""),
-        category: item.category || category,
+        category: toAnnouncementCategory(item.category, category),
         date: String(item.date || ""),
         author: String(item.author || ""),
         url: typeof item.url === "string" ? item.url : "",
@@ -272,6 +274,12 @@ async function readAnnouncements() {
   );
 
   return groups.flat().sort(compareAnnouncementPriority);
+}
+
+function toAnnouncementCategory(value, fallback) {
+  return ["academic", "campus", "scholarship"].includes(value)
+    ? value
+    : fallback;
 }
 
 async function readExistingMetadata() {

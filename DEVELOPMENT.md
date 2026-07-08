@@ -166,6 +166,10 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `CRAWL_ACADEMIC_NOTICES_URL` | 필수 | `crawl-daily.yml` | 학사공지 목록 page base URL |
 | `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
 | `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
+| `CRAWL_EVENT_NOTICES_URL` | 선택 | `crawl-daily.yml` | 행사공지 목록 page base URL. 비워두면 삼육대 행사공지 기본 URL 사용 |
+| `CRAWL_DEPARTMENT_DIRECTORY_URL` | 선택 | `crawl-daily.yml` | 공식 학과 홈페이지 목록 URL. 비워두면 삼육대 교내홈페이지 기본 URL 사용 |
+| `CRAWL_DEPARTMENT_NOTICE_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 탐색 페이지 수, 기본값 `3` |
+| `CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS` | 선택 | `crawl-daily.yml` | 학과 사이트 간 요청 대기 시간(초), 기본값 `0.25` |
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
@@ -200,6 +204,8 @@ pip install -r requirements.txt
 python scripts/crawl_announcements.py
 python scripts/crawl_scholarships.py
 python scripts/crawl_campus.py
+python scripts/crawl_events.py
+python scripts/crawl_department_notices.py
 python scripts/crawl_cafeteria.py
 python scripts/crawl_schedule.py
 python scripts/crawl_phone.py

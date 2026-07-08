@@ -742,12 +742,13 @@ export const dictionaries = {
       competitions: {
         title: "공모전·대회",
         description:
-          "학교 공식 공지에 올라온 공모전, 경진대회, 해커톤 정보를 모아 확인하세요",
+          "학교와 학과 공식 공지에 올라온 공모전, 경진대회, 해커톤 정보를 모아 확인하세요",
         metaDescription:
-          "삼육대학교 공식 공지 기반 공모전, 경진대회, 해커톤, 아이디어톤 모집 및 결과 모음",
+          "삼육대학교 공식 공지와 학과 공지 기반 공모전, 경진대회, 해커톤, 아이디어톤 모집 및 결과 모음",
         sourceNotice:
-          "학교 공식 공지 데이터에서 대회·공모전 성격의 글만 분류합니다.",
+          "학교·학과 공식 공지 데이터에서 대회·공모전 성격의 글만 분류합니다. AI 요약은 빠른 확인용 참고 정보입니다.",
         searchPlaceholder: "공모전, 해커톤, 경진대회, 아이디어, 수상자...",
+        countSeparator: "",
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
         empty: "조건에 맞는 공모전·대회 공지가 없습니다.",
@@ -766,6 +767,7 @@ export const dictionaries = {
         sourceFilters: {
           all: "전체 출처",
           event: "행사공지",
+          department: "학과공지",
           academic: "학사공지",
           campus: "캠퍼스공지",
           scholarship: "장학공지",
@@ -2391,13 +2393,14 @@ export const dictionaries = {
       competitions: {
         title: "Contests & Competitions",
         description:
-          "Browse contest, competition, hackathon, and idea challenge notices from official school announcements",
+          "Browse contest, competition, hackathon, and idea challenge notices from official school and department announcements",
         metaDescription:
-          "Official Sahmyook University notice-based contests, competitions, hackathons, idea challenges, calls, and results",
+          "Official Sahmyook University and department notice-based contests, competitions, hackathons, idea challenges, calls, and results",
         sourceNotice:
-          "This page classifies only contest and competition-like posts from official school notice data.",
+          "This page classifies only contest and competition-like posts from official school and department notice data. AI summaries are for quick reference.",
         searchPlaceholder:
           "Contest, hackathon, competition, idea, winners...",
+        countSeparator: " ",
         foundItems: "items found",
         searchQuery: "query",
         empty: "No contest or competition notices match these filters.",
@@ -2415,6 +2418,7 @@ export const dictionaries = {
         sourceFilters: {
           all: "All Sources",
           event: "Event Notices",
+          department: "Department Notices",
           academic: "Academic Notices",
           campus: "Campus Notices",
           scholarship: "Scholarship Notices",

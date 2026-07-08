@@ -10,6 +10,7 @@ import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { AnnouncementAiSummary } from "@/app/components/AnnouncementAiSummary";
 import { fetchCompetitionPage } from "@/lib/api";
 import type { Dictionary } from "@/lib/i18n";
 import { formatDateWithYear } from "@/lib/utils";
@@ -34,6 +35,7 @@ const statusFilters: CompetitionStatusFilter[] = [
 const sourceFilters: CompetitionSourceFilter[] = [
   "all",
   "event",
+  "department",
   "academic",
   "campus",
   "scholarship",
@@ -128,7 +130,7 @@ export function CompetitionsPageClient() {
 
       {!isLoading && !isError && (
         <div className="mb-4 text-sm text-neutral-600">
-          {localeAwareResultCount(total, text.foundItems)}
+          {`${total}${text.countSeparator}${text.foundItems}`}
           {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
         </div>
       )}
@@ -213,6 +215,8 @@ function CompetitionCard({
   const href = competition.url;
   const overlayLabel = `${competition.title} ${text.originalLink}`;
   const preview = competition.content.trim().replace(/\s+/g, " ");
+  const authorLabel =
+    competition.sourceName || competition.author || text.defaultAuthor;
 
   return (
     <Card
@@ -257,9 +261,15 @@ function CompetitionCard({
             {preview}
           </p>
         )}
+        {competition.aiSummary?.summary && (
+          <AnnouncementAiSummary
+            aiSummary={competition.aiSummary}
+            variant="preview"
+          />
+        )}
         <div className="flex items-center justify-between border-t border-neutral-100 pt-2 text-xs text-neutral-500">
           <span>{formatDateWithYear(competition.date)}</span>
-          <span>{competition.author || text.defaultAuthor}</span>
+          <span className="ml-3 truncate text-right">{authorLabel}</span>
         </div>
       </div>
     </Card>
@@ -289,6 +299,7 @@ function getSourceFilterLabel(
 ): string {
   if (source === "all") return text.sourceFilters.all;
   if (source === "event") return text.sourceFilters.event;
+  if (source === "department") return text.sourceFilters.department;
   if (source === "academic") return text.sourceFilters.academic;
   if (source === "campus") return text.sourceFilters.campus;
   return text.sourceFilters.scholarship;
@@ -311,6 +322,7 @@ function getSourceColor(
   source: CompetitionSourceCategory,
 ): "blue" | "red" | "green" | "yellow" | "purple" | "gray" {
   if (source === "event") return "purple";
+  if (source === "department") return "red";
   if (source === "academic") return "blue";
   if (source === "campus") return "green";
   if (source === "scholarship") return "yellow";
@@ -334,8 +346,4 @@ function getKindColor(
   if (kind === "presentation") return "green";
   if (kind === "program") return "gray";
   return "blue";
-}
-
-function localeAwareResultCount(total: number, label: string) {
-  return label.startsWith("개") ? `${total}${label}` : `${total} ${label}`;
 }

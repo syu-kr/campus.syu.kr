@@ -1,6 +1,9 @@
 import type { Announcement, AnnouncementCategory } from "./announcements";
 
-export type CompetitionSourceCategory = AnnouncementCategory | "event";
+export type CompetitionSourceCategory =
+  | AnnouncementCategory
+  | "event"
+  | "department";
 
 export type CompetitionSourceFilter = CompetitionSourceCategory | "all";
 
@@ -24,6 +27,8 @@ export interface CompetitionAnnouncement
   competitionStatus: CompetitionStatus;
   competitionKind: CompetitionKind;
   matchedKeywords: string[];
+  sourceName?: string;
+  sourceUrl?: string;
 }
 
 export interface CompetitionPageResponse {

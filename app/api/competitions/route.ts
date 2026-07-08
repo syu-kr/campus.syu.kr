@@ -13,6 +13,7 @@ const VALID_SOURCES = new Set<CompetitionSourceFilter>([
   "campus",
   "scholarship",
   "event",
+  "department",
 ]);
 
 const VALID_STATUSES = new Set<CompetitionStatusFilter>([

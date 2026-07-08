@@ -22,6 +22,10 @@ jobs:
       CRAWL_ACADEMIC_NOTICES_URL: ${{ vars.CRAWL_ACADEMIC_NOTICES_URL }}
       CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
       CRAWL_CAMPUS_NOTICES_URL: ${{ vars.CRAWL_CAMPUS_NOTICES_URL }}
+      CRAWL_EVENT_NOTICES_URL: ${{ vars.CRAWL_EVENT_NOTICES_URL }}
+      CRAWL_DEPARTMENT_DIRECTORY_URL: ${{ vars.CRAWL_DEPARTMENT_DIRECTORY_URL }}
+      CRAWL_DEPARTMENT_NOTICE_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_MAX_PAGES }}
+      CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
 
     steps:
@@ -65,6 +69,12 @@ jobs:
 
       - name: Run campus life notices crawler
         run: python scripts/crawl_campus.py
+
+      - name: Run event notices crawler
+        run: python scripts/crawl_events.py
+
+      - name: Run department notices crawler
+        run: python scripts/crawl_department_notices.py
 
       - name: Run cafeteria menu crawler
         run: python scripts/crawl_cafeteria.py

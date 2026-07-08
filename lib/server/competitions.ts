@@ -1,7 +1,9 @@
 import { readFile } from "fs/promises";
 import path from "path";
+import { attachAnnouncementAiSummaries } from "@/lib/server/announcement-ai";
 import type {
   AnnouncementCategory,
+  AnnouncementAiSummary,
   CompetitionAnnouncement,
   CompetitionKind,
   CompetitionPageResponse,
@@ -30,6 +32,10 @@ type RawAnnouncement = {
   isImportant?: unknown;
   isPinned?: unknown;
   url?: unknown;
+  sourceName?: unknown;
+  sourceUrl?: unknown;
+  departmentName?: unknown;
+  departmentUrl?: unknown;
 };
 
 const SOURCE_BY_CATEGORY: Record<CompetitionSourceCategory, string> = {
@@ -37,10 +43,12 @@ const SOURCE_BY_CATEGORY: Record<CompetitionSourceCategory, string> = {
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
   event: "announcements-events.json",
+  department: "announcements-departments.json",
 };
 
 const SOURCE_ORDER: CompetitionSourceCategory[] = [
   "event",
+  "department",
   "academic",
   "campus",
   "scholarship",
@@ -166,6 +174,8 @@ const RESULT_TERMS = [
 
 const CLOSED_TERMS = ["마감", "취소", "종료"];
 
+const UNKNOWN_AI_VALUES = new Set(["", "unknown", "미정", "없음", "해당 없음"]);
+
 export async function getCompetitionPage({
   source = "all",
   status = "open",
@@ -237,23 +247,27 @@ async function readCompetitionAnnouncementsFromDisk(
   const content = await readFile(filePath, "utf8");
   const items = JSON.parse(content) as RawAnnouncement[];
 
-  return items
-    .map((item, index) => toCompetitionAnnouncement(item, sourceCategory, index))
+  const candidates = items
+    .map((item, index) => toCompetitionCandidate(item, sourceCategory, index))
+    .filter((item): item is CompetitionAnnouncement => item !== null);
+  const withAiSummaries = (await attachAnnouncementAiSummaries(
+    candidates,
+  )) as CompetitionAnnouncement[];
+
+  return withAiSummaries
+    .map(applyCompetitionAnalysis)
     .filter((item): item is CompetitionAnnouncement => item !== null);
 }
 
-function toCompetitionAnnouncement(
+function toCompetitionCandidate(
   item: RawAnnouncement,
   sourceCategory: CompetitionSourceCategory,
   index: number,
 ): CompetitionAnnouncement | null {
   const title = readString(item.title);
   const content = readString(item.content);
-  const searchableText = normalizeText(`${title} ${content}`);
-  const matchedKeywords = getMatchedKeywords(searchableText);
 
-  if (matchedKeywords.length === 0) return null;
-  if (isExcludedCompetition(searchableText)) return null;
+  if (!title) return null;
 
   return {
     id: readString(item.id) || `${sourceCategory}-${index}`,
@@ -267,7 +281,33 @@ function toCompetitionAnnouncement(
     isImportant: Boolean(item.isImportant),
     isPinned: Boolean(item.isPinned),
     url: readOptionalString(item.url),
-    competitionStatus: getCompetitionStatus(searchableText),
+    competitionStatus: "open",
+    competitionKind: "contest",
+    matchedKeywords: [],
+    sourceName:
+      readOptionalString(item.sourceName) ||
+      readOptionalString(item.departmentName),
+    sourceUrl:
+      readOptionalString(item.sourceUrl) ||
+      readOptionalString(item.departmentUrl),
+  };
+}
+
+function applyCompetitionAnalysis(
+  announcement: CompetitionAnnouncement,
+): CompetitionAnnouncement | null {
+  const searchableText = getCompetitionAnalysisText(announcement);
+  const matchedKeywords = getMatchedKeywords(searchableText);
+
+  if (matchedKeywords.length === 0) return null;
+  if (isExcludedCompetition(searchableText)) return null;
+
+  return {
+    ...announcement,
+    competitionStatus: getCompetitionStatus(
+      searchableText,
+      announcement.aiSummary,
+    ),
     competitionKind: getCompetitionKind(searchableText),
     matchedKeywords,
   };
@@ -311,9 +351,21 @@ function isExcludedCompetition(searchableText: string): boolean {
   return false;
 }
 
-function getCompetitionStatus(searchableText: string): CompetitionStatus {
+function getCompetitionStatus(
+  searchableText: string,
+  aiSummary: AnnouncementAiSummary | undefined,
+): CompetitionStatus {
   if (RESULT_TERMS.some((term) => searchableText.includes(term))) {
     return "result";
+  }
+
+  const deadlineStatus = getAiDeadlineStatus(aiSummary?.deadline);
+  if (deadlineStatus === "future") {
+    return "open";
+  }
+
+  if (deadlineStatus === "past") {
+    return "closed";
   }
 
   if (CLOSED_TERMS.some((term) => searchableText.includes(term))) {
@@ -370,12 +422,94 @@ function getSearchText(announcement: CompetitionAnnouncement): string {
       announcement.title,
       announcement.content,
       announcement.author,
+      announcement.sourceName,
       announcement.sourceCategory,
       announcement.competitionStatus,
       announcement.competitionKind,
       ...announcement.matchedKeywords,
+      announcement.aiSummary?.summary,
+      announcement.aiSummary?.target,
+      announcement.aiSummary?.deadline,
+      announcement.aiSummary?.requiredAction,
+      ...(announcement.aiSummary?.keywords || []),
     ].join(" "),
   );
+}
+
+function getCompetitionAnalysisText(
+  announcement: CompetitionAnnouncement,
+): string {
+  return normalizeText(
+    [
+      announcement.title,
+      announcement.content,
+      announcement.author,
+      announcement.sourceName,
+      announcement.aiSummary?.summary,
+      announcement.aiSummary?.target,
+      announcement.aiSummary?.deadline,
+      announcement.aiSummary?.requiredAction,
+      ...(announcement.aiSummary?.keywords || []),
+    ].join(" "),
+  );
+}
+
+function getAiDeadlineStatus(
+  deadline: string | undefined,
+): "future" | "past" | "unknown" {
+  const normalizedDeadline = normalizeText(deadline || "");
+  if (UNKNOWN_AI_VALUES.has(normalizedDeadline)) return "unknown";
+  if (normalizedDeadline.includes("상시")) return "unknown";
+
+  const parsed = parseDeadlineDate(deadline || "");
+  if (!parsed) return "unknown";
+
+  const endOfDeadline = new Date(parsed);
+  endOfDeadline.setHours(23, 59, 59, 999);
+
+  return Date.now() > endOfDeadline.getTime() ? "past" : "future";
+}
+
+function parseDeadlineDate(value: string): Date | null {
+  const explicitYearMatch = value.match(
+    /(20\d{2})\s*[년.\-/]\s*(\d{1,2})\s*[월.\-/]\s*(\d{1,2})/,
+  );
+  if (explicitYearMatch) {
+    return buildDate(
+      Number(explicitYearMatch[1]),
+      Number(explicitYearMatch[2]),
+      Number(explicitYearMatch[3]),
+    );
+  }
+
+  const monthDayMatch = value.match(
+    /(?:^|[^0-9])(\d{1,2})\s*[월.\-/]\s*(\d{1,2})\s*일?/,
+  );
+  if (!monthDayMatch) return null;
+
+  return buildDate(
+    new Date().getFullYear(),
+    Number(monthDayMatch[1]),
+    Number(monthDayMatch[2]),
+  );
+}
+
+function buildDate(year: number, month: number, day: number): Date | null {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
 }
 
 function toAnnouncementCategory(
