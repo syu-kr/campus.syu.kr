@@ -7,6 +7,9 @@ import {
   ShuttleSpecialPeriods,
   BusLocation,
   CampusTip,
+  CompetitionPageResponse,
+  CompetitionSourceFilter,
+  CompetitionStatusFilter,
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
@@ -94,6 +97,40 @@ export async function fetchAnnouncementSummary(): Promise<Announcement[]> {
   } catch {
     return [];
   }
+}
+
+export async function fetchCompetitionPage({
+  source = "all",
+  status = "open",
+  query = "",
+  page = 1,
+  limit = 10,
+}: {
+  source?: CompetitionSourceFilter;
+  status?: CompetitionStatusFilter;
+  query?: string;
+  page?: number;
+  limit?: number;
+}): Promise<CompetitionPageResponse> {
+  const params = new URLSearchParams({
+    source,
+    status,
+    query,
+    page: String(page),
+    limit: String(limit),
+  });
+
+  return fetchJson<CompetitionPageResponse>(`/api/competitions?${params}`, {
+    fallback: {
+      items: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1,
+    },
+    noStore: Boolean(query),
+    throwOnError: true,
+  });
 }
 
 // 학식 API - 크롤링된 실제 데이터 사용

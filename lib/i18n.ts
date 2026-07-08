@@ -289,6 +289,8 @@ export const dictionaries = {
         announcementsDescription: "학사 관련 공지사항",
         scheduleTitle: "학사일정",
         scheduleDescription: "수강신청, 시험, 휴무 일정",
+        competitionsTitle: "공모전·대회",
+        competitionsDescription: "학교 공지 기반 모집 및 결과",
         scholarshipTitle: "장학금",
         scholarshipDescription: "장학금 공지 및 신청",
         graduationTitle: "졸업요건 확인",
@@ -736,6 +738,47 @@ export const dictionaries = {
         aiInsightTitle: "AI 핵심 정리",
         sourceNotice:
           "AI 요약은 원문 공지와 수집 데이터를 바탕으로 만든 참고 정보입니다. 신청, 제출, 비용, 일정은 원문 공지를 반드시 확인하세요.",
+      },
+      competitions: {
+        title: "공모전·대회",
+        description:
+          "학교 공식 공지에 올라온 공모전, 경진대회, 해커톤 정보를 모아 확인하세요",
+        metaDescription:
+          "삼육대학교 공식 공지 기반 공모전, 경진대회, 해커톤, 아이디어톤 모집 및 결과 모음",
+        sourceNotice:
+          "학교 공식 공지 데이터에서 대회·공모전 성격의 글만 분류합니다.",
+        searchPlaceholder: "공모전, 해커톤, 경진대회, 아이디어, 수상자...",
+        foundItems: "개 항목 찾음",
+        searchQuery: "검색어",
+        empty: "조건에 맞는 공모전·대회 공지가 없습니다.",
+        error:
+          "공모전·대회 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        originalLink: "원문 공지 보기",
+        defaultAuthor: "삼육대학교",
+        statusFilters: {
+          all: "전체",
+        },
+        statuses: {
+          open: "모집/안내",
+          result: "결과",
+          closed: "마감/종료",
+        },
+        sourceFilters: {
+          all: "전체 출처",
+          event: "행사공지",
+          academic: "학사공지",
+          campus: "캠퍼스공지",
+          scholarship: "장학공지",
+        },
+        kinds: {
+          contest: "공모전",
+          competition: "대회",
+          hackathon: "해커톤",
+          idea: "아이디어",
+          capstone: "캡스톤",
+          presentation: "발표/토론",
+          program: "프로그램",
+        },
       },
       timetable: {
         backToAcademic: "학사 정보",
@@ -1871,6 +1914,8 @@ export const dictionaries = {
         announcementsDescription: "Academic-related notices",
         scheduleTitle: "Academic Schedule",
         scheduleDescription: "Registration, exams, and holidays",
+        competitionsTitle: "Contests & Competitions",
+        competitionsDescription: "Official notice-based calls and results",
         scholarshipTitle: "Scholarships",
         scholarshipDescription: "Scholarship notices and applications",
         graduationTitle: "Graduation Check",
@@ -2323,6 +2368,47 @@ export const dictionaries = {
         aiInsightTitle: "AI key takeaways",
         sourceNotice:
           "The AI summary is reference information generated from the original notice and collected data. Always confirm applications, submissions, costs, and dates in the original notice.",
+      },
+      competitions: {
+        title: "Contests & Competitions",
+        description:
+          "Browse contest, competition, hackathon, and idea challenge notices from official school announcements",
+        metaDescription:
+          "Official Sahmyook University notice-based contests, competitions, hackathons, idea challenges, calls, and results",
+        sourceNotice:
+          "This page classifies only contest and competition-like posts from official school notice data.",
+        searchPlaceholder:
+          "Contest, hackathon, competition, idea, winners...",
+        foundItems: "items found",
+        searchQuery: "query",
+        empty: "No contest or competition notices match these filters.",
+        error: "Could not load contest and competition notices. Please try again shortly.",
+        originalLink: "View original notice",
+        defaultAuthor: "Sahmyook University",
+        statusFilters: {
+          all: "All",
+        },
+        statuses: {
+          open: "Open/Notice",
+          result: "Results",
+          closed: "Closed",
+        },
+        sourceFilters: {
+          all: "All Sources",
+          event: "Event Notices",
+          academic: "Academic Notices",
+          campus: "Campus Notices",
+          scholarship: "Scholarship Notices",
+        },
+        kinds: {
+          contest: "Contest",
+          competition: "Competition",
+          hackathon: "Hackathon",
+          idea: "Idea",
+          capstone: "Capstone",
+          presentation: "Presentation",
+          program: "Program",
+        },
       },
       timetable: {
         backToAcademic: "Academic Info",

@@ -13,6 +13,11 @@ const PUBLIC_ROUTES = [
     changeFrequency: "daily",
     priority: 0.95,
   },
+  {
+    route: "/academic/competitions",
+    changeFrequency: "daily",
+    priority: 0.9,
+  },
   { route: "/academic/schedule", changeFrequency: "weekly", priority: 0.9 },
   { route: "/academic/timetable", changeFrequency: "monthly", priority: 0.85 },
   { route: "/academic/graduation", changeFrequency: "monthly", priority: 0.85 },
