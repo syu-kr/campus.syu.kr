@@ -102,7 +102,6 @@ export default function CampusTipsPage() {
           tip.note,
           getCategoryLabel(tip.category, text),
           getSourceLabel(tip.sourceType, text),
-          getViewLabel(selectedView, text),
           getContentKindLabel(getContentKind(tip), text),
           ...tip.tags,
         ]
@@ -250,57 +249,63 @@ export default function CampusTipsPage() {
         )}
 
         {!isLoading &&
-          paginatedTips.map((tip) => (
-            <a
-              key={tip.id}
-              href={tip.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-            >
-              <Card className="hover:shadow-card-hover">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <Badge color={getCategoryBadgeColor(tip.category)}>
-                        {getCategoryLabel(tip.category, text)}
-                      </Badge>
-                      <Badge color={getSourceBadgeColor(tip.sourceType)}>
-                        {getSourceLabel(tip.sourceType, text)}
-                      </Badge>
-                      <Badge color={getContentKindBadgeColor(getContentKind(tip))}>
-                        {getContentKindLabel(getContentKind(tip), text)}
-                      </Badge>
+          paginatedTips.map((tip) => {
+            const contentKind = getContentKind(tip);
+
+            return (
+              <a
+                key={tip.id}
+                href={tip.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Card className="hover:shadow-card-hover">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <Badge color={getCategoryBadgeColor(tip.category)}>
+                          {getCategoryLabel(tip.category, text)}
+                        </Badge>
+                        <Badge color={getSourceBadgeColor(tip.sourceType)}>
+                          {getSourceLabel(tip.sourceType, text)}
+                        </Badge>
+                        <Badge color={getContentKindBadgeColor(contentKind)}>
+                          {getContentKindLabel(contentKind, text)}
+                        </Badge>
+                      </div>
+                      <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
+                        {tip.title}
+                      </h2>
+                      {tip.description && (
+                        <p className="mt-2 text-sm text-neutral-600">
+                          {tip.description}
+                        </p>
+                      )}
+                      {tip.note && (
+                        <p className="mt-2 text-xs text-amber-700">
+                          {tip.note}
+                        </p>
+                      )}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {tip.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded bg-neutral-100 px-2 py-1 text-xs text-neutral-600"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
-                      {tip.title}
-                    </h2>
-                    {tip.description && (
-                      <p className="mt-2 text-sm text-neutral-600">
-                        {tip.description}
-                      </p>
-                    )}
-                    {tip.note && (
-                      <p className="mt-2 text-xs text-amber-700">{tip.note}</p>
-                    )}
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {tip.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded bg-neutral-100 px-2 py-1 text-xs text-neutral-600"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
+                    <span className="shrink-0 text-sm font-medium text-primary-600">
+                      {tip.urlLabel || text.externalUrlFallback}
+                    </span>
                   </div>
-                  <span className="shrink-0 text-sm font-medium text-primary-600">
-                    {tip.urlLabel || text.externalUrlFallback}
-                  </span>
-                </div>
-              </Card>
-            </a>
-          ))}
+                </Card>
+              </a>
+            );
+          })}
       </div>
 
       {!isLoading && totalPages > 1 && (
@@ -398,25 +403,25 @@ function matchesViewFilter(tip: CampusTip, view: CampusTipViewFilter): boolean {
   const kind = getContentKind(tip);
 
   if (view === "all") return true;
-  if (view === "campus-tips") return isDirectCampusTip(tip);
+  if (view === "campus-tips") return isDirectCampusTip(tip, kind);
   if (view === "essential") {
     return (
-      isDirectCampusTip(tip) &&
+      isDirectCampusTip(tip, kind) &&
       (kind === "official-link" || kind === "public-link")
     );
   }
   if (view === "department") {
-    return isDirectCampusTip(tip) && kind === "department-channel";
+    return isDirectCampusTip(tip, kind) && kind === "department-channel";
   }
   if (view === "study") return kind === "study-review";
   if (view === "external") {
-    return !isDirectCampusTip(tip) && kind !== "study-review";
+    return !isDirectCampusTip(tip, kind) && kind !== "study-review";
   }
 
   return (
-    (isDirectCampusTip(tip) && kind === "local-life") ||
+    (isDirectCampusTip(tip, kind) && kind === "local-life") ||
     (tip.category === "campus-life" &&
-      isDirectCampusTip(tip) &&
+      isDirectCampusTip(tip, kind) &&
       kind !== "study-review" &&
       kind !== "community-post" &&
       kind !== "external-directory")
@@ -490,14 +495,15 @@ function getVisibility(tip: CampusTip): CampusTipVisibility {
   if (tip.visibility) return tip.visibility;
 
   const kind = getContentKind(tip);
-  if (isDirectCampusTip(tip)) return "featured";
+  if (isDirectCampusTip(tip, kind)) return "featured";
   if (kind === "department-channel" || kind === "local-life") return "default";
   return "archive";
 }
 
-function isDirectCampusTip(tip: CampusTip): boolean {
-  const kind = getContentKind(tip);
-
+function isDirectCampusTip(
+  tip: CampusTip,
+  kind = getContentKind(tip),
+): boolean {
   if (
     kind === "external-directory" ||
     kind === "community-post" ||
@@ -529,25 +535,22 @@ function isDirectCampusTip(tip: CampusTip): boolean {
 function getContentKind(tip: CampusTip): CampusTipContentKind {
   if (tip.contentKind) return tip.contentKind;
 
-  const joinedTags = tip.tags.join(" ");
-  const text = `${tip.id} ${tip.title} ${joinedTags} ${tip.url}`.toLowerCase();
-
   if (
     tip.id.startsWith("school-instagram-") ||
-    text.includes("instagram.com")
+    hasUrlHost(tip.url, ["instagram.com"])
   ) {
     return "department-channel";
   }
 
-  if (isSutoryReviewTip(tip, text)) {
+  if (isSutoryReviewTip(tip)) {
     return "study-review";
   }
 
-  if (tip.sourceType === "community" || text.includes("everytime.kr")) {
+  if (tip.sourceType === "community" || hasUrlHost(tip.url, ["everytime.kr"])) {
     return "community-post";
   }
 
-  if (isExternalReferenceTip(tip, text)) {
+  if (isExternalReferenceTip(tip)) {
     return "external-directory";
   }
 
@@ -561,10 +564,7 @@ function getContentKind(tip: CampusTip): CampusTipContentKind {
   return "external-directory";
 }
 
-function isExternalReferenceTip(
-  tip: CampusTip,
-  searchableText: string,
-): boolean {
+function isExternalReferenceTip(tip: CampusTip): boolean {
   if (tip.category === "activity" || tip.category === "career") return true;
 
   if (
@@ -575,22 +575,22 @@ function isExternalReferenceTip(
     return true;
   }
 
-  return [
+  return hasUrlHost(tip.url, [
     "linkareer.com",
     "allforyoung.com",
     "wevity.com",
     "contestkorea.com",
     "all-con.co.kr",
     "ssgsag.kr",
-  ].some((domain) => searchableText.includes(domain));
+  ]);
 }
 
-function isSutoryReviewTip(tip: CampusTip, searchableText: string): boolean {
-  if (
-    searchableText.includes("sutory.syu.ac.kr/archives/") ||
-    searchableText.includes("sutory.syu.ac.kr/infinity/")
-  ) {
-    return true;
+function isSutoryReviewTip(tip: CampusTip): boolean {
+  if (hasUrlHost(tip.url, ["sutory.syu.ac.kr"])) {
+    const pathname = getUrlPathname(tip.url);
+    if (pathname.startsWith("/archives/") || pathname.startsWith("/infinity/")) {
+      return true;
+    }
   }
 
   if (!tip.id.startsWith("campus-life-sutory-")) return false;
@@ -662,4 +662,29 @@ function getSourceBadgeColor(
   if (sourceType === "public") return "green";
   if (sourceType === "community") return "yellow";
   return "gray";
+}
+
+function hasUrlHost(url: string, allowedHosts: string[]): boolean {
+  const host = getUrlHost(url);
+  if (!host) return false;
+
+  return allowedHosts.some(
+    (allowedHost) => host === allowedHost || host.endsWith(`.${allowedHost}`),
+  );
+}
+
+function getUrlHost(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/\.$/, "");
+  } catch {
+    return "";
+  }
+}
+
+function getUrlPathname(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return "";
+  }
 }
