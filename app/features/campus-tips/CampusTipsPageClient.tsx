@@ -21,13 +21,33 @@ import { usePagination } from "@/lib/use-pagination";
 import type {
   CampusTip,
   CampusTipCategory,
+  CampusTipContentKind,
   CampusTipSourceType,
+  CampusTipVisibility,
 } from "@/types";
 
 const ONE_HOUR = 60 * 60 * 1000;
 const ONE_DAY = 24 * ONE_HOUR;
 const ITEMS_PER_PAGE = 12;
 type CampusTipsDictionary = Dictionary["pages"]["campusTips"];
+type CampusTipViewFilter =
+  | "featured"
+  | "essential"
+  | "department"
+  | "campus-life"
+  | "study"
+  | "external"
+  | "all";
+
+const viewFilters: CampusTipViewFilter[] = [
+  "featured",
+  "essential",
+  "department",
+  "campus-life",
+  "study",
+  "external",
+  "all",
+];
 
 const categoryFilters: Array<CampusTipCategory | "all"> = [
   "all",
@@ -52,6 +72,8 @@ export default function CampusTipsPage() {
   const text = dictionary.pages.campusTips;
   const suggestText = dictionary.pages.campusTipsSuggest;
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedView, setSelectedView] =
+    useState<CampusTipViewFilter>("featured");
   const [selectedCategory, setSelectedCategory] = useState<
     CampusTipCategory | "all"
   >("all");
@@ -68,6 +90,7 @@ export default function CampusTipsPage() {
     const query = searchQuery.trim().toLowerCase();
 
     return tips
+      .filter((tip) => matchesViewFilter(tip, selectedView))
       .filter((tip) =>
         selectedCategory === "all" ? true : tip.category === selectedCategory,
       )
@@ -79,6 +102,8 @@ export default function CampusTipsPage() {
           tip.note,
           getCategoryLabel(tip.category, text),
           getSourceLabel(tip.sourceType, text),
+          getViewLabel(selectedView, text),
+          getContentKindLabel(getContentKind(tip), text),
           ...tip.tags,
         ]
           .filter(Boolean)
@@ -87,7 +112,7 @@ export default function CampusTipsPage() {
         return searchable.includes(query);
       })
       .sort((a, b) => sortTips(a, b, locale));
-  }, [locale, searchQuery, selectedCategory, text, tips]);
+  }, [locale, searchQuery, selectedCategory, selectedView, text, tips]);
   const {
     currentPage,
     setCurrentPage,
@@ -101,6 +126,11 @@ export default function CampusTipsPage() {
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleViewChange = (view: CampusTipViewFilter) => {
+    setSelectedView(view);
     setCurrentPage(1);
   };
 
@@ -143,6 +173,25 @@ export default function CampusTipsPage() {
         onClear={() => handleSearchChange("")}
         searchOnChange
       />
+
+      <div className="mb-3 -mx-4 overflow-x-auto px-4">
+        <div className="flex min-w-max gap-2 pb-1">
+          {viewFilters.map((view) => (
+            <button
+              key={view}
+              type="button"
+              onClick={() => handleViewChange(view)}
+              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                selectedView === view
+                  ? "bg-neutral-900 text-white"
+                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
+              }`}
+            >
+              {getViewLabel(view, text)}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="mb-5 -mx-4 overflow-x-auto px-4">
         <div className="flex min-w-max gap-2 pb-1">
@@ -206,6 +255,9 @@ export default function CampusTipsPage() {
                       </Badge>
                       <Badge color={getSourceBadgeColor(tip.sourceType)}>
                         {getSourceLabel(tip.sourceType, text)}
+                      </Badge>
+                      <Badge color={getContentKindBadgeColor(getContentKind(tip))}>
+                        {getContentKindLabel(getContentKind(tip), text)}
                       </Badge>
                     </div>
                     <h2 className="text-base font-bold text-neutral-900 sm:text-lg">
@@ -305,6 +357,16 @@ export default function CampusTipsPage() {
 }
 
 function sortTips(a: CampusTip, b: CampusTip, locale: string): number {
+  const visibilityDiff =
+    getVisibilityPriority(getVisibility(a)) -
+    getVisibilityPriority(getVisibility(b));
+  if (visibilityDiff !== 0) return visibilityDiff;
+
+  const kindDiff =
+    getContentKindPriority(getContentKind(a)) -
+    getContentKindPriority(getContentKind(b));
+  if (kindDiff !== 0) return kindDiff;
+
   const categoryDiff =
     (categoryOrder.get(a.category) ?? 99) -
     (categoryOrder.get(b.category) ?? 99);
@@ -318,6 +380,43 @@ function sortTips(a: CampusTip, b: CampusTip, locale: string): number {
   if (sourceDiff !== 0) return sourceDiff;
 
   return a.title.localeCompare(b.title, locale);
+}
+
+function matchesViewFilter(tip: CampusTip, view: CampusTipViewFilter): boolean {
+  const kind = getContentKind(tip);
+  const visibility = getVisibility(tip);
+
+  if (view === "all") return true;
+  if (view === "featured") return visibility === "featured";
+  if (view === "essential") {
+    return kind === "official-link" || kind === "public-link";
+  }
+  if (view === "department") return kind === "department-channel";
+  if (view === "study") return kind === "study-review";
+  if (view === "external") {
+    return kind === "external-directory" || kind === "community-post";
+  }
+
+  return (
+    kind === "local-life" ||
+    (tip.category === "campus-life" &&
+      kind !== "study-review" &&
+      kind !== "community-post" &&
+      kind !== "external-directory")
+  );
+}
+
+function getViewLabel(
+  view: CampusTipViewFilter,
+  text: CampusTipsDictionary,
+): string {
+  if (view === "featured") return text.views.featured;
+  if (view === "essential") return text.views.essential;
+  if (view === "department") return text.views.department;
+  if (view === "campus-life") return text.views.campusLife;
+  if (view === "study") return text.views.study;
+  if (view === "external") return text.views.external;
+  return text.views.all;
 }
 
 function getCategoryLabel(
@@ -345,12 +444,122 @@ function getSourceLabel(
   return text.sources.external;
 }
 
+function getContentKindLabel(
+  contentKind: CampusTipContentKind,
+  text: CampusTipsDictionary,
+): string {
+  if (contentKind === "official-link") return text.contentKinds.officialLink;
+  if (contentKind === "public-link") return text.contentKinds.publicLink;
+  if (contentKind === "department-channel") {
+    return text.contentKinds.departmentChannel;
+  }
+  if (contentKind === "study-review") return text.contentKinds.studyReview;
+  if (contentKind === "external-directory") {
+    return text.contentKinds.externalDirectory;
+  }
+  if (contentKind === "community-post") return text.contentKinds.communityPost;
+  return text.contentKinds.localLife;
+}
+
 function getTipPriority(tip: CampusTip): number {
   if (typeof tip.sortPriority === "number") return tip.sortPriority;
   if (tip.category === "school" && tip.id.startsWith("school-instagram-")) {
     return 900;
   }
   return 500;
+}
+
+function getVisibility(tip: CampusTip): CampusTipVisibility {
+  if (tip.visibility) return tip.visibility;
+
+  const kind = getContentKind(tip);
+  if (kind === "official-link" || kind === "public-link") return "featured";
+  if (kind === "department-channel" || kind === "local-life") return "default";
+  return "archive";
+}
+
+function getContentKind(tip: CampusTip): CampusTipContentKind {
+  if (tip.contentKind) return tip.contentKind;
+
+  const joinedTags = tip.tags.join(" ");
+  const text = `${tip.id} ${tip.title} ${joinedTags} ${tip.url}`.toLowerCase();
+
+  if (
+    tip.id.startsWith("school-instagram-") ||
+    text.includes("instagram.com")
+  ) {
+    return "department-channel";
+  }
+
+  if (isSutoryReviewTip(tip, text)) {
+    return "study-review";
+  }
+
+  if (tip.sourceType === "community" || text.includes("everytime.kr")) {
+    return "community-post";
+  }
+
+  if (
+    tip.category === "activity" ||
+    text.includes("linkareer.com/list/") ||
+    text.includes("allforyoung.com") ||
+    text.includes("wevity.com") ||
+    text.includes("contestkorea.com") ||
+    text.includes("all-con.co.kr") ||
+    text.includes("ssgsag.kr")
+  ) {
+    return "external-directory";
+  }
+
+  if (tip.category === "local" || tip.category === "culture") {
+    return "local-life";
+  }
+
+  if (tip.sourceType === "official") return "official-link";
+  if (tip.sourceType === "public") return "public-link";
+
+  return "external-directory";
+}
+
+function isSutoryReviewTip(tip: CampusTip, searchableText: string): boolean {
+  if (
+    searchableText.includes("sutory.syu.ac.kr/archives/") ||
+    searchableText.includes("sutory.syu.ac.kr/infinity/")
+  ) {
+    return true;
+  }
+
+  if (!tip.id.startsWith("campus-life-sutory-")) return false;
+
+  return [
+    "advice",
+    "freshman",
+    "lab-tip",
+    "method",
+    "midterm",
+    "minor",
+    "plan-tip",
+    "recipe",
+    "review",
+    "study",
+    "theory",
+  ].some((keyword) => tip.id.includes(keyword));
+}
+
+function getVisibilityPriority(visibility: CampusTipVisibility): number {
+  if (visibility === "featured") return 0;
+  if (visibility === "default") return 1;
+  return 2;
+}
+
+function getContentKindPriority(contentKind: CampusTipContentKind): number {
+  if (contentKind === "official-link") return 0;
+  if (contentKind === "public-link") return 1;
+  if (contentKind === "department-channel") return 2;
+  if (contentKind === "local-life") return 3;
+  if (contentKind === "study-review") return 4;
+  if (contentKind === "external-directory") return 5;
+  return 6;
 }
 
 function getSourcePriority(sourceType: CampusTipSourceType): number {
@@ -368,6 +577,17 @@ function getCategoryBadgeColor(
   if (category === "finance") return "yellow";
   if (category === "certificate") return "purple";
   if (category === "activity") return "red";
+  return "gray";
+}
+
+function getContentKindBadgeColor(
+  contentKind: CampusTipContentKind,
+): "blue" | "red" | "green" | "yellow" | "purple" | "gray" {
+  if (contentKind === "official-link") return "blue";
+  if (contentKind === "public-link") return "green";
+  if (contentKind === "department-channel") return "purple";
+  if (contentKind === "study-review") return "yellow";
+  if (contentKind === "external-directory") return "red";
   return "gray";
 }
 

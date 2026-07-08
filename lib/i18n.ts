@@ -1322,11 +1322,12 @@ export const dictionaries = {
       campusTips: {
         title: "캠퍼스 꿀팁",
         description:
-          "학교생활, 진로, 대외활동, 지역 정보를 한곳에서 찾아보세요",
-        metaDescription: "학교생활, 진로, 대외활동, 지역 정보 링크 모음",
+          "학교생활에 자주 필요한 공식 링크와 검토된 참고 자료를 찾아보세요",
+        metaDescription:
+          "학교생활에 필요한 공식 링크, 학과 채널, 생활 정보 링크 모음",
         suggestAction: "꿀팁 제보하기",
         searchPlaceholder:
-          "수윙스, 토익, 공모전, 별내, 장학, 포트폴리오...",
+          "수윙스, 토익, 별내, 장학, 증명서, 학과...",
         countSeparator: "",
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
@@ -1344,6 +1345,15 @@ export const dictionaries = {
         next: "다음",
         pageIndicatorPrefix: "",
         pageIndicatorSuffix: " 페이지",
+        views: {
+          featured: "추천",
+          essential: "학교 필수",
+          department: "학과 채널",
+          campusLife: "생활/시설",
+          study: "학습 후기",
+          external: "외부 참고",
+          all: "전체",
+        },
         categories: {
           all: "전체",
           school: "학교",
@@ -1361,6 +1371,15 @@ export const dictionaries = {
           public: "공공",
           community: "커뮤니티",
           external: "외부",
+        },
+        contentKinds: {
+          officialLink: "공식 링크",
+          publicLink: "공공 링크",
+          departmentChannel: "학과 채널",
+          studyReview: "학습 후기",
+          externalDirectory: "외부 모음",
+          communityPost: "커뮤니티",
+          localLife: "생활 정보",
         },
       },
       campusTipsSuggest: {
@@ -2934,12 +2953,12 @@ export const dictionaries = {
       campusTips: {
         title: "Campus Tips",
         description:
-          "Find school life, career, activity, and local information in one place",
+          "Find official links and reviewed references for everyday campus life",
         metaDescription:
-          "Useful links for school life, careers, activities, and local information",
+          "Official links, department channels, and local references for campus life",
         suggestAction: "Suggest a Tip",
         searchPlaceholder:
-          "SU-Wings, TOEIC, contests, Byeollae, scholarships, portfolio...",
+          "SU-Wings, TOEIC, Byeollae, scholarships, certificates, department...",
         countSeparator: " ",
         foundItems: "items found",
         searchQuery: "query",
@@ -2957,6 +2976,15 @@ export const dictionaries = {
         next: "Next",
         pageIndicatorPrefix: "Page ",
         pageIndicatorSuffix: "",
+        views: {
+          featured: "Featured",
+          essential: "School Essentials",
+          department: "Department Channels",
+          campusLife: "Life/Facilities",
+          study: "Study Reviews",
+          external: "External References",
+          all: "All",
+        },
         categories: {
           all: "All",
           school: "School",
@@ -2974,6 +3002,15 @@ export const dictionaries = {
           public: "Public",
           community: "Community",
           external: "External",
+        },
+        contentKinds: {
+          officialLink: "Official Link",
+          publicLink: "Public Link",
+          departmentChannel: "Department Channel",
+          studyReview: "Study Review",
+          externalDirectory: "External Directory",
+          communityPost: "Community",
+          localLife: "Local Info",
         },
       },
       campusTipsSuggest: {
