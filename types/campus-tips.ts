@@ -15,11 +15,24 @@ export type CampusTipSourceType =
   | "community"
   | "external";
 
+export type CampusTipContentKind =
+  | "official-link"
+  | "public-link"
+  | "department-channel"
+  | "study-review"
+  | "external-directory"
+  | "community-post"
+  | "local-life";
+
+export type CampusTipVisibility = "featured" | "default" | "archive";
+
 export interface CampusTip {
   id: string;
   title: string;
   description?: string;
   category: CampusTipCategory;
+  contentKind?: CampusTipContentKind;
+  visibility?: CampusTipVisibility;
   sortPriority?: number;
   url: string;
   urlLabel?: string;
@@ -27,4 +40,5 @@ export interface CampusTip {
   sourceType: CampusTipSourceType;
   isExternal: true;
   note?: string;
+  lastVerifiedAt?: string;
 }
