@@ -1322,12 +1322,12 @@ export const dictionaries = {
       campusTips: {
         title: "캠퍼스 꿀팁",
         description:
-          "학교생활에 자주 필요한 공식 링크와 검토된 참고 자료를 찾아보세요",
+          "학교생활에 바로 필요한 공식 링크, 학과 채널, 생활 정보를 정리했어요",
         metaDescription:
           "학교생활에 필요한 공식 링크, 학과 채널, 생활 정보 링크 모음",
         suggestAction: "꿀팁 제보하기",
         searchPlaceholder:
-          "수윙스, 토익, 별내, 장학, 증명서, 학과...",
+          "수윙스, 이클래스, 도서관, 증명서, 별내, 학과...",
         countSeparator: "",
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
@@ -1346,13 +1346,13 @@ export const dictionaries = {
         pageIndicatorPrefix: "",
         pageIndicatorSuffix: " 페이지",
         views: {
-          featured: "추천",
-          essential: "학교 필수",
+          campusTips: "캠퍼스 꿀팁",
+          essential: "공식 링크",
           department: "학과 채널",
-          campusLife: "생활/시설",
+          campusLife: "생활 정보",
           study: "학습 후기",
-          external: "외부 참고",
-          all: "전체",
+          external: "보관 참고자료",
+          all: "전체 자료",
         },
         categories: {
           all: "전체",
@@ -1377,8 +1377,8 @@ export const dictionaries = {
           publicLink: "공공 링크",
           departmentChannel: "학과 채널",
           studyReview: "학습 후기",
-          externalDirectory: "외부 모음",
-          communityPost: "커뮤니티",
+          externalDirectory: "참고자료",
+          communityPost: "커뮤니티 참고",
           localLife: "생활 정보",
         },
       },
@@ -2953,12 +2953,12 @@ export const dictionaries = {
       campusTips: {
         title: "Campus Tips",
         description:
-          "Find official links and reviewed references for everyday campus life",
+          "Find official links, department channels, and local info you can use right away",
         metaDescription:
           "Official links, department channels, and local references for campus life",
         suggestAction: "Suggest a Tip",
         searchPlaceholder:
-          "SU-Wings, TOEIC, Byeollae, scholarships, certificates, department...",
+          "SU-Wings, e-class, library, certificates, Byeollae, department...",
         countSeparator: " ",
         foundItems: "items found",
         searchQuery: "query",
@@ -2977,13 +2977,13 @@ export const dictionaries = {
         pageIndicatorPrefix: "Page ",
         pageIndicatorSuffix: "",
         views: {
-          featured: "Featured",
-          essential: "School Essentials",
+          campusTips: "Campus Tips",
+          essential: "Official Links",
           department: "Department Channels",
-          campusLife: "Life/Facilities",
+          campusLife: "Life Info",
           study: "Study Reviews",
-          external: "External References",
-          all: "All",
+          external: "Archived References",
+          all: "All Materials",
         },
         categories: {
           all: "All",
@@ -3008,8 +3008,8 @@ export const dictionaries = {
           publicLink: "Public Link",
           departmentChannel: "Department Channel",
           studyReview: "Study Review",
-          externalDirectory: "External Directory",
-          communityPost: "Community",
+          externalDirectory: "Reference",
+          communityPost: "Community Reference",
           localLife: "Local Info",
         },
       },

@@ -31,7 +31,7 @@ const ONE_DAY = 24 * ONE_HOUR;
 const ITEMS_PER_PAGE = 12;
 type CampusTipsDictionary = Dictionary["pages"]["campusTips"];
 type CampusTipViewFilter =
-  | "featured"
+  | "campus-tips"
   | "essential"
   | "department"
   | "campus-life"
@@ -40,7 +40,7 @@ type CampusTipViewFilter =
   | "all";
 
 const viewFilters: CampusTipViewFilter[] = [
-  "featured",
+  "campus-tips",
   "essential",
   "department",
   "campus-life",
@@ -73,7 +73,7 @@ export default function CampusTipsPage() {
   const suggestText = dictionary.pages.campusTipsSuggest;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedView, setSelectedView] =
-    useState<CampusTipViewFilter>("featured");
+    useState<CampusTipViewFilter>("campus-tips");
   const [selectedCategory, setSelectedCategory] = useState<
     CampusTipCategory | "all"
   >("all");
@@ -113,6 +113,17 @@ export default function CampusTipsPage() {
       })
       .sort((a, b) => sortTips(a, b, locale));
   }, [locale, searchQuery, selectedCategory, selectedView, text, tips]);
+  const availableCategoryFilters = useMemo(() => {
+    const availableCategories = new Set(
+      tips
+        .filter((tip) => matchesViewFilter(tip, selectedView))
+        .map((tip) => tip.category),
+    );
+
+    return categoryFilters.filter(
+      (category) => category === "all" || availableCategories.has(category),
+    );
+  }, [selectedView, tips]);
   const {
     currentPage,
     setCurrentPage,
@@ -131,6 +142,7 @@ export default function CampusTipsPage() {
 
   const handleViewChange = (view: CampusTipViewFilter) => {
     setSelectedView(view);
+    setSelectedCategory("all");
     setCurrentPage(1);
   };
 
@@ -195,7 +207,7 @@ export default function CampusTipsPage() {
 
       <div className="mb-5 -mx-4 overflow-x-auto px-4">
         <div className="flex min-w-max gap-2 pb-1">
-          {categoryFilters.map((category) => (
+          {availableCategoryFilters.map((category) => (
             <button
               key={category}
               type="button"
@@ -384,22 +396,27 @@ function sortTips(a: CampusTip, b: CampusTip, locale: string): number {
 
 function matchesViewFilter(tip: CampusTip, view: CampusTipViewFilter): boolean {
   const kind = getContentKind(tip);
-  const visibility = getVisibility(tip);
 
   if (view === "all") return true;
-  if (view === "featured") return visibility === "featured";
+  if (view === "campus-tips") return isDirectCampusTip(tip);
   if (view === "essential") {
-    return kind === "official-link" || kind === "public-link";
+    return (
+      isDirectCampusTip(tip) &&
+      (kind === "official-link" || kind === "public-link")
+    );
   }
-  if (view === "department") return kind === "department-channel";
+  if (view === "department") {
+    return isDirectCampusTip(tip) && kind === "department-channel";
+  }
   if (view === "study") return kind === "study-review";
   if (view === "external") {
-    return kind === "external-directory" || kind === "community-post";
+    return !isDirectCampusTip(tip) && kind !== "study-review";
   }
 
   return (
-    kind === "local-life" ||
+    (isDirectCampusTip(tip) && kind === "local-life") ||
     (tip.category === "campus-life" &&
+      isDirectCampusTip(tip) &&
       kind !== "study-review" &&
       kind !== "community-post" &&
       kind !== "external-directory")
@@ -410,7 +427,7 @@ function getViewLabel(
   view: CampusTipViewFilter,
   text: CampusTipsDictionary,
 ): string {
-  if (view === "featured") return text.views.featured;
+  if (view === "campus-tips") return text.views.campusTips;
   if (view === "essential") return text.views.essential;
   if (view === "department") return text.views.department;
   if (view === "campus-life") return text.views.campusLife;
@@ -473,9 +490,40 @@ function getVisibility(tip: CampusTip): CampusTipVisibility {
   if (tip.visibility) return tip.visibility;
 
   const kind = getContentKind(tip);
-  if (kind === "official-link" || kind === "public-link") return "featured";
+  if (isDirectCampusTip(tip)) return "featured";
   if (kind === "department-channel" || kind === "local-life") return "default";
   return "archive";
+}
+
+function isDirectCampusTip(tip: CampusTip): boolean {
+  const kind = getContentKind(tip);
+
+  if (
+    kind === "external-directory" ||
+    kind === "community-post" ||
+    kind === "study-review"
+  ) {
+    return false;
+  }
+
+  if (
+    tip.category === "activity" ||
+    tip.category === "career" ||
+    tip.category === "certificate"
+  ) {
+    return false;
+  }
+
+  if (tip.category === "finance") {
+    return kind === "official-link" || kind === "public-link";
+  }
+
+  return (
+    kind === "official-link" ||
+    kind === "public-link" ||
+    kind === "department-channel" ||
+    kind === "local-life"
+  );
 }
 
 function getContentKind(tip: CampusTip): CampusTipContentKind {
@@ -499,15 +547,7 @@ function getContentKind(tip: CampusTip): CampusTipContentKind {
     return "community-post";
   }
 
-  if (
-    tip.category === "activity" ||
-    text.includes("linkareer.com/list/") ||
-    text.includes("allforyoung.com") ||
-    text.includes("wevity.com") ||
-    text.includes("contestkorea.com") ||
-    text.includes("all-con.co.kr") ||
-    text.includes("ssgsag.kr")
-  ) {
+  if (isExternalReferenceTip(tip, text)) {
     return "external-directory";
   }
 
@@ -519,6 +559,30 @@ function getContentKind(tip: CampusTip): CampusTipContentKind {
   if (tip.sourceType === "public") return "public-link";
 
   return "external-directory";
+}
+
+function isExternalReferenceTip(
+  tip: CampusTip,
+  searchableText: string,
+): boolean {
+  if (tip.category === "activity" || tip.category === "career") return true;
+
+  if (
+    tip.sourceType === "external" &&
+    tip.category !== "local" &&
+    tip.category !== "culture"
+  ) {
+    return true;
+  }
+
+  return [
+    "linkareer.com",
+    "allforyoung.com",
+    "wevity.com",
+    "contestkorea.com",
+    "all-con.co.kr",
+    "ssgsag.kr",
+  ].some((domain) => searchableText.includes(domain));
 }
 
 function isSutoryReviewTip(tip: CampusTip, searchableText: string): boolean {
