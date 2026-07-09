@@ -9,7 +9,7 @@ import re
 import sys
 import time
 from typing import Dict, List, Optional
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -27,14 +27,12 @@ from crawler_utils import (
     normalize_notice_url,
     notice_key,
     request_soup,
+    require_env,
     write_json_atomic,
 )
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
-DEFAULT_DEPARTMENT_DIRECTORY_URL = (
-    "https://www.syu.ac.kr/about-sahmyook/college-guide/family-site/"
-)
 OUTPUT_PATH = "public/data/announcements-departments.json"
 
 COMPETITION_HINT_TERMS = (
@@ -87,10 +85,7 @@ NoticeItem = Dict[str, object]
 
 
 def crawl_department_notices() -> None:
-    directory_url = (
-        os.environ.get("CRAWL_DEPARTMENT_DIRECTORY_URL")
-        or DEFAULT_DEPARTMENT_DIRECTORY_URL
-    )
+    course_guide_url = require_env("CRAWL_DEPARTMENT_COURSE_GUIDE_URL")
     max_pages = read_positive_int_env("CRAWL_DEPARTMENT_NOTICE_MAX_PAGES", 3)
     max_departments = read_positive_int_env(
         "CRAWL_DEPARTMENT_NOTICE_MAX_DEPARTMENTS",
@@ -113,17 +108,28 @@ def crawl_department_notices() -> None:
     session = requests.Session()
     session.headers.update(DEFAULT_HEADERS)
 
-    departments = discover_department_sites(session, directory_url)
+    target_department_names = discover_course_guide_department_names(
+        session,
+        course_guide_url,
+    )
+    college_page_urls = discover_college_page_urls(session, course_guide_url)
+    departments = discover_department_sites_from_college_pages(
+        session,
+        college_page_urls,
+        target_department_names,
+    )
     if max_departments > 0:
         departments = departments[:max_departments]
 
     print("학과 공지 공모전/대회 후보 크롤링 시작")
-    print(f"공식 학과 홈페이지: {len(departments)}개")
+    print(f"교육과정 학과명: {len(target_department_names)}개")
+    print(f"단과대학 페이지: {len(college_page_urls)}개")
+    print(f"매칭된 공식 학과 홈페이지: {len(departments)}개")
     print(f"기존 데이터: {len(existing_items)}개")
 
     if not departments:
         write_json_atomic(OUTPUT_PATH, existing_items)
-        print("학과 홈페이지 목록을 찾지 못해 기존 데이터를 유지했습니다")
+        print("학과 홈페이지 매칭 결과가 없어 기존 데이터를 유지했습니다")
         return
 
     new_by_key: Dict[str, NoticeItem] = {}
@@ -164,29 +170,63 @@ def crawl_department_notices() -> None:
     print(f"학과 공지 완료: 신규 {new_count}개, 총 {len(merged)}개")
 
 
-def discover_department_sites(
+def discover_course_guide_department_names(
     session: requests.Session,
-    directory_url: str,
-) -> List[DepartmentSite]:
-    soup = safe_request_soup(session, directory_url)
+    course_guide_url: str,
+) -> List[str]:
+    soup = safe_request_soup(session, course_guide_url)
     if not soup:
         return []
 
-    links = find_links_between_headings(soup, "학과 홈페이지", "주요 부서 홈페이지")
-    departments: List[DepartmentSite] = []
-    seen_urls = set()
+    names: List[str] = []
+    seen_names = set()
 
-    for link in links:
-        href = link.get("href")
+    for anchor in soup.select("a[href]"):
+        href = anchor.get("href")
         if not href:
             continue
 
-        url = normalize_site_url(urljoin(directory_url, href))
-        if not is_official_syu_url(url):
+        url = urljoin(course_guide_url, href)
+        parsed = urlsplit(url)
+        query = parse_qs(parsed.query)
+        if "c" not in query:
             continue
 
-        name = normalize_text(link.get_text(" ", strip=True))
+        name = normalize_department_display_name(anchor.get_text(" ", strip=True))
         if not name:
+            continue
+
+        key = normalize_department_name(name)
+        if key in seen_names:
+            continue
+
+        seen_names.add(key)
+        names.append(name)
+
+    return names
+
+
+def discover_college_page_urls(
+    session: requests.Session,
+    course_guide_url: str,
+) -> List[str]:
+    soup = safe_request_soup(session, course_guide_url)
+    if not soup:
+        return []
+
+    urls: List[str] = []
+    seen_urls = set()
+
+    for anchor in soup.select("a[href]"):
+        href = anchor.get("href")
+        if not href:
+            continue
+
+        url = normalize_site_url(urljoin(course_guide_url, href))
+        path = urlsplit(url).path
+        if "/admissions-education/college/" not in path:
+            continue
+        if not is_official_syu_url(url):
             continue
 
         key = normalize_notice_url(url)
@@ -194,35 +234,92 @@ def discover_department_sites(
             continue
 
         seen_urls.add(key)
-        departments.append({"name": name, "url": url})
+        urls.append(url)
+
+    return urls
+
+
+def discover_department_sites_from_college_pages(
+    session: requests.Session,
+    college_page_urls: List[str],
+    target_department_names: List[str],
+) -> List[DepartmentSite]:
+    target_name_keys = {
+        normalize_department_name(name) for name in target_department_names if name
+    }
+    if not target_name_keys:
+        return []
+
+    departments: List[DepartmentSite] = []
+    seen_urls = set()
+
+    for college_url in college_page_urls:
+        soup = safe_request_soup(session, college_url)
+        if not soup:
+            continue
+
+        for department in extract_department_homepage_links(
+            soup,
+            college_url,
+            target_name_keys,
+        ):
+            key = normalize_notice_url(department["url"])
+            if key in seen_urls:
+                continue
+
+            seen_urls.add(key)
+            departments.append(department)
 
     return departments
 
 
-def find_links_between_headings(
+def extract_department_homepage_links(
     soup: BeautifulSoup,
-    start_text: str,
-    end_text: str,
-) -> List[Tag]:
-    start_node = soup.find(
-        string=lambda text: bool(text and start_text in normalize_text(text)),
-    )
-    if not start_node or not start_node.parent:
-        return []
+    college_url: str,
+    target_name_keys: set[str],
+) -> List[DepartmentSite]:
+    departments: List[DepartmentSite] = []
 
-    links: List[Tag] = []
-    for element in start_node.parent.next_elements:
+    for heading in soup.select("h3"):
+        name = normalize_department_display_name(heading.get_text(" ", strip=True))
+        if not is_target_department_name(name, target_name_keys):
+            continue
+
+        homepage_url = find_homepage_link_after_heading(heading, college_url)
+        if not homepage_url:
+            continue
+
+        departments.append({"name": name, "url": homepage_url})
+
+    return departments
+
+
+def find_homepage_link_after_heading(
+    heading: Tag,
+    college_url: str,
+) -> Optional[str]:
+    for element in heading.next_elements:
         if not isinstance(element, Tag):
             continue
 
+        if element is not heading and element.name in {"h2", "h3"}:
+            return None
+
+        if element.name != "a":
+            continue
+
         text = normalize_text(element.get_text(" ", strip=True))
-        if element.name in {"h2", "h3", "h4"} and end_text in text:
-            break
+        if "학과홈페이지" not in text and "홈페이지 바로가기" not in text:
+            continue
 
-        if element.name == "a":
-            links.append(element)
+        href = element.get("href")
+        if not href:
+            continue
 
-    return links
+        url = normalize_site_url(urljoin(college_url, href))
+        return url if is_official_syu_url(url) else None
+
+    return None
 
 
 def discover_notice_board_url(
@@ -246,12 +343,6 @@ def discover_notice_board_url(
             board_url = to_notice_board_base_url(url)
             if board_url:
                 candidates.append((score, board_url))
-
-    common_url = to_notice_board_base_url(
-        urljoin(f"{department['url'].rstrip('/')}/", "community/notice/"),
-    )
-    if common_url:
-        candidates.append((50, common_url))
 
     seen_urls = set()
     for _, url in sorted(candidates, key=lambda item: item[0]):
@@ -473,6 +564,33 @@ def normalize_site_url(url: str) -> str:
 
 def normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", value or "").strip()
+
+
+def normalize_department_display_name(value: str) -> str:
+    return normalize_text(re.sub(r"\bNEW\b", "", value, flags=re.IGNORECASE))
+
+
+def normalize_department_name(value: str) -> str:
+    normalized = normalize_department_display_name(value)
+    normalized = re.sub(r"\([^)]*\)", "", normalized)
+    normalized = re.sub(r"\s+", "", normalized)
+    normalized = re.sub(r"[-–—].*$", "", normalized)
+    normalized = re.sub(r"(Ⅰ|Ⅱ|Ⅲ|Ⅳ|I|II|III|IV)$", "", normalized)
+    return normalized.lower()
+
+
+def is_target_department_name(name: str, target_name_keys: set[str]) -> bool:
+    key = normalize_department_name(name)
+    if not key:
+        return False
+    if key in target_name_keys:
+        return True
+
+    return any(
+        target.startswith(key) or key.startswith(target)
+        for target in target_name_keys
+        if len(target) >= 3 and len(key) >= 3
+    )
 
 
 def read_positive_int_env(name: str, fallback: int) -> int:

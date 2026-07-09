@@ -2,14 +2,11 @@
 """행사공지 크롤링 스크립트."""
 
 import io
-import os
 import sys
 
-from crawler_utils import NoticeCrawlerConfig, crawl_notice_board
+from crawler_utils import NoticeCrawlerConfig, crawl_notice_board, require_env
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-
-DEFAULT_EVENT_NOTICES_URL = "https://www.syu.ac.kr/university-square/notice/event/page"
 
 
 def crawl_event_notices():
@@ -17,8 +14,7 @@ def crawl_event_notices():
         NoticeCrawlerConfig(
             category="campus",
             label="행사공지",
-            base_url=os.environ.get("CRAWL_EVENT_NOTICES_URL")
-            or DEFAULT_EVENT_NOTICES_URL,
+            base_url=require_env("CRAWL_EVENT_NOTICES_URL"),
             output_path="public/data/announcements-events.json",
             default_author="삼육대학교",
             max_pages=128,
