@@ -119,6 +119,10 @@ def crawl_department_notices() -> None:
     for item in existing_items:
         if item.get("id"):
             existing_id_by_key.setdefault(legacy_notice_key(item), str(item.get("id")))
+            existing_id_by_key.setdefault(
+                department_notice_group_key(item),
+                str(item.get("id")),
+            )
 
     session = requests.Session()
     session.headers.update(DEFAULT_HEADERS)
@@ -488,8 +492,15 @@ def upsert_department_notice(
         crawled[key] = item
         return
 
+    item_department_names = read_string_list(item.get("departmentNames"))
+    item_department_urls = read_string_list(item.get("departmentUrls"))
     department_name = str(item.get("departmentName", ""))
     department_url = str(item.get("departmentUrl", ""))
+    if department_name:
+        item_department_names.append(department_name)
+    if department_url:
+        item_department_urls.append(department_url)
+
     department_names = [
         str(name)
         for name in existing.get("departmentNames", [])
@@ -501,10 +512,12 @@ def upsert_department_notice(
         if isinstance(url, str) and url
     ]
 
-    if department_name and department_name not in department_names:
-        department_names.append(department_name)
-    if department_url and department_url not in department_urls:
-        department_urls.append(department_url)
+    for name in item_department_names:
+        if name and name not in department_names:
+            department_names.append(name)
+    for url in item_department_urls:
+        if url and url not in department_urls:
+            department_urls.append(url)
 
     existing["departmentNames"] = department_names
     existing["departmentUrls"] = department_urls
@@ -513,6 +526,13 @@ def upsert_department_notice(
         item.get("isImportant")
     )
     existing["isPinned"] = bool(existing.get("isPinned")) or bool(item.get("isPinned"))
+
+
+def read_string_list(value: object) -> List[str]:
+    if not isinstance(value, list):
+        return []
+
+    return [str(item) for item in value if isinstance(item, str) and item]
 
 
 def department_notice_group_key(item: NoticeItem) -> str:
@@ -637,7 +657,10 @@ def merge_department_notices(
         key = notice_key(item)
         legacy_key = legacy_notice_key(item)
         group_key = department_notice_group_key(item)
-        if key in merged_keys or legacy_key in new_by_key or group_key in new_by_key:
+        if group_key in new_by_key:
+            upsert_department_notice(new_by_key, group_key, item)
+            continue
+        if key in merged_keys or legacy_key in new_by_key:
             continue
 
         normalized_item = dict(item)
