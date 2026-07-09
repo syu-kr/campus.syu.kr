@@ -28,6 +28,14 @@ export function AcademicMenuGrid() {
       isExternal: false,
     },
     {
+      id: "competitions",
+      title: dictionary.academic.menus.competitionsTitle,
+      description: dictionary.academic.menus.competitionsDescription,
+      icon: "lightbulb",
+      href: "/academic/competitions",
+      isExternal: false,
+    },
+    {
       id: "scholarship",
       title: dictionary.academic.menus.scholarshipTitle,
       description: dictionary.academic.menus.scholarshipDescription,
