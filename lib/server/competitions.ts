@@ -36,6 +36,8 @@ type RawAnnouncement = {
   sourceUrl?: unknown;
   departmentName?: unknown;
   departmentUrl?: unknown;
+  departmentNames?: unknown;
+  departmentUrls?: unknown;
 };
 
 const SOURCE_BY_CATEGORY: Record<CompetitionSourceCategory, string> = {
@@ -266,6 +268,8 @@ function toCompetitionCandidate(
 ): CompetitionAnnouncement | null {
   const title = readString(item.title);
   const content = readString(item.content);
+  const departmentNames = readStringArray(item.departmentNames);
+  const departmentUrls = readStringArray(item.departmentUrls);
 
   if (!title) return null;
 
@@ -290,6 +294,8 @@ function toCompetitionCandidate(
     sourceUrl:
       readOptionalString(item.sourceUrl) ||
       readOptionalString(item.departmentUrl),
+    departmentNames,
+    departmentUrls,
   };
 }
 
@@ -423,6 +429,7 @@ function getSearchText(announcement: CompetitionAnnouncement): string {
       announcement.content,
       announcement.author,
       announcement.sourceName,
+      ...(announcement.departmentNames || []),
       announcement.sourceCategory,
       announcement.competitionStatus,
       announcement.competitionKind,
@@ -445,6 +452,7 @@ function getCompetitionAnalysisText(
       announcement.content,
       announcement.author,
       announcement.sourceName,
+      ...(announcement.departmentNames || []),
       announcement.aiSummary?.summary,
       announcement.aiSummary?.target,
       announcement.aiSummary?.deadline,
@@ -566,4 +574,13 @@ function readOptionalString(value: unknown): string | undefined {
 
 function readNumber(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map(readString)
+    .map((text) => text.trim())
+    .filter(Boolean);
 }

@@ -169,6 +169,8 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `CRAWL_EVENT_NOTICES_URL` | 필수 | `crawl-daily.yml` | 행사공지 목록 page base URL |
 | `CRAWL_DEPARTMENT_COURSE_GUIDE_URL` | 필수 | `crawl-daily.yml` | 수집 대상 학과명을 확인할 공식 교육과정 URL |
 | `CRAWL_DEPARTMENT_NOTICE_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 탐색 페이지 수, 기본값 `3` |
+| `CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS` | 선택 | `crawl-daily.yml` | 학과별 공지사항 내부 검색 키워드. 쉼표로 구분하며 비워두면 `공모,대회,경진,해커톤` 사용 |
+| `CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 검색 결과 탐색 페이지 수, 기본값 `2` |
 | `CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS` | 선택 | `crawl-daily.yml` | 학과 사이트 간 요청 대기 시간(초), 기본값 `0.25` |
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |

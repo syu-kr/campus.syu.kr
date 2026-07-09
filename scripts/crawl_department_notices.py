@@ -9,7 +9,7 @@ import re
 import sys
 import time
 from typing import Dict, List, Optional
-from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
+from urllib.parse import parse_qs, urlencode, urljoin, urlsplit, urlunsplit
 
 import requests
 from bs4 import BeautifulSoup
@@ -76,6 +76,13 @@ COMPETITION_HINT_TERMS = (
     "프로그래밍 경진",
 )
 
+COMPETITION_SEARCH_TERMS = (
+    "공모",
+    "대회",
+    "경진",
+    "해커톤",
+)
+
 NOTICE_TEXT_TERMS = ("공지사항", "공지", "notice")
 NOTICE_PATH_HINTS = ("/community/notice", "/notice")
 
@@ -91,7 +98,15 @@ def crawl_department_notices() -> None:
         "CRAWL_DEPARTMENT_NOTICE_MAX_DEPARTMENTS",
         0,
     )
+    search_max_pages = read_positive_int_env(
+        "CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES",
+        2,
+    )
     delay_seconds = read_float_env("CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS", 0.25)
+    search_terms = read_csv_env(
+        "CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS",
+        COMPETITION_SEARCH_TERMS,
+    )
 
     existing_items = [
         item for item in load_json_list(OUTPUT_PATH) if is_valid_notice_item(item)
@@ -153,8 +168,11 @@ def crawl_department_notices() -> None:
             config,
             department,
             existing_id_by_key,
+            search_terms,
+            search_max_pages,
         )
-        new_by_key.update(crawled)
+        for key, item in crawled.items():
+            upsert_department_notice(new_by_key, key, item)
         print(
             f"  {index}/{len(departments)} {department['name']}: "
             f"{len(crawled)}개 후보"
@@ -392,24 +410,32 @@ def crawl_department_board(
     config: NoticeCrawlerConfig,
     department: DepartmentSite,
     existing_id_by_key: Dict[str, str],
+    search_terms: List[str],
+    search_max_pages: int,
 ) -> Dict[str, NoticeItem]:
     crawled: Dict[str, NoticeItem] = {}
+    request_urls = build_notice_request_urls(
+        config.base_url,
+        config.max_pages,
+        search_terms,
+        search_max_pages,
+    )
 
-    for page in range(1, config.max_pages + 1):
-        soup = safe_request_soup(session, f"{config.base_url}/{page}/")
+    for request_url in request_urls:
+        soup = safe_request_soup(session, request_url)
         if not soup:
-            break
+            continue
 
         rows = soup.select("table tbody tr")
         if not rows:
-            break
+            continue
 
         for row in rows:
             row_data = extract_notice_row(row, config)
             if not row_data:
                 continue
 
-            fix_department_notice_url(row, config.base_url, row_data)
+            fix_department_notice_url(row, request_url, row_data)
 
             if not is_valid_notice_item(row_data):
                 continue
@@ -417,20 +443,18 @@ def crawl_department_board(
             if not is_competition_notice(row_data):
                 continue
 
-            key = notice_key(row_data)
+            key = department_notice_group_key(row_data)
             notice_id = (
-                existing_id_by_key.get(key)
+                existing_id_by_key.get(notice_key(row_data))
                 or existing_id_by_key.get(legacy_notice_key(row_data))
                 or generate_stable_id(
                     "department",
-                    department["url"],
                     str(row_data["title"]),
                     str(row_data["date"]),
-                    str(row_data["url"]),
                 )
             )
 
-            crawled[key] = {
+            upsert_department_notice(crawled, key, {
                 "id": notice_id,
                 "no": row_data["no"],
                 "title": row_data["title"],
@@ -443,13 +467,104 @@ def crawl_department_board(
                 "sourceUrl": department["url"],
                 "departmentName": department["name"],
                 "departmentUrl": department["url"],
+                "departmentNames": [department["name"]],
+                "departmentUrls": [department["url"]],
                 "content": "",
                 "url": row_data["url"],
                 "isImportant": row_data["is_important"],
                 "isPinned": row_data["is_pinned"],
-            }
+            })
 
     return crawled
+
+
+def upsert_department_notice(
+    crawled: Dict[str, NoticeItem],
+    key: str,
+    item: NoticeItem,
+) -> None:
+    existing = crawled.get(key)
+    if not existing:
+        crawled[key] = item
+        return
+
+    department_name = str(item.get("departmentName", ""))
+    department_url = str(item.get("departmentUrl", ""))
+    department_names = [
+        str(name)
+        for name in existing.get("departmentNames", [])
+        if isinstance(name, str) and name
+    ]
+    department_urls = [
+        str(url)
+        for url in existing.get("departmentUrls", [])
+        if isinstance(url, str) and url
+    ]
+
+    if department_name and department_name not in department_names:
+        department_names.append(department_name)
+    if department_url and department_url not in department_urls:
+        department_urls.append(department_url)
+
+    existing["departmentNames"] = department_names
+    existing["departmentUrls"] = department_urls
+    existing["sourceName"] = format_department_source_name(department_names)
+    existing["isImportant"] = bool(existing.get("isImportant")) or bool(
+        item.get("isImportant")
+    )
+    existing["isPinned"] = bool(existing.get("isPinned")) or bool(item.get("isPinned"))
+
+
+def department_notice_group_key(item: NoticeItem) -> str:
+    title = re.sub(r"\s+", "", str(item.get("title", "")))
+    date = str(item.get("date", "")).strip()
+    return f"{title}|{date}"
+
+
+def format_department_source_name(department_names: List[str]) -> str:
+    if not department_names:
+        return "학과공지"
+    if len(department_names) == 1:
+        return department_names[0]
+    return f"{department_names[0]} 외 {len(department_names) - 1}개 학과"
+
+
+def build_notice_request_urls(
+    board_base_url: str,
+    max_pages: int,
+    search_terms: List[str],
+    search_max_pages: int,
+) -> List[str]:
+    urls: List[str] = []
+    seen_urls = set()
+
+    for page in range(1, max_pages + 1):
+        add_notice_request_url(urls, seen_urls, board_base_url, page)
+
+    for term in search_terms:
+        for page in range(1, search_max_pages + 1):
+            add_notice_request_url(urls, seen_urls, board_base_url, page, term)
+
+    return urls
+
+
+def add_notice_request_url(
+    urls: List[str],
+    seen_urls: set[str],
+    board_base_url: str,
+    page: int,
+    search_term: Optional[str] = None,
+) -> None:
+    url = f"{board_base_url}/{page}/"
+    if search_term:
+        url = f"{url}?{urlencode({'k': search_term})}"
+
+    key = url
+    if key in seen_urls:
+        return
+
+    seen_urls.add(key)
+    urls.append(url)
 
 
 def fix_department_notice_url(
@@ -521,7 +636,8 @@ def merge_department_notices(
     for item in existing_items:
         key = notice_key(item)
         legacy_key = legacy_notice_key(item)
-        if key in merged_keys or legacy_key in new_by_key:
+        group_key = department_notice_group_key(item)
+        if key in merged_keys or legacy_key in new_by_key or group_key in new_by_key:
             continue
 
         normalized_item = dict(item)
@@ -604,6 +720,25 @@ def read_positive_int_env(name: str, fallback: int) -> int:
         return fallback
 
     return value if value >= 0 else fallback
+
+
+def read_csv_env(name: str, fallback: tuple[str, ...]) -> List[str]:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return list(fallback)
+
+    values: List[str] = []
+    seen_values = set()
+    for value in raw.split(","):
+        normalized = normalize_text(value)
+        key = normalized.lower()
+        if not normalized or key in seen_values:
+            continue
+
+        seen_values.add(key)
+        values.append(normalized)
+
+    return values or list(fallback)
 
 
 def read_float_env(name: str, fallback: float) -> float:

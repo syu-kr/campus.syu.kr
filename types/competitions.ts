@@ -29,6 +29,8 @@ export interface CompetitionAnnouncement
   matchedKeywords: string[];
   sourceName?: string;
   sourceUrl?: string;
+  departmentNames?: string[];
+  departmentUrls?: string[];
 }
 
 export interface CompetitionPageResponse {
