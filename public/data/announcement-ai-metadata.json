@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-09T17:32:03.411Z",
+  "generatedAt": "2026-07-10T17:08:43.107Z",
   "items": {
     "academic:url:0036436fd6d7b705": {
       "summary": "2025학년도 1학기 신입생·편입생은 2025년 2월 24일(월) 오후 3시 이후 SU-WINGs에서 학번 조회 및 비밀번호 설정이 가능합니다.",
@@ -9667,27 +9667,27 @@
       "detailContentHash": "3c5509905aa6419d"
     },
     "academic:url:47d14ce542994a9e": {
-      "summary": "2026년 8월 졸업예정자 중 졸업확정자는 2026년 7월 13일~19일 SU-WINGs에서 학사학위취득유예(졸업유예)를 신청할 수 있습니다.",
-      "target": "2026년 8월 졸업사정 결과 '졸업확정'을 받은 학생",
-      "deadline": "2026년 7월 19일(일) 18:00",
-      "requiredAction": "SU-WINGs에서 졸업사정결과 '졸업확정' 확인 후 2026.7.13~7.19 기간 내 유예 신청",
+      "summary": "2026년 8월 졸업 예정자 중 '졸업확정'자는 2026년 7월 22일~26일 SU-WINGs에서 학사학위취득유예(최대 2회)를 신청할 수 있습니다.",
+      "target": "2026년 8월 졸업 예정자 중 졸업사정결과 '졸업확정'자",
+      "deadline": "2026년 7월 22일(수) 10:00 ~ 2026년 7월 26일(일) 13:00",
+      "requiredAction": "SU-WINGs → [학부]졸업정보 → 졸업사정결과조회에서 '졸업확정' 확인 후 기간 내 신청",
       "keywords": [
         "졸업유예",
         "학사학위취득유예",
-        "2026년 8월 졸업",
         "졸업확정",
         "SU-WINGs",
-        "신청기간 엄수",
-        "등록금 차등납부"
+        "신청기간",
+        "등록금 차등납부",
+        "학사지원팀"
       ],
       "importance": "high",
       "confidence": "high",
-      "generatedAt": "2026-06-17T15:02:11.710Z",
-      "sourceHash": "f689d7360a0b9bf7",
-      "inputHash": "2df1ac766cd1846e",
+      "generatedAt": "2026-07-10T17:05:37.757Z",
+      "sourceHash": "897209a62c85aace",
+      "inputHash": "1855522ad4bc0c9e",
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
-      "detailContentHash": "685cc4d54c8b8a76"
+      "detailContentHash": "530570bf4c9770eb"
     },
     "academic:url:47dd3f8397ea01ac": {
       "summary": "2026학년도 편입생은 전적 대학 교과목 인정 신청서와 성적증명서를 3월 31일까지 학사지원팀(바울관 101호)에 제출해야 합니다.",
@@ -35425,6 +35425,28 @@
       "contentSource": "detail",
       "detailContentHash": "20fc4c9c30abf471"
     },
+    "campus:url:11185ce8c8032563": {
+      "summary": "이니셜 워드마크 개발 설문조사 당첨자가 발표되었으며, 선정자는 백주년기념관 401호 커뮤니케이션팀에서 캐릭터 배지를 수령해야 합니다.",
+      "target": "설문조사 당첨자",
+      "deadline": "unknown",
+      "requiredAction": "백주년기념관 401호 커뮤니케이션팀 방문 후 캐릭터 배지 수령",
+      "keywords": [
+        "이니셜 워드마크",
+        "설문조사",
+        "당첨자 발표",
+        "캐릭터 배지",
+        "커뮤니케이션팀",
+        "백주년기념관"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:17.837Z",
+      "sourceHash": "4e723a5467cae295",
+      "inputHash": "b356c84c2ef5fbdf",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "da6630496c3ae4ae"
+    },
     "campus:url:1165a9d596dc2a39": {
       "summary": "2023년 여성청소년 생리용품 바우처 지원 안내로, 학생처에서 관련 내용을 공지하였습니다.",
       "target": "여성청소년",
@@ -35634,6 +35656,28 @@
       "contentSource": "detail",
       "detailContentHash": "2dc5139f66cc6a3e"
     },
+    "campus:url:1ba1f6b02ef88ea5": {
+      "summary": "2026 대학혁신지원사업 총괄협의회 서포터즈를 모집하며, 신청 마감은 5월 17일까지 기간 연장됩니다.",
+      "target": "삼육대학교 재학생 (서포터즈 신청 희망자)",
+      "deadline": "2026.05.17",
+      "requiredAction": "붙임 파일(모집 공고, 신청서·자기소개서) 확인 후 기간 내 신청 제출",
+      "keywords": [
+        "서포터즈 모집",
+        "대학혁신지원사업",
+        "총괄협의회",
+        "기간연장",
+        "신청서",
+        "자기소개서"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-07-10T17:08:25.026Z",
+      "sourceHash": "ec7c5c52db6afe04",
+      "inputHash": "87b18f0fdb9e1bcd",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ee4ba9c03056ff59"
+    },
     "campus:url:1c48a9e5fdda5695": {
       "summary": "2024년 11월 각 군 현역병 모집계획을 안내하는 공지로, 세부 모집 일정 및 내용은 원문에서 확인해야 합니다.",
       "target": "현역병 입영 대상 학생",
@@ -35699,6 +35743,29 @@
       "contentSource": "detail",
       "detailContentHash": "f684fb784cddc568"
     },
+    "campus:url:21621e417e050ddc": {
+      "summary": "삼육대 재학생·휴학생 대상 ISIC 국제학생증 인증비(19,000원) 무료 지원 행사로, 2026년 5월 24일까지 온라인 신청 가능합니다.",
+      "target": "삼육대학교 재학생 및 휴학생 전체",
+      "deadline": "2026년 5월 24일(일)",
+      "requiredAction": "isic.co.kr/hbr/146016에서 온라인 신청서 작성 후 발급 절차 진행 (신분증 필요)",
+      "keywords": [
+        "ISIC",
+        "국제학생증",
+        "무료발급",
+        "인증비 지원",
+        "하나은행",
+        "교환학생",
+        "해외여행"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:51.078Z",
+      "sourceHash": "568577152379adc7",
+      "inputHash": "2b5bec360b71539c",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "4e30c4cc8d87c0ed"
+    },
     "campus:url:219070d6afc377f1": {
       "summary": "삼육대 학생은 내셔널지오그래픽 사진전(북서울꿈의숲 상상톡톡미술관)을 학생증 제시 시 50% 할인(7,500원)으로 8월 31일까지 관람할 수 있습니다.",
       "target": "삼육대학교 재학생 전체",
@@ -35720,6 +35787,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "1903fc664f710fb0"
+    },
+    "campus:url:21b2da39d3263260": {
+      "summary": "5월 12일(화) 16:00~19:00 에스라관 213호에서 NotebookLM 활용 AI 특강이 열리며, 재학생 30명을 대상으로 신청을 받습니다.",
+      "target": "삼육대학교 재학생 30명",
+      "deadline": "unknown",
+      "requiredAction": "SU-PLUS 또는 https://z.huno.kr/qaV4iiAd 에서 신청",
+      "keywords": [
+        "AI 특강",
+        "NotebookLM",
+        "학습 전략",
+        "생성형 AI",
+        "SU-PLUS 신청",
+        "에스라관 213호"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:58.539Z",
+      "sourceHash": "4f52ec08e3ec69d2",
+      "inputHash": "73299277be8f7437",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "a423916da2908d0a"
     },
     "campus:url:21eb57dd51c6dc6d": {
       "summary": "SU-Talk 로그인 오류가 발생한 안드로이드 사용자는 구글플레이에서 SU-Talk 3.0.3 버전으로 업데이트하여 문제를 해결하세요.",
@@ -35866,6 +35955,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "1e758c570b7c4c5c"
+    },
+    "campus:url:2669451275444538": {
+      "summary": "2026 사회적 이슈 시각화 대회 수상자가 발표되었으며, 참여자 전원에게 SU-Point 21,450점이 지급되고 만족도 조사 참여가 안내됩니다.",
+      "target": "2026 사회적 이슈 시각화 대회 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "미참여 학생은 만족도 조사 링크(https://z.huno.kr/DnU4vYtt) 접속 후 조사 완료; 심사평 원하는 학생은 ojh2019@syu.ac.kr로 요청",
+      "keywords": [
+        "사회적 이슈 시각화 대회",
+        "수상자 발표",
+        "SU-Point",
+        "만족도 조사",
+        "상금 지급",
+        "교수학습개발센터"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:05:27.218Z",
+      "sourceHash": "55b8cf0a0fb28f25",
+      "inputHash": "fd4d1681bb61f24e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "70b0806bbe3518d9"
     },
     "campus:url:27089c2280e0b7b2": {
       "summary": "카드학생증을 아직 발급받지 못한 학생은 원문 공지를 확인하여 발급 신청하세요.",
@@ -36185,6 +36296,29 @@
       "contentSource": "detail",
       "detailContentHash": "ed9452f663b162f4"
     },
+    "campus:url:373fa1ce3d7094bc": {
+      "summary": "교육혁신원이 2026학년도 비교과프로그램 가이드북을 배포하며, 장학금·SU-Point 등 혜택이 있는 다양한 프로그램을 SU-Plus에서 신청할 수 있습니다.",
+      "target": "전체 학생",
+      "deadline": "unknown",
+      "requiredAction": "SU-Plus(http://su-plus.syu.ac.kr) 접속 후 관심 비교과프로그램 확인 및 신청",
+      "keywords": [
+        "비교과프로그램",
+        "가이드북",
+        "SU-Plus",
+        "SU-Point",
+        "SU-Pay",
+        "비교과통합센터",
+        "역량개발"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:08:07.057Z",
+      "sourceHash": "b4b97c46c0ffd0c8",
+      "inputHash": "858113ce1b7d7ae6",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "9ae1654a379090ea"
+    },
     "campus:url:37925bc419264206": {
       "summary": "말레이시아항공 MHexplorer 프로그램은 만 18~26세 학생 대상으로 티켓 구매 시 요금할인·무료일정변경·추가수하물 혜택을 제공합니다.",
       "target": "만 18세~26세 학생",
@@ -36421,6 +36555,29 @@
       "contentSource": "detail",
       "detailContentHash": "0fb6cada47a6bd2a"
     },
+    "campus:url:419d455803dd895b": {
+      "summary": "2026-1학기 재학생 대상 우수강의 에세이 공모전으로, 6월 23일까지 SU-Plus 신청 및 이메일 제출 가능하며 장학금 혜택이 있습니다.",
+      "target": "2026학년도 1학기 재학생",
+      "deadline": "2026년 6월 23일(화)",
+      "requiredAction": "SU-Plus에서 신청 후 에세이를 ctl@syu.ac.kr로 이메일 제출",
+      "keywords": [
+        "우수강의 에세이 공모전",
+        "교육혁신원",
+        "SU-Plus 신청",
+        "이메일 제출",
+        "장학금",
+        "SU-Point",
+        "6월 23일 마감"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:26.099Z",
+      "sourceHash": "a81fa7ed7992cce3",
+      "inputHash": "6a7fc8c91e210aee",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1795023f8b9eb25b"
+    },
     "campus:url:440e3aad9c01aecf": {
       "summary": "인천시 거주 대학생 대상 2020년 하반기 학자금대출 이자 지원 신청을 2021년 2월 1일부터 3월 2일까지 인천시 홈페이지에서 받습니다.",
       "target": "부모 또는 본인이 1년 이상 인천광역시에 주민등록된 소득 8분위 이하 재학·휴학·졸업생(졸업 후 2년 이내 미취업자)",
@@ -36442,6 +36599,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "b6cdb717af6db952"
+    },
+    "campus:url:44ad20bd0fa417ee": {
+      "summary": "영어영문학과 제52회 영어 연극 'Kingdom of Earth'가 5월 21~22일 오후 7시 삼육대 다목적관에서 공연되며, 타학과 학생도 관람 가능합니다.",
+      "target": "전체 학생 (타학과 학생 포함)",
+      "deadline": "2026.05.22 (공연 마지막 날)",
+      "requiredAction": "5월 21~22일 오후 7시 삼육대학교 다목적관(사무엘관 앞) 방문하여 관람",
+      "keywords": [
+        "영어 연극",
+        "Kingdom of Earth",
+        "제52회 연극",
+        "다목적관",
+        "영어영문학과",
+        "무료 관람"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:50.728Z",
+      "sourceHash": "9881ba86e0b160f9",
+      "inputHash": "a43493735b2d231b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "7722ad4d59acb51d"
     },
     "campus:url:44b275fc41d50865": {
       "summary": "GS칼텍스 취준동고동락 프로그램의 에너지 플러스 콘서트 및 워크숍 참가자를 모집하오니 첨부 파일을 확인하세요.",
@@ -36995,6 +37174,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "0e12e56409abca99"
+    },
+    "campus:url:5672e7d9777a8fbe": {
+      "summary": "커뮤니케이션팀이 개교 120주년 이니셜 워드마크 개발을 위한 설문조사를 진행하며, 참여자 중 30명 추첨으로 캐릭터 배지를 증정합니다.",
+      "target": "전체 학생",
+      "deadline": "2026.05.22 17:00",
+      "requiredAction": "설문조사 링크(https://naver.me/xRgh6i1t) 접속 후 설문 참여",
+      "keywords": [
+        "이니셜 워드마크",
+        "설문조사",
+        "브랜드 개발",
+        "캐릭터 배지",
+        "개교 120주년",
+        "추첨 증정"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:41.975Z",
+      "sourceHash": "5782080d9f110ea6",
+      "inputHash": "0184e0d2421201c0",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e17456d31cb35efb"
     },
     "campus:url:57adf325d254199d": {
       "summary": "2005년생 중 병역판정검사를 받은 해에 입영을 희망하는 학생을 대상으로 현역병 입영 신청 안내가 공지되었습니다.",
@@ -38278,6 +38479,29 @@
       "contentSource": "detail",
       "detailContentHash": "a38620c78b398817"
     },
+    "campus:url:892e0625be4f39f7": {
+      "summary": "교육혁신원이 주최하는 2026 삼육토론대회가 5월 8일 요한관 223호에서 열리며, 장학금·MVP점수·SU-Point 등 혜택이 제공됩니다.",
+      "target": "삼육대학교 재학생 전체",
+      "deadline": "2025-05-06",
+      "requiredAction": "5월 6일(수)까지 https://venerable-llama-589aae.netlify.app/ 에서 신청",
+      "keywords": [
+        "삼육토론대회",
+        "토론 워크숍",
+        "장학금",
+        "MVP점수",
+        "SU-Point",
+        "교육혁신원",
+        "말하기 특강"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:08:16.739Z",
+      "sourceHash": "b88ac763a926dceb",
+      "inputHash": "671fa081cfe9ba00",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "183a43e8bf9bb80f"
+    },
     "campus:url:8ac68e12ef57fa86": {
       "summary": "리더십센터에서 2024 삼육마을 프로젝트 단기 참여자를 모집합니다. 양말목 방석 만들기(~9/29)와 점자 메뉴판 제작(10~11월) 두 프로젝트에 봉사시간 혜택과 함께 참여할 수 있습니다.",
       "target": "삼육대학교 재학생 중 지역사회 프로젝트 참여 희망자",
@@ -38469,6 +38693,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "a76641459a252ccf"
+    },
+    "campus:url:95e88c049afd508d": {
+      "summary": "2026-1학기 우수강의 에세이 공모전 수상자가 발표되었으며, 상금은 7월 말~8월 초 지급 예정이고 미참여 만족도 조사 완료가 요청됩니다.",
+      "target": "우수강의 에세이 공모전 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "만족도 조사 미완료 학생은 링크(https://z.huno.kr/VeDP0aqI) 접속 후 조사 완료; 심사평 희망 시 ojh2019@syu.ac.kr로 요청",
+      "keywords": [
+        "우수강의 에세이 공모전",
+        "수상자 발표",
+        "상금 지급",
+        "SU-Point",
+        "만족도 조사",
+        "교육혁신원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:05:18.355Z",
+      "sourceHash": "c2416303102a1929",
+      "inputHash": "6355e248153ed4a2",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "eba8779e2e1cef75"
     },
     "campus:url:96ad9dde1fd7539e": {
       "summary": "한국고용정보원이 2021년 5월 28일 개최 예정인 고용패널조사 학술대회에 참여할 연구자 및 대학원생의 논문을 공모합니다.",
@@ -38728,6 +38974,28 @@
       "contentSource": "detail",
       "detailContentHash": "b9627b6f20cddc60"
     },
+    "campus:url:9dd3ea4e24c031f5": {
+      "summary": "5월 18일(월) 16:00~19:00 에스라관 213호에서 Gemini 활용 AI특강이 열리며, 재학생 30명을 대상으로 SU-PLUS에서 신청 가능합니다.",
+      "target": "삼육대학교 재학생 30명",
+      "deadline": "unknown",
+      "requiredAction": "SU-PLUS(https://z.huno.kr/gJqKPDQS)에서 신청",
+      "keywords": [
+        "AI특강",
+        "Gemini",
+        "생성형AI",
+        "프롬프트 작성",
+        "SU-PLUS 신청",
+        "AI융합교육원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:42.878Z",
+      "sourceHash": "ea6e58078fd2b010",
+      "inputHash": "8ed6d15bed5d6407",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "88f3b61e5dee67c9"
+    },
     "campus:url:9fbcb6a8d7986445": {
       "summary": "서울런 멘토단 활동 학생을 모집하며, 2021년 8월 19일 17시까지 신청서 등 서류를 이메일로 제출해야 합니다.",
       "target": "서울 소재 대학(원)생(휴학생 포함), 직전학기 학점 C0 이상",
@@ -38813,6 +39081,29 @@
       "contentSource": "detail",
       "detailContentHash": "215810d61123237d"
     },
+    "campus:url:a746e47033047ef5": {
+      "summary": "삼육대 재학생 전체를 대상으로 AI기초학력진단(CAT평가) 후 SU-PLUS에 SU-EBE 신청 시 SU-Point 1,000점과 수료 인정을 제공하는 프로그램입니다.",
+      "target": "삼육대학교 재학생 전체",
+      "deadline": "2027.01.31",
+      "requiredAction": "풀리캠퍼스에서 CAT평가 실시 → 인증서 발급 → SU-PLUS에서 SU-EBE 신청 및 인증서 첨부 → 만족도조사 참여",
+      "keywords": [
+        "SU-EBE",
+        "AI기초학력진단",
+        "CAT평가",
+        "SU-PLUS",
+        "SU-Point",
+        "기초학력증진",
+        "비교과프로그램"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:08:33.539Z",
+      "sourceHash": "dbaff90fc3a18848",
+      "inputHash": "1b2fd672740ff402",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c1f709a4e3970ef2"
+    },
     "campus:url:a7c6707e6abaec57": {
       "summary": "교육부에서 안내하는 여름철 계곡·해수욕장 등 수상 안전사고 예방 및 대처요령 자료가 첨부파일로 제공됩니다.",
       "target": "전체 학생",
@@ -38879,6 +39170,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "53e602bd4ec2e634"
+    },
+    "campus:url:a846c4265f2d96cd": {
+      "summary": "2026 전공탐색 페스티벌이 5월 27일(수) 오전 10시~오후 4시 솔로몬광장에서 열리며, 학과 부스 방문·상담·체험 및 스탬프 미션 참여 후 간식·경품 혜택을 받을 수 있습니다.",
+      "target": "전공 선택 및 진로 탐색에 관심 있는 전체 학생",
+      "deadline": "2026년 5월 27일 (행사 당일)",
+      "requiredAction": "5월 27일 솔로몬광장 행사 현장에서 스탬프 용지 수령 후 4개 이상 학과 부스 방문·상담 참여",
+      "keywords": [
+        "전공탐색 페스티벌",
+        "솔로몬광장",
+        "학과 부스",
+        "스탬프 미션",
+        "경품 추첨",
+        "진로 탐색"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:34.920Z",
+      "sourceHash": "461248fcc01d3e04",
+      "inputHash": "841fb115f31cce43",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "1b3e765ae732aff2"
     },
     "campus:url:a8fc1513c7214e75": {
       "summary": "GH 기회수도파트너스(도민주주단) 모집 안내로, 지원신청서 양식이 첨부되어 있으며 원문 확인 후 신청 가능합니다.",
@@ -39031,6 +39344,29 @@
       "contentSource": "detail",
       "detailContentHash": "6492e92364ee3edf"
     },
+    "campus:url:abf230120541640e": {
+      "summary": "2026-1학기 재학생 대상 메타인지 학습법 경험 공모전으로, 6월 22일까지 SU-Plus 신청 및 SUtory 포트폴리오 작성 제출 필요.",
+      "target": "2026-1학기 삼육대학교 재학생(휴학생·졸업유예·학점등록생 제외)",
+      "deadline": "2026.06.22(접수), 2026.06.29(만족도조사)",
+      "requiredAction": "SU-Plus에서 공모전 참여 신청 후 SUtory 시스템에 1,000자 이상 포트폴리오 작성 및 만족도조사 완료",
+      "keywords": [
+        "SUtory 공모전",
+        "메타인지 학습법",
+        "포트폴리오 작성",
+        "SU-Plus 신청",
+        "SU-Point",
+        "장학금",
+        "교육혁신원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:00.758Z",
+      "sourceHash": "869141109619b5e8",
+      "inputHash": "b27788d60b27ecb7",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "995c1ce889518f3c"
+    },
     "campus:url:ac7e2c68b879507a": {
       "summary": "스타벅스 청년인재 양성 프로그램 7기 모집으로, 초록우산 어린이재단 홈페이지에서 서류 제출 방식으로 지원할 수 있습니다.",
       "target": "신청 희망 재학생",
@@ -39072,6 +39408,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "59ae40a5ace6f984"
+    },
+    "campus:url:ae730d02f8f3ec96": {
+      "summary": "교육혁신원이 주최하는 사회적 이슈 시각화 대회로, 4월 20일~6월 21일 SU-Plus 신청 후 작품을 이메일로 제출하면 상금 및 SU-Point 혜택이 있습니다.",
+      "target": "전체 학생",
+      "deadline": "2026년 6월 21일(일) (신청 및 작품 제출)",
+      "requiredAction": "SU-Plus에서 신청 후 완성된 작품을 작품 출품서와 함께 ctl@syu.ac.kr로 제출",
+      "keywords": [
+        "사회적 이슈 시각화 대회",
+        "SU-Plus 신청",
+        "작품 제출",
+        "상금",
+        "SU-Point",
+        "교수학습개발센터"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:08:43.065Z",
+      "sourceHash": "cebbb23fee59f49a",
+      "inputHash": "2ed78c507f44c367",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "6c4095e875035e9f"
     },
     "campus:url:af512614d240b166": {
       "summary": "병역면탈 조장정보 게시·유통 예방 안내 및 2005년생 현역병 입영 신청 관련 공지입니다.",
@@ -39184,6 +39542,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "c12786d7b57ab0d6"
+    },
+    "campus:url:b218c800f900c778": {
+      "summary": "교육혁신원이 전공 기반 경진대회 아이디어를 제안하는 공모전을 운영하며, 우수 선정 시 장학금과 참여자 전원 SU-Point가 지급됩니다.",
+      "target": "2026학년도 1학기 본교 재학생 전체",
+      "deadline": "2026년 6월 19일(금)",
+      "requiredAction": "공모전 양식 작성 후 ctl@syu.ac.kr로 이메일 제출",
+      "keywords": [
+        "아이디어 공모전",
+        "학과연계 경진대회",
+        "전공 기반",
+        "SU-Point",
+        "장학금",
+        "교수학습개발센터",
+        "비교과 프로그램"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:33.905Z",
+      "sourceHash": "deb443dde788c678",
+      "inputHash": "d2ce3cf89c9a0aa7",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "496d9f0cdf1dcf0c"
     },
     "campus:url:b3434af4e1ee89b7": {
       "summary": "iOS 15.2 업데이트 후 SU-Talk 자동종료 문제가 발생하므로, 아이폰 사용자는 SU-Talk 앱을 삭제 후 재설치해야 합니다.",
@@ -39353,6 +39734,30 @@
       "contentSource": "detail",
       "detailContentHash": "8d9fda62bfb835cf"
     },
+    "campus:url:bb45d8435e443ed1": {
+      "summary": "2026-1 SUtory AI 공모전 심사 결과가 발표되었으며, 수상자는 6월 30일까지 다니엘관 508호 방문 수령 및 만족도조사 참여 후 상금·혜택을 받을 수 있습니다.",
+      "target": "SUtory AI 공모전 참여 학생 및 수상자",
+      "deadline": "2026.06.30 (상장·굿즈 수령 마감)",
+      "requiredAction": "수상자는 방문 전 연락 후 6월 30일까지 다니엘관 508호 방문, 만족도조사 참여 완료",
+      "keywords": [
+        "SUtory 공모전",
+        "심사 결과",
+        "수상자 발표",
+        "상장 수령",
+        "장학금 지급",
+        "SU-Point",
+        "만족도조사",
+        "교육혁신원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:16.883Z",
+      "sourceHash": "bd320f7b75f31fbf",
+      "inputHash": "0fe40168773e6d57",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5959d8bfe6df1df7"
+    },
     "campus:url:bb53be0a5aeb67f4": {
       "summary": "노원청년일삶센터가 노원구 거주 1인가구 청년(만 19~39세)을 대상으로 요리·마음·정리 등 삶의기술 청년모임을 모집합니다.",
       "target": "노원구 거주 1인가구 청년 (만 19세~39세)",
@@ -39458,6 +39863,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "56d51c54f12a7e0b"
+    },
+    "campus:url:beaf78ee336ec87c": {
+      "summary": "2026학년도 하계 노원 대학 연합 창업캠프(6.24~6.26, 제주도)에 참가할 삼육대 재학생 15명을 2026.06.05까지 모집합니다.",
+      "target": "삼육대학교 재학생",
+      "deadline": "2026.06.05(금)",
+      "requiredAction": "공지 내 접수 방법 확인 후 2026.06.05까지 신청서 제출",
+      "keywords": [
+        "창업캠프",
+        "하계캠프",
+        "노원대학연합",
+        "제주도",
+        "재학생모집",
+        "창업지원단",
+        "인터뷰선발"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:24.765Z",
+      "sourceHash": "4e9c1faa4d0c0e68",
+      "inputHash": "c256b1eed81ae98f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "11e11ea23c64c22c"
     },
     "campus:url:bff22947cace023e": {
       "summary": "굿네이버스 NGO Traveler 5기를 모집하며, 대학생(재학·휴학·졸업예정자)을 대상으로 2021년 9월~11월 활동 예정이고 신청 마감은 9월 12일입니다.",
@@ -39802,6 +40230,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "789d75391e1a1179"
+    },
+    "campus:url:cd295e54b43cb03e": {
+      "summary": "5/18~19 솔로몬 광장 교수학습개발센터 부스에서 학습역량 진단검사 완료 후 방문하면 간식과 SU-POINT 1,000점을 선착순 증정합니다.",
+      "target": "전체 학생",
+      "deadline": "2026.05.19 16:00",
+      "requiredAction": "검사 링크에서 MLST-2 또는 LQS 검사 완료 후 화면 캡처, 행사 기간 중 부스 방문하여 완료 화면 제시 및 서명 작성",
+      "keywords": [
+        "학습역량 진단검사",
+        "솔로몬 광장",
+        "교수학습개발센터",
+        "SU-POINT",
+        "선착순 이벤트",
+        "MLST-2",
+        "LQS"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:59.547Z",
+      "sourceHash": "3ac023eafd499b6c",
+      "inputHash": "a64515826878f178",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "89c5f6fd62f02586"
     },
     "campus:url:d1a2aeca173176fd": {
       "summary": "개인형 이동장치(PM) 안전관리에 관한 학생처 안내 공지입니다.",
@@ -40311,6 +40762,29 @@
       "contentSource": "detail",
       "detailContentHash": "cf7cc7e62fac988e"
     },
+    "campus:url:e9d06252f099c648": {
+      "summary": "비교과통합센터가 5월 18~19일 SU-Festa 행사를 개최하며, 8개 부서 스탬프 4개 이상 수집 시 츄러스 교환 가능합니다.",
+      "target": "전체 학생",
+      "deadline": "2026.05.19 (소진 시 종료)",
+      "requiredAction": "5월 18~19일 오전 10시부터 비교과통합센터 방문 후 부서 스탬프 4개 이상 수집하여 츄러스 교환",
+      "keywords": [
+        "SU-Festa",
+        "비교과통합센터",
+        "스탬프",
+        "츄러스",
+        "푸드트럭",
+        "부서행사",
+        "간식"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:07:07.695Z",
+      "sourceHash": "5e7188e4c48f44d1",
+      "inputHash": "a164db5b265c132e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "c388f99e0ad11bb1"
+    },
     "campus:url:e9f504c17eba0277": {
       "summary": "2026년 전반기 학사장교 모집공고가 육군인사사령부 요청으로 게시 중단되었습니다.",
       "target": "학사장교 지원 희망 학생",
@@ -40523,6 +40997,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "f6c8d55c239c23a8"
+    },
+    "campus:url:f44b5354b639a7ee": {
+      "summary": "2026-1학기 학습공동체 12주·8주 수료팀을 대상으로 우수 성과 사례 공모전을 개최하며, 6월 1일부터 7월 3일까지 SU-PLUS에서 신청 가능합니다.",
+      "target": "2026학년도 1학기 학습공동체 12주·8주 과정 수료팀 (활동보고서 및 최종보고서 성실 제출 팀)",
+      "deadline": "2026. 7. 3.(금) 23:59",
+      "requiredAction": "SU-PLUS 로그인 후 공모전 신청 및 HWP 양식 작성 후 제출 (6/1~7/3)",
+      "keywords": [
+        "학습공동체",
+        "우수 성과 사례 공모전",
+        "SU-PLUS 신청",
+        "팀 장학금",
+        "교육혁신원",
+        "HWP 양식 제출"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:06:09.946Z",
+      "sourceHash": "cdb56c78b6b066e5",
+      "inputHash": "51ba379e0b288e37",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "bc1702f4e2517514"
     },
     "campus:url:f4ec9693a1fa2a36": {
       "summary": "원격교육지원센터가 AI 활용 유튜브 정보형 크리에이터 양성 비교과 프로그램을 운영하며, 7월 1일까지 신청 가능합니다.",
@@ -46063,6 +46559,26 @@
       "inputHash": "56f559941f6c7d89",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
+    },
+    "scholarship:url:2d0f7d0f7bb5c12c": {
+      "summary": "정읍시민장학재단에서 2026년 우수인재 장학생을 선발하며, 상세 내용은 첨부파일 또는 해당 기관 홈페이지에서 확인해야 합니다.",
+      "target": "정읍시 출신 또는 관련 조건을 충족하는 재학생",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지의 첨부파일 확인 후 정읍시민장학재단 홈페이지 또는 해당 기관에 문의",
+      "keywords": [
+        "정읍시민장학재단",
+        "우수인재 장학금",
+        "장학생 선발",
+        "외부 장학금"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-07-10T17:05:50.714Z",
+      "sourceHash": "5e1147651f2b7bc6",
+      "inputHash": "ccd5bb7017d4ef56",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "f8253da365107079"
     },
     "scholarship:url:2d20a6360696567c": {
       "summary": "2023-1학기 자매학교진흥 장학금 신청 안내로, 본 재단 교육기관 교직원 자녀 재학생은 3월 2일부터 4월 14일까지 SU-WINGs에서 신청 가능합니다.",
@@ -58929,6 +59445,30 @@
       "inputHash": "a41212d87e20d81d",
       "model": "claude-sonnet-4-6",
       "contentSource": "metadata"
+    },
+    "scholarship:url:a4d6996476a669e0": {
+      "summary": "석일장학회 2026년 2학기 장학생을 선발하며, 신청서류를 2026년 8월 5일까지 등기우편으로 제출해야 합니다.",
+      "target": "2026년 2학기 정규 등록 예정인 4년제 대학교 재학생 중 성적 B+ 이상 또는 가정형편 곤란자",
+      "deadline": "2026년 8월 5일(수) 우체국 소인 기준",
+      "requiredAction": "서식 다운로드 후 구비서류 준비하여 등기우편으로 삼육대학교 요한관 529호 석일장학회에 제출",
+      "keywords": [
+        "석일장학회",
+        "장학생 선발",
+        "최우수장학금",
+        "특별장학금",
+        "등기우편 제출",
+        "구비서류",
+        "성적 기준",
+        "가정형편"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-07-10T17:05:09.696Z",
+      "sourceHash": "78cddbbcce51e33b",
+      "inputHash": "1e83d0acdd3c1cf4",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "91443a338dfe42c6"
     },
     "scholarship:url:a557653e706a852b": {
       "summary": "국립국제교육원에서 2023-2024 쿠웨이트 정부초청 학사학위 과정 장학생을 선발하며, 관련 안내문과 입학신청서가 첨부되어 있습니다.",
