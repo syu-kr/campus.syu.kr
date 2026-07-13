@@ -53,6 +53,8 @@ export function HomeNoticesSection({
   serviceNotices,
   serviceNoticesLoading,
   announcementsLoading,
+  hasError,
+  onRetry,
   homeNotices,
 }: {
   selectedCategory?: HomeNoticeCategory;
@@ -60,6 +62,8 @@ export function HomeNoticesSection({
   serviceNotices?: ServiceNotice[];
   serviceNoticesLoading: boolean;
   announcementsLoading: boolean;
+  hasError: boolean;
+  onRetry: () => void;
   homeNotices: HomeNotice[];
 }) {
   const locale = useLocale();
@@ -98,6 +102,7 @@ export function HomeNoticesSection({
       </div>
 
       <div className="space-y-3">
+        {hasError && <DashboardLoadError onRetry={onRetry} />}
         {selectedCategory === "service" ? (
           <>
             {serviceNoticesLoading && <Skeleton count={3} />}
@@ -109,12 +114,12 @@ export function HomeNoticesSection({
                   <ServiceNoticeCard notice={notice} />
                 </div>
               ))
-            ) : (
+            ) : !hasError ? (
               <StateCard
                 type="info"
                 message={dictionary.home.notices.emptyService}
               />
-            )}
+            ) : null}
           </>
         ) : (
           <>
@@ -123,7 +128,7 @@ export function HomeNoticesSection({
             )}
             {!announcementsLoading && !serviceNoticesLoading && (
               <>
-                {homeNotices.length === 0 ? (
+                {homeNotices.length === 0 && !hasError ? (
                   <StateCard
                     type="info"
                     message={dictionary.home.notices.emptyCategory}
@@ -151,11 +156,15 @@ export function HomeNoticesSection({
 
 export function TodayMenuSection({
   isLoading,
+  isError,
+  onRetry,
   todayInfo,
   todayMenu,
   hasStaleMenuData = false,
 }: {
   isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
   todayInfo: TodayInfo;
   todayMenu: CafeteriaMenu | null;
   hasStaleMenuData?: boolean;
@@ -168,6 +177,7 @@ export function TodayMenuSection({
       <SectionTitle title={dictionary.home.dashboard.cafeteria} />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
+        {isError && <DashboardLoadError onRetry={onRetry} />}
         {!isLoading && todayInfo.isWeekend && (
           <StateCard
             type="info"
@@ -204,11 +214,13 @@ export function TodayMenuSection({
           )}
         {!isLoading &&
           !showStaleMenu &&
+          !isError &&
           !todayInfo.isWeekend &&
           todayInfo.dayOfWeek === 1 &&
           !todayMenu && <PendingMenuCard />}
         {!isLoading &&
           !showStaleMenu &&
+          !isError &&
           !todayInfo.isWeekend &&
           todayInfo.dayOfWeek !== 1 &&
           !todayMenu && (
@@ -225,11 +237,15 @@ export function TodayMenuSection({
 
 export function TodayShuttleSection({
   isLoading,
+  isError,
+  onRetry,
   buses,
   specialPeriods,
   now,
 }: {
   isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
   buses?: ShuttleBusSchedule[];
   specialPeriods?: ShuttleSpecialPeriods;
   now: Date | null;
@@ -249,7 +265,8 @@ export function TodayShuttleSection({
       <SectionTitle title={dictionary.home.dashboard.shuttle} />
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
-        {!isLoading && summary.isWeekend && (
+        {isError && <DashboardLoadError onRetry={onRetry} />}
+        {!isLoading && !isError && summary.isWeekend && (
           <StateCard
             type="info"
             message={dictionary.home.dashboard.shuttleWeekend}
@@ -263,7 +280,10 @@ export function TodayShuttleSection({
             }
           />
         )}
-        {!isLoading && !summary.isWeekend && !summary.isOperatingPeriod && (
+        {!isLoading &&
+          !isError &&
+          !summary.isWeekend &&
+          !summary.isOperatingPeriod && (
           <StateCard
             type="info"
             message={dictionary.home.dashboard.shuttleOutOfPeriod}
@@ -279,6 +299,7 @@ export function TodayShuttleSection({
         )}
         {!isLoading &&
           !summary.isWeekend &&
+          !isError &&
           summary.isOperatingPeriod &&
           !primaryDeparture &&
           !summary.hasMoreToday && (
@@ -356,9 +377,13 @@ export function TodayShuttleSection({
 
 export function TodaySchedulesSection({
   isLoading,
+  isError,
+  onRetry,
   schedules,
 }: {
   isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
   schedules: AcademicSchedule[];
 }) {
   const dictionary = useDictionary();
@@ -372,13 +397,14 @@ export function TodaySchedulesSection({
       />
       <div className="space-y-4">
         {isLoading && <Skeleton count={2} />}
+        {isError && <DashboardLoadError onRetry={onRetry} />}
         {!isLoading &&
-          (schedules.length === 0 ? (
+          (schedules.length === 0 && !isError ? (
             <StateCard
               type="info"
               message={dictionary.home.dashboard.scheduleEmpty}
             />
-          ) : (
+          ) : schedules.length > 0 ? (
             schedules.map((schedule) => (
               <div key={schedule.id} className="mb-3">
                 <Link href={localizePath("/academic/schedule", locale)}>
@@ -409,7 +435,7 @@ export function TodaySchedulesSection({
                 </Link>
               </div>
             ))
-          ))}
+          ) : null)}
       </div>
     </div>
   );
@@ -431,6 +457,27 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
         </Link>
       )}
     </div>
+  );
+}
+
+function DashboardLoadError({ onRetry }: { onRetry: () => void }) {
+  const dictionary = useDictionary();
+
+  return (
+    <StateCard
+      type="warning"
+      title={dictionary.home.dashboard.loadFailedTitle}
+      message={dictionary.home.dashboard.loadFailedMessage}
+      action={
+        <button
+          type="button"
+          onClick={onRetry}
+          className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        >
+          {dictionary.home.dashboard.retry}
+        </button>
+      }
+    />
   );
 }
 

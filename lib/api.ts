@@ -47,12 +47,12 @@ export async function fetchAnnouncements(
           limit: 100,
           totalPages: 1,
         },
+        throwOnError: true,
       },
     );
     return response.items;
-  } catch {
-    // Return empty array if fetch fails
-    return [];
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -93,9 +93,10 @@ export async function fetchAnnouncementSummary(): Promise<Announcement[]> {
       fallback: [],
       noStore: false,
       next: { revalidate: 300 },
+      throwOnError: true,
     });
-  } catch {
-    return [];
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -140,7 +141,7 @@ export async function fetchCafeteriaMenu(
   try {
     const data = await fetchJson<
       Array<{ menus?: unknown[] }> | { menus?: unknown[] }
-    >("/data/cafeteria-menu.json", { fallback: [] });
+    >("/data/cafeteria-menu.json", { fallback: [], throwOnError: true });
 
     // 데이터 구조 확인
     let cafeteriaData: { menus?: unknown[] };
@@ -210,8 +211,8 @@ export async function fetchCafeteriaMenu(
     }
 
     return menus;
-  } catch {
-    return [];
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -222,15 +223,15 @@ export async function fetchAcademicSchedules(
   try {
     const parsedSchedules = await fetchJson<AcademicSchedule[]>(
       "/data/schedules-major.json",
-      { fallback: [] },
+      { fallback: [], throwOnError: true },
     );
 
     if (category) {
       return parsedSchedules.filter((s) => s.category === category);
     }
     return parsedSchedules;
-  } catch {
-    return [];
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -239,10 +240,10 @@ export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
   try {
     return await fetchJson<ShuttleBusSchedule[]>(
       "/data/shuttle-bus-schedule.json",
-      { fallback: [] },
+      { fallback: [], throwOnError: true },
     );
-  } catch {
-    return [];
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -257,10 +258,11 @@ export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriod
           semesterPeriods: [],
           vacationPeriods: [],
         },
+        throwOnError: true,
       },
     );
-  } catch {
-    return { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] };
+  } catch (error) {
+    throw error;
   }
 }
 
@@ -274,11 +276,25 @@ export async function searchAll(
 
   const lowerQuery = query.toLowerCase();
 
-  const results = await Promise.all([
+  const settledResults = await Promise.allSettled([
     searchSchedules(lowerQuery),
     searchAnnouncementApi(lowerQuery),
     searchPhoneNumberSource(query, lowerQuery),
   ]);
+
+  const results: SearchAllResult[][] = [];
+  settledResults.forEach((result) => {
+    if (result.status === "fulfilled") {
+      results.push(result.value);
+    }
+  });
+
+  if (results.length === 0) {
+    const firstFailure = settledResults.find(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
+    throw firstFailure?.reason ?? new Error("검색 정보를 불러오지 못했습니다.");
+  }
 
   const uniqueResults = sortSearchResults(
     dedupeSearchResults(results.flat()),

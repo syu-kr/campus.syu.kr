@@ -37,6 +37,7 @@ export async function fetchWeather(): Promise<WeatherData | null> {
     fallback: null,
     noStore: true,
     cache: "no-store",
+    throwOnError: true,
   })
     .then((data) => {
       if (!isWeatherData(data)) return null;
