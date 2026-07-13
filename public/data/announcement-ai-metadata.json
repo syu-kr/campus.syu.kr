@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-12T16:11:05.306Z",
+  "generatedAt": "2026-07-13T17:25:11.047Z",
   "items": {
     "academic:url:0036436fd6d7b705": {
       "summary": "2025학년도 1학기 신입생·편입생은 2025년 2월 24일(월) 오후 3시 이후 SU-WINGs에서 학번 조회 및 비밀번호 설정이 가능합니다.",
@@ -14932,27 +14932,27 @@
       "detailContentHash": "ff591184def58bd2"
     },
     "academic:url:6cca9005f1559d77": {
-      "summary": "2026-2학기 학점교류대학 수강신청 일정 안내로, 교류 희망 대학의 추천 마감일 이틀 전까지 학사지원팀(바울관 101호)에 신청서를 제출해야 합니다.",
-      "target": "학점교류를 희망하는 본교 재학생 (신입생 1학년 1학기, 마지막 학기·초과학기 제외)",
-      "deadline": "대학별 상이 (가장 이른 마감: 동국대 2026.07.15. / 가장 늦은 마감: 건국대 2026.08.12.)",
-      "requiredAction": "교류 희망 대학 학사공지 확인 후 신청서 작성 및 담당교수 서명을 받아 추천 마감 이틀 전까지 학사지원팀 제출",
+      "summary": "2026-2학기 학점교류 수강신청 일정 안내로, 교류 희망 대학의 추천 마감일 이틀 전까지 학사지원팀(바울관101호)에 신청서를 제출해야 합니다.",
+      "target": "학점교류를 희망하는 본교 재학생 (신입생 1학년 1학기, 마지막 학기·초과학기 학생 제외)",
+      "deadline": "대학별 상이 (동국대 07.15, 서울시립대 07.20, 서울과기대 07.27, 서울여대 07.28, 숙명여대 08.06, 성신여대 08.10, 건국대 08.12, 중앙대 07.2",
+      "requiredAction": "교류 희망 대학 개설과목 확인 후 신청서 작성·담당교수 확인 → 해당 대학 추천 마감일 이틀 전까지 학사지원팀 제출",
       "keywords": [
         "학점교류",
         "수강신청",
         "2026-2학기",
         "타대학",
         "학사지원팀",
-        "신청 마감",
-        "수강신청 절차"
+        "신청서 제출",
+        "추천 마감일"
       ],
       "importance": "high",
       "confidence": "high",
-      "generatedAt": "2026-07-09T17:28:20.306Z",
+      "generatedAt": "2026-07-13T17:21:57.050Z",
       "sourceHash": "15195b4824b8bdc1",
-      "inputHash": "e3295cfe4d9e700b",
+      "inputHash": "6d0a4aa8cda14643",
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
-      "detailContentHash": "464d9ed33f57bfbc"
+      "detailContentHash": "49046eb226bf57c1"
     },
     "academic:url:6ccc3beca75d579f": {
       "summary": "2023년 11월 20일(월) 논술고사 당일 학부 모든 수업이 비대면(온라인)으로 진행되며 등교 없음.",
@@ -35110,6 +35110,49 @@
       "contentSource": "detail",
       "detailContentHash": "db229ff0118d86a1"
     },
+    "campus:url:02a425a8ec8b915a": {
+      "summary": "2025 대학혁신지원사업 참여학생 사례영상 경진대회가 개최되며, 첨부 공고문과 신청서를 확인하여 참여 신청할 수 있습니다.",
+      "target": "대학혁신지원사업 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "첨부 공고문(PDF) 및 신청서(HWP) 확인 후 기간 내 신청",
+      "keywords": [
+        "대학혁신지원사업",
+        "사례영상",
+        "경진대회",
+        "공모신청",
+        "혁신지원사업단"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:24:40.402Z",
+      "sourceHash": "36ea04a7a2f42592",
+      "inputHash": "553c05edc17bb9e9",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5def97a376312734"
+    },
+    "campus:url:02e22306611fdd71": {
+      "summary": "교육혁신원이 학과연계 경진대회 아이디어를 11월 24일까지 모집하며, 선정자는 MVP 인증 점수 50점, 미선정자는 SU-Point 5,000점을 지급합니다.",
+      "target": "경진대회 아이디어를 제안하고 싶은 전체 학생",
+      "deadline": "2025.11.24.(월)",
+      "requiredAction": "첨부된 신청 양식을 다운로드 후 작성하여 신청 시 제출",
+      "keywords": [
+        "학과연계 경진대회",
+        "아이디어 모집",
+        "MVP 인증 점수",
+        "SU-Point",
+        "교육혁신원",
+        "신청 양식"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:24:29.095Z",
+      "sourceHash": "d0e62f61ab57ee43",
+      "inputHash": "3583df765ed316ce",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ee4998bf2ca7fe2b"
+    },
     "campus:url:040fe97ca25fc67b": {
       "summary": "정보공개 청구에 따라 총무인사팀이 공개한 정보공개목록(전형료 반환 관련)을 안내합니다.",
       "target": "unknown",
@@ -35129,6 +35172,49 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "7d9bd231271a6615"
+    },
+    "campus:url:043274dd0086c0f2": {
+      "summary": "대학혁신지원사업 프로그램 참여 수기를 공모하며, 주관 부서에 직접 제출하는 공모전입니다.",
+      "target": "대학혁신지원사업 프로그램 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "참여 프로그램 주관 부서에 수기 직접 제출 후 웹포스터에서 세부내용 확인",
+      "keywords": [
+        "대학혁신지원사업",
+        "학생성과 발표대회",
+        "공모전",
+        "참여 수기",
+        "주관 부서 제출"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:23:03.380Z",
+      "sourceHash": "350819033317f260",
+      "inputHash": "df8b06962de81d23",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "905a84c9fa79bbea"
+    },
+    "campus:url:04773f672c435b6b": {
+      "summary": "2026학년도 3월 외국인 1차 신·편입학 합격자는 11월 5일 14시부터 링크에서 수험번호+생년월일로 확인하고, 11월 14일 12시까지 등록금을 납부해야 합니다.",
+      "target": "2026학년도 3월 외국인 1차 신·편입학 지원자",
+      "deadline": "합격 확인: 2025-11-12 12:00 / 등록 마감: 2025-11-14 12:00",
+      "requiredAction": "합격 조회 링크에서 수험번호+생년월일로 합격 확인 후, 국내 송금 가능 시 가상계좌 입금 / 불가 시 interchina@syu.ac.kr로 해외 송금 계좌 요청",
+      "keywords": [
+        "외국인 신·편입학",
+        "합격자 발표",
+        "등록금 납부",
+        "가상계좌",
+        "해외 송금",
+        "국제교육원"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:24:03.166Z",
+      "sourceHash": "f1878a3c52437bbf",
+      "inputHash": "8e49be3449e3749b",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "a8ee8d9b20334940"
     },
     "campus:url:049cf859496269c0": {
       "summary": "2026 전공탐색 페스티벌(5월 27일 개최) 경품 추첨 당첨자 발표 공지입니다.",
@@ -35699,6 +35785,29 @@
       "contentSource": "detail",
       "detailContentHash": "631883b4f63077a8"
     },
+    "campus:url:1a5a4842322b4e34": {
+      "summary": "SW중심대학사업단이 2026년 1월 싱가포르 연수(4박 6일) 참가자 20명을 모집하며, 교육비·숙식비 전액 지원되고 항공료는 개인 부담입니다.",
+      "target": "삼육대학교 재학생 20명 (SW건강과학 마이크로전공생·연계전공생, TOPCIT 650이상 장학금 수혜자 우선 선발)",
+      "deadline": "2025.11.25(화)",
+      "requiredAction": "네이버폼 1차 제출 후 참가신청서·개인정보처리동의서를 이메일(chufdsa@syu.ac.kr)로 2차 제출",
+      "keywords": [
+        "SW융합 해외연수",
+        "싱가포르",
+        "참가자 모집",
+        "네이버폼 신청",
+        "서류 제출",
+        "항공료 개인부담",
+        "SW중심대학사업단"
+      ],
+      "importance": "high",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:22:55.844Z",
+      "sourceHash": "b32213987227eeb9",
+      "inputHash": "474b90728e542109",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fd872374a0c8cc7f"
+    },
     "campus:url:1ba1f6b02ef88ea5": {
       "summary": "2026 대학혁신지원사업 총괄협의회 서포터즈를 모집하며, 신청 마감은 5월 17일까지 기간 연장됩니다.",
       "target": "삼육대학교 재학생 (서포터즈 신청 희망자)",
@@ -35937,6 +36046,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "167b2b59aede9de2"
+    },
+    "campus:url:24cef1f1fbe29fc9": {
+      "summary": "2025-2 SU-Festa 행사가 11월 18~19일 솔로몬광장에서 열리며, 스탬프 투어(8개 부스 중 4개 참여) 완료 시 간식을 제공합니다.",
+      "target": "전체 학생",
+      "deadline": "2025.11.19",
+      "requiredAction": "11월 18~19일 솔로몬광장 방문 후 스탬프 투어 4개 부스 참여 완료 및 운영 본부에서 간식 수령",
+      "keywords": [
+        "SU-Festa",
+        "스탬프 투어",
+        "솔로몬광장",
+        "비교과 행사",
+        "간식 증정",
+        "교육혁신원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:22:45.490Z",
+      "sourceHash": "b479b629996a3d84",
+      "inputHash": "717308d9afbab299",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "44f6361c7ec6bd12"
     },
     "campus:url:25344277f28de6c3": {
       "summary": "2021년 10월 7일 해군사관학교에서 열리는 제52회 해양학술세미나에 대학생을 초청하며, 해양안보·해양리더십 부문 원고 투고 시 우수작을 선정해 포상합니다.",
@@ -36711,6 +36842,27 @@
       "contentSource": "detail",
       "detailContentHash": "87460d115cf7e3eb"
     },
+    "campus:url:3f758641c3dac444": {
+      "summary": "창업지원단이 주관하는 삼육동 플리마켓 '콩콩마켓'이 11월 4~5일 솔로몬 광장에서 열립니다.",
+      "target": "전체 학생",
+      "deadline": "2025.11.04 ~ 2025.11.05 (행사 기간)",
+      "requiredAction": "11월 4일(화)~5일(수) 11:00~16:30 솔로몬 광장 방문",
+      "keywords": [
+        "콩콩마켓",
+        "플리마켓",
+        "창업지원단",
+        "솔로몬 광장",
+        "부서행사"
+      ],
+      "importance": "low",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:24:48.514Z",
+      "sourceHash": "3ed23cbc93e04c4e",
+      "inputHash": "4f92bacbba1a8305",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "fab4256ef940e3c0"
+    },
     "campus:url:404e44cb6489cdf1": {
       "summary": "삼육대 학생홍보대사단 SU-Ambassador 20기 신입 단원 8명을 모집하며, 지원서와 자기PR영상을 3월 13일 17시까지 이메일로 제출해야 합니다.",
       "target": "삼육대학교 재학생 1~3학년 (외국인 학생 포함)",
@@ -36757,6 +36909,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "0fb6cada47a6bd2a"
+    },
+    "campus:url:416a34c37821a9b7": {
+      "summary": "119주년 기념 쇼츠 영상 공모전 수상작이 발표되었으며, 대상·은상 없이 금상 1팀·동상 5팀이 선정되었고 수상자에게는 개별 연락 예정입니다.",
+      "target": "119주년 기념 쇼츠 영상 공모전 참가자 및 수상자",
+      "deadline": "unknown",
+      "requiredAction": "수상자는 개별 연락 확인",
+      "keywords": [
+        "쇼츠 영상 공모전",
+        "119주년 기념",
+        "수상작 발표",
+        "금상",
+        "동상",
+        "상금"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:22:19.621Z",
+      "sourceHash": "d7ec8b5cbfa1a9d6",
+      "inputHash": "d795775653d1cfd5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "966e606793aeb53b"
     },
     "campus:url:419d455803dd895b": {
       "summary": "2026-1학기 재학생 대상 우수강의 에세이 공모전으로, 6월 23일까지 SU-Plus 신청 및 이메일 제출 가능하며 장학금 혜택이 있습니다.",
@@ -37085,6 +37259,28 @@
       "contentSource": "detail",
       "detailContentHash": "244b5b7bcb5db764"
     },
+    "campus:url:4cae6efb1729d541": {
+      "summary": "삼육대 재학생·휴학생 대상 ISIC 국제학생증 무료 발급 행사가 2025년 11월 3일~16일 온라인으로 진행됩니다.",
+      "target": "삼육대학교 재학생 및 휴학생",
+      "deadline": "2025년 11월 16일(일)",
+      "requiredAction": "isic.co.kr/hbr/147006에서 신청 후 하나은행 비대면 계좌개설 및 카드 발급 신청",
+      "keywords": [
+        "ISIC 국제학생증",
+        "무료 발급",
+        "하나은행",
+        "해외 학생 할인",
+        "비대면 카드 발급",
+        "스타벅스 쿠폰"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:24:11.437Z",
+      "sourceHash": "ded3bd0634189669",
+      "inputHash": "0c3a7f16411e8de7",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "e998207536508734"
+    },
     "campus:url:4e7d3b6cb7a0befe": {
       "summary": "재무처에서 펭수와 함께하는 크리스마스 씰 판매를 안내하는 캠퍼스 공지입니다.",
       "target": "전체 학생 및 교직원",
@@ -37187,6 +37383,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "d0cb1c862907c21b"
+    },
+    "campus:url:50d49eed9bb55877": {
+      "summary": "2007년생 중 병역판정검사를 받은 해에 입영을 희망하는 학생을 위한 현역병 입영 신청 안내입니다.",
+      "target": "2007년생 병역판정검사 당해 입영희망자",
+      "deadline": "unknown",
+      "requiredAction": "원문 공지 확인 후 현역병 입영 신청 절차 파악",
+      "keywords": [
+        "병역판정검사",
+        "현역병 입영",
+        "2007년생",
+        "입영 신청",
+        "예비군대대"
+      ],
+      "importance": "normal",
+      "confidence": "low",
+      "generatedAt": "2026-07-13T17:22:04.520Z",
+      "sourceHash": "961ad11499e96ebf",
+      "inputHash": "0ca77be7d5ca2cfb",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5c792c7584b74dc6"
     },
     "campus:url:50d9bc951195120a": {
       "summary": "해군 전문의무병 모집 안내로, 관심 있는 학생은 원문 공지를 통해 상세 내용을 확인할 수 있습니다.",
@@ -37469,6 +37686,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "0e12e56409abca99"
+    },
+    "campus:url:558dbe40c0c1838a": {
+      "summary": "삼육대 119주년 기념 쇼츠 영상 공모전(기간 연장)으로, 재학생이 학교 자랑 영상을 11월 14일까지 이메일로 제출하면 최대 100만 원 수상 가능.",
+      "target": "삼육대학교 재학생(학부, 대학원, 어학당)",
+      "deadline": "2025년 11월 14일(금)",
+      "requiredAction": "참가 신청서, 응모 동의서, 개인정보제공 동의서, 영상 파일을 supr@syu.ac.kr로 이메일 제출",
+      "keywords": [
+        "쇼츠 영상 공모전",
+        "119주년 기념",
+        "재학생 참가",
+        "상금 300만원",
+        "이메일 접수",
+        "세로형 영상"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:25:11.008Z",
+      "sourceHash": "b6d7b100d7bad3f1",
+      "inputHash": "2693d3472fb30e19",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "8c8dd06fe7eb5500"
     },
     "campus:url:5672e7d9777a8fbe": {
       "summary": "커뮤니케이션팀이 개교 120주년 이니셜 워드마크 개발을 위한 설문조사를 진행하며, 참여자 중 30명 추첨으로 캐릭터 배지를 증정합니다.",
@@ -39134,6 +39373,29 @@
       "contentSource": "detail",
       "detailContentHash": "4d30ad9e8b8d05f0"
     },
+    "campus:url:8863773b109e3178": {
+      "summary": "2025학년도 SW페스티벌 성과공유회가 11월 19일(수) 장근청홀에서 열리며, SW캡스톤디자인·프로젝트 경진대회 발표 및 전시가 진행됩니다.",
+      "target": "전체 학생 및 SW중심대학 관련 구성원",
+      "deadline": "2025.11.19",
+      "requiredAction": "관심 있는 학생은 2025년 11월 19일 장근청홀에서 열리는 행사에 참석",
+      "keywords": [
+        "SW페스티벌",
+        "성과공유회",
+        "SW캡스톤디자인",
+        "프로젝트 경진대회",
+        "산학협력",
+        "SW건강과학 융합전공",
+        "장근청홀"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:22:37.562Z",
+      "sourceHash": "ee9c5337f0263fdd",
+      "inputHash": "e6165f2c194354d2",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "9f5ebf27d2c57663"
+    },
     "campus:url:8898ea29c3fa4080": {
       "summary": "2021 돌단 문학상 공모전이 '다시(again/restart)' 주제로 개최되며, 시·소설·에세이·웹툰 등을 9월 27일까지 이메일로 제출할 수 있습니다.",
       "target": "전체 학생",
@@ -39675,6 +39937,30 @@
       "contentSource": "detail",
       "detailContentHash": "19888996df16faa9"
     },
+    "campus:url:9c6deb1ced0dba0c": {
+      "summary": "재학생 대상 기초물리·기초수학·기초영어회화 SU-EBE 특강을 11월 3일부터 운영하며, SU-Plus 신청 후 e-class 수강 시 최대 SU-Point 48,000점 혜택 제공.",
+      "target": "재학생 (휴학생·졸업유예·학점등록생은 신청 가능하나 재학생이 아닐 경우 혜택 지급 불가)",
+      "deadline": "신청기간 2025.11.03~12.25 / 수강기간 ~12.28 / 결과보고서·만족도조사 ~12.30",
+      "requiredAction": "SU-Plus에서 신청 후 e-class 수강(진도율 100%), 보고서 작성, 만족도 조사 제출",
+      "keywords": [
+        "SU-EBE 특강",
+        "기초물리",
+        "기초수학",
+        "기초영어회화",
+        "SU-Plus 신청",
+        "SU-Point",
+        "e-class",
+        "교육혁신원"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:24:20.974Z",
+      "sourceHash": "f2de414f8c32e5e5",
+      "inputHash": "f17988799b105e3e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "efd3e48e2ad3e553"
+    },
     "campus:url:9c9f42d433f4802a": {
       "summary": "병역명문가 신청 또는 추천 관련 안내로, 자세한 내용은 원문 공지를 확인하세요.",
       "target": "병역명문가 해당자 또는 관심 학생",
@@ -39782,6 +40068,28 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "88f3b61e5dee67c9"
+    },
+    "campus:url:9ed992addeac3d25": {
+      "summary": "원격교육지원센터가 AI 생성형 콘텐츠 마스터 과정을 12월 15~19일 온라인(Zoom)으로 운영하며, 12월 10일까지 신청 가능하고 SU-Point 20,000p가 지급됩니다.",
+      "target": "콘텐츠 제작 역량 강화에 관심 있는 전체 학생",
+      "deadline": "2025.12.10(수) 23:59",
+      "requiredAction": "신청 링크(https://z.huno.kr/3OCDijW1)에서 12월 10일 자정 전까지 신청",
+      "keywords": [
+        "1인 미디어",
+        "AI 생성형 콘텐츠",
+        "비교과프로그램",
+        "SU-Point",
+        "온라인 Zoom",
+        "신청 마감"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:22:28.072Z",
+      "sourceHash": "ced730986d514cb5",
+      "inputHash": "bd8c7bcd5bf291d5",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "bd230be4f94d94fa"
     },
     "campus:url:9fbcb6a8d7986445": {
       "summary": "서울런 멘토단 활동 학생을 모집하며, 2021년 8월 19일 17시까지 신청서 등 서류를 이메일로 제출해야 합니다.",
@@ -40219,6 +40527,27 @@
       "contentSource": "detail",
       "detailContentHash": "099ea009be3791ea"
     },
+    "campus:url:ade25560cca4a0dd": {
+      "summary": "2025년 대학혁신지원사업 학생참여 수기 공모전이 개최되며, 신청서 및 유의사항은 첨부파일을 통해 확인할 수 있습니다.",
+      "target": "삼육대학교 재학생",
+      "deadline": "unknown",
+      "requiredAction": "첨부파일(신청서, 유의사항) 확인 후 신청서 작성 및 제출",
+      "keywords": [
+        "수기 공모전",
+        "대학혁신지원사업",
+        "학생참여",
+        "신청서",
+        "혁신지원사업단"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:23:10.684Z",
+      "sourceHash": "84f38ab9edbf0816",
+      "inputHash": "93ddb9c810b37783",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "94193744c1ede011"
+    },
     "campus:url:ae730d02f8f3ec96": {
       "summary": "교육혁신원이 주최하는 사회적 이슈 시각화 대회로, 4월 20일~6월 21일 SU-Plus 신청 후 작품을 이메일로 제출하면 상금 및 SU-Point 혜택이 있습니다.",
       "target": "전체 학생",
@@ -40461,6 +40790,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "5354d1f47cb11074"
+    },
+    "campus:url:b61260a0fd551f6f": {
+      "summary": "2025-2학기 4주 과정 학습공동체(3인 이상 팀)를 11월 2일까지 모집하며, 수료 시 장학금 10만 원 및 수료증을 제공합니다.",
+      "target": "삼육대학교 2025-2학기 등록 재학생(휴학생·졸업유예생 제외)",
+      "deadline": "2025-11-02",
+      "requiredAction": "신청서 작성 후 팀 리더가 SU-Plus(비교과통합시스템)에 접속하여 기간 내 제출",
+      "keywords": [
+        "학습공동체",
+        "4주 과정",
+        "SU-Plus",
+        "비교과프로그램",
+        "장학금",
+        "팀 신청",
+        "수료증"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:24:59.378Z",
+      "sourceHash": "ada4deb554ff4669",
+      "inputHash": "65673c504c42523c",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "7cbf447d629187e2"
     },
     "campus:url:b7fd116e7b5d8c55": {
       "summary": "LH 청년주거복지 관련 안내로, 상세 내용은 네이버 블로그 링크를 통해 확인할 수 있습니다.",
@@ -40857,6 +41209,28 @@
       "contentSource": "detail",
       "detailContentHash": "0ff5f6bd9c49993c"
     },
+    "campus:url:c0108d1bd4b1c4b0": {
+      "summary": "SW중심대학사업단이 11월 24일(월) 15:00~17:00 제1실습관 411호에서 오픈소스 프로젝트 기여 특강을 개최하며, 신청은 SU-PLUS에서 가능합니다.",
+      "target": "오픈소스 SW 및 기여에 관심 있는 재학생(전공 불문)",
+      "deadline": "unknown",
+      "requiredAction": "SU-PLUS(https://z.huno.kr/W6NpA2BO)에서 신청",
+      "keywords": [
+        "오픈소스 특강",
+        "오픈소스 프로젝트 기여",
+        "SW중심대학사업단",
+        "SU-PLUS 신청",
+        "제1실습관 411호",
+        "컴퓨터공학부 연계"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:23:36.893Z",
+      "sourceHash": "52b88825b5b7d874",
+      "inputHash": "25e48c2d79518f30",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "b8bfa706653580a7"
+    },
     "campus:url:c098702b7f039605": {
       "summary": "2025년 1월 각 군 현역병 모집계획을 안내하는 공지로, 원문에서 세부 모집 일정 및 내용을 확인할 수 있습니다.",
       "target": "입영 대상 재학생 또는 현역병 지원 희망자",
@@ -40876,6 +41250,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "b53784a9c5d82df8"
+    },
+    "campus:url:c1267edd9d9f1372": {
+      "summary": "삼육대학교 대학혁신지원사업 웹소식지 2025-1호가 발간되었으며, SU-PANEL 학생홍보단이 제작한 PDF를 확인할 수 있습니다.",
+      "target": "전체 학생 및 교내 구성원",
+      "deadline": "unknown",
+      "requiredAction": "원문 URL에서 웹소식지 PDF 다운로드 후 열람",
+      "keywords": [
+        "대학혁신지원사업",
+        "웹소식지",
+        "SU-PANEL",
+        "학생홍보단",
+        "PDF 다운로드"
+      ],
+      "importance": "low",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:23:28.631Z",
+      "sourceHash": "087fb194815ad0e8",
+      "inputHash": "f4bf0bb0043f413e",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "db229ff0118d86a1"
     },
     "campus:url:c15672ee12694f99": {
       "summary": "장애학생지원센터에서 2026-1학기 장애학생 서포터즈를 추가 모집하며, 지원서를 작성하여 제출해야 합니다.",
@@ -41202,6 +41597,27 @@
       "contentSource": "detail",
       "detailContentHash": "89c5f6fd62f02586"
     },
+    "campus:url:ce6a6fd0d227293e": {
+      "summary": "2025 대학혁신지원사업 학생성과 발표대회 공모전 재공고로, 참가신청서 및 동의서 제출이 필요합니다.",
+      "target": "대학혁신지원사업 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "참가신청서 및 동의서(hwp) 작성 후 제출 방법은 원문 공지에서 확인",
+      "keywords": [
+        "대학혁신지원사업",
+        "학생성과 발표대회",
+        "공모전",
+        "참가신청서",
+        "재공고"
+      ],
+      "importance": "normal",
+      "confidence": "medium",
+      "generatedAt": "2026-07-13T17:22:11.839Z",
+      "sourceHash": "7f498b7313f9833b",
+      "inputHash": "a8c305fcda2aed23",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "cb89b99101906665"
+    },
     "campus:url:ce7bf700c25bb074": {
       "summary": "기말고사 기간(12/8~12/12) SU-Pay로 하이오커피 또는 마녀떡볶이에서 3,000p 이상 결제 시 마카롱 또는 볶음밥을 무료 증정하는 이벤트입니다.",
       "target": "SU-Pay를 보유한 전체 재학생",
@@ -41330,6 +41746,50 @@
       "contentSource": "detail",
       "detailContentHash": "34958591f41db6ff"
     },
+    "campus:url:d66baa63a0ebe4ba": {
+      "summary": "2026학년도 1학기 학습공동체 우수 성과 사례 공모전 심사 결과, 7팀이 선정되었으며 선정팀에는 팀당 30만 원 장학금이 지급될 예정입니다.",
+      "target": "2026학년도 1학기 학습공동체 공모전 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "선정 여부를 원문 공지에서 확인하고, 선정팀은 장학금 지급 관련 개별 안내를 대기",
+      "keywords": [
+        "학습공동체",
+        "공모전 결과",
+        "선정팀",
+        "장학금 지급",
+        "교육혁신원",
+        "우수 성과 사례집"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:21:47.263Z",
+      "sourceHash": "dd52aa6179c4b149",
+      "inputHash": "d0f76c21a39df423",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "3d89ed27827bfa51"
+    },
+    "campus:url:d6885c74a897b533": {
+      "summary": "2026 학과연계 경진대회 아이디어 공모전 수상자를 발표하며, 참여자 전원 SU-Point 19,800점이 지급되고 만족도 조사 미완료자는 조사에 참여해야 합니다.",
+      "target": "2026 학과연계 경진대회 아이디어 공모전 참여 학생",
+      "deadline": "unknown",
+      "requiredAction": "수상 여부 확인, 만족도 조사 미완료자는 링크(https://z.huno.kr/o0HZc3ie) 접속 후 조사 완료",
+      "keywords": [
+        "아이디어 공모전",
+        "수상자 발표",
+        "SU-Point",
+        "만족도 조사",
+        "상금 지급",
+        "학과연계 경진대회"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:21:37.259Z",
+      "sourceHash": "91a2dabbbf60fb7a",
+      "inputHash": "f1ee5cc0c8b4b5a9",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "ef94da749aa7ed96"
+    },
     "campus:url:d6ae1c7771d020fd": {
       "summary": "2023년 4월 육군·해군·해병대·공군 현역병 모집계획으로, 군별 모집분야·접수기간·합격자 발표일·입영월 정보를 안내합니다.",
       "target": "현역병 입대 지원 희망 학생",
@@ -41395,6 +41855,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "98a66b9263b3a87c"
+    },
+    "campus:url:d83b4f8390ab9801": {
+      "summary": "2025 삼육대 취업박람회가 11월 18~19일 바울관 앞·카페에서 열리며, 재학생·졸업생·타대생·지역청년 모두 참여 가능합니다.",
+      "target": "재학생, 졸업생, 타대생, 지역청년",
+      "deadline": "2025.11.18~2025.11.19 (행사 당일, 이벤트관 조기 마감 가능)",
+      "requiredAction": "박람회 현장 방문 후 원하는 부스 참여, 혜택 수령 시 운영본부에서 참여 확인 및 신청 등록 필수",
+      "keywords": [
+        "취업박람회",
+        "기업상담",
+        "직무상담",
+        "사전신청",
+        "참여특전",
+        "이벤트관",
+        "해외취업"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:23:19.601Z",
+      "sourceHash": "35e7a1808ab6c192",
+      "inputHash": "0a0d91714b5ae88f",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "9337794a8d8b6eb5"
     },
     "campus:url:d990d5b2b0eb65cd": {
       "summary": "교육혁신원이 2025학년도 동계방학 학습공동체(4주·8주 과정)를 모집하며, 수료 시 최대 15만 원 혜택과 수료증이 제공됩니다.",
@@ -41695,6 +42178,27 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "2c71079216e4ced2"
+    },
+    "campus:url:e14fc91ca69988af": {
+      "summary": "삼육대학교 교지편집부 돌단이 제15회 돌단 문학상 수상자를 발표했으며, 수상작은 제60호 교지에 수록될 예정입니다.",
+      "target": "돌단 문학상 참여자 및 관심 있는 전체 학생",
+      "deadline": "unknown",
+      "requiredAction": "unknown",
+      "keywords": [
+        "돌단 문학상",
+        "수상자 발표",
+        "교지편집부",
+        "제60호 교지",
+        "시야"
+      ],
+      "importance": "low",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:23:45.600Z",
+      "sourceHash": "4b74c03ef5c71324",
+      "inputHash": "e7a5298d9217d4b8",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "5e33ab06dede1c56"
     },
     "campus:url:e2a8feae3529f2fe": {
       "summary": "2026년 전반기 학사사관(예비) 후보생 선발 관련 지원절차 안내로, 붙임 자료를 통해 세부 내용을 확인할 수 있습니다.",
@@ -42445,6 +42949,29 @@
       "model": "claude-sonnet-4-6",
       "contentSource": "detail",
       "detailContentHash": "012e66a4550653d3"
+    },
+    "campus:url:fb8962f166336cdc": {
+      "summary": "11월 10일(월) 외국인 유학생 대상 SU International Festival이 개최되며, 한복체험·캘리그라피·퍼스널컬러진단·각국 문화 부스 등이 운영됩니다.",
+      "target": "외국인 유학생",
+      "deadline": "2025.11.10",
+      "requiredAction": "11월 10일 행사 현장 참여",
+      "keywords": [
+        "국제페스티벌",
+        "외국인 유학생",
+        "한국문화체험",
+        "한복체험",
+        "캘리그라피",
+        "퍼스널컬러",
+        "글로벌부스"
+      ],
+      "importance": "normal",
+      "confidence": "high",
+      "generatedAt": "2026-07-13T17:23:53.616Z",
+      "sourceHash": "c2bcdeded5c8f7b9",
+      "inputHash": "4d3711df212274c6",
+      "model": "claude-sonnet-4-6",
+      "contentSource": "detail",
+      "detailContentHash": "802898090edc0348"
     },
     "campus:url:fc63957ddab510c6": {
       "summary": "2025 돌단 교지 문학상을 모집합니다. 시·소설·에세이·웹툰 등 자유 형식으로 6월 20일까지 이메일 제출하면 상금 및 교지 게재 기회가 주어집니다.",
