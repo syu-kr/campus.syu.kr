@@ -268,6 +268,8 @@ export const dictionaries = {
         closedMeal: "운영 없음",
         extraItems: " 외",
         shuttleWeekend: "오늘은 주말입니다. 셔틀버스가 운행되지 않습니다.",
+        shuttleOutOfPeriod:
+          "현재는 학기·방학 셔틀 운행 기간이 아닙니다. 전체 시간표를 확인해보세요.",
         shuttleNoMore:
           "오늘 남은 셔틀 운행이 없습니다. 전체 시간표를 확인해보세요.",
         shuttleSchedule: "셔틀 시간표 보기",
@@ -885,6 +887,8 @@ export const dictionaries = {
           updatedPrefix: "기준",
           weekend:
             "오늘은 주말입니다. 삼육대학교 셔틀버스가 운행되지 않습니다.",
+          outOfPeriod:
+            "현재는 학기·방학 셔틀 운행 기간이 아닙니다. 전체 시간표에서 다음 운행 기간을 확인하세요.",
           noMore:
             "오늘 남은 셔틀 출발편이 없습니다. 전체 시간표에서 다음 운행일을 확인하세요.",
           nextDeparture:
@@ -907,12 +911,16 @@ export const dictionaries = {
         lastLocationUpdate: "마지막 위치 갱신",
         staleLocationWarning:
           "기존 정보가 오래되었을 수 있습니다.",
-        outsideOperation: "선택한 시간표 기준 운행 시간 밖입니다.",
+        outsideOperation: "현재 운행 시간표 기준 운행 시간 밖입니다.",
+        outsideOperationPeriod:
+          "현재는 학기·방학 셔틀 운행 기간이 아니어서 실시간 위치를 표시하지 않습니다.",
         locationDisclosureHint:
           "정확도 안내를 확인한 뒤 필요한 경우에만 위치를 표시합니다.",
         locationUnavailableTitle: "현재는 위치 표시 시간이 아닙니다",
         locationUnavailableMessage:
-          "선택한 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
+          "현재 운행 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
+        locationUnavailablePeriodMessage:
+          "현재는 학기·방학 셔틀 운행 기간이 아닙니다.\n아래 시간표에서 다음 운행 기간을 확인하세요.",
         locationEmptyTitle:
           "현재 운행 중인 셔틀 위치를 찾을 수 없습니다",
         locationEmptyMessage:
@@ -1914,6 +1922,8 @@ export const dictionaries = {
         closedMeal: "Closed",
         extraItems: " more",
         shuttleWeekend: "It is the weekend today. Shuttle buses are not running.",
+        shuttleOutOfPeriod:
+          "The shuttle is not currently in a semester or vacation operating period. Check the full timetable.",
         shuttleNoMore:
           "There are no remaining shuttle departures today. Check the full timetable.",
         shuttleSchedule: "View shuttle timetable",
@@ -2536,6 +2546,8 @@ export const dictionaries = {
           updatedPrefix: "As of",
           weekend:
             "It is the weekend today. Sahmyook University shuttle buses are not running.",
+          outOfPeriod:
+            "The shuttle is not currently in a semester or vacation operating period. Check the full timetable for the next operating period.",
           noMore:
             "There are no remaining shuttle departures today. Check the full timetable for the next operating day.",
           nextDeparture:
@@ -2558,12 +2570,16 @@ export const dictionaries = {
         lastLocationUpdate: "Last location update",
         staleLocationWarning:
           "The existing location data may be outdated.",
-        outsideOperation: "Outside operating hours for the selected timetable.",
+        outsideOperation: "Outside operating hours for the current timetable.",
+        outsideOperationPeriod:
+          "Live locations are unavailable outside the semester and vacation shuttle operating periods.",
         locationDisclosureHint:
           "Live locations are shown only after you confirm the accuracy notice.",
         locationUnavailableTitle: "Location display is unavailable now",
         locationUnavailableMessage:
-          "It is outside operating hours for the selected timetable.\nCheck the timetable below for the next departure.",
+          "It is outside operating hours for the current timetable.\nCheck the timetable below for the next departure.",
+        locationUnavailablePeriodMessage:
+          "The shuttle is not currently in a semester or vacation operating period.\nCheck the timetable below for the next operating period.",
         locationEmptyTitle:
           "No active shuttle location is available",
         locationEmptyMessage:

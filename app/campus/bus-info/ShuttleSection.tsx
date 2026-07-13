@@ -23,7 +23,10 @@ import {
   ShuttleMap,
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
-import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
+import {
+  getShuttleScheduleType,
+  isShuttleVacationDate,
+} from "@/lib/shuttle-schedule";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
 import type { LiveDataSourceStatus } from "@/types/live-data";
@@ -178,6 +181,10 @@ export default function ShuttleSection() {
     () => isShuttleVacationDate(dateInfo.dateStr, specialPeriods),
     [dateInfo.dateStr, specialPeriods],
   );
+  const currentScheduleType = useMemo(
+    () => (now ? getShuttleScheduleType(now, specialPeriods) : null),
+    [now, specialPeriods],
+  );
 
   // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
@@ -217,7 +224,9 @@ export default function ShuttleSection() {
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0;
   const specialScheduleIsCurrent = activeReplacementSpecialPeriods.length > 0;
-  const currentRegularScheduleType = dateInfo.isWeekend ? null : defaultType;
+  const currentRegularScheduleType = dateInfo.isWeekend
+    ? null
+    : currentScheduleType;
   const dayButtons = [
     {
       type: "mondayToThursday" as const,
@@ -531,7 +540,8 @@ export default function ShuttleSection() {
     if (
       !busesWithSpecialPeriods ||
       busesWithSpecialPeriods.length === 0 ||
-      !now
+      !now ||
+      !currentScheduleType
     )
       return false;
 
@@ -541,8 +551,8 @@ export default function ShuttleSection() {
 
     // 현재 요일의 모든 버스 시간에서 첫차와 마지막차 찾기
     busesWithSpecialPeriods.forEach((bus) => {
-      const times = Array.isArray(bus.schedules?.[selectedType])
-        ? bus.schedules[selectedType]
+      const times = Array.isArray(bus.schedules?.[currentScheduleType])
+        ? bus.schedules[currentScheduleType]
         : [];
       if (times.length > 0) {
         times.forEach((time) => {
@@ -562,7 +572,14 @@ export default function ShuttleSection() {
     const operationEnd = Math.min(24 * 60 - 1, lastTime + 30);
 
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
-  }, [busesWithSpecialPeriods, dateInfo, now, selectedType]);
+  }, [busesWithSpecialPeriods, currentScheduleType, dateInfo, now]);
+
+  const locationUnavailableMessage = currentScheduleType
+    ? text.locationUnavailableMessage
+    : text.locationUnavailablePeriodMessage;
+  const outsideOperationMessage = currentScheduleType
+    ? text.outsideOperation
+    : text.outsideOperationPeriod;
 
   // 버스 위치는 안내를 확인했고, 표시 가능한 시간일 때만 불러온다.
   useEffect(() => {
@@ -756,7 +773,7 @@ export default function ShuttleSection() {
               </>
             ) : !isWithinOperationHours ? (
               <p className="text-xs sm:text-sm text-neutral-600">
-                {text.outsideOperation}
+                {outsideOperationMessage}
               </p>
             ) : (
               <p className="text-xs sm:text-sm text-neutral-600">
@@ -768,7 +785,7 @@ export default function ShuttleSection() {
           {!isWithinOperationHours ? (
             <ShuttleLocationState
               title={text.locationUnavailableTitle}
-              message={text.locationUnavailableMessage}
+              message={locationUnavailableMessage}
             />
           ) : !isLocationPanelVisible ? (
             <ShuttleLocationDisclosure

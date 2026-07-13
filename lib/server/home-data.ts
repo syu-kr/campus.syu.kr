@@ -73,6 +73,7 @@ export function getHomeShuttleBuses(): Promise<ShuttleBusSchedule[]> {
 export function getHomeShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriods> {
   return readPublicData<ShuttleSpecialPeriods>("shuttle-special-periods.json", {
     specialPeriods: [],
+    semesterPeriods: [],
     vacationPeriods: [],
   });
 }
