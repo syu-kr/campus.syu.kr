@@ -12,6 +12,7 @@ interface ModalProps {
   size?: "sm" | "md" | "lg";
   initialFocus?: "close" | "none";
   className?: string;
+  overlayClassName?: string;
   headerClassName?: string;
   bodyClassName?: string;
   hideHeader?: boolean;
@@ -26,6 +27,7 @@ export function Modal({
   size = "md",
   initialFocus = "close",
   className = "",
+  overlayClassName = "",
   headerClassName = "",
   bodyClassName = "",
   hideHeader = false,
@@ -35,6 +37,7 @@ export function Modal({
   const titleId = useId();
   const descriptionId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -50,6 +53,36 @@ export function Modal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         onClose();
+        return;
+      }
+
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      const focusableElements = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter(
+        (element) =>
+          element.getAttribute("aria-hidden") !== "true" &&
+          element.getClientRects().length > 0,
+      );
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        dialogRef.current.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
       }
     };
 
@@ -74,7 +107,7 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-4 pt-16 sm:items-center sm:p-6"
+      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-4 pt-16 sm:items-center sm:p-6 ${overlayClassName}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -82,6 +115,8 @@ export function Modal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className={`flex max-h-[calc(100dvh-2rem)] w-full ${sizeClass} flex-col overflow-hidden rounded-xl bg-white shadow-xl ${className}`}
         onClick={(event) => event.stopPropagation()}
       >

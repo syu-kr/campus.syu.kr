@@ -82,13 +82,13 @@ export function NotificationModal() {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-end z-50 pointer-events-none"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="notification-title"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center p-4"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
       <div
-        className="pointer-events-auto w-full bg-white rounded-t-2xl shadow-2xl p-6 sm:rounded-lg sm:m-4 sm:max-w-md sm:ml-auto sm:mr-auto animate-in slide-in-from-bottom-5"
+        className="pointer-events-auto w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl animate-in slide-in-from-bottom-5"
         onClick={handleClick}
       >
         <div className="flex items-start gap-4">
