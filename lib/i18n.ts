@@ -911,12 +911,16 @@ export const dictionaries = {
         lastLocationUpdate: "마지막 위치 갱신",
         staleLocationWarning:
           "기존 정보가 오래되었을 수 있습니다.",
-        outsideOperation: "선택한 시간표 기준 운행 시간 밖입니다.",
+        outsideOperation: "현재 운행 시간표 기준 운행 시간 밖입니다.",
+        outsideOperationPeriod:
+          "현재는 학기·방학 셔틀 운행 기간이 아니어서 실시간 위치를 표시하지 않습니다.",
         locationDisclosureHint:
           "정확도 안내를 확인한 뒤 필요한 경우에만 위치를 표시합니다.",
         locationUnavailableTitle: "현재는 위치 표시 시간이 아닙니다",
         locationUnavailableMessage:
-          "선택한 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
+          "현재 운행 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
+        locationUnavailablePeriodMessage:
+          "현재는 학기·방학 셔틀 운행 기간이 아닙니다.\n아래 시간표에서 다음 운행 기간을 확인하세요.",
         locationEmptyTitle:
           "현재 운행 중인 셔틀 위치를 찾을 수 없습니다",
         locationEmptyMessage:
@@ -2566,12 +2570,16 @@ export const dictionaries = {
         lastLocationUpdate: "Last location update",
         staleLocationWarning:
           "The existing location data may be outdated.",
-        outsideOperation: "Outside operating hours for the selected timetable.",
+        outsideOperation: "Outside operating hours for the current timetable.",
+        outsideOperationPeriod:
+          "Live locations are unavailable outside the semester and vacation shuttle operating periods.",
         locationDisclosureHint:
           "Live locations are shown only after you confirm the accuracy notice.",
         locationUnavailableTitle: "Location display is unavailable now",
         locationUnavailableMessage:
-          "It is outside operating hours for the selected timetable.\nCheck the timetable below for the next departure.",
+          "It is outside operating hours for the current timetable.\nCheck the timetable below for the next departure.",
+        locationUnavailablePeriodMessage:
+          "The shuttle is not currently in a semester or vacation operating period.\nCheck the timetable below for the next operating period.",
         locationEmptyTitle:
           "No active shuttle location is available",
         locationEmptyMessage:
