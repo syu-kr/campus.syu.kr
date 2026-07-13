@@ -95,6 +95,22 @@
       "routes": ["shuttle-1"]
     }
   ],
+  "semesterPeriods": [
+    {
+      "id": "spring-2026",
+      "name": "2026학년도 1학기",
+      "startDate": "2026-03-03",
+      "endDate": "2026-06-15",
+      "scheduleType": "semester"
+    },
+    {
+      "id": "fall-2026",
+      "name": "2026학년도 2학기",
+      "startDate": "2026-09-01",
+      "endDate": "2026-12-14",
+      "scheduleType": "semester"
+    }
+  ],
   "vacationPeriods": [
     {
       "id": "summer-2026",

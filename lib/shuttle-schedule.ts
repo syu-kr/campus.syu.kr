@@ -21,6 +21,7 @@ interface NextShuttleDeparture {
 export interface CurrentShuttleSummary {
   departures: NextShuttleDeparture[];
   isWeekend: boolean;
+  isOperatingPeriod: boolean;
   isSpecialSchedule: boolean;
   scheduleLabel: string;
   hasMoreToday: boolean;
@@ -109,10 +110,24 @@ export function isShuttleVacationDate(
   );
 }
 
-function getScheduleType(
+function isShuttleSemesterDate(
+  dateString: string,
+  specialPeriods?: ShuttleSpecialPeriods,
+): boolean {
+  const semesterPeriods = Array.isArray(specialPeriods?.semesterPeriods)
+    ? specialPeriods.semesterPeriods
+    : [];
+
+  return semesterPeriods.some(
+    (period) =>
+      dateString >= period.startDate && dateString <= period.endDate,
+  );
+}
+
+export function getShuttleScheduleType(
   now: Date,
   specialPeriods?: ShuttleSpecialPeriods,
-): ShuttleScheduleType {
+): ShuttleScheduleType | null {
   const dateInfo = getDateInfo(now);
   const isVacation = isShuttleVacationDate(
     dateInfo.dateString,
@@ -123,7 +138,11 @@ function getScheduleType(
     return dateInfo.isFriday ? "fridayVacation" : "mondayToThursdayVacation";
   }
 
-  return dateInfo.isFriday ? "friday" : "mondayToThursday";
+  if (isShuttleSemesterDate(dateInfo.dateString, specialPeriods)) {
+    return dateInfo.isFriday ? "friday" : "mondayToThursday";
+  }
+
+  return null;
 }
 
 function getScheduleLabel(type: ShuttleScheduleType, isSpecial: boolean) {
@@ -231,6 +250,7 @@ export function getCurrentShuttleSummary({
     return {
       departures: [],
       isWeekend: false,
+      isOperatingPeriod: false,
       isSpecialSchedule: false,
       scheduleLabel: "오늘 시간표",
       hasMoreToday: false,
@@ -238,14 +258,28 @@ export function getCurrentShuttleSummary({
   }
 
   const dateInfo = getDateInfo(now);
-  const scheduleType = getScheduleType(now, specialPeriods);
+  const scheduleType = getShuttleScheduleType(now, specialPeriods);
 
   if (dateInfo.isWeekend) {
     return {
       departures: [],
       isWeekend: true,
+      isOperatingPeriod: scheduleType !== null,
       isSpecialSchedule: false,
-      scheduleLabel: getScheduleLabel(scheduleType, false),
+      scheduleLabel: scheduleType
+        ? getScheduleLabel(scheduleType, false)
+        : "운행 기간 외",
+      hasMoreToday: false,
+    };
+  }
+
+  if (!scheduleType) {
+    return {
+      departures: [],
+      isWeekend: false,
+      isOperatingPeriod: false,
+      isSpecialSchedule: false,
+      scheduleLabel: "운행 기간 외",
       hasMoreToday: false,
     };
   }
@@ -280,6 +314,7 @@ export function getCurrentShuttleSummary({
   return {
     departures: departures.slice(0, limit),
     isWeekend: false,
+    isOperatingPeriod: true,
     isSpecialSchedule,
     scheduleLabel: getScheduleLabel(scheduleType, isSpecialSchedule),
     hasMoreToday: departures.length > 0,

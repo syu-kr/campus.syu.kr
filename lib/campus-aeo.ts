@@ -122,6 +122,13 @@ export function createShuttleAnswerSummary({
     };
   }
 
+  if (!summary.isOperatingPeriod) {
+    return {
+      ...baseSummary,
+      answer: answerText.outOfPeriod,
+    };
+  }
+
   if (!primaryDeparture) {
     return {
       ...baseSummary,

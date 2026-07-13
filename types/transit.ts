@@ -35,17 +35,18 @@ export interface ShuttleSpecialPeriod {
   routes: string[];
 }
 
-interface ShuttleVacationPeriod {
+interface ShuttleOperatingPeriod {
   id: string;
   name: string;
   startDate: string;
   endDate: string;
-  scheduleType: "vacation";
+  scheduleType: "semester" | "vacation";
 }
 
 export interface ShuttleSpecialPeriods {
   specialPeriods: ShuttleSpecialPeriod[];
-  vacationPeriods: ShuttleVacationPeriod[];
+  semesterPeriods: ShuttleOperatingPeriod[];
+  vacationPeriods: ShuttleOperatingPeriod[];
 }
 
 export interface BusLocation {

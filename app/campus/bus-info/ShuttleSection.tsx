@@ -23,7 +23,10 @@ import {
   ShuttleMap,
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
-import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
+import {
+  getShuttleScheduleType,
+  isShuttleVacationDate,
+} from "@/lib/shuttle-schedule";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
 import type { LiveDataSourceStatus } from "@/types/live-data";
@@ -178,6 +181,10 @@ export default function ShuttleSection() {
     () => isShuttleVacationDate(dateInfo.dateStr, specialPeriods),
     [dateInfo.dateStr, specialPeriods],
   );
+  const currentScheduleType = useMemo(
+    () => (now ? getShuttleScheduleType(now, specialPeriods) : null),
+    [now, specialPeriods],
+  );
 
   // 초기 선택 상태 (현재 요일에 따라, 방학 기간 고려)
   const defaultType = useMemo(() => {
@@ -217,7 +224,9 @@ export default function ShuttleSection() {
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0;
   const specialScheduleIsCurrent = activeReplacementSpecialPeriods.length > 0;
-  const currentRegularScheduleType = dateInfo.isWeekend ? null : defaultType;
+  const currentRegularScheduleType = dateInfo.isWeekend
+    ? null
+    : currentScheduleType;
   const dayButtons = [
     {
       type: "mondayToThursday" as const,

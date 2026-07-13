@@ -251,10 +251,16 @@ export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriod
   try {
     return await fetchJson<ShuttleSpecialPeriods>(
       "/data/shuttle-special-periods.json",
-      { fallback: { specialPeriods: [], vacationPeriods: [] } },
+      {
+        fallback: {
+          specialPeriods: [],
+          semesterPeriods: [],
+          vacationPeriods: [],
+        },
+      },
     );
   } catch {
-    return { specialPeriods: [], vacationPeriods: [] };
+    return { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] };
   }
 }
 

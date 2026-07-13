@@ -263,8 +263,23 @@ export function TodayShuttleSection({
             }
           />
         )}
+        {!isLoading && !summary.isWeekend && !summary.isOperatingPeriod && (
+          <StateCard
+            type="info"
+            message={dictionary.home.dashboard.shuttleOutOfPeriod}
+            action={
+              <Link
+                href={localizePath("/campus/bus-info", locale)}
+                className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+              >
+                {dictionary.home.dashboard.shuttleSchedule}
+              </Link>
+            }
+          />
+        )}
         {!isLoading &&
           !summary.isWeekend &&
+          summary.isOperatingPeriod &&
           !primaryDeparture &&
           !summary.hasMoreToday && (
             <StateCard
