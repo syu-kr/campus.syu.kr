@@ -119,7 +119,11 @@ const responseTemplates = [
 
 export default function AdminPage() {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [authStatus, setAuthStatus] = useState<
+    "checking" | "ready" | "error"
+  >("checking");
+  const [authCheckAttempt, setAuthCheckAttempt] = useState(0);
+  const [authError, setAuthError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -146,11 +150,39 @@ export default function AdminPage() {
   const [pageNotice, setPageNotice] = useState("");
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
-      setIsAuthReady(true);
-    });
-  }, []);
+    let settled = false;
+    setAuthStatus("checking");
+    setAuthError("");
+
+    const timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      setAuthStatus("error");
+      setAuthError("관리자 세션 확인 시간이 초과되었습니다.");
+    }, 10_000);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        settled = true;
+        window.clearTimeout(timeoutId);
+        setUser(nextUser);
+        setAuthStatus("ready");
+      },
+      () => {
+        settled = true;
+        window.clearTimeout(timeoutId);
+        setUser(null);
+        setAuthStatus("error");
+        setAuthError("관리자 세션을 확인하지 못했습니다.");
+      },
+    );
+
+    return () => {
+      settled = true;
+      window.clearTimeout(timeoutId);
+      unsubscribe();
+    };
+  }, [authCheckAttempt]);
 
   const filteredSubmissions = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -459,13 +491,40 @@ export default function AdminPage() {
     }
   };
 
-  if (!isAuthReady) {
+  if (authStatus === "checking") {
     return (
       <div className="min-h-screen bg-neutral-100 px-6 py-10">
-        <div className="mx-auto max-w-7xl text-sm text-neutral-600">
+        <div
+          className="mx-auto max-w-7xl text-sm text-neutral-600"
+          role="status"
+          aria-live="polite"
+        >
           관리자 세션을 확인하는 중입니다.
         </div>
       </div>
+    );
+  }
+
+  if (authStatus === "error") {
+    return (
+      <main className="min-h-screen bg-neutral-100 px-6 py-12">
+        <section className="mx-auto max-w-md rounded-lg border border-red-200 bg-white p-8 shadow-sm">
+          <p className="text-sm font-semibold text-red-700">Admin</p>
+          <h1 className="mt-2 text-2xl font-bold text-neutral-950">
+            관리자 세션 확인 실패
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-neutral-600" role="alert">
+            {authError}
+          </p>
+          <button
+            type="button"
+            onClick={() => setAuthCheckAttempt((attempt) => attempt + 1)}
+            className="mt-6 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            다시 시도
+          </button>
+        </section>
+      </main>
     );
   }
 
