@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
@@ -25,7 +26,7 @@ export default function SchedulePageClient({
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
-  const { data: schedules, isLoading } = useQuery({
+  const { data: schedules, isLoading, isError, refetch } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     initialData: initialSchedules,
@@ -227,9 +228,27 @@ export default function SchedulePageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
+      {isError && (
+        <StateCard
+          type="error"
+          className="mb-6"
+          title={dictionary.home.dashboard.loadFailedTitle}
+          message={dictionary.home.dashboard.loadFailedMessage}
+          action={
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              {dictionary.home.dashboard.retry}
+            </button>
+          }
+        />
+      )}
+
       {isLoading ? (
         <Skeleton count={4} height="100px" />
-      ) : (
+      ) : isError && (!schedules || schedules.length === 0) ? null : (
         <div className="space-y-6">
           <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">

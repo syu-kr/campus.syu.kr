@@ -9,12 +9,21 @@ import clsx from "clsx";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import { Modal } from "@/app/components/Modal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 import { normalizeCourseName } from "@/lib/lecture-timetable";
+import {
+  createTimetableDraft,
+  filterAvailableDraftCourseIds,
+  isTimetableDraftForSemester,
+  parseTimetableDraft,
+  TIMETABLE_DRAFT_STORAGE_KEY,
+  type TimetableDraft,
+} from "@/lib/timetable-draft";
 import type {
   LectureDay,
   LectureTimeSlot,
@@ -92,6 +101,8 @@ interface TimetableConflictPair {
   }>;
 }
 
+type DraftPersistenceMode = "pending" | "local" | "shared" | "paused";
+
 const emptyTimetableResponse: TimetableApiResponse = {
   success: false,
   data: { courses: [] },
@@ -121,6 +132,12 @@ export function TimetableBuilderClient() {
   const [isCreatingShare, setIsCreatingShare] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
+  const [draftMessage, setDraftMessage] = useState("");
+  const [previousSemesterDraft, setPreviousSemesterDraft] =
+    useState<TimetableDraft | null>(null);
+  const [draftPersistenceMode, setDraftPersistenceMode] =
+    useState<DraftPersistenceMode>("pending");
+  const [isDraftStorageAvailable, setIsDraftStorageAvailable] = useState(true);
 
   const {
     data: response = emptyTimetableResponse,
@@ -159,6 +176,116 @@ export function TimetableBuilderClient() {
   const courseById = useMemo(() => {
     return new Map(courses.map((course) => [course.id, course]));
   }, [courses]);
+
+  useEffect(() => {
+    if (
+      draftPersistenceMode !== "pending" ||
+      !response.success ||
+      courseById.size === 0
+    ) {
+      return;
+    }
+
+    if (shareId) {
+      setDraftPersistenceMode("shared");
+      return;
+    }
+
+    try {
+      const rawDraft = window.localStorage.getItem(
+        TIMETABLE_DRAFT_STORAGE_KEY,
+      );
+      if (!rawDraft) {
+        setDraftPersistenceMode("local");
+        return;
+      }
+
+      const draft = parseTimetableDraft(rawDraft);
+      if (!draft) {
+        window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
+        setDraftPersistenceMode("local");
+        return;
+      }
+
+      if (
+        !isTimetableDraftForSemester(
+          draft,
+          response.data.year,
+          response.data.semester,
+        )
+      ) {
+        setPreviousSemesterDraft(draft);
+        setDraftPersistenceMode("paused");
+        return;
+      }
+
+      const restoredIds = filterAvailableDraftCourseIds(
+        draft,
+        new Set(courseById.keys()),
+      );
+      if (restoredIds.length > 0) {
+        setSelectedCourseIds(restoredIds);
+        setDraftMessage(text.draftRestored);
+      } else {
+        window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
+      }
+      setDraftPersistenceMode("local");
+    } catch {
+      setIsDraftStorageAvailable(false);
+      setDraftPersistenceMode("local");
+    }
+  }, [
+    courseById,
+    draftPersistenceMode,
+    response.data.semester,
+    response.data.year,
+    response.success,
+    shareId,
+    text.draftRestored,
+  ]);
+
+  useEffect(() => {
+    if (draftPersistenceMode !== "local" || !response.success) return;
+
+    try {
+      if (selectedCourseIds.length === 0) {
+        window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
+        return;
+      }
+
+      window.localStorage.setItem(
+        TIMETABLE_DRAFT_STORAGE_KEY,
+        JSON.stringify(
+          createTimetableDraft(
+            selectedCourseIds,
+            response.data.year,
+            response.data.semester,
+          ),
+        ),
+      );
+    } catch {
+      // 비공개 모드나 저장 용량 제한에서도 시간표 편집은 계속 사용할 수 있습니다.
+      setIsDraftStorageAvailable(false);
+    }
+  }, [
+    draftPersistenceMode,
+    response.data.semester,
+    response.data.year,
+    response.success,
+    selectedCourseIds,
+  ]);
+
+  useEffect(() => {
+    if (
+      shareId &&
+      shareId !== createdShareId &&
+      draftPersistenceMode === "local"
+    ) {
+      setDraftPersistenceMode("shared");
+      setPreviousSemesterDraft(null);
+      setDraftMessage("");
+    }
+  }, [createdShareId, draftPersistenceMode, shareId]);
 
   useEffect(() => {
     if (!shareId) {
@@ -308,11 +435,46 @@ export function TimetableBuilderClient() {
     }
   }
 
-  function replaceSelectedCourses(nextIds: string[], options = { clearShare: true }) {
+  function replaceSelectedCourses(
+    nextIds: string[],
+    options = { clearShare: true },
+  ) {
+    setDraftPersistenceMode("local");
+    setPreviousSemesterDraft(null);
     setSelectedCourseIds(Array.from(new Set(nextIds)));
+    setDraftMessage("");
     setShareMessage("");
     setShareFallbackUrl("");
     if (options.clearShare) clearShareFromUrl();
+  }
+
+  function restorePreviousSemesterDraft() {
+    if (!previousSemesterDraft) return;
+
+    const restoredIds = filterAvailableDraftCourseIds(
+      previousSemesterDraft,
+      new Set(courseById.keys()),
+    );
+    setPreviousSemesterDraft(null);
+    setDraftPersistenceMode("local");
+    setSelectedCourseIds(restoredIds);
+    setDraftMessage(
+      restoredIds.length > 0
+        ? text.draftRestored
+        : text.draftNoMatchingCourses,
+    );
+  }
+
+  function discardPreviousSemesterDraft() {
+    try {
+      window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
+    } catch {
+      // 저장소를 사용할 수 없어도 화면 상태 전환은 계속합니다.
+      setIsDraftStorageAvailable(false);
+    }
+    setPreviousSemesterDraft(null);
+    setDraftPersistenceMode("local");
+    setDraftMessage("");
   }
 
   function toggleCourse(course: LectureTimetableCourse) {
@@ -460,6 +622,37 @@ export function TimetableBuilderClient() {
               </span>
             ))}
           </div>
+        )}
+        <p className="mt-3 text-xs text-neutral-500">
+          {isDraftStorageAvailable
+            ? text.draftAutoSaveNotice
+            : text.draftStorageUnavailable}
+        </p>
+        {previousSemesterDraft && (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+            <p className="font-medium">{text.previousDraftFound}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={restorePreviousSemesterDraft}
+                className="rounded-lg bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-800"
+              >
+                {text.restorePreviousDraft}
+              </button>
+              <button
+                type="button"
+                onClick={discardPreviousSemesterDraft}
+                className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100"
+              >
+                {text.discardPreviousDraft}
+              </button>
+            </div>
+          </div>
+        )}
+        {draftMessage && (
+          <p className="mt-3 text-sm font-medium text-emerald-700" role="status">
+            {draftMessage}
+          </p>
         )}
         {(shareMessage ||
           (shouldLoadShareFromUrl &&
@@ -810,34 +1003,17 @@ function MobileCoursePickerSheet({
   const text = useDictionary().pages.timetable;
 
   return (
-    <div
-      className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="course-picker-title"
-      onClick={onClose}
+    <Modal
+      isOpen
+      title={text.addCourse}
+      onClose={onClose}
+      size="lg"
+      overlayClassName="lg:hidden"
+      className="rounded-t-2xl sm:rounded-xl"
+      bodyClassName="max-h-[calc(88vh-64px)] pb-2"
     >
-      <div
-        className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-hidden rounded-t-2xl bg-white p-4 shadow-xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="mb-3 flex items-center justify-between">
-          <h2 id="course-picker-title" className="text-lg font-bold text-neutral-900">
-            {text.addCourse}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700"
-          >
-            {text.close}
-          </button>
-        </div>
-        <div className="max-h-[calc(88vh-64px)] overflow-y-auto pb-2">
-          {children}
-        </div>
-      </div>
-    </div>
+      {children}
+    </Modal>
   );
 }
 

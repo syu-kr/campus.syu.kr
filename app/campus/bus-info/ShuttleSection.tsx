@@ -5,6 +5,7 @@ import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchShuttleBuses,
@@ -87,14 +88,23 @@ export default function ShuttleSection() {
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
 
-  const { data: buses, isLoading } = useQuery({
+  const {
+    data: buses,
+    isLoading,
+    isError: busesError,
+    refetch: refetchBuses,
+  } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
     staleTime: FIVE_MINUTES,
     gcTime: 30 * ONE_MINUTE,
   });
 
-  const { data: specialPeriods } = useQuery({
+  const {
+    data: specialPeriods,
+    isError: specialPeriodsError,
+    refetch: refetchSpecialPeriods,
+  } = useQuery({
     queryKey: ["shuttle-special-periods"],
     queryFn: () => fetchShuttleSpecialPeriods(),
     staleTime: FIVE_MINUTES,
@@ -645,6 +655,27 @@ export default function ShuttleSection() {
         </p>
       </div>
 
+      {(busesError || specialPeriodsError) && (
+        <StateCard
+          type="error"
+          className="mb-6"
+          title={dictionary.home.dashboard.loadFailedTitle}
+          message={dictionary.home.dashboard.loadFailedMessage}
+          action={
+            <button
+              type="button"
+              onClick={() => {
+                void refetchBuses();
+                void refetchSpecialPeriods();
+              }}
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              {dictionary.home.dashboard.retry}
+            </button>
+          }
+        />
+      )}
+
       {dateInfo.isWeekend && (
         <Card
           className="mb-6 border border-amber-200 bg-amber-50/70"
@@ -962,6 +993,8 @@ export default function ShuttleSection() {
         {isLoading && <Skeleton count={3} height="150px" />}
 
         {!isLoading &&
+          !busesError &&
+          !specialPeriodsError &&
           busesWithSpecialPeriods &&
           busesWithSpecialPeriods.length === 0 && (
             <Card>

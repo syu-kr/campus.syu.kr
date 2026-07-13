@@ -44,7 +44,7 @@ export function CafeteriaPageClient({
     return () => clearInterval(timer);
   }, []);
 
-  const { data: menus, isLoading } = useQuery({
+  const { data: menus, isLoading, isError, refetch } = useQuery({
     queryKey: ["cafeteria-weekly"],
     queryFn: () => fetchCafeteriaMenu(),
     initialData: initialMenus,
@@ -79,6 +79,24 @@ export function CafeteriaPageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
+      {isError && (
+        <StateCard
+          type="error"
+          className="mb-8"
+          title={dictionary.home.dashboard.loadFailedTitle}
+          message={dictionary.home.dashboard.loadFailedMessage}
+          action={
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+            >
+              {dictionary.home.dashboard.retry}
+            </button>
+          }
+        />
+      )}
+
       {!isLoading && !todayMenu && todayInfo.isWeekend && (
         <StateCard
           type="info"
@@ -98,6 +116,7 @@ export function CafeteriaPageClient({
 
       {!isLoading &&
         !shouldShowStaleToday &&
+        !isError &&
         !todayMenu &&
         !todayInfo.isWeekend &&
         todayInfo.dayOfWeek === 1 && (
@@ -111,6 +130,7 @@ export function CafeteriaPageClient({
 
       {!isLoading &&
         !shouldShowStaleToday &&
+        !isError &&
         !todayMenu &&
         !todayInfo.isWeekend &&
         todayInfo.dayOfWeek !== 1 && (
@@ -150,7 +170,10 @@ export function CafeteriaPageClient({
             />
           )}
 
-          {!isLoading && !hasStaleMenuData && (!menus || menus.length === 0) && (
+          {!isLoading &&
+            !isError &&
+            !hasStaleMenuData &&
+            (!menus || menus.length === 0) && (
             <StateCard type="info" message={text.emptyWeekly} />
           )}
 

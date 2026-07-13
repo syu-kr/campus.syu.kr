@@ -8,6 +8,7 @@ import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
+import { Modal } from "@/app/components/Modal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import {
   evaluateGraduation,
@@ -568,24 +569,15 @@ export default function GraduationPageClient() {
   return (
     <Container size="full" className="max-w-[88rem] pb-safe pt-6 md:pt-8">
       {showMobileNotice && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="graduation-mobile-notice-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/45 px-4 py-6"
+        <Modal
+          isOpen
+          onClose={handleMobileContinue}
+          title={text.mobileTitle}
+          description={text.mobileDescription}
+          size="sm"
         >
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
-            <Badge color="yellow">{text.mobileBadge}</Badge>
-            <h2
-              id="graduation-mobile-notice-title"
-              className="mt-3 text-lg font-bold text-neutral-900"
-            >
-              {text.mobileTitle}
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">
-              {text.mobileDescription}
-            </p>
-            <div className="mt-5 grid gap-2">
+          <Badge color="yellow">{text.mobileBadge}</Badge>
+          <div className="mt-5 grid gap-2">
               <button
                 type="button"
                 onClick={handleMobileContinue}
@@ -600,9 +592,8 @@ export default function GraduationPageClient() {
               >
                 {text.mobileBack}
               </button>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       <header className="mb-8">

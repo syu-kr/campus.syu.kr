@@ -1,8 +1,8 @@
 "use client";
 
 import { BusArrival } from "@/types";
-import { useEffect, useRef } from "react";
 import clsx from "clsx";
+import { Modal } from "@/app/components/Modal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n";
 
@@ -49,63 +49,22 @@ export default function BusDetailModal({
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    document.body.style.overflow = "hidden";
-    closeButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !bus) return null;
+  if (!bus) return null;
 
   const seatStatus1 = getSeatStatus(bus.crowded1, text);
   const seatStatus2 = getSeatStatus(bus.crowded2, text);
   const destination = getDestinationLabel(stopId, direction, text);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${bus.routeName} ${text.busDetailLabel}`}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={bus.routeName}
+      description={destination}
+      size="sm"
+      bodyClassName="space-y-6"
     >
-      <div
-        className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-          <div className="sticky top-0 bg-white text-neutral-900 px-6 py-4 flex items-center justify-between border-b border-neutral-200">
-            <div>
-              <h2 className="text-2xl font-bold">{bus.routeName}</h2>
-              <p className="text-neutral-600 text-sm mt-1">
-                {destination}
-              </p>
-            </div>
-            <button
-              ref={closeButtonRef}
-              onClick={onClose}
-              className="text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 rounded-full px-3 py-2 transition"
-              aria-label={text.closeBusDetail}
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="p-6 space-y-6">
             <div className="space-y-4">
               <h3 className="font-bold text-lg text-neutral-900">
                 {text.currentBus}
@@ -243,14 +202,13 @@ export default function BusDetailModal({
               )}
 
             <button
+              type="button"
               onClick={onClose}
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium py-3 rounded-lg transition"
             >
               {text.close}
             </button>
-          </div>
-      </div>
-    </div>
+    </Modal>
   );
 }
 

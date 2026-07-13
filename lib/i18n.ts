@@ -279,6 +279,10 @@ export const dictionaries = {
         scheduleEmpty: "오늘 일정이 없습니다.",
         exam: "시험",
         schedule: "일정",
+        loadFailedTitle: "정보를 불러오지 못했습니다",
+        loadFailedMessage:
+          "기존 정보가 있다면 계속 표시합니다. 잠시 후 다시 시도해 주세요.",
+        retry: "다시 시도",
       },
     },
     academic: {
@@ -421,6 +425,14 @@ export const dictionaries = {
       dismiss: "알림 받지 않기",
       processing: "설정 중...",
       enable: "알림 설정",
+    },
+    errorBoundary: {
+      pageTitle: "페이지를 불러오지 못했습니다",
+      pageMessage: "잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요.",
+      globalTitle: "서비스를 표시하지 못했습니다",
+      globalMessage: "잠시 후 다시 시도해 주세요.",
+      retry: "다시 시도",
+      loading: "페이지를 불러오는 중입니다.",
     },
     notFound: {
       funMessages: [
@@ -807,6 +819,17 @@ export const dictionaries = {
         shareFallbackInputLabel: "직접 복사할 공유 링크",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
         shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
+        draftAutoSaveNotice:
+          "직접 편집한 시간표는 이 브라우저에 30일간 자동 저장됩니다.",
+        draftStorageUnavailable:
+          "현재 브라우저에서는 자동 저장을 사용할 수 없습니다.",
+        draftRestored: "저장된 시간표 초안을 불러왔습니다.",
+        previousDraftFound:
+          "다른 학기의 시간표 초안이 저장되어 있습니다. 현재 강의 데이터에 남아 있는 과목만 불러올 수 있습니다.",
+        restorePreviousDraft: "이전 초안 불러오기",
+        discardPreviousDraft: "이전 초안 삭제",
+        draftNoMatchingCourses:
+          "이전 초안의 과목이 현재 강의 데이터에 남아 있지 않습니다.",
         loadFailedTitle: "강의 정보를 불러올 수 없습니다",
         loadFailedMessage:
           "잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요.",
@@ -1933,6 +1956,10 @@ export const dictionaries = {
         scheduleEmpty: "There are no schedules today.",
         exam: "Exam",
         schedule: "Schedule",
+        loadFailedTitle: "Could not load this information",
+        loadFailedMessage:
+          "Existing information remains visible when available. Please try again shortly.",
+        retry: "Try again",
       },
     },
     academic: {
@@ -2076,6 +2103,14 @@ export const dictionaries = {
       dismiss: "Not now",
       processing: "Setting up...",
       enable: "Enable notifications",
+    },
+    errorBoundary: {
+      pageTitle: "Could not load this page",
+      pageMessage: "Please try again shortly or check your network connection.",
+      globalTitle: "Could not display the service",
+      globalMessage: "Please try again shortly.",
+      retry: "Try again",
+      loading: "Loading the page.",
     },
     notFound: {
       funMessages: [
@@ -2466,6 +2501,17 @@ export const dictionaries = {
         shareFallbackInputLabel: "Share link to copy manually",
         shareLoading: "Loading shared timetable.",
         shareLoadFailed: "Could not load the shared timetable.",
+        draftAutoSaveNotice:
+          "Timetables you edit are saved in this browser for 30 days.",
+        draftStorageUnavailable:
+          "Automatic saving is unavailable in this browser.",
+        draftRestored: "Your saved timetable draft was restored.",
+        previousDraftFound:
+          "A draft from another semester is saved. Only courses still present in the current data can be restored.",
+        restorePreviousDraft: "Restore previous draft",
+        discardPreviousDraft: "Delete previous draft",
+        draftNoMatchingCourses:
+          "None of the courses in the previous draft remain in the current data.",
         loadFailedTitle: "Could not load course information",
         loadFailedMessage:
           "Please try again shortly or check your network connection.",

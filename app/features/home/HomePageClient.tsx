@@ -88,7 +88,12 @@ export function HomePageClient({
     return () => clearInterval(timer);
   }, []);
 
-  const { data: announcements, isLoading: announcementsLoading } = useQuery({
+  const {
+    data: announcements,
+    isLoading: announcementsLoading,
+    isError: announcementsError,
+    refetch: refetchAnnouncements,
+  } = useQuery({
     queryKey: ["announcements", selectedCategory],
     queryFn: () =>
       selectedCategory && selectedCategory !== "service"
@@ -100,16 +105,29 @@ export function HomePageClient({
     gcTime: FIVE_MINUTES,
   });
 
-  const { data: serviceNotices, isLoading: serviceNoticesLoading } = useQuery({
+  const {
+    data: serviceNotices,
+    isLoading: serviceNoticesLoading,
+    isError: serviceNoticesError,
+    refetch: refetchServiceNotices,
+  } = useQuery({
     queryKey: ["serviceNotices"],
     queryFn: () =>
-      fetchJson<ServiceNotice[]>("/api/service-notices", { fallback: [] }),
+      fetchJson<ServiceNotice[]>("/api/service-notices", {
+        fallback: [],
+        throwOnError: true,
+      }),
     initialData: initialServiceNotices,
     staleTime: FIVE_MINUTES,
     gcTime: TEN_MINUTES,
   });
 
-  const { data: cafeteria, isLoading: cafeteriaLoading } = useQuery({
+  const {
+    data: cafeteria,
+    isLoading: cafeteriaLoading,
+    isError: cafeteriaError,
+    refetch: refetchCafeteria,
+  } = useQuery({
     queryKey: ["cafeteria"],
     queryFn: () => fetchCafeteriaMenu(),
     initialData: initialCafeteria,
@@ -117,7 +135,12 @@ export function HomePageClient({
     gcTime: TEN_MINUTES,
   });
 
-  const { data: schedules, isLoading: schedulesLoading } = useQuery({
+  const {
+    data: schedules,
+    isLoading: schedulesLoading,
+    isError: schedulesError,
+    refetch: refetchSchedules,
+  } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     initialData: initialSchedules,
@@ -125,7 +148,12 @@ export function HomePageClient({
     gcTime: ONE_HOUR,
   });
 
-  const { data: shuttleBuses, isLoading: shuttleBusesLoading } = useQuery({
+  const {
+    data: shuttleBuses,
+    isLoading: shuttleBusesLoading,
+    isError: shuttleBusesError,
+    refetch: refetchShuttleBuses,
+  } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
     initialData: initialShuttleBuses,
@@ -136,6 +164,8 @@ export function HomePageClient({
   const {
     data: shuttleSpecialPeriods,
     isLoading: shuttleSpecialPeriodsLoading,
+    isError: shuttleSpecialPeriodsError,
+    refetch: refetchShuttleSpecialPeriods,
   } = useQuery({
     queryKey: ["shuttle-special-periods"],
     queryFn: () => fetchShuttleSpecialPeriods(),
@@ -214,16 +244,24 @@ export function HomePageClient({
 
   return (
     <Container className="py-5 sm:py-8 space-y-6">
+      <h1 className="sr-only">SYU CAMPUS</h1>
       <SearchBar onSearch={handleSearch} className="mt-2" />
 
       <TodayMenuSection
         isLoading={cafeteriaLoading}
+        isError={cafeteriaError}
+        onRetry={() => refetchCafeteria()}
         todayInfo={todayInfo}
         todayMenu={todayMenu ?? null}
         hasStaleMenuData={hasStaleCafeteriaData}
       />
       <TodayShuttleSection
         isLoading={shuttleBusesLoading || shuttleSpecialPeriodsLoading}
+        isError={shuttleBusesError || shuttleSpecialPeriodsError}
+        onRetry={() => {
+          void refetchShuttleBuses();
+          void refetchShuttleSpecialPeriods();
+        }}
         buses={shuttleBuses}
         specialPeriods={shuttleSpecialPeriods}
         now={now}
@@ -234,10 +272,25 @@ export function HomePageClient({
         serviceNotices={serviceNotices}
         serviceNoticesLoading={serviceNoticesLoading}
         announcementsLoading={announcementsLoading}
+        hasError={
+          selectedCategory === "service"
+            ? serviceNoticesError
+            : announcementsError || serviceNoticesError
+        }
+        onRetry={() => {
+          if (selectedCategory === "service") {
+            void refetchServiceNotices();
+            return;
+          }
+          void refetchAnnouncements();
+          void refetchServiceNotices();
+        }}
         homeNotices={homeNotices}
       />
       <TodaySchedulesSection
         isLoading={schedulesLoading}
+        isError={schedulesError}
+        onRetry={() => refetchSchedules()}
         schedules={todaySchedules}
       />
 

@@ -127,32 +127,42 @@ async function requestNotificationPermission(): Promise<NotificationPermission> 
 
 export async function disablePushNotifications(): Promise<void> {
   const storedToken = localStorage.getItem(FCM_TOKEN_KEY);
+  let serverUnsubscribeFailed = false;
+
+  // 사용자의 로컬 선택은 서버 상태와 무관하게 즉시 반영합니다.
+  setNotificationPreference("disabled");
 
   if (storedToken) {
-    const response = await fetch("/api/notifications/subscribe", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fcm_token: storedToken }),
-    });
-
-    if (!response.ok) {
-      throw new Error("서버의 알림 토큰을 제거하지 못했습니다.");
-    }
-  }
-
-  const { deleteToken } = await import("firebase/messaging");
-  const { messaging } = await import("@/lib/firebase");
-
-  if (messaging) {
     try {
-      await deleteToken(messaging);
+      const response = await fetch("/api/notifications/subscribe", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fcm_token: storedToken }),
+      });
+
+      serverUnsubscribeFailed = !response.ok;
     } catch {
-      // 서버 구독이 제거되면 더 이상 알림 발송 대상에 포함되지 않습니다.
+      serverUnsubscribeFailed = true;
     }
   }
 
-  localStorage.removeItem(FCM_TOKEN_KEY);
-  setNotificationPreference("disabled");
+  try {
+    const { deleteToken } = await import("firebase/messaging");
+    const { messaging } = await import("@/lib/firebase");
+
+    if (messaging) {
+      await deleteToken(messaging);
+    }
+  } catch {
+    // 서버 해제 성공 여부와 관계없이 아래에서 로컬 활성 상태를 제거합니다.
+  } finally {
+    localStorage.removeItem(FCM_TOKEN_KEY);
+    setNotificationPreference("disabled");
+  }
+
+  if (serverUnsubscribeFailed) {
+    throw new Error("서버의 알림 토큰을 제거하지 못했습니다.");
+  }
 }
 
 async function waitForServiceWorkerReady() {

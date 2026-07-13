@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fetchPublicTransitArrivals } from "@/lib/api";
 import type { PublicTransitArrivalsResult } from "@/lib/public-transit";
 import type { BusArrivalsAtStop } from "@/types";
+import { resolveTransitTimestamp } from "@/lib/server/transit-cache";
 import type {
   LiveDataResponse,
   LiveDataSourceStatus,
@@ -68,7 +69,12 @@ export async function GET() {
       usedRouteFallback && cachedArrivals
         ? preserveMissingRoutes(freshArrivals, cachedArrivals.data)
         : freshArrivals;
-    const timestamp = new Date().toISOString();
+    // 일부 노선을 이전 캐시에서 보존했다면 전체 응답을 새 데이터처럼 표시하지 않는다.
+    const timestamp = resolveTransitTimestamp(
+      usedRouteFallback,
+      cachedArrivals?.timestamp,
+      new Date().toISOString(),
+    );
     const stale = usedRouteFallback || freshTransit.stale;
     const sourceStatus: LiveDataSourceStatus = stale
       ? "stale"
