@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { AnnouncementDetailSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import {
   getAnnouncementById,
@@ -88,7 +90,17 @@ export async function generateMetadata({
   };
 }
 
-export default async function AnnouncementDetailPage({
+export default function AnnouncementDetailPage(
+  props: AnnouncementDetailPageProps,
+) {
+  return (
+    <Suspense fallback={<AnnouncementDetailSkeleton />}>
+      <AnnouncementDetailContent {...props} />
+    </Suspense>
+  );
+}
+
+async function AnnouncementDetailContent({
   params,
 }: AnnouncementDetailPageProps) {
   const { category, id } = await params;

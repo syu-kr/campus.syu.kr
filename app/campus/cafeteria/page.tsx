@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { headers } from "next/headers";
 
+import { CafeteriaPageSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import { CafeteriaPageClient } from "@/app/features/cafeteria/CafeteriaPageClient";
 import { createCafeteriaAnswerSummary } from "@/lib/campus-aeo";
@@ -16,7 +18,15 @@ import { createFAQPageSchema } from "@/lib/structured-data";
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 const SITE_ORIGIN = "https://campus.syu.kr";
 
-export default async function CafeteriaPage() {
+export default function CafeteriaPage() {
+  return (
+    <Suspense fallback={<CafeteriaPageSkeleton />}>
+      <CafeteriaContent />
+    </Suspense>
+  );
+}
+
+async function CafeteriaContent() {
   const headerStore = await headers();
   const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;

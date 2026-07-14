@@ -28,7 +28,7 @@ export function Skeleton({
   };
 
   return (
-    <div className="animate-pulse">
+    <div className="motion-safe:animate-pulse" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}

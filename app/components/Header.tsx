@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { WeatherWidget } from "./WeatherWidget";
 import { WeatherModal } from "./WeatherModal";
+import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
 import { fetchWeather, type WeatherData } from "@/lib/weather";
 import { localizePath } from "@/lib/i18n";
 import { useDictionary, useLocale } from "./LocaleProvider";
@@ -87,7 +88,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
             )}
             <Link
               href={localizePath("/", locale)}
-              className="flex items-center gap-2"
+              className="relative flex items-center gap-2"
               title={dictionary.navigation.homepageTitle}
             >
               <Image
@@ -101,6 +102,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
               <span className="font-bold text-lg text-primary-600">
                 SYU CAMPUS
               </span>
+              <NavigationPendingIndicator className="-bottom-2 inset-x-4 bg-primary-500" />
             </Link>
           </div>
 
@@ -115,13 +117,21 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
                   key={item.href}
                   href={item.href}
                   className={clsx(
-                    "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "relative overflow-hidden px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     isActive(item.activePath)
                       ? "bg-primary-600 text-white"
                       : "text-neutral-700 hover:bg-neutral-100",
                   )}
                 >
                   {item.label}
+                  <NavigationPendingIndicator
+                    className={clsx(
+                      "inset-x-3 bottom-1",
+                      isActive(item.activePath)
+                        ? "bg-white"
+                        : "bg-primary-500",
+                    )}
+                  />
                 </Link>
               ))}
             </nav>

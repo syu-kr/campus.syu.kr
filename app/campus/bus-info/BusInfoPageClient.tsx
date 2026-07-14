@@ -6,12 +6,11 @@ import { useState } from "react";
 
 import { Container } from "@/app/components/Container";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { ShuttleSectionSkeleton } from "@/app/components/PageLoadingSkeletons";
 import PublicTransitSection from "./PublicTransitSection";
 
 function ShuttleSectionLoading() {
-  const dictionary = useDictionary();
-
-  return <div className="py-8">{dictionary.pages.busInfo.loading}</div>;
+  return <ShuttleSectionSkeleton />;
 }
 
 const ShuttleSection = dynamic(() => import("./ShuttleSection"), {
