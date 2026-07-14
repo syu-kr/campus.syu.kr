@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { headers } from "next/headers";
 
 import { StructuredDataScript } from "@/app/components/StructuredDataScript";
@@ -20,7 +21,18 @@ import { createFAQPageSchema } from "@/lib/structured-data";
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 const SITE_ORIGIN = "https://campus.syu.kr";
 
-export default async function BusInfoPage() {
+export default function BusInfoPage() {
+  return (
+    <>
+      <Suspense fallback={null}>
+        <BusInfoStructuredData />
+      </Suspense>
+      <BusInfoPageClient />
+    </>
+  );
+}
+
+async function BusInfoStructuredData() {
   const headerStore = await headers();
   const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
@@ -43,22 +55,19 @@ export default async function BusInfoPage() {
   const dictionary = getDictionary(locale);
 
   return (
-    <>
-      <StructuredDataScript
-        id="shuttle-answer-schema"
-        nonce={nonce}
-        data={createFAQPageSchema({
-          inLanguage: dictionary.meta.inLanguage,
-          mainEntity: [
-            {
-              acceptedAnswerText: answerSummary.answer,
-              questionName: answerSummary.question,
-            },
-          ],
-          url: `${SITE_ORIGIN}${localizePath("/campus/bus-info", locale)}`,
-        })}
-      />
-      <BusInfoPageClient />
-    </>
+    <StructuredDataScript
+      id="shuttle-answer-schema"
+      nonce={nonce}
+      data={createFAQPageSchema({
+        inLanguage: dictionary.meta.inLanguage,
+        mainEntity: [
+          {
+            acceptedAnswerText: answerSummary.answer,
+            questionName: answerSummary.question,
+          },
+        ],
+        url: `${SITE_ORIGIN}${localizePath("/campus/bus-info", locale)}`,
+      })}
+    />
   );
 }

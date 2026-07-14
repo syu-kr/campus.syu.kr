@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "./Icon";
+import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
 import { useDictionary, useLocale } from "./LocaleProvider";
 import { localizePath } from "@/lib/i18n";
 
@@ -66,7 +67,7 @@ export function BottomNav() {
               key={item.id}
               href={localizePath(item.href, locale)}
               className={clsx(
-                "flex flex-col items-center justify-center py-3 px-2 transition-colors",
+                "relative flex flex-col items-center justify-center overflow-hidden py-3 px-2 transition-colors",
                 active
                   ? "text-primary-600 font-semibold"
                   : "text-neutral-600 hover:text-neutral-900",
@@ -79,6 +80,7 @@ export function BottomNav() {
                 color="currentColor"
               />
               <div className="text-xs mt-1">{item.label}</div>
+              <NavigationPendingIndicator className="inset-x-4 top-0 bg-primary-500" />
             </Link>
           );
         })}

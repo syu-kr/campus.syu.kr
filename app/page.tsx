@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+
+import { HomePageSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { HomePageClient } from "@/app/features/home/HomePageClient";
 import { getAnnouncementSummary } from "@/lib/server/announcements";
 import {
@@ -11,7 +14,15 @@ import { getAllServiceNotices } from "@/lib/serviceNotices";
 
 export const revalidate = 300;
 
-export default async function Home() {
+export default function Home() {
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+async function HomeContent() {
   const [
     initialAnnouncements,
     initialServiceNotices,

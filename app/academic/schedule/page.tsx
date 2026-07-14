@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import { headers } from "next/headers";
 
+import { SchedulePageSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import SchedulePageClient from "@/app/features/academic/SchedulePageClient";
 import { createAcademicScheduleAnswerSummary } from "@/lib/academic-aeo";
@@ -16,7 +18,15 @@ import { createFAQPageSchema } from "@/lib/structured-data";
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 const SITE_ORIGIN = "https://campus.syu.kr";
 
-export default async function SchedulePage() {
+export default function SchedulePage() {
+  return (
+    <Suspense fallback={<SchedulePageSkeleton />}>
+      <ScheduleContent />
+    </Suspense>
+  );
+}
+
+async function ScheduleContent() {
   const headerStore = await headers();
   const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
