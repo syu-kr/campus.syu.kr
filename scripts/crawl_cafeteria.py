@@ -15,6 +15,7 @@ import re
 import os
 import html
 from datetime import datetime, timedelta
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
 
@@ -60,14 +61,35 @@ def parse_week_range(text):
     ]
 
 
-def current_week_dates():
-    """페이지에서 주차 범위를 못 읽을 때 현재 월~금 날짜 생성"""
-    today = datetime.now().date()
+def get_cafeteria_week_start(reference_date=None):
+    """평일은 이번 주, 주말은 다음 주 월요일을 크롤링 대상으로 선택"""
+    today = reference_date or datetime.now().date()
     monday = today - timedelta(days=today.weekday())
+    if today.weekday() >= 5:
+        monday += timedelta(days=7)
+    return monday
+
+
+def build_cafeteria_url(base_url, week_start):
+    """기존 쿼리를 보존하면서 대상 주차의 week_start를 설정"""
+    parts = urlsplit(base_url)
+    query = [
+        (key, value)
+        for key, value in parse_qsl(parts.query, keep_blank_values=True)
+        if key != "week_start"
+    ]
+    query.append(("week_start", week_start.strftime("%Y%m%d")))
+    return urlunsplit(
+        (parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment)
+    )
+
+
+def week_dates(week_start):
+    """페이지에서 주차 범위를 못 읽을 때 대상 주차의 월~금 날짜 생성"""
     return [
         (
-            (monday + timedelta(days=offset)).strftime("%Y-%m-%d"),
-            KOREAN_DAYS[(monday + timedelta(days=offset)).weekday()],
+            (week_start + timedelta(days=offset)).strftime("%Y-%m-%d"),
+            KOREAN_DAYS[(week_start + timedelta(days=offset)).weekday()],
         )
         for offset in range(5)
     ]
@@ -167,9 +189,9 @@ def write_cafeteria_result(data_path, menus):
     write_json_atomic(data_path, result)
 
 
-def write_no_menu_result(data_path, soup):
+def write_no_menu_result(data_path, soup, week_start):
     page_text = soup.get_text(" ", strip=True)
-    dates = parse_week_range(page_text) or current_week_dates()
+    dates = parse_week_range(page_text) or week_dates(week_start)
     menus = [closed_menu(date, day) for date, day in dates]
 
     print("ℹ️  공식 페이지에 메뉴 정보가 없어 운영 없음으로 저장합니다.")
@@ -197,8 +219,11 @@ def crawl_cafeteria_menu():
         except Exception as e:
             print(f"⚠️  기존 데이터 로드 실패: {e}")
     
-    url = require_env("CRAWL_CAFETERIA_URL")
+    base_url = require_env("CRAWL_CAFETERIA_URL")
+    week_start = get_cafeteria_week_start()
+    url = build_cafeteria_url(base_url, week_start)
     print("🍜 학식 메뉴 크롤링 시작...")
+    print(f"📅 요청 주차: {week_start.strftime('%Y-%m-%d')}")
     
     try:
         response = requests.get(url, headers=DEFAULT_HEADERS, timeout=10)
@@ -213,7 +238,7 @@ def crawl_cafeteria_menu():
         table = soup.select_one(".weekly-menu-table")
         if not table:
             if NO_MENU_TEXT in soup.get_text(" ", strip=True):
-                write_no_menu_result(data_path, soup)
+                write_no_menu_result(data_path, soup, week_start)
                 print("✅ 학식 메뉴 없음 상태 저장 완료")
                 return
             raise RuntimeError("weekly-menu-table을 찾을 수 없습니다.")
