@@ -1,10 +1,10 @@
 {
   "id": "cafeteria-sulounge",
   "name": "SU-Lounge",
-  "weekStart": "2026-07-13",
+  "weekStart": "2026-07-20",
   "menus": [
     {
-      "date": "2026-07-13",
+      "date": "2026-07-20",
       "day": "월",
       "meals": {
         "breakfast": [
@@ -24,7 +24,7 @@
       }
     },
     {
-      "date": "2026-07-14",
+      "date": "2026-07-21",
       "day": "화",
       "meals": {
         "breakfast": [
@@ -44,7 +44,7 @@
       }
     },
     {
-      "date": "2026-07-15",
+      "date": "2026-07-22",
       "day": "수",
       "meals": {
         "breakfast": [
@@ -64,7 +64,7 @@
       }
     },
     {
-      "date": "2026-07-16",
+      "date": "2026-07-23",
       "day": "목",
       "meals": {
         "breakfast": [
@@ -84,7 +84,7 @@
       }
     },
     {
-      "date": "2026-07-17",
+      "date": "2026-07-24",
       "day": "금",
       "meals": {
         "breakfast": [
@@ -104,5 +104,5 @@
       }
     }
   ],
-  "lastUpdated": "2026-07-18T01:22:49.433612"
+  "lastUpdated": "2026-07-19T01:05:24.080578"
 }
