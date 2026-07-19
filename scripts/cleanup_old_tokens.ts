@@ -6,7 +6,7 @@ import { admin, initializeScriptFirestore } from "./firebase-admin";
 async function cleanupOldTokens() {
   try {
     const db = await initializeScriptFirestore();
-    const cutoffDays = Number(process.env.TOKEN_CLEANUP_DAYS || 90);
+    const cutoffDays = readCutoffDays(process.env.TOKEN_CLEANUP_DAYS);
     const cutoff = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() - cutoffDays * 86400000),
     );
@@ -50,6 +50,14 @@ async function cleanupOldTokens() {
     console.error("토큰 정리 실패:", error);
     process.exit(1);
   }
+}
+
+function readCutoffDays(value: string | undefined) {
+  const days = Number(value || 90);
+  if (!Number.isInteger(days) || days < 7 || days > 3650) {
+    throw new Error("TOKEN_CLEANUP_DAYS는 7~3650 사이의 정수여야 합니다.");
+  }
+  return days;
 }
 
 cleanupOldTokens();
