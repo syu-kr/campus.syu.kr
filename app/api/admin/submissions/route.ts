@@ -105,17 +105,18 @@ export async function PATCH(req: NextRequest) {
 
     await db.runTransaction(async (transaction) => {
       const now = nowTimestamp();
+      const submissionRefs = targets.map((target) =>
+        db.collection(collectionForKind(target.kind)).doc(target.id),
+      );
+      const snapshots = await transaction.getAll(...submissionRefs);
 
-      for (const target of targets) {
-        const submissionRef = db
-          .collection(collectionForKind(target.kind))
-          .doc(target.id);
-        const snapshot = await transaction.get(submissionRef);
-
+      for (const snapshot of snapshots) {
         if (!snapshot.exists) {
           throw new ApiError("제출 항목을 찾을 수 없습니다", 404);
         }
+      }
 
+      for (const submissionRef of submissionRefs) {
         transaction.update(submissionRef, {
           status,
           updated_at: now,
