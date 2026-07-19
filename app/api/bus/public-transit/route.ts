@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchPublicTransitArrivals } from "@/lib/api";
-import type { PublicTransitArrivalsResult } from "@/lib/public-transit";
+import {
+  getBusRouteKey,
+  type PublicTransitArrivalsResult,
+} from "@/lib/public-transit";
 import type { BusArrivalsAtStop } from "@/types";
 import { resolveTransitTimestamp } from "@/lib/server/transit-cache";
 import type {
@@ -161,10 +164,10 @@ function preserveMissingRoutes(
     }
 
     const mergedByRoute = new Map(
-      cachedStop.arrivals.map((arrival) => [getRouteKey(arrival), arrival]),
+      cachedStop.arrivals.map((arrival) => [getBusRouteKey(arrival), arrival]),
     );
     freshStop.arrivals.forEach((arrival) => {
-      mergedByRoute.set(getRouteKey(arrival), arrival);
+      mergedByRoute.set(getBusRouteKey(arrival), arrival);
     });
 
     return {
@@ -172,10 +175,6 @@ function preserveMissingRoutes(
       arrivals: Array.from(mergedByRoute.values()).sort(compareArrivalTime),
     };
   });
-}
-
-function getRouteKey(arrival: BusArrivalsAtStop["arrivals"][number]) {
-  return (arrival.routeName || arrival.routeId).replace(/\s+/g, "");
 }
 
 function compareArrivalTime(
