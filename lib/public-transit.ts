@@ -6,6 +6,7 @@ import {
 import type { LiveDataSourceStatus } from "@/types/live-data";
 import { fetchJson } from "./fetch-json";
 import { requireServerEnv } from "./server/env";
+import { getBusRouteDestination } from "./public-transit-destinations";
 
 type GyeonggiArrivalResponse = {
   response?: {
@@ -501,6 +502,11 @@ export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrival
 
   // 맵의 값들을 배열로 변환
   Array.from(stopMap.values()).forEach((item) => {
+    item.arrivals = item.arrivals.map((arrival) => ({
+      ...arrival,
+      destination: getBusRouteDestination(item.stop.id, arrival.routeId),
+    }));
+
     // 도착 시간순으로 정렬
     item.arrivals.sort((a, b) => {
       const timeA = a.predictTime1 || Infinity;

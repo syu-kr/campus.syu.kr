@@ -52,9 +52,6 @@ export default function PublicTransitSection() {
   const text = dictionary.pages.busInfo;
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
   const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
-  const [selectedBusDirection, setSelectedBusDirection] = useState<
-    "up" | "down" | null
-  >(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 10초마다 자동 갱신
@@ -142,7 +139,6 @@ export default function PublicTransitSection() {
 
   const openBusDetail = (arrival: BusArrival) => {
     setSelectedBus(arrival);
-    setSelectedBusDirection(selectedStop?.stop.direction as "up" | "down");
     setIsModalOpen(true);
   };
 
@@ -289,28 +285,19 @@ export default function PublicTransitSection() {
                     ? { label: text.normal, color: "bg-yellow-100 text-yellow-700" }
                     : { label: text.crowded, color: "bg-red-100 text-red-700" };
 
-            // 방향에 따른 고정 행선지
-            const fixedDestination =
-              selectedStop?.stop.id.includes("jungmun") &&
-              selectedStop?.stop.direction === "up"
-                ? text.destinations.damteogogae
-                : selectedStop?.stop.id.includes("jungmun") &&
-                    selectedStop?.stop.direction === "down"
-                  ? text.destinations.taereungRink
-                  : selectedStop?.stop.id.includes("humun") &&
-                      selectedStop?.stop.direction === "up"
-                    ? text.destinations.mirinaeHanbyeol
-                    : selectedStop?.stop.id.includes("humun") &&
-                        selectedStop?.stop.direction === "down"
-                      ? text.destinations.taereungRink
-                      : "";
+            const destination =
+              locale === "ko"
+                ? arrival.destination?.labelKo
+                : arrival.destination?.labelEn;
 
             return (
               <Card
                 key={`${arrival.routeId}-${idx}`}
                 role="button"
                 tabIndex={0}
-                aria-label={`${arrival.routeName} ${statusLabel} ${fixedDestination}`}
+                aria-label={[arrival.routeName, statusLabel, destination]
+                  .filter(Boolean)
+                  .join(" ")}
                 onClick={() => openBusDetail(arrival)}
                 onKeyDown={(event) => handleBusCardKeyDown(event, arrival)}
                 className={clsx(
@@ -352,14 +339,16 @@ export default function PublicTransitSection() {
                       )}
                     </div>
 
-                    <p
-                      className={clsx(
-                        "text-xs sm:text-sm mb-2 truncate",
-                        isNoInfo ? "text-neutral-400" : "text-neutral-600",
-                      )}
-                    >
-                      {fixedDestination}
-                    </p>
+                    {destination && (
+                      <p
+                        className={clsx(
+                          "text-xs sm:text-sm mb-2 truncate",
+                          isNoInfo ? "text-neutral-400" : "text-neutral-600",
+                        )}
+                      >
+                        {destination}
+                      </p>
+                    )}
 
                     {isNoInfo ? (
                       <p className="text-xs sm:text-sm text-neutral-500 font-medium">
@@ -420,13 +409,10 @@ export default function PublicTransitSection() {
 
       <BusDetailModal
         bus={selectedBus}
-        direction={selectedBusDirection}
-        stopId={selectedStop?.stop.id}
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setSelectedBus(null);
-          setSelectedBusDirection(null);
         }}
       />
     </Container>
