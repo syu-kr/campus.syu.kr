@@ -69,6 +69,12 @@ export interface BusStop {
   direction: "up" | "down";
 }
 
+export interface BusRouteDestination {
+  labelKo: string;
+  labelEn: string;
+  kind: "terminal" | "major-stop" | "current-stop-terminal";
+}
+
 export interface BusArrival {
   routeId: string;
   routeName: string;
@@ -86,6 +92,7 @@ export interface BusArrival {
   predictTime2?: number;
   remainSeat1?: number;
   remainSeat2?: number;
+  destination?: BusRouteDestination;
 }
 
 export interface BusArrivalsAtStop {
