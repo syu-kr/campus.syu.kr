@@ -134,6 +134,7 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `SUPILOT_PUSH_COPY_TIMEOUT_MS` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 timeout. 기본값 `12000` |
 | `SUPILOT_PUSH_COPY_MAX_RETRIES` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 재시도 횟수. 기본값 `2` |
 | `SUPILOT_PUSH_COPY_RETRY_BASE_MS` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 재시도 기본 대기 시간. 기본값 `1500` |
+| `TOKEN_CLEANUP_DAYS` | 선택 | `cleanup-expired-firestore.yml` | 마지막 갱신 후 FCM 토큰을 삭제할 기준 일수. 기본값 `90`, 허용 범위 `7~3650` |
 | `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 동기화 대상 개인 배포 레포. `owner/name` 형식 |
 
 ## Firebase Console Configuration

@@ -13,17 +13,17 @@ type GyeonggiArrivalResponse = {
       busArrivalList?: Array<{
         routeName?: string | number;
         routeId?: string | number;
-        predictTime1?: number;
+        predictTime1?: number | string;
         predictTime2?: number | string;
-        lowPlate1?: number;
+        lowPlate1?: number | string;
         lowPlate2?: number | string;
-        locationNo1?: number;
+        locationNo1?: number | string;
         locationNo2?: number | string;
         stationId?: string | number;
         stationNm1?: string;
         stationNm2?: string;
-        crowded1?: number;
-        crowded2?: number;
+        crowded1?: number | string;
+        crowded2?: number | string;
       }>;
     };
   };
@@ -164,7 +164,31 @@ function isFreshSeoulReport(reportTime: string): boolean {
 
 function normalizeRouteName(name: string): string {
   const compact = name.replace(/\s+/g, "");
-  return compact.replace(/^남양주/, "").replace(/남양주$/, "");
+  return compact
+    .replace(/^(?:남양주|구리)/, "")
+    .replace(/(?:남양주|구리)$/, "");
+}
+
+export function readTransitNumber(value: unknown): number | undefined {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : undefined;
+  }
+
+  if (typeof value !== "string" || value.trim() === "") {
+    return undefined;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+export function getBusRouteKey(
+  arrival: Pick<BusArrival, "routeId" | "routeName">,
+): string {
+  const routeId = String(arrival.routeId ?? "").trim();
+  if (routeId) return `id:${routeId}`;
+
+  return `name:${normalizeRouteName(String(arrival.routeName ?? ""))}`;
 }
 
 // 서울 버스 도착정보 조회 (정류소 고유번호 arsId 기반)
@@ -281,37 +305,40 @@ async function fetchGyeonggiBusArrivals(
             );
           })
           .map((item) => {
+            const predictTime1 = readTransitNumber(item.predictTime1);
+            const predictTime2 = readTransitNumber(item.predictTime2);
+            const lowPlate1 = readTransitNumber(item.lowPlate1);
+            const lowPlate2 = readTransitNumber(item.lowPlate2);
+            const locationNo1 = readTransitNumber(item.locationNo1);
+            const locationNo2 = readTransitNumber(item.locationNo2);
+            const crowded1 = readTransitNumber(item.crowded1);
+            const crowded2 = readTransitNumber(item.crowded2);
+
             // predictTime은 이미 분 단위 (API 문서: 초 단위라 했으나 실제는 분 단위)
             const time1 =
-              typeof item.predictTime1 === "number"
-                ? Math.ceil(item.predictTime1) + "분"
+              predictTime1 !== undefined
+                ? Math.ceil(predictTime1) + "분"
                 : "정보 없음";
             const time2 =
-              typeof item.predictTime2 === "number"
-                ? Math.ceil(item.predictTime2) + "분"
+              predictTime2 !== undefined
+                ? Math.ceil(predictTime2) + "분"
                 : "운행 종료";
 
             return {
-              routeId: String(item.routeId) || "",
-              routeName: normalizeRouteName(String(item.routeName) || ""),
+              routeId: String(item.routeId ?? "").trim(),
+              routeName: normalizeRouteName(String(item.routeName ?? "")),
               arrivalMsg1: time1,
               arrivalMsg2: time2,
-              isLow1: item.lowPlate1 === 1,
-              isLow2: item.lowPlate2 === 1,
-              locationNo1: item.locationNo1,
-              locationNo2:
-                typeof item.locationNo2 === "number"
-                  ? item.locationNo2
-                  : undefined,
+              isLow1: lowPlate1 === 1,
+              isLow2: lowPlate2 === 1,
+              locationNo1,
+              locationNo2,
               nextStation1: item.stationNm1,
               nextStation2: item.stationNm2,
-              predictTime1: item.predictTime1,
-              predictTime2:
-                typeof item.predictTime2 === "number"
-                  ? item.predictTime2
-                  : undefined,
-              crowded1: item.crowded1,
-              crowded2: item.crowded2,
+              predictTime1,
+              predictTime2,
+              crowded1,
+              crowded2,
             };
           }) as BusArrival[];
 
@@ -337,7 +364,7 @@ async function fetchGyeonggiBusArrivals(
 
     results.forEach((batch) => {
       batch.arrivals.forEach((arrival) => {
-        const key = arrival.routeId || arrival.routeName;
+        const key = getBusRouteKey(arrival);
         if (!routeMap.has(key)) {
           routeMap.set(key, arrival);
         }
@@ -425,10 +452,7 @@ export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrival
       const mergedByRoute = new Map<string, BusArrival>();
 
       [...existing.arrivals, ...arrivals].forEach((arrival) => {
-        const key = (arrival.routeName || arrival.routeId || "").replace(
-          /\s+/g,
-          "",
-        );
+        const key = getBusRouteKey(arrival);
         const prev = mergedByRoute.get(key);
 
         if (!prev) {
@@ -444,7 +468,11 @@ export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrival
             : Infinity;
 
         // 동일 노선이 여러 소스에서 오면 도착예정이 있는 값, 그리고 더 이른 값을 우선 사용
-        if (nextTime < prevTime) {
+        if (
+          nextTime < prevTime ||
+          (nextTime === prevTime &&
+            arrival.routeName.length < prev.routeName.length)
+        ) {
           mergedByRoute.set(key, arrival);
         }
       });
