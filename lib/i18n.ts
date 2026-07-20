@@ -1014,7 +1014,7 @@ export const dictionaries = {
         relaxed: "여유",
         normal: "보통",
         crowded: "혼잡",
-        destinationFallback: "목적지",
+        destinationUnavailable: "행선지 정보 없음",
         busDetailLabel: "버스 상세 정보",
         closeBusDetail: "버스 상세 닫기",
         currentBus: "현재 버스",
@@ -1031,11 +1031,6 @@ export const dictionaries = {
           jungmunDown: "정문 하행",
           humunUp: "후문 상행",
           humunDown: "후문 하행",
-        },
-        destinations: {
-          damteogogae: "담터고개 행",
-          taereungRink: "태릉국제스케이트장 행",
-          mirinaeHanbyeol: "미리내마을4-2단지.한별초등학교 행",
         },
       },
       cafeteria: {
@@ -2697,7 +2692,7 @@ export const dictionaries = {
         relaxed: "Light",
         normal: "Normal",
         crowded: "Crowded",
-        destinationFallback: "Destination",
+        destinationUnavailable: "Destination unavailable",
         busDetailLabel: "bus details",
         closeBusDetail: "Close bus details",
         currentBus: "Current Bus",
@@ -2714,12 +2709,6 @@ export const dictionaries = {
           jungmunDown: "Main Gate Downbound",
           humunUp: "Back Gate Upbound",
           humunDown: "Back Gate Downbound",
-        },
-        destinations: {
-          damteogogae: "Damteogogae-bound",
-          taereungRink: "Taereung International Skating Rink-bound",
-          mirinaeHanbyeol:
-            "Mirinae Village 4-2 / Hanbyeol Elementary School-bound",
         },
       },
       cafeteria: {

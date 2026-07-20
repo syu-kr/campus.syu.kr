@@ -10,8 +10,6 @@ type BusInfoDictionary = Dictionary["pages"]["busInfo"];
 
 interface BusDetailModalProps {
   bus: BusArrival | null;
-  direction: "up" | "down" | null;
-  stopId: string | undefined;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -41,8 +39,6 @@ function getSeatStatus(
 
 export default function BusDetailModal({
   bus,
-  direction,
-  stopId,
   isOpen,
   onClose,
 }: BusDetailModalProps) {
@@ -54,14 +50,15 @@ export default function BusDetailModal({
 
   const seatStatus1 = getSeatStatus(bus.crowded1, text);
   const seatStatus2 = getSeatStatus(bus.crowded2, text);
-  const destination = getDestinationLabel(stopId, direction, text);
+  const destination =
+    locale === "ko" ? bus.destination?.labelKo : bus.destination?.labelEn;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={bus.routeName}
-      description={destination}
+      description={destination ?? text.destinationUnavailable}
       size="sm"
       bodyClassName="space-y-6"
     >
@@ -210,30 +207,6 @@ export default function BusDetailModal({
             </button>
     </Modal>
   );
-}
-
-function getDestinationLabel(
-  stopId: string | undefined,
-  direction: "up" | "down" | null,
-  text: BusInfoDictionary,
-) {
-  if (stopId?.includes("jungmun") && direction === "up") {
-    return text.destinations.damteogogae;
-  }
-
-  if (stopId?.includes("jungmun") && direction === "down") {
-    return text.destinations.taereungRink;
-  }
-
-  if (stopId?.includes("humun") && direction === "up") {
-    return text.destinations.mirinaeHanbyeol;
-  }
-
-  if (stopId?.includes("humun") && direction === "down") {
-    return text.destinations.taereungRink;
-  }
-
-  return text.destinationFallback;
 }
 
 function formatStopsBefore(
