@@ -4,13 +4,13 @@ on:
   schedule:
     # 매일 15시(UTC) 실행 = KST 자정(00:00)
     - cron: "0 15 * * *"
-  workflow_dispatch: # 수동 실행 option
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: daily-crawl
+  group: crawl-data-pages
   cancel-in-progress: false
 
 jobs:
@@ -18,6 +18,12 @@ jobs:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      changed: ${{ steps.prepare.outputs.changed }}
+      version: ${{ steps.prepare.outputs.version }}
     env:
       CRAWL_ACADEMIC_NOTICES_URL: ${{ vars.CRAWL_ACADEMIC_NOTICES_URL }}
       CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
@@ -36,19 +42,8 @@ jobs:
           sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
           echo "Timezone set to KST: $(date)"
 
-      - name: Validate crawler deploy key secret
-        env:
-          CRAWLER_DEPLOY_KEY: ${{ secrets.CRAWLER_DEPLOY_KEY }}
-        run: |
-          if [ -z "$CRAWLER_DEPLOY_KEY" ]; then
-            echo "CRAWLER_DEPLOY_KEY secret is not configured."
-            exit 1
-          fi
-
-      - name: Checkout code with crawler deploy key
+      - name: Checkout code
         uses: actions/checkout@v7
-        with:
-          ssh-key: ${{ secrets.CRAWLER_DEPLOY_KEY }}
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -60,8 +55,17 @@ jobs:
         with:
           node-version: "22.13.0"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
+
+      - name: Use pinned npm
+        run: npm install -g npm@10.9.4
+
+      - name: Install Node dependencies
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Restore current crawl data snapshot
+        run: npm run pull:crawl-data
 
       - name: Run academic notices crawler
         run: python scripts/crawl_announcements.py
@@ -96,18 +100,34 @@ jobs:
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT }}
         run: node scripts/generate_announcement_ai_summaries.mjs
 
-      - name: Commit crawler changes to main
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git config --global --add safe.directory "$PWD"
-          git add public/data/
+      - name: Prepare versioned Pages artifact
+        id: prepare
+        run: npm run prepare:crawl-data-pages -- "$RUNNER_TEMP/crawl-data-pages-${GITHUB_RUN_ID}"
 
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
+      - name: Configure GitHub Pages
+        if: steps.prepare.outputs.changed == 'true'
+        uses: actions/configure-pages@v5
 
-          git commit -m "chore: update daily crawl data (notices and cafeteria menu)"
-          git remote set-url origin "git@github.com:${GITHUB_REPOSITORY}.git"
-          git push origin HEAD:main
+      - name: Upload GitHub Pages artifact
+        if: steps.prepare.outputs.changed == 'true'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/crawl-data-pages-${{ github.run_id }}
+          retention-days: 1
+
+  deploy:
+    if: needs.crawl.outputs.changed == 'true'
+    needs: crawl
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy crawl data to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

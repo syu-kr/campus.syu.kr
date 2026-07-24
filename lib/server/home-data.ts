@@ -7,6 +7,7 @@ import type {
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
 } from "@/types";
+import { readDailyCrawlDataJson } from "./crawl-data";
 
 async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
   try {
@@ -19,9 +20,9 @@ async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
 }
 
 export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
-  const data = await readPublicData<
+  const data = await readDailyCrawlDataJson<
     Array<{ menus?: unknown[] }> | { menus?: unknown[] }
-  >("cafeteria-menu.json", []);
+  >("cafeteria-menu.json");
   const cafeteriaData = Array.isArray(data) ? data[0] : data;
   const menuDays = Array.isArray(cafeteriaData?.menus)
     ? (cafeteriaData.menus as Array<{

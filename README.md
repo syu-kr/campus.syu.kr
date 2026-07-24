@@ -55,6 +55,7 @@ npm run check
 - [docs/I18N_POLICY.md](./docs/I18N_POLICY.md): `/en` 로케일 운영 정책과 번역 범위
 - [docs/SEARCH_INDEXING_GUIDE.md](./docs/SEARCH_INDEXING_GUIDE.md): SEO/AEO/GEO 색인 및 Google Search Console 점검 절차
 - [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙과 TTL 운영
+- [docs/CRAWL_DATA_PAGES.md](./docs/CRAWL_DATA_PAGES.md): 무료 GitHub Pages 일일 데이터·롤백 운영
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
 
 ## 기술 스택
@@ -82,7 +83,7 @@ campus.syu.kr/
 ├── lib/                    # data fetching, Firebase, utilities
 ├── types/                  # shared TypeScript types
 ├── public/
-│   ├── data/               # generated/curated JSON datasets
+│   ├── data/               # bundled fallback and curated JSON datasets
 │   ├── images/             # static images
 │   ├── service-notices/    # service notice Markdown files
 │   └── manifest.json
@@ -95,7 +96,7 @@ campus.syu.kr/
 
 ## 데이터 갱신
 
-정적 데이터는 `public/data/`의 JSON 파일을 기준으로 제공됩니다. 공지사항, 장학금, 학식, 학사 일정, 연락처 등은 `scripts/`의 크롤러와 GitHub Actions로 갱신합니다.
+공지사항·장학금·학식 등 일일 크롤링 데이터는 공개 저장소의 무료 GitHub Pages 아티팩트에 버전형 스냅샷으로 게시하고 앱이 서버에서 조회합니다. `public/data/`의 동일 JSON은 Pages 장애나 무결성 검증 실패 때 사용하는 번들 fallback입니다. 학사 일정·연락처 등 저빈도 데이터는 기존처럼 저장소 JSON과 월간 크롤러로 관리합니다.
 
 ```bash
 pip install -r requirements.txt

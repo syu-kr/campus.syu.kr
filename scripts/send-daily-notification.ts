@@ -1,7 +1,7 @@
 // scripts/send-daily-notification.ts
 import { createHash } from "crypto";
-import * as fs from "fs";
-import * as path from "path";
+import type { DailyCrawlDataFile } from "../lib/crawl-data-contract";
+import { readDailyCrawlDataJson } from "../lib/server/crawl-data";
 import {
   compactAiText,
   readNumberEnv,
@@ -53,7 +53,7 @@ const DEFAULT_PUSH_COPY_TIMEOUT_MS = 12000;
 const DEFAULT_PUSH_COPY_MAX_RETRIES = 2;
 const DEFAULT_PUSH_COPY_RETRY_BASE_MS = 1500;
 const MAX_ANNOUNCEMENT_ITEMS_FOR_AI = 12;
-const DAILY_ANNOUNCEMENT_SOURCES: Record<string, string> = {
+const DAILY_ANNOUNCEMENT_SOURCES: Record<string, DailyCrawlDataFile> = {
   academic: "announcements-academic.json",
   scholarship: "announcements-scholarship.json",
 };
@@ -70,18 +70,12 @@ async function getAnnouncementStats(
 
 async function getAnnouncementStatsFromJSON(
   category: string,
-  filename: string,
+  filename: DailyCrawlDataFile,
   targetWindow: KoreaDayWindow,
 ): Promise<AnnouncementStats> {
-  const filepath = path.join(process.cwd(), "public/data", filename);
-
-  if (!fs.existsSync(filepath)) {
-    throw new Error(`공지 JSON 파일을 찾을 수 없습니다: ${filepath}`);
-  }
-
   try {
-    const rawData = fs.readFileSync(filepath, "utf-8");
-    const announcements: AnnouncementData[] = JSON.parse(rawData);
+    const announcements =
+      await readDailyCrawlDataJson<AnnouncementData[]>(filename);
 
     const filtered = announcements.filter((announcement) => {
       return (

@@ -141,7 +141,10 @@ export async function fetchCafeteriaMenu(
   try {
     const data = await fetchJson<
       Array<{ menus?: unknown[] }> | { menus?: unknown[] }
-    >("/data/cafeteria-menu.json", { fallback: [], throwOnError: true });
+    >("/api/crawl-data/cafeteria-menu.json", {
+      fallback: [],
+      throwOnError: true,
+    });
 
     // 데이터 구조 확인
     let cafeteriaData: { menus?: unknown[] };
