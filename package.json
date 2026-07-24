@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@fontsource/pretendard": "^5.2.5",
-    "@tanstack/react-query": "^5.101.1",
+    "@tanstack/react-query": "^5.101.4",
     "clsx": "^2.1.0",
     "firebase": "^12.16.0",
     "firebase-admin": "^13.10.0",
