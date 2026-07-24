@@ -1,6 +1,6 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import { attachAnnouncementAiSummaries } from "@/lib/server/announcement-ai";
+import { readDailyCrawlDataJson } from "@/lib/server/crawl-data";
+import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type {
   AnnouncementCategory,
   AnnouncementAiSummary,
@@ -40,7 +40,10 @@ type RawAnnouncement = {
   departmentUrls?: unknown;
 };
 
-const SOURCE_BY_CATEGORY: Record<CompetitionSourceCategory, string> = {
+const SOURCE_BY_CATEGORY: Record<
+  CompetitionSourceCategory,
+  DailyCrawlDataFile
+> = {
   academic: "announcements-academic.json",
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
@@ -226,7 +229,7 @@ async function readCompetitionAnnouncements(
     return cached.promise;
   }
 
-  const promise = readCompetitionAnnouncementsFromDisk(sourceCategory).catch(
+  const promise = readCompetitionAnnouncementsFromSource(sourceCategory).catch(
     (error) => {
       competitionCache.delete(sourceCategory);
       throw error;
@@ -241,13 +244,11 @@ async function readCompetitionAnnouncements(
   return promise;
 }
 
-async function readCompetitionAnnouncementsFromDisk(
+async function readCompetitionAnnouncementsFromSource(
   sourceCategory: CompetitionSourceCategory,
 ): Promise<CompetitionAnnouncement[]> {
   const fileName = SOURCE_BY_CATEGORY[sourceCategory];
-  const filePath = path.join(process.cwd(), "public", "data", fileName);
-  const content = await readFile(filePath, "utf8");
-  const items = JSON.parse(content) as RawAnnouncement[];
+  const items = await readDailyCrawlDataJson<RawAnnouncement[]>(fileName);
 
   const candidates = items
     .map((item, index) => toCompetitionCandidate(item, sourceCategory, index))

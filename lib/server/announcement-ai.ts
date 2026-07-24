@@ -1,7 +1,6 @@
 import { createHash } from "crypto";
-import { readFile } from "fs/promises";
-import path from "path";
 import type { Announcement, AnnouncementAiSummary } from "@/types";
+import { readDailyCrawlDataJson } from "./crawl-data";
 
 interface AnnouncementAiMetadataFile {
   version: number;
@@ -9,12 +8,6 @@ interface AnnouncementAiMetadataFile {
   items: Record<string, AnnouncementAiSummary>;
 }
 
-const METADATA_FILE = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "announcement-ai-metadata.json",
-);
 const METADATA_CACHE_TTL_MS = 60 * 1000;
 
 let metadataCache:
@@ -126,7 +119,7 @@ async function readAnnouncementAiMetadata() {
     return metadataCache.promise;
   }
 
-  const promise = readAnnouncementAiMetadataFromDisk();
+  const promise = readAnnouncementAiMetadataFromSource();
   metadataCache = {
     expiresAt: now + METADATA_CACHE_TTL_MS,
     promise,
@@ -135,10 +128,12 @@ async function readAnnouncementAiMetadata() {
   return promise;
 }
 
-async function readAnnouncementAiMetadataFromDisk() {
+async function readAnnouncementAiMetadataFromSource() {
   try {
-    const content = await readFile(METADATA_FILE, "utf8");
-    const parsed = JSON.parse(content) as AnnouncementAiMetadataFile;
+    const parsed =
+      await readDailyCrawlDataJson<AnnouncementAiMetadataFile>(
+        "announcement-ai-metadata.json",
+      );
 
     if (!parsed || parsed.version !== 1 || !parsed.items) {
       return null;
@@ -146,15 +141,6 @@ async function readAnnouncementAiMetadataFromDisk() {
 
     return parsed;
   } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === "ENOENT"
-    ) {
-      return null;
-    }
-
     console.error("Failed to read announcement AI metadata:", error);
     return null;
   }

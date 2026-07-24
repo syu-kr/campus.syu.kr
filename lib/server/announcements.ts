@@ -1,7 +1,7 @@
-import { readFile } from "fs/promises";
-import path from "path";
 import type { Announcement, AnnouncementCategory } from "@/types";
+import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import { attachAnnouncementAiSummaries } from "./announcement-ai";
+import { readDailyCrawlDataJson } from "./crawl-data";
 
 export interface AnnouncementQuery {
   category?: AnnouncementCategory | "all";
@@ -18,7 +18,10 @@ export interface AnnouncementPage {
   totalPages: number;
 }
 
-const SOURCE_BY_CATEGORY: Record<AnnouncementCategory, string> = {
+const SOURCE_BY_CATEGORY: Record<
+  AnnouncementCategory,
+  DailyCrawlDataFile
+> = {
   academic: "announcements-academic.json",
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
@@ -121,7 +124,7 @@ async function readAnnouncements(
     return cached.promise;
   }
 
-  const promise = readAnnouncementsFromDisk(category).catch((error) => {
+  const promise = readAnnouncementsFromSource(category).catch((error) => {
     announcementCache.delete(category);
     throw error;
   });
@@ -133,13 +136,11 @@ async function readAnnouncements(
   return promise;
 }
 
-async function readAnnouncementsFromDisk(
+async function readAnnouncementsFromSource(
   category: AnnouncementCategory,
 ): Promise<Announcement[]> {
   const fileName = SOURCE_BY_CATEGORY[category];
-  const filePath = path.join(process.cwd(), "public", "data", fileName);
-  const content = await readFile(filePath, "utf8");
-  const items = JSON.parse(content) as Announcement[];
+  const items = await readDailyCrawlDataJson<Announcement[]>(fileName);
 
   return items.map((item) => ({
     ...item,

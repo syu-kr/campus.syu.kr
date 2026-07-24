@@ -29,9 +29,13 @@ npm run type-check                # TypeScript 검사
 npm run check:i18n                # 공개 UI 한국어 하드코딩 검사
 npm run check:unused              # 미사용 파일, export, 의존성 검사
 npm run check:python              # Python 크롤러 문법 검사
+npm run check:crawl-data         # 일일 JSON과 manifest 계약 dry-run
 npm run build                     # 프로덕션 빌드
 npm run check                     # lint, type-check, i18n, unused, data, build 전체 검사
 npm run generate:announcement-ai  # 공지 AI 요약 메타데이터 생성
+npm run pull:crawl-data           # 현재 Pages 일일 데이터 스냅샷 복원
+npm run prepare:crawl-data-pages -- OUTPUT_DIR # 새 Pages 배포 아티팩트 준비
+npm run rollback:crawl-data -- VERSION OUTPUT_DIR # 롤백 Pages 아티팩트 준비
 npm audit --audit-level=moderate  # 의존성 보안 취약점 검사
 npm run build:analyze             # 번들 분석
 npm run send-daily-notification   # 일일 공지 알림
@@ -60,7 +64,8 @@ campus.syu.kr/
 │   ├── sw.js/route.ts          # Firebase Messaging service worker
 │   └── globals.css
 ├── lib/
-│   ├── api.ts                  # public JSON/API fetch helpers
+│   ├── api.ts                  # JSON/API fetch helpers
+│   ├── crawl-data-contract.ts  # 일일 데이터 manifest 계약
 │   ├── fetch-json.ts           # shared JSON fetch utility
 │   ├── firebase.ts             # client Firebase Messaging
 │   ├── firebaseAdmin.ts        # server Firebase Admin
@@ -68,7 +73,7 @@ campus.syu.kr/
 │   ├── serviceNotices.ts       # service notice parser
 │   └── weather.ts              # weather transform helpers
 ├── public/
-│   ├── data/                   # static JSON datasets
+│   ├── data/                   # bundled fallback and curated JSON datasets
 │   ├── images/
 │   ├── service-notices/        # service notice Markdown data
 │   └── manifest.json
@@ -84,7 +89,8 @@ campus.syu.kr/
 
 - Next.js App Router가 페이지와 API Route를 담당합니다.
 - 화면 데이터는 `lib/api.ts`, feature helper, API Route를 통해 가져옵니다.
-- 정적 데이터는 `public/data/*.json`을 우선 사용합니다.
+- 일일 크롤링 데이터는 무료 GitHub Pages의 현재 스냅샷을 서버에서 읽고, 실패하면 `public/data/*.json` fallback을 사용합니다.
+- 학사 일정·연락처 등 저빈도 데이터는 `public/data/*.json`을 사용합니다.
 - 외부 API 키가 필요한 요청은 API Route에서 프록시/정규화합니다.
 - Firebase Admin은 서버 전용 코드에서만 사용합니다.
 - FCM 클라이언트 초기화와 포그라운드 알림은 브라우저에서만 실행합니다.
@@ -93,7 +99,7 @@ campus.syu.kr/
 Client UI
   -> TanStack Query
   -> lib/api.ts or app/api/*
-  -> public/data, Firebase Admin, external APIs
+  -> GitHub Pages crawl-data snapshot, public/data fallback, Firebase Admin, external APIs
 ```
 
 ## 환경 변수
@@ -136,6 +142,7 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase client | Firebase app id |
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | FCM web push | Web Push VAPID public key |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
+| `CRAWL_DATA_BASE_URL` | 선택 | crawl data runtime/scripts | Pages 데이터 base URL override. 기본값은 공식 저장소의 GitHub Pages URL |
 | `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
 | `RATE_LIMIT_SECRET` | 운영 필수 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. Production에서는 미등록 시 public write API가 503으로 실패하며, 로컬 개발에서만 `PUSH_API_KEY` fallback을 허용 |
 | `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
@@ -193,13 +200,15 @@ Vercel 런타임 환경 변수는 GitHub Actions Secrets와 별개로 Vercel Pro
 
 ### 정적 JSON
 
-`public/data/`의 JSON은 화면에서 직접 조회하거나 `lib/api.ts`를 통해 조회합니다. `fetchJson`을 사용할 때 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 마세요.
+공지·행사·학과 공지·학식·AI 메타데이터는 GitHub Pages의 `crawl-data/current.json` manifest가 가리키는 동일 버전 파일을 서버에서 조회합니다. 각 파일의 크기와 SHA-256을 검증하고, Pages 조회나 무결성 검증이 실패하면 `public/data/`의 번들 JSON으로 내려갑니다. 브라우저는 `/api/crawl-data/[fileName]`처럼 허용 목록이 적용된 API만 호출합니다.
+
+학사 일정·전화번호·셔틀처럼 일일 크롤링 대상이 아닌 JSON은 기존처럼 `public/data/`에서 조회합니다. `fetchJson`을 사용할 때 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 마세요.
 
 `public/data/announcement-ai-metadata.json`은 공지 원문 JSON을 수정하지 않고 AI 요약만 별도 저장합니다. `scripts/generate_announcement_ai_summaries.mjs`는 `.env.local`과 `.env`를 읽고, `SUPILOT_API_KEY`가 없으면 실행을 건너뜁니다. 공지 JSON 본문이 비어 있으면 `syu.ac.kr` 상세 URL에 접속해 본문 영역을 추출한 뒤 AI 입력으로 사용하며, 상세 페이지를 읽지 못하면 제목/작성자/날짜/URL만으로 낮은 confidence 요약을 생성합니다. 기존 요약은 `id`가 아니라 query/hash를 제거한 공지 상세 URL을 우선 키로 사용하고, 공지 제목/작성자/날짜/본문/canonical URL 해시가 일치할 때만 화면에 병합됩니다. 생성 스크립트는 실제 AI 입력의 `inputHash`와 상세 본문의 `detailContentHash`를 저장해 다음 실행에서 본문 변경을 감지하며, 장시간 백필 중에는 `ANNOUNCEMENT_AI_CHECKPOINT_EVERY` 주기마다 중간 저장합니다.
 
 ### 크롤러
 
-GitHub Actions에서 공지, 장학금, 캠퍼스 공지, 학식, 학사 일정, 전화번호 데이터를 갱신합니다.
+GitHub Actions에서 공지, 장학금, 캠퍼스 공지, 학식, 학사 일정, 전화번호 데이터를 갱신합니다. 일일 크롤러는 더 이상 `main`에 데이터 커밋을 push하지 않습니다.
 
 ```bash
 pip install -r requirements.txt
@@ -212,6 +221,21 @@ python scripts/crawl_cafeteria.py
 python scripts/crawl_schedule.py
 python scripts/crawl_phone.py
 ```
+
+일일 워크플로는 다음 순서를 지킵니다.
+
+1. `current.json`이 있으면 현재 스냅샷을 작업 디렉터리로 복원합니다.
+2. 크롤러와 AI 메타데이터 생성기를 실행합니다.
+3. 새 버전과 직전 최대 6개 버전을 포함한 Pages 아티팩트를 만들고 각 파일의 크기·SHA-256을 manifest에 기록합니다.
+4. 모든 준비가 성공한 아티팩트만 GitHub Pages에 원자적으로 배포합니다.
+
+최초 실행은 `current.json`이 없어도 저장소의 번들 fallback에서 시작합니다. 게시 실패 시 기존 Pages 배포는 바뀌지 않습니다. 문제가 있는 버전으로 전환된 경우 Actions의 `Rollback Crawl Data` 워크플로에 `current.json`의 `retainedVersions` 중 하나를 입력합니다.
+
+```bash
+npm run rollback:crawl-data -- 20260724T010203-123456789.1 /tmp/crawl-data-pages
+```
+
+Pages 활성화, 최초 게시, 보존·롤백 검증 절차는 [docs/CRAWL_DATA_PAGES.md](./docs/CRAWL_DATA_PAGES.md)를 따릅니다.
 
 ### 외부 API
 
@@ -260,10 +284,10 @@ syu-kr/campus.syu.kr main push
 ```
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
-daily/monthly crawler가 `public/data/` 변경 커밋을 만들면, 해당 워크플로 안에서 검증과 동기화 워크플로를 호출해 개인 레포와 Vercel 배포까지 이어집니다. 데이터 변경이 없으면 동기화도 건너뜁니다.
+일일 크롤러는 GitHub Pages 데이터 아티팩트만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. 월간 크롤러의 저빈도 정적 데이터 변경은 기존 `main` 커밋과 배포 흐름을 사용합니다.
 `sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 dependency audit과 `npm run check`를 통과해야 개인 Vercel 레포에 push합니다.
 
-`main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 예약 크롤러가 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 **GitHub Actions 앱**만 추가합니다. 그 외 사용자와 앱에는 bypass를 허용하지 않습니다.
+`main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 월간 크롤러가 저빈도 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 필요한 자동화 주체만 추가합니다. 일일 크롤러에는 저장소 write 권한이나 Ruleset bypass가 필요하지 않습니다.
 
 배포 전 확인:
 
@@ -276,9 +300,9 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: dependency audit, npm run check
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 dependency audit과 `npm run check` 필수
-- daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 동기화
+- daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 Pages 데이터 아티팩트 배포
 - monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
-- daily notification: `public/data/announcements-*.json`의 학사/장학 공지를 기준일별로 집계해 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
+- daily notification: Pages 스냅샷의 학사/장학 공지를 기준일별로 집계하고, 조회 실패 시 번들 fallback으로 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
 
 알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.
 
