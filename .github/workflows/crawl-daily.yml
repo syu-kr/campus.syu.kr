@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload GitHub Pages artifact
         if: steps.prepare.outputs.changed == 'true'
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ runner.temp }}/crawl-data-pages-${{ github.run_id }}
           retention-days: 1
