@@ -4,6 +4,7 @@ import type {
   Query,
   QueryDocumentSnapshot,
 } from "firebase-admin/firestore";
+import { FieldPath } from "firebase-admin/firestore";
 import { AdminAuthError, requireAdmin } from "@/lib/server/admin-auth";
 import { normalizeStoredAdminSubmissionAiClassification } from "@/lib/server/admin-submission-ai";
 import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/server/http";
@@ -27,11 +28,26 @@ const VALID_KINDS: AdminSubmissionKind[] = ["inquiry", "campus-tip"];
 const DEFAULT_PAGE_LIMIT = 20;
 const MAX_PAGE_LIMIT = 50;
 const MAX_BULK_STATUS_ITEMS = 50;
-const MAX_MERGED_COLLECTION_READ = 500;
+const MAX_CURSOR_LENGTH = 2048;
 
 interface SubmissionTarget {
   id: string;
   kind: AdminSubmissionKind;
+}
+
+export interface CollectionCursor {
+  createdAt: string;
+  id: string;
+}
+
+export interface SubmissionCursor {
+  inquiry?: CollectionCursor;
+  campusTip?: CollectionCursor;
+}
+
+interface SubmissionRead {
+  item: AdminSubmissionItem;
+  cursor: CollectionCursor;
 }
 
 export async function GET(req: NextRequest) {
@@ -47,10 +63,14 @@ export async function GET(req: NextRequest) {
       DEFAULT_PAGE_LIMIT,
       MAX_PAGE_LIMIT,
     );
+    const cursor = readSubmissionCursor(searchParams.get("cursor"));
+    if (page > 1 && !cursor) {
+      throw new ApiError("다음 페이지 커서가 필요합니다", 400);
+    }
     const { getFirestore } = await import("@/lib/server/firestore");
     const db = getFirestore();
     const [submissionPage, counts] = await Promise.all([
-      readSubmissions(db, kind, status, page, limit),
+      readSubmissions(db, kind, status, page, limit, cursor),
       readSubmissionCounts(db, kind),
     ]);
 
@@ -140,59 +160,63 @@ async function readSubmissions(
   status: "all" | SubmissionStatus,
   page: number,
   limit: number,
+  cursor: SubmissionCursor | null,
 ) {
-  const offset = (page - 1) * limit;
   const total = await countSubmissions(db, kind, status);
   const totalPages = Math.max(1, Math.ceil(total / limit));
+  const reads: Promise<SubmissionRead[]>[] = [];
 
-  if (kind === "inquiry") {
-    const submissions = await readCollection(
-      db,
-      "site_inquiries",
-      status,
-      offset,
-      limit,
-      (doc) => mapInquiry(doc),
+  if (kind === "all" || kind === "inquiry") {
+    reads.push(
+      readCollection(
+        db,
+        "site_inquiries",
+        status,
+        cursor?.inquiry,
+        limit,
+        mapInquiry,
+      ),
     );
-
-    return {
-      submissions,
-      pagination: { page, limit, total, totalPages },
-    };
   }
 
-  if (kind === "campus-tip") {
-    const submissions = await readCollection(
-      db,
-      "campus_tip_suggestions",
-      status,
-      offset,
-      limit,
-      (doc) => mapCampusTipSuggestion(doc),
+  if (kind === "all" || kind === "campus-tip") {
+    reads.push(
+      readCollection(
+        db,
+        "campus_tip_suggestions",
+        status,
+        cursor?.campusTip,
+        limit,
+        mapCampusTipSuggestion,
+      ),
     );
-
-    return {
-      submissions,
-      pagination: { page, limit, total, totalPages },
-    };
   }
 
-  const readLimit = Math.min(page * limit, MAX_MERGED_COLLECTION_READ);
-  const reads: Promise<AdminSubmissionItem[]>[] = [
-    readCollection(db, "site_inquiries", status, 0, readLimit, (doc) =>
-      mapInquiry(doc),
-    ),
-    readCollection(db, "campus_tip_suggestions", status, 0, readLimit, (doc) =>
-      mapCampusTipSuggestion(doc),
-    ),
-  ];
+  const selected = (await Promise.all(reads))
+    .flat()
+    .sort(compareSubmissionReadDesc)
+    .slice(0, limit);
+  const nextCursorState: SubmissionCursor = { ...(cursor || {}) };
 
-  const submissions = (await Promise.all(reads)).flat();
+  selected.forEach(({ item, cursor: itemCursor }) => {
+    if (item.kind === "inquiry") {
+      nextCursorState.inquiry = itemCursor;
+    } else {
+      nextCursorState.campusTip = itemCursor;
+    }
+  });
+
+  const hasNext = page < totalPages && selected.length > 0;
   return {
-    submissions: submissions
-      .sort(compareCreatedAtDesc)
-      .slice(offset, offset + limit),
-    pagination: { page, limit, total, totalPages },
+    submissions: selected.map(({ item }) => item),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+      hasNext,
+      nextCursor: hasNext ? encodeSubmissionCursor(nextCursorState) : null,
+    },
   };
 }
 
@@ -200,7 +224,7 @@ async function readCollection(
   db: Firestore,
   collection: "site_inquiries" | "campus_tip_suggestions",
   status: "all" | SubmissionStatus,
-  offset: number,
+  cursor: CollectionCursor | undefined,
   limit: number,
   mapper: (doc: QueryDocumentSnapshot) => AdminSubmissionItem,
 ) {
@@ -209,9 +233,21 @@ async function readCollection(
     status === "all"
       ? query.orderBy("created_at", "desc")
       : query.where("status", "==", status).orderBy("created_at", "desc");
-  const snapshot = await query.offset(offset).limit(limit).get();
+  query = query.orderBy(FieldPath.documentId(), "desc");
 
-  return snapshot.docs.map(mapper).sort(compareCreatedAtDesc);
+  if (cursor) {
+    query = query.startAfter(new Date(cursor.createdAt), cursor.id);
+  }
+
+  const snapshot = await query.limit(limit).get();
+
+  return snapshot.docs.map((doc) => ({
+    item: mapper(doc),
+    cursor: {
+      createdAt: timestampToIso(doc.get("created_at")) || new Date(0).toISOString(),
+      id: doc.id,
+    },
+  }));
 }
 
 async function countSubmissions(
@@ -413,7 +449,65 @@ function compareCreatedAtDesc(
   a: AdminSubmissionItem,
   b: AdminSubmissionItem,
 ) {
-  return Date.parse(b.createdAt || "") - Date.parse(a.createdAt || "");
+  const createdAtDifference =
+    Date.parse(b.createdAt || "") - Date.parse(a.createdAt || "");
+  return createdAtDifference || b.id.localeCompare(a.id);
+}
+
+function compareSubmissionReadDesc(a: SubmissionRead, b: SubmissionRead) {
+  return compareCreatedAtDesc(a.item, b.item);
+}
+
+export function readSubmissionCursor(
+  value: string | null,
+): SubmissionCursor | null {
+  if (!value) return null;
+  if (value.length > MAX_CURSOR_LENGTH) {
+    throw new ApiError("페이지 커서가 너무 깁니다", 400);
+  }
+
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf8"),
+    ) as unknown;
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("invalid cursor");
+    }
+
+    const record = parsed as Record<string, unknown>;
+    const inquiry = readCollectionCursor(record.inquiry);
+    const campusTip = readCollectionCursor(record.campusTip);
+    if (!inquiry && !campusTip) {
+      throw new Error("empty cursor");
+    }
+
+    return { inquiry, campusTip };
+  } catch {
+    throw new ApiError("페이지 커서가 올바르지 않습니다", 400);
+  }
+}
+
+function readCollectionCursor(value: unknown): CollectionCursor | undefined {
+  if (!value || typeof value !== "object") return undefined;
+
+  const record = value as Record<string, unknown>;
+  const createdAt =
+    typeof record.createdAt === "string" ? record.createdAt : "";
+  const id = typeof record.id === "string" ? record.id : "";
+
+  if (
+    !createdAt ||
+    !Number.isFinite(Date.parse(createdAt)) ||
+    !/^[A-Za-z0-9_-]{1,128}$/.test(id)
+  ) {
+    throw new Error("invalid collection cursor");
+  }
+
+  return { createdAt, id };
+}
+
+export function encodeSubmissionCursor(cursor: SubmissionCursor) {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
 }
 
 function readString(value: unknown) {

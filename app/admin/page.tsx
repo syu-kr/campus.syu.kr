@@ -94,6 +94,8 @@ const emptyPagination: AdminSubmissionPagination = {
   limit: PAGE_LIMIT,
   total: 0,
   totalPages: 1,
+  hasNext: false,
+  nextCursor: null,
 };
 
 const responseTemplates = [
@@ -137,6 +139,7 @@ export default function AdminPage() {
     "pending",
   );
   const [page, setPage] = useState(1);
+  const pageCursorsRef = useRef<Record<number, string>>({});
   const [pagination, setPagination] =
     useState<AdminSubmissionPagination>(emptyPagination);
   const [query, setQuery] = useState("");
@@ -240,6 +243,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     setPage(1);
+    pageCursorsRef.current = {};
     setSelectedKeys(new Set());
   }, [kindFilter, statusFilter]);
 
@@ -271,6 +275,13 @@ export default function AdminPage() {
           page: String(page),
           limit: String(PAGE_LIMIT),
         });
+        const cursor = pageCursorsRef.current[page];
+        if (page > 1 && !cursor) {
+          return;
+        }
+        if (cursor) {
+          params.set("cursor", cursor);
+        }
         const response = await fetch(`/api/admin/submissions?${params}`, {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
@@ -285,7 +296,16 @@ export default function AdminPage() {
 
         setSubmissions(data.submissions || []);
         setCounts({ ...emptyCounts, ...(data.counts || {}) });
-        setPagination(data.pagination || emptyPagination);
+        const nextPagination = data.pagination || emptyPagination;
+        setPagination(nextPagination);
+        pageCursorsRef.current = Object.fromEntries(
+          Object.entries(pageCursorsRef.current).filter(
+            ([cursorPage]) => Number(cursorPage) <= page,
+          ),
+        );
+        if (nextPagination.nextCursor) {
+          pageCursorsRef.current[page + 1] = nextPagination.nextCursor;
+        }
         setSelectedKeys(new Set());
       } catch (error) {
         setPageError(
@@ -677,7 +697,8 @@ export default function AdminPage() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="제목, 내용, 연락처, URL 검색"
+            placeholder="현재 페이지에서 제목, 내용, 연락처, URL 검색"
+            aria-label="현재 페이지 접수 내역 검색"
             className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </section>
@@ -837,7 +858,7 @@ export default function AdminPage() {
               </span>
               <button
                 type="button"
-                disabled={page >= pagination.totalPages || isLoading}
+                disabled={!pagination.hasNext || isLoading}
                 onClick={() =>
                   setPage((current) =>
                     Math.min(pagination.totalPages, current + 1),

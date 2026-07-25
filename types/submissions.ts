@@ -86,6 +86,8 @@ export interface AdminSubmissionPagination {
   limit: number;
   total: number;
   totalPages: number;
+  hasNext: boolean;
+  nextCursor: string | null;
 }
 
 export interface AdminSubmissionPageResponse {
