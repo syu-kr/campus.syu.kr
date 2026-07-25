@@ -1,6 +1,10 @@
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { buildMeetSlots, normalizeMeetRoomInput } from "@/lib/meet";
+import {
+  buildMeetSlots,
+  MeetValidationError,
+  normalizeMeetRoomInput,
+} from "@/lib/meet";
 import {
   admin,
   getFirestore,
@@ -61,6 +65,17 @@ export async function POST(req: NextRequest) {
       slots,
     });
   } catch (error) {
+    if (error instanceof MeetValidationError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+          field: error.field,
+        },
+        { status: 400 },
+      );
+    }
+
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
