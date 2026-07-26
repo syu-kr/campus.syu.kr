@@ -10,18 +10,19 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import {
+  getLibrarySeason,
   LIBRARY_OPERATING_HOURS,
   ROOM_SEAT_MAP_URLS,
   type LibrarySeason,
   type ReadingRoom,
 } from "@/lib/library";
 import { fetchShuttleSpecialPeriods } from "@/lib/api";
-import { getKoreaNow } from "@/lib/home";
-import { isShuttleVacationDate } from "@/lib/shuttle-schedule";
+import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import type { Dictionary } from "@/lib/i18n";
 import type { LiveDataResponse } from "@/types/live-data";
+import initialShuttleSpecialPeriods from "@/public/data/shuttle-special-periods.json";
 
 type LibraryDictionary = Dictionary["pages"]["library"];
 type ReadingRoomStatusPayload = LiveDataResponse<ReadingRoom[]>;
@@ -47,12 +48,22 @@ function getUsageLabel(percentage: number, text: LibraryDictionary): string {
   return text.relaxed;
 }
 
+const INITIAL_SEMESTER_PERIODS =
+  initialShuttleSpecialPeriods.semesterPeriods;
+
+function getInitialLibrarySeason(): LibrarySeason {
+  return getLibrarySeason(
+    getTodayInfo(getKoreaNow()).dateStringDash,
+    INITIAL_SEMESTER_PERIODS,
+  );
+}
+
 export default function LibraryPage() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.library;
   const [selectedSeason, setSelectedSeason] =
-    useState<LibrarySeason>("semester");
+    useState<LibrarySeason>(getInitialLibrarySeason);
   const [seatMapUrl, setSeatMapUrl] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
 
@@ -102,21 +113,24 @@ export default function LibraryPage() {
   });
   const rooms = readingRoomStatus.data;
 
-  const defaultSeason = useMemo<LibrarySeason>(() => {
-    if (!now) return "semester";
+  const defaultSeason = useMemo<LibrarySeason | null>(() => {
+    if (!now) return null;
 
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const date = String(now.getDate()).padStart(2, "0");
-    const dateString = `${year}-${month}-${date}`;
+    const semesterPeriods =
+      shuttleSpecialPeriods?.semesterPeriods?.length
+        ? shuttleSpecialPeriods.semesterPeriods
+        : INITIAL_SEMESTER_PERIODS;
 
-    return isShuttleVacationDate(dateString, shuttleSpecialPeriods)
-      ? "vacation"
-      : "semester";
+    return getLibrarySeason(
+      getTodayInfo(now).dateStringDash,
+      semesterPeriods,
+    );
   }, [now, shuttleSpecialPeriods]);
 
   useEffect(() => {
-    setSelectedSeason(defaultSeason);
+    if (defaultSeason) {
+      setSelectedSeason(defaultSeason);
+    }
   }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
@@ -240,6 +254,7 @@ export default function LibraryPage() {
             <button
               type="button"
               onClick={() => setSelectedSeason("semester")}
+              aria-pressed={selectedSeason === "semester"}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "semester"
                   ? "bg-primary-600 text-white"
@@ -251,6 +266,7 @@ export default function LibraryPage() {
             <button
               type="button"
               onClick={() => setSelectedSeason("vacation")}
+              aria-pressed={selectedSeason === "vacation"}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "vacation"
                   ? "bg-primary-600 text-white"
