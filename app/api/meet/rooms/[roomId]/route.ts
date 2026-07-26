@@ -25,7 +25,12 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
   try {
     const { roomId } = await params;
     if (!/^[A-Za-z0-9_-]{8,32}$/.test(roomId)) {
-      throw new ApiError("일정 방 코드 형식이 올바르지 않습니다", 400);
+      throw new ApiError(
+        "일정 방 코드 형식이 올바르지 않습니다",
+        400,
+        undefined,
+        "INVALID_ROOM_CODE",
+      );
     }
 
     await enforceRateLimit(req, `meet-room:${roomId}`, RATE_LIMIT);
@@ -35,7 +40,10 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
 
     if (!roomDoc.exists) {
       return NextResponse.json(
-        { error: "일정 방을 찾을 수 없습니다" },
+        {
+          error: "일정 방을 찾을 수 없습니다",
+          code: "ROOM_NOT_FOUND",
+        },
         { status: 404 },
       );
     }
@@ -46,7 +54,10 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       data.expires_at.toMillis() <= Date.now()
     ) {
       return NextResponse.json(
-        { error: "일정 방을 찾을 수 없습니다" },
+        {
+          error: "일정 방을 찾을 수 없습니다",
+          code: "ROOM_NOT_FOUND",
+        },
         { status: 404 },
       );
     }

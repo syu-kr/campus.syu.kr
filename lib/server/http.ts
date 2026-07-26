@@ -19,19 +19,26 @@ const DEFAULT_MAX_JSON_BYTES = 16 * 1024;
 export class ApiError extends Error {
   status: ApiErrorStatus;
   field?: string;
+  code?: string;
 
-  constructor(message: string, status: ApiErrorStatus = 400, field?: string) {
+  constructor(
+    message: string,
+    status: ApiErrorStatus = 400,
+    field?: string,
+    code?: string,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.field = field;
+    this.code = code;
   }
 }
 
 export function apiErrorResponse(error: unknown, fallbackMessage: string) {
   if (error instanceof ApiError) {
     return NextResponse.json(
-      { error: error.message, field: error.field },
+      { error: error.message, field: error.field, code: error.code },
       { status: error.status },
     );
   }
@@ -61,6 +68,8 @@ export async function enforceRateLimit(
     throw new ApiError(
       `요청이 많습니다. ${localResult.retryAfterSeconds}초 후 다시 시도해주세요.`,
       429,
+      undefined,
+      "RATE_LIMITED",
     );
   }
 
@@ -76,7 +85,12 @@ export async function enforceRateLimit(
   if (!secret) {
     if (process.env.NODE_ENV === "production") {
       console.error("[Rate Limit] RATE_LIMIT_SECRET is not configured");
-      throw new ApiError("요청 제한 설정이 완료되지 않았습니다.", 503);
+      throw new ApiError(
+        "요청 제한 설정이 완료되지 않았습니다.",
+        503,
+        undefined,
+        "RATE_LIMIT_CONFIG_MISSING",
+      );
     }
     return;
   }
@@ -90,6 +104,8 @@ export async function enforceRateLimit(
     throw new ApiError(
       `요청이 많습니다. ${result.retryAfterSeconds}초 후 다시 시도해주세요.`,
       429,
+      undefined,
+      "RATE_LIMITED",
     );
   }
 }
@@ -102,23 +118,43 @@ export async function readJsonBody<T = unknown>(
 
   const contentType = req.headers.get("content-type")?.toLowerCase() ?? "";
   if (!contentType.startsWith("application/json")) {
-    throw new ApiError("Content-Type은 application/json이어야 합니다.", 415);
+    throw new ApiError(
+      "Content-Type은 application/json이어야 합니다.",
+      415,
+      undefined,
+      "UNSUPPORTED_CONTENT_TYPE",
+    );
   }
 
   const contentLength = Number(req.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > maxBytes) {
-    throw new ApiError("요청 본문이 너무 큽니다.", 413);
+    throw new ApiError(
+      "요청 본문이 너무 큽니다.",
+      413,
+      undefined,
+      "REQUEST_TOO_LARGE",
+    );
   }
 
   const rawBody = await req.text();
   if (Buffer.byteLength(rawBody, "utf8") > maxBytes) {
-    throw new ApiError("요청 본문이 너무 큽니다.", 413);
+    throw new ApiError(
+      "요청 본문이 너무 큽니다.",
+      413,
+      undefined,
+      "REQUEST_TOO_LARGE",
+    );
   }
 
   try {
     return JSON.parse(rawBody) as T;
   } catch {
-    throw new ApiError("JSON 요청 본문이 올바르지 않습니다.", 400);
+    throw new ApiError(
+      "JSON 요청 본문이 올바르지 않습니다.",
+      400,
+      undefined,
+      "INVALID_JSON",
+    );
   }
 }
 
@@ -135,7 +171,12 @@ export function enforceSameOrigin(req: Request) {
       : new URL(req.url).origin;
 
   if (origin !== requestOrigin) {
-    throw new ApiError("허용되지 않은 출처의 요청입니다.", 403);
+    throw new ApiError(
+      "허용되지 않은 출처의 요청입니다.",
+      403,
+      undefined,
+      "FORBIDDEN_ORIGIN",
+    );
   }
 }
 
@@ -148,7 +189,7 @@ export function rateLimitResponse(error: unknown) {
     error.message.match(/(\d+)초/)?.[1] ?? String(60);
 
   return NextResponse.json(
-    { error: error.message },
+    { error: error.message, code: error.code },
     {
       status: 429,
       headers: {

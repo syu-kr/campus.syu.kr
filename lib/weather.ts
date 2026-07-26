@@ -3,9 +3,9 @@ import type { LiveDataMeta } from "@/types/live-data";
 
 export interface WeatherData extends LiveDataMeta {
   temperature: number; // 기온
-  skyCondition: number; // 하늘상태 (1:맑음, 3:구름많음, 4:흐림)
-  precipitation: number; // 강수형태 (0:없음, 1:비, 2:비/눈, 3:눈, 5:빗방울/이슬비, 6:빗방울눈날림, 7:눈날림)
-  windSpeed: number; // 풍속
+  skyCondition: number | null; // 하늘상태 (1:맑음, 3:구름많음, 4:흐림)
+  precipitation: number | null; // 강수형태 (0:없음, 1:비, 2:비/눈, 3:눈, 5:빗방울/이슬비, 6:빗방울눈날림, 7:눈날림)
+  windSpeed: number | null; // 풍속
   time: string;
   latitude: number;
   longitude: number;
@@ -63,9 +63,11 @@ function isWeatherData(data: unknown): data is WeatherData {
   const weather = data as Partial<WeatherData>;
   return (
     typeof weather.temperature === "number" &&
-    typeof weather.skyCondition === "number" &&
-    typeof weather.precipitation === "number" &&
-    typeof weather.windSpeed === "number" &&
+    (typeof weather.skyCondition === "number" ||
+      weather.skyCondition === null) &&
+    (typeof weather.precipitation === "number" ||
+      weather.precipitation === null) &&
+    (typeof weather.windSpeed === "number" || weather.windSpeed === null) &&
     typeof weather.time === "string" &&
     typeof weather.latitude === "number" &&
     typeof weather.longitude === "number" &&

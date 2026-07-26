@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import http from "node:http";
 import https from "node:https";
 import type { BusLocation } from "@/types";
 import { requireServerEnv } from "@/lib/server/env";
+import { toBusLocation } from "@/lib/shuttle-location";
+import {
+  MAX_SHUTTLE_RESPONSE_BYTES,
+  validateShuttleEndpoint,
+} from "@/lib/server/shuttle-upstream";
 import type { LiveDataResponse } from "@/types/live-data";
 
 export const runtime = "nodejs";
@@ -13,6 +17,7 @@ export const fetchCache = "force-no-store";
 const SHUTTLE_LOCATION_SOURCE = "shuttle";
 const SHUTTLE_CACHE_TTL_MS = 3 * 1000;
 const SHUTTLE_STALE_RETENTION_MS = 60 * 1000;
+const MAX_SHUTTLE_ROWS = 100;
 const PUBLIC_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=3, stale-while-revalidate=10",
 };
@@ -31,60 +36,46 @@ interface ShuttleLocationPayload {
   data?: unknown[];
 }
 
-function toBusLocation(item: unknown): BusLocation | null {
-  if (!item || typeof item !== "object") return null;
-
-  const record = item as Record<string, unknown>;
-  const id = String(record.id ?? record.name ?? "");
-  const name = String(record.name ?? id);
-  const lat = String(record.lat ?? "");
-  const lon = String(record.lon ?? "");
-  const status = Number(record.status);
-  const routeid = Number(record.routeid);
-
-  if (!id || !Number.isFinite(status) || !Number.isFinite(routeid)) {
-    return null;
-  }
-
-  return {
-    id,
-    name,
-    lat,
-    lon,
-    status: status as BusLocation["status"],
-    routeid: routeid as BusLocation["routeid"],
-  };
-}
-
 async function fetchShuttleLocations(): Promise<BusLocation[]> {
-  const url = new URL(requireServerEnv("SHUTTLE_LOCATION_URL"));
-  const payload = await fetchJsonFromUrl(url);
+  const { url, referer } = validateShuttleEndpoint(
+    requireServerEnv("SHUTTLE_LOCATION_URL"),
+    requireServerEnv("SHUTTLE_REFERER"),
+  );
+  const payload = await fetchJsonFromUrl(url, referer);
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
   }
 
   const rows = Array.isArray(payload.data) ? payload.data : [];
+  if (rows.length > MAX_SHUTTLE_ROWS) {
+    throw new Error("Shuttle location API returned too many rows");
+  }
+
   const locations = rows
     .map(toBusLocation)
     .filter((item): item is BusLocation => item !== null)
     .filter((bus) => bus.status !== 0);
 
+  if (rows.length > 0 && locations.length === 0) {
+    throw new Error("Shuttle location API returned no valid locations");
+  }
+
   return locations;
 }
 
-function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
-  const referer = requireServerEnv("SHUTTLE_REFERER");
+function fetchJsonFromUrl(
+  url: URL,
+  referer: string,
+): Promise<ShuttleLocationPayload> {
   const userAgent = requireServerEnv("SHUTTLE_USER_AGENT");
 
   return new Promise((resolve, reject) => {
-    const transport = url.protocol === "https:" ? https : http;
-    const defaultPort = url.protocol === "https:" ? 443 : 80;
-    const request = transport.request(
+    const request = https.request(
       {
         protocol: url.protocol,
         hostname: url.hostname,
-        port: url.port || defaultPort,
+        port: url.port || 443,
         path: `${url.pathname}${url.search}`,
         method: "GET",
         headers: {
@@ -107,12 +98,26 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
       },
       (response) => {
         const chunks: Buffer[] = [];
+        let receivedBytes = 0;
+        let responseRejected = false;
 
         response.on("data", (chunk) => {
-          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+          const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          receivedBytes += buffer.byteLength;
+
+          if (receivedBytes > MAX_SHUTTLE_RESPONSE_BYTES) {
+            responseRejected = true;
+            response.destroy();
+            reject(new Error("Shuttle location API response is too large"));
+            return;
+          }
+
+          chunks.push(buffer);
         });
 
         response.on("end", () => {
+          if (responseRejected) return;
+
           const statusCode = response.statusCode ?? 0;
           const body = Buffer.concat(chunks).toString("utf8");
 
@@ -126,6 +131,9 @@ function fetchJsonFromUrl(url: URL): Promise<ShuttleLocationPayload> {
           } catch {
             reject(new Error("Shuttle location API returned invalid JSON"));
           }
+        });
+        response.on("error", (error) => {
+          if (!responseRejected) reject(error);
         });
       },
     );

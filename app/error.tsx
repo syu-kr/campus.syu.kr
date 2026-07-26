@@ -6,7 +6,7 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
   const text = useDictionary().errorBoundary;
 
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+    <section className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
       <h1 className="text-2xl font-bold text-neutral-900">
         {text.pageTitle}
       </h1>
@@ -20,6 +20,6 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
       >
         {text.retry}
       </button>
-    </main>
+    </section>
   );
 }

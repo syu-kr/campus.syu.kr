@@ -4,6 +4,33 @@ const MAX_DATE_COUNT = 14;
 
 const ALLOWED_MEET_SLOT_MINUTES = [15, 30, 60] as const;
 
+export type MeetValidationErrorCode =
+  | "INVALID_BODY"
+  | "INVALID_TITLE"
+  | "DESCRIPTION_TOO_LONG"
+  | "INVALID_DATE_FORMAT"
+  | "INVALID_TIME_FORMAT"
+  | "INVALID_SLOT_MINUTES"
+  | "END_DATE_BEFORE_START"
+  | "DATE_RANGE_TOO_LONG"
+  | "END_TIME_NOT_AFTER_START";
+
+export class MeetValidationError extends Error {
+  readonly code: MeetValidationErrorCode;
+  readonly field?: keyof MeetRoomInput;
+
+  constructor(
+    code: MeetValidationErrorCode,
+    message: string,
+    field?: keyof MeetRoomInput,
+  ) {
+    super(message);
+    this.name = "MeetValidationError";
+    this.code = code;
+    this.field = field;
+  }
+}
+
 export interface MeetRoomInput {
   title: string;
   description: string;
@@ -16,7 +43,10 @@ export interface MeetRoomInput {
 
 export function normalizeMeetRoomInput(input: unknown): MeetRoomInput {
   if (!input || typeof input !== "object") {
-    throw new Error("요청 본문이 올바르지 않습니다");
+    throw new MeetValidationError(
+      "INVALID_BODY",
+      "요청 본문이 올바르지 않습니다",
+    );
   }
 
   const body = input as Record<string, unknown>;
@@ -29,11 +59,19 @@ export function normalizeMeetRoomInput(input: unknown): MeetRoomInput {
   const slotMinutes = Number(body.slotMinutes ?? body.slot_minutes ?? 30);
 
   if (!title || title.length > 80) {
-    throw new Error("방 제목은 1자 이상 80자 이하로 입력해주세요");
+    throw new MeetValidationError(
+      "INVALID_TITLE",
+      "방 제목은 1자 이상 80자 이하로 입력해주세요",
+      "title",
+    );
   }
 
   if (description.length > 300) {
-    throw new Error("설명은 300자 이하로 입력해주세요");
+    throw new MeetValidationError(
+      "DESCRIPTION_TOO_LONG",
+      "설명은 300자 이하로 입력해주세요",
+      "description",
+    );
   }
 
   assertValidMeetRange({ dateStart, dateEnd, timeStart, timeEnd, slotMinutes });
@@ -57,27 +95,47 @@ function assertValidMeetRange({
   slotMinutes,
 }: Omit<MeetRoomInput, "title" | "description">) {
   if (!isValidDateString(dateStart) || !isValidDateString(dateEnd)) {
-    throw new Error("날짜 형식이 올바르지 않습니다");
+    throw new MeetValidationError(
+      "INVALID_DATE_FORMAT",
+      "날짜 형식이 올바르지 않습니다",
+      !isValidDateString(dateStart) ? "dateStart" : "dateEnd",
+    );
   }
 
   if (!TIME_PATTERN.test(timeStart) || !TIME_PATTERN.test(timeEnd)) {
-    throw new Error("시간 형식이 올바르지 않습니다");
+    throw new MeetValidationError(
+      "INVALID_TIME_FORMAT",
+      "시간 형식이 올바르지 않습니다",
+      !TIME_PATTERN.test(timeStart) ? "timeStart" : "timeEnd",
+    );
   }
 
   if (
     !Number.isInteger(slotMinutes) ||
     !ALLOWED_MEET_SLOT_MINUTES.includes(slotMinutes as 15 | 30 | 60)
   ) {
-    throw new Error("시간 간격은 15분, 30분, 60분 중 하나여야 합니다");
+    throw new MeetValidationError(
+      "INVALID_SLOT_MINUTES",
+      "시간 간격은 15분, 30분, 60분 중 하나여야 합니다",
+      "slotMinutes",
+    );
   }
 
   const dateCount = getDateCount(dateStart, dateEnd);
   if (dateCount < 1) {
-    throw new Error("종료 날짜는 시작 날짜보다 빠를 수 없습니다");
+    throw new MeetValidationError(
+      "END_DATE_BEFORE_START",
+      "종료 날짜는 시작 날짜보다 빠를 수 없습니다",
+      "dateEnd",
+    );
   }
 
   if (dateCount > MAX_DATE_COUNT) {
-    throw new Error(`날짜 범위는 최대 ${MAX_DATE_COUNT}일까지 가능합니다`);
+    throw new MeetValidationError(
+      "DATE_RANGE_TOO_LONG",
+      `날짜 범위는 최대 ${MAX_DATE_COUNT}일까지 가능합니다`,
+      "dateEnd",
+    );
   }
 
   const startMinutes = parseTimeToMinutes(timeStart);
@@ -85,7 +143,11 @@ function assertValidMeetRange({
   const dailyMinutes = endMinutes - startMinutes;
 
   if (dailyMinutes <= 0) {
-    throw new Error("종료 시간은 시작 시간보다 늦어야 합니다");
+    throw new MeetValidationError(
+      "END_TIME_NOT_AFTER_START",
+      "종료 시간은 시작 시간보다 늦어야 합니다",
+      "timeEnd",
+    );
   }
 }
 

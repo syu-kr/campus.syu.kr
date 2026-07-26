@@ -6,6 +6,9 @@ interface RateLimitEntry {
 }
 
 const buckets = new Map<string, RateLimitEntry>();
+const MAX_LOCAL_RATE_LIMIT_BUCKETS = 10_000;
+const RATE_LIMIT_SWEEP_INTERVAL = 128;
+let operationsSinceSweep = 0;
 
 /**
  * Process-local fixed-window rate limiter.
@@ -19,9 +22,24 @@ export function checkRateLimit(
   options: { limit: number; windowMs: number },
 ): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
+  operationsSinceSweep += 1;
+  if (
+    operationsSinceSweep >= RATE_LIMIT_SWEEP_INTERVAL ||
+    buckets.size >= MAX_LOCAL_RATE_LIMIT_BUCKETS
+  ) {
+    pruneRateLimitBuckets(now);
+  }
+
   const current = buckets.get(key);
 
   if (!current || current.resetAt <= now) {
+    if (buckets.size >= MAX_LOCAL_RATE_LIMIT_BUCKETS) {
+      const oldestKey = buckets.keys().next().value;
+      if (typeof oldestKey === "string") {
+        buckets.delete(oldestKey);
+      }
+    }
+
     buckets.set(key, {
       count: 1,
       resetAt: now + options.windowMs,
@@ -37,8 +55,28 @@ export function checkRateLimit(
   }
 
   current.count++;
+  buckets.delete(key);
   buckets.set(key, current);
   return { allowed: true, retryAfterSeconds: 0 };
+}
+
+export function pruneRateLimitBuckets(now = Date.now()) {
+  for (const [key, entry] of buckets) {
+    if (entry.resetAt <= now) {
+      buckets.delete(key);
+    }
+  }
+
+  operationsSinceSweep = 0;
+}
+
+export function clearRateLimitBuckets() {
+  buckets.clear();
+  operationsSinceSweep = 0;
+}
+
+export function getRateLimitBucketCount() {
+  return buckets.size;
 }
 
 export function getRateLimitKey(req: Request, scope: string): string {

@@ -9,10 +9,10 @@
   },
   "overrides": {
     "minimatch@^3.0.0": {
-      "brace-expansion": "1.1.16"
+      "brace-expansion": "$brace-expansion"
     },
     "minimatch@^10.0.0": {
-      "brace-expansion": "5.0.7"
+      "brace-expansion": "5.0.8"
     },
     "postcss": "8.5.22",
     "protobufjs": "7.6.5",
@@ -20,6 +20,14 @@
     "uuid": "11.1.1"
   },
   "knip": {
+    "ignoreDependencies": [
+      "brace-expansion"
+    ],
+    "ignoreIssues": {
+      "vendor/brace-expansion-compat/index.cjs": [
+        "exports"
+      ]
+    },
     "ignoreBinaries": [
       "python"
     ]
@@ -72,6 +80,8 @@
     "@types/node": "22.13.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "brace-expansion": "file:vendor/brace-expansion-compat",
+    "brace-expansion-v5": "npm:brace-expansion@5.0.8",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.11",
     "jsdom": "^29.1.1",

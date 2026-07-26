@@ -54,6 +54,22 @@ const meetRoomErrorKeys: Record<string, keyof MeetRoomErrors> = {
   "요청 제한 설정이 완료되지 않았습니다.": "rateLimitConfig",
 };
 
+const meetRoomErrorCodeKeys: Record<string, keyof MeetRoomErrors> = {
+  INVALID_ROOM_CODE: "invalidRoomCode",
+  ROOM_NOT_FOUND: "roomNotFound",
+  ROOM_LOAD_FAILED: "roomLoadFailed",
+  SAVE_FAILED: "saveFailed",
+  ROOM_CLOSED: "roomClosed",
+  INVALID_NICKNAME: "nicknameInvalid",
+  EDIT_FORBIDDEN: "editForbidden",
+  MAX_PARTICIPANTS: "maxParticipants",
+  UNSUPPORTED_CONTENT_TYPE: "contentType",
+  REQUEST_TOO_LARGE: "requestTooLarge",
+  INVALID_JSON: "invalidJson",
+  FORBIDDEN_ORIGIN: "forbiddenOrigin",
+  RATE_LIMIT_CONFIG_MISSING: "rateLimitConfig",
+};
+
 export default function MeetRoomPage({ params }: PageProps) {
   const { roomId } = use(params);
   const dictionary = useDictionary();
@@ -82,7 +98,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       const roomData = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(roomData.error, text));
+        throw new Error(getMeetRoomErrorMessage(roomData, text));
       }
 
       setData(roomData);
@@ -211,6 +227,10 @@ export default function MeetRoomPage({ params }: PageProps) {
     setSlotValue(slot, dragMode);
   };
 
+  const handleSlotToggle = (slot: string) => {
+    setSlotValue(slot, !availability.has(slot));
+  };
+
   const handlePointerEnd = () => {
     setDragMode(null);
   };
@@ -282,7 +302,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(result.error, text));
+        throw new Error(getMeetRoomErrorMessage(result, text));
       }
 
       if (typeof result.editToken === "string") {
@@ -456,8 +476,12 @@ export default function MeetRoomPage({ params }: PageProps) {
                     participantBySlot={participantBySlot}
                     readOnly={isClosed}
                     selectableTitle={text.selectableTitle}
+                    selectedTitle={text.selectedTitle}
+                    availableCountSuffix={text.availableCountSuffix}
+                    locale={locale}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
+                    onToggle={handleSlotToggle}
                   />
                 ))}
               </div>
@@ -521,8 +545,12 @@ export default function MeetRoomPage({ params }: PageProps) {
                     compact
                     readOnly={isClosed}
                     selectableTitle={text.selectableTitle}
+                    selectedTitle={text.selectedTitle}
+                    availableCountSuffix={text.availableCountSuffix}
+                    locale={locale}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
+                    onToggle={handleSlotToggle}
                   />
                 ))}
               </div>
@@ -530,12 +558,18 @@ export default function MeetRoomPage({ params }: PageProps) {
           </Card>
 
           {error && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               {error}
             </p>
           )}
           {status && (
-            <p className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+            <p
+              role="status"
+              className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
+            >
               {status}
             </p>
           )}
@@ -656,9 +690,18 @@ export default function MeetRoomPage({ params }: PageProps) {
 }
 
 function getMeetRoomErrorMessage(
-  error: unknown,
+  payload: unknown,
   text: MeetRoomDictionary,
 ): string {
+  const response =
+    payload && typeof payload === "object"
+      ? (payload as { code?: unknown; error?: unknown })
+      : { error: payload };
+  const code = typeof response.code === "string" ? response.code : "";
+  const codeKey = meetRoomErrorCodeKeys[code];
+  if (codeKey) return text.errors[codeKey];
+
+  const error = response.error;
   if (typeof error !== "string") return text.errors.saveFailed;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];

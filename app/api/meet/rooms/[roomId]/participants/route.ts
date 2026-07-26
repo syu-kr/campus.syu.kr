@@ -36,7 +36,10 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     if (!nickname || nickname.length > 30) {
       return NextResponse.json(
-        { error: "닉네임은 1자 이상 30자 이하로 입력해주세요" },
+        {
+          error: "닉네임은 1자 이상 30자 이하로 입력해주세요",
+          code: "INVALID_NICKNAME",
+        },
         { status: 400 },
       );
     }
@@ -47,7 +50,10 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
 
     if (!roomDoc.exists) {
       return NextResponse.json(
-        { error: "일정 방을 찾을 수 없습니다" },
+        {
+          error: "일정 방을 찾을 수 없습니다",
+          code: "ROOM_NOT_FOUND",
+        },
         { status: 404 },
       );
     }
@@ -55,7 +61,10 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     const room = roomDoc.data() || {};
     if (isExpired(room.expires_at)) {
       return NextResponse.json(
-        { error: "일정 방을 찾을 수 없습니다" },
+        {
+          error: "일정 방을 찾을 수 없습니다",
+          code: "ROOM_NOT_FOUND",
+        },
         { status: 404 },
       );
     }
@@ -66,7 +75,10 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       responseClosesAt.toMillis() <= Date.now()
     ) {
       return NextResponse.json(
-        { error: "이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다" },
+        {
+          error: "이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다",
+          code: "ROOM_CLOSED",
+        },
         { status: 403 },
       );
     }
@@ -95,7 +107,12 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
       const existingTokenHash = participantDoc.get("edit_token_hash");
 
       if (!currentRoomDoc.exists || isExpired(currentRoom.expires_at)) {
-        throw new ApiError("일정 방을 찾을 수 없습니다", 404);
+        throw new ApiError(
+          "일정 방을 찾을 수 없습니다",
+          404,
+          undefined,
+          "ROOM_NOT_FOUND",
+        );
       }
 
       if (
@@ -105,6 +122,8 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
         throw new ApiError(
           "이 일정 방은 응답 시간이 마감되어 결과만 볼 수 있습니다",
           403,
+          undefined,
+          "ROOM_CLOSED",
         );
       }
 
@@ -117,11 +136,18 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
           throw new ApiError(
             "이 닉네임의 기존 응답을 수정할 권한이 없습니다. 다른 닉네임을 사용해주세요.",
             403,
+            undefined,
+            "EDIT_FORBIDDEN",
           );
         }
       } else {
         if (Number(currentRoom.participant_count || 0) >= MAX_PARTICIPANTS) {
-          throw new ApiError("이 일정 방의 최대 참여자 수에 도달했습니다", 409);
+          throw new ApiError(
+            "이 일정 방의 최대 참여자 수에 도달했습니다",
+            409,
+            undefined,
+            "MAX_PARTICIPANTS",
+          );
         }
         isNewParticipant = true;
       }
@@ -185,7 +211,12 @@ function matchesEditToken(token: string, expectedHash: string): boolean {
 
 function assertValidRoomId(roomId: string) {
   if (!/^[A-Za-z0-9_-]{8,32}$/.test(roomId)) {
-    throw new ApiError("일정 방 코드 형식이 올바르지 않습니다", 400);
+    throw new ApiError(
+      "일정 방 코드 형식이 올바르지 않습니다",
+      400,
+      undefined,
+      "INVALID_ROOM_CODE",
+    );
   }
 }
 

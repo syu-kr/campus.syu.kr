@@ -30,8 +30,9 @@ export async function GET() {
     );
   }
 
-  const source = `
+const source = `
 const FIREBASE_COMPAT_VERSION = ${JSON.stringify(FIREBASE_COMPAT_VERSION)};
+const APP_CACHE_PREFIX = "syu-campus-";
 
 importScripts(
   \`https://www.gstatic.com/firebasejs/\${FIREBASE_COMPAT_VERSION}/firebase-app-compat.js\`,
@@ -80,7 +81,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((cacheNames) =>
-        Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName))),
+        Promise.all(
+          cacheNames
+            .filter((cacheName) => cacheName.startsWith(APP_CACHE_PREFIX))
+            .map((cacheName) => caches.delete(cacheName)),
+        ),
       )
       .then(() => self.clients.claim()),
   );

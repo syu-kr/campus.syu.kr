@@ -7,6 +7,23 @@ export interface ReadingRoom {
 
 export type LibrarySeason = "semester" | "vacation";
 
+interface LibrarySemesterPeriod {
+  startDate: string;
+  endDate: string;
+}
+
+export function getLibrarySeason(
+  dateString: string,
+  semesterPeriods?: readonly LibrarySemesterPeriod[],
+): LibrarySeason {
+  const isSemester = (semesterPeriods ?? []).some(
+    (period) =>
+      dateString >= period.startDate && dateString <= period.endDate,
+  );
+
+  return isSemester ? "semester" : "vacation";
+}
+
 interface LibraryRoomHours {
   name: string;
   schedule: {

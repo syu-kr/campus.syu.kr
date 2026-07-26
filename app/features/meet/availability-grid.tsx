@@ -10,11 +10,15 @@ export interface TimeRowProps {
   compact?: boolean;
   readOnly?: boolean;
   selectableTitle?: string;
+  selectedTitle?: string;
+  availableCountSuffix?: string;
+  locale?: Locale;
   onPointerDown: (
     event: PointerEvent<HTMLButtonElement>,
     slot: string,
   ) => void;
   onPointerEnter: (slot: string) => void;
+  onToggle: (slot: string) => void;
 }
 
 export function TimeRow({
@@ -25,8 +29,12 @@ export function TimeRow({
   compact = false,
   readOnly = false,
   selectableTitle = "Selectable",
+  selectedTitle = "Selected",
+  availableCountSuffix = "available",
+  locale = "ko",
   onPointerDown,
   onPointerEnter,
+  onToggle,
 }: TimeRowProps) {
   return (
     <>
@@ -37,6 +45,12 @@ export function TimeRow({
         const slot = `${date}T${time}:00+09:00`;
         const selected = availability.has(slot);
         const participants = participantBySlot.get(slot) || [];
+        const dateLabel = formatDateLabel(date, locale);
+        const stateLabel = selected ? selectedTitle : selectableTitle;
+        const participantLabel =
+          participants.length > 0
+            ? `, ${participants.length}${locale === "ko" ? "" : " "}${availableCountSuffix}`
+            : "";
 
         return (
           <button
@@ -50,7 +64,12 @@ export function TimeRow({
             onPointerEnter={() => {
               if (!readOnly) onPointerEnter(slot);
             }}
-            className={`${compact ? "h-11" : "h-10"} border-b border-r border-neutral-200 text-xs transition-colors ${
+            onClick={(event) => {
+              if (!readOnly && event.detail === 0) onToggle(slot);
+            }}
+            aria-pressed={selected}
+            aria-label={`${dateLabel} ${time}, ${stateLabel}${participantLabel}`}
+            className={`${compact ? "h-11" : "h-10"} border-b border-r border-neutral-200 text-xs transition-colors focus-visible:relative focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500 ${
               selected
                 ? "bg-primary-600 text-white"
                 : participants.length > 0

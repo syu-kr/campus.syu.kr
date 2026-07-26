@@ -38,6 +38,18 @@ const meetErrorKeys: Record<string, keyof MeetErrors> = {
   "요청 제한 설정이 완료되지 않았습니다.": "rateLimitConfig",
 };
 
+const meetErrorCodeKeys: Record<string, keyof MeetErrors> = {
+  INVALID_BODY: "invalidBody",
+  INVALID_TITLE: "titleInvalid",
+  DESCRIPTION_TOO_LONG: "descriptionTooLong",
+  INVALID_DATE_FORMAT: "invalidDateFormat",
+  INVALID_TIME_FORMAT: "invalidTimeFormat",
+  INVALID_SLOT_MINUTES: "invalidSlotMinutes",
+  END_DATE_BEFORE_START: "endDateBeforeStart",
+  DATE_RANGE_TOO_LONG: "dateRangeMax",
+  END_TIME_NOT_AFTER_START: "endTimeAfterStart",
+};
+
 export default function MeetCreatePage() {
   const router = useRouter();
   const dictionary = useDictionary();
@@ -102,7 +114,7 @@ export default function MeetCreatePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetErrorMessage(data.error, text));
+        throw new Error(getMeetErrorMessage(data, text));
       }
 
       setInviteUrl(localizeInviteUrl(data.inviteUrl, locale));
@@ -160,6 +172,7 @@ export default function MeetCreatePage() {
         <button
           type="button"
           onClick={() => setMode("join")}
+          aria-pressed={mode === "join"}
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "join"
               ? "bg-white text-primary-700 shadow-sm"
@@ -171,6 +184,7 @@ export default function MeetCreatePage() {
         <button
           type="button"
           onClick={() => setMode("create")}
+          aria-pressed={mode === "create"}
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "create"
               ? "bg-white text-primary-700 shadow-sm"
@@ -198,11 +212,17 @@ export default function MeetCreatePage() {
                   value={joinCode}
                   onChange={(event) => setJoinCode(event.target.value)}
                   placeholder={text.joinCodePlaceholder}
+                  aria-invalid={Boolean(joinError)}
+                  aria-describedby={joinError ? "join-code-error" : undefined}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               {joinError && (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  id="join-code-error"
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {joinError}
                 </p>
               )}
@@ -385,7 +405,10 @@ export default function MeetCreatePage() {
               </div>
 
               {error && (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {error}
                 </p>
               )}
@@ -492,7 +515,11 @@ function validateMeetRange(
   };
 }
 
-function getMeetErrorMessage(error: unknown, text: MeetDictionary): string {
+function getMeetErrorMessage(
+  payload: { error?: unknown; code?: unknown },
+  text: MeetDictionary,
+): string {
+  const error = payload.error;
   if (typeof error !== "string") return text.createFailed;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
@@ -503,6 +530,15 @@ function getMeetErrorMessage(error: unknown, text: MeetDictionary): string {
   const dateRangeMax = error.match(/날짜 범위는 최대 (\d+)일까지 가능합니다/)?.[1];
   if (dateRangeMax) {
     return text.errors.dateRangeMax.replace("{max}", dateRangeMax);
+  }
+
+  if (typeof payload.code === "string") {
+    const codeKey = meetErrorCodeKeys[payload.code];
+    if (codeKey) {
+      return codeKey === "dateRangeMax"
+        ? text.errors.dateRangeMax.replace("{max}", String(MAX_DATE_COUNT))
+        : text.errors[codeKey];
+    }
   }
 
   const key = meetErrorKeys[error];

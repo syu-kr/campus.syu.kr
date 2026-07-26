@@ -106,7 +106,7 @@ export function CampusTipSuggestionForm({
       const data = await response.json();
 
       if (!response.ok) {
-        const serverError = getServerFieldError(data.field, text);
+        const serverError = getServerFieldError(data.code, data.error, text);
         if (data.field) {
           setFieldErrors({ [data.field]: serverError });
         }
@@ -417,15 +417,16 @@ function getCampusTipCategories(text: CampusTipsDictionary): Array<{
 }
 
 function getServerFieldError(
-  field: string | undefined,
+  code: string | undefined,
+  error: string | undefined,
   text: CampusTipSuggestDictionary,
 ) {
-  if (field === "title") return text.titleRequired;
-  if (field === "category") return text.categoryRequired;
-  if (field === "description") return text.descriptionRequired;
-  if (field === "url") return text.invalidUrl;
+  if (code === "TITLE_REQUIRED") return text.titleRequired;
+  if (code === "CATEGORY_REQUIRED") return text.categoryRequired;
+  if (code === "DESCRIPTION_REQUIRED") return text.descriptionRequired;
+  if (code === "INVALID_URL") return text.invalidUrl;
 
-  return text.submitFailed;
+  return error || text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {

@@ -52,7 +52,7 @@ export default function NotFound() {
         }
       `}</style>
 
-      <main className="flex-1 flex items-center justify-center px-4 py-20 md:py-24 relative z-10">
+      <section className="relative z-10 flex flex-1 items-center justify-center px-4 py-20 md:py-24">
         <div className="max-w-lg w-full text-center">
           <div className="mb-8 flex justify-center">
             <div className="relative h-32 w-32">
@@ -124,7 +124,7 @@ export default function NotFound() {
             </ul>
           </div>
         </div>
-      </main>
+      </section>
 
       <ContactModal
         isOpen={isContactOpen}
