@@ -232,10 +232,10 @@ export const dictionaries = {
       notices: {
         title: "공지사항",
         all: "전체",
-        academic: "학사공지",
+        academic: "학사",
         scholarship: "장학금",
         campus: "캠퍼스",
-        service: "서비스공지",
+        service: "서비스",
         emptyService: "선택한 서비스 공지가 없습니다.",
         emptyCategory: "선택한 분류에 공지사항이 없습니다.",
         allNotices: "전체 공지 보기",
