@@ -54,6 +54,22 @@ const meetRoomErrorKeys: Record<string, keyof MeetRoomErrors> = {
   "요청 제한 설정이 완료되지 않았습니다.": "rateLimitConfig",
 };
 
+const meetRoomErrorCodeKeys: Record<string, keyof MeetRoomErrors> = {
+  INVALID_ROOM_CODE: "invalidRoomCode",
+  ROOM_NOT_FOUND: "roomNotFound",
+  ROOM_LOAD_FAILED: "roomLoadFailed",
+  SAVE_FAILED: "saveFailed",
+  ROOM_CLOSED: "roomClosed",
+  INVALID_NICKNAME: "nicknameInvalid",
+  EDIT_FORBIDDEN: "editForbidden",
+  MAX_PARTICIPANTS: "maxParticipants",
+  UNSUPPORTED_CONTENT_TYPE: "contentType",
+  REQUEST_TOO_LARGE: "requestTooLarge",
+  INVALID_JSON: "invalidJson",
+  FORBIDDEN_ORIGIN: "forbiddenOrigin",
+  RATE_LIMIT_CONFIG_MISSING: "rateLimitConfig",
+};
+
 export default function MeetRoomPage({ params }: PageProps) {
   const { roomId } = use(params);
   const dictionary = useDictionary();
@@ -82,7 +98,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       const roomData = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(roomData.error, text));
+        throw new Error(getMeetRoomErrorMessage(roomData, text));
       }
 
       setData(roomData);
@@ -286,7 +302,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(result.error, text));
+        throw new Error(getMeetRoomErrorMessage(result, text));
       }
 
       if (typeof result.editToken === "string") {
@@ -674,9 +690,18 @@ export default function MeetRoomPage({ params }: PageProps) {
 }
 
 function getMeetRoomErrorMessage(
-  error: unknown,
+  payload: unknown,
   text: MeetRoomDictionary,
 ): string {
+  const response =
+    payload && typeof payload === "object"
+      ? (payload as { code?: unknown; error?: unknown })
+      : { error: payload };
+  const code = typeof response.code === "string" ? response.code : "";
+  const codeKey = meetRoomErrorCodeKeys[code];
+  if (codeKey) return text.errors[codeKey];
+
+  const error = response.error;
   if (typeof error !== "string") return text.errors.saveFailed;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
