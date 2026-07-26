@@ -98,10 +98,12 @@ export interface AdminSubmissionPageResponse {
 
 export class SubmissionValidationError extends Error {
   field: string;
+  code: string;
 
-  constructor(field: string, message: string) {
+  constructor(field: string, message: string, code = "INVALID_SUBMISSION") {
     super(message);
     this.name = "SubmissionValidationError";
     this.field = field;
+    this.code = code;
   }
 }

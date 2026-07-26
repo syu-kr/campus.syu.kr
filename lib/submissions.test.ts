@@ -27,6 +27,7 @@ describe("submission input length validation", () => {
     );
 
     expect(error).toMatchObject({
+      code: "MESSAGE_TOO_LONG",
       field: "message",
       message: "문의 내용은 2000자 이하로 입력해주세요",
     });
@@ -43,6 +44,7 @@ describe("submission input length validation", () => {
     );
 
     expect(error).toMatchObject({
+      code: "TOO_MANY_TAGS",
       field: "tags",
       message: "태그는 최대 8개까지 입력할 수 있습니다",
     });
@@ -59,6 +61,7 @@ describe("submission input length validation", () => {
     );
 
     expect(error).toMatchObject({
+      code: "TAG_TOO_LONG",
       field: "tags",
       message: "태그는 각각 24자 이하로 입력해주세요",
     });

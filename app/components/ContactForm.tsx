@@ -94,11 +94,11 @@ export function ContactForm({
       if (!response.ok) {
         if (data.field) {
           setFieldErrors({
-            [data.field]: getServerFieldError(data.field, data.error, text),
+            [data.field]: getServerFieldError(data.code, data.error, text),
           });
         }
         throw new Error(
-          getServerFieldError(data.field, data.error, text) ||
+          getServerFieldError(data.code, data.error, text) ||
             text.submitFailed,
         );
       }
@@ -335,22 +335,13 @@ function getInquiryTypes(text: ContactFormDictionary): Array<{
 }
 
 function getServerFieldError(
-  field: string | undefined,
+  code: string | undefined,
   error: string | undefined,
   text: ContactFormDictionary,
 ) {
-  if (field === "title" && error === "제목을 입력해주세요") {
-    return text.titleRequired;
-  }
-  if (field === "message" && error === "문의 내용을 입력해주세요") {
-    return text.messageRequired;
-  }
-  if (
-    field === "pageUrl" &&
-    error === "관련 페이지 URL 형식이 올바르지 않습니다"
-  ) {
-    return text.invalidPageUrl;
-  }
+  if (code === "TITLE_REQUIRED") return text.titleRequired;
+  if (code === "MESSAGE_REQUIRED") return text.messageRequired;
+  if (code === "INVALID_PAGE_URL") return text.invalidPageUrl;
 
   return error || text.submitFailed;
 }

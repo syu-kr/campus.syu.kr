@@ -53,7 +53,11 @@ export async function POST(req: NextRequest) {
 
     if (error instanceof SubmissionValidationError) {
       return NextResponse.json(
-        { error: error.message, field: getSubmissionErrorField(error) },
+        {
+          error: error.message,
+          field: getSubmissionErrorField(error),
+          code: error.code,
+        },
         { status: 400 },
       );
     }
