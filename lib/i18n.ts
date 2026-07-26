@@ -1696,6 +1696,7 @@ export const dictionaries = {
         cancel: "취소",
         overwrite: "덮어쓰기",
         selectableTitle: "선택 가능",
+        selectedTitle: "선택됨",
         errors: {
           invalidRoomCode: "일정 방 코드 형식이 올바르지 않습니다",
           roomNotFound: "일정 방을 찾을 수 없습니다",
@@ -3405,6 +3406,7 @@ export const dictionaries = {
         cancel: "Cancel",
         overwrite: "Overwrite",
         selectableTitle: "Selectable",
+        selectedTitle: "Selected",
         errors: {
           invalidRoomCode: "The schedule room code format is invalid",
           roomNotFound: "Schedule room not found",

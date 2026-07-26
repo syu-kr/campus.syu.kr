@@ -211,6 +211,10 @@ export default function MeetRoomPage({ params }: PageProps) {
     setSlotValue(slot, dragMode);
   };
 
+  const handleSlotToggle = (slot: string) => {
+    setSlotValue(slot, !availability.has(slot));
+  };
+
   const handlePointerEnd = () => {
     setDragMode(null);
   };
@@ -456,8 +460,12 @@ export default function MeetRoomPage({ params }: PageProps) {
                     participantBySlot={participantBySlot}
                     readOnly={isClosed}
                     selectableTitle={text.selectableTitle}
+                    selectedTitle={text.selectedTitle}
+                    availableCountSuffix={text.availableCountSuffix}
+                    locale={locale}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
+                    onToggle={handleSlotToggle}
                   />
                 ))}
               </div>
@@ -521,8 +529,12 @@ export default function MeetRoomPage({ params }: PageProps) {
                     compact
                     readOnly={isClosed}
                     selectableTitle={text.selectableTitle}
+                    selectedTitle={text.selectedTitle}
+                    availableCountSuffix={text.availableCountSuffix}
+                    locale={locale}
                     onPointerDown={handleSlotPointerDown}
                     onPointerEnter={handleSlotPointerEnter}
+                    onToggle={handleSlotToggle}
                   />
                 ))}
               </div>
@@ -530,12 +542,18 @@ export default function MeetRoomPage({ params }: PageProps) {
           </Card>
 
           {error && (
-            <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              role="alert"
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
               {error}
             </p>
           )}
           {status && (
-            <p className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+            <p
+              role="status"
+              className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
+            >
               {status}
             </p>
           )}

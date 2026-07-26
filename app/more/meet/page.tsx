@@ -172,6 +172,7 @@ export default function MeetCreatePage() {
         <button
           type="button"
           onClick={() => setMode("join")}
+          aria-pressed={mode === "join"}
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "join"
               ? "bg-white text-primary-700 shadow-sm"
@@ -183,6 +184,7 @@ export default function MeetCreatePage() {
         <button
           type="button"
           onClick={() => setMode("create")}
+          aria-pressed={mode === "create"}
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "create"
               ? "bg-white text-primary-700 shadow-sm"
@@ -210,11 +212,17 @@ export default function MeetCreatePage() {
                   value={joinCode}
                   onChange={(event) => setJoinCode(event.target.value)}
                   placeholder={text.joinCodePlaceholder}
+                  aria-invalid={Boolean(joinError)}
+                  aria-describedby={joinError ? "join-code-error" : undefined}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               {joinError && (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  id="join-code-error"
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {joinError}
                 </p>
               )}
@@ -397,7 +405,10 @@ export default function MeetCreatePage() {
               </div>
 
               {error && (
-                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
                   {error}
                 </p>
               )}
