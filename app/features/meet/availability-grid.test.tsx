@@ -15,9 +15,9 @@ function renderTimeRow(overrides: { selected?: boolean } = {}) {
       dates={["2026-07-25"]}
       availability={new Set(overrides.selected ? [slot] : [])}
       participantBySlot={new Map()}
-      selectableTitle="선택 가능"
-      selectedTitle="선택됨"
-      locale="ko"
+      selectableTitle="Selectable"
+      selectedTitle="Selected"
+      locale="en"
       onPointerDown={onPointerDown}
       onPointerEnter={onPointerEnter}
       onToggle={onToggle}
@@ -33,7 +33,7 @@ describe("TimeRow", () => {
 
     expect(
       screen.getByRole("button", {
-        name: /7월 25일.*09:00, 선택됨/,
+        name: /Jul 25.*09:00, Selected/,
       }),
     ).toHaveAttribute("aria-pressed", "true");
   });
