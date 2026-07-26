@@ -339,9 +339,18 @@ function getServerFieldError(
   error: string | undefined,
   text: ContactFormDictionary,
 ) {
-  if (field === "title") return text.titleRequired;
-  if (field === "message") return text.messageRequired;
-  if (field === "pageUrl") return text.invalidPageUrl;
+  if (field === "title" && error === "제목을 입력해주세요") {
+    return text.titleRequired;
+  }
+  if (field === "message" && error === "문의 내용을 입력해주세요") {
+    return text.messageRequired;
+  }
+  if (
+    field === "pageUrl" &&
+    error === "관련 페이지 URL 형식이 올바르지 않습니다"
+  ) {
+    return text.invalidPageUrl;
+  }
 
   return error || text.submitFailed;
 }

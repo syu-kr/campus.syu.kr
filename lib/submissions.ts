@@ -32,13 +32,38 @@ export function normalizeCampusTipSuggestion(
   const body = asRecord(input);
   assertEmptyHoneypot(body);
 
-  const title = readString(body.title).slice(0, 120);
+  const title = readLimitedString(
+    body.title,
+    120,
+    "title",
+    "제목은 120자 이하로 입력해주세요",
+  );
   const category = readString(body.category) as CampusTipCategory;
-  const description = readString(body.description).slice(0, 1200);
-  const url = readString(body.url).slice(0, 500);
-  const note = readString(body.note).slice(0, 1000);
-  const contact = readString(body.contact).slice(0, 120);
-  const tags = parseTags(body.tags).slice(0, 8);
+  const description = readLimitedString(
+    body.description,
+    1200,
+    "description",
+    "꿀팁 내용은 1200자 이하로 입력해주세요",
+  );
+  const url = readLimitedString(
+    body.url,
+    500,
+    "url",
+    "관련 링크는 500자 이하로 입력해주세요",
+  );
+  const note = readLimitedString(
+    body.note,
+    1000,
+    "note",
+    "참고 메모는 1000자 이하로 입력해주세요",
+  );
+  const contact = readLimitedString(
+    body.contact,
+    120,
+    "contact",
+    "연락처는 120자 이하로 입력해주세요",
+  );
+  const tags = parseTags(body.tags);
 
   if (!title) {
     throw new ValidationError("title", "제목을 입력해주세요");
@@ -72,10 +97,30 @@ export function normalizeSiteInquiry(input: unknown): SiteInquiryInput {
   assertEmptyHoneypot(body);
 
   const type = readString(body.type) as SiteInquiryType;
-  const title = readString(body.title).slice(0, 120);
-  const message = readString(body.message).slice(0, 2000);
-  const pageUrl = readString(body.pageUrl || body.page_url).slice(0, 500);
-  const contact = readString(body.contact).slice(0, 120);
+  const title = readLimitedString(
+    body.title,
+    120,
+    "title",
+    "제목은 120자 이하로 입력해주세요",
+  );
+  const message = readLimitedString(
+    body.message,
+    2000,
+    "message",
+    "문의 내용은 2000자 이하로 입력해주세요",
+  );
+  const pageUrl = readLimitedString(
+    body.pageUrl || body.page_url,
+    500,
+    "pageUrl",
+    "관련 페이지 URL은 500자 이하로 입력해주세요",
+  );
+  const contact = readLimitedString(
+    body.contact,
+    120,
+    "contact",
+    "연락처는 120자 이하로 입력해주세요",
+  );
 
   if (!INQUIRY_TYPES.includes(type)) {
     throw new ValidationError("type", "문의 유형을 선택해주세요");
@@ -114,21 +159,41 @@ function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function readLimitedString(
+  value: unknown,
+  maxLength: number,
+  field: string,
+  message: string,
+) {
+  const normalized = readString(value);
+  if (normalized.length > maxLength) {
+    throw new ValidationError(field, message);
+  }
+
+  return normalized;
+}
+
 function parseTags(value: unknown): string[] {
   const raw =
     Array.isArray(value) && value.every((item) => typeof item === "string")
       ? value.join(",")
       : readString(value);
 
-  return Array.from(
-    new Set(
-      raw
-        .split(",")
-        .map((tag) => tag.trim().replace(/^#/, ""))
-        .filter(Boolean)
-        .map((tag) => tag.slice(0, 24)),
-    ),
-  );
+  const tags = raw
+    .split(",")
+    .map((tag) => tag.trim().replace(/^#/, ""))
+    .filter(Boolean);
+
+  if (tags.some((tag) => tag.length > 24)) {
+    throw new ValidationError("tags", "태그는 각각 24자 이하로 입력해주세요");
+  }
+
+  const uniqueTags = Array.from(new Set(tags));
+  if (uniqueTags.length > 8) {
+    throw new ValidationError("tags", "태그는 최대 8개까지 입력할 수 있습니다");
+  }
+
+  return uniqueTags;
 }
 
 function assertEmptyHoneypot(body: Record<string, unknown>) {

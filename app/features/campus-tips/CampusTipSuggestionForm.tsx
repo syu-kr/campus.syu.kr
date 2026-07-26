@@ -106,7 +106,7 @@ export function CampusTipSuggestionForm({
       const data = await response.json();
 
       if (!response.ok) {
-        const serverError = getServerFieldError(data.field, text);
+        const serverError = getServerFieldError(data.field, data.error, text);
         if (data.field) {
           setFieldErrors({ [data.field]: serverError });
         }
@@ -418,14 +418,23 @@ function getCampusTipCategories(text: CampusTipsDictionary): Array<{
 
 function getServerFieldError(
   field: string | undefined,
+  error: string | undefined,
   text: CampusTipSuggestDictionary,
 ) {
-  if (field === "title") return text.titleRequired;
-  if (field === "category") return text.categoryRequired;
-  if (field === "description") return text.descriptionRequired;
-  if (field === "url") return text.invalidUrl;
+  if (field === "title" && error === "제목을 입력해주세요") {
+    return text.titleRequired;
+  }
+  if (field === "category" && error === "카테고리를 선택해주세요") {
+    return text.categoryRequired;
+  }
+  if (field === "description" && error === "꿀팁 내용을 입력해주세요") {
+    return text.descriptionRequired;
+  }
+  if (field === "url" && error === "관련 링크 형식이 올바르지 않습니다") {
+    return text.invalidUrl;
+  }
 
-  return text.submitFailed;
+  return error || text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {
