@@ -527,7 +527,7 @@ export default function AdminPage() {
 
   if (authStatus === "error") {
     return (
-      <main className="min-h-screen bg-neutral-100 px-6 py-12">
+      <div className="min-h-screen bg-neutral-100 px-6 py-12">
         <section className="mx-auto max-w-md rounded-lg border border-red-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold text-red-700">Admin</p>
           <h1 className="mt-2 text-2xl font-bold text-neutral-950">
@@ -544,7 +544,7 @@ export default function AdminPage() {
             다시 시도
           </button>
         </section>
-      </main>
+      </div>
     );
   }
 
@@ -558,8 +558,8 @@ export default function AdminPage() {
               제보 및 문의 관리
             </h1>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
-              컴공의 자존심으로 뚫어보고 싶다면 말리진 않겠습니다.
-              <br /> 하지만 정문은 Firebase Authentication 로그인입니다.
+              Firebase Authentication으로 인증된 허용 계정만 접근할 수
+              있습니다.
             </p>
           </div>
 
@@ -574,6 +574,8 @@ export default function AdminPage() {
                 onChange={(event) => setEmail(event.target.value)}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 autoComplete="email"
+                aria-invalid={Boolean(loginError)}
+                aria-describedby={loginError ? "admin-login-error" : undefined}
                 required
               />
             </label>
@@ -588,12 +590,18 @@ export default function AdminPage() {
                 onChange={(event) => setPassword(event.target.value)}
                 className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 autoComplete="current-password"
+                aria-invalid={Boolean(loginError)}
+                aria-describedby={loginError ? "admin-login-error" : undefined}
                 required
               />
             </label>
 
             {loginError && (
-              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              <p
+                id="admin-login-error"
+                role="alert"
+                className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+              >
                 {loginError}
               </p>
             )}

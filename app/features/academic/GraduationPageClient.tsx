@@ -630,7 +630,7 @@ export default function GraduationPageClient() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
-        <main className="space-y-6">
+        <div className="space-y-6">
           <Section
             title={text.sections.selectionTitle}
             description={text.sections.selectionDescription}
@@ -978,7 +978,7 @@ export default function GraduationPageClient() {
               ))}
             </div>
           </Section>
-        </main>
+        </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <Card hover={false} className="border border-neutral-200">
