@@ -84,13 +84,18 @@ export function HomeNoticesSection({
         </Link>
       </div>
 
-      <div className="scrollbar-hide mb-4 flex gap-2 overflow-x-auto">
+      <div
+        role="group"
+        aria-label={dictionary.home.notices.title}
+        className="mb-4 flex flex-wrap gap-2"
+      >
         {categoryFilters.map((cat) => (
           <button
             key={cat.id}
             type="button"
             onClick={() => onCategoryChange(cat.value)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            aria-pressed={selectedCategory === cat.value}
+            className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors sm:px-4 ${
               selectedCategory === cat.value
                 ? "bg-primary-600 text-white"
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
