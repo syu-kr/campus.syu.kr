@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import type { DocumentData } from "firebase-admin/firestore";
 import { AdminAuthError, requireAdmin } from "@/lib/server/admin-auth";
@@ -7,16 +8,33 @@ import {
   normalizeStoredAdminSubmissionAiClassification,
   type AdminSubmissionAiInput,
 } from "@/lib/server/admin-submission-ai";
-import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/server/http";
+import {
+  ApiError,
+  apiErrorResponse,
+  enforceRateLimit,
+  rateLimitResponse,
+  readJsonBody,
+} from "@/lib/server/http";
 import { SupilotJsonError } from "@/lib/server/supilot-json";
 import type { AdminSubmissionKind } from "@/types/submissions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const ADMIN_CLASSIFIER_RATE_LIMIT = {
+  limit: 20,
+  windowMs: 60 * 60 * 1000,
+};
 
 export async function POST(req: NextRequest) {
+  const startedAt = Date.now();
+
   try {
-    await requireAdmin(req);
+    const admin = await requireAdmin(req);
+    await enforceRateLimit(
+      req,
+      `admin_submission_classifier:${admin.uid}`,
+      ADMIN_CLASSIFIER_RATE_LIMIT,
+    );
 
     const body = await readJsonBody<{
       id?: unknown;
@@ -62,6 +80,7 @@ export async function POST(req: NextRequest) {
     );
 
     if (existing?.sourceHash === sourceHash) {
+      logClassificationResult(admin.uid, kind, true, startedAt);
       return NextResponse.json({ classification: existing, reused: true });
     }
 
@@ -70,6 +89,7 @@ export async function POST(req: NextRequest) {
       ai_classification: classification,
     });
 
+    logClassificationResult(admin.uid, kind, false, startedAt);
     return NextResponse.json({ classification, reused: false });
   } catch (error) {
     if (error instanceof AdminAuthError) {
@@ -78,6 +98,9 @@ export async function POST(req: NextRequest) {
         { status: error.status },
       );
     }
+
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
 
     if (error instanceof SupilotJsonError) {
       return supilotErrorResponse(error);
@@ -92,6 +115,20 @@ export async function POST(req: NextRequest) {
 
     return apiErrorResponse(error, "AI 문의 분류를 생성하지 못했습니다");
   }
+}
+
+function logClassificationResult(
+  uid: string,
+  kind: AdminSubmissionKind,
+  reused: boolean,
+  startedAt: number,
+) {
+  console.info("[Admin AI] classification completed", {
+    actor: createHash("sha256").update(uid).digest("hex").slice(0, 12),
+    kind,
+    reused,
+    durationMs: Date.now() - startedAt,
+  });
 }
 
 function supilotErrorResponse(error: SupilotJsonError) {

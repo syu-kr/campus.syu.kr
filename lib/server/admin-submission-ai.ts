@@ -205,7 +205,7 @@ function buildAdminSubmissionClassifierPrompt(input: AdminSubmissionAiInput) {
 ${JSON.stringify(normalized, null, 2)}`;
 }
 
-function sanitizeAdminSubmissionAiInput(
+export function sanitizeAdminSubmissionAiInput(
   input: AdminSubmissionAiInput,
 ): AdminSubmissionAiInput {
   return {
@@ -255,14 +255,31 @@ function normalizeEnum<T extends string>(
     : fallback;
 }
 
-function redactPersonalInfo(value: string) {
+export function redactPersonalInfo(value: string) {
   return value
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[연락처 생략]")
     .replace(/\b0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}\b/g, "[연락처 생략]")
-    .replace(/\b\d{8,12}\b/g, "[식별번호 생략]");
+    .replace(/\b\d{6}[-.\s]?[1-4]\d{6}\b/g, "[식별번호 생략]")
+    .replace(/\b\d{8,12}\b/g, "[식별번호 생략]")
+    .replace(
+      /\b\d{2,6}(?:[-.\s]\d{2,6}){2,3}\b/g,
+      "[식별번호 생략]",
+    )
+    .replace(
+      /((?:이름|성명|신청자|작성자)\s*[:=]?\s*)[가-힣]{2,5}/g,
+      "$1[이름 생략]",
+    )
+    .replace(
+      /((?:학번|계정|아이디|사용자명)\s*[:=]?\s*)[A-Za-z0-9._-]{3,}/gi,
+      "$1[식별자 생략]",
+    )
+    .replace(
+      /(?:서울특별시|서울시|경기도|인천광역시|인천시|강원특별자치도|강원도|충청북도|충청남도|전북특별자치도|전라북도|전라남도|경상북도|경상남도|제주특별자치도|제주도)\s+(?:[가-힣0-9·.-]+\s+){0,3}[가-힣0-9·.-]+(?:로|길)\s*\d+(?:-\d+)?/g,
+      "[주소 생략]",
+    );
 }
 
-function sanitizeUrlForAi(value: string | undefined) {
+export function sanitizeUrlForAi(value: string | undefined) {
   const text = compactAiText(value, 300);
   if (!text) return "";
 
