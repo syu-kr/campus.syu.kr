@@ -25,7 +25,7 @@ function WeatherModalComponent({
     return null;
   }
 
-  const getSkyConditionDetail = (skyCondition: number): string => {
+  const getSkyConditionDetail = (skyCondition: number | null): string => {
     switch (skyCondition) {
       case 1:
         return dictionary.weather.clear;
@@ -38,7 +38,9 @@ function WeatherModalComponent({
     }
   };
 
-  const getPrecipitationDetail = (precipitation: number): string => {
+  const getPrecipitationDetail = (
+    precipitation: number | null,
+  ): string => {
     switch (precipitation) {
       case 0:
         return dictionary.weather.none;
@@ -136,7 +138,9 @@ function WeatherModalComponent({
               {dictionary.weather.windSpeed}
             </p>
             <p className="text-sm font-semibold text-neutral-800">
-              {weather.windSpeed} m/s
+              {weather.windSpeed === null
+                ? dictionary.weather.unknown
+                : `${weather.windSpeed} m/s`}
             </p>
           </div>
         </div>

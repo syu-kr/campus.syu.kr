@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireServerEnv } from "@/lib/server/env";
+import {
+  buildForecastCategoryMap,
+  type KmaForecastItem,
+} from "@/lib/server/weather-normalization";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,9 +25,9 @@ let pendingWeather: Promise<WeatherResponse> | undefined;
 
 interface WeatherResponse {
   temperature: number;
-  skyCondition: number;
-  precipitation: number;
-  windSpeed: number;
+  skyCondition: number | null;
+  precipitation: number | null;
+  windSpeed: number | null;
   time: string;
   latitude: number;
   longitude: number;
@@ -90,7 +94,7 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
   const ny = 128; // 격자 Y
 
   const now = new Date();
-  const { baseDate, baseTime, hours, minutes } = getUltraSrtNcstBase(now);
+  const { baseDate, baseTime } = getUltraSrtNcstBase(now);
   const forecastBase = getUltraSrtFcstBase(now);
 
   const ncstParams = new URLSearchParams({
@@ -145,40 +149,29 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
     setCategoryValue(ncstCategoryMap, item.category, item.obsrValue);
   });
 
-  const forecastTime = getNearestForecastTime(hours, minutes);
-  const fcstCategoryMap: Record<string, number> = {};
-  fcstItems
-    .filter((item) => !item.fcstTime || item.fcstTime >= forecastTime)
-    .sort((a, b) => (a.fcstTime ?? "").localeCompare(b.fcstTime ?? ""))
-    .forEach((item) => {
-      if (fcstCategoryMap[item.category] === undefined) {
-        setCategoryValue(fcstCategoryMap, item.category, item.fcstValue);
-      }
-    });
+  const { values: fcstCategoryMap } = buildForecastCategoryMap(
+    fcstItems,
+    getNearestForecastDateTime(now),
+  );
 
-  if (Object.keys(fcstCategoryMap).length === 0) {
-    fcstItems
-      .sort((a, b) => (a.fcstTime ?? "").localeCompare(b.fcstTime ?? ""))
-      .forEach((item) => {
-        if (fcstCategoryMap[item.category] === undefined) {
-          setCategoryValue(fcstCategoryMap, item.category, item.fcstValue);
-        }
-      });
+  const temperature = ncstCategoryMap["T1H"] ?? fcstCategoryMap["T1H"];
+  if (typeof temperature !== "number" || !Number.isFinite(temperature)) {
+    throw new Error("유효한 기온 데이터 없음");
   }
 
-  const temperature = ncstCategoryMap["T1H"] ?? fcstCategoryMap["T1H"] ?? 0;
-  const precipitation = ncstCategoryMap["PTY"] ?? fcstCategoryMap["PTY"] ?? 0;
-  const windSpeed = ncstCategoryMap["WSD"] ?? fcstCategoryMap["WSD"] ?? 0;
+  const precipitation =
+    ncstCategoryMap["PTY"] ?? fcstCategoryMap["PTY"] ?? null;
+  const windSpeed = ncstCategoryMap["WSD"] ?? fcstCategoryMap["WSD"] ?? null;
   const skyCondition =
-    precipitation > 0
+    precipitation !== null && precipitation > 0
       ? getPrecipitationSky(precipitation)
-      : (fcstCategoryMap["SKY"] ?? 1);
+      : (fcstCategoryMap["SKY"] ?? null);
 
   return {
     temperature: Math.round(temperature),
     skyCondition,
     precipitation,
-    windSpeed: Math.round(windSpeed * 10) / 10,
+    windSpeed: windSpeed === null ? null : Math.round(windSpeed * 10) / 10,
     time: `${baseTime.substring(0, 2)}:${baseTime.substring(2, 4)}`,
     latitude,
     longitude,
@@ -187,11 +180,9 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
   };
 }
 
-type KmaItem = {
+type KmaItem = KmaForecastItem & {
   category: string;
   obsrValue?: string;
-  fcstValue?: string;
-  fcstTime?: string;
 };
 
 function toItemArray(items: unknown): KmaItem[] {
@@ -271,9 +262,13 @@ function getUltraSrtFcstBase(date: Date) {
   };
 }
 
-function getNearestForecastTime(hours: number, minutes: number) {
-  const forecastHour = minutes >= 45 ? hours + 1 : hours;
-  return `${String(forecastHour % 24).padStart(2, "0")}00`;
+function getNearestForecastDateTime(date: Date) {
+  const { minutes } = getKstParts(date);
+  const forecastDate = new Date(
+    date.getTime() + (minutes >= 45 ? 60 * 60 * 1000 : 0),
+  );
+  const { hours } = getKstParts(forecastDate);
+  return `${formatBaseDate(forecastDate)}${String(hours).padStart(2, "0")}00`;
 }
 
 function getPrecipitationSky(precipitation: number) {
