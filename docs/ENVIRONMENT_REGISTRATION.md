@@ -22,8 +22,8 @@
 | `KMA_FCST_URL` | 필수 | 기상청 초단기 예보 endpoint |
 | `SEOUL_BUS_ARRIVAL_URL` | 필수 | 서울 버스 도착 endpoint |
 | `GYEONGGI_BUS_ARRIVAL_URL` | 필수 | 경기도 버스 도착 endpoint |
-| `SHUTTLE_LOCATION_URL` | 필수 | 셔틀 실시간 위치 endpoint |
-| `SHUTTLE_REFERER` | 필수 | 셔틀 upstream 요청 Referer |
+| `SHUTTLE_LOCATION_URL` | 필수 | HTTPS 셔틀 실시간 위치 endpoint |
+| `SHUTTLE_REFERER` | 필수 | endpoint와 동일한 HTTPS origin의 upstream 요청 Referer |
 | `SHUTTLE_USER_AGENT` | 필수 | 셔틀 upstream 요청 User-Agent |
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |

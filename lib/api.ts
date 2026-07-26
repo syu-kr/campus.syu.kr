@@ -13,6 +13,7 @@ import {
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
+import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
 import type {
   LiveDataResponse,
@@ -408,31 +409,6 @@ interface RawShuttleLocationPayload {
   stale?: boolean;
   sourceStatus?: LiveDataSourceStatus;
   error?: string;
-}
-
-function toBusLocation(item: unknown): BusLocation | null {
-  if (!item || typeof item !== "object") return null;
-
-  const record = item as Record<string, unknown>;
-  const id = String(record.id ?? record.name ?? "");
-  const name = String(record.name ?? id);
-  const lat = String(record.lat ?? "");
-  const lon = String(record.lon ?? "");
-  const status = Number(record.status);
-  const routeid = Number(record.routeid);
-
-  if (!id || !Number.isFinite(status) || !Number.isFinite(routeid)) {
-    return null;
-  }
-
-  return {
-    id,
-    name,
-    lat,
-    lon,
-    status: status as BusLocation["status"],
-    routeid: routeid as BusLocation["routeid"],
-  };
 }
 
 function isLiveDataSourceStatus(value: unknown): value is LiveDataSourceStatus {
