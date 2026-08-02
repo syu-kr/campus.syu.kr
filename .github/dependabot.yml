@@ -20,6 +20,15 @@ updates:
           - "eslint-config-next"
           - "@next/bundle-analyzer"
     ignore:
+      - dependency-name: "next"
+        versions:
+          - "16.2.12"
+      - dependency-name: "eslint-config-next"
+        versions:
+          - "16.2.12"
+      - dependency-name: "@next/bundle-analyzer"
+        versions:
+          - "16.2.12"
       - dependency-name: "@testing-library/jest-dom"
         update-types:
           - "version-update:semver-major"
