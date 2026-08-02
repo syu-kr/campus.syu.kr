@@ -3,8 +3,22 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: "Asia/Seoul"
     open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+      semver-patch-days: 7
+      semver-minor-days: 14
+      semver-major-days: 30
+    groups:
+      next-family:
+        patterns:
+          - "next"
+          - "eslint-config-next"
+          - "@next/bundle-analyzer"
     ignore:
       - dependency-name: "@testing-library/jest-dom"
         update-types:
