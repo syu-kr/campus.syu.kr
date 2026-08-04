@@ -2,44 +2,54 @@ import { describe, expect, it } from "vitest";
 
 import type { LectureTimetableCourse } from "@/lib/lecture-timetable";
 import {
-  getCoursesBeyondVisibleTimetable,
-  LAST_VISIBLE_TIMETABLE_PERIOD,
-  TIMETABLE_DAYS,
-  TIMETABLE_PERIODS,
+  DEFAULT_TIMETABLE_PERIOD_COUNT,
+  getVisibleTimetableDays,
+  getVisibleTimetablePeriods,
+  TIMETABLE_FILTER_PERIODS,
 } from "@/lib/timetable-display";
 
 function course(
   id: string,
   startPeriod: number,
   endPeriod: number,
+  day: LectureTimetableCourse["timeSlots"][number]["day"] = "월",
 ): LectureTimetableCourse {
   return {
     id,
     courseName: id,
     normalizedName: id,
     credits: 3,
-    timeSlots: [{ day: "월", startPeriod, endPeriod }],
+    timeSlots: [{ day, startPeriod, endPeriod }],
   };
 }
 
 describe("timetable display policy", () => {
-  it("shows every official lecture day and periods 1 through 12", () => {
-    expect(TIMETABLE_DAYS).toEqual(["월", "화", "수", "목", "금", "토", "일"]);
-    expect(TIMETABLE_PERIODS).toEqual([
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+  it("starts with weekdays and periods 1 through 9", () => {
+    expect(getVisibleTimetableDays([])).toEqual(["월", "화", "수", "목", "금"]);
+    expect(getVisibleTimetablePeriods([])).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9,
     ]);
-    expect(LAST_VISIBLE_TIMETABLE_PERIOD).toBe(12);
+    expect(DEFAULT_TIMETABLE_PERIOD_COUNT).toBe(9);
   });
 
-  it("keeps courses extending past period 12 in a separate summary", () => {
-    const visible = course("visible", 10, 12);
-    const crossing = course("crossing", 12, 14);
-    const later = course("later", 15, 16);
+  it("adds weekend days in order when selected courses require them", () => {
+    expect(getVisibleTimetableDays([course("sat", 1, 2, "토")])).toEqual([
+      "월", "화", "수", "목", "금", "토",
+    ]);
+    expect(getVisibleTimetableDays([course("sun", 1, 2, "일")])).toEqual([
+      "월", "화", "수", "목", "금", "토", "일",
+    ]);
+  });
 
+  it("adds every period through the latest selected course", () => {
     expect(
-      getCoursesBeyondVisibleTimetable([visible, crossing, later]).map(
-        (item) => item.id,
-      ),
-    ).toEqual(["crossing", "later"]);
+      getVisibleTimetablePeriods([course("late", 15, 15)]),
+    ).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+  });
+
+  it("keeps course filter options capped at period 12", () => {
+    expect(TIMETABLE_FILTER_PERIODS).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    ]);
   });
 });

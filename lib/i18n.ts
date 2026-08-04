@@ -873,7 +873,6 @@ export const dictionaries = {
         anyPeriod: "전체",
         timeFilterDescription:
           "요일·교시 조건과 겹치는 수업만 표시하며 시간 미정 강의는 제외합니다.",
-        afterPeriodTitle: "12교시 이후 수업",
         department: "학과",
         college: "단과대",
         allDepartments: "전체 학과",
@@ -2453,7 +2452,6 @@ export const dictionaries = {
         anyPeriod: "Any",
         timeFilterDescription:
           "Only courses overlapping the selected day and period are shown. Unscheduled courses are excluded.",
-        afterPeriodTitle: "Classes after period 12",
         department: "Department",
         college: "College",
         allDepartments: "All departments",

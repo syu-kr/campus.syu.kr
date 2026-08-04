@@ -54,9 +54,9 @@ import type {
   LectureTimetableDataset,
 } from "@/lib/lecture-timetable";
 import {
-  getCoursesBeyondVisibleTimetable,
-  TIMETABLE_DAYS,
-  TIMETABLE_PERIODS,
+  getVisibleTimetableDays,
+  getVisibleTimetablePeriods,
+  TIMETABLE_FILTER_PERIODS,
 } from "@/lib/timetable-display";
 import { getTimetableImageFilename } from "@/lib/timetable-image";
 import { synchronizeTimetableScrollTop } from "@/lib/timetable-scroll";
@@ -89,7 +89,7 @@ interface CreateShareResponse {
   error?: string;
 }
 
-const PERIOD_OPTIONS = TIMETABLE_PERIODS.map(String);
+const PERIOD_OPTIONS = TIMETABLE_FILTER_PERIODS.map(String);
 const VISIBLE_SEARCH_MATCH_FIELDS: LectureSearchMatchField[] = [
   "departmentName",
   "collegeName",
@@ -1964,9 +1964,10 @@ function TimetableGrid({
   scrollContainerRef?: (container: HTMLDivElement | null) => void;
 }) {
   const text = useDictionary().pages.timetable;
-  const coursesBeyondVisiblePeriods = getCoursesBeyondVisibleTimetable(
-    selectedCourses,
-  );
+  const visibleDays = getVisibleTimetableDays(selectedCourses);
+  const visiblePeriods = getVisibleTimetablePeriods(selectedCourses);
+  const gridTemplateColumns = `clamp(38px, 4vw, 56px) repeat(${visibleDays.length}, minmax(0, 1fr))`;
+  const minimumGridWidth = 56 + visibleDays.length * 68;
 
   return (
     <div
@@ -1993,19 +1994,21 @@ function TimetableGrid({
           "max-w-none",
           exportMode
             ? "w-full"
-            : clsx("sm:w-full", compact ? "w-[520px]" : "w-[600px]"),
+            : "w-full",
         )}
+        style={exportMode ? undefined : { minWidth: `${minimumGridWidth}px` }}
       >
         <div
           className={clsx(
-            "top-0 z-10 grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))] sm:text-sm",
+            "top-0 z-10 grid border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:text-sm",
             !exportMode && "sticky",
           )}
+          style={{ gridTemplateColumns }}
         >
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
             {text.period}
           </div>
-          {TIMETABLE_DAYS.map((day) => (
+          {visibleDays.map((day) => (
             <div
               key={day}
               className="border-r border-neutral-200 px-1 py-2 last:border-r-0 sm:px-2 sm:py-3"
@@ -2015,17 +2018,18 @@ function TimetableGrid({
           ))}
         </div>
 
-        {TIMETABLE_PERIODS.map((period) => (
+        {visiblePeriods.map((period) => (
           <div
             key={period}
             className={clsx(
-              "grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))]",
+              "grid border-b border-neutral-200 last:border-b-0",
               compact
                 ? exportMode
-                  ? "min-h-[60px]"
-                  : "min-h-[68px] sm:min-h-[76px]"
-                : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
+                  ? "min-h-[52px]"
+                  : "min-h-[52px] sm:min-h-[56px]"
+                : "min-h-[64px] sm:min-h-[68px] lg:min-h-[72px]",
             )}
+            style={{ gridTemplateColumns }}
           >
             <div className="flex flex-col items-center justify-center border-r border-neutral-200 bg-neutral-50 px-0.5 text-center font-semibold text-neutral-600">
               <span className="text-[11px] leading-4 sm:text-sm">
@@ -2035,7 +2039,7 @@ function TimetableGrid({
                 {getPeriodTimeLabel(period)}
               </span>
             </div>
-            {TIMETABLE_DAYS.map((day) => {
+            {visibleDays.map((day) => {
               const cellCourses = selectedCourses.filter((course) =>
                 course.timeSlots.some((slot) =>
                   includesPeriod(slot, day, period),
@@ -2049,9 +2053,9 @@ function TimetableGrid({
                     "border-r border-neutral-100 p-0.5 last:border-r-0 sm:p-1.5",
                     compact
                       ? exportMode
-                        ? "min-h-[60px]"
-                        : "min-h-[68px] sm:min-h-[76px]"
-                      : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
+                        ? "min-h-[52px]"
+                        : "min-h-[52px] sm:min-h-[56px]"
+                      : "min-h-[64px] sm:min-h-[68px] lg:min-h-[72px]",
                   )}
                 >
                   <div className="space-y-1">
@@ -2082,21 +2086,6 @@ function TimetableGrid({
             })}
           </div>
         ))}
-        {coursesBeyondVisiblePeriods.length > 0 && (
-          <div className="border-t border-amber-200 bg-amber-50 p-3 text-amber-950">
-            <p className="text-xs font-bold">{text.afterPeriodTitle}</p>
-            <ul className="mt-1 space-y-1 text-[11px] leading-4">
-              {coursesBeyondVisiblePeriods.map((course) => (
-                <li key={course.id}>
-                  <span className="font-semibold">{course.courseName}</span>
-                  <span className="ml-1 text-amber-800">
-                    {course.classTime || text.timeMissing}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </div>
   );
