@@ -15,7 +15,13 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
-import { normalizeCourseName } from "@/lib/lecture-timetable";
+import {
+  FILTERABLE_LECTURE_DAYS,
+  filterLectureTimetableCourses,
+  getLectureCourseSearchMatches,
+  normalizeLectureSearchText,
+  type LectureSearchMatchField,
+} from "@/lib/lecture-timetable-filter";
 import {
   createTimetableDraft,
   filterAvailableDraftCourseIds,
@@ -60,6 +66,17 @@ interface CreateShareResponse {
 
 const DAYS: LectureDay[] = ["월", "화", "수", "목", "금"];
 const PERIODS = Array.from({ length: 15 }, (_, index) => index + 1);
+const PERIOD_OPTIONS = PERIODS.map(String);
+const VISIBLE_SEARCH_MATCH_FIELDS: LectureSearchMatchField[] = [
+  "departmentName",
+  "collegeName",
+  "completionType",
+  "areaType",
+  "classTime",
+  "place",
+  "note",
+  "teamTeaching",
+];
 const MAX_VISIBLE_RESULTS = 300;
 type CompletionGroupId =
   | "major"
@@ -125,6 +142,9 @@ export function TimetableBuilderClient() {
   const [gradeFilter, setGradeFilter] = useState("");
   const [completionTypeFilter, setCompletionTypeFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [dayFilters, setDayFilters] = useState<LectureDay[]>([]);
+  const [startPeriodFilter, setStartPeriodFilter] = useState("");
+  const [endPeriodFilter, setEndPeriodFilter] = useState("");
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
   const [appliedShareId, setAppliedShareId] = useState("");
   const [createdShareId, setCreatedShareId] = useState("");
@@ -345,44 +365,24 @@ export function TimetableBuilderClient() {
   );
 
   const filteredCourses = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(searchQuery);
-
-    return courses.filter((course) => {
-      if (departmentFilter && course.departmentName !== departmentFilter) {
-        return false;
-      }
-
-      if (gradeFilter && course.grade?.toString() !== gradeFilter) {
-        return false;
-      }
-
-      if (
-        completionTypeFilter &&
-        course.completionType !== completionTypeFilter
-      ) {
-        return false;
-      }
-
-      if (!normalizedQuery) return true;
-
-      const searchable = normalizeSearchText(
-        [
-          course.id,
-          course.courseCode,
-          course.courseName,
-          course.normalizedName,
-          course.professor,
-        ].join(" "),
-      );
-
-      return searchable.includes(normalizedQuery);
+    return filterLectureTimetableCourses(courses, {
+      query: searchQuery,
+      department: departmentFilter,
+      grade: gradeFilter,
+      completionType: completionTypeFilter,
+      days: dayFilters,
+      startPeriod: parseOptionalPeriod(startPeriodFilter),
+      endPeriod: parseOptionalPeriod(endPeriodFilter),
     });
   }, [
     completionTypeFilter,
     courses,
+    dayFilters,
     departmentFilter,
+    endPeriodFilter,
     gradeFilter,
     searchQuery,
+    startPeriodFilter,
   ]);
 
   const visibleCourses = useMemo(
@@ -390,10 +390,13 @@ export function TimetableBuilderClient() {
     [filteredCourses],
   );
   const courseListKey = [
-    normalizeSearchText(searchQuery),
+    normalizeLectureSearchText(searchQuery),
     departmentFilter,
     gradeFilter,
     completionTypeFilter,
+    dayFilters.join(","),
+    startPeriodFilter,
+    endPeriodFilter,
     filteredCourses.length,
   ].join("|");
   const selectedIdSet = useMemo(
@@ -551,6 +554,17 @@ export function TimetableBuilderClient() {
     setGradeFilter("");
     setCompletionTypeFilter("");
     setSearchQuery("");
+    setDayFilters([]);
+    setStartPeriodFilter("");
+    setEndPeriodFilter("");
+  }
+
+  function toggleDayFilter(day: LectureDay) {
+    setDayFilters((currentDays) =>
+      currentDays.includes(day)
+        ? currentDays.filter((currentDay) => currentDay !== day)
+        : [...currentDays, day],
+    );
   }
 
   return (
@@ -762,18 +776,24 @@ export function TimetableBuilderClient() {
               completionTypeFilter={completionTypeFilter}
               departments={departments}
               departmentFilter={departmentFilter}
+              dayFilters={dayFilters}
+              endPeriodFilter={endPeriodFilter}
               filteredCoursesCount={filteredCourses.length}
               grades={grades}
               gradeFilter={gradeFilter}
               completionTypes={completionTypes}
               onCompletionTypeFilterChange={setCompletionTypeFilter}
+              onDayFilterToggle={toggleDayFilter}
               onDepartmentFilterChange={setDepartmentFilter}
+              onEndPeriodFilterChange={setEndPeriodFilter}
               onGradeFilterChange={setGradeFilter}
               onResetFilters={resetFilters}
               onSearchQueryChange={setSearchQuery}
+              onStartPeriodFilterChange={setStartPeriodFilter}
               onToggleCourse={toggleCourse}
               searchQuery={searchQuery}
               selectedIdSet={selectedIdSet}
+              startPeriodFilter={startPeriodFilter}
               visibleCourses={visibleCourses}
               conflictCourseIds={conflictSummary.courseIds}
               idPrefix="desktop"
@@ -795,18 +815,24 @@ export function TimetableBuilderClient() {
                 completionTypeFilter={completionTypeFilter}
                 departments={departments}
                 departmentFilter={departmentFilter}
+                dayFilters={dayFilters}
+                endPeriodFilter={endPeriodFilter}
                 filteredCoursesCount={filteredCourses.length}
                 grades={grades}
                 gradeFilter={gradeFilter}
                 completionTypes={completionTypes}
                 onCompletionTypeFilterChange={setCompletionTypeFilter}
+                onDayFilterToggle={toggleDayFilter}
                 onDepartmentFilterChange={setDepartmentFilter}
+                onEndPeriodFilterChange={setEndPeriodFilter}
                 onGradeFilterChange={setGradeFilter}
                 onResetFilters={resetFilters}
                 onSearchQueryChange={setSearchQuery}
+                onStartPeriodFilterChange={setStartPeriodFilter}
                 onToggleCourse={toggleCourse}
                 searchQuery={searchQuery}
                 selectedIdSet={selectedIdSet}
+                startPeriodFilter={startPeriodFilter}
                 visibleCourses={visibleCourses}
                 conflictCourseIds={conflictSummary.courseIds}
                 idPrefix="mobile"
@@ -847,19 +873,25 @@ function SummaryMetric({
 function CoursePicker({
   completionTypeFilter,
   completionTypes,
+  dayFilters,
   departmentFilter,
   departments,
+  endPeriodFilter,
   filteredCoursesCount,
   gradeFilter,
   grades,
   onCompletionTypeFilterChange,
+  onDayFilterToggle,
   onDepartmentFilterChange,
+  onEndPeriodFilterChange,
   onGradeFilterChange,
   onResetFilters,
   onSearchQueryChange,
+  onStartPeriodFilterChange,
   onToggleCourse,
   searchQuery,
   selectedIdSet,
+  startPeriodFilter,
   visibleCourses,
   conflictCourseIds,
   idPrefix,
@@ -867,19 +899,25 @@ function CoursePicker({
 }: {
   completionTypeFilter: string;
   completionTypes: string[];
+  dayFilters: LectureDay[];
   departmentFilter: string;
   departments: string[];
+  endPeriodFilter: string;
   filteredCoursesCount: number;
   gradeFilter: string;
   grades: string[];
   onCompletionTypeFilterChange: (value: string) => void;
+  onDayFilterToggle: (day: LectureDay) => void;
   onDepartmentFilterChange: (value: string) => void;
+  onEndPeriodFilterChange: (value: string) => void;
   onGradeFilterChange: (value: string) => void;
   onResetFilters: () => void;
   onSearchQueryChange: (value: string) => void;
+  onStartPeriodFilterChange: (value: string) => void;
   onToggleCourse: (course: LectureTimetableCourse) => void;
   searchQuery: string;
   selectedIdSet: Set<string>;
+  startPeriodFilter: string;
   visibleCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
   idPrefix: string;
@@ -889,6 +927,7 @@ function CoursePicker({
   const locale = useLocale();
   const numberLocale = getNumberLocale(locale);
   const searchInputId = `${idPrefix}-course-search`;
+  const dayFilterHelpId = `${idPrefix}-day-filter-help`;
 
   return (
     <Card hover={false} className="border border-neutral-200">
@@ -901,12 +940,77 @@ function CoursePicker({
             {text.courseFilter}
           </label>
           <input
+            type="search"
             id={searchInputId}
             value={searchQuery}
             onChange={(event) => onSearchQueryChange(event.target.value)}
             placeholder={text.searchPlaceholder}
             className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-primary-500"
           />
+        </div>
+
+        <fieldset aria-describedby={dayFilterHelpId}>
+          <legend className="text-sm font-semibold text-neutral-800">
+            {text.classDay}
+          </legend>
+          <p id={dayFilterHelpId} className="mt-1 text-xs text-neutral-500">
+            {text.classDayDescription}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {FILTERABLE_LECTURE_DAYS.map((day) => {
+              const isChecked = dayFilters.includes(day);
+              return (
+                <label
+                  key={day}
+                  className={clsx(
+                    "cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary-600",
+                    isChecked
+                      ? "border-primary-600 bg-primary-50 text-primary-800"
+                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => onDayFilterToggle(day)}
+                    className="sr-only"
+                  />
+                  {getDayLabel(day, text)}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <div>
+          <p className="mb-1 text-sm font-semibold text-neutral-800">
+            {text.classPeriod}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <FilterSelect
+              id={`${idPrefix}-start-period-filter`}
+              label={text.startPeriod}
+              value={startPeriodFilter}
+              onChange={onStartPeriodFilterChange}
+              options={PERIOD_OPTIONS}
+              allLabel={text.anyPeriod}
+              getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
+            />
+            <FilterSelect
+              id={`${idPrefix}-end-period-filter`}
+              label={text.endPeriod}
+              value={endPeriodFilter}
+              onChange={onEndPeriodFilterChange}
+              options={PERIOD_OPTIONS}
+              allLabel={text.anyPeriod}
+              getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
+            />
+          </div>
+          {(dayFilters.length > 0 || startPeriodFilter || endPeriodFilter) && (
+            <p className="mt-2 text-xs text-neutral-500" role="status">
+              {text.timeFilterDescription}
+            </p>
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
@@ -971,6 +1075,7 @@ function CoursePicker({
                 isSelected={isSelected}
                 hasConflict={hasConflict}
                 onToggle={() => onToggleCourse(course)}
+                searchQuery={searchQuery}
               />
             );
           })}
@@ -1064,14 +1169,20 @@ function CourseResultCard({
   isSelected,
   hasConflict,
   onToggle,
+  searchQuery,
 }: {
   course: LectureTimetableCourse;
   isSelected: boolean;
   hasConflict: boolean;
   onToggle: () => void;
+  searchQuery: string;
 }) {
   const text = useDictionary().pages.timetable;
   const locale = useLocale();
+  const visibleSearchMatches = getLectureCourseSearchMatches(
+    course,
+    searchQuery,
+  ).filter((field) => VISIBLE_SEARCH_MATCH_FIELDS.includes(field));
 
   return (
     <article
@@ -1110,6 +1221,13 @@ function CourseResultCard({
                 : undefined,
             ])}
           </p>
+          {visibleSearchMatches.length > 0 && (
+            <p className="mt-2 text-xs font-semibold text-primary-700">
+              {text.searchMatchedIn}: {visibleSearchMatches
+                .map((field) => getSearchMatchFieldLabel(field, text))
+                .join(", ")}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -1128,6 +1246,9 @@ function CourseResultCard({
       <dl className="mt-3 grid gap-2 text-sm text-neutral-700">
         <CourseMeta label={text.time} value={course.classTime || text.timeMissing} />
         <CourseMeta label={text.place} value={course.place || text.placeMissing} />
+        {course.areaType && (
+          <CourseMeta label={text.areaType} value={course.areaType} />
+        )}
         {course.note && <CourseMeta label={text.note} value={course.note} />}
       </dl>
     </article>
@@ -1444,6 +1565,8 @@ function getDayLabel(day: LectureDay, text: TimetableDictionary) {
     수: text.dayLabels.wed,
     목: text.dayLabels.thu,
     금: text.dayLabels.fri,
+    [FILTERABLE_LECTURE_DAYS[5]]: text.dayLabels.sat,
+    [FILTERABLE_LECTURE_DAYS[6]]: text.dayLabels.sun,
   };
 
   return dayLabels[day] ?? day;
@@ -1612,8 +1735,28 @@ function uniqueSorted(values: Array<string | undefined>) {
   ).sort((first, second) => first.localeCompare(second, "ko-KR"));
 }
 
-function normalizeSearchText(value: string) {
-  return normalizeCourseName(value).replace(/[^0-9a-z가-힣]/g, "");
+function parseOptionalPeriod(value: string): number | null {
+  if (!value) return null;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getSearchMatchFieldLabel(
+  field: LectureSearchMatchField,
+  text: TimetableDictionary,
+): string {
+  const labels: Partial<Record<LectureSearchMatchField, string>> = {
+    departmentName: text.department,
+    collegeName: text.college,
+    completionType: text.completionType,
+    areaType: text.areaType,
+    classTime: text.time,
+    place: text.place,
+    note: text.note,
+    teamTeaching: text.teamTeaching,
+  };
+
+  return labels[field] ?? field;
 }
 
 function joinParts(parts: Array<string | undefined>) {
