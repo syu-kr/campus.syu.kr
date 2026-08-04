@@ -112,7 +112,7 @@ export function getLectureCourseSearchMatches(
     .map(([field]) => field);
 }
 
-export function hasActiveTimeFilter(
+function hasActiveTimeFilter(
   filters: Pick<
     LectureTimetableFilters,
     "days" | "startPeriod" | "endPeriod"
