@@ -24,12 +24,27 @@ import {
 } from "@/lib/lecture-timetable-filter";
 import {
   createTimetableDraft,
-  filterAvailableDraftCourseIds,
+  filterAvailableDraftWorkspace,
   isTimetableDraftForSemester,
   parseTimetableDraft,
   TIMETABLE_DRAFT_STORAGE_KEY,
   type TimetableDraft,
 } from "@/lib/timetable-draft";
+import {
+  addTimetable,
+  createTimetableWorkspace,
+  duplicateTimetable,
+  enterTimetableCompareMode,
+  getActiveTimetable,
+  hasWorkspaceCourses,
+  leaveTimetableCompareMode,
+  MAX_TIMETABLES,
+  removeTimetable,
+  replaceTimetableCourseIds,
+  setActiveTimetable,
+  toggleTimetableCourse,
+  type TimetableWorkspaceItem,
+} from "@/lib/timetable-workspace";
 import type {
   LectureDay,
   LectureTimeSlot,
@@ -146,7 +161,9 @@ export function TimetableBuilderClient() {
   const [dayFilters, setDayFilters] = useState<LectureDay[]>([]);
   const [startPeriodFilter, setStartPeriodFilter] = useState("");
   const [endPeriodFilter, setEndPeriodFilter] = useState("");
-  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+  const [timetableWorkspace, setTimetableWorkspace] = useState(
+    createTimetableWorkspace,
+  );
   const [appliedShareId, setAppliedShareId] = useState("");
   const [createdShareId, setCreatedShareId] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -199,6 +216,8 @@ export function TimetableBuilderClient() {
   const courseById = useMemo(() => {
     return new Map(courses.map((course) => [course.id, course]));
   }, [courses]);
+  const activeTimetable = getActiveTimetable(timetableWorkspace);
+  const selectedCourseIds = activeTimetable.courseIds;
 
   useEffect(() => {
     if (
@@ -242,12 +261,12 @@ export function TimetableBuilderClient() {
         return;
       }
 
-      const restoredIds = filterAvailableDraftCourseIds(
+      const restoredWorkspace = filterAvailableDraftWorkspace(
         draft,
         new Set(courseById.keys()),
       );
-      if (restoredIds.length > 0) {
-        setSelectedCourseIds(restoredIds);
+      if (hasWorkspaceCourses(restoredWorkspace)) {
+        setTimetableWorkspace(restoredWorkspace);
         setDraftMessage(text.draftRestored);
       } else {
         window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
@@ -271,7 +290,7 @@ export function TimetableBuilderClient() {
     if (draftPersistenceMode !== "local" || !response.success) return;
 
     try {
-      if (selectedCourseIds.length === 0) {
+      if (!hasWorkspaceCourses(timetableWorkspace)) {
         window.localStorage.removeItem(TIMETABLE_DRAFT_STORAGE_KEY);
         return;
       }
@@ -280,7 +299,7 @@ export function TimetableBuilderClient() {
         TIMETABLE_DRAFT_STORAGE_KEY,
         JSON.stringify(
           createTimetableDraft(
-            selectedCourseIds,
+            timetableWorkspace,
             response.data.year,
             response.data.semester,
           ),
@@ -295,7 +314,7 @@ export function TimetableBuilderClient() {
     response.data.semester,
     response.data.year,
     response.success,
-    selectedCourseIds,
+    timetableWorkspace,
   ]);
 
   useEffect(() => {
@@ -330,7 +349,7 @@ export function TimetableBuilderClient() {
       const restoredIds = shareResponse.data.courseIds.filter((courseId) =>
         courseById.has(courseId),
       );
-      setSelectedCourseIds(restoredIds);
+      setTimetableWorkspace(createTimetableWorkspace(restoredIds));
       setAppliedShareId(shareId);
       setShareMessage(text.shareLoaded);
     }
@@ -445,9 +464,26 @@ export function TimetableBuilderClient() {
     nextIds: string[],
     options = { clearShare: true },
   ) {
+    updateWorkspace(
+      (workspace) =>
+        replaceTimetableCourseIds(
+          workspace,
+          workspace.activeTimetableId,
+          nextIds,
+        ),
+      options,
+    );
+  }
+
+  function updateWorkspace(
+    updater: (
+      workspace: ReturnType<typeof createTimetableWorkspace>,
+    ) => ReturnType<typeof createTimetableWorkspace>,
+    options = { clearShare: true },
+  ) {
     setDraftPersistenceMode("local");
     setPreviousSemesterDraft(null);
-    setSelectedCourseIds(Array.from(new Set(nextIds)));
+    setTimetableWorkspace(updater);
     setDraftMessage("");
     setShareMessage("");
     setShareFallbackUrl("");
@@ -457,15 +493,15 @@ export function TimetableBuilderClient() {
   function restorePreviousSemesterDraft() {
     if (!previousSemesterDraft) return;
 
-    const restoredIds = filterAvailableDraftCourseIds(
+    const restoredWorkspace = filterAvailableDraftWorkspace(
       previousSemesterDraft,
       new Set(courseById.keys()),
     );
     setPreviousSemesterDraft(null);
     setDraftPersistenceMode("local");
-    setSelectedCourseIds(restoredIds);
+    setTimetableWorkspace(restoredWorkspace);
     setDraftMessage(
-      restoredIds.length > 0
+      hasWorkspaceCourses(restoredWorkspace)
         ? text.draftRestored
         : text.draftNoMatchingCourses,
     );
@@ -484,12 +520,47 @@ export function TimetableBuilderClient() {
   }
 
   function toggleCourse(course: LectureTimetableCourse) {
-    if (selectedIdSet.has(course.id)) {
-      replaceSelectedCourses(selectedCourseIds.filter((id) => id !== course.id));
-      return;
-    }
+    toggleCourseForTimetable(course, timetableWorkspace.activeTimetableId);
+  }
 
-    replaceSelectedCourses([...selectedCourseIds, course.id]);
+  function toggleCourseForTimetable(
+    course: LectureTimetableCourse,
+    timetableId: string,
+  ) {
+    updateWorkspace((workspace) =>
+      toggleTimetableCourse(workspace, timetableId, course.id),
+    );
+  }
+
+  function toggleCompareMode() {
+    updateWorkspace((workspace) =>
+      workspace.isCompareMode
+        ? leaveTimetableCompareMode(workspace)
+        : enterTimetableCompareMode(workspace),
+    );
+    setDesktopSidebarView("courses");
+  }
+
+  function createAlternativeTimetable() {
+    updateWorkspace((workspace) => addTimetable(workspace));
+    setDesktopSidebarView("courses");
+  }
+
+  function copyAlternativeTimetable(timetableId: string) {
+    updateWorkspace((workspace) =>
+      duplicateTimetable(workspace, timetableId),
+    );
+  }
+
+  function deleteAlternativeTimetable(timetableId: string) {
+    updateWorkspace((workspace) => removeTimetable(workspace, timetableId));
+  }
+
+  function activateTimetable(timetableId: string) {
+    updateWorkspace(
+      (workspace) => setActiveTimetable(workspace, timetableId),
+      { clearShare: false },
+    );
   }
 
   async function createShareLink() {
@@ -595,6 +666,16 @@ export function TimetableBuilderClient() {
               {semesterBaseLabel}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={toggleCompareMode}
+            aria-pressed={timetableWorkspace.isCompareMode}
+            className="hidden shrink-0 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-bold text-primary-700 transition-colors hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 xl:inline-flex"
+          >
+            {timetableWorkspace.isCompareMode
+              ? text.leaveCompareMode
+              : text.enterCompareMode}
+          </button>
         </div>
       </div>
 
@@ -743,26 +824,78 @@ export function TimetableBuilderClient() {
       ) : (
         <div className="space-y-6">
           <section className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
-            <Card
-              hover={false}
-              className="min-w-0 overflow-hidden border border-neutral-200"
-            >
-              <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-neutral-900">
-                    {text.weeklyTimetable}
-                  </h2>
-                  <p className="text-sm text-neutral-500">
-                    {text.weeklyTimetableDescription}
-                  </p>
-                </div>
-              </div>
-
-              <TimetableGrid
-                selectedCourses={selectedCourses}
-                conflictCourseIds={conflictSummary.courseIds}
-              />
-            </Card>
+            <div className="min-w-0">
+              {timetableWorkspace.isCompareMode ? (
+                <>
+                  <div className="hidden xl:block">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-lg font-bold text-neutral-900">
+                          {text.compareTimetables}
+                        </h2>
+                        <p className="text-sm text-neutral-500">
+                          {text.compareTimetablesDescription}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={createAlternativeTimetable}
+                        disabled={
+                          timetableWorkspace.timetables.length >= MAX_TIMETABLES
+                        }
+                        className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                      >
+                        {text.addTimetable}
+                      </button>
+                    </div>
+                    <div className="grid min-w-0 grid-cols-2 gap-4">
+                      {timetableWorkspace.timetables.map(
+                        (timetable, timetableIndex) => (
+                          <ComparisonTimetableCard
+                            key={timetable.id}
+                            timetableIndex={timetableIndex}
+                            courses={getCoursesForTimetable(
+                              timetable,
+                              courseById,
+                            )}
+                            isActive={
+                              timetable.id ===
+                              timetableWorkspace.activeTimetableId
+                            }
+                            canDuplicate={
+                              timetableWorkspace.timetables.length <
+                              MAX_TIMETABLES
+                            }
+                            canRemove={
+                              timetableWorkspace.timetables.length > 2
+                            }
+                            onActivate={() => activateTimetable(timetable.id)}
+                            onDuplicate={() =>
+                              copyAlternativeTimetable(timetable.id)
+                            }
+                            onRemove={() =>
+                              deleteAlternativeTimetable(timetable.id)
+                            }
+                          />
+                        ),
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-4 xl:hidden">
+                    <StateCard type="info" message={text.compareDesktopOnly} />
+                    <TimetableOverviewCard
+                      selectedCourses={selectedCourses}
+                      conflictCourseIds={conflictSummary.courseIds}
+                    />
+                  </div>
+                </>
+              ) : (
+                <TimetableOverviewCard
+                  selectedCourses={selectedCourses}
+                  conflictCourseIds={conflictSummary.courseIds}
+                />
+              )}
+            </div>
 
             <div className="hidden xl:block">
               <DesktopWorkspaceSidebar
@@ -789,9 +922,16 @@ export function TimetableBuilderClient() {
                     onSearchQueryChange={setSearchQuery}
                     onStartPeriodFilterChange={setStartPeriodFilter}
                     onToggleCourse={toggleCourse}
+                    onToggleCourseForTimetable={toggleCourseForTimetable}
                     searchQuery={searchQuery}
                     selectedIdSet={selectedIdSet}
                     startPeriodFilter={startPeriodFilter}
+                    timetableMemberships={
+                      timetableWorkspace.isCompareMode
+                        ? timetableWorkspace.timetables
+                        : undefined
+                    }
+                    activeTimetableId={timetableWorkspace.activeTimetableId}
                     visibleCourses={visibleCourses}
                     conflictCourseIds={conflictSummary.courseIds}
                     idPrefix="desktop-sidebar"
@@ -922,6 +1062,127 @@ function SummaryMetric({
   );
 }
 
+function TimetableOverviewCard({
+  selectedCourses,
+  conflictCourseIds,
+}: {
+  selectedCourses: LectureTimetableCourse[];
+  conflictCourseIds: Set<string>;
+}) {
+  const text = useDictionary().pages.timetable;
+
+  return (
+    <Card
+      hover={false}
+      className="min-w-0 overflow-hidden border border-neutral-200"
+    >
+      <div className="mb-4">
+        <h2 className="text-lg font-bold text-neutral-900">
+          {text.weeklyTimetable}
+        </h2>
+        <p className="text-sm text-neutral-500">
+          {text.weeklyTimetableDescription}
+        </p>
+      </div>
+      <TimetableGrid
+        selectedCourses={selectedCourses}
+        conflictCourseIds={conflictCourseIds}
+      />
+    </Card>
+  );
+}
+
+function ComparisonTimetableCard({
+  timetableIndex,
+  courses,
+  isActive,
+  canDuplicate,
+  canRemove,
+  onActivate,
+  onDuplicate,
+  onRemove,
+}: {
+  timetableIndex: number;
+  courses: LectureTimetableCourse[];
+  isActive: boolean;
+  canDuplicate: boolean;
+  canRemove: boolean;
+  onActivate: () => void;
+  onDuplicate: () => void;
+  onRemove: () => void;
+}) {
+  const text = useDictionary().pages.timetable;
+  const conflictSummary = getConflictSummary(courses);
+  const totalCredits = courses.reduce(
+    (total, course) => total + (course.credits ?? 0),
+    0,
+  );
+  const timetableLabel = formatTimetableLabel(timetableIndex, text);
+
+  return (
+    <Card
+      hover={false}
+      className={clsx(
+        "min-w-0 overflow-hidden border",
+        isActive
+          ? "border-primary-400 ring-2 ring-primary-100"
+          : "border-neutral-200",
+      )}
+    >
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-neutral-900">
+              {timetableLabel}
+            </h3>
+            {isActive && <Badge tone="blue">{text.editing}</Badge>}
+          </div>
+          <p className="mt-1 text-xs font-medium text-neutral-500">
+            {formatCredits(totalCredits, text)} · {courses.length}
+            {text.coursesUnit} · {text.conflicts} {conflictSummary.pairCount}
+            {text.casesUnit}
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-end gap-1.5">
+          {!isActive && (
+            <button
+              type="button"
+              onClick={onActivate}
+              className="rounded-md border border-primary-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-primary-600"
+            >
+              {text.editTimetable}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDuplicate}
+            disabled={!canDuplicate}
+            aria-label={`${timetableLabel} ${text.duplicateTimetable}`}
+            className="rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-400"
+          >
+            {text.duplicate}
+          </button>
+          {canRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              aria-label={`${timetableLabel} ${text.deleteTimetable}`}
+              className="rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600"
+            >
+              {text.delete}
+            </button>
+          )}
+        </div>
+      </div>
+      <TimetableGrid
+        selectedCourses={courses}
+        conflictCourseIds={conflictSummary.courseIds}
+        compact
+      />
+    </Card>
+  );
+}
+
 function DesktopWorkspaceSidebar({
   activeView,
   children,
@@ -972,6 +1233,7 @@ function DesktopWorkspaceSidebar({
 }
 
 function CoursePicker({
+  activeTimetableId,
   compact = false,
   completionTypeFilter,
   completionTypes,
@@ -991,14 +1253,17 @@ function CoursePicker({
   onSearchQueryChange,
   onStartPeriodFilterChange,
   onToggleCourse,
+  onToggleCourseForTimetable,
   searchQuery,
   selectedIdSet,
   startPeriodFilter,
+  timetableMemberships,
   visibleCourses,
   conflictCourseIds,
   idPrefix,
   listKey,
 }: {
+  activeTimetableId?: string;
   compact?: boolean;
   completionTypeFilter: string;
   completionTypes: string[];
@@ -1018,9 +1283,14 @@ function CoursePicker({
   onSearchQueryChange: (value: string) => void;
   onStartPeriodFilterChange: (value: string) => void;
   onToggleCourse: (course: LectureTimetableCourse) => void;
+  onToggleCourseForTimetable?: (
+    course: LectureTimetableCourse,
+    timetableId: string,
+  ) => void;
   searchQuery: string;
   selectedIdSet: Set<string>;
   startPeriodFilter: string;
+  timetableMemberships?: TimetableWorkspaceItem[];
   visibleCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
   idPrefix: string;
@@ -1188,7 +1458,22 @@ function CoursePicker({
                 isSelected={isSelected}
                 hasConflict={hasConflict}
                 onToggle={() => onToggleCourse(course)}
+                onToggleTimetable={
+                  onToggleCourseForTimetable
+                    ? (timetableId) =>
+                        onToggleCourseForTimetable(course, timetableId)
+                    : undefined
+                }
                 searchQuery={searchQuery}
+                timetableMemberships={timetableMemberships?.map(
+                  (timetable, timetableIndex) => ({
+                    id: timetable.id,
+                    label: formatTimetableLabel(timetableIndex, text),
+                    shortLabel: String(timetableIndex + 1),
+                    isActive: timetable.id === activeTimetableId,
+                    isSelected: timetable.courseIds.includes(course.id),
+                  }),
+                )}
               />
             );
           })}
@@ -1282,13 +1567,23 @@ function CourseResultCard({
   isSelected,
   hasConflict,
   onToggle,
+  onToggleTimetable,
   searchQuery,
+  timetableMemberships,
 }: {
   course: LectureTimetableCourse;
   isSelected: boolean;
   hasConflict: boolean;
   onToggle: () => void;
+  onToggleTimetable?: (timetableId: string) => void;
   searchQuery: string;
+  timetableMemberships?: Array<{
+    id: string;
+    label: string;
+    shortLabel: string;
+    isActive: boolean;
+    isSelected: boolean;
+  }>;
 }) {
   const text = useDictionary().pages.timetable;
   const locale = useLocale();
@@ -1342,18 +1637,55 @@ function CourseResultCard({
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onToggle}
-          className={clsx(
-            "shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-            isSelected
-              ? "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
-              : "bg-primary-600 text-white hover:bg-primary-700",
-          )}
-        >
-          {isSelected ? text.delete : text.add}
-        </button>
+        {timetableMemberships && onToggleTimetable ? (
+          <div className="shrink-0">
+            <p className="mb-1 text-right text-[11px] font-semibold text-neutral-500">
+              {text.addToTimetable}
+            </p>
+            <div
+              className="flex flex-wrap justify-end gap-1"
+              role="group"
+              aria-label={`${course.courseName} ${text.addToTimetable}`}
+            >
+              {timetableMemberships.map((membership) => (
+                <button
+                  key={membership.id}
+                  type="button"
+                  aria-pressed={membership.isSelected}
+                  aria-label={`${membership.label} ${
+                    membership.isSelected
+                      ? text.removeFromTimetable
+                      : text.add
+                  }`}
+                  onClick={() => onToggleTimetable(membership.id)}
+                  className={clsx(
+                    "min-w-8 rounded-md border px-2 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary-600",
+                    membership.isSelected
+                      ? "border-primary-600 bg-primary-600 text-white"
+                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
+                    membership.isActive && !membership.isSelected &&
+                      "ring-2 ring-primary-100",
+                  )}
+                >
+                  {membership.shortLabel}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            className={clsx(
+              "shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+              isSelected
+                ? "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                : "bg-primary-600 text-white hover:bg-primary-700",
+            )}
+          >
+            {isSelected ? text.delete : text.add}
+          </button>
+        )}
       </div>
 
       <dl className="mt-3 grid gap-2 text-sm text-neutral-700">
@@ -1380,15 +1712,22 @@ function CourseMeta({ label, value }: { label: string; value: string }) {
 function TimetableGrid({
   selectedCourses,
   conflictCourseIds,
+  compact = false,
 }: {
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
+  compact?: boolean;
 }) {
   const text = useDictionary().pages.timetable;
 
   return (
-    <div className="w-full max-w-full max-h-[72vh] overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200 lg:max-h-[760px]">
-      <div className="w-[420px] max-w-none sm:w-full">
+    <div
+      className={clsx(
+        "w-full max-w-full overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200",
+        compact ? "max-h-[560px]" : "max-h-[72vh] lg:max-h-[760px]",
+      )}
+    >
+      <div className={clsx("max-w-none sm:w-full", compact ? "w-[380px]" : "w-[420px]")}>
         <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))] sm:text-sm">
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
             {text.period}
@@ -1406,7 +1745,12 @@ function TimetableGrid({
         {PERIODS.map((period) => (
           <div
             key={period}
-            className="grid min-h-[74px] grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:min-h-[96px] sm:grid-cols-[56px_repeat(5,minmax(0,1fr))] lg:min-h-[108px]"
+            className={clsx(
+              "grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))]",
+              compact
+                ? "min-h-[68px] sm:min-h-[76px]"
+                : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
+            )}
           >
             <div className="flex flex-col items-center justify-center border-r border-neutral-200 bg-neutral-50 px-0.5 text-center font-semibold text-neutral-600">
               <span className="text-[11px] leading-4 sm:text-sm">
@@ -1426,7 +1770,12 @@ function TimetableGrid({
               return (
                 <div
                   key={`${day}-${period}`}
-                  className="min-h-[74px] border-r border-neutral-100 p-0.5 last:border-r-0 sm:min-h-[96px] sm:p-1.5 lg:min-h-[108px]"
+                  className={clsx(
+                    "border-r border-neutral-100 p-0.5 last:border-r-0 sm:p-1.5",
+                    compact
+                      ? "min-h-[68px] sm:min-h-[76px]"
+                      : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
+                  )}
                 >
                   <div className="space-y-1">
                     {cellCourses.map((course) => (
@@ -1870,6 +2219,19 @@ function getSearchMatchFieldLabel(
   };
 
   return labels[field] ?? field;
+}
+
+function getCoursesForTimetable(
+  timetable: TimetableWorkspaceItem,
+  courseById: ReadonlyMap<string, LectureTimetableCourse>,
+): LectureTimetableCourse[] {
+  return timetable.courseIds
+    .map((courseId) => courseById.get(courseId))
+    .filter((course): course is LectureTimetableCourse => Boolean(course));
+}
+
+function formatTimetableLabel(index: number, text: TimetableDictionary): string {
+  return `${text.timetable} ${index + 1}`;
 }
 
 function joinParts(parts: Array<string | undefined>) {
