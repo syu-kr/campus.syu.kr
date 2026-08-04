@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -58,6 +58,7 @@ import {
   TIMETABLE_DAYS,
   TIMETABLE_PERIODS,
 } from "@/lib/timetable-display";
+import { synchronizeTimetableScrollTop } from "@/lib/timetable-scroll";
 
 type TimetableDictionary = Dictionary["pages"]["timetable"];
 
@@ -184,6 +185,10 @@ export function TimetableBuilderClient() {
   const [draftPersistenceMode, setDraftPersistenceMode] =
     useState<DraftPersistenceMode>("pending");
   const [isDraftStorageAvailable, setIsDraftStorageAvailable] = useState(true);
+  const comparisonScrollContainersRef = useRef(
+    new Map<string, HTMLDivElement>(),
+  );
+  const isSynchronizingComparisonScrollRef = useRef(false);
 
   const {
     data: response = emptyTimetableResponse,
@@ -579,6 +584,40 @@ export function TimetableBuilderClient() {
     );
   }
 
+  function registerComparisonScrollContainer(
+    timetableId: string,
+    container: HTMLDivElement | null,
+  ) {
+    const containers = comparisonScrollContainersRef.current;
+    if (!container) {
+      containers.delete(timetableId);
+      return;
+    }
+
+    const existingContainer = containers.values().next().value;
+    if (existingContainer) {
+      container.scrollTop = existingContainer.scrollTop;
+    }
+    containers.set(timetableId, container);
+  }
+
+  function synchronizeComparisonScroll(
+    sourceTimetableId: string,
+    scrollTop: number,
+  ) {
+    if (isSynchronizingComparisonScrollRef.current) return;
+
+    isSynchronizingComparisonScrollRef.current = true;
+    synchronizeTimetableScrollTop(
+      sourceTimetableId,
+      scrollTop,
+      comparisonScrollContainersRef.current,
+    );
+    window.requestAnimationFrame(() => {
+      isSynchronizingComparisonScrollRef.current = false;
+    });
+  }
+
   async function createShareLink() {
     if (!hasShareableCourses || isCreatingShare) return;
 
@@ -895,6 +934,18 @@ export function TimetableBuilderClient() {
                             onRemove={() =>
                               deleteAlternativeTimetable(timetable.id)
                             }
+                            scrollContainerRef={(container) =>
+                              registerComparisonScrollContainer(
+                                timetable.id,
+                                container,
+                              )
+                            }
+                            onScroll={(scrollTop) =>
+                              synchronizeComparisonScroll(
+                                timetable.id,
+                                scrollTop,
+                              )
+                            }
                           />
                         ),
                       )}
@@ -1128,6 +1179,8 @@ function ComparisonTimetableCard({
   onActivate,
   onDuplicate,
   onRemove,
+  scrollContainerRef,
+  onScroll,
 }: {
   timetableIndex: number;
   courses: LectureTimetableCourse[];
@@ -1137,6 +1190,8 @@ function ComparisonTimetableCard({
   onActivate: () => void;
   onDuplicate: () => void;
   onRemove: () => void;
+  scrollContainerRef: (container: HTMLDivElement | null) => void;
+  onScroll: (scrollTop: number) => void;
 }) {
   const text = useDictionary().pages.timetable;
   const conflictSummary = getConflictSummary(courses);
@@ -1205,6 +1260,8 @@ function ComparisonTimetableCard({
         selectedCourses={courses}
         conflictCourseIds={conflictSummary.courseIds}
         compact
+        scrollContainerRef={scrollContainerRef}
+        onScroll={onScroll}
       />
     </Card>
   );
@@ -1741,11 +1798,15 @@ function TimetableGrid({
   conflictCourseIds,
   compact = false,
   fillAvailableHeight = false,
+  onScroll,
+  scrollContainerRef,
 }: {
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
   compact?: boolean;
   fillAvailableHeight?: boolean;
+  onScroll?: (scrollTop: number) => void;
+  scrollContainerRef?: (container: HTMLDivElement | null) => void;
 }) {
   const text = useDictionary().pages.timetable;
   const coursesBeyondVisiblePeriods = getCoursesBeyondVisibleTimetable(
@@ -1754,6 +1815,8 @@ function TimetableGrid({
 
   return (
     <div
+      ref={scrollContainerRef}
+      onScroll={(event) => onScroll?.(event.currentTarget.scrollTop)}
       className={clsx(
         "w-full max-w-full overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200",
         fillAvailableHeight
