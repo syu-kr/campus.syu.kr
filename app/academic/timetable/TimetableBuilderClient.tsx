@@ -53,6 +53,11 @@ import type {
   LectureTimetableCourse,
   LectureTimetableDataset,
 } from "@/lib/lecture-timetable";
+import {
+  getCoursesBeyondVisibleTimetable,
+  TIMETABLE_DAYS,
+  TIMETABLE_PERIODS,
+} from "@/lib/timetable-display";
 
 type TimetableDictionary = Dictionary["pages"]["timetable"];
 
@@ -82,9 +87,7 @@ interface CreateShareResponse {
   error?: string;
 }
 
-const DAYS: LectureDay[] = ["월", "화", "수", "목", "금"];
-const PERIODS = Array.from({ length: 15 }, (_, index) => index + 1);
-const PERIOD_OPTIONS = PERIODS.map(String);
+const PERIOD_OPTIONS = TIMETABLE_PERIODS.map(String);
 const VISIBLE_SEARCH_MATCH_FIELDS: LectureSearchMatchField[] = [
   "departmentName",
   "collegeName",
@@ -909,6 +912,7 @@ export function TimetableBuilderClient() {
                 <TimetableOverviewCard
                   selectedCourses={selectedCourses}
                   conflictCourseIds={conflictSummary.courseIds}
+                  matchDesktopSidebar
                 />
               )}
             </div>
@@ -1081,16 +1085,22 @@ function SummaryMetric({
 function TimetableOverviewCard({
   selectedCourses,
   conflictCourseIds,
+  matchDesktopSidebar = false,
 }: {
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
+  matchDesktopSidebar?: boolean;
 }) {
   const text = useDictionary().pages.timetable;
 
   return (
     <Card
       hover={false}
-      className="min-w-0 overflow-hidden border border-neutral-200"
+      className={clsx(
+        "min-w-0 overflow-hidden border border-neutral-200",
+        matchDesktopSidebar &&
+          "xl:flex xl:h-[calc(100vh-7rem)] xl:flex-col",
+      )}
     >
       <div className="mb-4">
         <h2 className="text-lg font-bold text-neutral-900">
@@ -1103,6 +1113,7 @@ function TimetableOverviewCard({
       <TimetableGrid
         selectedCourses={selectedCourses}
         conflictCourseIds={conflictCourseIds}
+        fillAvailableHeight={matchDesktopSidebar}
       />
     </Card>
   );
@@ -1211,7 +1222,7 @@ function DesktopWorkspaceSidebar({
   const text = useDictionary().pages.timetable;
 
   return (
-    <aside className="sticky top-[96px] max-h-[calc(100vh-7rem)] self-start overflow-y-auto pr-1">
+    <aside className="sticky top-[96px] h-[calc(100vh-7rem)] self-start overflow-y-auto pr-1">
       <div
         className="sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm"
         aria-label={text.desktopPanelLabel}
@@ -1729,26 +1740,40 @@ function TimetableGrid({
   selectedCourses,
   conflictCourseIds,
   compact = false,
+  fillAvailableHeight = false,
 }: {
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
   compact?: boolean;
+  fillAvailableHeight?: boolean;
 }) {
   const text = useDictionary().pages.timetable;
+  const coursesBeyondVisiblePeriods = getCoursesBeyondVisibleTimetable(
+    selectedCourses,
+  );
 
   return (
     <div
       className={clsx(
         "w-full max-w-full overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200",
-        compact ? "max-h-[560px]" : "max-h-[72vh] lg:max-h-[760px]",
+        fillAvailableHeight
+          ? "xl:min-h-0 xl:flex-1 xl:max-h-none"
+          : compact
+            ? "max-h-[560px]"
+            : "max-h-[72vh] lg:max-h-[760px]",
       )}
     >
-      <div className={clsx("max-w-none sm:w-full", compact ? "w-[380px]" : "w-[420px]")}>
-        <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))] sm:text-sm">
+      <div
+        className={clsx(
+          "max-w-none sm:w-full",
+          compact ? "w-[520px]" : "w-[600px]",
+        )}
+      >
+        <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))] sm:text-sm">
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
             {text.period}
           </div>
-          {DAYS.map((day) => (
+          {TIMETABLE_DAYS.map((day) => (
             <div
               key={day}
               className="border-r border-neutral-200 px-1 py-2 last:border-r-0 sm:px-2 sm:py-3"
@@ -1758,11 +1783,11 @@ function TimetableGrid({
           ))}
         </div>
 
-        {PERIODS.map((period) => (
+        {TIMETABLE_PERIODS.map((period) => (
           <div
             key={period}
             className={clsx(
-              "grid grid-cols-[38px_repeat(5,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:grid-cols-[56px_repeat(5,minmax(0,1fr))]",
+              "grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))]",
               compact
                 ? "min-h-[68px] sm:min-h-[76px]"
                 : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
@@ -1776,7 +1801,7 @@ function TimetableGrid({
                 {getPeriodTimeLabel(period)}
               </span>
             </div>
-            {DAYS.map((day) => {
+            {TIMETABLE_DAYS.map((day) => {
               const cellCourses = selectedCourses.filter((course) =>
                 course.timeSlots.some((slot) =>
                   includesPeriod(slot, day, period),
@@ -1821,6 +1846,21 @@ function TimetableGrid({
             })}
           </div>
         ))}
+        {coursesBeyondVisiblePeriods.length > 0 && (
+          <div className="border-t border-amber-200 bg-amber-50 p-3 text-amber-950">
+            <p className="text-xs font-bold">{text.afterPeriodTitle}</p>
+            <ul className="mt-1 space-y-1 text-[11px] leading-4">
+              {coursesBeyondVisiblePeriods.map((course) => (
+                <li key={course.id}>
+                  <span className="font-semibold">{course.courseName}</span>
+                  <span className="ml-1 text-amber-800">
+                    {course.classTime || text.timeMissing}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
