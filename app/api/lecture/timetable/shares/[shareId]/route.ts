@@ -5,6 +5,7 @@ import {
   getFirestore,
   timestampToIso,
 } from "@/lib/server/firestore";
+import { parseSharedTimetableWorkspace } from "@/lib/timetable-share";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,12 +40,14 @@ export async function GET(_req: Request, { params }: RouteContext) {
     const courseIds = Array.isArray(data.course_ids)
       ? data.course_ids.filter((item): item is string => typeof item === "string")
       : [];
+    const workspace = parseSharedTimetableWorkspace(data.workspace);
 
     return NextResponse.json({
       success: true,
       data: {
         shareId,
         courseIds,
+        ...(workspace ? { workspace } : {}),
         year: typeof data.year === "string" ? data.year : null,
         semester: typeof data.semester === "string" ? data.semester : null,
         createdAt: timestampToIso(data.created_at),

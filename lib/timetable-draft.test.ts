@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createTimetableDraft,
   filterAvailableDraftCourseIds,
+  filterAvailableDraftWorkspace,
   isTimetableDraftForSemester,
   parseTimetableDraft,
   TIMETABLE_DRAFT_TTL_MS,
@@ -20,8 +21,14 @@ describe("timetable draft", () => {
         NOW,
       ),
     ).toEqual({
-      version: 1,
-      courseIds: ["course-a", "course-b"],
+      version: 2,
+      workspace: {
+        activeTimetableId: "timetable-1",
+        isCompareMode: false,
+        timetables: [
+          { id: "timetable-1", courseIds: ["course-a", "course-b"] },
+        ],
+      },
       year: "2026",
       semester: "1",
       updatedAt: "2026-07-13T00:00:00.000Z",
@@ -41,10 +48,31 @@ describe("timetable draft", () => {
     expect(parseTimetableDraft("not-json", NOW)).toBeNull();
     expect(
       parseTimetableDraft(
-        JSON.stringify({ ...draft, version: 2 }),
+        JSON.stringify({ ...draft, version: 3 }),
         NOW,
       ),
     ).toBeNull();
+  });
+
+  it("migrates a valid version 1 draft into a single timetable", () => {
+    const parsed = parseTimetableDraft(
+      JSON.stringify({
+        version: 1,
+        courseIds: ["course-a", "course-b"],
+        year: "2026",
+        semester: "1",
+        updatedAt: new Date(NOW).toISOString(),
+      }),
+      NOW,
+    );
+
+    expect(parsed?.workspace).toEqual({
+      activeTimetableId: "timetable-1",
+      isCompareMode: false,
+      timetables: [
+        { id: "timetable-1", courseIds: ["course-a", "course-b"] },
+      ],
+    });
   });
 
   it("checks semester identity without coercing missing metadata", () => {
@@ -69,5 +97,35 @@ describe("timetable draft", () => {
         new Set(["course-a", "course-b", "course-c"]),
       ),
     ).toEqual(["course-a", "course-b"]);
+  });
+
+  it("keeps all alternatives while removing unavailable courses", () => {
+    const draft = createTimetableDraft(
+      {
+        activeTimetableId: "timetable-2",
+        isCompareMode: true,
+        timetables: [
+          { id: "timetable-1", courseIds: ["course-a", "removed-course"] },
+          { id: "timetable-2", courseIds: ["course-b"] },
+        ],
+      },
+      "2026",
+      "1",
+      NOW,
+    );
+
+    expect(
+      filterAvailableDraftWorkspace(
+        draft,
+        new Set(["course-a", "course-b"]),
+      ),
+    ).toEqual({
+      activeTimetableId: "timetable-2",
+      isCompareMode: true,
+      timetables: [
+        { id: "timetable-1", courseIds: ["course-a"] },
+        { id: "timetable-2", courseIds: ["course-b"] },
+      ],
+    });
   });
 });
