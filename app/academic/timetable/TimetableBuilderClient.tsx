@@ -58,6 +58,7 @@ import {
   TIMETABLE_DAYS,
   TIMETABLE_PERIODS,
 } from "@/lib/timetable-display";
+import { getTimetableImageFilename } from "@/lib/timetable-image";
 import { synchronizeTimetableScrollTop } from "@/lib/timetable-scroll";
 
 type TimetableDictionary = Dictionary["pages"]["timetable"];
@@ -177,7 +178,9 @@ export function TimetableBuilderClient() {
   const [desktopSidebarView, setDesktopSidebarView] =
     useState<DesktopSidebarView>("courses");
   const [isCreatingShare, setIsCreatingShare] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
+  const [imageDownloadMessage, setImageDownloadMessage] = useState("");
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
   const [draftMessage, setDraftMessage] = useState("");
   const [previousSemesterDraft, setPreviousSemesterDraft] =
@@ -189,6 +192,7 @@ export function TimetableBuilderClient() {
     new Map<string, HTMLDivElement>(),
   );
   const isSynchronizingComparisonScrollRef = useRef(false);
+  const timetableExportRef = useRef<HTMLDivElement>(null);
 
   const {
     data: response = emptyTimetableResponse,
@@ -507,6 +511,7 @@ export function TimetableBuilderClient() {
     setTimetableWorkspace(updater);
     setDraftMessage("");
     setShareMessage("");
+    setImageDownloadMessage("");
     setShareFallbackUrl("");
     if (options.clearShare) clearShareFromUrl();
   }
@@ -681,6 +686,50 @@ export function TimetableBuilderClient() {
     }
   }
 
+  async function downloadTimetableImage() {
+    if (!hasShareableCourses || isDownloadingImage) return;
+
+    const exportSurface = timetableExportRef.current;
+    if (!exportSurface) {
+      setImageDownloadMessage(text.imageDownloadFailed);
+      return;
+    }
+
+    setIsDownloadingImage(true);
+    setImageDownloadMessage("");
+
+    try {
+      await document.fonts?.ready;
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(exportSurface, {
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+        height: exportSurface.scrollHeight,
+        pixelRatio: 2,
+        style: {
+          left: "0",
+          position: "static",
+          top: "0",
+        },
+        width: exportSurface.scrollWidth,
+      });
+      const link = document.createElement("a");
+      link.download = getTimetableImageFilename(
+        response.data.year,
+        response.data.semester,
+      );
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setImageDownloadMessage(text.imageDownloaded);
+    } catch {
+      setImageDownloadMessage(text.imageDownloadFailed);
+    } finally {
+      setIsDownloadingImage(false);
+    }
+  }
+
   function resetFilters() {
     setDepartmentFilter("");
     setGradeFilter("");
@@ -738,7 +787,7 @@ export function TimetableBuilderClient() {
       </div>
 
       <section className="sticky top-[73px] z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <SummaryMetric
             label={text.totalCredits}
             value={formatCredits(totalCredits, text)}
@@ -760,9 +809,19 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={createShareLink}
             disabled={!hasShareableCourses || isCreatingShare}
-            className="col-span-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300 sm:col-span-1"
+            className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
           >
             {isCreatingShare ? text.creatingShare : text.share}
+          </button>
+          <button
+            type="button"
+            onClick={downloadTimetableImage}
+            disabled={!hasShareableCourses || isDownloadingImage}
+            className="rounded-lg border border-primary-300 bg-white px-3 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:text-neutral-400"
+          >
+            {isDownloadingImage
+              ? text.downloadingImage
+              : text.downloadImage}
           </button>
         </div>
         {visibleCompletionStats.length > 0 && (
@@ -808,6 +867,11 @@ export function TimetableBuilderClient() {
         {draftMessage && (
           <p className="mt-3 text-sm font-medium text-emerald-700" role="status">
             {draftMessage}
+          </p>
+        )}
+        {imageDownloadMessage && (
+          <p className="mt-3 text-sm font-medium text-neutral-600" role="status">
+            {imageDownloadMessage}
           </p>
         )}
         {(shareMessage ||
@@ -1105,6 +1169,12 @@ export function TimetableBuilderClient() {
           )}
         </div>
       )}
+      <TimetableExportSurface
+        containerRef={timetableExportRef}
+        courseById={courseById}
+        semesterBaseLabel={semesterBaseLabel}
+        workspace={timetableWorkspace}
+      />
     </Container>
   );
 }
@@ -1162,6 +1232,7 @@ function TimetableOverviewCard({
         </p>
       </div>
       <TimetableGrid
+        ariaLabel={text.weeklyTimetable}
         selectedCourses={selectedCourses}
         conflictCourseIds={conflictCourseIds}
         fillAvailableHeight={matchDesktopSidebar}
@@ -1257,6 +1328,7 @@ function ComparisonTimetableCard({
         </div>
       </div>
       <TimetableGrid
+        ariaLabel={timetableLabel}
         selectedCourses={courses}
         conflictCourseIds={conflictSummary.courseIds}
         compact
@@ -1264,6 +1336,85 @@ function ComparisonTimetableCard({
         onScroll={onScroll}
       />
     </Card>
+  );
+}
+
+function TimetableExportSurface({
+  containerRef,
+  courseById,
+  semesterBaseLabel,
+  workspace,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  courseById: ReadonlyMap<string, LectureTimetableCourse>;
+  semesterBaseLabel: string;
+  workspace: TimetableWorkspace;
+}) {
+  const text = useDictionary().pages.timetable;
+  const timetables = workspace.isCompareMode
+    ? workspace.timetables
+    : [getActiveTimetable(workspace)];
+
+  return (
+    <div
+      ref={containerRef}
+      aria-hidden="true"
+      className="pointer-events-none fixed top-0 bg-white p-8 text-neutral-900"
+      style={{
+        left: "-10000px",
+        width: workspace.isCompareMode ? "1320px" : "920px",
+      }}
+    >
+      <div className="mb-6 flex items-end justify-between gap-6 border-b border-neutral-200 pb-4">
+        <div>
+          <p className="text-sm font-bold text-primary-700">SYU Campus</p>
+          <h1 className="mt-1 text-2xl font-bold">{text.weeklyTimetable}</h1>
+        </div>
+        <p className="text-sm font-medium text-neutral-500">
+          {semesterBaseLabel}
+        </p>
+      </div>
+      <div
+        className={clsx(
+          "grid gap-6",
+          timetables.length > 1 && "grid-cols-2",
+        )}
+      >
+        {timetables.map((timetable, timetableIndex) => {
+          const courses = getCoursesForTimetable(timetable, courseById);
+          const conflictSummary = getConflictSummary(courses);
+          const totalCredits = courses.reduce(
+            (total, course) => total + (course.credits ?? 0),
+            0,
+          );
+
+          return (
+            <section
+              key={timetable.id}
+              className="min-w-0 rounded-lg border border-neutral-200 p-4"
+            >
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <h2 className="text-base font-bold">
+                  {formatTimetableLabel(timetableIndex, text)}
+                </h2>
+                <p className="text-xs font-medium text-neutral-500">
+                  {formatCredits(totalCredits, text)} · {courses.length}
+                  {text.coursesUnit} · {text.conflicts}{" "}
+                  {conflictSummary.pairCount}
+                  {text.casesUnit}
+                </p>
+              </div>
+              <TimetableGrid
+                selectedCourses={courses}
+                conflictCourseIds={conflictSummary.courseIds}
+                compact
+                exportMode
+              />
+            </section>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1794,16 +1945,20 @@ function CourseMeta({ label, value }: { label: string; value: string }) {
 }
 
 function TimetableGrid({
+  ariaLabel,
   selectedCourses,
   conflictCourseIds,
   compact = false,
+  exportMode = false,
   fillAvailableHeight = false,
   onScroll,
   scrollContainerRef,
 }: {
+  ariaLabel?: string;
   selectedCourses: LectureTimetableCourse[];
   conflictCourseIds: Set<string>;
   compact?: boolean;
+  exportMode?: boolean;
   fillAvailableHeight?: boolean;
   onScroll?: (scrollTop: number) => void;
   scrollContainerRef?: (container: HTMLDivElement | null) => void;
@@ -1817,22 +1972,36 @@ function TimetableGrid({
     <div
       ref={scrollContainerRef}
       onScroll={(event) => onScroll?.(event.currentTarget.scrollTop)}
+      role={exportMode ? undefined : "region"}
+      aria-label={exportMode ? undefined : ariaLabel}
+      tabIndex={exportMode ? undefined : 0}
       className={clsx(
-        "w-full max-w-full overflow-x-auto overflow-y-auto rounded-lg border border-neutral-200",
-        fillAvailableHeight
-          ? "xl:min-h-0 xl:flex-1 xl:max-h-none"
-          : compact
-            ? "max-h-[560px]"
-            : "max-h-[72vh] lg:max-h-[760px]",
+        "w-full max-w-full rounded-lg border border-neutral-200",
+        exportMode
+          ? "overflow-visible"
+          : "overflow-x-auto overflow-y-auto",
+        !exportMode &&
+          (fillAvailableHeight
+            ? "xl:min-h-0 xl:flex-1 xl:max-h-none"
+            : compact
+              ? "max-h-[560px]"
+              : "max-h-[72vh] lg:max-h-[760px]"),
       )}
     >
       <div
         className={clsx(
-          "max-w-none sm:w-full",
-          compact ? "w-[520px]" : "w-[600px]",
+          "max-w-none",
+          exportMode
+            ? "w-full"
+            : clsx("sm:w-full", compact ? "w-[520px]" : "w-[600px]"),
         )}
       >
-        <div className="sticky top-0 z-10 grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))] sm:text-sm">
+        <div
+          className={clsx(
+            "top-0 z-10 grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 bg-neutral-50 text-center text-[11px] font-bold text-neutral-700 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))] sm:text-sm",
+            !exportMode && "sticky",
+          )}
+        >
           <div className="border-r border-neutral-200 px-1 py-2 sm:px-2 sm:py-3">
             {text.period}
           </div>
@@ -1852,7 +2021,9 @@ function TimetableGrid({
             className={clsx(
               "grid grid-cols-[38px_repeat(7,minmax(0,1fr))] border-b border-neutral-200 last:border-b-0 sm:grid-cols-[56px_repeat(7,minmax(0,1fr))]",
               compact
-                ? "min-h-[68px] sm:min-h-[76px]"
+                ? exportMode
+                  ? "min-h-[60px]"
+                  : "min-h-[68px] sm:min-h-[76px]"
                 : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
             )}
           >
@@ -1877,7 +2048,9 @@ function TimetableGrid({
                   className={clsx(
                     "border-r border-neutral-100 p-0.5 last:border-r-0 sm:p-1.5",
                     compact
-                      ? "min-h-[68px] sm:min-h-[76px]"
+                      ? exportMode
+                        ? "min-h-[60px]"
+                        : "min-h-[68px] sm:min-h-[76px]"
                       : "min-h-[74px] sm:min-h-[96px] lg:min-h-[108px]",
                   )}
                 >
