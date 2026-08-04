@@ -119,6 +119,7 @@ interface TimetableConflictPair {
 }
 
 type DraftPersistenceMode = "pending" | "local" | "shared" | "paused";
+type DesktopSidebarView = "courses" | "selected";
 
 const emptyTimetableResponse: TimetableApiResponse = {
   success: false,
@@ -149,6 +150,8 @@ export function TimetableBuilderClient() {
   const [appliedShareId, setAppliedShareId] = useState("");
   const [createdShareId, setCreatedShareId] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [desktopSidebarView, setDesktopSidebarView] =
+    useState<DesktopSidebarView>("courses");
   const [isCreatingShare, setIsCreatingShare] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
@@ -570,7 +573,7 @@ export function TimetableBuilderClient() {
   return (
     <Container
       size="full"
-      className="min-w-0 max-w-[88rem] overflow-x-hidden py-6 sm:py-8"
+      className="min-w-0 max-w-[88rem] overflow-x-hidden py-6 sm:py-8 2xl:max-w-[112rem]"
     >
       <div className="mb-6">
         <Link
@@ -739,7 +742,7 @@ export function TimetableBuilderClient() {
         />
       ) : (
         <div className="space-y-6">
-          <section className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
+          <section className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
             <Card
               hover={false}
               className="min-w-0 overflow-hidden border border-neutral-200"
@@ -761,17 +764,66 @@ export function TimetableBuilderClient() {
               />
             </Card>
 
-            <SelectedCoursesPanel
-              selectedCourses={selectedCourses}
-              conflictCourseIds={conflictSummary.courseIds}
-              completionStats={visibleCompletionStats}
-              totalCredits={totalCredits}
-              onClear={() => replaceSelectedCourses([])}
-              onRemove={toggleCourse}
-            />
+            <div className="hidden xl:block">
+              <DesktopWorkspaceSidebar
+                activeView={desktopSidebarView}
+                onViewChange={setDesktopSidebarView}
+              >
+                {desktopSidebarView === "courses" ? (
+                  <CoursePicker
+                    completionTypeFilter={completionTypeFilter}
+                    departments={departments}
+                    departmentFilter={departmentFilter}
+                    dayFilters={dayFilters}
+                    endPeriodFilter={endPeriodFilter}
+                    filteredCoursesCount={filteredCourses.length}
+                    grades={grades}
+                    gradeFilter={gradeFilter}
+                    completionTypes={completionTypes}
+                    onCompletionTypeFilterChange={setCompletionTypeFilter}
+                    onDayFilterToggle={toggleDayFilter}
+                    onDepartmentFilterChange={setDepartmentFilter}
+                    onEndPeriodFilterChange={setEndPeriodFilter}
+                    onGradeFilterChange={setGradeFilter}
+                    onResetFilters={resetFilters}
+                    onSearchQueryChange={setSearchQuery}
+                    onStartPeriodFilterChange={setStartPeriodFilter}
+                    onToggleCourse={toggleCourse}
+                    searchQuery={searchQuery}
+                    selectedIdSet={selectedIdSet}
+                    startPeriodFilter={startPeriodFilter}
+                    visibleCourses={visibleCourses}
+                    conflictCourseIds={conflictSummary.courseIds}
+                    idPrefix="desktop-sidebar"
+                    listKey={courseListKey}
+                    compact
+                  />
+                ) : (
+                  <SelectedCoursesPanel
+                    selectedCourses={selectedCourses}
+                    conflictCourseIds={conflictSummary.courseIds}
+                    completionStats={visibleCompletionStats}
+                    totalCredits={totalCredits}
+                    onClear={() => replaceSelectedCourses([])}
+                    onRemove={toggleCourse}
+                  />
+                )}
+              </DesktopWorkspaceSidebar>
+            </div>
+
+            <div className="hidden lg:block xl:hidden">
+              <SelectedCoursesPanel
+                selectedCourses={selectedCourses}
+                conflictCourseIds={conflictSummary.courseIds}
+                completionStats={visibleCompletionStats}
+                totalCredits={totalCredits}
+                onClear={() => replaceSelectedCourses([])}
+                onRemove={toggleCourse}
+              />
+            </div>
           </section>
 
-          <div className="hidden lg:block">
+          <div className="hidden lg:block xl:hidden">
             <CoursePicker
               completionTypeFilter={completionTypeFilter}
               departments={departments}
@@ -870,7 +922,57 @@ function SummaryMetric({
   );
 }
 
+function DesktopWorkspaceSidebar({
+  activeView,
+  children,
+  onViewChange,
+}: {
+  activeView: DesktopSidebarView;
+  children: React.ReactNode;
+  onViewChange: (view: DesktopSidebarView) => void;
+}) {
+  const text = useDictionary().pages.timetable;
+
+  return (
+    <aside className="sticky top-[96px] max-h-[calc(100vh-7rem)] self-start overflow-y-auto pr-1">
+      <div
+        className="sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm"
+        aria-label={text.desktopPanelLabel}
+      >
+        <button
+          type="button"
+          aria-pressed={activeView === "courses"}
+          onClick={() => onViewChange("courses")}
+          className={clsx(
+            "rounded-md px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+            activeView === "courses"
+              ? "bg-primary-600 text-white"
+              : "text-neutral-600 hover:bg-neutral-100",
+          )}
+        >
+          {text.addCourse}
+        </button>
+        <button
+          type="button"
+          aria-pressed={activeView === "selected"}
+          onClick={() => onViewChange("selected")}
+          className={clsx(
+            "rounded-md px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600",
+            activeView === "selected"
+              ? "bg-primary-600 text-white"
+              : "text-neutral-600 hover:bg-neutral-100",
+          )}
+        >
+          {text.selectedCourses}
+        </button>
+      </div>
+      {children}
+    </aside>
+  );
+}
+
 function CoursePicker({
+  compact = false,
   completionTypeFilter,
   completionTypes,
   dayFilters,
@@ -897,6 +999,7 @@ function CoursePicker({
   idPrefix,
   listKey,
 }: {
+  compact?: boolean;
   completionTypeFilter: string;
   completionTypes: string[];
   dayFilters: LectureDay[];
@@ -1013,7 +1116,12 @@ function CoursePicker({
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div
+          className={clsx(
+            "grid gap-3",
+            compact ? "grid-cols-1 2xl:grid-cols-3" : "sm:grid-cols-3",
+          )}
+        >
           <FilterSelect
             id={`${idPrefix}-department-filter`}
             label={text.department}
@@ -1061,7 +1169,12 @@ function CoursePicker({
 
         <div
           key={listKey}
-          className="grid max-h-[60vh] gap-3 overflow-y-auto pr-1 lg:max-h-[620px] lg:grid-cols-2 2xl:grid-cols-3"
+          className={clsx(
+            "grid gap-3 overflow-y-auto pr-1",
+            compact
+              ? "max-h-[520px] grid-cols-1"
+              : "max-h-[60vh] lg:max-h-[620px] lg:grid-cols-2 2xl:grid-cols-3",
+          )}
         >
           {visibleCourses.map((course) => {
             const isSelected = selectedIdSet.has(course.id);

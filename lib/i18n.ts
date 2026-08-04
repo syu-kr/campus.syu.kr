@@ -840,6 +840,7 @@ export const dictionaries = {
         weeklyTimetableDescription:
           "교시별 시간과 선택한 강의를 한눈에 확인하세요.",
         addCourse: "강의 추가",
+        desktopPanelLabel: "시간표 편집 도구",
         courseFilter: "과목 필터",
         searchPlaceholder: "과목명, 교수, 코드, 영역, 비고",
         searchMatchedIn: "검색 일치",
@@ -2398,6 +2399,7 @@ export const dictionaries = {
         weeklyTimetableDescription:
           "Review selected courses by day and period.",
         addCourse: "Add Course",
+        desktopPanelLabel: "Timetable editing tools",
         courseFilter: "Course Filter",
         searchPlaceholder: "Course, professor, code, area, or note",
         searchMatchedIn: "Matched in",
