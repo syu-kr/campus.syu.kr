@@ -1,5 +1,6 @@
 import {
   createTimetableWorkspace,
+  filterWorkspaceCourseIds,
   getActiveTimetable,
   hasWorkspaceCourses,
   MAX_TIMETABLES,
@@ -102,17 +103,7 @@ export function filterAvailableDraftWorkspace(
   draft: TimetableDraft,
   availableCourseIds: ReadonlySet<string>,
 ): TimetableWorkspace {
-  const workspace = normalizeTimetableWorkspace({
-    ...draft.workspace,
-    timetables: draft.workspace.timetables.map((timetable) => ({
-      ...timetable,
-      courseIds: timetable.courseIds.filter((courseId) =>
-        availableCourseIds.has(courseId),
-      ),
-    })),
-  });
-
-  return workspace;
+  return filterWorkspaceCourseIds(draft.workspace, availableCourseIds);
 }
 
 export function filterAvailableDraftCourseIds(

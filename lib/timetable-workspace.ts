@@ -187,6 +187,21 @@ export function hasWorkspaceCourses(workspace: TimetableWorkspace): boolean {
   return workspace.timetables.some((timetable) => timetable.courseIds.length > 0);
 }
 
+export function filterWorkspaceCourseIds(
+  workspace: TimetableWorkspace,
+  availableCourseIds: ReadonlySet<string>,
+): TimetableWorkspace {
+  return normalizeTimetableWorkspace({
+    ...workspace,
+    timetables: workspace.timetables.map((timetable) => ({
+      ...timetable,
+      courseIds: timetable.courseIds.filter((courseId) =>
+        availableCourseIds.has(courseId),
+      ),
+    })),
+  });
+}
+
 function createNextTimetable(
   timetables: TimetableWorkspaceItem[],
   courseIds: string[],

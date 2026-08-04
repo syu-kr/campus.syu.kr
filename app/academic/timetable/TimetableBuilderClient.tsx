@@ -43,6 +43,8 @@ import {
   replaceTimetableCourseIds,
   setActiveTimetable,
   toggleTimetableCourse,
+  filterWorkspaceCourseIds,
+  type TimetableWorkspace,
   type TimetableWorkspaceItem,
 } from "@/lib/timetable-workspace";
 import type {
@@ -69,6 +71,7 @@ interface TimetableShareResponse {
     year: string | null;
     semester: string | null;
     createdAt: string | null;
+    workspace?: TimetableWorkspace;
   };
   error?: string;
 }
@@ -346,10 +349,17 @@ export function TimetableBuilderClient() {
       shareResponse.data &&
       courseById.size > 0
     ) {
-      const restoredIds = shareResponse.data.courseIds.filter((courseId) =>
-        courseById.has(courseId),
-      );
-      setTimetableWorkspace(createTimetableWorkspace(restoredIds));
+      const restoredWorkspace = shareResponse.data.workspace
+        ? filterWorkspaceCourseIds(
+            shareResponse.data.workspace,
+            new Set(courseById.keys()),
+          )
+        : createTimetableWorkspace(
+            shareResponse.data.courseIds.filter((courseId) =>
+              courseById.has(courseId),
+            ),
+          );
+      setTimetableWorkspace(restoredWorkspace);
       setAppliedShareId(shareId);
       setShareMessage(text.shareLoaded);
     }
@@ -451,6 +461,9 @@ export function TimetableBuilderClient() {
     text,
   );
   const shouldLoadShareFromUrl = Boolean(shareId && shareId !== createdShareId);
+  const hasShareableCourses = timetableWorkspace.isCompareMode
+    ? hasWorkspaceCourses(timetableWorkspace)
+    : selectedCourses.length > 0;
 
   function clearShareFromUrl() {
     if (shareId) {
@@ -564,7 +577,7 @@ export function TimetableBuilderClient() {
   }
 
   async function createShareLink() {
-    if (selectedCourses.length === 0 || isCreatingShare) return;
+    if (!hasShareableCourses || isCreatingShare) return;
 
     setIsCreatingShare(true);
     setShareMessage("");
@@ -578,6 +591,9 @@ export function TimetableBuilderClient() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             courseIds: selectedCourses.map((course) => course.id),
+            workspace: timetableWorkspace.isCompareMode
+              ? timetableWorkspace
+              : undefined,
             year: response.data.year,
             semester: response.data.semester,
           }),
@@ -701,7 +717,7 @@ export function TimetableBuilderClient() {
           <button
             type="button"
             onClick={createShareLink}
-            disabled={selectedCourses.length === 0 || isCreatingShare}
+            disabled={!hasShareableCourses || isCreatingShare}
             className="col-span-2 rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300 sm:col-span-1"
           >
             {isCreatingShare ? text.creatingShare : text.share}

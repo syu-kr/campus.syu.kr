@@ -12,6 +12,12 @@ import {
 } from "@/lib/server/http";
 import { getFirestore, nowTimestamp } from "@/lib/server/firestore";
 import { admin } from "@/lib/server/firestore";
+import {
+  getRepresentativeCourseIds,
+  MAX_SHARED_COURSES,
+  parseSharedTimetableWorkspace,
+  toStoredTimetableWorkspace,
+} from "@/lib/timetable-share";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,13 +27,13 @@ const RATE_LIMIT = {
   windowMs: 60 * 60 * 1000,
 };
 
-const MAX_SHARED_COURSES = 120;
 const SHARE_ID_BYTES = 12;
 const SHARE_ID_ATTEMPTS = 5;
 const SHARE_EXPIRY_DAYS = 90;
 
 interface ShareRequestBody {
   courseIds?: unknown;
+  workspace?: unknown;
   year?: unknown;
   semester?: unknown;
 }
@@ -36,8 +42,21 @@ export async function POST(req: NextRequest) {
   try {
     enforceSameOrigin(req);
     await enforceRateLimit(req, "lecture_timetable_shares", RATE_LIMIT);
-    const body = await readJsonBody<ShareRequestBody>(req, 32 * 1024);
-    const courseIds = normalizeCourseIds(body.courseIds);
+    const body = await readJsonBody<ShareRequestBody>(req, 96 * 1024);
+    const workspace =
+      body.workspace === undefined
+        ? null
+        : parseSharedTimetableWorkspace(body.workspace);
+    if (body.workspace !== undefined && !workspace) {
+      throw new ApiError(
+        "시간표 비교 데이터 형식이 올바르지 않습니다.",
+        400,
+        "workspace",
+      );
+    }
+    const courseIds = workspace
+      ? getRepresentativeCourseIds(workspace)
+      : normalizeCourseIds(body.courseIds);
     const year = normalizeOptionalString(body.year, 20);
     const semester = normalizeOptionalString(body.semester, 40);
 
@@ -60,6 +79,12 @@ export async function POST(req: NextRequest) {
       updated_at: now,
       expires_at: expiresAt,
       user_agent: getUserAgent(req),
+      ...(workspace
+        ? {
+            version: 2,
+            workspace: toStoredTimetableWorkspace(workspace),
+          }
+        : {}),
     });
 
     return NextResponse.json({

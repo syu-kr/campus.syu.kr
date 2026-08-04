@@ -5,6 +5,7 @@ import {
   createTimetableWorkspace,
   duplicateTimetable,
   enterTimetableCompareMode,
+  filterWorkspaceCourseIds,
   leaveTimetableCompareMode,
   MAX_TIMETABLES,
   removeTimetable,
@@ -62,5 +63,26 @@ describe("timetable workspace", () => {
   it("does not remove alternatives below the comparison minimum", () => {
     const workspace = enterTimetableCompareMode(createTimetableWorkspace());
     expect(removeTimetable(workspace, "timetable-2")).toEqual(workspace);
+  });
+
+  it("filters unavailable courses without collapsing alternatives", () => {
+    let workspace = enterTimetableCompareMode(
+      createTimetableWorkspace(["course-a", "removed-course"]),
+    );
+    workspace = toggleTimetableCourse(workspace, "timetable-2", "course-b");
+
+    expect(
+      filterWorkspaceCourseIds(
+        workspace,
+        new Set(["course-a", "course-b"]),
+      ),
+    ).toEqual({
+      activeTimetableId: "timetable-1",
+      isCompareMode: true,
+      timetables: [
+        { id: "timetable-1", courseIds: ["course-a"] },
+        { id: "timetable-2", courseIds: ["course-b"] },
+      ],
+    });
   });
 });
