@@ -27,10 +27,7 @@
       "vendor/brace-expansion-compat/index.cjs": [
         "exports"
       ]
-    },
-    "ignoreBinaries": [
-      "python"
-    ]
+    }
   },
   "scripts": {
     "dev": "next dev",
