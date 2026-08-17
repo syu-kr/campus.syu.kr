@@ -14,7 +14,7 @@
     "minimatch@^10.0.0": {
       "brace-expansion": "5.0.9"
     },
-    "postcss": "8.5.23",
+    "postcss": "8.5.26",
     "protobufjs": "7.6.5",
     "sharp": "0.35.3",
     "uuid": "11.1.1"
@@ -84,7 +84,7 @@
     "eslint-config-next": "^16.2.11",
     "jsdom": "^29.1.1",
     "knip": "^6.29.0",
-    "postcss": "8.5.23",
+    "postcss": "8.5.26",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
