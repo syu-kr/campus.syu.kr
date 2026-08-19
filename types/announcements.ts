@@ -18,7 +18,11 @@ export interface AnnouncementAiSummary {
   inputHash?: string;
   contentSource?: "detail" | "json" | "metadata";
   detailContentHash?: string;
+  provider?: "openai";
   model?: string;
+  promptVersion?: string;
+  schemaVersion?: number;
+  generationFingerprint?: string;
 }
 
 export interface Announcement {

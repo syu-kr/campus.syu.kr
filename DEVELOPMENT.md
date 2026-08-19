@@ -123,13 +123,16 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `SHUTTLE_USER_AGENT` | 필수 | shuttle | 셔틀 upstream 요청 User-Agent |
 | `LECTURE_TIMETABLE_URL` | 필수 | lecture timetable | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | library | 도서관 열람실 현황 endpoint |
-| `SUPILOT_API_BASE_URL` | 선택 | announcement AI summary script | AI 요약 API base URL. 기본값은 `https://supilot.syu.ac.kr/api` |
-| `SUPILOT_API_KEY` | 선택 | announcement AI summary script | 공지 AI 요약 생성용 API 키. 브라우저에 노출하지 않고 GitHub Actions Secret 또는 서버 환경 변수로만 관리 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | announcement AI summary script | OpenAI Project 서비스 계정 키. 브라우저에 노출하지 않고 GitHub Actions Secret 또는 서버 환경 변수로만 관리 |
+| `OPENAI_ANNOUNCEMENT_MODEL` | 선택 | announcement AI summary script | 공지 요약 모델. 기본값 `gpt-5.6-luna` |
+| `ANNOUNCEMENT_AI_ENABLED` | 선택 | announcement AI summary script | `false`이면 공지 AI 생성을 명시적으로 중단하고 기존 요약만 보존 |
 | `ANNOUNCEMENT_AI_LIMIT` | 선택 | announcement AI summary script | 한 번에 새로 생성할 공지 요약 수, 기본값 `25` |
 | `ANNOUNCEMENT_AI_DELAY_MS` | 선택 | announcement AI summary script | API rate limit 보호용 요청 간 대기 시간(ms), 기본값 `2200` |
+| `ANNOUNCEMENT_AI_TIMEOUT_MS` | 선택 | announcement AI summary script | OpenAI 요청 timeout(ms), 기본값 `30000` |
 | `ANNOUNCEMENT_AI_CHECKPOINT_EVERY` | 선택 | announcement AI summary script | 장시간 백필 중 메타데이터 중간 저장 주기, 기본값 `5` |
-| `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | announcement AI summary script | 429/5xx/timeout 재시도 횟수, 기본값 `3` |
-| `ANNOUNCEMENT_AI_RETRY_BASE_MS` | 선택 | announcement AI summary script | 재시도 exponential backoff 기준 시간(ms), 기본값 `3000` |
+| `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | announcement AI summary script | OpenAI SDK 재시도 횟수, 기본값 `3` |
+| `ANNOUNCEMENT_AI_REFRESH_GENERATION` | 선택 | announcement AI summary script | `true`일 때만 모델/프롬프트 generation fingerprint가 다른 기존 요약을 선택 백필 |
+| `ANNOUNCEMENT_AI_REFRESH_SINCE` | 선택 백필 시 필수 | announcement AI summary script | 선택 백필의 최소 공지일. `YYYY-MM-DD` 형식이며 limit과 함께 범위를 제한 |
 | `ANNOUNCEMENT_DETAIL_FETCH_ENABLED` | 선택 | announcement AI summary script | 공지 URL 상세 페이지 본문 추출 여부. 기본값 `true`, `false`면 JSON의 기존 본문/메타데이터만 사용 |
 | `ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS` | 선택 | announcement AI summary script | 공지 URL 상세 페이지 요청 timeout(ms), 기본값 `12000` |
 | `ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED` | 선택 | announcement AI summary script | 기존 상세 본문 기반 요약의 본문 변경 감지 여부, 기본값 `true` |
@@ -162,7 +165,7 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `SUPILOT_API_KEY` | 선택 | `crawl-daily.yml` | daily crawl 후 `public/data/announcement-ai-metadata.json` 생성/갱신에 사용하는 AI API 키. 없으면 요약 생성 단계는 건너뜀 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml` | daily crawl 공지 요약용 OpenAI Project 서비스 계정 키. 누락 시 기존 요약을 보존하고 AI 단계만 degraded 처리 |
 
 ### GitHub Actions Variables
 
@@ -183,12 +186,15 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
 | `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포의 `owner/name` |
-| `SUPILOT_API_BASE_URL` | 선택 | `crawl-daily.yml` | AI 요약 API base URL. 비워두면 스크립트 기본값 사용 |
+| `OPENAI_ANNOUNCEMENT_MODEL` | 선택 | `crawl-daily.yml` | 공지 요약 모델. 기본값 `gpt-5.6-luna` |
+| `ANNOUNCEMENT_AI_ENABLED` | 선택 | `crawl-daily.yml` | 공지 AI 생성 중단 스위치. `false`이면 기존 요약만 보존 |
 | `ANNOUNCEMENT_AI_LIMIT` | 선택 | `crawl-daily.yml` | daily crawl 후 새로 생성할 공지 요약 수 |
 | `ANNOUNCEMENT_AI_DELAY_MS` | 선택 | `crawl-daily.yml` | AI API 요청 간 대기 시간(ms) |
+| `ANNOUNCEMENT_AI_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | OpenAI 요청 timeout(ms), 기본값 `30000` |
 | `ANNOUNCEMENT_AI_CHECKPOINT_EVERY` | 선택 | `crawl-daily.yml` | 장시간 생성 중 중간 저장 주기 |
-| `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | `crawl-daily.yml` | AI API 일시 오류 재시도 횟수 |
-| `ANNOUNCEMENT_AI_RETRY_BASE_MS` | 선택 | `crawl-daily.yml` | AI API 재시도 backoff 기준 시간(ms) |
+| `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | `crawl-daily.yml` | OpenAI SDK 일시 오류 재시도 횟수 |
+| `ANNOUNCEMENT_AI_REFRESH_GENERATION` | 수동 선택 | `crawl-daily.yml` | 선택 백필 활성화. workflow dispatch 입력으로만 사용 |
+| `ANNOUNCEMENT_AI_REFRESH_SINCE` | 수동 선택 | `crawl-daily.yml` | 선택 백필 최소 공지일. workflow dispatch 입력으로만 사용 |
 | `ANNOUNCEMENT_DETAIL_FETCH_ENABLED` | 선택 | `crawl-daily.yml` | 공지 URL 상세 페이지 본문 추출 여부 |
 | `ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | 공지 URL 상세 페이지 요청 timeout(ms) |
 | `ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED` | 선택 | `crawl-daily.yml` | 기존 상세 본문 기반 요약의 본문 변경 감지 여부 |
@@ -204,7 +210,7 @@ Vercel 런타임 환경 변수는 GitHub Actions Secrets와 별개로 Vercel Pro
 
 학사 일정·전화번호·셔틀처럼 일일 크롤링 대상이 아닌 JSON은 기존처럼 `public/data/`에서 조회합니다. `fetchJson`을 사용할 때 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 마세요.
 
-`public/data/announcement-ai-metadata.json`은 공지 원문 JSON을 수정하지 않고 AI 요약만 별도 저장합니다. `scripts/generate_announcement_ai_summaries.mjs`는 `.env.local`과 `.env`를 읽고, `SUPILOT_API_KEY`가 없으면 실행을 건너뜁니다. 공지 JSON 본문이 비어 있으면 `syu.ac.kr` 상세 URL에 접속해 본문 영역을 추출한 뒤 AI 입력으로 사용하며, 상세 페이지를 읽지 못하면 제목/작성자/날짜/URL만으로 낮은 confidence 요약을 생성합니다. 기존 요약은 `id`가 아니라 query/hash를 제거한 공지 상세 URL을 우선 키로 사용하고, 공지 제목/작성자/날짜/본문/canonical URL 해시가 일치할 때만 화면에 병합됩니다. 생성 스크립트는 실제 AI 입력의 `inputHash`와 상세 본문의 `detailContentHash`를 저장해 다음 실행에서 본문 변경을 감지하며, 장시간 백필 중에는 `ANNOUNCEMENT_AI_CHECKPOINT_EVERY` 주기마다 중간 저장합니다.
+`public/data/announcement-ai-metadata.json`은 공지 원문 JSON을 수정하지 않고 AI 요약만 별도 저장합니다. `scripts/generate_announcement_ai_summaries.mjs`는 `.env.local`과 `.env`를 읽고 OpenAI Responses API로 신규·변경 공지만 처리합니다. `OPENAI_API_KEY`가 없거나 개별 호출이 실패하면 source hash가 유효한 기존 요약을 보존하며, 크롤 데이터 배포는 계속됩니다. 공지 JSON 본문이 비어 있으면 `syu.ac.kr` 상세 URL에 접속해 본문 영역을 추출한 뒤 AI 입력으로 사용하며, 상세 페이지를 읽지 못하면 제목/작성자/날짜/URL만으로 낮은 confidence 요약을 생성합니다. 기존 요약은 `id`가 아니라 query/hash를 제거한 공지 상세 URL을 우선 키로 사용하고, 공지 제목/작성자/날짜/본문/canonical URL 해시가 일치할 때만 화면에 병합됩니다. `inputHash`는 공지 내용 변경만 추적하며 모델·프롬프트 변경은 자동 재생성 조건이 아닙니다. 기존 결과의 선택 백필은 `ANNOUNCEMENT_AI_REFRESH_GENERATION=true`, `ANNOUNCEMENT_AI_REFRESH_SINCE`, 실행 limit을 함께 지정한 경우에만 수행합니다.
 
 ### 크롤러
 
