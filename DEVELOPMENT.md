@@ -147,6 +147,10 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
 | `CRAWL_DATA_BASE_URL` | 선택 | crawl data runtime/scripts | Pages 데이터 base URL override. 기본값은 공식 저장소의 GitHub Pages URL |
 | `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
+| `OPENAI_PUSH_MODEL` | 선택 | daily notification script | 일일 푸시 문구 모델. 기본값 `gpt-5.6-luna` |
+| `PUSH_COPY_AI_ENABLED` | 선택 | daily notification script | `false`이면 OpenAI를 호출하지 않고 결정론적 기본 문구 사용 |
+| `PUSH_COPY_AI_TIMEOUT_MS` | 선택 | daily notification script | OpenAI 요청 timeout(ms), 기본값 `12000` |
+| `PUSH_COPY_AI_MAX_RETRIES` | 선택 | daily notification script | OpenAI SDK 재시도 횟수, 기본값 `2` |
 | `RATE_LIMIT_SECRET` | 운영 필수 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. Production에서는 미등록 시 public write API가 503으로 실패하며, 로컬 개발에서만 `PUSH_API_KEY` fallback을 허용 |
 | `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
 | `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |
@@ -165,7 +169,7 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml` | daily crawl 공지 요약용 OpenAI Project 서비스 계정 키. 누락 시 기존 요약을 보존하고 AI 단계만 degraded 처리 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml` | Actions 전용 OpenAI Project 서비스 계정 키. 공지 요약은 누락 시 degraded, 푸시는 결정론적 기본 문구로 fallback |
 
 ### GitHub Actions Variables
 

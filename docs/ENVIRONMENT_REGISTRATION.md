@@ -92,10 +92,9 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
-| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml` | 공지 요약 전용 OpenAI Project 서비스 계정 키. Vercel용 키와 분리 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml` | Actions 전용 OpenAI Project 서비스 계정 키. Vercel용 키와 분리 |
 | `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL. GitHub Actions에서는 운영 HTTPS URL만 사용하고 localhost를 쓰지 않음 |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `SUPILOT_PUSH_COPY_API_KEY` | AI 푸시 문구 사용 시 필수 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 어시스턴트 API 키 |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
 | `CRAWLER_DEPLOY_KEY` | 필수 | `crawl-monthly.yml` | 월간 정적 데이터를 `main`에 자동 커밋하는 write deploy key의 private key |
@@ -149,10 +148,10 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `ANNOUNCEMENT_AI_DELAY_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 간 대기 시간(ms). 기본값 `2200` |
 | `ANNOUNCEMENT_AI_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 timeout(ms). 기본값 `30000` |
 | `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | `crawl-daily.yml` | OpenAI SDK 재시도 횟수. 기본값 `3` |
-| `SUPILOT_PUSH_COPY_API_BASE_URL` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 어시스턴트 전용 API base URL. 미등록 시 `SUPILOT_API_BASE_URL` 또는 기본 AI API URL 사용 |
-| `SUPILOT_PUSH_COPY_TIMEOUT_MS` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 timeout. 기본값 `12000` |
-| `SUPILOT_PUSH_COPY_MAX_RETRIES` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 재시도 횟수. 기본값 `2` |
-| `SUPILOT_PUSH_COPY_RETRY_BASE_MS` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 재시도 기본 대기 시간. 기본값 `1500` |
+| `OPENAI_PUSH_MODEL` | 선택 | `daily-announcement-notification.yml` | 일일 푸시 문구 모델. 기본값 `gpt-5.6-luna` |
+| `PUSH_COPY_AI_ENABLED` | 선택 | `daily-announcement-notification.yml` | AI 푸시 중단 스위치. `false`이면 결정론적 기본 문구 사용 |
+| `PUSH_COPY_AI_TIMEOUT_MS` | 선택 | `daily-announcement-notification.yml` | 일일 푸시 문구 요청 timeout. 기본값 `12000` |
+| `PUSH_COPY_AI_MAX_RETRIES` | 선택 | `daily-announcement-notification.yml` | OpenAI SDK 재시도 횟수. 기본값 `2` |
 | `TOKEN_CLEANUP_DAYS` | 선택 | `cleanup-expired-firestore.yml` | 마지막 갱신 후 FCM 토큰을 삭제할 기준 일수. 기본값 `90`, 허용 범위 `7~3650` |
 | `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 동기화 대상 개인 배포 레포. `owner/name` 형식 |
 
@@ -176,7 +175,7 @@ Next.js 로컬 서버는 `.env.local`을 읽습니다. Vercel Project Environmen
 
 Python 크롤러는 `.env.local`을 자동으로 읽지 않습니다. 로컬에서 크롤러를 직접 실행할 때는 PowerShell에서 필요한 값을 먼저 설정하세요.
 
-Node 스크립트도 GitHub Actions와 같은 환경 변수를 사용합니다. 로컬에서 일일 공지 푸시 문구 AI를 확인하려면 `.env.local` 또는 현재 PowerShell 세션에 `SUPILOT_PUSH_COPY_API_KEY`, `SUPILOT_PUSH_COPY_API_BASE_URL`을 등록하세요. `/admin` 문의 분류는 Next.js 서버 런타임에서 실행되므로 `.env.local` 또는 Vercel Project Environment Variables에 `SUPILOT_ADMIN_CLASSIFIER_API_KEY`를 등록합니다.
+Node 스크립트도 GitHub Actions와 같은 환경 변수를 사용합니다. 로컬에서 일일 공지 푸시 문구 AI를 확인하려면 `.env.local` 또는 현재 PowerShell 세션에 `OPENAI_API_KEY`를 등록하세요. `DRY_RUN=true`이면 공지 조회와 문구 생성까지만 수행하고 FCM 호출, dedupe 소비, Firestore 기록을 하지 않습니다. `/admin` 문의 분류는 Next.js 서버 런타임에서 실행되므로 `.env.local` 또는 Vercel Project Environment Variables에 `SUPILOT_ADMIN_CLASSIFIER_API_KEY`를 등록합니다.
 
 ```powershell
 $env:CRAWL_ACADEMIC_NOTICES_URL="..."
