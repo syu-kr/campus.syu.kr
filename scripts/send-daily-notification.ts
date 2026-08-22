@@ -3,24 +3,11 @@ import { createHash } from "crypto";
 import type { DailyCrawlDataFile } from "../lib/crawl-data-contract";
 import { readDailyCrawlDataJson } from "../lib/server/crawl-data";
 import {
-  compactAiText,
-  readNumberEnv,
-  requestSupilotJsonObject,
-} from "../lib/server/supilot-json";
+  buildDailyPushCopy,
+  type AnnouncementStats,
+  type DailyPushCopyResult,
+} from "../lib/server/daily-push-copy";
 import { admin, initializeScriptFirestore } from "./firebase-admin";
-
-interface AnnouncementDigestItem {
-  category: string;
-  title: string;
-  date: string;
-}
-
-interface AnnouncementStats {
-  category: string;
-  count: number;
-  titles: string[];
-  items: AnnouncementDigestItem[];
-}
 
 interface AnnouncementData {
   title: string;
@@ -39,20 +26,6 @@ interface KoreaDayWindow {
   dateKey: string;
 }
 
-interface DailyPushCopy {
-  title: string;
-  body: string;
-}
-
-interface RawDailyPushCopy {
-  title?: unknown;
-  body?: unknown;
-}
-
-const DEFAULT_PUSH_COPY_TIMEOUT_MS = 12000;
-const DEFAULT_PUSH_COPY_MAX_RETRIES = 2;
-const DEFAULT_PUSH_COPY_RETRY_BASE_MS = 1500;
-const MAX_ANNOUNCEMENT_ITEMS_FOR_AI = 12;
 const DAILY_ANNOUNCEMENT_SOURCES: Record<string, DailyCrawlDataFile> = {
   academic: "announcements-academic.json",
   scholarship: "announcements-scholarship.json",
@@ -106,6 +79,7 @@ async function getAnnouncementStatsFromJSON(
 async function sendNotification(
   stats: AnnouncementStats[],
   context: DailyNotificationContext,
+  copyResult: DailyPushCopyResult,
 ) {
   const apiUrl = process.env.API_URL;
   const apiKey = process.env.PUSH_API_KEY;
@@ -144,7 +118,7 @@ async function sendNotification(
   const academicCount = academic?.count || 0;
   const scholarshipCount = scholarship?.count || 0;
 
-  const { title, body } = await buildDailyPushCopy(stats, context);
+  const { title, body } = copyResult.copy;
 
   // API 호출
   try {
@@ -203,133 +177,10 @@ async function sendNotification(
   }
 }
 
-async function buildDailyPushCopy(
-  stats: AnnouncementStats[],
-  context: DailyNotificationContext,
-): Promise<DailyPushCopy> {
-  const fallback = buildFallbackDailyPushCopy(stats);
-  const apiKey = readOptionalEnv("SUPILOT_PUSH_COPY_API_KEY", "SUPILOT_API_KEY");
-
-  if (!apiKey) {
-    console.log("SUPILOT_PUSH_COPY_API_KEY가 없어 기본 푸시 문구를 사용합니다.");
-    return fallback;
-  }
-
-  try {
-    const raw = await requestSupilotJsonObject<RawDailyPushCopy>({
-      apiKey,
-      baseUrl: readOptionalEnv(
-        "SUPILOT_PUSH_COPY_API_BASE_URL",
-        "SUPILOT_API_BASE_URL",
-      ),
-      message: buildDailyPushCopyPrompt(stats, context),
-      timeoutMs: readNumberEnv(
-        "SUPILOT_PUSH_COPY_TIMEOUT_MS",
-        DEFAULT_PUSH_COPY_TIMEOUT_MS,
-      ),
-      maxRetries: readNumberEnv(
-        "SUPILOT_PUSH_COPY_MAX_RETRIES",
-        DEFAULT_PUSH_COPY_MAX_RETRIES,
-      ),
-      retryBaseMs: readNumberEnv(
-        "SUPILOT_PUSH_COPY_RETRY_BASE_MS",
-        DEFAULT_PUSH_COPY_RETRY_BASE_MS,
-      ),
-    });
-
-    return normalizeDailyPushCopy(raw, fallback);
-  } catch (error) {
-    console.warn("AI 푸시 문구 생성 실패, 기본 문구를 사용합니다:", error);
-    return fallback;
-  }
-}
-
-function buildDailyPushCopyPrompt(
-  stats: AnnouncementStats[],
-  context: DailyNotificationContext,
-) {
-  const announcements = stats
-    .flatMap((stat) =>
-      stat.items.map((item) => ({
-        category: item.category,
-        title: item.title,
-        date: item.date,
-      })),
-    )
-    .slice(0, MAX_ANNOUNCEMENT_ITEMS_FOR_AI);
-
-  return `당신은 SYU CAMPUS 푸시 알림 문구 작성 어시스턴트입니다.
-지정된 날짜에 새로 수집된 공지 목록을 학생용 짧은 알림 제목과 본문으로 압축하세요.
-
-규칙:
-- 반드시 제공된 목록과 개수만 근거로 작성하세요.
-- 없는 마감, 혜택, 긴급성을 추측하지 마세요.
-- 한국어로 작성하세요.
-- title은 45자 이내입니다.
-- body는 100자 이내입니다.
-- title과 body는 줄바꿈 없이 한 문장 또는 짧은 구로 작성하세요.
-- 공지가 없으면 새 공지가 없다는 사실만 담으세요.
-- JSON 외의 문장, 마크다운, 코드블록을 출력하지 마세요.
-
-출력 JSON:
-{
-  "title": "45자 이내 알림 제목",
-  "body": "100자 이내 알림 본문"
-}
-
-알림 실행일: ${context.koreaDate}
-공지 기준일: ${context.targetDate}
-공지 개수:
-${stats.map((stat) => `- ${stat.category}: ${stat.count}개`).join("\n")}
-공지 목록:
-${announcements.length > 0 ? JSON.stringify(announcements, null, 2) : "없음"}`;
-}
-
-function normalizeDailyPushCopy(
-  raw: RawDailyPushCopy,
-  fallback: DailyPushCopy,
-): DailyPushCopy {
-  const title = compactAiText(raw.title, 45);
-  const body = compactAiText(raw.body, 100);
-
-  if (!title || !body) {
-    return fallback;
-  }
-
-  return { title, body };
-}
-
-function buildFallbackDailyPushCopy(stats: AnnouncementStats[]): DailyPushCopy {
-  const academic = stats.find((stat) => stat.category === "academic");
-  const scholarship = stats.find((stat) => stat.category === "scholarship");
-  const academicCount = academic?.count || 0;
-  const scholarshipCount = scholarship?.count || 0;
-  const titleParts: string[] = [];
-
-  if (academicCount > 0) titleParts.push(`학사 ${academicCount}개`);
-  if (scholarshipCount > 0) titleParts.push(`장학 ${scholarshipCount}개`);
-
-  if (titleParts.length === 0) {
-    return {
-      title: "새 공지사항 없음",
-      body: "새로 수집된 학사·장학 공지가 없습니다.",
-    };
-  }
-
-  const bodyParts = [
-    academicCount > 0 ? `학사: ${academic?.titles[0] || "새 공지"}` : "",
-    scholarshipCount > 0 ? `장학: ${scholarship?.titles[0] || "새 공지"}` : "",
-  ].filter(Boolean);
-
-  return {
-    title: compactAiText(`새 공지 ${titleParts.join(", ")}`, 45),
-    body: compactAiText(bodyParts.join(" / "), 100),
-  };
-}
-
 async function logNotificationRecord(
   stats: AnnouncementStats[],
   context: DailyNotificationContext,
+  copyResult: DailyPushCopyResult,
 ) {
   const db = await initializeScriptFirestore();
   const recordId = createHash("sha256").update(context.dedupeKey).digest("hex");
@@ -347,38 +198,67 @@ async function logNotificationRecord(
     },
     executedBy: "github-actions",
     status: "success",
+    copySource: copyResult.source,
+    aiModel: copyResult.model,
+    promptVersion: copyResult.promptVersion,
+    copyFallbackReason: copyResult.reason,
   });
 
   console.log("📝 Firestore에 기록 저장됨");
 }
 
-async function main() {
+interface DailyNotificationJobOptions {
+  now?: Date;
+  dryRun?: boolean;
+  getStats?: typeof getAnnouncementStats;
+  buildCopy?: typeof buildDailyPushCopy;
+  send?: typeof sendNotification;
+  logRecord?: typeof logNotificationRecord;
+}
+
+export async function runDailyNotificationJob(
+  options: DailyNotificationJobOptions = {},
+) {
   console.log("🚀 Daily Announcement Notification Job 시작\n");
+  const now = options.now ?? new Date();
+  const targetWindow = createPreviousKoreaDayWindow(now);
+  const context = createDailyNotificationContext(now, targetWindow);
+  const dryRun = options.dryRun ?? process.env.DRY_RUN === "true";
+  console.log(`중복 방지 키: ${context.dedupeKey}`);
+  console.log(`공지 기준일: ${context.targetDate}`);
 
+  console.log("1️⃣ 공지사항 통계 조회 중...");
+  const stats = await (options.getStats ?? getAnnouncementStats)(targetWindow);
+  const copyResult = await (options.buildCopy ?? buildDailyPushCopy)(stats, context);
+  console.log("[Push copy AI] selection", {
+    source: copyResult.source,
+    model: copyResult.model,
+    promptVersion: copyResult.promptVersion,
+    reason: copyResult.reason,
+    usage: copyResult.usage,
+  });
+
+  if (dryRun) {
+    console.log("DRY_RUN=true: FCM 호출과 Firestore 기록을 건너뜁니다.");
+    return { dryRun: true, stats, context, copyResult };
+  }
+
+  console.log("\n2️⃣ FCM 알림 발송 중...");
+  await (options.send ?? sendNotification)(stats, context, copyResult);
+
+  console.log("\n3️⃣ 실행 기록 저장 중...");
+  await (options.logRecord ?? logNotificationRecord)(stats, context, copyResult);
+
+  console.log("\n✅ Job 완료!");
+  return { dryRun: false, stats, context, copyResult };
+}
+
+async function main() {
   try {
-    const now = new Date();
-    const targetWindow = createPreviousKoreaDayWindow(now);
-    const context = createDailyNotificationContext(now, targetWindow);
-    console.log(`중복 방지 키: ${context.dedupeKey}`);
-    console.log(`공지 기준일: ${context.targetDate}`);
-
-    // 1. 공지사항 통계 조회
-    console.log("1️⃣ 공지사항 통계 조회 중...");
-    const stats = await getAnnouncementStats(targetWindow);
-
-    // 2. 알림 발송
-    console.log("\n2️⃣ FCM 알림 발송 중...");
-    await sendNotification(stats, context);
-
-    // 3. 기록 저장
-    console.log("\n3️⃣ 실행 기록 저장 중...");
-    await logNotificationRecord(stats, context);
-
-    console.log("\n✅ Job 완료!");
-    process.exit(0);
+    await runDailyNotificationJob();
   } catch (error) {
     console.error("\n❌ Job 실패:", error);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 
@@ -458,13 +338,6 @@ function readAnnouncementTitle(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function readOptionalEnv(...names: string[]) {
-  for (const name of names) {
-    const value = process.env[name]?.trim();
-    if (value) return value;
-  }
-
-  return undefined;
+if (typeof require !== "undefined" && require.main === module) {
+  void main();
 }
-
-main();
