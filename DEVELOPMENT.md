@@ -123,7 +123,7 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `SHUTTLE_USER_AGENT` | 필수 | shuttle | 셔틀 upstream 요청 User-Agent |
 | `LECTURE_TIMETABLE_URL` | 필수 | lecture timetable | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | library | 도서관 열람실 현황 endpoint |
-| `OPENAI_API_KEY` | AI 사용 시 필수 | announcement AI summary script | OpenAI Project 서비스 계정 키. 브라우저에 노출하지 않고 GitHub Actions Secret 또는 서버 환경 변수로만 관리 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | AI server/scripts | OpenAI Project 서비스 계정 키. GitHub Actions와 Vercel은 별도 서비스 계정 키를 사용하고 브라우저에 노출하지 않음 |
 | `OPENAI_ANNOUNCEMENT_MODEL` | 선택 | announcement AI summary script | 공지 요약 모델. 기본값 `gpt-5.6-luna` |
 | `ANNOUNCEMENT_AI_ENABLED` | 선택 | announcement AI summary script | `false`이면 공지 AI 생성을 명시적으로 중단하고 기존 요약만 보존 |
 | `ANNOUNCEMENT_AI_LIMIT` | 선택 | announcement AI summary script | 한 번에 새로 생성할 공지 요약 수, 기본값 `25` |
@@ -151,6 +151,10 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `PUSH_COPY_AI_ENABLED` | 선택 | daily notification script | `false`이면 OpenAI를 호출하지 않고 결정론적 기본 문구 사용 |
 | `PUSH_COPY_AI_TIMEOUT_MS` | 선택 | daily notification script | OpenAI 요청 timeout(ms), 기본값 `12000` |
 | `PUSH_COPY_AI_MAX_RETRIES` | 선택 | daily notification script | OpenAI SDK 재시도 횟수, 기본값 `2` |
+| `OPENAI_ADMIN_MODEL` | 선택 | `/api/admin/submissions/classify` | 관리자 문의 분류 모델. 기본값 `gpt-5.6-luna` |
+| `ADMIN_CLASSIFIER_AI_ENABLED` | 선택 | `/api/admin/submissions/classify` | `false`이면 관리자 문의 분류 API가 503 반환 |
+| `ADMIN_CLASSIFIER_AI_TIMEOUT_MS` | 선택 | `/api/admin/submissions/classify` | OpenAI 요청 timeout(ms), 기본값 `15000` |
+| `ADMIN_CLASSIFIER_AI_MAX_RETRIES` | 선택 | `/api/admin/submissions/classify` | OpenAI SDK 재시도 횟수, 기본값 `2` |
 | `RATE_LIMIT_SECRET` | 운영 필수 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. Production에서는 미등록 시 public write API가 503으로 실패하며, 로컬 개발에서만 `PUSH_API_KEY` fallback을 허용 |
 | `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
 | `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |

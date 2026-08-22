@@ -32,11 +32,11 @@
 | `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키. 환경별로 별도 값 사용 |
 | `RATE_LIMIT_SECRET` | 운영 필수 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. Production에서는 미등록 시 public write API가 실패함 |
 | `ADMIN_EMAILS` | 필수 | 쉼표로 구분한 관리자 허용 이메일 목록. 운영 관리자 목록은 Production 전용으로 관리 |
-| `SUPILOT_ADMIN_CLASSIFIER_API_KEY` | AI 분류 사용 시 필수 | `/admin` 문의/제보 AI 분류 어시스턴트 API 키. 서버 전용 |
-| `SUPILOT_ADMIN_CLASSIFIER_API_BASE_URL` | 선택 | 문의/제보 AI 분류 어시스턴트 API base URL. 미등록 시 `SUPILOT_API_BASE_URL` 또는 기본 AI API URL 사용 |
-| `SUPILOT_ADMIN_CLASSIFIER_TIMEOUT_MS` | 선택 | 문의/제보 AI 분류 호출 timeout. 기본값 `15000` |
-| `SUPILOT_ADMIN_CLASSIFIER_MAX_RETRIES` | 선택 | 문의/제보 AI 분류 재시도 횟수. 기본값 `2` |
-| `SUPILOT_ADMIN_CLASSIFIER_RETRY_BASE_MS` | 선택 | 문의/제보 AI 분류 재시도 기본 대기 시간. 기본값 `2000` |
+| `OPENAI_API_KEY` | AI 분류 사용 시 필수 | `/admin` 문의/제보 분류용 Vercel 전용 OpenAI Project 서비스 계정 키. GitHub Actions용 키와 분리 |
+| `OPENAI_ADMIN_MODEL` | 선택 | 문의/제보 AI 분류 모델. 기본값 `gpt-5.6-luna` |
+| `ADMIN_CLASSIFIER_AI_ENABLED` | 선택 | 문의/제보 AI 분류 중단 스위치. `false`이면 분류 API가 503 반환 |
+| `ADMIN_CLASSIFIER_AI_TIMEOUT_MS` | 선택 | 문의/제보 AI 분류 timeout. 기본값 `15000` |
+| `ADMIN_CLASSIFIER_AI_MAX_RETRIES` | 선택 | OpenAI SDK 재시도 횟수. 기본값 `2` |
 | `TOKEN_CLEANUP_DAYS` | 선택 | 오래된 FCM 토큰 삭제 기준 일수. 기본값 `90` |
 
 ### RATE_LIMIT_SECRET 생성 및 등록
@@ -175,7 +175,7 @@ Next.js 로컬 서버는 `.env.local`을 읽습니다. Vercel Project Environmen
 
 Python 크롤러는 `.env.local`을 자동으로 읽지 않습니다. 로컬에서 크롤러를 직접 실행할 때는 PowerShell에서 필요한 값을 먼저 설정하세요.
 
-Node 스크립트도 GitHub Actions와 같은 환경 변수를 사용합니다. 로컬에서 일일 공지 푸시 문구 AI를 확인하려면 `.env.local` 또는 현재 PowerShell 세션에 `OPENAI_API_KEY`를 등록하세요. `DRY_RUN=true`이면 공지 조회와 문구 생성까지만 수행하고 FCM 호출, dedupe 소비, Firestore 기록을 하지 않습니다. `/admin` 문의 분류는 Next.js 서버 런타임에서 실행되므로 `.env.local` 또는 Vercel Project Environment Variables에 `SUPILOT_ADMIN_CLASSIFIER_API_KEY`를 등록합니다.
+Node 스크립트도 GitHub Actions와 같은 환경 변수를 사용합니다. 로컬에서 일일 공지 푸시 문구 AI를 확인하려면 `.env.local` 또는 현재 PowerShell 세션에 `OPENAI_API_KEY`를 등록하세요. `DRY_RUN=true`이면 공지 조회와 문구 생성까지만 수행하고 FCM 호출, dedupe 소비, Firestore 기록을 하지 않습니다. `/admin` 문의 분류는 Next.js 서버 런타임에서 실행되므로 `.env.local` 또는 Vercel Project Environment Variables에 Vercel 전용 `OPENAI_API_KEY`를 등록합니다.
 
 ```powershell
 $env:CRAWL_ACADEMIC_NOTICES_URL="..."

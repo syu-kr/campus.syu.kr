@@ -27,6 +27,7 @@ tsconfig.tsbuildinfo
 # Environment
 .env*
 !.env.example
+.vercel/
 
 # OS
 Thumbs.db
