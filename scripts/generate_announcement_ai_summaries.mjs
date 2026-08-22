@@ -163,6 +163,7 @@ async function main() {
 
   if (!enabled) {
     report.status = "no-op";
+    await ensureMetadataArtifact(nextItems, existing);
     await writeAnnouncementAiSummary(report, "AI generation is disabled.");
     console.log("Announcement AI generation is disabled.");
     return;
@@ -171,6 +172,7 @@ async function main() {
   if (!API_KEY) {
     report.status = "degraded";
     report.failed = candidates.length;
+    await ensureMetadataArtifact(nextItems, existing);
     await writeAnnouncementAiSummary(report, "OPENAI_API_KEY is not configured.");
     console.warn("OPENAI_API_KEY is not configured. Existing summaries were preserved.");
     return;
@@ -264,6 +266,18 @@ async function main() {
         ? "no-op"
         : "healthy";
   await writeAnnouncementAiSummary(report);
+}
+
+async function ensureMetadataArtifact(items, existing) {
+  const didWrite = await writeMetadata(items, {
+    generatedCount: 0,
+    existingGeneratedAt: existing.metadata?.generatedAt,
+    previousRaw: existing.raw,
+  });
+
+  if (didWrite) {
+    console.log(`Wrote ${Object.keys(items).length} preserved AI summaries.`);
+  }
 }
 
 async function writeMetadata(
