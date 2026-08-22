@@ -218,7 +218,10 @@ export function normalizeStoredAdminSubmissionAiClassification(
     ...("promptVersion" in value && typeof value.promptVersion === "string"
       ? { promptVersion: value.promptVersion }
       : {}),
-    ...("schemaVersion" in value && typeof value.schemaVersion === "number"
+    ...("schemaVersion" in value &&
+    typeof value.schemaVersion === "number" &&
+    Number.isInteger(value.schemaVersion) &&
+    value.schemaVersion > 0
       ? { schemaVersion: value.schemaVersion }
       : {}),
   };

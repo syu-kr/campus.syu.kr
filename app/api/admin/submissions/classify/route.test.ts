@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { OpenAiJsonError } from "@/lib/server/openai-json";
-import { openAiErrorResponse } from "./route";
+import {
+  getAdminClassifierConfigurationError,
+  openAiErrorResponse,
+} from "./route";
 
 describe("admin classifier OpenAI error mapping", () => {
   it.each([
@@ -25,5 +28,17 @@ describe("admin classifier OpenAI error mapping", () => {
     const body = await response.text();
     expect(body).not.toContain("internal raw error");
     expect(body).not.toContain("req_private");
+  });
+
+  it("reports a disabled classifier separately from a missing key", () => {
+    expect(
+      getAdminClassifierConfigurationError(false, "sk-test"),
+    ).toBe("운영자 문의 분류 AI 기능이 비활성화되어 있습니다");
+    expect(
+      getAdminClassifierConfigurationError(true, ""),
+    ).toBe("운영자 문의 분류 AI 키가 설정되지 않았습니다");
+    expect(
+      getAdminClassifierConfigurationError(true, "sk-test"),
+    ).toBeUndefined();
   });
 });

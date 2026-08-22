@@ -154,4 +154,35 @@ describe("admin submission AI data minimization", () => {
       sourceHash: "legacy-hash",
     });
   });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, -1, 0, 1.5])(
+    "ignores invalid stored schemaVersion %s",
+    (schemaVersion) => {
+      const normalized = normalizeStoredAdminSubmissionAiClassification({
+        category: "bug",
+        urgency: "normal",
+        handlingHint: "담당자가 오류를 확인하세요.",
+        confidence: "medium",
+        generatedAt: "2026-08-19T00:00:00.000Z",
+        sourceHash: "stored-hash",
+        schemaVersion,
+      });
+
+      expect(normalized).not.toHaveProperty("schemaVersion");
+    },
+  );
+
+  it("keeps a finite positive integer schemaVersion", () => {
+    const normalized = normalizeStoredAdminSubmissionAiClassification({
+      category: "bug",
+      urgency: "normal",
+      handlingHint: "담당자가 오류를 확인하세요.",
+      confidence: "medium",
+      generatedAt: "2026-08-19T00:00:00.000Z",
+      sourceHash: "stored-hash",
+      schemaVersion: 1,
+    });
+
+    expect(normalized).toHaveProperty("schemaVersion", 1);
+  });
 });

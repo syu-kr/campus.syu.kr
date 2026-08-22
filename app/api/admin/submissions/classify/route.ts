@@ -74,9 +74,12 @@ export async function POST(req: NextRequest) {
 
     const classifierEnabled =
       process.env.ADMIN_CLASSIFIER_AI_ENABLED !== "false";
-    const hasClassifierKey = Boolean(process.env.OPENAI_API_KEY?.trim());
-    if (!classifierEnabled || !hasClassifierKey) {
-      throw new ApiError("운영자 문의 분류 AI 키가 설정되지 않았습니다", 503);
+    const configurationError = getAdminClassifierConfigurationError(
+      classifierEnabled,
+      process.env.OPENAI_API_KEY,
+    );
+    if (configurationError) {
+      throw new ApiError(configurationError, 503);
     }
 
     const classification = await classifyAdminSubmission(input);
@@ -104,6 +107,21 @@ export async function POST(req: NextRequest) {
 
     return apiErrorResponse(error, "AI 문의 분류를 생성하지 못했습니다");
   }
+}
+
+export function getAdminClassifierConfigurationError(
+  enabled: boolean,
+  apiKey: string | undefined,
+) {
+  if (!enabled) {
+    return "운영자 문의 분류 AI 기능이 비활성화되어 있습니다";
+  }
+
+  if (!apiKey?.trim()) {
+    return "운영자 문의 분류 AI 키가 설정되지 않았습니다";
+  }
+
+  return undefined;
 }
 
 function logClassificationResult(
