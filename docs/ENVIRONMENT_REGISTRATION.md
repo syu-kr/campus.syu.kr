@@ -92,6 +92,7 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml` | 공지 요약 전용 OpenAI Project 서비스 계정 키. Vercel용 키와 분리 |
 | `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL. GitHub Actions에서는 운영 HTTPS URL만 사용하고 localhost를 쓰지 않음 |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 | `SUPILOT_PUSH_COPY_API_KEY` | AI 푸시 문구 사용 시 필수 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 어시스턴트 API 키 |
@@ -142,7 +143,12 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
-| `SUPILOT_API_BASE_URL` | 선택 | `crawl-daily.yml`, `daily-announcement-notification.yml` | AI API 공통 base URL. 미등록 시 기본값 `https://aitutor.syu.ac.kr/api` 사용 |
+| `OPENAI_ANNOUNCEMENT_MODEL` | 선택 | `crawl-daily.yml` | 공지 요약 모델. 기본값 `gpt-5.6-luna` |
+| `ANNOUNCEMENT_AI_ENABLED` | 선택 | `crawl-daily.yml` | 공지 AI 생성 중단 스위치. `false`이면 기존 요약만 보존 |
+| `ANNOUNCEMENT_AI_LIMIT` | 선택 | `crawl-daily.yml` | 예약 실행의 공지 요약 최대 처리 건수. 기본 운영값 `25` |
+| `ANNOUNCEMENT_AI_DELAY_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 간 대기 시간(ms). 기본값 `2200` |
+| `ANNOUNCEMENT_AI_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 timeout(ms). 기본값 `30000` |
+| `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | `crawl-daily.yml` | OpenAI SDK 재시도 횟수. 기본값 `3` |
 | `SUPILOT_PUSH_COPY_API_BASE_URL` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 어시스턴트 전용 API base URL. 미등록 시 `SUPILOT_API_BASE_URL` 또는 기본 AI API URL 사용 |
 | `SUPILOT_PUSH_COPY_TIMEOUT_MS` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 timeout. 기본값 `12000` |
 | `SUPILOT_PUSH_COPY_MAX_RETRIES` | 선택 | `daily-announcement-notification.yml` | 일일 공지 푸시 문구 작성 재시도 횟수. 기본값 `2` |

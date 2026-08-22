@@ -1,26 +1,38 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { readFile, rename, writeFile } from "node:fs/promises";
+import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import {
+  ANNOUNCEMENT_AI_DEFAULT_MODEL,
+  ANNOUNCEMENT_AI_PROMPT_VERSION,
+  ANNOUNCEMENT_AI_PROVIDER,
+  ANNOUNCEMENT_AI_SCHEMA_VERSION,
+  AnnouncementAiError,
+  requestAnnouncementSummary,
+} from "./announcement-openai.mjs";
 
 loadLocalEnvFiles();
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const OUTPUT_FILE = path.join(DATA_DIR, "announcement-ai-metadata.json");
-const API_BASE_URL =
-  process.env.SUPILOT_ANNOUNCEMENT_API_BASE_URL ||
-  process.env.SUPILOT_API_BASE_URL ||
-  "https://aitutor.syu.ac.kr/api";
-const API_KEY =
-  process.env.SUPILOT_ANNOUNCEMENT_API_KEY || process.env.SUPILOT_API_KEY || "";
-const MODEL_NAME = "claude-sonnet-4-6";
+const API_KEY = process.env.OPENAI_API_KEY?.trim() || "";
+const MODEL_NAME =
+  process.env.OPENAI_ANNOUNCEMENT_MODEL?.trim() ||
+  ANNOUNCEMENT_AI_DEFAULT_MODEL;
 const DEFAULT_LIMIT = 25;
 const DEFAULT_DELAY_MS = 2200;
-const DEFAULT_TIMEOUT_MS = 15000;
+const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_DETAIL_FETCH_TIMEOUT_MS = 12000;
 const DEFAULT_CHECKPOINT_EVERY = 5;
 const DEFAULT_MAX_RETRIES = 3;
-const DEFAULT_RETRY_BASE_MS = 3000;
+const GENERATION_FINGERPRINT = hashText(
+  JSON.stringify({
+    provider: ANNOUNCEMENT_AI_PROVIDER,
+    model: MODEL_NAME,
+    promptVersion: ANNOUNCEMENT_AI_PROMPT_VERSION,
+    schemaVersion: ANNOUNCEMENT_AI_SCHEMA_VERSION,
+  }),
+);
 
 const SOURCES = [
   { category: "academic", file: "announcements-academic.json" },
@@ -31,13 +43,6 @@ const SOURCES = [
 ];
 
 async function main() {
-  if (!API_KEY) {
-    console.log(
-      "SUPILOT_API_KEY is not configured. Skipping announcement AI summaries.",
-    );
-    return;
-  }
-
   const limit = readLimitEnv("ANNOUNCEMENT_AI_LIMIT", DEFAULT_LIMIT);
   const delayMs = readNumberEnv("ANNOUNCEMENT_AI_DELAY_MS", DEFAULT_DELAY_MS);
   const timeoutMs = readNumberEnv("ANNOUNCEMENT_AI_TIMEOUT_MS", DEFAULT_TIMEOUT_MS);
@@ -53,11 +58,13 @@ async function main() {
     "ANNOUNCEMENT_AI_MAX_RETRIES",
     DEFAULT_MAX_RETRIES,
   );
-  const retryBaseMs = readNumberEnv(
-    "ANNOUNCEMENT_AI_RETRY_BASE_MS",
-    DEFAULT_RETRY_BASE_MS,
+  const enabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
+  const refreshGeneration =
+    process.env.ANNOUNCEMENT_AI_REFRESH_GENERATION === "true";
+  const refreshSince = parseRefreshSince(
+    process.env.ANNOUNCEMENT_AI_REFRESH_SINCE,
+    refreshGeneration,
   );
-  const force = process.env.ANNOUNCEMENT_AI_FORCE === "true";
   const shouldFetchDetails =
     process.env.ANNOUNCEMENT_DETAIL_FETCH_ENABLED !== "false";
   const shouldCheckDetailChanges =
@@ -78,7 +85,11 @@ async function main() {
     const sourceHash = hashAnnouncement(announcement);
     const existingItem = findExistingMetadataItem(existing.metadata, announcement);
 
-    if (existingItem && sourceHashMatches(existingItem, announcement) && currentKeys.has(key)) {
+    if (
+      existingItem &&
+      sourceHashMatches(existingItem, announcement) &&
+      currentKeys.has(key)
+    ) {
       nextItems[key] = {
         ...existingItem,
         sourceHash,
@@ -95,10 +106,21 @@ async function main() {
     const key = getMetadataKey(announcement);
     const existingItem = nextItems[key];
 
-    if (force || !existingItem || metadataNeedsRefresh(existingItem)) {
+    if (!existingItem) {
       candidates.push(announcement);
       continue;
     }
+
+    if (
+      refreshGeneration &&
+      isOnOrAfterRefreshSince(announcement.date, refreshSince) &&
+      existingItem.generationFingerprint !== GENERATION_FINGERPRINT
+    ) {
+      candidates.push(announcement);
+      continue;
+    }
+
+    if (!enabled || !API_KEY) continue;
 
     if (
       shouldCheckDetailChanges &&
@@ -128,10 +150,39 @@ async function main() {
     console.log(`Checked ${detailChangeChecks} existing detail pages for changes.`);
   }
 
+  const report = {
+    status: "healthy",
+    candidates: candidates.length,
+    succeeded: 0,
+    failed: 0,
+    preserved: Object.keys(nextItems).length,
+    provider: ANNOUNCEMENT_AI_PROVIDER,
+    model: MODEL_NAME,
+    usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+  };
+
+  if (!enabled) {
+    report.status = "no-op";
+    await ensureMetadataArtifact(nextItems, existing);
+    await writeAnnouncementAiSummary(report, "AI generation is disabled.");
+    console.log("Announcement AI generation is disabled.");
+    return;
+  }
+
+  if (!API_KEY) {
+    report.status = "degraded";
+    report.failed = candidates.length;
+    await ensureMetadataArtifact(nextItems, existing);
+    await writeAnnouncementAiSummary(report, "OPENAI_API_KEY is not configured.");
+    console.warn("OPENAI_API_KEY is not configured. Existing summaries were preserved.");
+    return;
+  }
+
   let generatedCount = 0;
   for (const [index, announcement] of candidates.entries()) {
     const key = getMetadataKey(announcement);
     const sourceHash = hashAnnouncement(announcement);
+    const requestStartedAt = Date.now();
 
     try {
       const enrichedAnnouncement =
@@ -146,25 +197,33 @@ async function main() {
                 ? "json"
                 : "metadata",
             });
-      const summary = await summarizeAnnouncement(enrichedAnnouncement, {
+      const result = await requestAnnouncementSummary({
+        announcement: enrichedAnnouncement,
+        apiKey: API_KEY,
+        model: MODEL_NAME,
         timeoutMs,
         maxRetries,
-        retryBaseMs,
       });
       nextItems[key] = {
-        ...summary,
+        ...result.value,
         generatedAt: new Date().toISOString(),
         sourceHash,
         inputHash: hashAnnouncementInput(enrichedAnnouncement),
-        model: MODEL_NAME,
+        provider: result.provider,
+        model: result.model,
+        promptVersion: result.promptVersion,
+        schemaVersion: result.schemaVersion,
+        generationFingerprint: GENERATION_FINGERPRINT,
         contentSource: enrichedAnnouncement.contentSource,
         ...(enrichedAnnouncement.detailContentHash
           ? { detailContentHash: enrichedAnnouncement.detailContentHash }
           : {}),
       };
       generatedCount += 1;
+      report.succeeded += 1;
+      addUsage(report.usage, result.usage);
       console.log(
-        `Generated AI summary ${index + 1}/${candidates.length}: ${key}`,
+        `Generated AI summary ${index + 1}/${candidates.length}.`,
       );
       if (checkpointEvery > 0 && generatedCount % checkpointEvery === 0) {
         await writeMetadata(nextItems, {
@@ -174,7 +233,13 @@ async function main() {
         console.log(`Checkpointed ${generatedCount} generated AI summaries.`);
       }
     } catch (error) {
-      console.error(`Failed to generate AI summary for ${key}:`, error);
+      report.failed += 1;
+      logAnnouncementAiError(
+        error,
+        index + 1,
+        candidates.length,
+        Date.now() - requestStartedAt,
+      );
     }
 
     if (index < candidates.length - 1 && delayMs > 0) {
@@ -190,9 +255,29 @@ async function main() {
 
   if (!didWrite) {
     console.log("Announcement AI metadata is already up to date.");
-    return;
+  } else {
+    console.log(`Wrote ${Object.keys(nextItems).length} AI summaries.`);
   }
-  console.log(`Wrote ${Object.keys(nextItems).length} AI summaries.`);
+
+  report.status =
+    report.failed > 0
+      ? "degraded"
+      : report.candidates === 0
+        ? "no-op"
+        : "healthy";
+  await writeAnnouncementAiSummary(report);
+}
+
+async function ensureMetadataArtifact(items, existing) {
+  const didWrite = await writeMetadata(items, {
+    generatedCount: 0,
+    existingGeneratedAt: existing.metadata?.generatedAt,
+    previousRaw: existing.raw,
+  });
+
+  if (didWrite) {
+    console.log(`Wrote ${Object.keys(items).length} preserved AI summaries.`);
+  }
 }
 
 async function writeMetadata(
@@ -299,90 +384,6 @@ async function readExistingMetadata() {
 
     throw error;
   }
-}
-
-async function summarizeAnnouncement(
-  announcement,
-  { timeoutMs, maxRetries, retryBaseMs },
-) {
-  let lastError;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
-    try {
-      return await requestAiSummary(announcement, { timeoutMs });
-    } catch (error) {
-      lastError = error;
-      if (attempt >= maxRetries || !isRetryableAiError(error)) {
-        throw error;
-      }
-
-      const waitMs = getRetryDelayMs(error, attempt, retryBaseMs);
-      console.warn(
-        `Retrying AI summary after ${waitMs}ms (${attempt + 1}/${maxRetries})`,
-      );
-      await wait(waitMs);
-    }
-  }
-
-  throw lastError;
-}
-
-async function requestAiSummary(announcement, { timeoutMs }) {
-  const response = await fetch(`${API_BASE_URL.replace(/\/$/, "")}/v1/chat`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      message: buildPrompt(announcement),
-      stream: false,
-    }),
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    const error = new Error(
-      `AI API returned ${response.status}: ${body.slice(0, 300)}`,
-    );
-    error.status = response.status;
-    error.retryAfterMs = parseRetryAfterMs(response.headers.get("retry-after"));
-    throw error;
-  }
-
-  const data = await response.json();
-  const content = typeof data.content === "string" ? data.content : "";
-  return normalizeAiSummary(JSON.parse(extractJsonObject(content)));
-}
-
-function isRetryableAiError(error) {
-  if (error?.name === "TimeoutError" || error?.name === "AbortError") {
-    return true;
-  }
-
-  const status = Number(error?.status || 0);
-  return status === 429 || status >= 500;
-}
-
-function getRetryDelayMs(error, attempt, retryBaseMs) {
-  if (Number.isFinite(error?.retryAfterMs) && error.retryAfterMs > 0) {
-    return error.retryAfterMs;
-  }
-
-  return retryBaseMs * 2 ** attempt;
-}
-
-function parseRetryAfterMs(value) {
-  if (!value) return 0;
-
-  const seconds = Number.parseFloat(value);
-  if (Number.isFinite(seconds)) {
-    return Math.max(0, seconds * 1000);
-  }
-
-  const dateMs = new Date(value).getTime();
-  return Number.isFinite(dateMs) ? Math.max(0, dateMs - Date.now()) : 0;
 }
 
 async function enrichAnnouncementContent(announcement, { timeoutMs }) {
@@ -613,118 +614,6 @@ function isNoiseLine(line) {
   ].includes(line.toLowerCase());
 }
 
-function buildPrompt(announcement) {
-  const content = compactText(announcement.content).slice(0, 3500);
-  const fallbackNotice = content
-    ? ""
-    : "본문이 비어 있으면 제목, 작성부서, 날짜만 근거로 요약하고 confidence를 low로 두세요.";
-
-  return `당신은 SYU CAMPUS 공지 요약 어시스턴트입니다.
-아래 공지를 학생이 빠르게 판단할 수 있도록 요약하세요.
-
-규칙:
-- 반드시 제공된 공지 정보만 사용하세요.
-- 추측하지 마세요. 명시되지 않은 값은 "unknown"으로 쓰세요.
-- 한국어로 답하세요.
-- summary는 120자 이내 한 문장으로 쓰세요.
-- target, deadline, requiredAction은 각각 80자 이내로 쓰세요.
-- keywords는 2~8개의 짧은 명사구로 쓰세요.
-- importance는 "low", "normal", "high" 중 하나입니다.
-- confidence는 "low", "medium", "high" 중 하나입니다.
-- JSON 외의 문장, 마크다운, 코드블록을 출력하지 마세요.
-${fallbackNotice}
-
-출력 JSON:
-{
-  "summary": "학생용 핵심 요약",
-  "target": "대상자 또는 unknown",
-  "deadline": "신청/제출/확인 마감 또는 unknown",
-  "requiredAction": "학생이 해야 할 일 또는 unknown",
-  "keywords": ["키워드"],
-  "importance": "low|normal|high",
-  "confidence": "low|medium|high"
-}
-
-공지:
-- category: ${announcement.category}
-- title: ${announcement.title}
-- date: ${announcement.date}
-- author: ${announcement.author}
-- url: ${announcement.url || "unknown"}
-- isImportant: ${announcement.isImportant}
-- isPinned: ${announcement.isPinned}
-- content: ${content || "unknown"}`;
-}
-
-function normalizeAiSummary(input) {
-  const summary = normalizeRequiredText(input.summary, 140, "summary");
-
-  return {
-    summary,
-    target: normalizeOptionalText(input.target, 100),
-    deadline: normalizeOptionalText(input.deadline, 100),
-    requiredAction: normalizeOptionalText(input.requiredAction, 100),
-    keywords: normalizeKeywords(input.keywords),
-    importance: normalizeEnum(
-      input.importance,
-      ["low", "normal", "high"],
-      "normal",
-    ),
-    confidence: normalizeEnum(
-      input.confidence,
-      ["low", "medium", "high"],
-      "medium",
-    ),
-  };
-}
-
-function normalizeRequiredText(value, maxLength, field) {
-  const text = normalizeOptionalText(value, maxLength);
-
-  if (!text || text === "unknown") {
-    throw new Error(`AI summary field is missing: ${field}`);
-  }
-
-  return text;
-}
-
-function normalizeOptionalText(value, maxLength) {
-  if (typeof value !== "string") return "unknown";
-  const text = compactText(value);
-  if (!text) return "unknown";
-  return text.slice(0, maxLength);
-}
-
-function normalizeKeywords(value) {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .filter((item) => typeof item === "string")
-    .map((item) => compactText(item).slice(0, 30))
-    .filter(Boolean)
-    .slice(0, 8);
-}
-
-function normalizeEnum(value, allowed, fallback) {
-  return typeof value === "string" && allowed.includes(value) ? value : fallback;
-}
-
-function extractJsonObject(content) {
-  const trimmed = content.trim();
-  const withoutFence = trimmed
-    .replace(/^```(?:json)?/i, "")
-    .replace(/```$/i, "")
-    .trim();
-  const start = withoutFence.indexOf("{");
-  const end = withoutFence.lastIndexOf("}");
-
-  if (start < 0 || end < start) {
-    throw new Error("AI response did not contain a JSON object.");
-  }
-
-  return withoutFence.slice(start, end + 1);
-}
-
 function getMetadataKey(announcement) {
   const canonicalUrl = canonicalizeAnnouncementUrl(announcement.url);
   if (canonicalUrl) {
@@ -754,12 +643,6 @@ function sourceHashMatches(item, announcement) {
     item.sourceHash === hashAnnouncement(announcement) ||
     item.sourceHash === hashAnnouncementLegacy(announcement)
   );
-}
-
-function metadataNeedsRefresh(item) {
-  if (!item.inputHash || !item.contentSource) return true;
-  if (item.contentSource === "detail" && !item.detailContentHash) return true;
-  return false;
 }
 
 function hashAnnouncement(announcement) {
@@ -867,13 +750,93 @@ function readLimitEnv(name, fallback) {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
+function parseRefreshSince(value, refreshGeneration) {
+  if (!refreshGeneration) return null;
+
+  const normalized = String(value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    console.warn(
+      "ANNOUNCEMENT_AI_REFRESH_GENERATION requires ANNOUNCEMENT_AI_REFRESH_SINCE=YYYY-MM-DD. Refresh was disabled.",
+    );
+    return null;
+  }
+
+  return normalized;
+}
+
+function isOnOrAfterRefreshSince(value, refreshSince) {
+  if (!refreshSince) return false;
+  const announcementTime = parseAnnouncementDate(value);
+  const sinceTime = parseAnnouncementDate(refreshSince);
+  return announcementTime > 0 && sinceTime > 0 && announcementTime >= sinceTime;
+}
+
+function addUsage(target, usage) {
+  target.inputTokens += Number(usage?.inputTokens || 0);
+  target.outputTokens += Number(usage?.outputTokens || 0);
+  target.totalTokens += Number(usage?.totalTokens || 0);
+}
+
+function logAnnouncementAiError(error, index, total, latencyMs) {
+  const metadata =
+    error instanceof AnnouncementAiError
+      ? {
+          kind: error.kind,
+          status: error.status,
+          code: error.code,
+          requestId: error.requestId,
+        }
+      : { kind: "unknown", name: error?.name || "Error" };
+
+  console.error("[Announcement AI] generation failed", {
+    index,
+    total,
+    latencyMs,
+    ...metadata,
+  });
+}
+
+async function writeAnnouncementAiSummary(report, note = "") {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY?.trim();
+  if (!summaryPath) return;
+
+  const lines = [
+    "### Announcement AI summaries",
+    `- Status: ${report.status}`,
+    `- Candidates: ${report.candidates}`,
+    `- Succeeded: ${report.succeeded}`,
+    `- Failed: ${report.failed}`,
+    `- Preserved: ${report.preserved}`,
+    `- Provider/model: ${report.provider}/${report.model}`,
+    `- Token usage: input ${report.usage.inputTokens}, output ${report.usage.outputTokens}, total ${report.usage.totalTokens}`,
+  ];
+  if (note) lines.push(`- Note: ${note}`);
+  await appendFile(summaryPath, `${lines.join("\n")}\n`, "utf8");
+}
+
 function wait(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 }
 
-main().catch((error) => {
-  console.error(error);
+main().catch(async (error) => {
+  console.error("[Announcement AI] fatal error", {
+    name: error?.name || "Error",
+    code: error?.code,
+  });
+  await writeAnnouncementAiSummary(
+    {
+      status: "degraded",
+      candidates: 0,
+      succeeded: 0,
+      failed: 0,
+      preserved: 0,
+      provider: ANNOUNCEMENT_AI_PROVIDER,
+      model: MODEL_NAME,
+      usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+    },
+    "The AI summary step failed before generation completed.",
+  ).catch(() => undefined);
   process.exitCode = 1;
 });
