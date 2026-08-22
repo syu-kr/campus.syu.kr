@@ -1252,8 +1252,8 @@
   },
   {
     "id": "school-office365",
-    "title": "삼육대 오피스365",
-    "description": "학교 계정으로 Microsoft 365를 이용할 수 있습니다.",
+    "title": "삼육대 Microsoft 365",
+    "description": "학교 계정으로 Microsoft 365(Office 앱)를 무료로 이용할 수 있습니다.",
     "category": "school",
     "sortPriority": 80,
     "url": "https://m365.cloud.microsoft/?auth=2",
@@ -1261,7 +1261,8 @@
     "tags": [
       "오피스365",
       "Microsoft",
-      "학교계정"
+      "학교계정",
+      "무료"
     ],
     "sourceType": "official",
     "isExternal": true
@@ -1542,6 +1543,25 @@
     "isExternal": true
   },
   {
+    "id": "campus-life-everytime-new-student-guide",
+    "title": "신입·편입생 대학생활 가이드",
+    "description": "삼육대 수강신청과 교양과목 등 초기 대학생활 정보를 정리한 학생 커뮤니티 글입니다.",
+    "category": "campus-life",
+    "url": "https://everytime.kr/384376/v/414429421",
+    "urlLabel": "커뮤니티 글 보기",
+    "tags": [
+      "신입생",
+      "편입생",
+      "수강신청",
+      "교양",
+      "에브리타임"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다. 학사제도와 교과과정은 최신 학교 공식 안내를 함께 확인하세요.",
+    "lastVerifiedAt": "2026-08-22"
+  },
+  {
     "id": "campus-life-linkareer-iphone-apps",
     "title": "아이폰 유저 필수 앱 추천",
     "description": "아이폰 사용자에게 유용한 대학생활 앱 추천 글입니다.",
@@ -1617,6 +1637,25 @@
     "isExternal": true
   },
   {
+    "id": "campus-life-everytime-ppt-templates",
+    "title": "과제·발표용 PPT 템플릿 모음",
+    "description": "과제와 발표 자료를 만들 때 활용할 수 있는 PPT 템플릿을 모아둔 학생 커뮤니티 글입니다.",
+    "category": "campus-life",
+    "url": "https://everytime.kr/384376/v/190320864",
+    "urlLabel": "커뮤니티 글 보기",
+    "tags": [
+      "PPT",
+      "템플릿",
+      "과제",
+      "발표",
+      "에브리타임"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다.",
+    "lastVerifiedAt": "2026-08-22"
+  },
+  {
     "id": "activity-linkareer-portfolio-reference-sites",
     "title": "포트폴리오 제작 참고 사이트",
     "description": "포트폴리오 제작에 참고할 수 있는 사이트 모음입니다.",
@@ -1690,6 +1729,24 @@
     ],
     "sourceType": "external",
     "isExternal": true
+  },
+  {
+    "id": "campus-life-everytime-business-course-registration",
+    "title": "경영학과 수강신청 팁 모음",
+    "description": "삼육대 경영학과 학생이 전공·교양 과목을 선택하고 수강신청을 준비할 때 참고할 수 있는 학생 커뮤니티 글입니다.",
+    "category": "campus-life",
+    "url": "https://everytime.kr/385886/v/101119411",
+    "urlLabel": "커뮤니티 글 보기",
+    "tags": [
+      "경영학과",
+      "수강신청",
+      "전공과목",
+      "에브리타임"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다. 개설 과목과 수강 기준은 최신 학과·학교 공식 안내를 함께 확인하세요.",
+    "lastVerifiedAt": "2026-08-22"
   },
   {
     "id": "campus-life-linkareer-freshman-advice",
@@ -1870,6 +1927,25 @@
     ],
     "sourceType": "external",
     "isExternal": true
+  },
+  {
+    "id": "finance-everytime-nanum-scholarship-application",
+    "title": "나눔장학금 신청 절차 참고",
+    "description": "신입·편입생 등이 나눔장학금을 신청할 때 참고할 수 있는 학생 커뮤니티 안내입니다.",
+    "category": "finance",
+    "url": "https://everytime.kr/385886/v/402855364",
+    "urlLabel": "커뮤니티 글 보기",
+    "tags": [
+      "나눔장학금",
+      "신입생",
+      "편입생",
+      "SU-WINGs",
+      "에브리타임"
+    ],
+    "sourceType": "community",
+    "isExternal": true,
+    "note": "로그인이 필요할 수 있습니다. 신청 대상·기간·제출 요건은 해당 학기 학교 공식 공지를 반드시 확인하세요.",
+    "lastVerifiedAt": "2026-08-22"
   },
   {
     "id": "finance-linkareer-check-card",
