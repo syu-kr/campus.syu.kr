@@ -15,7 +15,7 @@ import {
   rateLimitResponse,
   readJsonBody,
 } from "@/lib/server/http";
-import { SupilotJsonError } from "@/lib/server/supilot-json";
+import { OpenAiJsonError } from "@/lib/server/openai-json";
 import type { AdminSubmissionKind } from "@/types/submissions";
 
 export const runtime = "nodejs";
@@ -50,18 +50,6 @@ export async function POST(req: NextRequest) {
       throw new ApiError("제출 항목을 찾을 수 없습니다", 400);
     }
 
-    const hasClassifierKey = Boolean(
-      (
-        process.env.SUPILOT_ADMIN_CLASSIFIER_API_KEY ||
-        process.env.SUPILOT_API_KEY ||
-        ""
-      ).trim(),
-    );
-
-    if (!hasClassifierKey) {
-      throw new ApiError("운영자 문의 분류 AI 키가 설정되지 않았습니다", 503);
-    }
-
     const collection =
       kind === "inquiry" ? "site_inquiries" : "campus_tip_suggestions";
     const { getFirestore } = await import("@/lib/server/firestore");
@@ -84,6 +72,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ classification: existing, reused: true });
     }
 
+    const classifierEnabled =
+      process.env.ADMIN_CLASSIFIER_AI_ENABLED !== "false";
+    const configurationError = getAdminClassifierConfigurationError(
+      classifierEnabled,
+      process.env.OPENAI_API_KEY,
+    );
+    if (configurationError) {
+      throw new ApiError(configurationError, 503);
+    }
+
     const classification = await classifyAdminSubmission(input);
     await docRef.update({
       ai_classification: classification,
@@ -102,19 +100,28 @@ export async function POST(req: NextRequest) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    if (error instanceof SupilotJsonError) {
-      return supilotErrorResponse(error);
-    }
-
-    if (isSupilotTransportError(error)) {
-      return NextResponse.json(
-        { error: "AI 문의 분류 서버에 연결하지 못했습니다" },
-        { status: 503 },
-      );
+    if (error instanceof OpenAiJsonError) {
+      logOpenAiClassificationError(error, startedAt);
+      return openAiErrorResponse(error);
     }
 
     return apiErrorResponse(error, "AI 문의 분류를 생성하지 못했습니다");
   }
+}
+
+export function getAdminClassifierConfigurationError(
+  enabled: boolean,
+  apiKey: string | undefined,
+) {
+  if (!enabled) {
+    return "운영자 문의 분류 AI 기능이 비활성화되어 있습니다";
+  }
+
+  if (!apiKey?.trim()) {
+    return "운영자 문의 분류 AI 키가 설정되지 않았습니다";
+  }
+
+  return undefined;
 }
 
 function logClassificationResult(
@@ -131,24 +138,26 @@ function logClassificationResult(
   });
 }
 
-function supilotErrorResponse(error: SupilotJsonError) {
-  const status = Number(error.status || 0);
-
-  if (status === 429) {
+export function openAiErrorResponse(error: OpenAiJsonError) {
+  if (error.kind === "rate-limit") {
     return NextResponse.json(
       { error: "AI 문의 분류 호출 제한을 초과했습니다" },
       { status: 429 },
     );
   }
 
-  if (status === 401 || status === 403) {
+  if (
+    error.kind === "auth" ||
+    error.kind === "permission" ||
+    error.kind === "quota"
+  ) {
     return NextResponse.json(
       { error: "AI 문의 분류 인증 설정을 확인해 주세요" },
       { status: 503 },
     );
   }
 
-  if (status >= 500) {
+  if (error.kind === "timeout" || error.kind === "server") {
     return NextResponse.json(
       { error: "AI 문의 분류 서버가 일시적으로 응답하지 않습니다" },
       { status: 503 },
@@ -157,17 +166,18 @@ function supilotErrorResponse(error: SupilotJsonError) {
 
   return NextResponse.json(
     { error: "AI 문의 분류 응답 형식이 올바르지 않습니다" },
-    { status: 500 },
+    { status: 502 },
   );
 }
 
-function isSupilotTransportError(error: unknown) {
-  return (
-    error instanceof Error &&
-    (error.name === "TimeoutError" ||
-      error.name === "AbortError" ||
-      error.message.toLowerCase().includes("fetch failed"))
-  );
+function logOpenAiClassificationError(error: OpenAiJsonError, startedAt: number) {
+  console.error("[Admin AI] classification failed", {
+    kind: error.kind,
+    status: error.status,
+    code: error.code,
+    requestId: error.requestId,
+    durationMs: Date.now() - startedAt,
+  });
 }
 
 function mapSubmissionDataToAiInput(

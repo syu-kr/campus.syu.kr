@@ -58,7 +58,10 @@ export interface AdminSubmissionAiClassification {
   confidence: AdminSubmissionAiConfidence;
   generatedAt: string;
   sourceHash: string;
+  provider?: "openai";
   model?: string;
+  promptVersion?: string;
+  schemaVersion?: number;
 }
 
 export interface AdminSubmissionItem {

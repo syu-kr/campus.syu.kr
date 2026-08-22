@@ -289,7 +289,13 @@ export function classifyOpenAiError(error) {
     name === "AbortError"
   ) {
     kind = "timeout";
-  } else if (status && status >= 500) kind = "server";
+  } else if (
+    (status && status >= 500) ||
+    name === "APIConnectionError" ||
+    message.includes("fetch failed")
+  ) {
+    kind = "server";
+  }
 
   return new AnnouncementAiError(kind, `OpenAI request failed (${kind})`, {
     status,

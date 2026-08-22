@@ -195,7 +195,13 @@ export function classifyOpenAiJsonError(error: unknown): OpenAiJsonError {
     name === "AbortError"
   ) {
     kind = "timeout";
-  } else if (status !== undefined && status >= 500) kind = "server";
+  } else if (
+    (status !== undefined && status >= 500) ||
+    name === "APIConnectionError" ||
+    message.includes("fetch failed")
+  ) {
+    kind = "server";
+  }
 
   return new OpenAiJsonError(kind, `OpenAI request failed (${kind})`, {
     status,
@@ -212,8 +218,10 @@ export function readNumberEnv(name: string, fallback: number): number {
   return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
-export function compactAiText(value: unknown): string {
-  return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+export function compactAiText(value: unknown, maxLength = Number.POSITIVE_INFINITY): string {
+  return typeof value === "string"
+    ? value.replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
 }
 
 function hasRefusal(output: unknown): boolean {
