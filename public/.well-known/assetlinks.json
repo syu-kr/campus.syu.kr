@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "kr.syukr.campus",
+      "sha256_cert_fingerprints": [
+        "1C:D2:A5:CC:E3:37:F9:CE:60:79:51:F9:7A:2D:48:CD:03:6D:64:6D:BA:71:A2:63:AE:67:D1:57:D1:93:80:BA"
+      ]
+    }
+  }
+]

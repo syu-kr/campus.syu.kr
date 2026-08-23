@@ -92,7 +92,7 @@ function HeaderComponent({ showBack = false, onBackClick }: HeaderProps) {
               title={dictionary.navigation.homepageTitle}
             >
               <Image
-                src="/images/syu-kr-logo.png"
+                src="/images/syu-campus-brand-badge-v1.png"
                 alt={dictionary.navigation.logoAlt}
                 width={32}
                 height={32}

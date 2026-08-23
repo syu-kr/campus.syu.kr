@@ -1,0 +1,73 @@
+{
+  "packageId": "kr.syukr.campus",
+  "host": "campus.syu.kr",
+  "name": "SYU CAMPUS",
+  "launcherName": "SYU CAMPUS",
+  "display": "standalone",
+  "themeColor": "#3182F6",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#3182F6",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-512.png",
+  "maskableIconUrl": "https://campus.syu.kr/images/syu-campus-maskable-icon-512.png",
+  "monochromeIconUrl": "https://campus.syu.kr/images/syu-campus-monochrome-icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "android.keystore",
+    "alias": "syucampus-upload"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "Notices",
+      "shortName": "Notices",
+      "url": "https://campus.syu.kr/academic/announcements",
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192.png"
+    },
+    {
+      "name": "Cafeteria",
+      "shortName": "Meals",
+      "url": "https://campus.syu.kr/campus/cafeteria",
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192.png"
+    },
+    {
+      "name": "Academic Schedule",
+      "shortName": "Schedule",
+      "url": "https://campus.syu.kr/academic/schedule",
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192.png"
+    },
+    {
+      "name": "Campus Map",
+      "shortName": "Map",
+      "url": "https://campus.syu.kr/campus/map",
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://campus.syu.kr/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://campus.syu.kr/",
+  "minSdkVersion": 23,
+  "orientation": "portrait-primary",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}
