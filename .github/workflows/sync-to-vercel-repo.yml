@@ -32,8 +32,6 @@ on:
     secrets:
       VERCEL_PERSONAL_ACCOUNT_TOKEN:
         required: true
-      OFFICIAL_ACCOUNT_EMAIL:
-        required: true
 
 concurrency:
   group: sync-to-vercel-repo-${{ github.event.workflow_run.head_branch || inputs.source_ref }}
@@ -169,17 +167,10 @@ jobs:
             --exclude ".vscode/"
 
       - name: Push changes to destination repository
-        env:
-          OFFICIAL_ACCOUNT_EMAIL: ${{ secrets.OFFICIAL_ACCOUNT_EMAIL }}
         run: |
-          if [ -z "$OFFICIAL_ACCOUNT_EMAIL" ]; then
-            echo "OFFICIAL_ACCOUNT_EMAIL secret is not configured."
-            exit 1
-          fi
-
           cd "$DESTINATION_DIR"
           git config user.name "github-actions[bot]"
-          git config user.email "$OFFICIAL_ACCOUNT_EMAIL"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
 
           if git diff --cached --quiet; then
