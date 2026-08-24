@@ -29,16 +29,17 @@
 ## Digital Asset Links
 
 웹사이트는 `/.well-known/assetlinks.json`에서 Android 앱과 도메인의 관계를 선언합니다.
-현재 등록된 지문은 로컬 개발용 기본 Android 디버그 키의 SHA-256 지문입니다.
-이 지문은 Draft PR 단계에서만 허용하며 운영 배포 전에 제거합니다.
+현재 `public/.well-known/assetlinks.json`에는 Play Console에서 확인한 앱 서명 키 인증서의
+SHA-256 지문이 등록되어 있습니다. 인증서 지문은 공개 식별 정보이며 비공개 키나 업로드 키
+비밀번호를 포함하지 않습니다.
 
 Play Console에서 Play App Signing을 활성화한 뒤에는 다음 위치에서 앱 서명 키 인증서의 SHA-256 지문을 확인합니다.
 
 `Play Console > 설정 > 앱 무결성 > 앱 서명 키 인증서`
 
-출시 전에는 해당 지문으로 `public/.well-known/assetlinks.json`의 디버그 지문을 교체해야 합니다.
-업로드 키 지문만 등록하면 Play 설치본에서 TWA 검증이 실패할 수 있으므로, 반드시 Play의
-앱 서명 키 지문을 사용합니다.
+`public/.well-known/assetlinks.json`에는 업로드 키나 디버그 키가 아니라 Play의 앱 서명 키
+지문을 사용합니다. 앱 서명 키를 업그레이드하거나 교체하면 사용자 기기에 배포될 수 있는
+인증서 지문을 다시 확인하고 필요한 지문을 배열에 반영합니다.
 
 배포 후 다음 조건을 확인합니다.
 
@@ -94,7 +95,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 6. 디버그 APK와 미서명 릴리스 AAB가 컴파일되는지 확인한다.
 7. Android Studio에서 저장소 밖의 업로드 키로 서명된 AAB를 생성한다.
 8. Play Console 내부 테스트 트랙에 AAB를 올리고 Play App Signing을 활성화한다.
-9. Play의 앱 서명 키 SHA-256으로 `assetlinks.json`의 디버그 지문을 교체한다.
+9. Play의 앱 서명 키 SHA-256과 `assetlinks.json`의 지문이 일치하는지 확인하고, 다르면 교체한다.
 10. PR 검사 통과 후 머지하고 운영 도메인의 Digital Asset Links 응답을 확인한다.
 11. 내부 테스트 트랙에서 설치하고 주소 표시줄 없이 TWA로 열리는지 검증한다.
 12. 대상 계정이라면 12명이 14일 연속 참여하는 비공개 테스트를 완료한다.
