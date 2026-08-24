@@ -24,8 +24,8 @@ export async function sendFCMMessage(
         notification: {
           title,
           body,
-          icon: "/images/syu-kr-logo.png",
-          badge: "/images/syu-kr-logo.png",
+          icon: "/images/syu-campus-app-icon-192.png",
+          badge: "/images/syu-campus-notification-badge-96.png",
         },
         data: data || {},
       },

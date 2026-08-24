@@ -39,5 +39,22 @@ test-schedule.js
 .DS_Store
 .next
 
+# Android / Trusted Web Activity
+*.apk
+*.aab
+*.jks
+*.keystore
+twa-android/**/*.p12
+twa-android/**/*.pfx
+twa-android/**/*.pk8
+twa-android/**/*.key
+twa-android/**/*private*.pem
+twa-android/**/key.properties
+twa-android/**/keystore.properties
+twa-android/**/signing.properties
+twa-android/.gradle/
+twa-android/local.properties
+twa-android/app/build/
+
 # Added by ggshield
 .cache_ggshield

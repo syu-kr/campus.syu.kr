@@ -1,27 +1,41 @@
 {
   "name": "SYU CAMPUS",
   "short_name": "SYU CAMPUS",
+  "id": "/",
+  "lang": "ko",
   "description": "Sahmyook University campus information platform for notices, meals, schedules, and student tools",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#3182F6",
-  "background_color": "#FFFFFF",
+  "background_color": "#3182F6",
   "prefer_related_applications": false,
   "categories": ["education", "productivity"],
   "icons": [
     {
-      "src": "/images/syu-kr-logo.png",
+      "src": "/images/syu-campus-app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/syu-campus-app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/syu-kr-logo.png",
+      "src": "/images/syu-campus-maskable-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/images/syu-campus-monochrome-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
     }
   ],
   "shortcuts": [
@@ -32,7 +46,7 @@
       "url": "/academic/announcements",
       "icons": [
         {
-          "src": "/images/syu-kr-logo.png",
+          "src": "/images/syu-campus-app-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -45,7 +59,7 @@
       "url": "/campus/cafeteria",
       "icons": [
         {
-          "src": "/images/syu-kr-logo.png",
+          "src": "/images/syu-campus-app-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -58,7 +72,7 @@
       "url": "/academic/schedule",
       "icons": [
         {
-          "src": "/images/syu-kr-logo.png",
+          "src": "/images/syu-campus-app-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -71,7 +85,7 @@
       "url": "/campus/map",
       "icons": [
         {
-          "src": "/images/syu-kr-logo.png",
+          "src": "/images/syu-campus-app-icon-192.png",
           "sizes": "192x192",
           "type": "image/png"
         }
