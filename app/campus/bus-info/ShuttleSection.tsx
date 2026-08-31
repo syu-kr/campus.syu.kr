@@ -25,8 +25,12 @@ import {
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
 import {
+  createScheduleCopy,
   getShuttleScheduleType,
+  isDateInSpecialPeriod,
+  isReplacementSpecialPeriod,
   isShuttleVacationDate,
+  timeToMinutes,
 } from "@/lib/shuttle-schedule";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
@@ -40,48 +44,6 @@ const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "mondayToThursdayVacation",
   "fridayVacation",
 ];
-
-function createScheduleCopy(
-  schedules: ShuttleBusSchedule["schedules"] | undefined,
-): ShuttleBusSchedule["schedules"] {
-  return {
-    mondayToThursday: Array.isArray(schedules?.mondayToThursday)
-      ? [...schedules.mondayToThursday]
-      : [],
-    friday: Array.isArray(schedules?.friday) ? [...schedules.friday] : [],
-    mondayToThursdayVacation: Array.isArray(schedules?.mondayToThursdayVacation)
-      ? [...schedules.mondayToThursdayVacation]
-      : [],
-    fridayVacation: Array.isArray(schedules?.fridayVacation)
-      ? [...schedules.fridayVacation]
-      : [],
-  };
-}
-
-function isDateInSpecialPeriod(
-  period: { applicableDates?: string[]; startDate?: string; endDate?: string },
-  dateStr: string,
-): boolean {
-  if (
-    Array.isArray(period.applicableDates) &&
-    period.applicableDates.length > 0
-  ) {
-    return period.applicableDates.includes(dateStr);
-  }
-
-  if (period.startDate && period.endDate) {
-    return dateStr >= period.startDate && dateStr <= period.endDate;
-  }
-
-  return false;
-}
-
-function isReplacementSpecialPeriod(period: {
-  type?: string;
-  replacementSchedules?: unknown;
-}): boolean {
-  return period.type === "replace" || Boolean(period.replacementSchedules);
-}
 
 export default function ShuttleSection() {
   const dictionary = useDictionary();
@@ -220,10 +182,8 @@ export default function ShuttleSection() {
   const activeSpecialPeriods = useMemo(
     () =>
       Array.isArray(specialPeriods?.specialPeriods)
-        ? specialPeriods.specialPeriods.filter(
-            (period) =>
-              Array.isArray(period.applicableDates) &&
-              period.applicableDates.includes(dateInfo.dateStr),
+        ? specialPeriods.specialPeriods.filter((period) =>
+            isDateInSpecialPeriod(period, dateInfo.dateStr),
           )
         : [],
     [dateInfo.dateStr, specialPeriods?.specialPeriods],
@@ -299,17 +259,6 @@ export default function ShuttleSection() {
 
   // 특수 기간 추가 시간을 병합한 버스 데이터
   const busesWithSpecialPeriods = useMemo((): ShuttleBusSchedule[] => {
-    // 시간 정렬 헬퍼 함수 (useMemo 내부에서 사용)
-    const parseTime = (timeStr: string): number => {
-      if (!timeStr || typeof timeStr !== "string") return 0;
-      const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})$/);
-      if (!match) return 0;
-      const hours = parseInt(match[1], 10);
-      const minutes = parseInt(match[2], 10);
-      if (isNaN(hours) || isNaN(minutes)) return 0;
-      return hours * 60 + minutes;
-    };
-
     const busList = Array.isArray(buses) ? buses.filter(Boolean) : [];
     const normalizedBusList = busList.map((bus) => ({
       ...bus,
@@ -372,7 +321,8 @@ export default function ShuttleSection() {
 
             if (Array.isArray(replacementTimes)) {
               schedulesCopy[scheduleType] = [...replacementTimes].sort(
-                (a, b) => parseTime(a) - parseTime(b),
+                (a, b) =>
+                  (timeToMinutes(a) ?? 0) - (timeToMinutes(b) ?? 0),
               );
             }
           });
@@ -395,8 +345,8 @@ export default function ShuttleSection() {
         if (Array.isArray(times)) {
           const mergedTimes = Array.from(new Set([...times, ...addedTimes]));
           mergedTimes.sort((a, b) => {
-            const aMinutes = parseTime(a);
-            const bMinutes = parseTime(b);
+            const aMinutes = timeToMinutes(a) ?? 0;
+            const bMinutes = timeToMinutes(b) ?? 0;
             return aMinutes - bMinutes;
           });
           schedulesCopy[key] = mergedTimes;
@@ -412,43 +362,6 @@ export default function ShuttleSection() {
     specialPeriods?.specialPeriods,
     useSpecialSchedule,
   ]);
-
-  // 시간 문자열을 분 단위로 변환 (공백, 형식 오류 처리)
-  const timeToMinutes = (timeStr: string): number => {
-    // 입력값 유효성 검사
-    if (!timeStr || typeof timeStr !== "string") {
-      console.warn("Invalid timeStr:", timeStr);
-      return 0;
-    }
-
-    // 공백 제거 및 정규화
-    const normalized = timeStr.trim();
-
-    // 시간:분 형식 검증
-    const match = normalized.match(/^(\d{1,2}):(\d{2})$/);
-    if (!match) {
-      console.warn("Invalid time format:", timeStr);
-      return 0;
-    }
-
-    const hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-
-    // 시간, 분 범위 검증
-    if (
-      isNaN(hours) ||
-      isNaN(minutes) ||
-      hours < 0 ||
-      hours > 23 ||
-      minutes < 0 ||
-      minutes > 59
-    ) {
-      console.warn("Out of range time values:", { timeStr, hours, minutes });
-      return 0;
-    }
-
-    return hours * 60 + minutes;
-  };
 
   // 노선별 가장 빨리 출발하는 버스 (30분 이내인 경우만)
   const nextBusesWithin30Min = useMemo((): Array<{
@@ -478,6 +391,7 @@ export default function ShuttleSection() {
 
       for (const time of times) {
         const timeMinutes = timeToMinutes(time);
+        if (timeMinutes === null) continue;
         const minutesUntil = timeMinutes - currentMinutes;
 
         // 첫 번째 다음 버스를 찾으면 저장하고 다음 노선으로
@@ -528,6 +442,7 @@ export default function ShuttleSection() {
       // 각 노선별로 첫 번째 다음 버스 찾기
       for (const time of times) {
         const timeMinutes = timeToMinutes(time);
+        if (timeMinutes === null) continue;
         const minutesUntil = timeMinutes - currentMinutes;
 
         if (minutesUntil > 0) {
@@ -567,6 +482,7 @@ export default function ShuttleSection() {
       if (times.length > 0) {
         times.forEach((time) => {
           const timeMinutes = timeToMinutes(time);
+          if (timeMinutes === null) return;
           firstTime = Math.min(firstTime, timeMinutes);
           lastTime = Math.max(lastTime, timeMinutes);
         });
@@ -952,6 +868,7 @@ export default function ShuttleSection() {
 
       <Card
         id="shuttle-schedules"
+        role="status"
         className="mb-4 border border-neutral-200 bg-neutral-50"
         hover={false}
       >
@@ -1109,15 +1026,10 @@ export default function ShuttleSection() {
                           })
                           .map((time, idx) => {
                             const timeMinutes = timeToMinutes(time);
+                            if (timeMinutes === null) return null;
                             const currentMinutes =
                               dateInfo.hour * 60 + dateInfo.minute;
                             const minutesUntil = timeMinutes - currentMinutes;
-
-                            // timeMinutes가 유효한지 확인
-                            if (isNaN(timeMinutes)) {
-                              console.error("NaN timeMinutes for time:", time);
-                              return null; // NaN이면 렌더링하지 않음
-                            }
 
                             // 이 노선의 가장 빨리 오는 버스인지 확인
                             const nextBusTime = nextBusTimeByRoute.get(

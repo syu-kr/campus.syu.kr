@@ -119,7 +119,7 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
     ny: ny.toString(),
   });
 
-  const [ncstResponse, fcstResponse] = await Promise.all([
+  const [ncstResult, fcstResult] = await Promise.allSettled([
     fetch(`${ncstUrl}?${ncstParams}`, {
       cache: "no-store",
       signal: AbortSignal.timeout(WEATHER_REQUEST_TIMEOUT_MS),
@@ -130,18 +130,12 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
     }),
   ]);
 
-  if (!ncstResponse.ok) {
-    throw new Error("기상청 실황 API 오류");
-  }
+  const [ncstData, fcstData] = await Promise.all([
+    readKmaJson(ncstResult),
+    readKmaJson(fcstResult),
+  ]);
 
-  const ncstData = await ncstResponse.json();
-  const fcstData = fcstResponse.ok ? await fcstResponse.json() : null;
-
-  if (!ncstData.response?.body?.items?.item) {
-    throw new Error("유효한 실황 데이터 없음");
-  }
-
-  const ncstItems = toItemArray(ncstData.response.body.items.item);
+  const ncstItems = toItemArray(ncstData?.response?.body?.items?.item);
   const fcstItems = toItemArray(fcstData?.response?.body?.items?.item);
 
   const ncstCategoryMap: Record<string, number> = {};
@@ -178,6 +172,16 @@ async function fetchWeatherFromKma(): Promise<WeatherResponse> {
     gridX: nx,
     gridY: ny,
   };
+}
+
+async function readKmaJson(result: PromiseSettledResult<Response>) {
+  if (result.status === "rejected" || !result.value.ok) return null;
+
+  try {
+    return await result.value.json();
+  } catch {
+    return null;
+  }
 }
 
 type KmaItem = KmaForecastItem & {

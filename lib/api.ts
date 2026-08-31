@@ -241,33 +241,22 @@ export async function fetchAcademicSchedules(
 
 // 셔틀버스 API - 크롤링된 실제 데이터 사용
 export async function fetchShuttleBuses(): Promise<ShuttleBusSchedule[]> {
-  try {
-    return await fetchJson<ShuttleBusSchedule[]>(
-      "/data/shuttle-bus-schedule.json",
-      { fallback: [], throwOnError: true },
-    );
-  } catch (error) {
-    throw error;
-  }
+  return fetchJson<ShuttleBusSchedule[]>("/data/shuttle-bus-schedule.json", {
+    fallback: [],
+    throwOnError: true,
+  });
 }
 
 // 셔틀버스 특수 기간 API
 export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriods> {
-  try {
-    return await fetchJson<ShuttleSpecialPeriods>(
-      "/data/shuttle-special-periods.json",
-      {
-        fallback: {
-          specialPeriods: [],
-          semesterPeriods: [],
-          vacationPeriods: [],
-        },
-        throwOnError: true,
-      },
-    );
-  } catch (error) {
-    throw error;
-  }
+  return fetchJson<ShuttleSpecialPeriods>("/data/shuttle-special-periods.json", {
+    fallback: {
+      specialPeriods: [],
+      semesterPeriods: [],
+      vacationPeriods: [],
+    },
+    throwOnError: true,
+  });
 }
 
 // 검색 API - 개선됨 (전체 데이터 통합 검색)

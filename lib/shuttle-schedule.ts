@@ -27,7 +27,7 @@ export interface CurrentShuttleSummary {
   hasMoreToday: boolean;
 }
 
-function createScheduleCopy(
+export function createScheduleCopy(
   schedules: ShuttleBusSchedule["schedules"] | undefined,
 ): ShuttleBusSchedule["schedules"] {
   return {
@@ -44,7 +44,7 @@ function createScheduleCopy(
   };
 }
 
-function timeToMinutes(time: string): number | null {
+export function timeToMinutes(time: string): number | null {
   const match = time.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return null;
 
@@ -64,11 +64,13 @@ function timeToMinutes(time: string): number | null {
   return hour * 60 + minute;
 }
 
-function isReplacementSpecialPeriod(period: ShuttleSpecialPeriod): boolean {
+export function isReplacementSpecialPeriod(
+  period: ShuttleSpecialPeriod,
+): boolean {
   return period.type === "replace" || Boolean(period.replacementSchedules);
 }
 
-function isDateInSpecialPeriod(
+export function isDateInSpecialPeriod(
   period: Pick<
     ShuttleSpecialPeriod,
     "applicableDates" | "startDate" | "endDate"
