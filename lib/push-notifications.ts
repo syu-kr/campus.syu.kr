@@ -1,5 +1,7 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
+
 export const FCM_TOKEN_KEY = "fcm_token";
 const NOTIFICATION_PREFERENCE_KEY = "notification_preference";
 
@@ -30,72 +32,97 @@ export function setNotificationPreference(preference: NotificationPreference) {
 export async function enablePushNotifications(
   options: EnablePushNotificationOptions = {},
 ): Promise<string> {
-  if (!("serviceWorker" in navigator) || !("Notification" in window)) {
-    throw new Error("이 브라우저에서는 알림을 지원하지 않습니다.");
+  let currentStatus: PushNotificationStatus = "requesting-permission";
+  const updateStatus = (status: PushNotificationStatus) => {
+    currentStatus = status;
+    options.onStatus?.(status);
+  };
+
+  try {
+    if (!("serviceWorker" in navigator) || !("Notification" in window)) {
+      throw new Error("이 브라우저에서는 알림을 지원하지 않습니다.");
+    }
+
+    updateStatus("requesting-permission");
+    const permission = await requestNotificationPermission();
+    if (permission !== "granted") {
+      setNotificationPreference("disabled");
+      throw new Error(
+        permission === "denied"
+          ? "브라우저에서 알림 권한이 차단되었습니다."
+          : "브라우저 알림 권한이 허용되지 않았습니다.",
+      );
+    }
+
+    updateStatus("registering-service-worker");
+    const swRegistration = await navigator.serviceWorker.register("/sw.js", {
+      updateViaCache: "none",
+    });
+    await waitForServiceWorkerReady();
+
+    updateStatus("initializing-firebase");
+    const { getToken, isSupported } = await import("firebase/messaging");
+    if (!(await isSupported())) {
+      throw new Error("이 브라우저에서는 Firebase 알림을 지원하지 않습니다.");
+    }
+
+    const { messaging, setupForegroundNotifications } =
+      await import("@/lib/firebase");
+
+    if (!messaging) {
+      throw new Error("알림 서비스를 초기화하지 못했습니다.");
+    }
+
+    setupForegroundNotifications();
+
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+    if (!vapidKey) {
+      throw new Error("Firebase VAPID 키가 설정되지 않았습니다.");
+    }
+
+    updateStatus("requesting-fcm-token");
+    const token = await getToken(messaging, {
+      serviceWorkerRegistration: swRegistration,
+      vapidKey,
+    });
+
+    if (!token) {
+      throw new Error("알림 토큰을 발급하지 못했습니다.");
+    }
+
+    updateStatus("saving-fcm-token");
+    const response = await fetch("/api/notifications/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fcm_token: token }),
+    });
+
+    if (!response.ok) {
+      throw new Error("알림 토큰을 저장하지 못했습니다.");
+    }
+
+    localStorage.setItem(FCM_TOKEN_KEY, token);
+    setNotificationPreference("enabled");
+    updateStatus("enabled");
+    return token;
+  } catch (error) {
+    const errorCode = readErrorCode(error);
+    Sentry.captureException(error, {
+      tags: {
+        feature: "push-notifications",
+        step: currentStatus,
+        permission:
+          "Notification" in window ? Notification.permission : "unsupported",
+        ...(errorCode ? { firebase_error_code: errorCode } : {}),
+      },
+    });
+    throw error;
   }
+}
 
-  options.onStatus?.("requesting-permission");
-  const permission = await requestNotificationPermission();
-  if (permission !== "granted") {
-    setNotificationPreference("disabled");
-    throw new Error(
-      permission === "denied"
-        ? "브라우저에서 알림 권한이 차단되었습니다."
-        : "브라우저 알림 권한이 허용되지 않았습니다.",
-    );
-  }
-
-  options.onStatus?.("registering-service-worker");
-  const swRegistration = await navigator.serviceWorker.register("/sw.js", {
-    updateViaCache: "none",
-  });
-  await waitForServiceWorkerReady();
-
-  options.onStatus?.("initializing-firebase");
-  const { getToken, isSupported } = await import("firebase/messaging");
-  if (!(await isSupported())) {
-    throw new Error("이 브라우저에서는 Firebase 알림을 지원하지 않습니다.");
-  }
-
-  const { messaging, setupForegroundNotifications } =
-    await import("@/lib/firebase");
-
-  if (!messaging) {
-    throw new Error("알림 서비스를 초기화하지 못했습니다.");
-  }
-
-  setupForegroundNotifications();
-
-  const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
-  if (!vapidKey) {
-    throw new Error("Firebase VAPID 키가 설정되지 않았습니다.");
-  }
-
-  options.onStatus?.("requesting-fcm-token");
-  const token = await getToken(messaging, {
-    serviceWorkerRegistration: swRegistration,
-    vapidKey,
-  });
-
-  if (!token) {
-    throw new Error("알림 토큰을 발급하지 못했습니다.");
-  }
-
-  options.onStatus?.("saving-fcm-token");
-  const response = await fetch("/api/notifications/subscribe", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ fcm_token: token }),
-  });
-
-  if (!response.ok) {
-    throw new Error("알림 토큰을 저장하지 못했습니다.");
-  }
-
-  localStorage.setItem(FCM_TOKEN_KEY, token);
-  setNotificationPreference("enabled");
-  options.onStatus?.("enabled");
-  return token;
+function readErrorCode(error: unknown) {
+  if (!error || typeof error !== "object" || !("code" in error)) return null;
+  return typeof error.code === "string" ? error.code : null;
 }
 
 async function requestNotificationPermission(): Promise<NotificationPermission> {
