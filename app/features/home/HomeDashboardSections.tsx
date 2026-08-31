@@ -271,6 +271,14 @@ export function TodayShuttleSection({
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {isError && <DashboardLoadError onRetry={onRetry} />}
+        {!isLoading && !isError && (
+          <p
+            role="status"
+            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900"
+          >
+            {dictionary.pages.busInfo.scheduleNotice}
+          </p>
+        )}
         {!isLoading && !isError && summary.isWeekend && (
           <StateCard
             type="info"

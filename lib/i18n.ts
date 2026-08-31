@@ -944,7 +944,7 @@ export const dictionaries = {
           eyebrow: "바로 답변",
           title: "다음 셔틀 한눈에 보기",
           question: "오늘 삼육대학교 셔틀버스는 언제 출발하나요?",
-          source: "출처: 삼육대학교 셔틀 시간표 데이터",
+          source: "출처: 2026년 4월 29일 기준 삼육대학교 셔틀 시간표 데이터",
           updatedPrefix: "기준",
           weekend:
             "오늘은 주말입니다. 삼육대학교 셔틀버스가 운행되지 않습니다.",
@@ -953,7 +953,7 @@ export const dictionaries = {
           noMore:
             "오늘 남은 셔틀 출발편이 없습니다. 전체 시간표에서 다음 운행일을 확인하세요.",
           nextDeparture:
-            "다음 셔틀은 {routeName} 노선 {time} 출발이며 약 {minutes}분 남았습니다.",
+            "다음 셔틀은 {routeName} 노선 {time} 출발이며 약 {minutes}분 남았습니다. 2026학년도 2학기 공식 시간표 확정 전 참고용입니다.",
           departureItem: "{time} 출발, 약 {minutes}분 후",
         },
         shuttleDescriptionPrefix: "캠퍼스 셔틀버스 운행 시간표",
@@ -1007,7 +1007,7 @@ export const dictionaries = {
         selectedSchedule: "선택한 시간표",
         scheduleBase: "현재 시간표 기준",
         scheduleNotice:
-          "셔틀 시간표와 실시간 위치는 제공 데이터 기준입니다. 행사, 교통 상황, 학교 공지에 따라 실제 운행과 다를 수 있습니다.",
+          "현재 시간표는 2026년 4월 29일 기준이며, 2026학년도 2학기 공식 공지 전까지 참고용입니다. 실제 운행은 학교 공지를 우선 확인해주세요.",
         specialPeriodTitle: "셔틀버스 특수 운행 기간입니다",
         vacationNotice: "방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.",
         noBusInfo: "버스 정보를 불러올 수 없습니다.",
@@ -2523,7 +2523,7 @@ export const dictionaries = {
           eyebrow: "Direct answer",
           title: "Next shuttle at a glance",
           question: "When does the Sahmyook University shuttle leave today?",
-          source: "Source: Sahmyook University shuttle timetable data",
+          source: "Source: Sahmyook University shuttle data as of April 29, 2026",
           updatedPrefix: "As of",
           weekend:
             "It is the weekend today. Sahmyook University shuttle buses are not running.",
@@ -2532,7 +2532,7 @@ export const dictionaries = {
           noMore:
             "There are no remaining shuttle departures today. Check the full timetable for the next operating day.",
           nextDeparture:
-            "The next shuttle is the {routeName} route at {time}, about {minutes} minutes from now.",
+            "The next shuttle is the {routeName} route at {time}, about {minutes} minutes from now. This is for reference until the Fall 2026 timetable is officially confirmed.",
           departureItem: "{time} departure, about {minutes} min later",
         },
         shuttleDescriptionPrefix: "Campus shuttle timetable",
@@ -2586,7 +2586,7 @@ export const dictionaries = {
         selectedSchedule: "Selected timetable",
         scheduleBase: "Current timetable",
         scheduleNotice:
-          "Shuttle timetables and live locations are based on provided data. Actual service may vary due to events, traffic, or official school notices.",
+          "This timetable is based on data from April 29, 2026 and is for reference until the Fall 2026 schedule is officially announced. Please prioritize official school notices.",
         specialPeriodTitle: "Special shuttle schedule is active",
         vacationNotice:
           "This is a vacation timetable. Operating times may differ.",
