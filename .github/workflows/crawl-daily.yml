@@ -2,8 +2,10 @@ name: Daily Crawl - Academic, Scholarship, Campus & Cafeteria Notices
 
 on:
   schedule:
-    # 매일 15시(UTC) 실행 = KST 자정(00:00)
+    # 매일 15시(UTC) 실행 = KST 자정(00:00), 전체 크롤링
     - cron: "0 15 * * *"
+    # 매일 1시(UTC) 실행 = KST 오전 10:00, 식단만 재크롤링
+    - cron: "0 1 * * *"
   workflow_dispatch:
     inputs:
       ai_limit:
@@ -50,6 +52,7 @@ jobs:
       CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES }}
       CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
+      CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && github.event.schedule == '0 1 * * *' }}
 
     steps:
       - name: Set timezone to KST
@@ -83,24 +86,30 @@ jobs:
         run: npm run pull:crawl-data
 
       - name: Run academic notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_announcements.py
 
       - name: Run scholarship notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_scholarships.py
 
       - name: Run campus life notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_campus.py
 
       - name: Run event notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_events.py
 
       - name: Run department notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_department_notices.py
 
       - name: Run cafeteria menu crawler
         run: python scripts/crawl_cafeteria.py
 
       - name: Generate announcement AI summaries
+        if: env.CAFETERIA_ONLY_RUN != 'true'
         id: announcement_ai
         continue-on-error: true
         env:
