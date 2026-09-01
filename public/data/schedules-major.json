@@ -264,10 +264,10 @@
     "description": "대체휴일"
   },
   {
-    "id": "schedule-588bcfff1b95",
+    "id": "schedule-e8139843e112",
     "title": "재학생 등록기간",
-    "startDate": "2026.08.18",
-    "endDate": "2026.08.24",
+    "startDate": "2026.08.24",
+    "endDate": "2026.08.28",
     "category": "event",
     "description": "재학생 등록기간"
   },
@@ -662,5 +662,13 @@
     "endDate": "2027.02.26",
     "category": "event",
     "description": "휴·복학 만기일"
+  },
+  {
+    "id": "schedule-588bcfff1b95",
+    "title": "재학생 등록기간",
+    "startDate": "2026.08.18",
+    "endDate": "2026.08.24",
+    "category": "event",
+    "description": "재학생 등록기간"
   }
 ]
