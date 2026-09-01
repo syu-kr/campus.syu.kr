@@ -54,7 +54,7 @@ export async function GET() {
       );
     }
 
-    // 서울 2개, 경기 4개 정류장 도착 정보를 병렬 조회한다.
+    // 서울 4개, 경기 4개 정류장 도착 정보를 병렬 조회한다.
     pendingArrivals ??= fetchPublicTransitArrivals().finally(() => {
       pendingArrivals = undefined;
     });
@@ -159,7 +159,10 @@ function preserveMissingRoutes(
   return freshStops.map((freshStop) => {
     const cachedStop = cachedByStopId.get(freshStop.stop.id);
 
-    if (!cachedStop || freshStop.arrivals.length >= cachedStop.arrivals.length) {
+    if (
+      !cachedStop ||
+      countRoutes([freshStop]) >= countRoutes([cachedStop])
+    ) {
       return freshStop;
     }
 
@@ -167,7 +170,10 @@ function preserveMissingRoutes(
       cachedStop.arrivals.map((arrival) => [getBusRouteKey(arrival), arrival]),
     );
     freshStop.arrivals.forEach((arrival) => {
-      mergedByRoute.set(getBusRouteKey(arrival), arrival);
+      const key = getBusRouteKey(arrival);
+      if (arrival.arrivalMsg1 !== "정보 없음" || !mergedByRoute.has(key)) {
+        mergedByRoute.set(key, arrival);
+      }
     });
 
     return {
@@ -185,5 +191,11 @@ function compareArrivalTime(
 }
 
 function countRoutes(stops: BusArrivalsAtStop[]) {
-  return stops.reduce((total, item) => total + item.arrivals.length, 0);
+  return stops.reduce(
+    (total, item) =>
+      total +
+      item.arrivals.filter((arrival) => arrival.arrivalMsg1 !== "정보 없음")
+        .length,
+    0,
+  );
 }

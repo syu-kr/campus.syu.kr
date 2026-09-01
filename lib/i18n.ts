@@ -1036,9 +1036,9 @@ export const dictionaries = {
           "일부 실시간 제공처 조회가 지연되어 현재 선택한 정류장 정보가 비어 있을 수 있습니다. 잠시 후 다시 시도해 주세요.",
         retry: "재시도",
         noTransitInfo: "현재 표시 가능한 운행 정보가 없습니다.",
-        noActiveBus: "현재 운행중인 버스는 없습니다.",
+        noActiveBus: "현재 도착 예정 정보가 없습니다.",
         allRouteStatusHint:
-          "아래에는 운행종료/정보없음을 포함한 전체 노선 상태를 표시합니다.",
+          "아래에는 현재 정류장을 경유하는 전체 노선을 표시합니다.",
         noInfo: "정보 없음",
         noInfoCompact: "정보없음",
         running: "운행중",
@@ -2616,9 +2616,9 @@ export const dictionaries = {
           "Some real-time providers are delayed, so the selected stop may be missing arrival information. Please try again shortly.",
         retry: "Retry",
         noTransitInfo: "No transit information is available to display.",
-        noActiveBus: "No buses are currently running.",
+        noActiveBus: "No arrival estimates are currently available.",
         allRouteStatusHint:
-          "All route statuses, including ended or unavailable routes, are shown below.",
+          "All routes serving this stop are shown below.",
         noInfo: "No information",
         noInfoCompact: "No info",
         running: "Running",

@@ -166,6 +166,18 @@ export function getBusRouteDestination(
   return destination ? { ...destination } : undefined;
 }
 
+export function getBusRoutesAtStop(stopId: string) {
+  if (!isPublicTransitStopId(stopId)) return [];
+
+  return ROUTE_DESTINATIONS.flatMap((route) => {
+    const destination = route.destinations[stopId];
+
+    return destination
+      ? [{ routeId: route.routeId, routeName: route.routeName, destination }]
+      : [];
+  });
+}
+
 function isPublicTransitStopId(stopId: string): stopId is PublicTransitStopId {
   return (
     stopId === "jungmun-up" ||
