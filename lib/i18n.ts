@@ -1007,7 +1007,7 @@ export const dictionaries = {
         selectedSchedule: "선택한 시간표",
         scheduleBase: "현재 시간표 기준",
         scheduleNotice:
-          "현재 시간표는 2026년 4월 29일 기준이며, 2026학년도 2학기 공식 공지 전까지 참고용입니다. 실제 운행은 학교 공지를 우선 확인해주세요.",
+          "현재 시간표는 2026년 4월 29일 기준입니다.",
         specialPeriodTitle: "셔틀버스 특수 운행 기간입니다",
         vacationNotice: "방학 중 시간표입니다. 운행 시간이 다를 수 있습니다.",
         noBusInfo: "버스 정보를 불러올 수 없습니다.",
@@ -2586,7 +2586,7 @@ export const dictionaries = {
         selectedSchedule: "Selected timetable",
         scheduleBase: "Current timetable",
         scheduleNotice:
-          "This timetable is based on data from April 29, 2026 and is for reference until the Fall 2026 schedule is officially announced. Please prioritize official school notices.",
+          "This timetable is based on data from April 29, 2026.",
         specialPeriodTitle: "Special shuttle schedule is active",
         vacationNotice:
           "This is a vacation timetable. Operating times may differ.",
