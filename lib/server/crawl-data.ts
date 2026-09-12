@@ -104,6 +104,9 @@ async function downloadAndParseJson(
   fileName: DailyCrawlDataFile,
 ): Promise<unknown> {
   const entry = manifest.files[fileName];
+  if (!entry) {
+    throw new Error(`manifest에 ${fileName} 항목이 없습니다.`);
+  }
   const payload = await fetchBuffer(`${baseUrl}/${entry.path}`);
 
   verifyPayload(fileName, payload, entry.sha256, entry.size);

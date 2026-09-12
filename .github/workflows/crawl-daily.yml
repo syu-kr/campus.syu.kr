@@ -1,4 +1,4 @@
-name: Daily Crawl - Academic, Scholarship, Campus & Cafeteria Notices
+name: Daily Crawl - Academic, Scholarship, Campus, SW & Cafeteria Notices
 
 on:
   schedule:
@@ -46,6 +46,7 @@ jobs:
       CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
       CRAWL_CAMPUS_NOTICES_URL: ${{ vars.CRAWL_CAMPUS_NOTICES_URL }}
       CRAWL_EVENT_NOTICES_URL: ${{ vars.CRAWL_EVENT_NOTICES_URL }}
+      CRAWL_SWUNIV_NOTICES_URL: ${{ vars.CRAWL_SWUNIV_NOTICES_URL }}
       CRAWL_DEPARTMENT_COURSE_GUIDE_URL: ${{ vars.CRAWL_DEPARTMENT_COURSE_GUIDE_URL }}
       CRAWL_DEPARTMENT_NOTICE_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_MAX_PAGES }}
       CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS }}
@@ -104,6 +105,10 @@ jobs:
       - name: Run department notices crawler
         if: env.CAFETERIA_ONLY_RUN != 'true'
         run: python scripts/crawl_department_notices.py
+
+      - name: Run SW-centered university notices crawler
+        if: env.CAFETERIA_ONLY_RUN != 'true'
+        run: python scripts/crawl_swuniv_notices.py
 
       - name: Run cafeteria menu crawler
         run: python scripts/crawl_cafeteria.py

@@ -1,7 +1,7 @@
 import type { Announcement, AnnouncementCategory } from "./announcements";
 
 export type CompetitionSourceCategory =
-  | AnnouncementCategory
+  | Exclude<AnnouncementCategory, "sw">
   | "event"
   | "department";
 

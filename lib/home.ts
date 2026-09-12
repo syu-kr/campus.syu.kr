@@ -97,6 +97,11 @@ function createEmptySearchCategories(
       items: [],
       linkPath: localizePath("/campus/announcements", locale),
     },
+    swAnnouncement: {
+      label: dictionary.categories.swAnnouncement,
+      items: [],
+      linkPath: localizePath("/academic/sw-notices", locale),
+    },
     scholarship: {
       label: dictionary.categories.scholarship,
       items: [],
@@ -138,6 +143,8 @@ export function categorizeSearchResults(
         categories.campusAnnouncement.items.push(result);
       } else if (result.category === "scholarship") {
         categories.scholarship.items.push(result);
+      } else if (result.category === "sw") {
+        categories.swAnnouncement.items.push(result);
       }
     }
   });

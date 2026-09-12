@@ -1,7 +1,8 @@
 export type AnnouncementCategory =
   | "academic"
   | "campus"
-  | "scholarship";
+  | "scholarship"
+  | "sw";
 
 export type HomeNoticeCategory = AnnouncementCategory | "service";
 
@@ -18,7 +19,7 @@ export interface AnnouncementAiSummary {
   inputHash?: string;
   contentSource?: "detail" | "json" | "metadata";
   detailContentHash?: string;
-  provider?: "openai";
+  provider?: "openai" | "supilot";
   model?: string;
   promptVersion?: string;
   schemaVersion?: number;

@@ -42,6 +42,7 @@ const VALID_CATEGORIES: AnnouncementCategory[] = [
   "academic",
   "campus",
   "scholarship",
+  "sw",
 ];
 
 async function getRequestContext() {
