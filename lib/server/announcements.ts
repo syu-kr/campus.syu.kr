@@ -25,12 +25,14 @@ const SOURCE_BY_CATEGORY: Record<
   academic: "announcements-academic.json",
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
+  sw: "announcements-sw.json",
 };
 
 const CATEGORY_ORDER: AnnouncementCategory[] = [
   "academic",
   "campus",
   "scholarship",
+  "sw",
 ];
 const ANNOUNCEMENT_CACHE_TTL_MS = 60 * 1000;
 const announcementCache = new Map<
