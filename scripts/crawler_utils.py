@@ -250,6 +250,7 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
 
             notice_id = existing_id_by_key.get(key) or generate_stable_id(
                 config.category,
+                str(row_data["url"]),
                 str(row_data["title"]),
                 str(row_data["date"]),
                 str(row_data["author"]),

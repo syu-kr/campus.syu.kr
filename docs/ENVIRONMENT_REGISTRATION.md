@@ -139,6 +139,7 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `CRAWL_ACADEMIC_NOTICES_URL` | 필수 | `crawl-daily.yml` | 학사공지 목록 page base URL |
 | `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
 | `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
+| `CRAWL_SWUNIV_NOTICES_URL` | 필수 | `crawl-daily.yml` | SW중심대학 공지 목록 page base URL |
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |

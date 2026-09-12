@@ -150,7 +150,8 @@ async function pullCurrent() {
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
     const payload = snapshot.payloads.get(fileName);
     if (!payload) {
-      throw new Error(`${fileName} 복원 payload가 없습니다.`);
+      console.log(`[crawl-data] legacy manifest: kept bundled ${fileName}`);
+      continue;
     }
     await writeFile(path.join(DATA_DIR, fileName), payload);
     console.log(`[crawl-data] restored ${fileName}`);
@@ -161,7 +162,7 @@ async function pullCurrent() {
 
 async function buildLocalSnapshot(): Promise<CrawlDataSnapshot> {
   const version = buildVersion();
-  const files = {} as CrawlDataManifest["files"];
+  const files: CrawlDataManifest["files"] = {};
   const payloads = new Map<DailyCrawlDataFile, Buffer>();
 
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
@@ -219,6 +220,7 @@ async function downloadSnapshot(
   const payloads = new Map<DailyCrawlDataFile, Buffer>();
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
     const entry = manifest.files[fileName];
+    if (!entry) continue;
     const payload = await fetchBuffer(entry.path);
     verifyPayload(fileName, payload, entry.sha256, entry.size);
     payloads.set(fileName, payload);
@@ -262,7 +264,10 @@ async function writePagesArtifact(
     for (const fileName of DAILY_CRAWL_DATA_FILES) {
       const payload = snapshot.payloads.get(fileName);
       if (!payload) {
-        throw new Error(`${snapshot.manifest.version}/${fileName}이 없습니다.`);
+        if (snapshot.manifest.files[fileName]) {
+          throw new Error(`${snapshot.manifest.version}/${fileName}이 없습니다.`);
+        }
+        continue;
       }
       await writeFile(path.join(versionDir, fileName), payload);
     }
@@ -368,6 +373,7 @@ function manifestsHaveSameFiles(
   return DAILY_CRAWL_DATA_FILES.every((fileName) => {
     const currentFile = current.files[fileName];
     const nextFile = next.files[fileName];
+    if (!currentFile || !nextFile) return false;
     return (
       currentFile.sha256 === nextFile.sha256 &&
       currentFile.size === nextFile.size

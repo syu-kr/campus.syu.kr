@@ -102,4 +102,38 @@ describe("crawl data Pages runtime", () => {
     expect(snapshot.version).toBe("bundled");
     expect(snapshot.data).toBeDefined();
   });
+
+  it("uses bundled SW notices with a legacy manifest", async () => {
+    const version = "20260724T010203-123.1";
+    const manifest = {
+      schemaVersion: 1,
+      version,
+      publishedAt: "2026-07-24T01:02:03.000Z",
+      files: Object.fromEntries(
+        DAILY_CRAWL_DATA_FILES.filter(
+          (fileName) => fileName !== "announcements-sw.json",
+        ).map((fileName) => [
+          fileName,
+          {
+            path: `versions/${version}/${fileName}`,
+            sha256: "0".repeat(64),
+            size: 2,
+          },
+        ]),
+      ),
+      retainedVersions: [version],
+    };
+
+    process.env.CRAWL_DATA_BASE_URL = "https://crawl-data.example.test";
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(manifest))));
+
+    const { readDailyCrawlDataSnapshot } = await import("./crawl-data");
+    const snapshot = await readDailyCrawlDataSnapshot<unknown[]>(
+      "announcements-sw.json",
+    );
+
+    expect(snapshot.source).toBe("bundled-fallback");
+    expect(snapshot.data.length).toBeGreaterThan(0);
+  });
 });

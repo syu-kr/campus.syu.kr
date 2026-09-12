@@ -52,6 +52,13 @@ describe("crawl data contract", () => {
     );
   });
 
+  it("accepts a legacy manifest without SW notices", () => {
+    const manifest = createManifest();
+    delete manifest.files["announcements-sw.json"];
+
+    expect(parseCrawlDataManifest(manifest).files["announcements-sw.json"]).toBeUndefined();
+  });
+
   it("rejects inconsistent retained versions", () => {
     const manifest = createManifest();
     manifest.retainedVersions = ["another-version"];
