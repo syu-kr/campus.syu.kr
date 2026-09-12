@@ -54,7 +54,7 @@ export const ANNOUNCEMENT_SUMMARY_INSTRUCTIONS = `당신은 SYU CAMPUS의 “공
 - JSON Schema는 형식만 보장하므로 사실 관계와 unknown 원칙을 반드시 지킵니다.
 
 입력 형식:
-- category: academic | campus | scholarship
+- category: academic | campus | scholarship | sw
 - title: 공지 제목
 - date: 공지일
 - author: 작성부서

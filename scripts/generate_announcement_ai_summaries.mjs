@@ -40,6 +40,7 @@ const SOURCES = [
   { category: "scholarship", file: "announcements-scholarship.json" },
   { category: "campus", file: "announcements-events.json" },
   { category: "campus", file: "announcements-departments.json" },
+  { category: "sw", file: "announcements-sw.json" },
 ];
 
 async function main() {
@@ -362,7 +363,7 @@ async function readAnnouncements() {
 }
 
 function toAnnouncementCategory(value, fallback) {
-  return ["academic", "campus", "scholarship"].includes(value)
+  return ["academic", "campus", "scholarship", "sw"].includes(value)
     ? value
     : fallback;
 }
