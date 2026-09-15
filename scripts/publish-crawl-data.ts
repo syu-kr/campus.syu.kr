@@ -41,7 +41,7 @@ async function main() {
   }
 
   if (args.includes("--pull-current")) {
-    await pullCurrent(args.includes("--allow-legacy-ai-metadata"));
+    await pullCurrent();
     return;
   }
 
@@ -137,7 +137,7 @@ async function prepareRollbackArtifact(version: string, outputDir: string) {
   console.log(`[crawl-data] prepared rollback artifact for ${version}`);
 }
 
-async function pullCurrent(allowLegacyAiMetadata = false) {
+async function pullCurrent() {
   const manifest = await fetchManifest("current.json", true);
   if (!manifest) {
     console.log(
@@ -146,11 +146,7 @@ async function pullCurrent(allowLegacyAiMetadata = false) {
     return;
   }
 
-  const snapshot = await downloadSnapshot(
-    manifest.version,
-    manifest,
-    allowLegacyAiMetadata,
-  );
+  const snapshot = await downloadSnapshot(manifest.version, manifest);
   await mkdir(DATA_DIR, { recursive: true });
 
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
@@ -214,7 +210,6 @@ async function downloadAvailableSnapshots(
 async function downloadSnapshot(
   version: string,
   knownManifest?: CrawlDataManifest,
-  allowLegacyAiMetadata = false,
 ): Promise<CrawlDataSnapshot> {
   validateCrawlDataVersion(version);
   const manifest =
@@ -229,13 +224,7 @@ async function downloadSnapshot(
     const entry = manifest.files[fileName];
     if (!entry) continue;
     const payload = await fetchBuffer(entry.path);
-    verifyPayload(
-      fileName,
-      payload,
-      entry.sha256,
-      entry.size,
-      allowLegacyAiMetadata,
-    );
+    verifyPayload(fileName, payload, entry.sha256, entry.size);
     payloads.set(fileName, payload);
   }
 
@@ -369,7 +358,6 @@ function verifyPayload(
   payload: Buffer,
   expectedSha256: string,
   expectedSize: number,
-  allowLegacyAiMetadata = false,
 ) {
   if (payload.byteLength !== expectedSize) {
     throw new Error(`${fileName}의 크기가 manifest와 일치하지 않습니다.`);
@@ -379,13 +367,7 @@ function verifyPayload(
   }
   try {
     const value = JSON.parse(payload.toString("utf8")) as unknown;
-    // ponytail: remove this migration escape hatch after published legacy AI metadata is sanitized.
-    if (
-      !allowLegacyAiMetadata ||
-      fileName !== "announcement-ai-metadata.json"
-    ) {
-      validateDailyCrawlData(fileName, value);
-    }
+    validateDailyCrawlData(fileName, value);
   } catch (error) {
     throw new Error(`${fileName}이 올바른 JSON이 아닙니다.`, { cause: error });
   }

@@ -84,7 +84,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit
 
       - name: Restore current crawl data snapshot
-        run: npm run pull:crawl-data -- --allow-legacy-ai-metadata
+        run: npm run pull:crawl-data
 
       - name: Run academic notices crawler
         if: env.CAFETERIA_ONLY_RUN != 'true'
