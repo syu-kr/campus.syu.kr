@@ -57,7 +57,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ## Vercel Runtime
 
-Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.12 이상으로 맞춥니다. 운영에서는 Vercel의 Node.js 24.x 런타임 사용을 권장합니다.
+Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.13.0 이상으로 맞춥니다. 운영에서는 Vercel의 Node.js 24.x 런타임 사용을 권장합니다.
 
 Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합니다. Vercel 함수 번들에서 `firebase-admin@14`의 `jwks-rsa@4` -> `jose@6` 조합이 CommonJS/ESM 로딩 오류를 일으킬 수 있으므로, 이 프로젝트는 Firebase Admin SDK를 13.x 안정 조합으로 고정합니다.
 
@@ -97,18 +97,12 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
-| `CRAWLER_DEPLOY_KEY` | 필수 | `crawl-monthly.yml` | 월간 정적 데이터를 `main`에 자동 커밋하는 write deploy key의 private key |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포에 push 가능한 GitHub token |
 | `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
 
-### CRAWLER_DEPLOY_KEY 등록
+### 월간 크롤러 권한
 
-`crawl-monthly.yml`은 PAT 대신 repository deploy key로 `main`에 자동 커밋합니다. `crawl-daily.yml`은 GitHub Pages 아티팩트만 배포하므로 deploy key와 저장소 write 권한을 사용하지 않습니다.
-
-1. 전용 SSH key pair를 생성합니다.
-2. Public key를 `GitHub Repository -> Settings -> Deploy keys`에 등록하고 `Allow write access`를 켭니다.
-3. Branch ruleset bypass 대상에서 `deploy keys`를 허용합니다.
-4. Private key 전체를 `CRAWLER_DEPLOY_KEY` Actions secret으로 등록합니다.
+`crawl-monthly.yml`은 기본 `GITHUB_TOKEN`의 `contents: write`, `pull-requests: write` 권한으로 임시 브랜치와 PR을 생성합니다. 별도 Deploy Key, PAT 또는 Ruleset bypass를 등록하지 않습니다.
 
 ### 일일 크롤링 데이터 GitHub Pages 권한
 

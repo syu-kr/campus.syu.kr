@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
@@ -24,7 +25,11 @@ import {
   formatDateTimeLabel,
   TimeRow,
 } from "@/app/features/meet/availability-grid";
-import { getMeetDatesFromSlots, getMeetTimesFromSlots } from "@/lib/meet";
+import {
+  getMeetDatesFromSlots,
+  getMeetOwnerTokenKey,
+  getMeetTimesFromSlots,
+} from "@/lib/meet";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 import type { MeetParticipant, MeetRoomResponse } from "@/types/meet";
 
@@ -71,6 +76,7 @@ const meetRoomErrorCodeKeys: Record<string, keyof MeetRoomErrors> = {
 };
 
 export default function MeetRoomPage({ params }: PageProps) {
+  const router = useRouter();
   const { roomId } = use(params);
   const dictionary = useDictionary();
   const locale = useLocale();
@@ -86,6 +92,8 @@ export default function MeetRoomPage({ params }: PageProps) {
   const [mobileDate, setMobileDate] = useState("");
   const [overwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false);
   const [participantEditToken, setParticipantEditToken] = useState("");
+  const [ownerToken, setOwnerToken] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadRoom = useCallback(async () => {
     setError("");
@@ -112,6 +120,14 @@ export default function MeetRoomPage({ params }: PageProps) {
   useEffect(() => {
     void loadRoom();
   }, [loadRoom]);
+
+  useEffect(() => {
+    try {
+      setOwnerToken(localStorage.getItem(getMeetOwnerTokenKey(roomId)) || "");
+    } catch {
+      setOwnerToken("");
+    }
+  }, [roomId]);
 
   useEffect(() => {
     if (!mobileDate && data?.slots.length) {
@@ -196,6 +212,31 @@ export default function MeetRoomPage({ params }: PageProps) {
       .slice(0, 6)
       .map(([slot, count]) => ({ slot, count }));
   }, [data]);
+
+  const deleteRoom = async () => {
+    if (!ownerToken || isDeleting || !window.confirm(text.deleteConfirm)) return;
+
+    setIsDeleting(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/meet/rooms/${roomId}`, {
+        method: "DELETE",
+        headers: { "x-owner-token": ownerToken },
+      });
+      if (!response.ok) throw new Error(text.deleteFailed);
+
+      try {
+        localStorage.removeItem(getMeetOwnerTokenKey(roomId));
+      } catch {
+        // The server-side deletion already succeeded.
+      }
+      router.replace(localizePath("/more/meet", locale));
+    } catch {
+      setError(text.deleteFailed);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const participantBySlot = useMemo(() => {
     const result = new Map<string, MeetParticipant[]>();
@@ -392,6 +433,19 @@ export default function MeetRoomPage({ params }: PageProps) {
               )}${text.responseOpenSuffix}`
             : text.responseClosed}
         </div>
+        <p className="mt-2 text-xs text-neutral-500">
+          {text.invitePrivacyNotice}
+        </p>
+        {ownerToken && (
+          <button
+            type="button"
+            onClick={deleteRoom}
+            disabled={isDeleting}
+            className="mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeleting ? text.deletingRoom : text.deleteRoom}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6">
@@ -412,6 +466,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                     value={nickname}
                     onChange={(event) => setNickname(event.target.value)}
                     maxLength={30}
+                    required
                     placeholder={text.nicknamePlaceholder}
                     className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />

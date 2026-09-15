@@ -177,6 +177,7 @@ export function CampusTipSuggestionForm({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             maxLength={120}
+            required
             placeholder={text.titlePlaceholder}
             aria-invalid={Boolean(fieldErrors.title)}
             aria-describedby={
@@ -229,6 +230,7 @@ export function CampusTipSuggestionForm({
             onChange={(event) => setDescription(event.target.value)}
             rows={6}
             maxLength={1200}
+            required
             placeholder={text.descriptionPlaceholder}
             aria-invalid={Boolean(fieldErrors.description)}
             aria-describedby={
@@ -288,9 +290,12 @@ export function CampusTipSuggestionForm({
             value={tags}
             onChange={(event) => setTags(event.target.value)}
             placeholder={text.tagsPlaceholder}
+            aria-describedby={`${tagsId}-help`}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="mt-1 text-xs text-neutral-500">{text.tagsHelp}</p>
+          <p id={`${tagsId}-help`} className="mt-1 text-xs text-neutral-500">
+            {text.tagsHelp}
+          </p>
         </div>
 
         <div>
@@ -328,9 +333,13 @@ export function CampusTipSuggestionForm({
             onChange={(event) => setContact(event.target.value)}
             maxLength={120}
             placeholder={text.contactPlaceholder}
+            aria-describedby={`${contactId}-help`}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="mt-1 text-xs leading-5 text-neutral-500">
+          <p
+            id={`${contactId}-help`}
+            className="mt-1 text-xs leading-5 text-neutral-500"
+          >
             {text.contactHelpPrefix}{" "}
             <Link
               href={localizePath("/privacy", locale)}

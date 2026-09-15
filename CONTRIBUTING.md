@@ -26,4 +26,4 @@ npm run dev
 
 ## Repository Rules
 
-`main`은 pull request와 `Lint, Type Check, Build` 통과를 요구하며 force push와 삭제를 금지합니다. 예약 크롤러가 `public/data/`를 직접 갱신하므로 Ruleset bypass 목록에는 **GitHub Actions 앱**만 허용합니다.
+`main`은 pull request와 필수 CI 통과를 요구하며 force push와 삭제를 금지합니다. 월간 크롤러도 PR을 생성하므로 자동화용 Ruleset bypass를 허용하지 않습니다.

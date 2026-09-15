@@ -10,6 +10,10 @@ export const MAX_SHARED_COURSES = 120;
 const MAX_SHARED_ASSIGNMENTS = MAX_SHARED_COURSES * MAX_TIMETABLES;
 const MAX_COURSE_ID_LENGTH = 120;
 
+export function getTimetableShareOwnerTokenKey(shareId: string) {
+  return `timetable-share-owner-token:${shareId}`;
+}
+
 export interface StoredTimetableWorkspace {
   active_timetable_id: string;
   is_compare_mode: boolean;

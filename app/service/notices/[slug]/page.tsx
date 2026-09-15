@@ -134,13 +134,13 @@ export default async function ServiceNoticeDetailPage({
               <ReactMarkdown
                 components={{
                   h1: ({ ...props }) => (
-                    <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />
+                    <h2 className="text-2xl font-bold mt-6 mb-4" {...props} />
                   ),
                   h2: ({ ...props }) => (
-                    <h2 className="text-xl font-bold mt-5 mb-3" {...props} />
+                    <h3 className="text-xl font-bold mt-5 mb-3" {...props} />
                   ),
                   h3: ({ ...props }) => (
-                    <h3 className="text-lg font-bold mt-4 mb-2" {...props} />
+                    <h4 className="text-lg font-bold mt-4 mb-2" {...props} />
                   ),
                   p: ({ ...props }) => (
                     <p className="text-base leading-7 mb-4" {...props} />

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { Modal } from "@/app/components/Modal";
 import { useDictionary } from "@/app/components/LocaleProvider";
 
@@ -26,8 +25,6 @@ export function SubmissionResultModal({
 }: SubmissionResultModalProps) {
   const dictionary = useDictionary();
   const text = dictionary.submissionResult;
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
   return (
     <Modal
       isOpen
@@ -72,8 +69,8 @@ export function SubmissionResultModal({
         )}
 
         <button
-          ref={closeButtonRef}
           type="button"
+          autoFocus
           onClick={onClose}
           className="mt-5 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         >

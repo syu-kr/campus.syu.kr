@@ -3,9 +3,11 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { unstable_rethrow } from "next/navigation";
 import {
+  CRAWL_DATA_MAX_BYTES,
   type CrawlDataManifest,
   type DailyCrawlDataFile,
   parseCrawlDataManifest,
+  validateDailyCrawlData,
 } from "../crawl-data-contract";
 
 const DEFAULT_CRAWL_DATA_BASE_URL =
@@ -82,12 +84,13 @@ async function getCurrentManifest(
   }
 
   const cacheWindow = Math.floor(now / MANIFEST_CACHE_TTL_MS);
-  const promise = fetchText(`${baseUrl}/current.json?v=${cacheWindow}`)
-    .then((content) => {
-      if (Buffer.byteLength(content, "utf8") > MAX_MANIFEST_BYTES) {
-        throw new Error("크롤링 데이터 manifest가 허용 크기를 초과했습니다.");
-      }
-      return parseCrawlDataManifest(JSON.parse(content) as unknown);
+  const promise = fetchBuffer(
+    `${baseUrl}/current.json?v=${cacheWindow}`,
+    MAX_MANIFEST_BYTES,
+  ).then((payload) => {
+      return parseCrawlDataManifest(
+        JSON.parse(payload.toString("utf8")) as unknown,
+      );
     });
 
   manifestCache = {
@@ -107,10 +110,12 @@ async function downloadAndParseJson(
   if (!entry) {
     throw new Error(`manifest에 ${fileName} 항목이 없습니다.`);
   }
-  const payload = await fetchBuffer(`${baseUrl}/${entry.path}`);
+  const payload = await fetchBuffer(`${baseUrl}/${entry.path}`, entry.size);
 
   verifyPayload(fileName, payload, entry.sha256, entry.size);
-  return JSON.parse(payload.toString("utf8")) as unknown;
+  const value = JSON.parse(payload.toString("utf8")) as unknown;
+  validateDailyCrawlData(fileName, value);
+  return value;
 }
 
 function getCrawlDataBaseUrl(): string {
@@ -125,26 +130,34 @@ function getCrawlDataBaseUrl(): string {
   return url.toString().replace(/\/+$/, "");
 }
 
-async function fetchText(url: string): Promise<string> {
+async function fetchBuffer(url: string, maxBytes: number): Promise<Buffer> {
   const response = await fetch(url, {
-    cache: "no-store",
+    cache: url.includes("current.json") ? "no-store" : "force-cache",
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   if (!response.ok) {
     throw new Error(`크롤링 데이터 응답 오류: ${response.status}`);
   }
-  return response.text();
-}
+  const declaredLength = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw new Error("크롤링 데이터가 허용 크기를 초과했습니다.");
+  }
 
-async function fetchBuffer(url: string): Promise<Buffer> {
-  const response = await fetch(url, {
-    cache: "force-cache",
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
-  if (!response.ok) {
-    throw new Error(`크롤링 데이터 응답 오류: ${response.status}`);
+  if (!response.body) return Buffer.alloc(0);
+  const chunks: Uint8Array[] = [];
+  const reader = response.body.getReader();
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel();
+      throw new Error("크롤링 데이터가 허용 크기를 초과했습니다.");
+    }
+    chunks.push(value);
   }
-  return Buffer.from(await response.arrayBuffer());
+  return Buffer.concat(chunks, totalBytes);
 }
 
 function verifyPayload(
@@ -168,9 +181,14 @@ async function readBundledSnapshot<T>(
 ): Promise<CrawlDataSnapshot<T>> {
   const filePath = path.join(process.cwd(), "public", "data", fileName);
   const content = await readFile(filePath, "utf8");
+  if (Buffer.byteLength(content, "utf8") > CRAWL_DATA_MAX_BYTES[fileName]) {
+    throw new Error(`${fileName}이 허용 크기를 초과했습니다.`);
+  }
+  const data = JSON.parse(content) as T;
+  validateDailyCrawlData(fileName, data);
 
   return {
-    data: JSON.parse(content) as T,
+    data,
     source: "bundled-fallback",
     version: "bundled",
   };

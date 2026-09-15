@@ -177,6 +177,7 @@ export function ContactForm({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             maxLength={120}
+            required
             placeholder={text.titlePlaceholder}
             aria-invalid={Boolean(fieldErrors.title)}
             aria-describedby={
@@ -206,6 +207,7 @@ export function ContactForm({
             onChange={(event) => setMessage(event.target.value)}
             rows={7}
             maxLength={2000}
+            required
             placeholder={text.messagePlaceholder}
             aria-invalid={Boolean(fieldErrors.message)}
             aria-describedby={
@@ -266,9 +268,10 @@ export function ContactForm({
             onChange={(event) => setContact(event.target.value)}
             maxLength={120}
             placeholder={text.contactPlaceholder}
+            aria-describedby="contact-help"
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="mt-1 text-xs text-neutral-500">
+          <p id="contact-help" className="mt-1 text-xs text-neutral-500">
             {text.contactHelp}
           </p>
         </div>

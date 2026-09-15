@@ -4,7 +4,7 @@ import { getAdminAuthorizationFailure } from "./admin-auth";
 const allowedEmails = ["admin@example.com"];
 
 describe("getAdminAuthorizationFailure", () => {
-  it("accepts an allowlisted email regardless of its verification claim", () => {
+  it("rejects an allowlisted email until it is verified", () => {
     const decodedToken = {
       email: "admin@example.com",
       email_verified: false,
@@ -12,13 +12,13 @@ describe("getAdminAuthorizationFailure", () => {
 
     expect(
       getAdminAuthorizationFailure(decodedToken, allowedEmails),
-    ).toBeNull();
+    ).toBe("email-not-verified");
   });
 
   it("rejects an email outside the allowlist", () => {
     expect(
       getAdminAuthorizationFailure(
-        { email: "user@example.com" },
+        { email: "user@example.com", email_verified: true },
         allowedEmails,
       ),
     ).toBe("not-allowed");
@@ -27,14 +27,14 @@ describe("getAdminAuthorizationFailure", () => {
   it("accepts an allowlisted email case-insensitively", () => {
     expect(
       getAdminAuthorizationFailure(
-        { email: " ADMIN@EXAMPLE.COM " },
+        { email: " ADMIN@EXAMPLE.COM ", email_verified: true },
         allowedEmails,
       ),
     ).toBeNull();
   });
 
   it("rejects a token without an email", () => {
-    expect(getAdminAuthorizationFailure({}, allowedEmails)).toBe(
+    expect(getAdminAuthorizationFailure({ email_verified: true }, allowedEmails)).toBe(
       "not-allowed",
     );
   });

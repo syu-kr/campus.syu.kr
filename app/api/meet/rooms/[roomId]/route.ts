@@ -5,9 +5,11 @@ import { admin, getFirestore, timestampToIso } from "@/lib/server/firestore";
 import {
   ApiError,
   apiServerErrorResponse,
+  enforceSameOrigin,
   enforceRateLimit,
   rateLimitResponse,
 } from "@/lib/server/http";
+import { matchesOwnerToken } from "@/lib/server/owner-token";
 
 const RATE_LIMIT = {
   limit: 120,
@@ -119,5 +121,51 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     if (rateLimited) return rateLimited;
 
     return apiServerErrorResponse(error, "일정 방 정보를 불러오지 못했습니다");
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  try {
+    const { roomId } = await params;
+    assertValidRoomId(roomId);
+    enforceSameOrigin(req);
+    await enforceRateLimit(req, `meet-room-delete:${roomId}`, {
+      limit: 20,
+      windowMs: 60 * 60 * 1000,
+    });
+
+    const roomRef = getFirestore().collection("meet_rooms").doc(roomId);
+    const roomDoc = await roomRef.get();
+    if (!roomDoc.exists) {
+      throw new ApiError("일정 방을 찾을 수 없습니다", 404);
+    }
+
+    if (
+      !matchesOwnerToken(
+        req.headers.get("x-owner-token")?.trim() || "",
+        roomDoc.get("owner_token_hash"),
+      )
+    ) {
+      throw new ApiError("일정 방을 삭제할 권한이 없습니다", 403);
+    }
+
+    await roomRef.firestore.recursiveDelete(roomRef);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
+
+    return apiServerErrorResponse(error, "일정 방을 삭제하지 못했습니다");
+  }
+}
+
+function assertValidRoomId(roomId: string) {
+  if (!/^[A-Za-z0-9_-]{8,32}$/.test(roomId)) {
+    throw new ApiError(
+      "일정 방 코드 형식이 올바르지 않습니다",
+      400,
+      undefined,
+      "INVALID_ROOM_CODE",
+    );
   }
 }

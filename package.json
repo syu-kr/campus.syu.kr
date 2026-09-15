@@ -40,7 +40,7 @@
     "check:twa": "node scripts/check-twa-readiness.mjs",
     "check:twa:release": "node scripts/check-twa-readiness.mjs --release",
     "check:unused": "knip",
-    "check:python": "python scripts/check_python_syntax.py",
+    "check:python": "python scripts/check_python_syntax.py && python scripts/check_crawler_utils.py && python scripts/check_monthly_crawl_data.py",
     "check:graduation": "node scripts/check_graduation_data.mjs",
     "check:curriculum": "node scripts/check_curriculum_data.mjs",
     "check:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --dry-run",

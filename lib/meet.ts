@@ -4,6 +4,10 @@ const MAX_DATE_COUNT = 14;
 
 const ALLOWED_MEET_SLOT_MINUTES = [15, 30, 60] as const;
 
+export function getMeetOwnerTokenKey(roomId: string) {
+  return `meet-owner-token:${roomId}`;
+}
+
 export type MeetValidationErrorCode =
   | "INVALID_BODY"
   | "INVALID_TITLE"

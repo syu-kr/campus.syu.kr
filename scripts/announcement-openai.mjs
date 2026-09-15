@@ -5,6 +5,11 @@ export const ANNOUNCEMENT_AI_DEFAULT_MODEL = "gpt-5.6-luna";
 export const ANNOUNCEMENT_AI_PROMPT_VERSION = "notice-summary-v1";
 export const ANNOUNCEMENT_AI_SCHEMA_VERSION = 1;
 
+const PUBLISHED_CONTACT_REPLACEMENT = "[연락처는 원문 확인]";
+const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+const KOREAN_PHONE_PATTERN =
+  /(?<!\d)(?:01[016789]|0(?:2|[3-8]\d))[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)/g;
+
 export const ANNOUNCEMENT_SUMMARY_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -254,7 +259,7 @@ export function normalizeAnnouncementSummary(input, announcement) {
     }
   }
 
-  return {
+  return sanitizeAnnouncementSummaryForPublication({
     summary,
     target,
     deadline,
@@ -262,7 +267,33 @@ export function normalizeAnnouncementSummary(input, announcement) {
     keywords,
     importance,
     confidence,
+  });
+}
+
+export function sanitizeAnnouncementSummaryForPublication(value) {
+  const keywords = Array.isArray(value.keywords)
+    ? value.keywords.map((keyword) => redactPublishedContactInfo(keyword).slice(0, 30))
+    : [];
+  const uniqueKeywords = [...new Set(keywords)];
+  for (const fallback of ["원문 확인", "공지 안내"]) {
+    if (uniqueKeywords.length >= 2) break;
+    if (!uniqueKeywords.includes(fallback)) uniqueKeywords.push(fallback);
+  }
+
+  return {
+    ...value,
+    summary: redactPublishedContactInfo(value.summary).slice(0, 120),
+    target: redactPublishedContactInfo(value.target).slice(0, 100),
+    deadline: redactPublishedContactInfo(value.deadline).slice(0, 100),
+    requiredAction: redactPublishedContactInfo(value.requiredAction).slice(0, 100),
+    keywords: uniqueKeywords,
   };
+}
+
+export function redactPublishedContactInfo(value) {
+  return compactText(value)
+    .replace(EMAIL_PATTERN, PUBLISHED_CONTACT_REPLACEMENT)
+    .replace(KOREAN_PHONE_PATTERN, PUBLISHED_CONTACT_REPLACEMENT);
 }
 
 export function classifyOpenAiError(error) {

@@ -6,12 +6,12 @@ import {
   apiServerErrorResponse,
   enforceSameOrigin,
   enforceRateLimit,
-  getUserAgent,
   readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
 import { getFirestore, nowTimestamp } from "@/lib/server/firestore";
 import { admin } from "@/lib/server/firestore";
+import { createOwnerToken } from "@/lib/server/owner-token";
 import {
   getRepresentativeCourseIds,
   MAX_SHARED_COURSES,
@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
     const db = getFirestore();
     const now = nowTimestamp();
     const shareId = await createUniqueShareId();
+    const owner = createOwnerToken();
     const expiresAt = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() + SHARE_EXPIRY_DAYS * 86400000),
     );
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
       created_at: now,
       updated_at: now,
       expires_at: expiresAt,
-      user_agent: getUserAgent(req),
+      owner_token_hash: owner.hash,
       ...(workspace
         ? {
             version: 2,
@@ -90,6 +91,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       shareId,
+      ownerToken: owner.token,
     });
   } catch (error) {
     const rateLimited = rateLimitResponse(error);

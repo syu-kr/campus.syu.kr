@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DAILY_CRAWL_DATA_FILES,
   parseCrawlDataManifest,
+  validateDailyCrawlData,
 } from "./crawl-data-contract";
 
 function createManifest() {
@@ -66,5 +67,56 @@ describe("crawl data contract", () => {
     expect(() => parseCrawlDataManifest(manifest)).toThrow(
       "보존 버전 목록이 일관되지 않습니다",
     );
+  });
+
+  it("rejects oversized files declared by a manifest", () => {
+    const manifest = createManifest();
+    manifest.files["cafeteria-menu.json"].size = 128 * 1024 + 1;
+
+    expect(() => parseCrawlDataManifest(manifest)).toThrow(
+      "파일 크기가 올바르지 않습니다",
+    );
+  });
+
+  it("validates announcements and rejects non-SYU URLs", () => {
+    const announcement = {
+      id: "academic-1",
+      title: "수강 안내",
+      date: "2026.09.14",
+      author: "교무처",
+      url: "https://www.syu.ac.kr/notice/1",
+      category: "academic",
+      isImportant: false,
+      isPinned: false,
+    };
+
+    expect(() =>
+      validateDailyCrawlData("announcements-academic.json", [announcement]),
+    ).not.toThrow();
+    expect(() =>
+      validateDailyCrawlData("announcements-academic.json", [
+        { ...announcement, url: "https://example.com/notice/1" },
+      ]),
+    ).toThrow("허용되지 않은 공지 URL");
+  });
+
+  it("rejects contact details in published AI metadata", () => {
+    expect(() =>
+      validateDailyCrawlData("announcement-ai-metadata.json", {
+        version: 1,
+        generatedAt: "2026-09-14T00:00:00.000Z",
+        items: {
+          test: {
+            summary: "student@example.com으로 문의하세요.",
+            target: "재학생",
+            deadline: "unknown",
+            requiredAction: "원문 확인",
+            keywords: ["공지", "문의"],
+            importance: "normal",
+            confidence: "low",
+          },
+        },
+      }),
+    ).toThrow("공개할 수 없는 연락처");
   });
 });

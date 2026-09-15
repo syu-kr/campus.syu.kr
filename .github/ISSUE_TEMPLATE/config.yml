@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Data, asset, or privacy request
+    url: https://campus.syu.kr/privacy
+    about: 공개 Issue에 개인정보를 남기지 말고 개인정보처리방침의 이메일로 요청해 주세요.
   - name: Security vulnerability
     url: https://github.com/syu-kr/campus.syu.kr/security/policy
     about: SECURITY.md의 비공개 제보 절차를 확인해 주세요.

@@ -184,6 +184,9 @@ async function logNotificationRecord(
 ) {
   const db = await initializeScriptFirestore();
   const recordId = createHash("sha256").update(context.dedupeKey).digest("hex");
+  const expiresAt = admin.firestore.Timestamp.fromDate(
+    new Date(Date.now() + 90 * 86400000),
+  );
 
   await db.collection("notifications_scheduled").doc(recordId).set({
     type: "daily-summary",
@@ -192,6 +195,7 @@ async function logNotificationRecord(
     targetDate: context.targetDate,
     dataSource: "public-data-json",
     timestamp: admin.firestore.Timestamp.now(),
+    expires_at: expiresAt,
     stats: {
       academic: stats.find((s) => s.category === "academic")?.count || 0,
       scholarship: stats.find((s) => s.category === "scholarship")?.count || 0,

@@ -12,16 +12,16 @@ export function Footer({ locale }: { locale: Locale }) {
       <Container className="py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-neutral-900 mb-4">SYU CAMPUS</h3>
+            <h2 className="font-bold text-neutral-900 mb-4">SYU CAMPUS</h2>
             <p className="text-sm text-neutral-600">
               {dictionary.footer.tagline}
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-neutral-900 mb-3">
+            <h2 className="font-semibold text-neutral-900 mb-3">
               {dictionary.footer.mainMenu}
-            </h4>
+            </h2>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
@@ -51,9 +51,9 @@ export function Footer({ locale }: { locale: Locale }) {
           </div>
 
           <div>
-            <h4 className="font-semibold text-neutral-900 mb-3">
+            <h2 className="font-semibold text-neutral-900 mb-3">
               {dictionary.footer.contactHeading}
-            </h4>
+            </h2>
             <ul className="space-y-2 text-sm text-neutral-600">
               <li>
                 <FooterContactButton />

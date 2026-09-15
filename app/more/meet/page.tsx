@@ -12,6 +12,7 @@ import {
   useLocale,
 } from "@/app/components/LocaleProvider";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
+import { getMeetOwnerTokenKey } from "@/lib/meet";
 
 const MAX_DATE_COUNT = 14;
 
@@ -119,6 +120,16 @@ export default function MeetCreatePage() {
 
       setInviteUrl(localizeInviteUrl(data.inviteUrl, locale));
       setRoomId(data.roomId);
+      if (typeof data.ownerToken === "string") {
+        try {
+          localStorage.setItem(
+            getMeetOwnerTokenKey(data.roomId),
+            data.ownerToken,
+          );
+        } catch {
+          // The invite still works when browser storage is unavailable.
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : text.createFailed);
     } finally {
@@ -211,6 +222,7 @@ export default function MeetCreatePage() {
                   type="text"
                   value={joinCode}
                   onChange={(event) => setJoinCode(event.target.value)}
+                  required
                   placeholder={text.joinCodePlaceholder}
                   aria-invalid={Boolean(joinError)}
                   aria-describedby={joinError ? "join-code-error" : undefined}
@@ -265,6 +277,7 @@ export default function MeetCreatePage() {
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   maxLength={80}
+                  required
                   placeholder={text.titlePlaceholder}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
@@ -441,6 +454,9 @@ export default function MeetCreatePage() {
               </h2>
               <p className="break-all rounded-lg bg-white p-3 text-sm text-neutral-800 border border-green-200">
                 {inviteUrl}
+              </p>
+              <p className="mt-2 text-xs text-green-900">
+                {text.invitePrivacyNotice}
               </p>
               <div className="mt-3 grid grid-cols-1 gap-2">
                 <button

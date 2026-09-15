@@ -35,6 +35,7 @@ import {
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
 import type { LiveDataSourceStatus } from "@/types/live-data";
+import { getKoreaDateTimeParts } from "@/lib/korea-time";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -124,18 +125,12 @@ export default function ShuttleSection() {
 
   // 현재 날짜/시간 정보
   const dateInfo = useMemo(() => {
-    const dayOfWeek = now.getDay(); // 0: 일, 1: 월, ..., 6: 토
+    const { dayOfWeek, year, month, date, hour, minute } =
+      getKoreaDateTimeParts(now);
     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
     const isFriday = dayOfWeek === 5;
-    const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-
-    // 현재 날짜를 YYYY-MM-DD 형식으로
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const date = String(now.getDate()).padStart(2, "0");
-    const dateStr = `${year}-${month}-${date}`;
+    const currentTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
 
     return {
       dayOfWeek,
@@ -1123,6 +1118,7 @@ function getLocaleCode(locale: Locale) {
 function formatWeekday(date: Date, locale: Locale) {
   return new Intl.DateTimeFormat(getLocaleCode(locale), {
     weekday: "short",
+    timeZone: "Asia/Seoul",
   }).format(date);
 }
 

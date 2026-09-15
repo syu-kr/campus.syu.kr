@@ -30,7 +30,8 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     enforceSameOrigin(req);
     await enforceRateLimit(req, `meet-participants:${roomId}`, RATE_LIMIT);
     const body = await readJsonBody<Record<string, unknown>>(req, 32 * 1024);
-    const nickname = String(body.nickname || "").trim();
+    const nickname =
+      typeof body.nickname === "string" ? body.nickname.trim() : "";
     const editToken =
       typeof body.editToken === "string" ? body.editToken.trim() : "";
 

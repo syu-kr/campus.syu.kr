@@ -57,6 +57,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /admin_audit_logs/{auditLogId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
@@ -78,6 +82,7 @@ service cloud.firestore {
 | `notification_send_locks` | 알림 중복 발송 방지 잠금 |
 | `timetable_shares` | 공유 시간표 정보 |
 | `api_rate_limits` | 서버리스 인스턴스 간 공용 요청 제한 카운터 |
+| `admin_audit_logs` | 관리자 상태 변경·AI 분류 작업 감사 기록 |
 
 ## 운영 원칙
 
@@ -110,6 +115,9 @@ Firestore TTL은 보존 기간을 정책에 입력하는 방식이 아닙니다.
 | `timetable_shares` | `expires_at` | 공유 링크 생성 시점부터 90일 후 |
 | `api_rate_limits` | `expires_at` | 해당 요청 제한 구간이 끝나는 시각. 현재 API는 1시간 구간을 사용 |
 | `notification_send_locks` | `expires_at` | 알림 발송 중복 방지 키 생성 시점부터 14일 후 |
+| `notifications_sent` | `expires_at` | 발송 시점부터 90일 후 |
+| `notifications_scheduled` | `expires_at` | 실행 시점부터 90일 후 |
+| `admin_audit_logs` | `expires_at` | 관리자 작업 시점부터 365일 후 |
 
 Google Cloud Console의 Firestore **Time-to-live > Create Policy** 화면에서는 컬렉션 그룹 이름과 timestamp 필드 이름만 입력합니다. 표준 Firestore TTL 정책에는 만료 오프셋이나 단위를 별도로 설정하지 않습니다.
 
@@ -132,7 +140,7 @@ TTL로 부모 `meet_rooms` 문서를 삭제해도 Firestore는 `participants` �
    ```
 3. Firestore에서 `participants` 컬렉션 그룹의 `expires_at` TTL을 먼저 활성화합니다.
 4. 보정 결과를 확인한 뒤 `meet_rooms` 컬렉션 그룹의 `expires_at` TTL을 활성화합니다.
-5. `timetable_shares`, `api_rate_limits`, `notification_send_locks`의 `expires_at` TTL을 활성화합니다.
+5. `timetable_shares`, `api_rate_limits`, `notification_send_locks`, `notifications_sent`, `notifications_scheduled`, `admin_audit_logs`의 `expires_at` TTL을 활성화합니다.
 
 `meet_rooms` TTL을 먼저 활성화하면 부모 방 문서가 삭제된 뒤 기존 하위 참여자 문서를 보정하기 어려워집니다.
 
@@ -142,7 +150,7 @@ TTL로 부모 `meet_rooms` 문서를 삭제해도 Firestore는 `participants` �
 
 - GitHub Actions 저장소 비밀값에 `FIREBASE_SERVICE_ACCOUNT`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`를 등록합니다.
 - 워크플로는 `npm run cleanup-expired-firestore`를 실행합니다.
-- 정리 대상은 만료된 `meet_rooms`와 하위 `participants`, `timetable_shares`, `api_rate_limits`, `notification_send_locks`입니다.
+- 정리 대상은 만료된 `meet_rooms`와 하위 `participants`, `timetable_shares`, `api_rate_limits`, `notification_send_locks`, `notifications_sent`, `notifications_scheduled`, `admin_audit_logs`입니다.
 - 일반 Firestore 읽기·삭제 작업으로 처리되므로 무료 일일 할당량을 사용합니다.
 - 관리형 TTL을 나중에 활성화해도 `expires_at` 필드와 호환됩니다. 중복 정리가 필요 없다면 예약 워크플로를 비활성화합니다.
 
@@ -176,4 +184,4 @@ npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-stale-sending
 
 ## 최종 업데이트
 
-2026-06-16
+2026-09-15

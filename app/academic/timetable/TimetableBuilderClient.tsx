@@ -60,6 +60,7 @@ import {
 } from "@/lib/timetable-display";
 import { getTimetableImageFilename } from "@/lib/timetable-image";
 import { synchronizeTimetableScrollTop } from "@/lib/timetable-scroll";
+import { getTimetableShareOwnerTokenKey } from "@/lib/timetable-share";
 
 type TimetableDictionary = Dictionary["pages"]["timetable"];
 
@@ -86,6 +87,7 @@ interface TimetableShareResponse {
 interface CreateShareResponse {
   success: boolean;
   shareId?: string;
+  ownerToken?: string;
   error?: string;
 }
 
@@ -178,10 +180,12 @@ export function TimetableBuilderClient() {
   const [desktopSidebarView, setDesktopSidebarView] =
     useState<DesktopSidebarView>("courses");
   const [isCreatingShare, setIsCreatingShare] = useState(false);
+  const [isDeletingShare, setIsDeletingShare] = useState(false);
   const [isDownloadingImage, setIsDownloadingImage] = useState(false);
   const [shareMessage, setShareMessage] = useState("");
   const [imageDownloadMessage, setImageDownloadMessage] = useState("");
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
+  const [shareOwnerToken, setShareOwnerToken] = useState("");
   const [draftMessage, setDraftMessage] = useState("");
   const [previousSemesterDraft, setPreviousSemesterDraft] =
     useState<TimetableDraft | null>(null);
@@ -228,6 +232,18 @@ export function TimetableBuilderClient() {
   });
 
   const courses = response.data.courses;
+
+  useEffect(() => {
+    try {
+      setShareOwnerToken(
+        shareId
+          ? localStorage.getItem(getTimetableShareOwnerTokenKey(shareId)) || ""
+          : "",
+      );
+    } catch {
+      setShareOwnerToken("");
+    }
+  }, [shareId]);
   const courseById = useMemo(() => {
     return new Map(courses.map((course) => [course.id, course]));
   }, [courses]);
@@ -649,7 +665,7 @@ export function TimetableBuilderClient() {
         },
       );
 
-      if (!share.success || !share.shareId) {
+      if (!share.success || !share.shareId || !share.ownerToken) {
         setShareMessage(share.error ?? text.shareCreateFailed);
         setShareFallbackUrl("");
         return;
@@ -658,6 +674,15 @@ export function TimetableBuilderClient() {
       const nextUrl = `${pathname}?share=${encodeURIComponent(share.shareId)}`;
       setCreatedShareId(share.shareId);
       setAppliedShareId(share.shareId);
+      try {
+        localStorage.setItem(
+          getTimetableShareOwnerTokenKey(share.shareId),
+          share.ownerToken,
+        );
+      } catch {
+        // Sharing remains available when browser storage is unavailable.
+      }
+      setShareOwnerToken(share.ownerToken);
       router.replace(nextUrl, { scroll: false });
 
       let didCopy = false;
@@ -683,6 +708,45 @@ export function TimetableBuilderClient() {
       setShareFallbackUrl("");
     } finally {
       setIsCreatingShare(false);
+    }
+  }
+
+  async function deleteShareLink() {
+    if (
+      !shareId ||
+      !shareOwnerToken ||
+      isDeletingShare ||
+      !window.confirm(text.shareDeleteConfirm)
+    ) {
+      return;
+    }
+
+    setIsDeletingShare(true);
+    try {
+      const response = await fetch(
+        `/api/lecture/timetable/shares/${encodeURIComponent(shareId)}`,
+        {
+          method: "DELETE",
+          headers: { "x-owner-token": shareOwnerToken },
+        },
+      );
+      if (!response.ok) throw new Error();
+
+      try {
+        localStorage.removeItem(getTimetableShareOwnerTokenKey(shareId));
+      } catch {
+        // The server-side deletion already succeeded.
+      }
+      setShareOwnerToken("");
+      setCreatedShareId("");
+      setAppliedShareId("");
+      setShareFallbackUrl("");
+      setShareMessage(text.shareDeleted);
+      router.replace(pathname, { scroll: false });
+    } catch {
+      setShareMessage(text.shareDeleteFailed);
+    } finally {
+      setIsDeletingShare(false);
     }
   }
 
@@ -877,7 +941,10 @@ export function TimetableBuilderClient() {
         {(shareMessage ||
           (shouldLoadShareFromUrl &&
             (isShareFetching || !shareResponse.success))) && (
-          <p className="mt-3 text-sm font-medium text-neutral-600">
+          <p
+            className="mt-3 text-sm font-medium text-neutral-600"
+            role="status"
+          >
             {shouldLoadShareFromUrl && isShareFetching
               ? text.shareLoading
               : shareMessage ||
@@ -895,6 +962,16 @@ export function TimetableBuilderClient() {
             onFocus={(event) => event.target.select()}
             className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-700"
           />
+        )}
+        {shareOwnerToken && (
+          <button
+            type="button"
+            onClick={deleteShareLink}
+            disabled={isDeletingShare}
+            className="mt-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeletingShare ? text.deletingShare : text.deleteShare}
+          </button>
         )}
         {conflictSummary.pairs.length > 0 && (
           <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-900">

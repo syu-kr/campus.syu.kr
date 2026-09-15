@@ -413,6 +413,8 @@ export const dictionaries = {
       confirm: "확인",
     },
     pagination: {
+      label: "페이지 탐색",
+      pageSelect: "페이지 선택",
       previous: "이전",
       next: "다음",
     },
@@ -833,6 +835,11 @@ export const dictionaries = {
         shareCreatedCopyFailed:
           "공유 링크를 만들었습니다. 브라우저 권한 문제로 자동 복사는 되지 않았습니다.",
         shareFallbackInputLabel: "직접 복사할 공유 링크",
+        deleteShare: "공유 링크 삭제",
+        deletingShare: "공유 링크 삭제 중",
+        shareDeleteConfirm: "이 공유 링크를 폐기할까요? 되돌릴 수 없습니다.",
+        shareDeleted: "공유 링크를 삭제했습니다.",
+        shareDeleteFailed: "공유 링크를 삭제하지 못했습니다.",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
         shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
         draftAutoSaveNotice:
@@ -1998,6 +2005,8 @@ export const dictionaries = {
       confirm: "OK",
     },
     pagination: {
+      label: "Pagination",
+      pageSelect: "Select page",
       previous: "Previous",
       next: "Next",
     },
@@ -2424,6 +2433,12 @@ export const dictionaries = {
         shareCreatedCopyFailed:
           "Share link created. Your browser blocked automatic copying.",
         shareFallbackInputLabel: "Share link to copy manually",
+        deleteShare: "Delete share link",
+        deletingShare: "Deleting share link",
+        shareDeleteConfirm:
+          "Delete this share link? This cannot be undone.",
+        shareDeleted: "The share link was deleted.",
+        shareDeleteFailed: "Could not delete the share link.",
         shareLoading: "Loading shared timetable.",
         shareLoadFailed: "Could not load the shared timetable.",
         draftAutoSaveNotice:

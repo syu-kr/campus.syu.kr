@@ -4,6 +4,7 @@ import type {
   ShuttleSpecialPeriod,
   ShuttleSpecialPeriods,
 } from "@/types";
+import { getKoreaDateTimeParts } from "@/lib/korea-time";
 
 const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "mondayToThursday",
@@ -85,14 +86,12 @@ export function isDateInSpecialPeriod(
 }
 
 function getDateInfo(now: Date) {
-  const dayOfWeek = now.getDay();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const date = String(now.getDate()).padStart(2, "0");
+  const { dayOfWeek, year, month, date, hour, minute } =
+    getKoreaDateTimeParts(now);
 
   return {
-    currentMinutes: now.getHours() * 60 + now.getMinutes(),
-    dateString: `${year}-${month}-${date}`,
+    currentMinutes: hour * 60 + minute,
+    dateString: `${year}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`,
     isFriday: dayOfWeek === 5,
     isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
   };

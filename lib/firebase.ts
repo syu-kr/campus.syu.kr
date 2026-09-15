@@ -13,9 +13,7 @@ const firebaseConfig = {
 };
 
 if (
-  !firebaseConfig.apiKey ||
-  !firebaseConfig.authDomain ||
-  !firebaseConfig.projectId
+  Object.values(firebaseConfig).some((value) => !value)
 ) {
   throw new Error("Firebase client config is incomplete");
 }
