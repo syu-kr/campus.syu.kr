@@ -6,7 +6,6 @@ import {
   apiErrorResponse,
   enforceSameOrigin,
   enforceRateLimit,
-  getUserAgent,
   readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
@@ -44,7 +43,6 @@ export async function POST(req: NextRequest) {
     );
 
     const db = getFirestore();
-    const userAgent = getUserAgent(req);
     const docId = getTokenDocumentId(fcm_token);
     const legacyDocId = getLegacyTokenDocumentId(fcm_token);
 
@@ -55,7 +53,6 @@ export async function POST(req: NextRequest) {
         .set(
           {
             fcm_token,
-            user_agent: userAgent,
             created_at: nowTimestamp(),
             last_updated: nowTimestamp(),
             active: true,

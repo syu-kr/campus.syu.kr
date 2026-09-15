@@ -46,18 +46,22 @@ export async function requireAdmin(req: Request): Promise<DecodedIdToken> {
   if (authorizationFailure === "not-allowed") {
     throw new AdminAuthError("관리자 권한이 없습니다", 403);
   }
+  if (authorizationFailure === "email-not-verified") {
+    throw new AdminAuthError("이메일 인증이 필요합니다", 403);
+  }
 
   return decodedToken;
 }
 
 export function getAdminAuthorizationFailure(
-  decodedToken: Pick<DecodedIdToken, "email">,
+  decodedToken: Pick<DecodedIdToken, "email" | "email_verified">,
   allowedEmails: string[],
-): "not-allowed" | null {
+): "email-not-verified" | "not-allowed" | null {
   const normalizedEmail = decodedToken.email?.trim().toLowerCase();
-  return normalizedEmail && allowedEmails.includes(normalizedEmail)
-    ? null
-    : "not-allowed";
+  if (!normalizedEmail || !allowedEmails.includes(normalizedEmail)) {
+    return "not-allowed";
+  }
+  return decodedToken.email_verified === true ? null : "email-not-verified";
 }
 
 function isAdminAuthInfrastructureError(error: unknown) {

@@ -1,11 +1,20 @@
 import { getMessaging } from "firebase-admin/messaging";
 import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
 
+export interface FcmBatchResult {
+  batchIndex: number;
+  tokensCount: number;
+  successCount: number;
+  failureCount: number;
+  invalidTokens: string[];
+}
+
 export async function sendFCMMessage(
   tokens: string[],
   title: string,
   body: string,
   data?: Record<string, string>,
+  onBatchComplete?: (result: FcmBatchResult) => Promise<void>,
 ) {
   const messaging = getMessaging(initializeFirebaseAdmin());
   let successCount = 0;
@@ -33,10 +42,19 @@ export async function sendFCMMessage(
 
     successCount += response.successCount;
     failureCount += response.failureCount;
+    const batchInvalidTokens: string[] = [];
     response.responses.forEach((result, responseIndex) => {
       if (!result.success && isInvalidFcmTokenError(result.error?.code)) {
-        invalidTokens.push(batchTokens[responseIndex]);
+        batchInvalidTokens.push(batchTokens[responseIndex]);
       }
+    });
+    invalidTokens.push(...batchInvalidTokens);
+    await onBatchComplete?.({
+      batchIndex: index / 500,
+      tokensCount: batchTokens.length,
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+      invalidTokens: batchInvalidTokens,
     });
   }
 

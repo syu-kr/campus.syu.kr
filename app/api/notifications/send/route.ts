@@ -14,6 +14,7 @@ const NOTIFICATION_CATEGORIES = [
   "scholarship",
   "daily-summary",
 ] as const;
+const NOTIFICATION_HISTORY_DAYS = 90;
 
 type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
@@ -111,6 +112,21 @@ export async function POST(req: NextRequest) {
       category,
       url: url || "/",
       announcementId: announcementId || "",
+    }, async (batchResult) => {
+      if (!sendLock?.ref) return;
+      await sendLock.ref.set(
+        {
+          batch_progress: admin.firestore.FieldValue.arrayUnion({
+            batch_index: batchResult.batchIndex,
+            tokens_count: batchResult.tokensCount,
+            success_count: batchResult.successCount,
+            failure_count: batchResult.failureCount,
+            invalid_token_count: batchResult.invalidTokens.length,
+          }),
+          updated_at: admin.firestore.Timestamp.fromDate(new Date()),
+        },
+        { merge: true },
+      );
     });
 
     await deleteInvalidTokens(db, result.invalidTokens);
@@ -290,11 +306,15 @@ async function recordNotificationResult(
   lockRef?: DocumentReference,
 ) {
   const now = admin.firestore.Timestamp.fromDate(new Date());
+  const expiresAt = admin.firestore.Timestamp.fromDate(
+    new Date(Date.now() + NOTIFICATION_HISTORY_DAYS * 86400000),
+  );
   const sentRef = request.dedupeKey
     ? db.collection("notifications_sent").doc(hashDedupeKey(request.dedupeKey))
     : db.collection("notifications_sent").doc();
 
-  await sentRef.set({
+  const batch = db.batch();
+  batch.set(sentRef, {
     title: request.title,
     body: request.body,
     category: request.category,
@@ -306,10 +326,12 @@ async function recordNotificationResult(
     successCount: data.successCount,
     failureCount: data.failureCount,
     sent_at: now,
+    expires_at: expiresAt,
   });
 
   if (lockRef) {
-    await lockRef.set(
+    batch.set(
+      lockRef,
       {
         status: "sent",
         data,
@@ -320,6 +342,7 @@ async function recordNotificationResult(
       { merge: true },
     );
   }
+  await batch.commit();
 }
 
 async function deleteInvalidTokens(db: Firestore, invalidTokens: string[]) {

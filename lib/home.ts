@@ -12,6 +12,7 @@ import {
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
+import { getKoreaDateTimeParts } from "@/lib/korea-time";
 
 export type TodayInfo = {
   dateStringDot: string;
@@ -47,9 +48,7 @@ export type CategorizedSearchResults = Record<
 >;
 
 export function getKoreaNow(): Date {
-  return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }),
-  );
+  return new Date();
 }
 
 export function getTodayInfo(now: Date | null): TodayInfo {
@@ -62,15 +61,14 @@ export function getTodayInfo(now: Date | null): TodayInfo {
     };
   }
 
-  const dayOfWeek = now.getDay();
+  const { dayOfWeek, year, month, date } = getKoreaDateTimeParts(now);
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const date = String(now.getDate()).padStart(2, "0");
+  const monthText = String(month).padStart(2, "0");
+  const dateText = String(date).padStart(2, "0");
 
   return {
-    dateStringDot: `${year}.${month}.${date}`,
-    dateStringDash: `${year}-${month}-${date}`,
+    dateStringDot: `${year}.${monthText}.${dateText}`,
+    dateStringDash: `${year}-${monthText}-${dateText}`,
     isWeekend,
     dayOfWeek,
   };

@@ -28,7 +28,10 @@ export function PaginationControls({
   );
 
   return (
-    <div className="mt-8 flex flex-wrap items-center justify-center gap-1 md:gap-2">
+    <nav
+      aria-label={dictionary.pagination.label}
+      className="mt-8 flex flex-wrap items-center justify-center gap-1 md:gap-2"
+    >
       <button
         type="button"
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
@@ -42,6 +45,7 @@ export function PaginationControls({
         <button
           key={page}
           type="button"
+          aria-current={currentPage === page ? "page" : undefined}
           onClick={() => onPageChange(page)}
           className={`rounded-lg px-2 py-2 text-sm transition-colors md:px-3 ${
             currentPage === page
@@ -55,6 +59,7 @@ export function PaginationControls({
 
       {endPage < totalPages && (
         <select
+          aria-label={dictionary.pagination.pageSelect}
           value={currentPage}
           onChange={(event) => onPageChange(Number(event.target.value))}
           className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 focus:ring-2 focus:ring-primary-500 md:px-3"
@@ -77,6 +82,6 @@ export function PaginationControls({
       >
         {dictionary.pagination.next}
       </button>
-    </div>
+    </nav>
   );
 }

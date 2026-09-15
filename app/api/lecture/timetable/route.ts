@@ -3,12 +3,14 @@ import { NextResponse } from "next/server";
 import { normalizeLectureTimetablePayload } from "@/lib/lecture-timetable";
 import { requireServerEnv } from "@/lib/server/env";
 import type { LectureTimetableDataset } from "@/lib/lecture-timetable";
+import { readResponseBytes } from "@/lib/server/read-response-bytes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const LECTURE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const LECTURE_REQUEST_TIMEOUT_MS = 20_000;
+const LECTURE_RESPONSE_MAX_BYTES = 8 * 1024 * 1024;
 
 let cachedTimetable:
   | {
@@ -65,6 +67,22 @@ export async function GET() {
   } catch (error) {
     console.error("Failed to fetch lecture timetable:", error);
 
+    if (cachedTimetable) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: cachedTimetable.data,
+          timestamp: cachedTimetable.timestamp,
+          stale: true,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+          },
+        },
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
@@ -97,7 +115,22 @@ async function fetchLectureTimetablePayload(url: string): Promise<unknown> {
     throw new Error(`Lecture timetable API returned ${response.status}`);
   }
 
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type")?.toLowerCase() || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      `Lecture timetable API returned ${contentType || "unknown"} content type`,
+    );
+  }
+
+  const payload = JSON.parse(
+    new TextDecoder().decode(
+      await readResponseBytes(
+        response,
+        LECTURE_RESPONSE_MAX_BYTES,
+        "Lecture timetable API",
+      ),
+    ),
+  );
   if (payload == null) {
     throw new Error("Lecture timetable API returned empty payload");
   }

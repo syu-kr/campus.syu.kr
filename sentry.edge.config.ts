@@ -4,6 +4,10 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import {
+  scrubSentryBreadcrumb,
+  scrubSentryEvent,
+} from "@/lib/sentry-privacy";
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -12,4 +16,7 @@ Sentry.init({
     userInfo: false,
     httpBodies: [],
   },
+  beforeSend: scrubSentryEvent,
+  beforeSendTransaction: scrubSentryEvent,
+  beforeBreadcrumb: scrubSentryBreadcrumb,
 });

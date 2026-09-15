@@ -1,11 +1,18 @@
-import { NextResponse } from "next/server";
-import { ApiError, apiServerErrorResponse } from "@/lib/server/http";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  ApiError,
+  apiServerErrorResponse,
+  enforceRateLimit,
+  enforceSameOrigin,
+  rateLimitResponse,
+} from "@/lib/server/http";
 import {
   admin,
   getFirestore,
   timestampToIso,
 } from "@/lib/server/firestore";
 import { parseSharedTimetableWorkspace } from "@/lib/timetable-share";
+import { matchesOwnerToken } from "@/lib/server/owner-token";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,6 +62,43 @@ export async function GET(_req: Request, { params }: RouteContext) {
     });
   } catch (error) {
     return apiServerErrorResponse(error, "공유 시간표를 불러오지 못했습니다.");
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  try {
+    const { shareId: rawShareId } = await params;
+    const shareId = normalizeShareId(rawShareId);
+    enforceSameOrigin(req);
+    await enforceRateLimit(req, `timetable-share-delete:${shareId}`, {
+      limit: 20,
+      windowMs: 60 * 60 * 1000,
+    });
+
+    const shareRef = getFirestore()
+      .collection("timetable_shares")
+      .doc(shareId);
+    const snapshot = await shareRef.get();
+    if (!snapshot.exists) {
+      throw new ApiError("공유 시간표를 찾을 수 없습니다.", 404);
+    }
+
+    if (
+      !matchesOwnerToken(
+        req.headers.get("x-owner-token")?.trim() || "",
+        snapshot.get("owner_token_hash"),
+      )
+    ) {
+      throw new ApiError("공유 링크를 삭제할 권한이 없습니다.", 403);
+    }
+
+    await shareRef.delete();
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
+
+    return apiServerErrorResponse(error, "공유 링크를 삭제하지 못했습니다.");
   }
 }
 

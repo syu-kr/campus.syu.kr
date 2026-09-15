@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useId, useState, useMemo } from "react";
 import { searchFacilities, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
@@ -24,6 +24,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
   const text = dictionary.pages.map;
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const inputId = useId();
 
   const results = useMemo(() => {
     if (!query.trim()) return [];
@@ -39,7 +40,11 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
             size={18}
             color="rgb(156, 163, 175)"
           />
+          <label htmlFor={inputId} className="sr-only">
+            {text.searchPlaceholder}
+          </label>
           <input
+            id={inputId}
             type="text"
             placeholder={text.searchPlaceholder}
             value={query}
@@ -48,6 +53,9 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
               setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setIsOpen(false);
+            }}
             className="flex-1 outline-none text-sm text-neutral-900 placeholder-neutral-500"
           />
           {query && (
@@ -155,7 +163,11 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
       )}
 
       {isOpen && results.length > 0 && (
-        <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-40"
+          onClick={() => setIsOpen(false)}
+        />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireServerEnv } from "@/lib/server/env";
 import type { LiveDataResponse } from "@/types/live-data";
+import { readResponseBytes } from "@/lib/server/read-response-bytes";
 
 // 🚀 빌드 최적화: 이 라우트를 동적으로 처리 (빌드 시간 단축)
 export const dynamic = "force-dynamic";
@@ -8,6 +9,7 @@ export const dynamic = "force-dynamic";
 const LIBRARY_CACHE_TTL_MS = 60 * 1000;
 const LIBRARY_STALE_RETENTION_MS = 30 * 60 * 1000;
 const LIBRARY_SOURCE = "library-reading-room";
+const LIBRARY_RESPONSE_MAX_BYTES = 1024 * 1024;
 let cachedRooms:
   | {
       rooms: ReadingRoom[];
@@ -89,7 +91,20 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
     throw new Error(`Failed to fetch: ${response.status}`);
   }
 
-  const text = await response.text();
+  const contentType = response.headers.get("content-type")?.toLowerCase() || "";
+  if (!contentType.includes("xml") && !contentType.includes("text/plain")) {
+    throw new Error(
+      `Reading room API returned ${contentType || "unknown"} content type`,
+    );
+  }
+
+  const text = new TextDecoder().decode(
+    await readResponseBytes(
+      response,
+      LIBRARY_RESPONSE_MAX_BYTES,
+      "Reading room API",
+    ),
+  );
   const roomRegex =
     /<item>[\s\S]*?<strRoomNm><!\[CDATA\[([^\]]+)\]\]><\/strRoomNm>[\s\S]*?<strTotalSeat><!\[CDATA\[([^\]]+)\]\]><\/strTotalSeat>[\s\S]*?<strUseSeat><!\[CDATA\[([^\]]+)\]\]><\/strUseSeat>[\s\S]*?<strRemainSeat><!\[CDATA\[([^\]]+)\]\]><\/strRemainSeat>[\s\S]*?<\/item>/g;
   const rooms: ReadingRoom[] = [];
@@ -103,7 +118,12 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
     if (
       !Number.isFinite(totalSeat) ||
       !Number.isFinite(useSeat) ||
-      !Number.isFinite(remainSeat)
+      !Number.isFinite(remainSeat) ||
+      totalSeat < 0 ||
+      useSeat < 0 ||
+      remainSeat < 0 ||
+      useSeat > totalSeat ||
+      remainSeat > totalSeat
     ) {
       throw new Error("Reading room API returned invalid seat counts");
     }

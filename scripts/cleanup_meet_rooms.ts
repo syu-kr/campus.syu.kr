@@ -25,6 +25,21 @@ async function cleanupExpiredFirestoreDocuments() {
       "notification_send_locks",
       now,
     );
+    const deletedSentNotifications = await deleteExpiredDocuments(
+      db,
+      "notifications_sent",
+      now,
+    );
+    const deletedScheduledNotifications = await deleteExpiredDocuments(
+      db,
+      "notifications_scheduled",
+      now,
+    );
+    const deletedAdminAuditLogs = await deleteExpiredDocuments(
+      db,
+      "admin_audit_logs",
+      now,
+    );
 
     console.log(
       [
@@ -34,6 +49,9 @@ async function cleanupExpiredFirestoreDocuments() {
         `공유 시간표 ${deletedTimetableShares}개`,
         `API 요청 제한 문서 ${deletedRateLimits}개`,
         `알림 중복 방지 잠금 ${deletedNotificationLocks}개 삭제\n`,
+        `알림 발송 기록 ${deletedSentNotifications}개`,
+        `알림 예약 실행 기록 ${deletedScheduledNotifications}개`,
+        `관리자 감사 기록 ${deletedAdminAuditLogs}개 삭제\n`,
       ].join(" "),
     );
   } catch (error) {

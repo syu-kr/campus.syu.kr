@@ -52,7 +52,9 @@ export async function POST(req: NextRequest) {
 
     const collection =
       kind === "inquiry" ? "site_inquiries" : "campus_tip_suggestions";
-    const { getFirestore } = await import("@/lib/server/firestore");
+    const { admin: firebaseAdmin, getFirestore, nowTimestamp } = await import(
+      "@/lib/server/firestore"
+    );
     const db = getFirestore();
     const docRef = db.collection(collection).doc(id);
     const snapshot = await docRef.get();
@@ -83,9 +85,23 @@ export async function POST(req: NextRequest) {
     }
 
     const classification = await classifyAdminSubmission(input);
-    await docRef.update({
+    const now = nowTimestamp();
+    const auditExpiresAt = firebaseAdmin.firestore.Timestamp.fromDate(
+      new Date(Date.now() + 365 * 86400000),
+    );
+    const batch = db.batch();
+    batch.update(docRef, {
       ai_classification: classification,
     });
+    batch.set(db.collection("admin_audit_logs").doc(), {
+      action: "submission_ai_classified",
+      actor_uid: admin.uid,
+      actor_email: admin.email || null,
+      target: { id, kind },
+      created_at: now,
+      expires_at: auditExpiresAt,
+    });
+    await batch.commit();
 
     logClassificationResult(admin.uid, kind, false, startedAt);
     return NextResponse.json({ classification, reused: false });

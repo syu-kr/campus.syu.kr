@@ -192,7 +192,13 @@ export default function LibraryPage() {
             {rooms.map((room, idx) => {
               const hasValidSeatTotal = room.strTotalSeat > 0;
               const usagePercent = hasValidSeatTotal
-                ? Math.round((room.strUseSeat / room.strTotalSeat) * 100)
+                ? Math.min(
+                    100,
+                    Math.max(
+                      0,
+                      Math.round((room.strUseSeat / room.strTotalSeat) * 100),
+                    ),
+                  )
                 : 0;
               const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (

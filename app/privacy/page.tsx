@@ -44,7 +44,7 @@ function EnglishPrivacyPage() {
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Effective Date"
-        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated June 21, 2026."
+        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated September 15, 2026."
       />
 
       <div className="space-y-6 mb-8">
@@ -89,11 +89,13 @@ function EnglishPrivacyPage() {
                 notifications, the token becomes invalid, or delivery is no
                 longer needed.
               </li>
+              <li>Notification delivery records are retained for up to 90 days.</li>
               <li>
                 Rate-limit counters are retained for the configured request
                 window, and notification send locks may be retained for up to 14
                 days to prevent duplicate sends.
               </li>
+              <li>Admin action audit records are retained for up to 365 days.</li>
             </ul>
             <p className="text-sm text-neutral-600">
               Third-party data such as Kakao Maps cookies and Google service data
@@ -105,13 +107,13 @@ function EnglishPrivacyPage() {
         <LegalSection title="3. Categories of Information">
           <div className="space-y-3 text-neutral-700">
             <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
-              <li>Local settings such as theme preference</li>
+              <li>Local settings, drafts, participant edit tokens, and owner deletion tokens</li>
               <li>Service logs, access records, IP address, and user agent</li>
               <li>Kakao Maps SDK cookies used for map and shuttle features</li>
               <li>Contact, report, campus-tip, and optional contact details entered by users</li>
               <li>Schedule room titles, descriptions, candidate times, participant nicknames, and availability responses</li>
-              <li>Schedule response edit-token hashes used to protect edits</li>
-              <li>Timetable share course IDs, year, semester, and user agent</li>
+              <li>Schedule response edit-token hashes and room owner-token hashes used to protect edits and deletion</li>
+              <li>Timetable share course IDs, year, semester, and owner-token hash</li>
               <li>Firebase Cloud Messaging tokens and notification delivery records when notifications are enabled</li>
               <li>Rate-limit counters and notification duplicate-send locks</li>
               <li>
@@ -169,12 +171,13 @@ function EnglishPrivacyPage() {
                   </td>
                 </tr>
                 <tr>
-                  <td className="border border-gray-300 p-2">GitHub</td>
+                  <td className="border border-gray-300 p-2">Sentry</td>
                   <td className="border border-gray-300 p-2">
-                    Source repository and change history management
+                    Error monitoring with request bodies, cookies, headers, user
+                    identity, and URL queries removed before transmission
                   </td>
                   <td className="border border-gray-300 p-2">
-                    According to GitHub policies and repository operation
+                    According to the configured Sentry retention settings
                   </td>
                 </tr>
               </tbody>
@@ -189,12 +192,13 @@ function EnglishPrivacyPage() {
             </p>
             <p className="font-semibold">Overseas or external processing</p>
             <p>
-              Google, Vercel, GitHub, Kakao, and a configured AI classification
+              Google, Vercel, Sentry, Kakao, and a configured AI classification
               API may process data on servers located outside Korea or in regions
               operated under each provider&apos;s policy. The categories of data
               are limited to the minimum needed for hosting, analytics,
               Firebase/Firestore storage, map features, notification delivery,
-              repository operation, and redacted admin triage.
+              error monitoring, and redacted admin triage. Operational personal
+              data must not be submitted to the public GitHub repository.
             </p>
           </div>
         </LegalSection>
@@ -263,7 +267,7 @@ function EnglishPrivacyPage() {
               <p className="text-xs text-neutral-600">
                 <strong>Effective date</strong>: March 23, 2026
                 <br />
-                <strong>Last updated</strong>: June 21, 2026
+                <strong>Last updated</strong>: September 15, 2026
               </p>
             </div>
           </div>
@@ -289,7 +293,7 @@ export default async function PrivacyPage() {
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 6월 21일 최종 개정되었습니다."
+        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 9월 15일 최종 개정되었습니다."
       />
 
       <div className="space-y-6 mb-8">
@@ -376,7 +380,8 @@ export default async function PrivacyPage() {
                 </p>
                 <p className="text-sm text-neutral-600">
                   알림 발송 목적 달성 시까지 보존하며, 사용자가 알림을 차단하거나
-                  토큰이 유효하지 않은 경우 삭제될 수 있습니다.
+                  토큰이 유효하지 않은 경우 삭제될 수 있습니다. 알림 발송 결과는
+                  생성 시점부터 최대 90일까지 보존합니다.
                 </p>
               </div>
               <div>
@@ -405,6 +410,15 @@ export default async function PrivacyPage() {
                 <p className="text-sm text-neutral-600">
                   문의 및 제보 항목의 운영자 검토 목적 달성 시까지 원 접수
                   항목과 함께 보존되며, 운영상 필요가 없어진 경우 삭제합니다.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-sm mb-1">
+                  10. 관리자 작업 감사 기록
+                </p>
+                <p className="text-sm text-neutral-600">
+                  관리자 UID·이메일, 작업 종류와 대상, 변경 전후 상태를 최대
+                  365일까지 보존합니다.
                 </p>
               </div>
             </div>
@@ -449,6 +463,9 @@ export default async function PrivacyPage() {
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>테마 설정 (다크 모드/라이트 모드)</li>
+                <li>시간표 초안</li>
+                <li>일정 응답 편집 토큰과 일정 방 삭제용 소유 토큰</li>
+                <li>시간표 공유 링크 삭제용 소유 토큰</li>
               </ul>
             </div>
             <div>
@@ -483,6 +500,7 @@ export default async function PrivacyPage() {
                 <li>참여자 닉네임</li>
                 <li>참여자가 선택한 가능 시간</li>
                 <li>응답 수정을 위한 편집 토큰 해시</li>
+                <li>방 삭제 권한 확인을 위한 소유 토큰 해시</li>
               </ul>
             </div>
             <div>
@@ -502,7 +520,7 @@ export default async function PrivacyPage() {
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>공유 링크에 포함된 강의 식별자 목록</li>
                 <li>학년도 및 학기 정보</li>
-                <li>공유 링크 생성 시점의 브라우저 정보(User-Agent)</li>
+                <li>공유 링크 삭제 권한 확인을 위한 소유 토큰 해시</li>
               </ul>
             </div>
             <div>
@@ -513,6 +531,7 @@ export default async function PrivacyPage() {
                 <li>요청 제한 카운터와 만료 시각</li>
                 <li>알림 중복 발송 방지 잠금 및 발송 기록</li>
                 <li>운영자 검토를 위한 AI 분류 결과와 생성 시점</li>
+                <li>관리자 작업 감사 기록</li>
               </ul>
             </div>
           </div>
@@ -571,12 +590,13 @@ export default async function PrivacyPage() {
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-gray-300 p-2">GitHub</td>
+                    <td className="border border-gray-300 p-2">Sentry</td>
                     <td className="border border-gray-300 p-2">
-                      소스코드 저장소 제공 및 변경 이력 관리
+                      오류 모니터링. 전송 전 요청 본문·쿠키·헤더·사용자 식별정보와
+                      URL 쿼리를 제거합니다.
                     </td>
                     <td className="border border-gray-300 p-2">
-                      GitHub의 정책 및 저장소 운영 기간에 따름
+                      설정된 Sentry 보존 정책에 따름
                     </td>
                   </tr>
                 </tbody>
@@ -639,16 +659,15 @@ export default async function PrivacyPage() {
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-300 p-2">GitHub</td>
+                      <td className="border border-gray-300 p-2">Sentry</td>
                       <td className="border border-gray-300 p-2">
-                        저장소 이슈, 배포 자동화 로그, 운영자가 직접 등록한 변경
-                        이력
+                        최소화된 오류·성능 진단 정보
                       </td>
                       <td className="border border-gray-300 p-2">
-                        소스코드 및 운영 이력 관리
+                        서비스 오류 모니터링
                       </td>
                       <td className="border border-gray-300 p-2">
-                        GitHub 정책 및 저장소 운영 기간에 따름
+                        설정된 Sentry 보존 정책에 따름
                       </td>
                     </tr>
                     <tr>
@@ -683,7 +702,8 @@ export default async function PrivacyPage() {
               </div>
               <p className="text-xs text-neutral-500">
                 위 업체는 각 사업자가 운영하는 국가 또는 리전의 서버에서 정보를
-                처리할 수 있습니다.
+                처리할 수 있습니다. 실제 이용자 개인정보와 삭제 요청 내용은
+                공개 GitHub 저장소나 이슈에 등록하지 않습니다.
               </p>
             </div>
           </div>
@@ -711,76 +731,15 @@ export default async function PrivacyPage() {
               <p className="text-sm text-neutral-600 mb-3">
                 본 서비스는 로컬 스토리지를 주로 사용하며, 캠퍼스 지도 및
                 셔틀버스 기능 제공을 위해 Kakao Maps SDK를 사용합니다. Kakao
-                Maps 사용 시 Kakao에서 다음의 쿠키를 설정합니다:
+                Maps 사용 과정에서 Kakao가 쿠키 또는 기기 정보를 처리할 수
+                있습니다. 구체적인 항목과 보존기간은 Kakao의 최신 정책을
+                확인해주세요.
               </p>
-
-              <p className="font-semibold text-sm mb-3">Kakao Maps SDK 쿠키</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    __T_SECURE
-                  </p>
-                  <p className="text-xs text-gray-700">보안 추적</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    TUID
-                  </p>
-                  <p className="text-xs text-gray-700">고유 사용자 ID</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    UUID
-                  </p>
-                  <p className="text-xs text-gray-700">범용 고유 식별자</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    aid
-                  </p>
-                  <p className="text-xs text-gray-700">광고 ID</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    DSPR
-                  </p>
-                  <p className="text-xs text-gray-700">기기 설정 저장</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    webid
-                  </p>
-                  <p className="text-xs text-gray-700">웹 로그인 ID</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    webid_ts
-                  </p>
-                  <p className="text-xs text-gray-700">웹 ID 타임스탬프</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    _kau
-                  </p>
-                  <p className="text-xs text-gray-700">사용자 활동 추적</p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded border border-gray-200">
-                  <p className="font-mono text-xs text-gray-600 font-semibold mb-1">
-                    _T_ANO
-                  </p>
-                  <p className="text-xs text-gray-700">익명 사용자 추적</p>
-                </div>
-              </div>
-
               <div className="space-y-2 text-sm mb-4 p-3 bg-gray-50 rounded border border-gray-200">
-                <p>
-                  <span className="font-semibold">쿠키 저장소:</span>
-                  <span className="text-neutral-600"> dapi.kakao.com</span>
-                </p>
                 <p>
                   <span className="font-semibold">목적:</span>
                   <span className="text-neutral-600">
-                    지도 기능 제공, 서비스 분석, 사용자 경험 개선
+                    지도와 장소 검색 기능 제공
                   </span>
                 </p>
                 <p>
@@ -801,7 +760,7 @@ export default async function PrivacyPage() {
                 </p>
                 <ul className="list-disc list-inside space-y-1 text-sm text-amber-800 ml-1">
                   <li>브라우저 설정 → 개인정보 보호 및 보안 → 쿠키 설정</li>
-                  <li>특정 사이트의 쿠키만 차단 (dapi.kakao.com 등)</li>
+                  <li>특정 사이트의 쿠키만 차단</li>
                 </ul>
                 <p className="text-sm text-amber-800 mt-2">
                   다만, Kakao Maps 쿠키를 거부 시 캠퍼스 지도 및 셔틀버스 기능이
@@ -1102,7 +1061,7 @@ export default async function PrivacyPage() {
               <p className="text-xs text-neutral-600">
                 <strong>시행일</strong>: 2026년 3월 23일
                 <br />
-                <strong>최종 개정일</strong>: 2026년 6월 21일
+                <strong>최종 개정일</strong>: 2026년 9월 15일
               </p>
             </div>
           </div>

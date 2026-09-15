@@ -39,6 +39,8 @@ export const koMeetPages = {
           "모두가 체크한 뒤 가장 많이 겹치는 시간을 바로 확인할 수 있습니다.",
         ],
         inviteLinkTitle: "초대 링크",
+        invitePrivacyNotice:
+          "이 링크를 아는 사람은 방의 내용과 응답을 볼 수 있습니다. 공개 게시판에 올리지 마세요.",
         copied: "복사됨",
         copyLink: "링크 복사",
         copyFailed:
@@ -107,6 +109,12 @@ export const koMeetPages = {
         participantsPrefix: "참여자",
         participantsSuffix: "명",
         inviteEmpty: "초대 링크를 공유해 참여를 받아보세요.",
+        invitePrivacyNotice:
+          "초대 링크는 비밀번호처럼 취급하고 참여자에게만 공유하세요.",
+        deleteRoom: "이 방 삭제",
+        deletingRoom: "방 삭제 중...",
+        deleteConfirm: "방과 모든 참여 응답을 삭제할까요? 되돌릴 수 없습니다.",
+        deleteFailed: "일정 방을 삭제하지 못했습니다.",
         overwriteTitle: "기존 응답을 덮어쓸까요?",
         overwriteDescription: "같은 닉네임으로 저장된 응답이 있습니다.",
         overwriteMessagePrefix:
@@ -178,6 +186,8 @@ export const enMeetPages = {
           "After everyone responds, you can quickly see the times with the most overlap.",
         ],
         inviteLinkTitle: "Invite Link",
+        invitePrivacyNotice:
+          "Anyone with this link can view the room and responses. Do not post it publicly.",
         copied: "Copied",
         copyLink: "Copy link",
         copyFailed:
@@ -248,6 +258,13 @@ export const enMeetPages = {
         participantsPrefix: "Participants",
         participantsSuffix: "",
         inviteEmpty: "Share the invite link to collect responses.",
+        invitePrivacyNotice:
+          "Treat the invite link like a password and share it only with participants.",
+        deleteRoom: "Delete this room",
+        deletingRoom: "Deleting room...",
+        deleteConfirm:
+          "Delete this room and all participant responses? This cannot be undone.",
+        deleteFailed: "Could not delete the schedule room.",
         overwriteTitle: "Overwrite existing response?",
         overwriteDescription: "A response with the same nickname already exists.",
         overwriteMessagePrefix:

@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    await requireAdmin(req);
+    const adminIdentity = await requireAdmin(req);
 
     const body = await readJsonBody<{
       id?: unknown;
@@ -118,13 +118,16 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const { getFirestore, nowTimestamp } = await import(
+    const { admin, getFirestore, nowTimestamp } = await import(
       "@/lib/server/firestore"
     );
     const db = getFirestore();
 
     await db.runTransaction(async (transaction) => {
       const now = nowTimestamp();
+      const auditExpiresAt = admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() + 365 * 86400000),
+      );
       const submissionRefs = targets.map((target) =>
         db.collection(collectionForKind(target.kind)).doc(target.id),
       );
@@ -142,6 +145,18 @@ export async function PATCH(req: NextRequest) {
           updated_at: now,
         });
       }
+      transaction.set(db.collection("admin_audit_logs").doc(), {
+        action: "submission_status_changed",
+        actor_uid: adminIdentity.uid,
+        actor_email: adminIdentity.email || null,
+        targets: targets.map((target, index) => ({
+          ...target,
+          previous_status: snapshots[index].get("status") || "pending",
+        })),
+        next_status: status,
+        created_at: now,
+        expires_at: auditExpiresAt,
+      });
     });
 
     return NextResponse.json({ success: true, updated: targets.length });

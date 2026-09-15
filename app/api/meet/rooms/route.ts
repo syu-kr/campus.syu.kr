@@ -17,6 +17,7 @@ import {
   readJsonBody,
   rateLimitResponse,
 } from "@/lib/server/http";
+import { createOwnerToken } from "@/lib/server/owner-token";
 
 const ROOM_EXPIRY_DAYS = 90;
 const RESPONSE_WINDOW_HOURS = 24;
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
 
     const db = getFirestore();
     const roomId = await createUniqueRoomId(db);
+    const owner = createOwnerToken();
     const now = nowTimestamp();
     const responseClosesAt = admin.firestore.Timestamp.fromDate(
       new Date(Date.now() + RESPONSE_WINDOW_HOURS * 60 * 60 * 1000),
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
       response_closes_at: responseClosesAt,
       expires_at: expiresAt,
       participant_count: 0,
+      owner_token_hash: owner.hash,
     });
 
     const inviteUrl = new URL(`/more/meet/${roomId}`, req.url).toString();
@@ -62,6 +65,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       roomId,
       inviteUrl,
+      ownerToken: owner.token,
       slots,
     });
   } catch (error) {

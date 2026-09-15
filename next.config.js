@@ -6,6 +6,7 @@ const { withSentryConfig } = require("@sentry/nextjs");
 
 const nextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
   turbopack: {
     root: __dirname,
   },
