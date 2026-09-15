@@ -135,4 +135,55 @@ describe("announcement AI metadata artifact", () => {
 
     expect(metadata.items[key]).toEqual(item);
   });
+
+  it("redacts contact details from preserved summaries", async () => {
+    const announcement = {
+      id: "academic-contact",
+      title: "문의 안내",
+      content: "",
+      category: "academic",
+      date: "2026.09.12",
+      author: "교무처",
+      views: 1,
+      isImportant: false,
+      isPinned: false,
+    };
+    const hash = (value) =>
+      createHash("sha256").update(value).digest("hex").slice(0, 16);
+    const key = `academic:legacy:${hash(
+      [announcement.title, announcement.date, announcement.author].join("\n"),
+    )}`;
+    const item = {
+      summary: "student@example.com 또는 010-1234-5678로 문의하세요.",
+      target: "재학생",
+      deadline: "unknown",
+      requiredAction: "담당자에게 문의",
+      keywords: ["문의", "학사"],
+      importance: "normal",
+      confidence: "low",
+      generatedAt: "2026-09-12T00:00:00.000Z",
+      sourceHash: hash(
+        ["academic", announcement.title, announcement.date, announcement.author, "", ""].join(
+          "\n",
+        ),
+      ),
+      provider: "supilot",
+    };
+
+    const metadata = await runGenerator(
+      { ANNOUNCEMENT_AI_ENABLED: "false" },
+      {
+        sources: { "announcements-academic.json": [announcement] },
+        metadata: {
+          version: 1,
+          generatedAt: "2026-09-12T00:00:00.000Z",
+          items: { [key]: item },
+        },
+      },
+    );
+
+    expect(JSON.stringify(metadata.items[key])).not.toMatch(
+      /student@example\.com|010-1234-5678/,
+    );
+  });
 });

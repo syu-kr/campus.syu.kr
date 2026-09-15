@@ -6,7 +6,7 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ### 요구사항
 
-- Node.js 22.12 이상
+- Node.js 22.13.0 이상
 - npm
 - Python 3.11 이상: 크롤러 실행 시 필요
 
@@ -184,6 +184,7 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `CRAWL_ACADEMIC_NOTICES_URL` | 필수 | `crawl-daily.yml` | 학사공지 목록 page base URL |
 | `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
 | `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
+| `CRAWL_SWUNIV_NOTICES_URL` | 필수 | `crawl-daily.yml` | SW중심대학 공지 목록 page base URL |
 | `CRAWL_EVENT_NOTICES_URL` | 필수 | `crawl-daily.yml` | 행사공지 목록 page base URL |
 | `CRAWL_DEPARTMENT_COURSE_GUIDE_URL` | 필수 | `crawl-daily.yml` | 수집 대상 학과명을 확인할 공식 교육과정 URL |
 | `CRAWL_DEPARTMENT_NOTICE_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 탐색 페이지 수, 기본값 `3` |
@@ -298,10 +299,10 @@ syu-kr/campus.syu.kr main push
 ```
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
-일일 크롤러는 GitHub Pages 데이터 아티팩트만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. 월간 크롤러의 저빈도 정적 데이터 변경은 기존 `main` 커밋과 배포 흐름을 사용합니다.
+일일 크롤러는 GitHub Pages 데이터 아티팩트만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. 월간 크롤러의 저빈도 정적 데이터 변경은 자동 PR로 제안하고 검토·CI 후 병합합니다.
 `sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 dependency audit과 `npm run check`를 통과해야 개인 Vercel 레포에 push합니다.
 
-`main` 브랜치 Ruleset은 일반 사용자의 직접 push와 force push를 막습니다. 월간 크롤러가 저빈도 데이터 변경을 직접 push하므로 Ruleset bypass 목록에는 필요한 자동화 주체만 추가합니다. 일일 크롤러에는 저장소 write 권한이나 Ruleset bypass가 필요하지 않습니다.
+`main` 브랜치 Ruleset은 직접 push와 force push를 막습니다. 일일·월간 크롤러 모두 Ruleset bypass가 필요하지 않습니다.
 
 배포 전 확인:
 
@@ -315,7 +316,7 @@ GitHub Actions는 다음 용도로 사용합니다.
 - CI: dependency audit, npm run check
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 dependency audit과 `npm run check` 필수
 - daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 Pages 데이터 아티팩트 배포
-- monthly crawl: 학사 일정, 전화번호 갱신 후 변경 시 동기화
+- monthly crawl: 학사 일정, 전화번호 검증 후 변경 시 PR 생성
 - daily notification: Pages 스냅샷의 학사/장학 공지를 기준일별로 집계하고, 조회 실패 시 번들 fallback으로 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
 
 알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.

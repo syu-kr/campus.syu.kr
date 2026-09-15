@@ -9,7 +9,6 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 """
 
 import requests
-from bs4 import BeautifulSoup
 import json
 import re
 import os
@@ -17,7 +16,7 @@ import html
 from datetime import datetime, timedelta
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, request_soup, require_env, write_json_atomic
 
 CLOSED_LABEL = "운영 없음"
 CLOSED_TEXTS = {"운영없음", "운영 없음", "휴무", "없음", "-", "미운영"}
@@ -226,13 +225,11 @@ def crawl_cafeteria_menu():
     print(f"📅 요청 주차: {week_start.strftime('%Y-%m-%d')}")
     
     try:
-        response = requests.get(url, headers=DEFAULT_HEADERS, timeout=10)
-        response.encoding = 'utf-8'
-        
-        if response.status_code != 200:
-            raise RuntimeError(f"학식 페이지 요청 실패: {response.status_code}")
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
+        session = requests.Session()
+        session.headers.update(DEFAULT_HEADERS)
+        soup = request_soup(session, url)
+        if not soup:
+            raise RuntimeError("학식 페이지 요청 실패")
         
         # 주간 메뉴 테이블 찾기
         table = soup.select_one(".weekly-menu-table")

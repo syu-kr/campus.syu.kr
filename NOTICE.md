@@ -18,15 +18,15 @@ SYU CAMPUS는 삼육대학교 공식 서비스가 아닌 비공식 학생 편의
 
 주요 저장 데이터의 출처 범주는 다음과 같습니다.
 
-| 경로 | 출처 범주 | 비고 |
-| --- | --- | --- |
-| `public/data/announcements-*.json` | 삼육대학교 공개 공지 페이지 | 원문 링크와 작성자 정보를 포함한 가공 데이터 |
-| `public/data/cafeteria-menu.json` | 삼육대학교 공개 식단 페이지 | 메뉴 정보를 구조화한 가공 데이터 |
-| `public/data/phone-numbers.json` | 삼육대학교 공개 전화번호 안내 | 공개 업무 연락처를 구조화한 가공 데이터 |
-| `public/data/schedules-major.json` | 삼육대학교 공개 학사일정 | 일정 정보를 구조화한 가공 데이터 |
-| `public/data/graduation-requirements-2025.json`, `public/data/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 참고용 구조화·OCR 가공 데이터 |
-| `public/data/shuttle-*.json` | 삼육대학교 공개 안내 및 운영 정보 | 실제 운영 정보와 다를 수 있음 |
-| `public/data/campus-tips.json` | 학교 공식 페이지 및 외부 공개 안내 | 각 항목의 원문 링크와 출처 유형 포함 |
+| 경로 | 출처 범주 | 재배포 근거 상태 | 비고 |
+| --- | --- | --- | --- |
+| `public/data/announcements-*.json` | 삼육대학교 공개 공지 페이지 | 서면 허가 미확인 | 원문 링크와 작성자 정보를 포함한 가공 데이터 |
+| `public/data/cafeteria-menu.json` | 삼육대학교 공개 식단 페이지 | 서면 허가 미확인 | 메뉴 정보를 구조화한 가공 데이터 |
+| `public/data/phone-numbers.json` | 삼육대학교 공개 전화번호 안내 | 서면 허가 미확인 | 공개 업무 연락처를 구조화한 가공 데이터 |
+| `public/data/schedules-major.json` | 삼육대학교 공개 학사일정 | 서면 허가 미확인 | 일정 정보를 구조화한 가공 데이터 |
+| `public/data/graduation-requirements-2025.json`, `public/data/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 서면 허가 미확인 | 참고용 구조화·OCR 가공 데이터 |
+| `public/data/shuttle-*.json` | 삼육대학교 공개 안내 및 운영 정보 | 서면 허가 미확인 | 실제 운영 정보와 다를 수 있음 |
+| `public/data/campus-tips.json` | 학교 공식 페이지 및 외부 공개 안내 | 항목별 확인 필요 | 각 항목의 원문 링크와 출처 유형 포함 |
 
 공개 웹페이지에서 접근할 수 있다는 사실만으로 재배포 허가가 확인되는 것은 아닙니다. 이 저장소는 위 데이터와 상표 자산에 대한 별도 재배포 라이선스 또는 서면 허가를 보증하지 않습니다. 운영자는 공개 전 제공처 이용약관과 허가 근거를 확인·보관해야 하며, 재사용자는 필요한 권리를 별도로 확인해야 합니다.
 
@@ -37,4 +37,4 @@ SYU CAMPUS는 삼육대학교 공식 서비스가 아닌 비공식 학생 편의
 
 ## Removal Requests
 
-권리 침해, 출처 정정, 데이터 또는 자산 삭제 요청은 GitHub의 [Data or asset removal request](https://github.com/syu-kr/campus.syu.kr/issues/new?template=data_removal_request.yml) 양식으로 전달해 주세요. 보안 취약점은 공개 Issue에 세부 정보를 남기지 말고 `SECURITY.md`의 비공개 제보 절차를 따라 주세요. 확인 후 합리적인 범위에서 신속히 조치합니다.
+권리 침해, 개인정보, 출처 정정, 데이터 또는 자산 삭제 요청은 공개 Issue에 권리 증빙이나 개인정보를 남기지 말고 `singhic_dev@syu.kr`로 전달해 주세요. 비민감 공개 데이터의 단순 오탈자 제보만 공개 Issue를 이용할 수 있습니다. 보안 취약점은 `SECURITY.md`의 비공개 제보 절차를 따라 주세요. 확인 후 합리적인 범위에서 신속히 조치합니다.

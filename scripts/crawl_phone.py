@@ -9,12 +9,11 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 """
 
 import requests
-from bs4 import BeautifulSoup
 import json
 import os
 import re
 
-from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, request_soup, require_env, write_json_atomic
 
 PHONE_NUMBER_PATTERN = re.compile(
     r"(?:\+82[\s-]?)?0\d{1,2}[\s)./-]?\d{3,4}[\s.-]?\d{4}"
@@ -73,13 +72,11 @@ def crawl_phone_numbers():
     print("📞 업무별 전화번호 크롤링 시작...")
     
     try:
-        response = requests.get(url, headers=DEFAULT_HEADERS, timeout=10)
-        response.encoding = 'utf-8'
-        
-        if response.status_code != 200:
-            raise RuntimeError(f"전화번호 페이지 요청 실패: {response.status_code}")
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
+        session = requests.Session()
+        session.headers.update(DEFAULT_HEADERS)
+        soup = request_soup(session, url)
+        if not soup:
+            raise RuntimeError("전화번호 페이지 요청 실패")
         
         # 전화번호 정보 추출 - 클래스 선택자 등으로 시도
         phone_elements = soup.select(".phone-info, .contact-info")

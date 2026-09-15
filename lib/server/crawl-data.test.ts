@@ -17,7 +17,24 @@ afterEach(() => {
 describe("crawl data Pages runtime", () => {
   it("loads and verifies a versioned Pages payload", async () => {
     const version = "20260724T010203-123.1";
-    const payload = Buffer.from('[{"id":1}]', "utf8");
+    const cafeteria = {
+      id: "cafeteria-test",
+      name: "Test Cafeteria",
+      weekStart: "2026-07-20",
+      menus: [
+        {
+          date: "2026-07-20",
+          day: "월",
+          meals: {
+            breakfast: ["운영 없음"],
+            lunch: { a_corner: ["운영 없음"], b_corner: ["운영 없음"] },
+            dinner: ["운영 없음"],
+          },
+        },
+      ],
+      lastUpdated: "2026-07-24T01:42:50.000Z",
+    };
+    const payload = Buffer.from(JSON.stringify(cafeteria), "utf8");
     const sha256 = createHash("sha256").update(payload).digest("hex");
     const manifest = {
       schemaVersion: 1,
@@ -54,7 +71,7 @@ describe("crawl data Pages runtime", () => {
     );
 
     expect(snapshot).toMatchObject({
-      data: [{ id: 1 }],
+      data: cafeteria,
       source: "github-pages",
       version,
       publishedAt: "2026-07-24T01:02:03.000Z",
@@ -135,5 +152,43 @@ describe("crawl data Pages runtime", () => {
 
     expect(snapshot.source).toBe("bundled-fallback");
     expect(snapshot.data.length).toBeGreaterThan(0);
+  });
+
+  it("stops reading a Pages payload once it exceeds the declared size", async () => {
+    const version = "20260724T010203-123.1";
+    const manifest = {
+      schemaVersion: 1,
+      version,
+      publishedAt: "2026-07-24T01:02:03.000Z",
+      files: Object.fromEntries(
+        DAILY_CRAWL_DATA_FILES.map((fileName) => [
+          fileName,
+          {
+            path: `versions/${version}/${fileName}`,
+            sha256: "0".repeat(64),
+            size: 2,
+          },
+        ]),
+      ),
+      retainedVersions: [version],
+    };
+
+    process.env.CRAWL_DATA_BASE_URL = "https://crawl-data.example.test";
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL | Request) =>
+        input.toString().includes("current.json")
+          ? new Response(JSON.stringify(manifest))
+          : new Response("[{}]"),
+      ),
+    );
+
+    const { readDailyCrawlDataSnapshot } = await import("./crawl-data");
+    const snapshot = await readDailyCrawlDataSnapshot<unknown>(
+      "cafeteria-menu.json",
+    );
+
+    expect(snapshot.source).toBe("bundled-fallback");
   });
 });

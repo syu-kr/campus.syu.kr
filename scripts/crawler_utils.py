@@ -8,8 +8,8 @@ import json
 import os
 import re
 import tempfile
+import time
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -19,6 +19,8 @@ from bs4 import BeautifulSoup
 DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
+MAX_HTML_BYTES = 2 * 1024 * 1024
+REQUEST_ATTEMPTS = 2
 
 
 def require_env(name: str) -> str:
@@ -120,13 +122,55 @@ def write_json_atomic(path: str, data: object) -> None:
     os.replace(temp_path, path)
 
 
-def request_soup(session: requests.Session, url: str, timeout: int = 10) -> Optional[BeautifulSoup]:
-    response = session.get(url, timeout=timeout)
-    response.encoding = "utf-8"
-    if response.status_code != 200:
-        print(f"  ⚠️ 요청 실패: {url} ({response.status_code})")
-        return None
-    return BeautifulSoup(response.text, "html.parser")
+def request_soup(
+    session: requests.Session,
+    url: str,
+    timeout: int = 10,
+    max_bytes: int = MAX_HTML_BYTES,
+    method: str = "GET",
+) -> Optional[BeautifulSoup]:
+    for attempt in range(REQUEST_ATTEMPTS):
+        response = None
+        try:
+            response = session.request(method, url, timeout=timeout, stream=True)
+            if response.status_code != 200:
+                print(f"  [warn] 요청 실패: {url} ({response.status_code})")
+                if response.status_code < 500 or attempt + 1 == REQUEST_ATTEMPTS:
+                    return None
+                time.sleep(1)
+                continue
+
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "text/html" not in content_type and "application/xhtml+xml" not in content_type:
+                print(f"  [warn] HTML이 아닌 응답: {url} ({content_type or 'unknown'})")
+                return None
+
+            content_length = response.headers.get("Content-Length")
+            if content_length and int(content_length) > max_bytes:
+                print(f"  [warn] 응답이 너무 큽니다: {url}")
+                return None
+
+            chunks = []
+            received = 0
+            for chunk in response.iter_content(chunk_size=64 * 1024):
+                received += len(chunk)
+                if received > max_bytes:
+                    print(f"  [warn] 응답이 너무 큽니다: {url}")
+                    return None
+                chunks.append(chunk)
+
+            return BeautifulSoup(b"".join(chunks), "html.parser")
+        except (requests.RequestException, ValueError) as error:
+            print(f"  [warn] 요청 오류: {url} ({error})")
+            if attempt + 1 == REQUEST_ATTEMPTS:
+                return None
+            time.sleep(1)
+        finally:
+            close = getattr(response, "close", None)
+            if callable(close):
+                close()
+
+    return None
 
 
 def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, object]]:
@@ -171,6 +215,8 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
         if title_cell_index + 2 < len(cells)
         else ""
     )
+    if not re.match(r"^\d{4}\.\d{2}\.\d{2}$", date_text):
+        return None
     views_text = cells[-1].get_text(" ", strip=True) if cells else "0"
 
     step1 = row.select_one("th.step1")
@@ -183,7 +229,7 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
     return {
         "no": no_text,
         "title": title,
-        "date": date_text or datetime.now().strftime("%Y.%m.%d"),
+        "date": date_text,
         "author": author or config.default_author,
         "views": parse_int(views_text),
         "url": url,
@@ -236,7 +282,7 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
 
         for row in rows:
             row_data = extract_notice_row(row, config)
-            if not row_data:
+            if not row_data or not is_valid_notice_item(row_data):
                 continue
 
             key = notice_key(row_data)

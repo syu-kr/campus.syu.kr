@@ -4,13 +4,12 @@ import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 import requests
-from bs4 import BeautifulSoup
 import json
 import re
 import os
 import hashlib
 
-from crawler_utils import DEFAULT_HEADERS, require_env, write_json_atomic
+from crawler_utils import DEFAULT_HEADERS, request_soup, require_env, write_json_atomic
 
 def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
     """제목+시작날짜+종료날짜 기반 안정적 ID 생성"""
@@ -80,17 +79,13 @@ def crawl_schedule():
             print(f"⚠️  기존 데이터 로드 실패: {e}")
     
     try:
-        # POST request
-        response = requests.post(url, headers=DEFAULT_HEADERS, timeout=15)
-        response.encoding = 'utf-8'
-        
-        if response.status_code != 200:
-            raise RuntimeError(f"학사일정 페이지 요청 실패: {response.status_code}")
-        
-        print(f"✓ Request successful (status: {response.status_code})")
-        
-        # Parse HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
+        session = requests.Session()
+        session.headers.update(DEFAULT_HEADERS)
+        soup = request_soup(session, url, timeout=15, method="POST")
+        if not soup:
+            raise RuntimeError("학사일정 페이지 요청 실패")
+
+        print("✓ Request successful")
         
         # Find all calendar boxes
         calendars = soup.find_all("div", {"class": "md_textcalendar"})

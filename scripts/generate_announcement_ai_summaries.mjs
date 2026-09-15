@@ -9,6 +9,7 @@ import {
   ANNOUNCEMENT_AI_SCHEMA_VERSION,
   AnnouncementAiError,
   requestAnnouncementSummary,
+  sanitizeAnnouncementSummaryForPublication,
 } from "./announcement-openai.mjs";
 
 loadLocalEnvFiles();
@@ -23,6 +24,7 @@ const DEFAULT_LIMIT = 25;
 const DEFAULT_DELAY_MS = 2200;
 const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_DETAIL_FETCH_TIMEOUT_MS = 12000;
+const DETAIL_RESPONSE_MAX_BYTES = 1024 * 1024;
 const DEFAULT_CHECKPOINT_EVERY = 5;
 const DEFAULT_MAX_RETRIES = 3;
 const GENERATION_FINGERPRINT = hashText(
@@ -91,10 +93,10 @@ async function main() {
       sourceHashMatches(existingItem, announcement) &&
       currentKeys.has(key)
     ) {
-      nextItems[key] = {
+      nextItems[key] = sanitizeAnnouncementSummaryForPublication({
         ...existingItem,
         sourceHash,
-      };
+      });
     }
   }
 
@@ -205,7 +207,7 @@ async function main() {
         timeoutMs,
         maxRetries,
       });
-      nextItems[key] = {
+      nextItems[key] = sanitizeAnnouncementSummaryForPublication({
         ...result.value,
         generatedAt: new Date().toISOString(),
         sourceHash,
@@ -219,7 +221,7 @@ async function main() {
         ...(enrichedAnnouncement.detailContentHash
           ? { detailContentHash: enrichedAnnouncement.detailContentHash }
           : {}),
-      };
+      });
       generatedCount += 1;
       report.succeeded += 1;
       addUsage(report.usage, result.usage);
@@ -436,7 +438,13 @@ async function fetchAnnouncementDetailContent(url, timeoutMs) {
       return null;
     }
 
-    const html = await response.text();
+    const contentType = response.headers.get("content-type")?.toLowerCase() || "";
+    if (!contentType.includes("text/html")) {
+      console.warn(`Detail fetch returned ${contentType || "unknown"}: ${url}`);
+      return null;
+    }
+
+    const html = await readDetailHtml(response);
     const text = extractAnnouncementTextFromHtml(html);
 
     return text.length >= 80 ? text : null;
@@ -444,6 +452,40 @@ async function fetchAnnouncementDetailContent(url, timeoutMs) {
     console.warn(`Detail fetch failed: ${url}`, error?.message || error);
     return null;
   }
+}
+
+async function readDetailHtml(response) {
+  const contentLength = Number(response.headers.get("content-length"));
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > DETAIL_RESPONSE_MAX_BYTES
+  ) {
+    throw new Error("Detail response is too large");
+  }
+
+  if (!response.body) return "";
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    received += value.byteLength;
+    if (received > DETAIL_RESPONSE_MAX_BYTES) {
+      await reader.cancel();
+      throw new Error("Detail response is too large");
+    }
+    chunks.push(value);
+  }
+
+  const bytes = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 function canFetchDetailUrl(value) {

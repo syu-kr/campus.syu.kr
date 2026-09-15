@@ -5,7 +5,9 @@ import {
   AnnouncementAiError,
   classifyOpenAiError,
   normalizeAnnouncementSummary,
+  redactPublishedContactInfo,
   requestAnnouncementSummary,
+  sanitizeAnnouncementSummaryForPublication,
 } from "./announcement-openai.mjs";
 
 const announcement = {
@@ -176,6 +178,18 @@ describe("announcement OpenAI Responses adapter", () => {
         { ...announcement, content: "" },
       ),
     ).toMatchObject({ deadline: "unknown", confidence: "low" });
+  });
+
+  it("removes contact details before publishing a summary", () => {
+    const sanitized = sanitizeAnnouncementSummaryForPublication({
+      ...validValue,
+      summary: "문의는 student@example.com 또는 010-1234-5678로 해주세요.",
+      keywords: ["student@example.com", "010.1234.5678"],
+    });
+
+    expect(JSON.stringify(sanitized)).not.toMatch(/student@example\.com|010[.-]1234[.-]5678/);
+    expect(sanitized.keywords).toHaveLength(2);
+    expect(redactPublishedContactInfo("02-123-4567")).toBe("[연락처는 원문 확인]");
   });
 
   it("keeps prompt injection text inside input without changing the request contract", async () => {

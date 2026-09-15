@@ -9,10 +9,12 @@ import {
 import path from "node:path";
 import {
   CRAWL_DATA_RETAINED_VERSION_LIMIT,
+  CRAWL_DATA_MAX_BYTES,
   DAILY_CRAWL_DATA_FILES,
   type CrawlDataManifest,
   type DailyCrawlDataFile,
   parseCrawlDataManifest,
+  validateDailyCrawlData,
   validateCrawlDataVersion,
 } from "../lib/crawl-data-contract";
 
@@ -339,8 +341,12 @@ async function readValidatedJson(
   fileName: DailyCrawlDataFile,
 ): Promise<Buffer> {
   const payload = await readFile(path.join(DATA_DIR, fileName));
+  if (payload.byteLength > CRAWL_DATA_MAX_BYTES[fileName]) {
+    throw new Error(`${fileName}이 허용 크기를 초과했습니다.`);
+  }
   try {
-    JSON.parse(payload.toString("utf8"));
+    const value = JSON.parse(payload.toString("utf8")) as unknown;
+    validateDailyCrawlData(fileName, value);
   } catch (error) {
     throw new Error(`${fileName}이 올바른 JSON이 아닙니다.`, { cause: error });
   }
@@ -360,7 +366,8 @@ function verifyPayload(
     throw new Error(`${fileName}의 SHA-256 값이 manifest와 일치하지 않습니다.`);
   }
   try {
-    JSON.parse(payload.toString("utf8"));
+    const value = JSON.parse(payload.toString("utf8")) as unknown;
+    validateDailyCrawlData(fileName, value);
   } catch (error) {
     throw new Error(`${fileName}이 올바른 JSON이 아닙니다.`, { cause: error });
   }
