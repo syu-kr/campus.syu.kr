@@ -16,11 +16,7 @@ import { createFAQPageSchema } from "@/lib/structured-data";
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 const SITE_ORIGIN = "https://campus.syu.kr";
 
-type PhonePageProps = {
-  canonicalPath: "/campus/phone" | "/more/phone";
-};
-
-export async function PhonePage({ canonicalPath }: PhonePageProps) {
+export async function PhonePage() {
   const headerStore = await headers();
   const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
@@ -32,15 +28,10 @@ export async function PhonePage({ canonicalPath }: PhonePageProps) {
     phoneNumbers: initialPhoneNumbers,
   });
   const dictionary = getDictionary(locale);
-  const schemaId =
-    canonicalPath === "/campus/phone"
-      ? "campus-phone-answer-schema"
-      : "more-phone-answer-schema";
-
   return (
     <>
       <StructuredDataScript
-        id={schemaId}
+        id="campus-phone-answer-schema"
         nonce={nonce}
         data={createFAQPageSchema({
           inLanguage: dictionary.meta.inLanguage,
@@ -50,7 +41,7 @@ export async function PhonePage({ canonicalPath }: PhonePageProps) {
               questionName: answerSummary.question,
             },
           ],
-          url: `${SITE_ORIGIN}${localizePath(canonicalPath, locale)}`,
+          url: `${SITE_ORIGIN}${localizePath("/campus/phone", locale)}`,
         })}
       />
       <PhonePageClient

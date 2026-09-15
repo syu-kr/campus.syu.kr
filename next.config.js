@@ -4,6 +4,19 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 });
 const { withSentryConfig } = require("@sentry/nextjs");
 
+const PERMANENT_REDIRECTS = [
+  ["/index", "/"],
+  ["/en/index", "/en"],
+  ["/more/scholarship", "/academic/scholarship"],
+  ["/en/more/scholarship", "/en/academic/scholarship"],
+  ["/more/phone", "/campus/phone"],
+  ["/en/more/phone", "/en/campus/phone"],
+  ["/more/campus-tips", "/campus/campus-tips"],
+  ["/en/more/campus-tips", "/en/campus/campus-tips"],
+  ["/more/campus-tips/suggest", "/campus/campus-tips/suggest"],
+  ["/en/more/campus-tips/suggest", "/en/campus/campus-tips/suggest"],
+];
+
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -45,38 +58,12 @@ const nextConfig = {
       destination: "/api/bus/shuttle",
     },
   ],
-  redirects: async () => [
-    {
-      source: "/index",
-      destination: "/",
+  redirects: async () =>
+    PERMANENT_REDIRECTS.map(([source, destination]) => ({
+      source,
+      destination,
       permanent: true,
-    },
-    {
-      source: "/en/index",
-      destination: "/en",
-      permanent: true,
-    },
-    {
-      source: "/more/scholarship",
-      destination: "/academic/scholarship",
-      permanent: true,
-    },
-    {
-      source: "/more/phone",
-      destination: "/campus/phone",
-      permanent: true,
-    },
-    {
-      source: "/more/campus-tips",
-      destination: "/campus/campus-tips",
-      permanent: true,
-    },
-    {
-      source: "/more/campus-tips/suggest",
-      destination: "/campus/campus-tips/suggest",
-      permanent: true,
-    },
-  ],
+    })),
 
   // 캐싱 설정
   headers: async () => {
