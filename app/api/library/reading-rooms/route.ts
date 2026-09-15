@@ -92,7 +92,11 @@ async function fetchReadingRooms(): Promise<ReadingRoom[]> {
   }
 
   const contentType = response.headers.get("content-type")?.toLowerCase() || "";
-  if (!contentType.includes("xml") && !contentType.includes("text/plain")) {
+  if (
+    !contentType.includes("xml") &&
+    !contentType.includes("text/plain") &&
+    !contentType.includes("text/html")
+  ) {
     throw new Error(
       `Reading room API returned ${contentType || "unknown"} content type`,
     );
