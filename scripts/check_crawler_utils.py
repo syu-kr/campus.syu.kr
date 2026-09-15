@@ -1,7 +1,14 @@
 """Check trust-boundary behavior shared by notice crawlers."""
 
+import os
+
 from bs4 import BeautifulSoup
 
+from crawl_department_notices import (
+    build_notice_request_urls,
+    read_official_url_set_env,
+    to_notice_board_base_url,
+)
 from crawler_utils import NoticeCrawlerConfig, extract_notice_row, request_soup
 
 
@@ -44,6 +51,32 @@ def main() -> None:
 
     assert request_soup(FakeSession(), "https://www.syu.ac.kr") is not None
     assert request_soup(FakeSession(), "https://www.syu.ac.kr", max_bytes=8) is None
+
+    standard_board = to_notice_board_base_url(
+        "https://example.syu.ac.kr/department/community/notice/",
+        set(),
+    )
+    assert standard_board == "https://example.syu.ac.kr/department/community/notice/page"
+    assert build_notice_request_urls(standard_board, 2, ["공모"], 1) == [
+        "https://example.syu.ac.kr/department/community/notice/page/1/",
+        "https://example.syu.ac.kr/department/community/notice/page/2/",
+        "https://example.syu.ac.kr/department/community/notice/page/1/?k=%EA%B3%B5%EB%AA%A8",
+    ]
+
+    query_url = "https://example.syu.ac.kr/special/community/notice/"
+    os.environ["TEST_DEPARTMENT_QUERY_URLS"] = query_url
+    query_urls = read_official_url_set_env("TEST_DEPARTMENT_QUERY_URLS")
+    query_board = to_notice_board_base_url(
+        query_url,
+        query_urls,
+    )
+    del os.environ["TEST_DEPARTMENT_QUERY_URLS"]
+    assert query_board == query_url
+    assert build_notice_request_urls(query_board, 2, ["공모"], 1) == [
+        "https://example.syu.ac.kr/special/community/notice/?var_page=1",
+        "https://example.syu.ac.kr/special/community/notice/?var_page=2",
+        "https://example.syu.ac.kr/special/community/notice/?var_page=1&K=%EA%B3%B5%EB%AA%A8",
+    ]
     print("Validated notice crawler trust boundary")
 
 

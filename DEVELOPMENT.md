@@ -186,6 +186,8 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | `CRAWL_SWUNIV_NOTICES_URL` | 필수 | `crawl-daily.yml` | SW중심대학 공지 목록 page base URL |
 | `CRAWL_EVENT_NOTICES_URL` | 필수 | `crawl-daily.yml` | 행사공지 목록 page base URL |
 | `CRAWL_DEPARTMENT_COURSE_GUIDE_URL` | 필수 | `crawl-daily.yml` | 수집 대상 학과명을 확인할 공식 교육과정 URL |
+| `CRAWL_DEPARTMENT_COLLEGE_EXCLUDE_URLS` | 선택 | `crawl-daily.yml` | 제외할 단과대학 공식 URL. 여러 개는 쉼표로 구분 |
+| `CRAWL_DEPARTMENT_NOTICE_QUERY_URLS` | 선택 | `crawl-daily.yml` | `var_page`와 `K` 쿼리를 사용하는 공지판 공식 URL. 여러 개는 쉼표로 구분 |
 | `CRAWL_DEPARTMENT_NOTICE_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 탐색 페이지 수, 기본값 `3` |
 | `CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS` | 선택 | `crawl-daily.yml` | 학과별 공지사항 내부 검색 키워드. 쉼표로 구분하며 비워두면 `공모,대회,경진,해커톤` 사용 |
 | `CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지사항 검색 결과 탐색 페이지 수, 기본값 `2` |
