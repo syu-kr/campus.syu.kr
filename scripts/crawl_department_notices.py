@@ -93,6 +93,12 @@ NoticeItem = Dict[str, object]
 
 def crawl_department_notices() -> None:
     course_guide_url = require_env("CRAWL_DEPARTMENT_COURSE_GUIDE_URL")
+    excluded_college_urls = read_official_url_set_env(
+        "CRAWL_DEPARTMENT_COLLEGE_EXCLUDE_URLS"
+    )
+    query_notice_urls = read_official_url_set_env(
+        "CRAWL_DEPARTMENT_NOTICE_QUERY_URLS"
+    )
     max_pages = read_positive_int_env("CRAWL_DEPARTMENT_NOTICE_MAX_PAGES", 3)
     max_departments = read_positive_int_env(
         "CRAWL_DEPARTMENT_NOTICE_MAX_DEPARTMENTS",
@@ -131,7 +137,11 @@ def crawl_department_notices() -> None:
         session,
         course_guide_url,
     )
-    college_page_urls = discover_college_page_urls(session, course_guide_url)
+    college_page_urls = discover_college_page_urls(
+        session,
+        course_guide_url,
+        excluded_college_urls,
+    )
     departments = discover_department_sites_from_college_pages(
         session,
         college_page_urls,
@@ -154,7 +164,11 @@ def crawl_department_notices() -> None:
     new_by_key: Dict[str, NoticeItem] = {}
 
     for index, department in enumerate(departments, start=1):
-        board_base_url = discover_notice_board_url(session, department)
+        board_base_url = discover_notice_board_url(
+            session,
+            department,
+            query_notice_urls,
+        )
         if not board_base_url:
             print(f"  ⚠️ {department['name']} 공지사항 링크를 찾지 못했습니다")
             continue
@@ -231,6 +245,7 @@ def discover_course_guide_department_names(
 def discover_college_page_urls(
     session: requests.Session,
     course_guide_url: str,
+    excluded_urls: set[str],
 ) -> List[str]:
     soup = safe_request_soup(session, course_guide_url)
     if not soup:
@@ -252,7 +267,7 @@ def discover_college_page_urls(
             continue
 
         key = normalize_notice_url(url)
-        if key in seen_urls:
+        if key in excluded_urls or key in seen_urls:
             continue
 
         seen_urls.add(key)
@@ -347,6 +362,7 @@ def find_homepage_link_after_heading(
 def discover_notice_board_url(
     session: requests.Session,
     department: DepartmentSite,
+    query_notice_urls: set[str],
 ) -> Optional[str]:
     soup = safe_request_soup(session, department["url"])
     candidates: List[tuple[int, str]] = []
@@ -362,7 +378,7 @@ def discover_notice_board_url(
             if score is None or not is_official_syu_url(url):
                 continue
 
-            board_url = to_notice_board_base_url(url)
+            board_url = to_notice_board_base_url(url, query_notice_urls)
             if board_url:
                 candidates.append((score, board_url))
 
@@ -392,7 +408,10 @@ def score_notice_link(anchor: Tag, url: str) -> Optional[int]:
     return None
 
 
-def to_notice_board_base_url(url: str) -> Optional[str]:
+def to_notice_board_base_url(
+    url: str,
+    query_notice_urls: set[str],
+) -> Optional[str]:
     parsed = urlsplit(url)
     if not parsed.scheme or not parsed.netloc:
         return None
@@ -400,6 +419,9 @@ def to_notice_board_base_url(url: str) -> Optional[str]:
     path = re.sub(r"/+$", "", parsed.path)
     if not path:
         return None
+
+    if normalize_notice_url(url) in query_notice_urls:
+        return urlunsplit((parsed.scheme, parsed.netloc, f"{path}/", "", ""))
 
     if "/page/" in path:
         path = path.split("/page/", 1)[0].rstrip("/") + "/page"
@@ -575,9 +597,18 @@ def add_notice_request_url(
     page: int,
     search_term: Optional[str] = None,
 ) -> None:
-    url = f"{board_base_url}/{page}/"
-    if search_term:
-        url = f"{url}?{urlencode({'k': search_term})}"
+    if board_base_url.rstrip("/").endswith("/page"):
+        url = f"{board_base_url}/{page}/"
+        if search_term:
+            url = f"{url}?{urlencode({'k': search_term})}"
+    else:
+        parsed = urlsplit(board_base_url)
+        query = {"var_page": str(page)}
+        if search_term:
+            query["K"] = search_term
+        url = urlunsplit(
+            (parsed.scheme, parsed.netloc, parsed.path, urlencode(query), "")
+        )
 
     key = url
     if key in seen_urls:
@@ -762,6 +793,14 @@ def read_csv_env(name: str, fallback: tuple[str, ...]) -> List[str]:
         values.append(normalized)
 
     return values or list(fallback)
+
+
+def read_official_url_set_env(name: str) -> set[str]:
+    urls = read_csv_env(name, ())
+    if any(not is_official_syu_url(url) for url in urls):
+        raise RuntimeError(f"{name}에는 삼육대학교 공식 URL만 사용할 수 있습니다")
+
+    return {normalize_notice_url(url) for url in urls}
 
 
 def read_float_env(name: str, fallback: float) -> float:
