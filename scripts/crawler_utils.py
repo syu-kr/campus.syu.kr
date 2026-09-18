@@ -20,7 +20,7 @@ DEFAULT_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
 MAX_HTML_BYTES = 2 * 1024 * 1024
-REQUEST_ATTEMPTS = 2
+REQUEST_ATTEMPTS = 3
 
 
 def require_env(name: str) -> str:
@@ -137,7 +137,7 @@ def request_soup(
                 print(f"  [warn] 요청 실패: {url} ({response.status_code})")
                 if response.status_code < 500 or attempt + 1 == REQUEST_ATTEMPTS:
                     return None
-                time.sleep(1)
+                time.sleep(2**attempt)
                 continue
 
             content_type = response.headers.get("Content-Type", "").lower()
@@ -164,7 +164,7 @@ def request_soup(
             print(f"  [warn] 요청 오류: {url} ({error})")
             if attempt + 1 == REQUEST_ATTEMPTS:
                 return None
-            time.sleep(1)
+            time.sleep(2**attempt)
         finally:
             close = getattr(response, "close", None)
             if callable(close):
