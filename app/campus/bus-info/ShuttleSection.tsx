@@ -528,9 +528,9 @@ export default function ShuttleSection() {
     };
 
     const scheduleNextFetch = () => {
-      const delay = Math.random() * 5000 + 5000;
-      timeoutId = setTimeout(() => {
-        fetchLocations();
+      const delay = Math.random() * 5000 + 30000;
+      timeoutId = setTimeout(async () => {
+        await fetchLocations();
         scheduleNextFetch();
       }, delay);
     };
