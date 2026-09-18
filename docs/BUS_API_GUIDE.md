@@ -113,7 +113,7 @@ PublicTransitSection
 | 데이터 | staleTime | gcTime | refetchInterval |
 | --- | --- | --- | --- |
 | 도착 정보 | 0초 | 0초 | 10초 |
-| 차량 위치 | 5초 | 15초 | 5초 |
+| 차량 위치 | 30초 | 10분 | 30~35초 |
 
 Next.js fetch 옵션에서 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 않습니다.
 
