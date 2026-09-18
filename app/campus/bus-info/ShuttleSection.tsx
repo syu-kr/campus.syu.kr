@@ -84,7 +84,6 @@ export default function ShuttleSection() {
   const [locationSourceStatus, setLocationSourceStatus] =
     useState<LiveDataSourceStatus>("fresh");
   const [selectedBusId, setSelectedBusId] = useState<string | null>(null);
-  const [isLocationPanelVisible, setIsLocationPanelVisible] = useState(false);
   const [expandedBuses, setExpandedBuses] = useState<Set<string>>(new Set());
   const mapComponentRef = useRef<ShuttleMapHandle | null>(null);
 
@@ -502,13 +501,9 @@ export default function ShuttleSection() {
     ? text.outsideOperation
     : text.outsideOperationPeriod;
 
-  // 버스 위치는 안내를 확인했고, 표시 가능한 시간일 때만 불러온다.
+  // 버스 위치는 표시 가능한 시간에 바로 불러온다.
   useEffect(() => {
-    if (
-      !isLocationPanelVisible ||
-      dateInfo.isWeekend ||
-      !isWithinOperationHours
-    ) {
+    if (dateInfo.isWeekend || !isWithinOperationHours) {
       return;
     }
 
@@ -549,7 +544,6 @@ export default function ShuttleSection() {
     };
   }, [
     dateInfo.isWeekend,
-    isLocationPanelVisible,
     isWithinOperationHours,
     text.locationError,
   ]);
@@ -642,7 +636,7 @@ export default function ShuttleSection() {
               <h2 className="text-lg sm:text-xl font-bold text-neutral-900">
                 {text.liveLocation}
               </h2>
-              {isLocationPanelVisible && (
+              {isWithinOperationHours && (
                 <div className="flex flex-wrap gap-2 sm:gap-3 text-xs">
                   <div className="flex items-center gap-1">
                     <div
@@ -690,7 +684,7 @@ export default function ShuttleSection() {
                 </div>
               )}
             </div>
-            {isLocationPanelVisible ? (
+            {isWithinOperationHours ? (
               <>
                 <p className="text-xs sm:text-sm text-neutral-600">
                   {text.liveLocationDescription}
@@ -705,6 +699,9 @@ export default function ShuttleSection() {
                   sourceStatus={locationSourceStatus}
                   className="mt-2"
                 />
+                <p className="mt-2 break-keep text-xs leading-5 text-neutral-600">
+                  {text.locationDisclaimer}
+                </p>
                 {(locationError || isLocationStale) && (
                   <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     {locationError
@@ -713,13 +710,9 @@ export default function ShuttleSection() {
                   </p>
                 )}
               </>
-            ) : !isWithinOperationHours ? (
-              <p className="text-xs sm:text-sm text-neutral-600">
-                {outsideOperationMessage}
-              </p>
             ) : (
               <p className="text-xs sm:text-sm text-neutral-600">
-                {text.locationDisclosureHint}
+                {outsideOperationMessage}
               </p>
             )}
           </div>
@@ -728,10 +721,6 @@ export default function ShuttleSection() {
             <ShuttleLocationState
               title={text.locationUnavailableTitle}
               message={locationUnavailableMessage}
-            />
-          ) : !isLocationPanelVisible ? (
-            <ShuttleLocationDisclosure
-              onConfirm={() => setIsLocationPanelVisible(true)}
             />
           ) : busLocations.length > 0 ? (
             <>
@@ -1069,28 +1058,6 @@ export default function ShuttleSection() {
           })}
       </div>
     </Container>
-  );
-}
-
-function ShuttleLocationDisclosure({ onConfirm }: { onConfirm: () => void }) {
-  const text = useDictionary().pages.busInfo;
-
-  return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-5">
-      <p className="font-semibold text-amber-950">
-        {text.locationDisclosureTitle}
-      </p>
-      <p className="mt-2 break-keep text-sm leading-6 text-amber-900">
-        {text.locationDisclosureMessage}
-      </p>
-      <button
-        type="button"
-        onClick={onConfirm}
-        className="mt-4 inline-flex rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-700 focus:ring-offset-2"
-      >
-        {text.locationDisclosureAction}
-      </button>
-    </div>
   );
 }
 

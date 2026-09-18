@@ -992,8 +992,8 @@ export const dictionaries = {
         outsideOperation: "현재 운행 시간표 기준 운행 시간 밖입니다.",
         outsideOperationPeriod:
           "현재는 학기·방학 셔틀 운행 기간이 아니어서 실시간 위치를 표시하지 않습니다.",
-        locationDisclosureHint:
-          "정확도 안내를 확인한 뒤 필요한 경우에만 위치를 표시합니다.",
+        locationDisclaimer:
+          "셔틀 위치는 참고용이며 실제 위치와 다를 수 있습니다. 위치 정보의 지연이나 오차로 인한 이용 결과에 대해 SYU CAMPUS는 책임을 지지 않습니다.",
         locationUnavailableTitle: "현재는 위치 표시 시간이 아닙니다",
         locationUnavailableMessage:
           "현재 운행 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
@@ -1005,11 +1005,6 @@ export const dictionaries = {
           "운행 시간표와 실제 위치 데이터가 잠시 다를 수 있습니다. 아래 시간표와 학교 공지를 함께 확인해주세요.",
         locationError:
           "실시간 위치 정보를 새로 가져오지 못했습니다.",
-        locationDisclosureTitle:
-          "실시간 위치가 정확하지 않을 수 있습니다",
-        locationDisclosureMessage:
-          "학교 측의 지속적인 제한으로 인해 표시되는 셔틀 위치가 실제 위치와 다를 수 있습니다. 이 점을 감안하고 실시간 위치를 확인하시겠습니까?",
-        locationDisclosureAction: "감안하고 위치 보기",
         unknown: "알 수 없음",
         status: "상태",
         schoolToStation: "학교 → 역",
@@ -2591,8 +2586,8 @@ export const dictionaries = {
         outsideOperation: "Outside operating hours for the current timetable.",
         outsideOperationPeriod:
           "Live locations are unavailable outside the semester and vacation shuttle operating periods.",
-        locationDisclosureHint:
-          "Live locations are shown only after you confirm the accuracy notice.",
+        locationDisclaimer:
+          "Shuttle locations are for reference only and may differ from actual positions. SYU CAMPUS is not responsible for outcomes caused by delayed or inaccurate location data.",
         locationUnavailableTitle: "Location display is unavailable now",
         locationUnavailableMessage:
           "It is outside operating hours for the current timetable.\nCheck the timetable below for the next departure.",
@@ -2604,11 +2599,6 @@ export const dictionaries = {
           "The timetable and live location data may differ temporarily. Please also check the timetable below and official school notices.",
         locationError:
           "Could not refresh live location information.",
-        locationDisclosureTitle:
-          "Live locations may be inaccurate",
-        locationDisclosureMessage:
-          "Due to continued restrictions from the school system, displayed shuttle locations may differ from actual locations. Do you still want to view live locations?",
-        locationDisclosureAction: "View Location Anyway",
         unknown: "Unknown",
         status: "Status",
         schoolToStation: "Campus → Station",
