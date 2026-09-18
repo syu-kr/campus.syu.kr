@@ -1,6 +1,7 @@
 """Check trust-boundary behavior shared by notice crawlers."""
 
 import os
+from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 
@@ -9,7 +10,12 @@ from crawl_department_notices import (
     read_official_url_set_env,
     to_notice_board_base_url,
 )
-from crawler_utils import NoticeCrawlerConfig, extract_notice_row, request_soup
+from crawler_utils import (
+    REQUEST_ATTEMPTS,
+    NoticeCrawlerConfig,
+    extract_notice_row,
+    request_soup,
+)
 
 
 def main() -> None:
@@ -51,6 +57,21 @@ def main() -> None:
 
     assert request_soup(FakeSession(), "https://www.syu.ac.kr") is not None
     assert request_soup(FakeSession(), "https://www.syu.ac.kr", max_bytes=8) is None
+
+    class FlakySession:
+        calls = 0
+
+        def request(self, method: str, url: str, timeout: int, stream: bool):
+            del method, url, timeout, stream
+            self.calls += 1
+            response = FakeResponse()
+            response.status_code = 500 if self.calls < REQUEST_ATTEMPTS else 200
+            return response
+
+    flaky_session = FlakySession()
+    with patch("crawler_utils.time.sleep"):
+        assert request_soup(flaky_session, "https://www.syu.ac.kr") is not None
+    assert flaky_session.calls == REQUEST_ATTEMPTS
 
     standard_board = to_notice_board_base_url(
         "https://example.syu.ac.kr/department/community/notice/",
