@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
+import http from "node:http";
 import https from "node:https";
 import type { BusLocation } from "@/types";
 import { requireServerEnv } from "@/lib/server/env";
 import { toBusLocation } from "@/lib/shuttle-location";
 import {
+  createShuttleChallengeBody,
   MAX_SHUTTLE_RESPONSE_BYTES,
   validateShuttleEndpoint,
 } from "@/lib/server/shuttle-upstream";
@@ -15,11 +17,13 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 const SHUTTLE_LOCATION_SOURCE = "shuttle";
-const SHUTTLE_CACHE_TTL_MS = 3 * 1000;
-const SHUTTLE_STALE_RETENTION_MS = 60 * 1000;
+const SHUTTLE_CACHE_TTL_MS = 30 * 1000;
+const SHUTTLE_STALE_RETENTION_MS = 10 * 60 * 1000;
+const SHUTTLE_FORBIDDEN_COOLDOWN_MS = 5 * 60 * 1000;
+const SHUTTLE_REQUEST_TIMEOUT_MS = 3500;
 const MAX_SHUTTLE_ROWS = 100;
 const PUBLIC_CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=3, stale-while-revalidate=10",
+  "Cache-Control": "public, s-maxage=30, stale-while-revalidate=300",
 };
 let cachedLocations:
   | {
@@ -30,6 +34,8 @@ let cachedLocations:
     }
   | undefined;
 let pendingLocations: Promise<BusLocation[]> | undefined;
+// ponytail: 인스턴스 로컬 cooldown; 분산 차단이 필요해질 때 공유 저장소로 승격.
+let upstreamBlockedUntil = 0;
 
 interface ShuttleLocationPayload {
   returnCode?: string;
@@ -37,11 +43,64 @@ interface ShuttleLocationPayload {
 }
 
 async function fetchShuttleLocations(): Promise<BusLocation[]> {
-  const { url, referer } = validateShuttleEndpoint(
+  if (Date.now() < upstreamBlockedUntil) {
+    throw new Error("Shuttle location API cooldown is active");
+  }
+
+  const { url, referer, pageUrl } = validateShuttleEndpoint(
     requireServerEnv("SHUTTLE_LOCATION_URL"),
     requireServerEnv("SHUTTLE_REFERER"),
+    requireServerEnv("SHUTTLE_PAGE_URL"),
   );
-  const payload = await fetchJsonFromUrl(url, referer);
+  const userAgent = requireServerEnv("SHUTTLE_USER_AGENT");
+  let payload: ShuttleLocationPayload;
+
+  try {
+    const challengeHtml = await fetchTextFromUrl(pageUrl, {
+      headers: {
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko,en-US;q=0.9,en;q=0.8",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": userAgent,
+      },
+    });
+    const body = createShuttleChallengeBody(
+      challengeHtml,
+      requireServerEnv("SHUTTLE_CHALLENGE_SALT"),
+    );
+    const responseBody = await fetchTextFromUrl(url, {
+      method: "POST",
+      body,
+      headers: {
+        Accept: "application/json, text/javascript, */*; q=0.01",
+        "Accept-Language": "ko,en-US;q=0.9,en;q=0.8",
+        "Cache-Control": "no-cache",
+        "Content-Length": Buffer.byteLength(body),
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        Origin: url.origin,
+        Pragma: "no-cache",
+        Referer: referer,
+        "User-Agent": userAgent,
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    });
+
+    try {
+      payload = JSON.parse(responseBody) as ShuttleLocationPayload;
+    } catch {
+      throw new Error("Shuttle location API returned invalid JSON");
+    }
+  } catch (error) {
+    if (getUpstreamStatusCode(error) === 403) {
+      upstreamBlockedUntil = Date.now() + SHUTTLE_FORBIDDEN_COOLDOWN_MS;
+    }
+    throw error;
+  }
+
+  upstreamBlockedUntil = 0;
 
   if (payload.returnCode && payload.returnCode !== "200") {
     throw new Error(`Shuttle location API returned code ${payload.returnCode}`);
@@ -64,37 +123,24 @@ async function fetchShuttleLocations(): Promise<BusLocation[]> {
   return locations;
 }
 
-function fetchJsonFromUrl(
+function fetchTextFromUrl(
   url: URL,
-  referer: string,
-): Promise<ShuttleLocationPayload> {
-  const userAgent = requireServerEnv("SHUTTLE_USER_AGENT");
-
+  options: {
+    method?: "GET" | "POST";
+    headers: Record<string, string | number>;
+    body?: string;
+  },
+): Promise<string> {
   return new Promise((resolve, reject) => {
-    const request = https.request(
+    const transport = url.protocol === "https:" ? https : http;
+    const request = transport.request(
       {
         protocol: url.protocol,
         hostname: url.hostname,
-        port: url.port || 443,
+        port: url.port || (url.protocol === "https:" ? 443 : 80),
         path: `${url.pathname}${url.search}`,
-        method: "GET",
-        headers: {
-          Accept: "*/*",
-          "Accept-Language": "ko,en;q=0.9,en-US;q=0.8",
-          "Cache-Control": "no-cache",
-          DNT: "1",
-          Pragma: "no-cache",
-          Priority: "u=1, i",
-          Referer: referer,
-          "Sec-CH-UA":
-            '"Chromium";v="148", "Microsoft Edge";v="148", "Not/A)Brand";v="99"',
-          "Sec-CH-UA-Mobile": "?0",
-          "Sec-CH-UA-Platform": '"Windows"',
-          "Sec-Fetch-Dest": "empty",
-          "Sec-Fetch-Mode": "cors",
-          "Sec-Fetch-Site": "same-origin",
-          "User-Agent": userAgent,
-        },
+        method: options.method ?? "GET",
+        headers: options.headers,
       },
       (response) => {
         const chunks: Buffer[] = [];
@@ -122,15 +168,15 @@ function fetchJsonFromUrl(
           const body = Buffer.concat(chunks).toString("utf8");
 
           if (statusCode < 200 || statusCode >= 300) {
-            reject(new Error(`Shuttle location API returned ${statusCode}`));
+            const error = new Error(
+              `Shuttle location API returned ${statusCode}`,
+            ) as Error & { statusCode: number };
+            error.statusCode = statusCode;
+            reject(error);
             return;
           }
 
-          try {
-            resolve(JSON.parse(body) as ShuttleLocationPayload);
-          } catch {
-            reject(new Error("Shuttle location API returned invalid JSON"));
-          }
+          resolve(body);
         });
         response.on("error", (error) => {
           if (!responseRejected) reject(error);
@@ -138,12 +184,19 @@ function fetchJsonFromUrl(
       },
     );
 
-    request.setTimeout(8000, () => {
+    request.setTimeout(SHUTTLE_REQUEST_TIMEOUT_MS, () => {
       request.destroy(new Error("Shuttle location API request timed out"));
     });
     request.on("error", reject);
+    if (options.body) request.write(options.body);
     request.end();
   });
+}
+
+function getUpstreamStatusCode(error: unknown): number | undefined {
+  return error instanceof Error && "statusCode" in error
+    ? Number(error.statusCode)
+    : undefined;
 }
 
 export async function GET() {

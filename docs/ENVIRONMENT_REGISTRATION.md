@@ -22,9 +22,11 @@
 | `KMA_FCST_URL` | 필수 | 기상청 초단기 예보 endpoint |
 | `SEOUL_BUS_ARRIVAL_URL` | 필수 | 서울 버스 도착 endpoint |
 | `GYEONGGI_BUS_ARRIVAL_URL` | 필수 | 경기도 버스 도착 endpoint |
-| `SHUTTLE_LOCATION_URL` | 필수 | HTTPS 셔틀 실시간 위치 endpoint |
-| `SHUTTLE_REFERER` | 필수 | endpoint와 동일한 HTTPS origin의 upstream 요청 Referer |
+| `SHUTTLE_LOCATION_URL` | 필수 | 셔틀 실시간 위치 POST endpoint. 레거시 HTTP source는 서버에서만 호출 |
+| `SHUTTLE_PAGE_URL` | 필수 | 위치 요청용 challenge를 발급하는 페이지 URL |
+| `SHUTTLE_REFERER` | 필수 | endpoint 및 page와 동일한 origin의 upstream 요청 Referer |
 | `SHUTTLE_USER_AGENT` | 필수 | 셔틀 upstream 요청 User-Agent |
+| `SHUTTLE_CHALLENGE_SALT` | 필수 | 공개 클라이언트 challenge 응답 계산값. 서버 환경변수로 관리 |
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열. 운영 값은 Production 전용 |

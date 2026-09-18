@@ -420,10 +420,10 @@ export async function fetchBusLocationStatus(): Promise<
       },
       method: "GET",
       credentials: "same-origin",
+      noStore: false,
+      cache: "default",
       headers: {
         Accept: "*/*",
-        "Cache-Control": "no-cache",
-        Pragma: "no-cache",
       },
       timeoutMs: 8000,
     },

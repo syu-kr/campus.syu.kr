@@ -118,8 +118,10 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `SEOUL_BUS_ARRIVAL_URL` | 필수 | public transit | 서울 버스 도착 endpoint |
 | `GYEONGGI_BUS_ARRIVAL_URL` | 필수 | public transit | 경기도 버스 도착 endpoint |
 | `SHUTTLE_LOCATION_URL` | 필수 | shuttle | 셔틀 실시간 위치 endpoint |
+| `SHUTTLE_PAGE_URL` | 필수 | shuttle | 셔틀 challenge 발급 page |
 | `SHUTTLE_REFERER` | 필수 | shuttle | 셔틀 upstream 요청 Referer |
 | `SHUTTLE_USER_AGENT` | 필수 | shuttle | 셔틀 upstream 요청 User-Agent |
+| `SHUTTLE_CHALLENGE_SALT` | 필수 | shuttle | 공개 challenge 응답 계산값 |
 | `LECTURE_TIMETABLE_URL` | 필수 | lecture timetable | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | library | 도서관 열람실 현황 endpoint |
 | `OPENAI_API_KEY` | AI 사용 시 필수 | AI server/scripts | OpenAI Project 서비스 계정 키. GitHub Actions와 Vercel은 별도 서비스 계정 키를 사용하고 브라우저에 노출하지 않음 |
@@ -257,7 +259,7 @@ Pages 활성화, 최초 게시, 보존·롤백 검증 절차는 [docs/CRAWL_DATA
 
 - 날씨: 기상청 단기예보/초단기예보 API
 - 대중교통: 서울/경기도 공공데이터 버스 API
-- 셔틀 위치: `/bus/shuttle` rewrites를 통해 서버 전용 `SHUTTLE_LOCATION_URL` 호출
+- 셔틀 위치: `/bus/shuttle` rewrites를 통해 challenge를 발급받은 뒤 서버 전용 `SHUTTLE_LOCATION_URL` 호출
 - 지도: Kakao Maps JavaScript SDK
 
 버스 API 상세는 [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md)를 참고하세요.
