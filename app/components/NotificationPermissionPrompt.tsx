@@ -28,7 +28,25 @@ export function NotificationPermissionPrompt() {
       return;
     }
 
-    setIsVisible(true);
+    const showPrompt = () => {
+      setIsVisible(true);
+      window.removeEventListener("pointerdown", showPrompt);
+      window.removeEventListener("keydown", showPrompt);
+      window.removeEventListener("scroll", showPrompt);
+    };
+
+    window.addEventListener("pointerdown", showPrompt, { once: true });
+    window.addEventListener("keydown", showPrompt, { once: true });
+    window.addEventListener("scroll", showPrompt, {
+      once: true,
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("pointerdown", showPrompt);
+      window.removeEventListener("keydown", showPrompt);
+      window.removeEventListener("scroll", showPrompt);
+    };
   }, []);
 
   const handleEnable = async () => {
