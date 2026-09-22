@@ -16,13 +16,8 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { createSiteIdentitySchema } from "@/lib/structured-data";
+import "./fonts/pretendard-v1.3.9/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
-
-// Pretendard 폰트 import - 필요한 weight만 로드
-import "@fontsource/pretendard/400.css"; // Regular
-import "@fontsource/pretendard/500.css"; // Medium
-import "@fontsource/pretendard/600.css"; // Semibold
-import "@fontsource/pretendard/700.css"; // Bold
 
 const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
 const GOOGLE_ANALYTICS_SCRIPT = `
@@ -30,6 +25,25 @@ const GOOGLE_ANALYTICS_SCRIPT = `
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', '${GOOGLE_ANALYTICS_ID}');
+
+  (function scheduleGoogleAnalytics() {
+    function loadGoogleAnalytics() {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}';
+      document.head.appendChild(script);
+    }
+
+    function scheduleLoad() {
+      window.setTimeout(loadGoogleAnalytics, 4000);
+    }
+
+    if (document.readyState === 'complete') {
+      scheduleLoad();
+    } else {
+      window.addEventListener('load', scheduleLoad, { once: true });
+    }
+  })();
 `;
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 
@@ -139,11 +153,6 @@ export default async function RootLayout({
           content="black-translucent"
         />
 
-        <Script
-          nonce={nonce}
-          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
-          strategy="afterInteractive"
-        />
         <Script
           id="google-analytics"
           nonce={nonce}
