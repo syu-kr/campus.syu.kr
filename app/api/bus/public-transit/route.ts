@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { fetchPublicTransitArrivals } from "@/lib/api";
 import {
+  fetchPublicTransitArrivals,
   getBusRouteKey,
   type PublicTransitArrivalsResult,
 } from "@/lib/public-transit";

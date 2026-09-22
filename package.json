@@ -60,7 +60,6 @@
     "notification-lock": "ts-node --project tsconfig.json scripts/notification_send_lock.ts"
   },
   "dependencies": {
-    "@fontsource/pretendard": "^5.2.5",
     "@sentry/nextjs": "^10.72.0",
     "@tanstack/react-query": "^5.102.8",
     "clsx": "^2.1.0",
