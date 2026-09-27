@@ -2,9 +2,11 @@ name: Daily Crawl - Academic, Scholarship, Campus, SW & Cafeteria Notices
 
 on:
   schedule:
-    # 매일 15:17(UTC) 실행 = KST 00:17, 전체 크롤링
-    - cron: "17 15 * * *"
-    # 매일 1:17(UTC) 실행 = KST 10:17, 식단만 재크롤링
+    # 매일 11:17(UTC) 실행 = KST 20:17, 전체 크롤링
+    - cron: "17 11 * * *"
+    # 매일 20:17(UTC) 실행 = KST 05:17, 식단 조기 재크롤링
+    - cron: "17 20 * * *"
+    # 매일 1:17(UTC) 실행 = KST 10:17, 식단 재크롤링 fallback
     - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
@@ -55,7 +57,7 @@ jobs:
       CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES }}
       CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
-      CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && github.event.schedule == '17 1 * * *' }}
+      CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '17 20 * * *' || github.event.schedule == '17 1 * * *') }}
 
     steps:
       - name: Set timezone to KST
