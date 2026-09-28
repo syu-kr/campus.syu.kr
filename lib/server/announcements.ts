@@ -1,7 +1,7 @@
 import type { Announcement, AnnouncementCategory } from "@/types";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import { attachAnnouncementAiSummaries } from "./announcement-ai";
-import { readDailyCrawlDataJson } from "./crawl-data";
+import { readDailyCrawlDataSnapshot } from "./crawl-data";
 
 export interface AnnouncementQuery {
   category?: AnnouncementCategory | "all";
@@ -16,6 +16,13 @@ export interface AnnouncementPage {
   page: number;
   limit: number;
   totalPages: number;
+  fallbackSources: { category: AnnouncementCategory; latestDate: string }[];
+}
+
+interface AnnouncementSource {
+  items: Announcement[];
+  fallback: boolean;
+  latestDate: string;
 }
 
 const SOURCE_BY_CATEGORY: Record<
@@ -39,7 +46,7 @@ const announcementCache = new Map<
   AnnouncementCategory,
   {
     expiresAt: number;
-    promise: Promise<Announcement[]>;
+    promise: Promise<AnnouncementSource>;
   }
 >();
 
@@ -60,7 +67,7 @@ export async function getAnnouncementPage({
   );
 
   const filtered = sourceItems
-    .flat()
+    .flatMap((source) => source.items)
     .filter((announcement) => {
       if (!normalizedQuery) return true;
       return (
@@ -82,6 +89,11 @@ export async function getAnnouncementPage({
     page: normalizedPage,
     limit: normalizedLimit,
     totalPages: Math.max(1, Math.ceil(filtered.length / normalizedLimit)),
+    fallbackSources: sourceItems.flatMap((source, index) =>
+      source.fallback
+        ? [{ category: categories[index], latestDate: source.latestDate }]
+        : [],
+    ),
   };
 }
 
@@ -92,7 +104,7 @@ export async function getAnnouncementSummary(limit = 12) {
 
   const items = await attachAnnouncementAiSummaries(
     sourceItems
-      .flat()
+      .flatMap((source) => source.items)
       .sort(sortAnnouncementsByDate)
       .slice(0, limit),
   );
@@ -107,8 +119,8 @@ export async function getAnnouncementById(
   category: AnnouncementCategory,
   id: string,
 ) {
-  const announcements = await readAnnouncements(category);
-  const announcement = announcements.find((item) => item.id === id);
+  const { items } = await readAnnouncements(category);
+  const announcement = items.find((item) => item.id === id);
 
   if (!announcement) return null;
 
@@ -118,7 +130,7 @@ export async function getAnnouncementById(
 
 async function readAnnouncements(
   category: AnnouncementCategory,
-): Promise<Announcement[]> {
+): Promise<AnnouncementSource> {
   const now = Date.now();
   const cached = announcementCache.get(category);
 
@@ -140,14 +152,21 @@ async function readAnnouncements(
 
 async function readAnnouncementsFromSource(
   category: AnnouncementCategory,
-): Promise<Announcement[]> {
+): Promise<AnnouncementSource> {
   const fileName = SOURCE_BY_CATEGORY[category];
-  const items = await readDailyCrawlDataJson<Announcement[]>(fileName);
+  const snapshot = await readDailyCrawlDataSnapshot<Announcement[]>(fileName);
 
-  return items.map((item) => ({
-    ...item,
-    category: item.category || category,
-  }));
+  return {
+    items: snapshot.data.map((item) => ({
+      ...item,
+      category: item.category || category,
+    })),
+    fallback: snapshot.source === "bundled-fallback",
+    latestDate: snapshot.data.reduce(
+      (latest, item) => (item.date > latest ? item.date : latest),
+      "",
+    ),
+  };
 }
 
 function sortAnnouncements(a: Announcement, b: Announcement) {

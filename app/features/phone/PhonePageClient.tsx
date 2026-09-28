@@ -10,10 +10,11 @@ import {
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { PhoneCallButton } from "@/app/components/PhoneCallButton";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
 import { usePagination } from "@/lib/use-pagination";
+import { useUrlSearch } from "@/lib/use-url-search";
 import type { PhoneNumber } from "@/types";
 
 const ONE_HOUR = 60 * 60 * 1000;
@@ -31,7 +32,7 @@ export default function PhonePageClient({
   const text = dictionary.pages.phone;
   const numberLocale = locale === "ko" ? "ko-KR" : "en-US";
   const ITEMS_PER_PAGE = 10;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useUrlSearch();
 
   const { data: phoneData, isLoading } = useQuery({
     queryKey: ["phone-numbers"],

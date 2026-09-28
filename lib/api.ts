@@ -26,6 +26,7 @@ export interface AnnouncementPageResponse {
   page: number;
   limit: number;
   totalPages: number;
+  fallbackSources?: { category: AnnouncementCategory; latestDate: string }[];
 }
 
 // 공지사항 API - 크롤링된 실제 데이터 사용
@@ -62,11 +63,13 @@ export async function fetchAnnouncementPage({
   query = "",
   page = 1,
   limit = 10,
+  signal,
 }: {
   category?: AnnouncementCategory | "all";
   query?: string;
   page?: number;
   limit?: number;
+  signal?: AbortSignal;
 }): Promise<AnnouncementPageResponse> {
   const params = new URLSearchParams({
     category: category || "all",
@@ -85,6 +88,7 @@ export async function fetchAnnouncementPage({
     },
     noStore: Boolean(query),
     throwOnError: true,
+    signal,
   });
 }
 
@@ -107,12 +111,14 @@ export async function fetchCompetitionPage({
   query = "",
   page = 1,
   limit = 10,
+  signal,
 }: {
   source?: CompetitionSourceFilter;
   status?: CompetitionStatusFilter;
   query?: string;
   page?: number;
   limit?: number;
+  signal?: AbortSignal;
 }): Promise<CompetitionPageResponse> {
   const params = new URLSearchParams({
     source,
@@ -132,6 +138,7 @@ export async function fetchCompetitionPage({
     },
     noStore: Boolean(query),
     throwOnError: true,
+    signal,
   });
 }
 
@@ -259,26 +266,36 @@ export async function fetchShuttleSpecialPeriods(): Promise<ShuttleSpecialPeriod
   });
 }
 
-// 검색 API - 개선됨 (전체 데이터 통합 검색)
+export type SearchSource = "schedules" | "announcements" | "phone";
+
+export interface SearchAllResponse {
+  items: SearchAllResult[];
+  failedSources: SearchSource[];
+}
+
+// 검색 API - 일정, 공지, 연락처 미리보기
 export async function searchAll(
   query: string,
-): Promise<(Announcement | AcademicSchedule | PhoneNumber)[]> {
-  if (!query.trim()) {
-    return [];
-  }
+): Promise<SearchAllResponse> {
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) return { items: [], failedSources: [] };
 
-  const lowerQuery = query.toLowerCase();
+  const lowerQuery = normalizedQuery.toLowerCase();
 
   const settledResults = await Promise.allSettled([
     searchSchedules(lowerQuery),
     searchAnnouncementApi(lowerQuery),
-    searchPhoneNumberSource(query, lowerQuery),
+    searchPhoneNumberSource(normalizedQuery, lowerQuery),
   ]);
 
   const results: SearchAllResult[][] = [];
-  settledResults.forEach((result) => {
+  const failedSources: SearchSource[] = [];
+  const sources: SearchSource[] = ["schedules", "announcements", "phone"];
+  settledResults.forEach((result, index) => {
     if (result.status === "fulfilled") {
       results.push(result.value);
+    } else {
+      failedSources.push(sources[index]);
     }
   });
 
@@ -294,7 +311,7 @@ export async function searchAll(
     query,
   );
 
-  return uniqueResults.slice(0, 100); // 최대 100개로 제한
+  return { items: uniqueResults.slice(0, 100), failedSources };
 }
 
 type SearchAllResult =
@@ -357,7 +374,7 @@ function dedupeSearchResults(results: SearchAllResult[]): SearchAllResult[] {
     new Map<string, SearchAllResult>(
       results.map((item) => {
         if ("phone" in item) {
-          return [item.phone, item];
+          return [`phone:${item.department}:${item.phone}`, item];
         }
         return [item.id, item];
       }),

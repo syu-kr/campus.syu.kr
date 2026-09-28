@@ -152,6 +152,11 @@ export const dictionaries = {
       clear: "검색어 삭제",
       submit: "검색 실행",
       resultSuffix: "검색 결과",
+      previewLabel: "건 표시",
+      previewNotice: "최근 공지 최대 60건을 포함해 최대 100건을 보여주는 미리보기입니다. 전체 결과는 각 항목의 전체보기에서 확인하세요.",
+      partialFailure: "일부 검색 정보를 불러오지 못했습니다:",
+      partialNoResults: "현재 불러온 정보에는 일치하는 결과가 없습니다. 누락된 항목은 다시 검색해 주세요.",
+      searchSources: { schedules: "학사일정", announcements: "공지사항", phone: "연락처" },
       resetToHome: "검색 초기화 / 홈으로",
       noResultsTitle: "검색 결과가 없습니다",
       noResultsMessage:
@@ -162,6 +167,7 @@ export const dictionaries = {
       retry: "다시 검색",
       cancel: "검색 취소",
       viewAll: "전체보기",
+      otherCategories: "다른 카테고리 전체보기",
     },
     weather: {
       unavailable: "날씨 정보를 불러올 수 없습니다",
@@ -750,6 +756,8 @@ export const dictionaries = {
         swError:
           "SW중심대학 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         listSearchPlaceholder: "제목 또는 작성자로 검색...",
+        fallbackNotice: "게시 데이터 조회에 실패해 저장된 공지를 표시합니다. 저장본에 포함된 최신 공지일:",
+        fallbackCategories: { academic: "학사", campus: "캠퍼스", scholarship: "장학금", sw: "SW중심대학" },
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
         empty: "검색 결과가 없습니다.",
@@ -1739,6 +1747,11 @@ export const dictionaries = {
       clear: "Clear search query",
       submit: "Run search",
       resultSuffix: "results",
+      previewLabel: "shown",
+      previewNotice: "This preview shows up to 100 results, including up to 60 recent notices. Open a category to see all matches.",
+      partialFailure: "Some search sources could not be loaded:",
+      partialNoResults: "No matches were found in the available sources. Retry to include the missing sources.",
+      searchSources: { schedules: "Academic schedule", announcements: "Notices", phone: "Contacts" },
       resetToHome: "Clear search / Home",
       noResultsTitle: "No results found",
       noResultsMessage:
@@ -1749,6 +1762,7 @@ export const dictionaries = {
       retry: "Search again",
       cancel: "Cancel search",
       viewAll: "View all",
+      otherCategories: "View all other categories",
     },
     weather: {
       unavailable: "Weather information is unavailable",
@@ -2343,6 +2357,8 @@ export const dictionaries = {
         swError:
           "Could not load SW-centered university notices. Please try again shortly.",
         listSearchPlaceholder: "Search by title or author...",
+        fallbackNotice: "The published data is unavailable. Showing saved notices. Latest notice dates in the saved copy:",
+        fallbackCategories: { academic: "Academic", campus: "Campus", scholarship: "Scholarships", sw: "SW-Centered University" },
         foundItems: "items found",
         searchQuery: "query",
         empty: "No results found.",

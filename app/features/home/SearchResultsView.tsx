@@ -4,11 +4,13 @@ import { SearchResultSection } from "@/app/components/SearchResultSection";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import type { SearchSource } from "@/lib/api";
 import type { CategorizedSearchResults, HomeSearchResult } from "@/lib/home";
 
 interface SearchResultsViewProps {
   searchQuery: string;
   searchResults?: HomeSearchResult[];
+  failedSources: SearchSource[];
   categorizedResults: CategorizedSearchResults;
   isLoading: boolean;
   isError: boolean;
@@ -20,6 +22,7 @@ interface SearchResultsViewProps {
 export function SearchResultsView({
   searchQuery,
   searchResults,
+  failedSources,
   categorizedResults,
   isLoading,
   isError,
@@ -39,12 +42,12 @@ export function SearchResultsView({
           placeholder={dictionary.search.compactPlaceholder}
         />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-neutral-600">
+          <h1 className="text-lg font-semibold text-neutral-900">
             <span className="font-semibold text-neutral-900">
               &quot;{searchQuery}&quot;
             </span>{" "}
             {dictionary.search.resultSuffix}
-          </p>
+          </h1>
           <button
             type="button"
             onClick={onClear}
@@ -54,6 +57,25 @@ export function SearchResultsView({
           </button>
         </div>
       </div>
+
+      {!isLoading && !isError && failedSources.length > 0 && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="status">
+          <p>
+            {dictionary.search.partialFailure}{" "}
+            {failedSources.map((source) => dictionary.search.searchSources[source]).join(", ")}
+          </p>
+          {(!searchResults || searchResults.length === 0) && (
+            <p className="mt-1">{dictionary.search.partialNoResults}</p>
+          )}
+          <button type="button" onClick={onRetry} className="mt-2 font-semibold underline">
+            {dictionary.search.retry}
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !isError && searchResults && searchResults.length > 0 && (
+        <p className="mb-4 text-sm text-neutral-600">{dictionary.search.previewNotice}</p>
+      )}
 
       {isLoading && (
         <div>
@@ -78,7 +100,7 @@ export function SearchResultsView({
         />
       )}
 
-      {!isLoading && !isError && (!searchResults || searchResults.length === 0) && (
+      {!isLoading && !isError && failedSources.length === 0 && (!searchResults || searchResults.length === 0) && (
         <StateCard
           type="info"
           title={dictionary.search.noResultsTitle}

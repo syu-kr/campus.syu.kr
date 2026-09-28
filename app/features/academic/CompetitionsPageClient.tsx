@@ -12,6 +12,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "@/app/components/AnnouncementAiSummary";
 import { fetchCompetitionPage } from "@/lib/api";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 import type { Dictionary } from "@/lib/i18n";
 import { formatDateWithYear } from "@/lib/utils";
 import type {
@@ -46,7 +47,8 @@ type CompetitionsDictionary = Dictionary["pages"]["competitions"];
 export function CompetitionsPageClient() {
   const dictionary = useDictionary();
   const text = dictionary.pages.competitions;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [inputQuery, setInputQuery] = useState("");
+  const searchQuery = useDebouncedValue(inputQuery);
   const [selectedStatus, setSelectedStatus] =
     useState<CompetitionStatusFilter>("open");
   const [selectedSource, setSelectedSource] =
@@ -61,13 +63,14 @@ export function CompetitionsPageClient() {
       searchQuery,
       currentPage,
     ],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetchCompetitionPage({
         source: selectedSource,
         status: selectedStatus,
         query: searchQuery,
         page: currentPage,
         limit: ITEMS_PER_PAGE,
+        signal,
       }),
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
@@ -76,6 +79,7 @@ export function CompetitionsPageClient() {
   const competitions = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
+  const showLoading = isLoading || inputQuery !== searchQuery;
 
   const handleStatusChange = (status: CompetitionStatusFilter) => {
     setSelectedStatus(status);
@@ -99,14 +103,14 @@ export function CompetitionsPageClient() {
 
       <SearchBar
         className="mb-5"
-        defaultValue={searchQuery}
+        defaultValue={inputQuery}
         placeholder={text.searchPlaceholder}
         onSearch={(query) => {
-          setSearchQuery(query);
+          setInputQuery(query);
           setCurrentPage(1);
         }}
         onClear={() => {
-          setSearchQuery("");
+          setInputQuery("");
           setCurrentPage(1);
         }}
         searchOnChange
@@ -128,7 +132,7 @@ export function CompetitionsPageClient() {
         secondary
       />
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <div className="mb-4 text-sm text-neutral-600">
           {`${total}${text.countSeparator}${text.foundItems}`}
           {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
@@ -136,14 +140,14 @@ export function CompetitionsPageClient() {
       )}
 
       <div className="mb-6 space-y-3">
-        {isLoading && <Skeleton count={5} />}
-        {!isLoading && (isError || competitions.length === 0) && (
+        {showLoading && <Skeleton count={5} />}
+        {!showLoading && (isError || competitions.length === 0) && (
           <StateCard
             type={isError ? "error" : "info"}
             message={isError ? text.error : text.empty}
           />
         )}
-        {!isLoading &&
+        {!showLoading &&
           competitions.map((competition) => (
             <CompetitionCard
               key={`${competition.sourceCategory}-${competition.id}`}
@@ -153,7 +157,7 @@ export function CompetitionsPageClient() {
           ))}
       </div>
 
-      {!isLoading && !isError && (
+      {!showLoading && !isError && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}

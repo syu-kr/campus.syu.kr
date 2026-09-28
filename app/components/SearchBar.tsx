@@ -51,8 +51,8 @@ function SearchBarComponent({
 
   const handleClear = useCallback(() => {
     setQuery("");
-    onClear?.();
-    onSearch("");
+    if (onClear) onClear();
+    else onSearch("");
   }, [onClear, onSearch]);
 
   return (
