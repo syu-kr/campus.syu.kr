@@ -24,25 +24,21 @@ export function SearchResultSection({
         .map(([key, category]) => (
           <div key={key} className="pb-4 border-b border-neutral-200">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-neutral-900">
+              <h2 className="text-lg font-semibold text-neutral-900">
                 {category.label}{" "}
                 <span className="text-sm font-medium text-neutral-500">
-                  {category.items.length}
+                  {category.items.length} {dictionary.search.previewLabel}
                 </span>
-              </h3>
-              {category.items.length > 3 && (
-                <Link
-                  href={{
-                    pathname: category.linkPath,
-                    query: shouldForwardSearchQuery(key)
-                      ? { search: searchQuery }
-                      : undefined,
-                  }}
-                  className="text-xs text-primary-600 hover:text-primary-700"
-                >
-                  {dictionary.search.viewAll} →
-                </Link>
-              )}
+              </h2>
+              <Link
+                href={{
+                  pathname: category.linkPath,
+                  query: { search: searchQuery },
+                }}
+                className="text-xs text-primary-600 hover:text-primary-700"
+              >
+                {dictionary.search.viewAll} →
+              </Link>
             </div>
 
             <div className="space-y-2">
@@ -56,15 +52,22 @@ export function SearchResultSection({
             </div>
           </div>
         ))}
+      {Object.entries(categorizedResults).some(([, category]) => category.items.length === 0) && (
+        <nav aria-label={dictionary.search.otherCategories} className="flex flex-wrap gap-2">
+          {Object.entries(categorizedResults)
+            .filter(([, category]) => category.items.length === 0)
+            .map(([key, category]) => (
+              <Link
+                key={key}
+                href={{ pathname: category.linkPath, query: { search: searchQuery } }}
+                className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-neutral-700 hover:border-primary-300 hover:text-primary-700"
+              >
+                {category.label} {dictionary.search.viewAll} →
+              </Link>
+            ))}
+        </nav>
+      )}
     </div>
-  );
-}
-
-function shouldForwardSearchQuery(categoryKey: string): boolean {
-  return (
-    categoryKey === "academicAnnouncement" ||
-    categoryKey === "campusAnnouncement" ||
-    categoryKey === "scholarship"
   );
 }
 
@@ -72,7 +75,7 @@ function getSearchResultKey(
   item: CategorizedSearchResults[string]["items"][number],
 ): string {
   if ("phone" in item) {
-    return item.phone;
+    return `${item.department}-${item.phone}`;
   }
 
   return item.id;

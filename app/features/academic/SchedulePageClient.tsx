@@ -9,6 +9,7 @@ import { fetchAcademicSchedules } from "@/lib/api";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { useUrlSearch } from "@/lib/use-url-search";
 import type { AcademicSchedule } from "@/types";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -43,7 +44,7 @@ export default function SchedulePageClient({
   const [currentMonth, setCurrentMonth] = useState(
     () => new Date(initialMonth.getFullYear(), initialMonth.getMonth()),
   );
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useUrlSearch();
 
   const groupedByMonth = useMemo(() => {
     if (!schedules) return {};
