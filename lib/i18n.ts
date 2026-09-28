@@ -211,6 +211,10 @@ export const dictionaries = {
     },
     home: {
       frequentMenuTitle: "자주 사용하는 메뉴",
+      festival: {
+        title: "🎉 10월 6일, 삼육대학교 천보축전 Make A Wish",
+        action: "부스맵·공연·축제 공지 확인하기",
+      },
       relatedLinksTitle: "주요 서비스 바로가기",
       pwaTitle: "자주 쓰는 경우 앱처럼 열 수 있습니다",
       pwaDescription:
@@ -1806,6 +1810,10 @@ export const dictionaries = {
     },
     home: {
       frequentMenuTitle: "Frequently Used",
+      festival: {
+        title: "🎉 October 6: Sahmyook University Festival Make A Wish",
+        action: "Explore booths, performances, and festival notices",
+      },
       relatedLinksTitle: "Main Services",
       pwaTitle: "Open it like an app if you use it often",
       pwaDescription:

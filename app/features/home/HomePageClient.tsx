@@ -21,6 +21,7 @@ import {
   getKoreaNow,
   getHomeNotices,
   getTodayInfo,
+  isFestivalPromotionVisible,
   isScheduleOnDate,
 } from "@/lib/home";
 import { isCafeteriaMenuDataStale } from "@/lib/cafeteria";
@@ -45,7 +46,7 @@ import {
   TodayMenuSection,
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
-import { useLocale } from "@/app/components/LocaleProvider";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -73,6 +74,7 @@ export function HomePageClient({
   initialNowIso,
 }: HomePageClientProps) {
   const locale = useLocale();
+  const dictionary = useDictionary();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -254,6 +256,22 @@ export function HomePageClient({
     <Container className="py-5 sm:py-8 space-y-6">
       <h1 className="sr-only">SYU CAMPUS</h1>
       <SearchBar onSearch={handleSearch} className="mt-2" />
+
+      {isFestivalPromotionVisible(todayInfo.dateStringDash) && (
+        <a
+          href="https://festa.syu-likelion.org/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block rounded-card border border-primary-200 bg-primary-50 p-4 transition-colors hover:bg-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+        >
+          <h2 className="text-sm font-semibold text-neutral-900">
+            {dictionary.home.festival.title}
+          </h2>
+          <p className="mt-1 text-sm text-primary-700">
+            {dictionary.home.festival.action} ↗
+          </p>
+        </a>
+      )}
 
       <TodayMenuSection
         isLoading={cafeteriaLoading}

@@ -51,6 +51,10 @@ export function getKoreaNow(): Date {
   return new Date();
 }
 
+export function isFestivalPromotionVisible(date: string): boolean {
+  return date >= "2026-09-28" && date <= "2026-10-06";
+}
+
 export function getTodayInfo(now: Date | null): TodayInfo {
   if (!now) {
     return {
