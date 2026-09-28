@@ -28,16 +28,19 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
   if ("startDate" in item) {
     return (
       <Link
-        href={localizePath("/academic/schedule", locale)}
+        href={{
+          pathname: localizePath("/academic/schedule", locale),
+          query: query ? { search: query } : undefined,
+        }}
         className="block rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
         aria-label={item.title}
       >
         <Card key={item.id} clickable className="border border-neutral-200">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <h4 className="font-medium text-neutral-900">
+              <h3 className="font-medium text-neutral-900">
                 {highlightText(item.title, query)}
-              </h4>
+              </h3>
               <p className="mt-1 text-xs text-neutral-600">
                 {item.startDate}
                 {item.startDate !== item.endDate ? ` ~ ${item.endDate}` : ""}
@@ -91,9 +94,9 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
               </Badge>
             )}
           </div>
-          <h4 className="font-medium text-neutral-900 line-clamp-2">
+          <h3 className="font-medium text-neutral-900 line-clamp-2">
             {highlightText(announcement.title, query)}
-          </h4>
+          </h3>
           {announcement.aiSummary?.summary ? (
             <AnnouncementAiSummary aiSummary={announcement.aiSummary} compact />
           ) : (
@@ -120,12 +123,12 @@ function PhoneSearchResultCard({
   const dictionary = useDictionary();
 
   return (
-    <Card key={phone.phone}>
+    <Card>
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1">
-          <h4 className="font-medium text-neutral-900">
+          <h3 className="font-medium text-neutral-900">
             {highlightText(phone.department, query)}
-          </h4>
+          </h3>
           <p className="text-sm text-primary-600 font-semibold mt-1">
             {highlightText(phone.phone, query)}
           </p>

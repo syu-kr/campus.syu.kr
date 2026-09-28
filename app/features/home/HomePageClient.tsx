@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Container } from "@/app/components/Container";
 import { SearchBar } from "@/app/components/SearchBar";
@@ -72,11 +73,14 @@ export function HomePageClient({
   initialNowIso,
 }: HomePageClientProps) {
   const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<
     HomeNoticeCategory | undefined
   >(undefined);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchQuery = searchParams.get("search")?.trim() ?? "";
+  const showSearchResults = Boolean(searchQuery);
   const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
 
   useEffect(() => {
@@ -175,7 +179,7 @@ export function HomePageClient({
   });
 
   const {
-    data: searchResults,
+    data: searchData,
     isLoading: searchLoading,
     isError: searchError,
     refetch: refetchSearch,
@@ -186,16 +190,19 @@ export function HomePageClient({
     staleTime: FIVE_MINUTES,
     gcTime: TEN_MINUTES,
   });
+  const searchResults = searchData?.items;
 
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    setShowSearchResults(query.trim().length > 0);
-  }, []);
+    const params = new URLSearchParams(searchParams.toString());
+    const normalized = query.trim();
+    if (normalized) params.set("search", normalized);
+    else params.delete("search");
+    router.push(`${pathname}${params.size ? `?${params}` : ""}`);
+  }, [pathname, router, searchParams]);
 
   const handleSearchClear = useCallback(() => {
-    setSearchQuery("");
-    setShowSearchResults(false);
-  }, []);
+    handleSearch("");
+  }, [handleSearch]);
 
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
   const hasStaleCafeteriaData = useMemo(
@@ -232,6 +239,7 @@ export function HomePageClient({
       <SearchResultsView
         searchQuery={searchQuery}
         searchResults={searchResults}
+        failedSources={searchData?.failedSources ?? []}
         categorizedResults={categorizedResults}
         isLoading={searchLoading}
         isError={searchError}

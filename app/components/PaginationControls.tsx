@@ -64,6 +64,7 @@ export function PaginationControls({
           onChange={(event) => onPageChange(Number(event.target.value))}
           className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 focus:ring-2 focus:ring-primary-500 md:px-3"
         >
+          <option value={currentPage}>{currentPage}</option>
           {Array.from({ length: totalPages }, (_, index) => index + 1)
             .slice(endPage)
             .map((page) => (
