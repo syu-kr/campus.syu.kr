@@ -1,7 +1,7 @@
 # brace-expansion compatibility adapter
 
 ESLint 9의 일부 플러그인은 `minimatch@3`을 통해 `brace-expansion`의 예전
-CommonJS 함수 export를 사용한다. 보안 수정판 `brace-expansion@5.0.8`은
+CommonJS 함수 export를 사용한다. 보안 수정판 `brace-expansion@5.0.12`는
 `expand`라는 named export를 제공하므로 이 어댑터가 두 형식을 함께 노출한다.
 루트 `package.json`의 `$brace-expansion` override 참조를 통해서만
 `minimatch@3`의 `brace-expansion` 슬롯을 대체한다.
