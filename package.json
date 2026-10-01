@@ -8,6 +8,7 @@
     "node": ">=22.13.0"
   },
   "overrides": {
+    "@grpc/grpc-js": "1.14.5",
     "minimatch@^3.0.0": {
       "brace-expansion": "$brace-expansion"
     },
