@@ -25,10 +25,10 @@ function readSavedState() {
   return JSON.parse(window.localStorage.getItem(GRADUATION_STORAGE_KEY)!);
 }
 
-function renderSavedProgress() {
+function renderSavedProgress(initialState = savedState) {
   window.localStorage.setItem(
     GRADUATION_STORAGE_KEY,
-    JSON.stringify(savedState),
+    JSON.stringify(initialState),
   );
   render(<GraduationPageClient />);
   return screen.getByRole("textbox", { name: /입학년도/ });
@@ -202,5 +202,29 @@ describe("graduation selection preserves progress", () => {
 
     expect(readSavedState()).toEqual(savedState);
     expect(write).not.toHaveBeenCalled();
+  });
+
+  it("shows the 2026 nursing reference and removes the not-applicable shortcut", () => {
+    renderSavedProgress({
+      ...savedState,
+      selection: { ...savedState.selection, admissionYear: "2026", collegeId: "nursing", departmentId: "nursing_nursing", majorId: undefined },
+    });
+    expect(screen.getByText(/^2026학년도 요람 기준으로 업데이트했습니다/)).toBeInTheDocument();
+    expect(screen.getByText("참고 요구학점 130")).toBeInTheDocument();
+    expect(screen.queryByText("참고 요구학점 150")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "해당 없음" })).not.toBeInTheDocument();
+    expect(screen.getAllByText(/근거 쪽:.*56.*58/).length).toBeGreaterThan(0);
+  });
+
+  it("selects and persists the department-transfer year before showing its major credits", () => {
+    renderSavedProgress({
+      selection: { ...savedState.selection, admissionType: "departmentTransfer", majorTrack: "" },
+      completedCredits: {}, selectedCourseIds: [], checklistAnswers: {}, plans: {},
+    });
+    expect(screen.queryByRole("button", { name: "단일전공" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "2학년 전과" }));
+    fireEvent.click(screen.getByRole("button", { name: "단일전공" }));
+    expect(screen.getByText("참고 요구학점 73")).toBeInTheDocument();
+    expect(readSavedState().selection.transferYear).toBe(2);
   });
 });
