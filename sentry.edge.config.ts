@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/nextjs";
 import {
   scrubSentryBreadcrumb,
   scrubSentryEvent,
+  isPrivateRoommateAuthEvent,
 } from "@/lib/sentry-privacy";
 
 Sentry.init({
@@ -16,7 +17,7 @@ Sentry.init({
     userInfo: false,
     httpBodies: [],
   },
-  beforeSend: scrubSentryEvent,
-  beforeSendTransaction: scrubSentryEvent,
+  beforeSend: (event) => isPrivateRoommateAuthEvent(event) ? null : scrubSentryEvent(event),
+  beforeSendTransaction: (event) => isPrivateRoommateAuthEvent(event) ? null : scrubSentryEvent(event),
   beforeBreadcrumb: scrubSentryBreadcrumb,
 });

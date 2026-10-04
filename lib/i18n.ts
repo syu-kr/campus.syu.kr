@@ -367,6 +367,8 @@ export const dictionaries = {
         gymDescription: "헬스장, 스포츠 센터 정보",
         healthCenterTitle: "보건소",
         healthCenterDescription: "학생 의료 서비스",
+        roommatesTitle: "룸메이트 구하기",
+        roommatesDescription: "학교 이메일로 인증하고 기숙사 룸메이트 찾기",
       },
     },
     more: {
@@ -1993,6 +1995,8 @@ export const dictionaries = {
         gymDescription: "Gym and sports center info",
         healthCenterTitle: "Health Center",
         healthCenterDescription: "Student medical services",
+        roommatesTitle: "Find a Roommate",
+        roommatesDescription: "Verify your school email and find a dorm roommate",
       },
     },
     more: {

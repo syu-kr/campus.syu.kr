@@ -132,6 +132,23 @@ function NumberedParagraph({
   );
 }
 
+function RoommateTerms({ english = false }: { english?: boolean }) {
+  const items = english ? [
+    "The dorm roommate board is provided to authenticated @syuin.ac.kr email holders without a separate registration form or password. Authentication verifies email ownership only. Enrollment, dorm admission and official roommate assignments must be checked through university procedures.",
+    "Users are responsible for the accuracy of their recruitment posts and must not impersonate others, disclose personal information without permission, post spam, harass others or submit abusive reports. Avoid real names, phone numbers and exact room numbers. Recruitment is limited to one active post per email and up to 30 calendar days including the creation date.",
+    "Contact takes place through the writer's Kakao open-chat link. The provider does not arrange rooms, guarantee matching or inspect external conversations. Completed and deleted posts cannot be reopened. Contact after recruitment closes and appeals can be raised through the site's existing inquiry channel.",
+    "Administrators may hide or delete posts after review and impose a writing hold, normally 30 days, with a reason and end time. Holds may be released or extended; an expired hold does not restore a hidden post. Report counts alone do not automatically hide posts. Reporting, completing and deleting your own posts remain available during a writing hold. Continuous or immediate report response is not guaranteed.",
+    "The board, new posts/edits or new authentication emails may be paused separately for operation. Personal-data processing and retention follow the Privacy Policy. Roommate reports do not use the site's AI classification tools for other submissions.",
+  ] : [
+    "기숙사 룸메이트 게시판은 @syuin.ac.kr 메일 소유를 인증한 이용자에게 별도 가입 화면이나 비밀번호 없이 제공됩니다. 이메일 인증은 소유 확인이며 재학 상태, 입사 합격이나 공식 룸메이트 배정을 보증하지 않습니다. 학교의 공식 신청 및 지정 절차는 이용자가 확인해야 합니다.",
+    "이용자는 모집 내용의 정확성을 확인하고 사칭, 동의 없는 개인정보 공개, 스팸, 괴롭힘과 악의적인 신고를 하지 않아야 합니다. 실명, 전화번호와 정확한 호실은 적지 않습니다. 이메일당 활성 모집글 1개와 등록일 포함 최대 30일 모집 기간을 적용합니다.",
+    "연락은 작성자의 카카오 오픈채팅 링크에서 이루어집니다. 제공자는 방 배정이나 매칭 성사를 보증하지 않고 외부 대화를 확인하지 않습니다. 완료하거나 삭제한 글은 다시 모집 중으로 돌릴 수 없습니다. 모집 종료 후 문제와 이의제기는 기존 사이트 문의로 접수할 수 있습니다.",
+    "관리자는 검토 후 글을 숨기거나 삭제하고 기본 30일의 작성 보류를 적용할 수 있으며 사유와 종료 시각을 안내합니다. 보류는 해제나 연장할 수 있고 기한 종료로 숨김 글이 자동 복구되지는 않습니다. 신고 수만으로 자동 숨김 처리하지 않습니다. 보류 중에도 신고와 본인 글의 완료·삭제는 가능합니다. 상시 즉시 대응을 보장하지 않습니다.",
+    "운영상 게시판 전체, 신규 작성과 수정, 새 인증 메일 발송을 각각 중지할 수 있습니다. 개인정보 처리와 보존은 개인정보처리방침을 따릅니다. 다른 문의·제보에 사용하는 AI 분류 도구는 룸메이트 신고에 적용하지 않습니다.",
+  ];
+  return <LegalSection title={english ? "Dorm Roommate Board" : "기숙사 룸메이트 게시판"}><ul className="list-disc space-y-3 pl-5 text-sm leading-relaxed text-neutral-700">{items.map((item) => <li key={item}>{item}</li>)}</ul></LegalSection>;
+}
+
 function EnglishTermsPage() {
   const legal = getDictionary("en").legal;
 
@@ -139,7 +156,7 @@ function EnglishTermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="Terms of Use"
-        description="Terms for using the SYU CAMPUS service. Effective March 23, 2026. Last updated June 21, 2026."
+        description="Terms for using the SYU CAMPUS service. Effective March 23, 2026. Last updated October 4, 2026."
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Important Notice"
@@ -148,6 +165,7 @@ function EnglishTermsPage() {
       />
 
       <div className="space-y-6 mb-8">
+        <RoommateTerms english />
         <LegalSection title="Article 1. Purpose">
           <p className="text-neutral-700 leading-relaxed">
             These Terms define the rights and obligations between SYU KR and
@@ -310,7 +328,7 @@ export default async function TermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="이용약관"
-        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 23일 시행, 2026년 6월 21일 개정"
+        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 23일 시행, 2026년 10월 4일 개정"
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="중요 공지"
@@ -319,6 +337,7 @@ export default async function TermsPage() {
       />
 
       <div className="space-y-6 mb-8">
+        <RoommateTerms />
         <LegalSection title="제1조 목적">
           <p className="text-neutral-700 leading-relaxed">
             이 약관은 삼육대학교 학생들을 위해 제공되는 &quot;SYU CAMPUS&quot;

@@ -15,6 +15,7 @@ import {
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { RoommateAdmin } from "./RoommateAdmin";
 import type {
   AdminSubmissionAiClassification,
   AdminSubmissionItem,
@@ -490,7 +491,7 @@ export default function AdminPage() {
           <div className="mb-8">
             <p className="text-sm font-semibold text-primary-600">Admin</p>
             <h1 className="mt-2 text-2xl font-bold text-neutral-950">
-              제보 및 문의 관리
+              제보·문의·룸메이트 관리
             </h1>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
               Firebase Authentication으로 인증된 허용 계정만 접근할 수
@@ -560,10 +561,10 @@ export default function AdminPage() {
           <div>
             <p className="text-sm font-semibold text-primary-600">Admin</p>
             <h1 className="mt-1 text-2xl font-bold text-neutral-950">
-              제보 및 문의 관리
+              제보·문의·룸메이트 관리
             </h1>
             <p className="mt-2 text-sm text-neutral-600">
-              접수된 문의와 캠퍼스 꿀팁 제보를 확인하고 처리 상태를 관리합니다.
+              룸메이트 신고와 모집글, 문의와 캠퍼스 꿀팁 제보를 확인하고 관리합니다.
             </p>
           </div>
 
@@ -585,6 +586,8 @@ export default function AdminPage() {
             </button>
           </div>
         </header>
+
+        <RoommateAdmin key={user.uid} user={user} />
 
         <section className="mb-6 grid gap-3 md:grid-cols-5">
           {statuses.map((status) => (

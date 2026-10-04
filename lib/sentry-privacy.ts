@@ -13,7 +13,20 @@ export function scrubSentryEvent<T extends Event>(event: T): T {
   }
 
   event.breadcrumbs = event.breadcrumbs?.map(scrubSentryBreadcrumb);
+  event.spans = event.spans?.map((span) => ({
+    ...span,
+    description: span.description ? removeQuery(span.description) : span.description,
+    data: span.data ? Object.fromEntries(Object.entries(span.data).map(([key, value]) => [key,
+      /url|target|location/i.test(key) && typeof value === "string" ? removeQuery(value) : value,
+    ])) : span.data,
+  }));
   return event;
+}
+
+export function isPrivateRoommateAuthEvent(event: Event) {
+  const pathPattern = /\/(?:en\/)?campus\/roommates\/verify\/finish(?:[/?#]|$)/;
+  return pathPattern.test(event.request?.url ?? "") || pathPattern.test(event.transaction ?? "") ||
+    (typeof window !== "undefined" && pathPattern.test(window.location.pathname));
 }
 
 export function scrubSentryBreadcrumb(breadcrumb: Breadcrumb) {

@@ -51,6 +51,8 @@
     "check:curriculum": "node scripts/check_curriculum_data.mjs",
     "check:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --dry-run",
     "test:unit": "vitest run",
+    "test:roommates:integration": "vitest run --config vitest.roommates.integration.config.ts",
+    "test:roommates:browser": "node tests/roommate-browser-server.cjs",
     "test:unit:watch": "vitest",
     "audit:curriculum": "python scripts/audit_curriculum_courses.py",
     "build:verified-curriculum": "python scripts/build_verified_curriculum.py",

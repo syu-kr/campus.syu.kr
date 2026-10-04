@@ -15,6 +15,7 @@ export type ApiErrorStatus =
   | 503;
 
 const DEFAULT_MAX_JSON_BYTES = 16 * 1024;
+let firestoreModulePromise: Promise<typeof import("@/lib/server/firestore")> | undefined;
 
 export class ApiError extends Error {
   status: ApiErrorStatus;
@@ -107,6 +108,30 @@ export async function enforceRateLimit(
       undefined,
       "RATE_LIMITED",
     );
+  }
+}
+
+/** Explicit identity keys do not acquire an IP suffix. New sensitive flows fail closed. */
+export async function enforceRateLimitKey(
+  key: string,
+  options: { limit: number; windowMs: number; metric?: string; fixedWindow?: boolean },
+) {
+  const secret = process.env.RATE_LIMIT_SECRET;
+  if (!secret) {
+    throw new ApiError("요청 제한 설정이 완료되지 않았습니다.", 503, undefined, "RATE_LIMIT_CONFIG_MISSING");
+  }
+  const now = Date.now();
+  const windowStart = options.fixedWindow === false ? 0 : Math.floor(now / options.windowMs) * options.windowMs;
+  const documentId = createHmac("sha256", secret)
+    .update(`${key}:${windowStart}`)
+    .digest("hex");
+  const result = await checkPersistentRateLimit(documentId, {
+    ...options,
+    resetAtMs: (options.fixedWindow === false ? now : windowStart) + options.windowMs,
+    windowStart: new Date(windowStart).toISOString().slice(0, 10),
+  });
+  if (!result.allowed) {
+    throw new ApiError(`요청이 많습니다. ${result.retryAfterSeconds}초 후 다시 시도해주세요.`, 429, undefined, "RATE_LIMITED");
   }
 }
 
@@ -205,9 +230,9 @@ export function getUserAgent(req: Request): string {
 
 async function checkPersistentRateLimit(
   documentId: string,
-  options: { limit: number; windowMs: number },
+  options: { limit: number; windowMs: number; resetAtMs?: number; metric?: string; windowStart?: string },
 ) {
-  const { admin, getFirestore } = await import("@/lib/server/firestore");
+  const { admin, getFirestore } = await (firestoreModulePromise ??= import("@/lib/server/firestore"));
   const db = getFirestore();
   const ref = db.collection("api_rate_limits").doc(documentId);
 
@@ -221,12 +246,13 @@ async function checkPersistentRateLimit(
 
     if (!snapshot.exists || resetAtMs <= now) {
       const nextResetAt = admin.firestore.Timestamp.fromMillis(
-        now + options.windowMs,
+        options.resetAtMs ?? now + options.windowMs,
       );
       transaction.set(ref, {
         count: 1,
         reset_at: nextResetAt,
         expires_at: nextResetAt,
+        ...(options.metric ? { metric: options.metric, window_start: options.windowStart } : {}),
       });
       return { allowed: true, retryAfterSeconds: 0 };
     }
