@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { useLocale } from "@/app/components/LocaleProvider";
+import { Button } from "@/app/components/Button";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { ROOMMATE_DORMS } from "@/lib/roommates";
 import type { RoommateDorm, RoommatePostFilters } from "@/types/roommates";
-import { HabitFields, inputClass, primaryClass } from "./RoommateShared";
+import { HabitFields, inputClass } from "./RoommateShared";
 
 export default function RoommateFilters({ initialFilters, onApply }: { initialFilters: RoommatePostFilters; onApply: (filters: RoommatePostFilters) => void }) {
   const text = getRoommateText(useLocale());
@@ -33,7 +34,7 @@ export default function RoommateFilters({ initialFilters, onApply }: { initialFi
         <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium text-neutral-700 focus-visible:outline-2 focus-visible:outline-primary-500">{text.habits}</summary>
         <div className="pt-2"><HabitFields emptyLabel={text.all} value={draft.habits ?? {}} onChange={(habits) => setDraft({ ...draft, habits })} /></div>
       </details>
-      <div className="flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5"><button className={primaryClass}>{text.apply}</button><button type="button" onClick={() => { setDraft({}); onApply({}); }} className="min-h-11 px-3 text-sm font-medium text-neutral-500 underline underline-offset-4 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-primary-500">{text.reset}</button></div>
+      <div className="flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5"><Button type="submit">{text.apply}</Button><Button variant="secondary" onClick={() => { setDraft({}); onApply({}); }}>{text.reset}</Button></div>
     </form>
   </details>;
 }

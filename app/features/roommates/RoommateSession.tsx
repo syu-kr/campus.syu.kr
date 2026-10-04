@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "@/app/components/LocaleProvider";
+import { Button } from "@/app/components/Button";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { localizePath } from "@/lib/i18n";
 import { protectRoommateLinkPrivacy } from "@/lib/roommate-link-privacy";
@@ -143,7 +144,7 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   return <>
     <RoommateHeading navigationEnabled={ready && !checking && !disabled}><RoommateLogout onStart={startLogout} onSignedOut={leave} /></RoommateHeading>
     {disabled && <p role="status" className="rounded-xl border border-neutral-200 bg-white p-6 text-neutral-700">{text.unavailable}</p>}
-    {failed && <div role="alert" className="mb-4 rounded-lg border border-neutral-200 bg-white p-4"><p>{text.failed}</p><button className="mt-2 text-primary-700 underline" type="button" onClick={() => void validate(true)}>{text.retry}</button></div>}
+    {failed && <div role="alert" className="mb-4 rounded-lg border border-neutral-200 bg-white p-4"><p>{text.failed}</p><Button variant="secondary" className="mt-2" onClick={() => void validate(true)}>{text.retry}</Button></div>}
     {ready && !disabled && <div key={identityVersion} ref={privateContents} hidden={checking}>{children}</div>}
     {(!ready || checking) && !failed && !disabled && <p role="status" className="py-8 text-neutral-600">{text.loading}</p>}
   </>;

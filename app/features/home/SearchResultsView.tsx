@@ -4,6 +4,7 @@ import { SearchResultSection } from "@/app/components/SearchResultSection";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "@/app/components/Button";
 import type { SearchSource } from "@/lib/api";
 import type { CategorizedSearchResults, HomeSearchResult } from "@/lib/home";
 
@@ -48,13 +49,13 @@ export function SearchResultsView({
             </span>{" "}
             {dictionary.search.resultSuffix}
           </h1>
-          <button
+          <Button
+            variant="secondary"
             type="button"
             onClick={onClear}
-            className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
           >
             {dictionary.search.resetToHome}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -67,9 +68,9 @@ export function SearchResultsView({
           {(!searchResults || searchResults.length === 0) && (
             <p className="mt-1">{dictionary.search.partialNoResults}</p>
           )}
-          <button type="button" onClick={onRetry} className="mt-2 font-semibold underline">
+          <Button variant="secondary" onClick={onRetry} className="mt-2">
             {dictionary.search.retry}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -89,13 +90,12 @@ export function SearchResultsView({
           title={dictionary.search.loadFailedTitle}
           message={dictionary.search.loadFailedMessage}
           action={
-            <button
+            <Button
               type="button"
               onClick={onRetry}
-              className="inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
             >
               {dictionary.search.retry}
-            </button>
+            </Button>
           }
         />
       )}
@@ -106,13 +106,13 @@ export function SearchResultsView({
           title={dictionary.search.noResultsTitle}
           message={`"${searchQuery}" ${dictionary.search.noResultsMessage}`}
           action={
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={onClear}
-              className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
             >
               {dictionary.search.cancel}
-            </button>
+            </Button>
           }
         />
       )}

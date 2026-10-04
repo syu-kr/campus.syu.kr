@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/app/components/Badge";
+import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { CampusTipSuggestionForm } from "@/app/features/campus-tips/CampusTipSuggestionForm";
@@ -166,13 +167,11 @@ export default function CampusTipsPage() {
             </h1>
             <p className="text-neutral-600">{text.description}</p>
           </div>
-          <button
-            type="button"
+          <Button
             onClick={() => setIsSuggestionModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
             {text.suggestAction}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -232,13 +231,11 @@ export default function CampusTipsPage() {
           title={dictionary.home.dashboard.loadFailedTitle}
           message={dictionary.home.dashboard.loadFailedMessage}
           action={
-            <button
-              type="button"
+            <Button
               onClick={() => refetch()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
               {dictionary.home.dashboard.retry}
-            </button>
+            </Button>
           }
         />
       )}

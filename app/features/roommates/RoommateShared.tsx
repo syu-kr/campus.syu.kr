@@ -4,14 +4,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/app/components/LocaleProvider";
+import { buttonStyles } from "@/app/components/Button";
 import { localizePath, stripLocalePrefix } from "@/lib/i18n";
 import { getRoommateText, type RoommateText } from "@/lib/i18n/roommates";
 import type { RoommateHabits, RoommatePostSummary } from "@/types/roommates";
 import { ROOMMATE_HABIT_OPTIONS } from "@/lib/roommates";
 
 export const inputClass = "mt-1 min-h-11 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100 disabled:bg-neutral-100";
-export const primaryClass = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 disabled:opacity-50";
-export const secondaryClass = "inline-flex min-h-11 items-center justify-center rounded-lg border border-neutral-300 bg-white px-4 py-2 text-neutral-700 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:opacity-50";
+export const primaryClass = buttonStyles("primary");
+export const secondaryClass = buttonStyles("secondary");
 
 export function RoommateHeading({ children, navigationEnabled = true }: { children: ReactNode; navigationEnabled?: boolean }) {
   const locale = useLocale(); const text = getRoommateText(locale);
@@ -23,13 +24,13 @@ export function RoommateHeading({ children, navigationEnabled = true }: { childr
     { href: "/campus/roommates/new", label: text.create },
   ];
   return <header className="mb-6">
-    <Link href={localizePath("/campus", locale)} className="inline-flex min-h-11 items-center gap-1 text-sm text-neutral-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"><span aria-hidden="true">‹</span>{text.campus}</Link>
+    <Link href={localizePath("/campus", locale)} className={buttonStyles("ghost")}><span aria-hidden="true">‹</span>{text.campus}</Link>
     <h1 className="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl">{title}</h1>
     <p className="mt-2 text-neutral-600">{text.description}</p>
     <div className="mt-4 flex items-start justify-between gap-3">
-    <nav aria-label={text.title} className="flex flex-wrap gap-x-5 gap-y-1 sm:gap-x-6">
+    <nav aria-label={text.title} className="flex flex-wrap gap-2">
       {links.map(({ href, label }) => {
-        const className = `inline-flex min-h-11 items-center py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500 sm:text-base ${pathname === href ? "text-primary-700 underline decoration-2 underline-offset-8" : "text-neutral-500 hover:text-neutral-900"}`;
+        const className = buttonStyles(pathname === href ? "primary" : "ghost");
         return navigationEnabled ? <Link key={href} prefetch={false} href={localizePath(href, locale)} aria-current={pathname === href ? "page" : undefined} className={className}>{label}</Link>
           : <span key={href} aria-disabled="true" className={className}>{label}</span>;
       })}

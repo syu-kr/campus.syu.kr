@@ -4,6 +4,7 @@ import { useEffect, useState, memo } from "react";
 import { fetchWeather, type WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "./Button";
 
 interface WeatherWidgetProps {
   onClick?: () => void;
@@ -64,10 +65,11 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
   );
 
   return (
-    <button
+    <Button
+      variant="secondary"
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 active:bg-neutral-100"
+      className="shrink-0 px-3"
       aria-label={`${dictionary.weather.label}: ${weather.temperature}°C ${weatherDescription}`}
     >
       <div className="w-6 h-6 flex-shrink-0">
@@ -86,7 +88,7 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
           {dictionary.liveData.statuses.stale}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 

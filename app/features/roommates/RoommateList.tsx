@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from "@/app/components/LocaleProvider";
+import { Button } from "@/app/components/Button";
 import { localizePath } from "@/lib/i18n";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { RoommateError, koreaDate } from "@/lib/roommates";
@@ -51,7 +52,7 @@ function RoommateListContent() {
   return <>
     <RoommateFilters key={search} initialFilters={urlState.filters} onApply={apply} />
     {query.isPending && !error && <div role="status" aria-label={text.loading} className="space-y-3">{[1, 2, 3].map((item) => <div key={item} className="h-28 animate-pulse rounded-xl bg-neutral-100" />)}</div>}
-    {error && <div role="alert" className="mb-4 rounded-xl border border-neutral-200 bg-white p-4"><p>{roommateErrorMessage(error, text, locale)}</p>{!urlState.error && <button type="button" onClick={() => void query.refetch()} className="mt-2 text-primary-700 underline">{text.retry}</button>}</div>}
+    {error && <div role="alert" className="mb-4 rounded-xl border border-neutral-200 bg-white p-4"><p>{roommateErrorMessage(error, text, locale)}</p>{!urlState.error && <Button variant="secondary" onClick={() => void query.refetch()} className="mt-2">{text.retry}</Button>}</div>}
     {!query.isPending && !error && posts.length === 0 && <p role="status" className="rounded-xl border border-neutral-200 bg-white p-6 text-neutral-600">{query.hasNextPage ? text.moreCandidates : text.empty}</p>}
     <div className="space-y-3">{posts.map((post) => <article key={post.id} className="rounded-xl border border-neutral-200 bg-white p-5">
       <div className="mb-2 flex flex-wrap items-center gap-2 text-sm"><span className="rounded-md bg-primary-50 px-2 py-1 font-medium text-primary-700">{text.statuses.recruiting}</span><span className="text-neutral-500">{post.nickname}</span></div>

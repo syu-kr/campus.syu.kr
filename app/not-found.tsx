@@ -1,6 +1,7 @@
 "use client";
 
 import { ContactModal } from "./components/ContactModal";
+import { Button, buttonStyles } from "./components/Button";
 import { Icon } from "./components/Icon";
 import { useDictionary, useLocale } from "./components/LocaleProvider";
 import { localizePath } from "@/lib/i18n";
@@ -81,7 +82,7 @@ export default function NotFound() {
           <div className="space-y-3 mb-8">
             <Link
               href={localizePath("/", locale)}
-              className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/40 active:scale-95 text-lg group"
+              className={buttonStyles("primary", "w-full group")}
             >
               <Icon
                 name="home"
@@ -98,10 +99,11 @@ export default function NotFound() {
               />
             </Link>
 
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => setIsContactOpen(true)}
-              className="flex items-center justify-center gap-2 w-full bg-white hover:bg-blue-50 text-blue-700 border-2 border-blue-200 font-bold py-4 px-4 rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95 text-lg group"
+              className="w-full group"
             >
               <Icon
                 name="megaphone"
@@ -110,7 +112,7 @@ export default function NotFound() {
                 className="group-hover:scale-110 transition-transform"
               />
               <span>{dictionary.notFound.contactAction}</span>
-            </button>
+            </Button>
           </div>
 
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 text-left">

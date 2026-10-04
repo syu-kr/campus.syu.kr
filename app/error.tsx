@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "@/app/components/Button";
 
 export default function ErrorPage({
   error,
@@ -26,13 +27,13 @@ export default function ErrorPage({
       <p className="mt-3 text-sm leading-6 text-neutral-600">
         {text.pageMessage}
       </p>
-      <button
+      <Button
         type="button"
         onClick={reset}
-        className="mt-6 rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        className="mt-6"
       >
         {text.retry}
-      </button>
+      </Button>
     </section>
   );
 }

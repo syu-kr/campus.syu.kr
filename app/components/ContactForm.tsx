@@ -6,6 +6,7 @@ import {
   type SubmissionSummaryItem,
 } from "@/app/components/SubmissionResultModal";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "./Button";
 import type { Dictionary } from "@/lib/i18n";
 import type { SiteInquiryType } from "@/types/submissions";
 
@@ -276,13 +277,13 @@ export function ContactForm({
           </p>
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+          className="w-full"
         >
           {isSubmitting ? text.submitting : text.submit}
-        </button>
+        </Button>
       </form>
 
       {resultModal && (
