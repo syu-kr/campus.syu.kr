@@ -64,7 +64,7 @@ async function localFetch(path: string, init?: RequestInit) {
   return result;
 }
 
-async function signIn(email: string, remember = true) {
+async function signIn(email: string, remember = true, beforeComplete?: () => void) {
   await responseData(await mailRoute.POST(request("/api/roommates/auth/request-link", { body: { email, locale: "ko" } })));
   const codes = await (await localFetch(`/emulator/v1/projects/${PROJECT}/oobCodes`)).json() as {
     oobCodes: { email: string; oobCode: string }[];
@@ -77,6 +77,7 @@ async function signIn(email: string, remember = true) {
   connectAuthEmulator(auth, `http://${AUTH_HOST}`, { disableWarnings: true });
   await setPersistence(auth, inMemoryPersistence);
   const link = `${ORIGIN}/campus/roommates/verify/finish?mode=signIn&oobCode=${code!.oobCode}&apiKey=demo-api-key`;
+  beforeComplete?.();
   const credential = await signInWithEmailLink(auth, email, link);
   const token = await credential.user.getIdToken();
   const response = await sessionRoute.POST(request("/api/roommates/auth/session", { body: { idToken: token, remember } }));
@@ -202,6 +203,17 @@ describe("roommates using real local Auth and Firestore emulators", () => {
     expect(new Date(body.retryAt).getTime()).toBeGreaterThan(Date.now());
   });
 
+  it("completes an already issued link and keeps existing sessions when new email delivery is disabled", async () => {
+    const existing = await signIn("student-a@syuin.ac.kr");
+    const returning = await signIn("student-b@syuin.ac.kr", false, () => { process.env.ROOMMATES_EMAIL_ENABLED = "false"; });
+    const denied = await responseData<{ code: string }>(await mailRoute.POST(request("/api/roommates/auth/request-link", { body: { email: "student-c@syuin.ac.kr", locale: "ko" } })), 503);
+    expect(denied.code).toBe("EMAIL_DISABLED");
+    for (const student of [existing, returning]) {
+      await responseData(await sessionRoute.GET(request("/api/roommates/auth/session", { cookie: student.cookie })));
+    }
+    expect((await db().collection("roommate_sessions").get()).size).toBe(2);
+  });
+
   it("serializes racing creates, filters lists and prevents cross-owner writes and duplicate reports", async () => {
     const author = await signIn("student-a@syuin.ac.kr");
     const reader = await signIn("student-b@syuin.ac.kr");
@@ -219,6 +231,52 @@ describe("roommates using real local Auth and Firestore emulators", () => {
     await responseData(await reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reader.cookie, body: { reason: "false_info", description: "가상 신고" } }), context(post.id)), 201);
     await responseData(await reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reader.cookie, body: { reason: "spam", description: "duplicate" } }), context(post.id)), 409);
     expect((await db().collection("roommate_reports").get()).size).toBe(1);
+  });
+
+  it("atomically records one of simultaneous duplicate reports and charges one successful attempt", async () => {
+    const author = await signIn("student-a@syuin.ac.kr");
+    const reporter = await signIn("student-b@syuin.ac.kr");
+    const post = await createPost(author.cookie);
+    const previousRateIds = new Set((await db().collection("api_rate_limits").get()).docs.map((doc) => doc.id));
+    const responses = await Promise.all(["spam", "privacy"].map((reason) => reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reporter.cookie, body: { reason, description: "동시 신고" } }), context(post.id))));
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+    for (const response of responses) await responseData(response, response.status);
+    const reports = await db().collection("roommate_reports").get();
+    expect(reports.size).toBe(1);
+    expect(reports.docs[0].get("evidence")).toMatchObject({ postId: post.id, version: 1, nickname: post.nickname, description: post.description });
+    const counters = (await db().collection("api_rate_limits").get()).docs.filter((doc) => !previousRateIds.has(doc.id));
+    expect(counters).toHaveLength(1);
+    expect(counters[0].get("count")).toBe(1);
+  });
+
+  it.each(["update", "delete"] as const)("retains a consistent report snapshot while the author concurrently performs %s", async (action) => {
+    const author = await signIn("student-a@syuin.ac.kr");
+    const reporter = await signIn("student-b@syuin.ac.kr");
+    const original = postInput("변경 전 학생");
+    const modified = { ...original, nickname: "변경 후 학생", description: "변경 후 내용", openChatUrl: "https://open.kakao.com/o/ChangedLocal123" };
+    const post = await createPost(author.cookie, original);
+    const previousRateIds = new Set((await db().collection("api_rate_limits").get()).docs.map((doc) => doc.id));
+    const [reported, mutated] = await Promise.all([
+      reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reporter.cookie, body: { reason: "false_info", description: "경합 신고" } }), context(post.id)),
+      action === "update"
+        ? detailRoute.PATCH(request(`/api/roommates/posts/${post.id}`, { method: "PATCH", cookie: author.cookie, body: { ...modified, action, expectedVersion: 1 } }), context(post.id))
+        : detailRoute.DELETE(request(`/api/roommates/posts/${post.id}`, { method: "DELETE", cookie: author.cookie, body: { expectedVersion: 1 } }), context(post.id)),
+    ]);
+    const mutation = await responseData<{ post: RoommatePost }>(mutated);
+    expect(mutation.post.version).toBe(2);
+    expect(mutation.post.status).toBe(action === "update" ? "recruiting" : "deleted");
+    expect(action === "update" ? [201] : [201, 404]).toContain(reported.status);
+    await responseData(reported, reported.status);
+    const reports = await db().collection("roommate_reports").get();
+    const counters = (await db().collection("api_rate_limits").get()).docs.filter((doc) => !previousRateIds.has(doc.id));
+    expect(reports.size).toBe(reported.status === 201 ? 1 : 0);
+    expect(counters).toHaveLength(reports.size);
+    if (reported.status === 201) {
+      const before = { postId: post.id, nickname: original.nickname, description: original.description, openChatUrl: original.openChatUrl, dorm: original.dorm, roomSize: original.roomSize, version: 1 };
+      const after = { ...before, nickname: modified.nickname, description: modified.description, openChatUrl: modified.openChatUrl, version: 2 };
+      expect(action === "update" ? [before, after] : [before]).toContainEqual(reports.docs[0].get("evidence"));
+      expect(counters[0].get("count")).toBe(1);
+    }
   });
 
   it("updates with optimistic versions, completes, deletes and preserves the original retention deadline", async () => {

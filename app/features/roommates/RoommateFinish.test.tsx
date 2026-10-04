@@ -4,18 +4,43 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import RoommateFinish from "./RoommateFinish";
 import { savePendingEmail } from "./client";
 
-const mocks = vi.hoisted(() => ({ getAuth: vi.fn(), signIn: vi.fn(), clearAuth: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getAuth: vi.fn(), isEmailLink: vi.fn(), signIn: vi.fn(), clearAuth: vi.fn() }));
 vi.mock("@/lib/firebaseRoommates", () => ({ getRoommateAuth: mocks.getAuth, clearRoommateAuth: mocks.clearAuth }));
-vi.mock("firebase/auth", () => ({ isSignInWithEmailLink: () => true, signInWithEmailLink: mocks.signIn }));
+vi.mock("firebase/auth", () => ({ isSignInWithEmailLink: mocks.isEmailLink, signInWithEmailLink: mocks.signIn }));
 
 describe("roommate email link completion", () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
     localStorage.clear(); mocks.signIn.mockClear(); mocks.clearAuth.mockClear();
+    mocks.isEmailLink.mockReset().mockReturnValue(true);
     window.history.replaceState(null, "", "/campus/roommates/verify/finish?oobCode=private-link");
     mocks.getAuth.mockResolvedValue({ currentUser: { getIdTokenResult: async () => ({ token: "temporary-id-token", claims: { auth_time: Math.floor(Date.now() / 1000) } }) } });
   });
   function show() { return render(<QueryClientProvider client={new QueryClient()}><RoommateFinish /></QueryClientProvider>); }
+  it("offers a new email when the URL is not a recognized sign-in link", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch); mocks.isEmailLink.mockReturnValue(false);
+    savePendingEmail({ email: "student@syuin.ac.kr", remember: true, next: "/campus/roommates" });
+    show();
+    expect(await screen.findByRole("alert")).toHaveTextContent("이 인증 링크를 사용할 수 없습니다");
+    expect(screen.getByRole("link", { name: "새 인증 메일 받기" })).toHaveAttribute("href", "/campus/roommates/verify");
+    expect(mocks.signIn).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+    expect(window.location.search).toBe("");
+  });
+  it.each(["auth/invalid-action-code", "auth/expired-action-code"])("recovers from %s without issuing a session or exposing credentials", async (code) => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    mocks.signIn.mockRejectedValueOnce({ code, message: "private-link student@syuin.ac.kr" });
+    savePendingEmail({ email: "student@syuin.ac.kr", remember: false, next: "/campus/roommates/me" });
+    show();
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("이 인증 링크를 사용할 수 없습니다");
+    expect(alert).not.toHaveTextContent("private-link"); expect(alert).not.toHaveTextContent("student@syuin.ac.kr");
+    expect(mocks.signIn).toHaveBeenCalledTimes(1); expect(fetch).not.toHaveBeenCalled();
+    expect(window.location.search).toBe("");
+    const fresh = screen.getByRole("link", { name: "새 인증 메일 받기" });
+    expect(fresh).toHaveAttribute("href", "/campus/roommates/verify");
+    fresh.addEventListener("click", (event) => event.preventDefault()); fireEvent.click(fresh);
+    expect(mocks.clearAuth).toHaveBeenCalled(); expect(localStorage.getItem("syu-roommates-pending-email")).toBeNull();
+  });
   it("retries only server session creation after the email link was consumed", async () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({ code: "AUTH_UNAVAILABLE" }, { status: 503 })); vi.stubGlobal("fetch", fetch);
     savePendingEmail({ email: "student@syuin.ac.kr", remember: false, next: "/campus/roommates/me" });
