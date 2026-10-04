@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+import { buttonStyles } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
@@ -139,7 +140,7 @@ export default function LibraryPage() {
       type="button"
       onClick={() => refetch()}
       disabled={isFetching}
-      className={`shrink-0 whitespace-nowrap rounded bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={buttonStyles("secondary", `shrink-0 whitespace-nowrap ${className}`)}
     >
       {isFetching ? text.refreshing : text.refresh}
     </button>
@@ -203,8 +204,8 @@ export default function LibraryPage() {
               const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (
                 <div key={idx}>
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <strong className="text-neutral-900">
                         {room.strRoomNm}
                       </strong>
@@ -212,13 +213,13 @@ export default function LibraryPage() {
                         <button
                           type="button"
                           onClick={() => setSeatMapUrl(roomSeatMapUrl)}
-                          className="rounded bg-primary-100 px-2 py-1 text-xs font-medium text-primary-700 transition-colors hover:bg-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                          className={buttonStyles("secondary")}
                         >
                           {text.viewSeats}
                         </button>
                       )}
                     </div>
-                    <span className="text-right text-sm font-semibold text-neutral-700">
+                    <span className="ml-auto text-right text-sm font-semibold text-neutral-700">
                       {hasValidSeatTotal ? (
                         <>
                           {room.strUseSeat}/{room.strTotalSeat}

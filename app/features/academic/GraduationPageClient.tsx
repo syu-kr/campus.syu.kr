@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import clsx from "clsx";
 
 import { Badge } from "@/app/components/Badge";
+import { buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
@@ -428,14 +429,14 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleMobileContinue}
-                className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+                className={buttonStyles("primary")}
               >
                 {text.mobileContinue}
               </button>
               <button
                 type="button"
                 onClick={handleMobileBack}
-                className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.mobileBack}
               </button>
@@ -469,7 +470,7 @@ export default function GraduationPageClient() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+            className={buttonStyles("secondary")}
           >
             {text.contactWrongInfo}
           </button>
@@ -902,7 +903,7 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.reset}
               </button>
@@ -910,7 +911,7 @@ export default function GraduationPageClient() {
                 type="button"
                 onClick={() => window.print()}
                 disabled={!requirement}
-                className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                className={buttonStyles("primary")}
               >
                 {text.sidebar.print}
               </button>
@@ -919,14 +920,14 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleExport}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.exportPlan}
               </button>
               <button
                 type="button"
                 onClick={() => importFileInputRef.current?.click()}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.importPlan}
               </button>
@@ -942,7 +943,7 @@ export default function GraduationPageClient() {
               type="button"
               onClick={() => void handleShareProgress()}
               disabled={!selectionComplete}
-              className="mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+              className={buttonStyles("primary", "mt-2 w-full")}
             >
               {text.sidebar.shareProgress}
             </button>
@@ -986,7 +987,7 @@ export default function GraduationPageClient() {
             <button
               type="button"
               onClick={() => setIsContactOpen(true)}
-              className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+              className={buttonStyles("primary", "mt-4 w-full")}
             >
               {text.contactWrongInfo}
             </button>
@@ -1146,7 +1147,7 @@ function CurriculumCourseSelector({
             type="button"
             onClick={onReset}
             disabled={selectedCourseIds.length === 0}
-            className="rounded-lg border border-green-300 bg-white px-3 py-2 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className={buttonStyles("secondary")}
           >
             {text.courses.reset}
           </button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+import { Button } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
 import {
@@ -99,13 +100,11 @@ export default function PhonePageClient({
           title={dictionary.home.dashboard.loadFailedTitle}
           message={dictionary.home.dashboard.loadFailedMessage}
           action={
-            <button
-              type="button"
+            <Button
               onClick={() => refetch()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
               {dictionary.home.dashboard.retry}
-            </button>
+            </Button>
           }
         />
       )}

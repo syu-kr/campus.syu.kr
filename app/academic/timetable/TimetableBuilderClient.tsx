@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
 import { Card } from "@/app/components/Card";
+import { buttonStyles } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 import { Modal } from "@/app/components/Modal";
@@ -840,7 +841,7 @@ export function TimetableBuilderClient() {
       <div className="mb-6">
         <Link
           href={localizePath("/academic", locale)}
-          className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900"
+          className={buttonStyles("ghost", "mb-4")}
         >
           <Icon name="chevron-right" size={16} className="rotate-180" />
           {text.backToAcademic}
@@ -866,7 +867,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={toggleCompareMode}
             aria-pressed={timetableWorkspace.isCompareMode}
-            className="hidden shrink-0 rounded-lg border border-primary-300 bg-white px-4 py-2.5 text-sm font-bold text-primary-700 transition-colors hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 xl:inline-flex"
+            className={buttonStyles("secondary", "hidden shrink-0 xl:inline-flex")}
           >
             {timetableWorkspace.isCompareMode
               ? text.leaveCompareMode
@@ -893,7 +894,7 @@ export function TimetableBuilderClient() {
                 <button
                   type="button"
                   onClick={() => void refetch()}
-                  className="rounded-lg border border-amber-300 px-3 py-1.5 text-sm font-semibold text-amber-900"
+                  className={buttonStyles("secondary")}
                 >
                   {text.retry}
                 </button>
@@ -926,7 +927,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={createShareLink}
             disabled={!hasShareableCourses || isCreatingShare}
-            className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+            className={buttonStyles("primary")}
           >
             {isCreatingShare ? text.creatingShare : text.share}
           </button>
@@ -934,7 +935,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={downloadTimetableImage}
             disabled={!hasShareableCourses || isDownloadingImage}
-            className="rounded-lg border border-primary-300 bg-white px-3 py-2 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:text-neutral-400"
+            className={buttonStyles("secondary")}
           >
             {isDownloadingImage
               ? text.downloadingImage
@@ -967,14 +968,14 @@ export function TimetableBuilderClient() {
               <button
                 type="button"
                 onClick={restorePreviousSemesterDraft}
-                className="rounded-lg bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-800"
+                className={buttonStyles("primary")}
               >
                 {text.restorePreviousDraft}
               </button>
               <button
                 type="button"
                 onClick={discardPreviousSemesterDraft}
-                className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 transition-colors hover:bg-amber-100"
+                className={buttonStyles("secondary")}
               >
                 {text.discardPreviousDraft}
               </button>
@@ -1021,7 +1022,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={deleteShareLink}
             disabled={isDeletingShare}
-            className="mt-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className={buttonStyles("danger", "mt-2")}
           >
             {isDeletingShare ? text.deletingShare : text.deleteShare}
           </button>
@@ -1067,7 +1068,7 @@ export function TimetableBuilderClient() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+              className={buttonStyles("primary")}
             >
               {text.retry}
             </button>
@@ -1095,7 +1096,7 @@ export function TimetableBuilderClient() {
                         disabled={
                           timetableWorkspace.timetables.length >= MAX_TIMETABLES
                         }
-                        className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                        className={buttonStyles("primary")}
                       >
                         {text.addTimetable}
                       </button>
@@ -1261,7 +1262,7 @@ export function TimetableBuilderClient() {
           <button
             type="button"
             onClick={() => setIsPickerOpen(true)}
-            className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 max-w-[calc(100vw-2rem)] rounded-lg bg-primary-600 px-5 py-3 text-sm font-bold text-white shadow-lg transition-colors hover:bg-primary-700 lg:hidden"
+            className={buttonStyles("primary", "fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 right-4 z-30 max-w-[calc(100vw-2rem)] py-3 shadow-lg lg:hidden")}
           >
             {text.addCourse}
           </button>
@@ -1431,7 +1432,7 @@ function ComparisonTimetableCard({
             <button
               type="button"
               onClick={onActivate}
-              className="rounded-md border border-primary-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-primary-700 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-primary-600"
+              className={buttonStyles("secondary")}
             >
               {text.editTimetable}
             </button>
@@ -1441,7 +1442,7 @@ function ComparisonTimetableCard({
             onClick={onDuplicate}
             disabled={!canDuplicate}
             aria-label={`${timetableLabel} ${text.duplicateTimetable}`}
-            className="rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-400"
+            className={buttonStyles("secondary")}
           >
             {text.duplicate}
           </button>
@@ -1450,7 +1451,7 @@ function ComparisonTimetableCard({
               type="button"
               onClick={onRemove}
               aria-label={`${timetableLabel} ${text.deleteTimetable}`}
-              className="rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600"
+              className={buttonStyles("danger")}
             >
               {text.delete}
             </button>
@@ -1796,7 +1797,7 @@ function CoursePicker({
           <button
             type="button"
             onClick={onResetFilters}
-            className="rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-200"
+            className={buttonStyles("secondary")}
           >
             {text.reset}
           </button>
@@ -2041,12 +2042,7 @@ function CourseResultCard({
           <button
             type="button"
             onClick={onToggle}
-            className={clsx(
-              "shrink-0 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-              isSelected
-                ? "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
-                : "bg-primary-600 text-white hover:bg-primary-700",
-            )}
+            className={buttonStyles(isSelected ? "secondary" : "primary", "shrink-0")}
           >
             {isSelected ? text.delete : text.add}
           </button>
@@ -2248,7 +2244,7 @@ function SelectedCoursesPanel({
           <button
             type="button"
             onClick={onClear}
-            className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+            className={buttonStyles("secondary")}
           >
             {text.clearAll}
           </button>
@@ -2341,7 +2337,7 @@ function SelectedCourseRow({
         <button
           type="button"
           onClick={onRemove}
-          className="shrink-0 rounded-lg bg-neutral-100 px-3 py-1.5 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-200"
+          className={buttonStyles("secondary", "shrink-0")}
         >
           {text.delete}
         </button>
