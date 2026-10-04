@@ -4,18 +4,30 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   FCM_TOKEN_KEY,
+  PushSubscriptionError,
   enablePushNotifications,
   getNotificationPreference,
   setNotificationPreference,
 } from "@/lib/push-notifications";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 export function NotificationPermissionPrompt() {
   const dictionary = useDictionary();
+  const locale = useLocale();
   const isRoommatePage = /^\/(?:en\/)?campus\/roommates(?:\/|$)/.test(usePathname());
   const [isVisible, setIsVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (retryAt === null) return;
+    const timeout = window.setTimeout(
+      () => setRetryAt(null),
+      Math.max(0, retryAt - Date.now()),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [retryAt]);
 
   useEffect(() => {
     if (isRoommatePage) return;
@@ -61,13 +73,25 @@ export function NotificationPermissionPrompt() {
         onStatus: (status) =>
           setMessage(dictionary.notificationPrompt.statusMessages[status]),
       });
+      setRetryAt(null);
       setIsVisible(false);
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : dictionary.notificationPrompt.errorFallback,
-      );
+      if (error instanceof PushSubscriptionError && error.status === 429) {
+        const deadline = error.retryAt ?? Date.now() + 60_000;
+        setRetryAt(deadline);
+        setMessage(
+          dictionary.notificationPrompt.rateLimited.replace(
+            "{time}",
+            new Date(deadline).toLocaleString(locale === "ko" ? "ko-KR" : "en-US"),
+          ),
+        );
+      } else {
+        setMessage(
+          error instanceof Error
+            ? error.message
+            : dictionary.notificationPrompt.errorFallback,
+        );
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -115,7 +139,7 @@ export function NotificationPermissionPrompt() {
           <button
             type="button"
             onClick={handleEnable}
-            disabled={isProcessing}
+            disabled={isProcessing || retryAt !== null}
             className="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-60 sm:w-auto"
           >
             {isProcessing
