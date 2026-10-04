@@ -552,7 +552,7 @@ export const dictionaries = {
       graduation: {
         metaTitle: "졸업요건 자가진단 | SYU CAMPUS",
         metaDescription:
-          "입학년도, 학과, 입학유형에 맞는 졸업요건을 확인하고 이수 현황을 점검하세요.",
+          "2026학년도 요람 기준으로 업데이트한 졸업요건을 확인하고, 입학년도와 소속 조건에 따라 이수 현황을 점검하세요.",
         mobileBadge: "데스크톱 권장",
         mobileTitle: "졸업요건 자가진단은 큰 화면이 더 편합니다",
         mobileDescription:
@@ -567,7 +567,7 @@ export const dictionaries = {
         },
         title: "졸업요건 자가진단",
         description:
-          "입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의 이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이 아닙니다.",
+          "2026학년도 요람 기준으로 업데이트했습니다. 입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의 이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이 아닙니다.",
         sourceNoticePrefix: "현재 학점 기준은 ",
         sourceNoticeSuffix:
           "을 구조화한 참고값입니다. 자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직 과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시 확인하세요.",
@@ -591,7 +591,7 @@ export const dictionaries = {
             "입학년도부터 순서대로 선택하세요. 조건을 바꾸면 입력한 진단 내용은 초기화됩니다.",
           coursesTitle: "2. 검증 과목 선택",
           coursesDescription:
-            "원문 PDF 전체 페이지 검증이 완료된 학과는 입학년도와 관계없이 현재 검증된 2025년 교육과정을 참고 기준으로 과목 선택 합계를 지원합니다.",
+            "{sourceYear}학년도 요람의 교육과정 전체 페이지 대조를 마친 학과에서 확정 과목만 선택 합계에 사용합니다.",
           creditsTitle: "3. 학점 입력",
           creditsDescription:
             "과목 선택으로 계산된 값은 참고용입니다. SU-WINGs의 인정학점, 교양 영역, 자유선택 학점을 확인해 직접 보정하세요.",
@@ -610,6 +610,8 @@ export const dictionaries = {
           major: "전공",
           detailMajor: "세부전공",
           admissionType: "입학유형",
+          transferYear: "전과 학년",
+          transferYearOption: "{year}학년 전과",
           majorTrack: "전공형태",
         },
         placeholders: {
@@ -621,6 +623,7 @@ export const dictionaries = {
           admissionYear:
             "학번 대신 입학 연도를 입력하세요. 예: 2024년 입학이면",
           majorRequired: "세부전공 선택 필요",
+          transferYear: "전과 시점의 학년을 선택하세요. 요람의 학년별 전과 요건을 적용합니다.",
           previousCondition: "이전 조건을 먼저 선택하세요.",
         },
         empty: {
@@ -637,7 +640,7 @@ export const dictionaries = {
         },
         metrics: {
           totalChecks: "전체 확인 항목",
-          satisfied: "충족·해당없음",
+          satisfied: "충족",
           remaining: "남은 확인",
         },
         result: {
@@ -657,10 +660,13 @@ export const dictionaries = {
           admissionYearWarning:
             "{admissionYear}년 입학생은 현재 {sourceYear}학년도 요람 참고값과 다를 수 있어 학과 확인이 필요합니다.",
           transfer3Warning:
-            "3학년 편입 졸업학점은 자가진단표와 최신 본부 안내 사이에 차이가 있어 SU-WINGs와 학과사무실 확인이 필요합니다.",
+            "편입생의 이수·인정학점과 선수과목 적용은 SU-WINGs 및 학과사무실에서 확인해야 합니다.",
+          sourceReviewWarning:
+            "요람의 상충하거나 확인되지 않은 항목은 학과 확인 전까지 충족으로 판정하지 않습니다.",
         },
         sources: {
           verifiedSuffix: "확인",
+          pagesPrefix: "근거 쪽",
           openOfficialPage: "공식 페이지 열기",
         },
         sidebar: {
@@ -709,6 +715,9 @@ export const dictionaries = {
             "자동 반영: 총 취득학점, 교양필수, 전공필수, 전공선택, 주전공. 교양선택의 세부 영역과 자유선택 학점은 과목표만으로 확정할 수 없어 직접 입력해야 합니다.",
           unavailableReason:
             "이 학과는 아직 교육과정 전체 페이지 검증이 완료되지 않았습니다.",
+          majorFirstReason: "세부전공을 먼저 선택하세요.",
+          partialReviewReason:
+            "원문 수치가 상충하거나 확인이 필요한 {count}개 과목은 선택 합계에서 제외했습니다.",
           referenceReason:
             "{admissionYear}년 입학생도 현재 검증된 {sourceYear}년 교육과정을 기준으로 과목을 선택할 수 있습니다. 실제 적용 교육과정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.",
         },
@@ -721,6 +730,7 @@ export const dictionaries = {
           satisfied: "이수",
           incomplete: "미이수",
           notApplicable: "해당 없음",
+          requiredHint: "필수 항목은 ‘해당 없음’으로 처리할 수 없습니다.",
         },
         banners: {
           shortTitle: "부족하거나 미이수인 항목이 있습니다",
@@ -2198,7 +2208,7 @@ export const dictionaries = {
       graduation: {
         metaTitle: "Graduation Requirement Check | SYU CAMPUS",
         metaDescription:
-          "Check reference graduation requirements by admission year, department, and admission type.",
+          "Check graduation requirements updated using the 2026 handbook and review your progress by admission year and department.",
         mobileBadge: "Desktop recommended",
         mobileTitle: "Graduation checks are easier on a larger screen",
         mobileDescription:
@@ -2213,7 +2223,7 @@ export const dictionaries = {
         },
         title: "Graduation Requirement Check",
         description:
-          "Review reference requirements for your admission year and department, then compare them with your SU-WINGs credits and non-credit requirements. This result is not an official graduation decision.",
+          "Updated using the 2026 handbook. Review reference requirements for your admission year and department, then compare them with your SU-WINGs credits and non-credit requirements. This result is not an official graduation decision.",
         sourceNoticePrefix: "The current credit criteria are reference values structured from ",
         sourceNoticeSuffix:
           ". Update times may differ by source. Transfer, department transfer, multi-major, and teaching-track students must check the official sources and department office shown with the result.",
@@ -2237,7 +2247,7 @@ export const dictionaries = {
             "Select each condition in order. Changing a condition resets the entered check data.",
           coursesTitle: "2. Select Verified Courses",
           coursesDescription:
-            "For departments whose original PDF pages have been fully verified, course totals are supported using the currently verified 2025 curriculum as a reference, regardless of admission year.",
+            "Only confirmed courses are included in selection totals for departments whose full curriculum pages have been compared with the {sourceYear} handbook.",
           creditsTitle: "3. Enter Credits",
           creditsDescription:
             "Course-selected totals are only a reference. Adjust recognized credits, liberal arts areas, and free electives using SU-WINGs.",
@@ -2257,6 +2267,8 @@ export const dictionaries = {
           major: "Major",
           detailMajor: "Detailed Major",
           admissionType: "Admission Type",
+          transferYear: "Year of Department Transfer",
+          transferYearOption: "Department transfer in year {year}",
           majorTrack: "Major Track",
         },
         placeholders: {
@@ -2268,6 +2280,7 @@ export const dictionaries = {
           admissionYear:
             "Enter your admission year instead of your student number. If you entered in 2024:",
           majorRequired: "Detailed major selection required",
+          transferYear: "Select your academic year when changing departments to apply the handbook's requirements for that year.",
           previousCondition: "Select the previous condition first.",
         },
         empty: {
@@ -2287,7 +2300,7 @@ export const dictionaries = {
         },
         metrics: {
           totalChecks: "Total Checks",
-          satisfied: "Satisfied/N/A",
+          satisfied: "Satisfied",
           remaining: "Remaining",
         },
         result: {
@@ -2307,10 +2320,13 @@ export const dictionaries = {
           admissionYearWarning:
             "Students admitted in {admissionYear} may differ from the current {sourceYear} handbook reference values, so department confirmation is required.",
           transfer3Warning:
-            "Third-year transfer graduation credits may differ between the self-check sheet and the latest office guidance. Check SU-WINGs and your department office.",
+            "Transfer students must confirm earned and recognized credits and prerequisite requirements through SU-WINGs and their department office.",
+          sourceReviewWarning:
+            "Conflicting or unverified handbook items remain pending until confirmed by your department.",
         },
         sources: {
           verifiedSuffix: "verified",
+          pagesPrefix: "Source pages",
           openOfficialPage: "Open official page",
         },
         sidebar: {
@@ -2359,6 +2375,9 @@ export const dictionaries = {
             "Auto-applied fields: total credits, required liberal arts, required major, elective major, and major total. Liberal arts sub-areas and free electives cannot be finalized from the course table alone and must be entered manually.",
           unavailableReason:
             "This department's full curriculum pages have not been verified yet.",
+          majorFirstReason: "Select a detailed major first.",
+          partialReviewReason:
+            "Excluded {count} courses with conflicting source values or items that still need confirmation from selection totals.",
           referenceReason:
             "Students admitted in {admissionYear} can use the currently verified {sourceYear} curriculum as a course-selection reference. Always confirm your actual curriculum in SU-WINGs and with your department office.",
         },
@@ -2371,6 +2390,7 @@ export const dictionaries = {
           satisfied: "Completed",
           incomplete: "Incomplete",
           notApplicable: "Not applicable",
+          requiredHint: "Required items cannot be marked as not applicable.",
         },
         banners: {
           shortTitle: "Some items are short or incomplete",
