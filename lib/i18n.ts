@@ -92,8 +92,10 @@ export const dictionaries = {
       updatedAt: "마지막 공휴일 확인",
       unavailable: "공휴일 정보를 확인할 수 없습니다.",
       stale: "공휴일 정보 갱신이 지연되고 있습니다. 최신 공지를 확인해주세요.",
-      shuttleUnconfirmed: "공휴일 또는 공휴일 정보 미확인으로 오늘의 셔틀 출발 예측을 제공하지 않습니다. 학교 운행 공지를 확인해주세요.",
+      shuttleHolidayClosed: "오늘은 공휴일로 셔틀을 운영하지 않습니다. 셔틀 시간표를 확인해주세요.",
+      shuttleUnconfirmed: "공휴일 정보를 확인할 수 없어 오늘의 셔틀 운행 정보를 안내하기 어렵습니다. 셔틀 시간표를 확인해주세요.",
       shuttleClosed: "학교 안내에 따라 오늘 셔틀버스가 운행되지 않습니다.",
+      referenceHolidaySchedule: "아래 시간표는 운행일 기준입니다.",
       referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
     },
     crawlDataStatus: {
@@ -1758,8 +1760,10 @@ export const dictionaries = {
       updatedAt: "Holidays last checked",
       unavailable: "Public holiday information is unavailable.",
       stale: "Public holiday updates are delayed. Check the latest official notice.",
-      shuttleUnconfirmed: "Today's shuttle departure predictions are unavailable because it is a public holiday or holiday information is unconfirmed. Check the university's service notice.",
+      shuttleHolidayClosed: "Shuttle buses do not operate today because it is a public holiday. Please check the shuttle timetable.",
+      shuttleUnconfirmed: "Today's shuttle service information is unavailable because public holiday information could not be confirmed. Please check the shuttle timetable.",
       shuttleClosed: "Shuttle buses are not operating today according to the university's notice.",
+      referenceHolidaySchedule: "The timetable below applies to operating days.",
       referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
     },
     crawlDataStatus: {

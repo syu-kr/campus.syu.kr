@@ -155,8 +155,12 @@ export function createShuttleAnswerSummary({
         summary.holiday.names.join(" · "),
         summary.operationStatus === "closed"
           ? dictionary.publicHolidays.shuttleClosed
-          : dictionary.publicHolidays.shuttleUnconfirmed,
-        dictionary.publicHolidays.referenceSchedule,
+          : summary.holiday.status === "holiday"
+            ? dictionary.publicHolidays.shuttleHolidayClosed
+            : dictionary.publicHolidays.shuttleUnconfirmed,
+        summary.holiday.status === "holiday"
+          ? dictionary.publicHolidays.referenceHolidaySchedule
+          : dictionary.publicHolidays.referenceSchedule,
       ].filter(Boolean).join(" "),
     };
   }
