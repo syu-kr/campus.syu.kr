@@ -14,11 +14,19 @@
 | 출처별 보존·갱신 상태 | 성공 출처는 갱신하고 실패·불완전 출처는 이전 검증본의 정확한 바이트로 복원한다. 학과 경고는 학과 출처 전체 보존으로 처리한다. manifest·상태 API·공지/공모전/학식 화면에 실패와 시각을 전달한다. 상태만 바뀌어도 게시한다. 식단 전용·AI 비활성화는 미실행 출처 상태를 유지하며 롤백은 목표 버전의 당시 상태도 복원한다. |
 | 크롤러 자료 무결성 | 잘못된 식단 날짜·부족한 메뉴 셀, 불가능하거나 부분 해석된 일정 날짜, 필수 정보 없는 공지 행을 저장 전에 거부한다. 완전히 수집한 일정 월만 교체하고 미수집 월은 보존한다. 검증된 첫 페이지와 공지 고정 상태를 동기화하며 공지 내용은 보존한다. |
 | Actions·알림 | 수동 Sync에 Python requirements 설치를 추가하고 rollback 입력을 인용한 환경변수로 전달한다. 수동 AI 한도 0을 보존한다. sending 잠금은 30분 경과가 확인된 경우에만 해제하며 failed 잠금도 transaction에서 최신 상태를 재검사한다. 알림 job은 10분, 발송 API는 2분으로 제한하며 시간 초과를 자동 재발송하지 않는다. |
-| 의존성 | Firebase·Next 버전을 유지하고 하위 패키지 `@fastify/busboy`만 3.2.0에서 3.2.1로 고정했다. 잠금 파일의 패키지 변경은 1개다. |
+| 의존성 | Firebase·Next·ESLint 버전을 유지하고 `@fastify/busboy`를 3.2.1로 고정했다. 추가 CI 실패 원인인 Next ESLint의 `fast-glob@3.3.1` 경로는 기존 `tinyglobby@0.2.17` 기반 로컬 어댑터로 교체해 `braces`·`micromatch` 및 전용 하위 의존성을 제거했다. 유지되는 모든 패키지의 버전·integrity는 그대로다. |
 
 출처별 복원·상태·롤백은 [크롤링 운영 가이드](CRAWL_DATA_PAGES.md)를 따른다. 과거 보고서와 중복 수정 기록을 이 문서로 통합하고 일회성 원시 로그·스크린샷은 저장소에서 제거했다.
 
 기존 검색 계약은 유지한다. 목록의 검색·필터 상태는 URL에 남기고, 통합 검색은 미리보기를 제공하며 전체보기에도 검색어를 전달한다. 일부 출처 조회 실패는 전체 빈 결과와 구분한다.
+
+## CI 의존성 감사 실패 수정
+
+[최초 PR CI](https://github.com/syu-kr/campus.syu.kr/actions/runs/37174466322/job/111354098363)는 미패치 [braces 권고](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)로 전체 감사가 high 5개를 보고해 실패했고 Python audit·Check 단계는 실행되지 않았다. 사용자 확인 후 `fast-glob@3.3.1`만 로컬 `vendor/eslint-root-glob`으로 연결했다. npm 10.9.4의 깨끗한 `npm ci --ignore-scripts` 재설치 후 실제 Next 소비자 경로와 정상 의존성 트리, 전체 audit 0개를 확인했다. Next 하향·규칙 제거·보안 gate 예외는 적용하지 않았다.
+
+어댑터는 Next가 사용하는 `globSync(string, { onlyDirectories: true })`만 제공한다. 4,096자 이하의 literal 경로, 마지막 경로 구성요소의 별표 1개, literal 대안 목록 brace 1개를 지원한다. Next의 `rootDir` 문자열·배열과 기본 cwd 처리를 검증했으며 junction 대상에 재귀 진입하지 않는다. 복잡한 glob·추가 옵션과 읽기 권한 오류는 명시적으로 실패한다. 향후 `rootDir` 설정 또는 Next 소비 API를 변경할 때 이 계약을 확인해야 하며, 상위 패키지가 취약 경로를 제거하면 override·어댑터를 함께 제거한다.
+
+실제 설치된 Next 플러그인을 사용하는 집중 시험 6개가 Node 22.13.0·24.18.0에서 각각 통과했다. 원본 fast-glob과는 지원 범위 내 23개 경로 집합을 비교했다. 교체 전후 113개 ESLint 규칙·parser 설정·전역 ignore·링크/이미지/접근성 위반 진단을 대조했다. 테스트가 설치된 의존성을 직접 해석하고, Knip에는 [별도 workspace 설정](https://knip.dev/reference/configuration#workspaces)으로 vendor의 자체 의존성 선언을 검사하게 했다.
 
 ## Actions 이력 확인
 
@@ -57,20 +65,21 @@
 
 | 검사 | 결과 |
 | --- | --- |
-| `npm run test:unit -- --maxWorkers=4 --reporter=dot` | 62개 파일·291개 테스트 통과 |
+| `npm run check` 전체 체인 | Node 22.13.0·npm 10.9.4에서 종료 코드 0; 아래 검사 모두 연속 통과 |
+| 전체 체인의 `npm run test:unit` | 63개 파일·297개 테스트 통과; `VITEST_MAX_WORKERS=4` 적용 |
 | 타입·ESLint·i18n·미사용 코드 검사 | 각각 종료 코드 0 |
 | Python 구문·크롤러 fixture·월간 자료 검사 | 18개 스크립트 및 격리 날짜·식단·공지 무결성 검사 통과 |
 | TWA·졸업·교육과정·크롤링 자료 dry-run | 통과; 교육과정 원본 PDF 2개의 해시 확인은 파일 부재로 생략 |
 | `npm run build` | Next.js 16.3.6 컴파일·타입·57개 정적 페이지 생성 통과; Sentry 업로드 토큰을 비움 |
 | 알림·정리·출처 복원·publisher 회귀 검사 | mock·임시 파일로 상태 경쟁, 경계 시각, 부분 실패, 원본 바이트 복원과 재발송 부재 확인 |
 | workflow YAML·action SHA·입력/조건 검사, 독립 코드 리뷰 | 통과; 리뷰에서 찾은 날짜 부분 해석·누락 공지 후보도 수정 후 재검증 |
-| 운영 의존성 audit / 전체 audit | 0개·통과 / 개발용 `braces` 경로 high 5개·실패 |
+| `npm audit --omit=dev --audit-level=moderate` / `npm audit --audit-level=moderate` | 각각 0개·종료 코드 0; npm 10.9.4로 최종 설치 후 실행 |
 
-모바일 크기 브라우저에서 연속 입력 포커스 유지, 알림 첫 표시 전후 주요 버튼 위치 변화 0px, 모바일 과목 추가·삭제, 지도 한 번 지우기, 졸업 변경 취소 시 기록 보존, 조회 503 후 재시도 복구, 일정 검색 목록 복원을 확인했다. 시간표 UI 검증은 운영에서 읽은 공개 응답을 로컬 요청에 주입했으므로 로컬 upstream 성공 증거가 아니다. 전체 `npm run check`를 한 명령으로 통과했다고 주장하지 않는다. 로컬 Node 24·Python 3.13 및 Python 패키지 버전은 CI 환경과 다르다. 설치·최종 audit은 저장소 지정 npm 10.9.4를 사용했다.
+모바일 크기 브라우저에서 연속 입력 포커스 유지, 알림 첫 표시 전후 주요 버튼 위치 변화 0px, 모바일 과목 추가·삭제, 지도 한 번 지우기, 졸업 변경 취소 시 기록 보존, 조회 503 후 재시도 복구, 일정 검색 목록 복원을 확인했다. 시간표 UI 검증은 운영에서 읽은 공개 응답을 로컬 요청에 주입했으므로 로컬 upstream 성공 증거가 아니다. 최종 `npm run check`는 CI와 같은 Node 22.13.0·npm 10.9.4, 비밀 없는 CI 환경변수로 실행했다. 로컬 Python은 PATH shim으로 `py -3.13`을 호출했으며 Python 3.13.14·설치된 Python 패키지 버전은 CI의 Python 3.11과 다르다. PR의 최종 푸시 SHA에 대한 실제 Linux CI 결과는 별도로 확인한다.
 
 ## 남은 확인
 
-- 전체 audit의 [braces 권고](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)는 점검 시 공식 수정 버전이 없었다. 원인 패키지와 상위 4개를 합쳐 high 5개이며 `npm audit --audit-level=moderate`는 실패한다. Next 하향이나 보안 gate 예외는 적용하지 않았다. busboy의 [boundary DoS](https://github.com/advisories/GHSA-xjh9-v7x6-24jw)·[header DoS](https://github.com/advisories/GHSA-x8mw-p69m-v3mx)는 3.2.1로 수정했다.
+- busboy의 [boundary DoS](https://github.com/advisories/GHSA-xjh9-v7x6-24jw)·[header DoS](https://github.com/advisories/GHSA-x8mw-p69m-v3mx)는 3.2.1로 수정했다. 로컬 Next ESLint 어댑터의 지원 범위·소비 API와 상위 의존성 개선 여부를 유지보수 시 확인해야 한다.
 - 실제 Android/iOS 키보드·한글 IME, 단말 푸시 수신, Sentry 이벤트 도착, 배포 후 UI/API와 변경된 크롤러의 Actions·Pages 게시를 검증해야 한다. Sentry 조회는 403이었고 Vercel 로그 인증도 없어 수집 성공을 확인하지 못했다.
 - 공개 읽기 제한은 기존 메모리 제한기를 사용하므로 인스턴스 간 한도를 공유하지 않는다. 분산 비용 방어는 별도 플랫폼/공유 저장소 검토가 필요하다.
 - 학과의 불완전 수집 감지는 알려진 경고 문구를 사용하므로 재시도 후 성공해도 보수적으로 이전본을 유지할 수 있다. 문구가 바뀌면 판정을 함께 점검해야 한다.
