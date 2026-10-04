@@ -15,6 +15,8 @@ const PERMANENT_REDIRECTS = [
   ["/en/more/campus-tips", "/en/campus/campus-tips"],
   ["/more/campus-tips/suggest", "/campus/campus-tips/suggest"],
   ["/en/more/campus-tips/suggest", "/en/campus/campus-tips/suggest"],
+  ["/service/notices/018-roommate-policy-update", "/service/notices/017-roommate-board"],
+  ["/en/service/notices/018-roommate-policy-update", "/en/service/notices/017-roommate-board"],
 ];
 
 const nextConfig = {
