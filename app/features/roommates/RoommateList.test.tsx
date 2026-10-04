@@ -14,7 +14,7 @@ describe("roommate list filters and cards", () => {
     const view = render(<RoommateList />);
     expect(screen.getByLabelText("기숙사")).toHaveValue("eden"); expect(screen.getByLabelText("인실")).toHaveValue("3");
     fireEvent.change(screen.getByLabelText("기숙사"), { target: { value: "sion" } });
-    fireEvent.click(screen.getByRole("button", { name: "조건 적용" }));
+    fireEvent.click(screen.getByRole("button", { name: "필터 적용" }));
     expect(window.location.pathname).toBe("/en/campus/roommates"); expect(new URLSearchParams(window.location.search).get("dorm")).toBe("sion"); expect(window.location.search).not.toContain("cursor");
     view.rerender(<RoommateList />);
     fireEvent.click(screen.getByRole("button", { name: "초기화" })); expect(window.location.search).toBe("");

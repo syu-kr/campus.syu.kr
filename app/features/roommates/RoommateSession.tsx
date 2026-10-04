@@ -6,8 +6,9 @@ import { useLocale } from "@/app/components/LocaleProvider";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { localizePath } from "@/lib/i18n";
 import { protectRoommateLinkPrivacy } from "@/lib/roommate-link-privacy";
-import { ROOMMATE_CHANNEL, ROOMMATE_CLEAR_EVENT, ROOMMATE_QUERY_KEY, RoommateApiError, roommateRequest } from "./client";
+import { ROOMMATE_CHANNEL, ROOMMATE_CLEAR_EVENT, ROOMMATE_QUERY_KEY, ROOMMATE_REFRESH_INTERVAL_MS, RoommateApiError, roommateRequest } from "./client";
 import RoommateLogout from "./RoommateLogout";
+import { RoommateHeading } from "./RoommateShared";
 
 export default function RoommateSession({ children, expiresAt, sessionTag }: { children: ReactNode; expiresAt?: string; sessionTag?: string }) {
   const locale = useLocale();
@@ -26,9 +27,16 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   const inFlightGeneration = useRef<number | null>(null);
   const identity = useRef(sessionTag ?? expiresAt);
   const privateContents = useRef<HTMLDivElement>(null);
+  const verified = useRef(false);
+  const needsFreshCheck = useRef(true);
+  const lastCheckAt = useRef<number | null>(null);
+  const expiry = useRef(expiresAt);
 
   const clear = useCallback(() => {
     generation.current += 1;
+    verified.current = false;
+    needsFreshCheck.current = true;
+    if (privateContents.current) privateContents.current.hidden = true;
     setReady(false);
     void queryClient.cancelQueries({ queryKey: ROOMMATE_QUERY_KEY });
     queryClient.removeQueries({ queryKey: ROOMMATE_QUERY_KEY });
@@ -41,21 +49,31 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
     signingOut.current = true;
     clear();
   }, [clear]);
-  const validate = useCallback(async () => {
-    // Focus, visibility and pageshow can arrive together. Reuse only the current check;
-    // conceal/logout increments generation so an older response cannot reopen the page.
+  const validate = useCallback(async (force = false) => {
+    // Expiry still applies when a background tab's timer has been suspended.
+    if (expiry.current && Date.parse(expiry.current) <= Date.now()) { leave(); return; }
     if (signingOut.current || inFlightGeneration.current === generation.current) return;
-    if (privateContents.current) privateContents.current.hidden = true;
-    setChecking(true);
+    if (!force && !needsFreshCheck.current && lastCheckAt.current !== null && Date.now() - lastCheckAt.current < ROOMMATE_REFRESH_INTERVAL_MS) return;
+    // Ordinary tab returns preserve the screen. Only the initial gate and browser
+    // history restoration conceal private contents until a fresh check succeeds.
+    if (!verified.current || needsFreshCheck.current) {
+      if (privateContents.current) privateContents.current.hidden = true;
+      setChecking(true);
+    }
+    lastCheckAt.current = Date.now();
     const run = ++generation.current;
     inFlightGeneration.current = run;
     try {
       const session = await roommateRequest<{ expiresAt: string; sessionTag?: string }>("auth/session");
       if (alive.current && run === generation.current) {
+        if (Date.parse(session.expiresAt) <= Date.now()) { leave(); return; }
         const tag = session.sessionTag ?? session.expiresAt;
         if (identity.current !== tag) {
           clear(); identity.current = tag; setIdentityVersion((value) => value + 1);
         }
+        verified.current = true;
+        needsFreshCheck.current = false;
+        expiry.current = session.expiresAt;
         setCurrentExpiry(session.expiresAt);
         setReady(true); setFailed(false); setChecking(false);
       }
@@ -72,7 +90,7 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   useEffect(() => {
     alive.current = true;
     protectRoommateLinkPrivacy();
-    void validate();
+    void validate(true);
     const onClear = (event: Event) => {
       clear();
       if ((event as CustomEvent<{ disabled?: boolean }>).detail?.disabled) setDisabled(true);
@@ -80,12 +98,13 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
     };
     const conceal = () => {
       generation.current += 1;
+      needsFreshCheck.current = true;
       if (privateContents.current) privateContents.current.hidden = true;
       setChecking(true);
     };
     const onFocus = () => { if (!document.hidden) void validate(); };
-    const onVisibility = () => { if (document.hidden) conceal(); else void validate(); };
-    const onPageShow = () => { void validate(); };
+    const onVisibility = () => { if (!document.hidden) void validate(); };
+    const onPageShow = (event: PageTransitionEvent) => { void validate(event.persisted); };
     window.addEventListener(ROOMMATE_CLEAR_EVENT, onClear);
     window.addEventListener("focus", onFocus);
     window.addEventListener("pageshow", onPageShow);
@@ -122,9 +141,9 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   }, [currentExpiry, leave]);
 
   return <>
-    <div className="mb-4 flex justify-end"><RoommateLogout onStart={startLogout} onSignedOut={leave} /></div>
+    <RoommateHeading navigationEnabled={ready && !checking && !disabled}><RoommateLogout onStart={startLogout} onSignedOut={leave} /></RoommateHeading>
     {disabled && <p role="status" className="rounded-xl border border-neutral-200 bg-white p-6 text-neutral-700">{text.unavailable}</p>}
-    {failed && <div role="alert" className="mb-4 rounded-lg border border-neutral-200 bg-white p-4"><p>{text.failed}</p><button className="mt-2 text-primary-700 underline" type="button" onClick={() => void validate()}>{text.retry}</button></div>}
+    {failed && <div role="alert" className="mb-4 rounded-lg border border-neutral-200 bg-white p-4"><p>{text.failed}</p><button className="mt-2 text-primary-700 underline" type="button" onClick={() => void validate(true)}>{text.retry}</button></div>}
     {ready && !disabled && <div key={identityVersion} ref={privateContents} hidden={checking}>{children}</div>}
     {(!ready || checking) && !failed && !disabled && <p role="status" className="py-8 text-neutral-600">{text.loading}</p>}
   </>;

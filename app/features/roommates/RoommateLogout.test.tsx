@@ -7,6 +7,7 @@ import ProtectedRoommatePage from "./ProtectedRoommatePage";
 
 const server = vi.hoisted(() => ({ revoke: vi.fn() }));
 vi.mock("@/lib/firebaseRoommates", () => ({ clearRoommateAuth: vi.fn() }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/campus/roommates" }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("@/lib/server/roommate-auth", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/server/roommate-auth")>(),

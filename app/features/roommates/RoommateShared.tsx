@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useLocale } from "@/app/components/LocaleProvider";
 import { localizePath, stripLocalePrefix } from "@/lib/i18n";
@@ -12,24 +13,29 @@ export const inputClass = "mt-1 min-h-11 w-full rounded-lg border border-neutral
 export const primaryClass = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 disabled:opacity-50";
 export const secondaryClass = "inline-flex min-h-11 items-center justify-center rounded-lg border border-neutral-300 bg-white px-4 py-2 text-neutral-700 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:opacity-50";
 
-export function RoommateHeading({ title }: { title?: string }) {
+export function RoommateHeading({ children, navigationEnabled = true }: { children: ReactNode; navigationEnabled?: boolean }) {
   const locale = useLocale(); const text = getRoommateText(locale);
   const pathname = stripLocalePrefix(usePathname());
+  const title = pathname === "/campus/roommates/new" ? text.create : pathname === "/campus/roommates/me" ? text.mine : text.title;
   const links = [
     { href: "/campus/roommates", label: text.list },
     { href: "/campus/roommates/me", label: text.mine },
     { href: "/campus/roommates/new", label: text.create },
   ];
   return <header className="mb-6">
-    <Link href={localizePath("/campus", locale)} className="text-sm text-neutral-600 hover:underline">{text.campus}</Link>
-    <h1 className="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl">{title ?? text.title}</h1>
+    <Link href={localizePath("/campus", locale)} className="inline-flex min-h-11 items-center gap-1 text-sm text-neutral-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"><span aria-hidden="true">‹</span>{text.campus}</Link>
+    <h1 className="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl">{title}</h1>
     <p className="mt-2 text-neutral-600">{text.description}</p>
-    <nav aria-label={text.title} className="mt-4 flex flex-wrap gap-x-6 gap-y-1">
-      {links.map(({ href, label }) => <Link key={href} prefetch={false} href={localizePath(href, locale)} aria-current={pathname === href ? "page" : undefined}
-        className={`inline-flex min-h-11 items-center py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500 sm:text-base ${pathname === href ? "text-primary-700 underline decoration-2 underline-offset-8" : "text-neutral-500 hover:text-neutral-900"}`}>
-        {label}
-      </Link>)}
+    <div className="mt-4 flex items-start justify-between gap-3">
+    <nav aria-label={text.title} className="flex flex-wrap gap-x-5 gap-y-1 sm:gap-x-6">
+      {links.map(({ href, label }) => {
+        const className = `inline-flex min-h-11 items-center py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-500 sm:text-base ${pathname === href ? "text-primary-700 underline decoration-2 underline-offset-8" : "text-neutral-500 hover:text-neutral-900"}`;
+        return navigationEnabled ? <Link key={href} prefetch={false} href={localizePath(href, locale)} aria-current={pathname === href ? "page" : undefined} className={className}>{label}</Link>
+          : <span key={href} aria-disabled="true" className={className}>{label}</span>;
+      })}
     </nav>
+    <div className="shrink-0">{children}</div>
+    </div>
   </header>;
 }
 

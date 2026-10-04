@@ -1,9 +1,6 @@
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
-import {
-  LegalPageHeader,
-  LegalSection,
-} from "@/app/features/legal/LegalPageLayout";
+import { LegalPageHeader } from "@/app/features/legal/LegalPageLayout";
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
@@ -13,6 +10,45 @@ import {
 } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+
+const policySections = [
+  ["개인정보의 처리 목적", "Purposes of Processing"],
+  ["개인정보의 처리 및 보유 기간", "Retention"],
+  ["처리하는 개인정보의 항목", "Categories of Information"],
+  ["개인정보의 제공·위탁 및 국외 이전", "Sharing, Processors, and Overseas Processing"],
+  ["쿠키(Cookie) 정보", "Cookies and Browser Storage"],
+  ["Google 분석도구 및 외부 처리 도구", "Analytics, Firebase, and AI Classification"],
+  ["개인정보의 안전성 확보 조치", "Security Measures"],
+  ["정보주체와 법정대리인의 권리·의무 및 그 행사방법", "User Rights and How to Exercise Them"],
+  ["개인정보 보호책임자에 관한 사항", "Privacy Contact"],
+  ["정보주체의 권익침해에 대한 구제방법", "Remedies"],
+  ["개인정보 처리방침 변경", "Policy Changes"],
+];
+
+function PrivacyContents({ english = false }: { english?: boolean }) {
+  return (
+    <Card as="section" hover={false} className="mb-6">
+      <h2 className="mb-3 text-lg font-bold text-neutral-900">
+        {english ? "Contents" : "목차"}
+      </h2>
+      <nav aria-label={english ? "Privacy policy contents" : "개인정보처리방침 목차"}>
+        <ol className="grid gap-x-6 sm:grid-cols-2">
+          {policySections.map(([korean, englishTitle], index) => (
+            <li key={index}>
+              <a
+                href={`#privacy-article-${index + 1}`}
+                className="inline-flex min-h-11 items-center gap-2 py-2 text-sm text-neutral-700 hover:text-primary-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              >
+                <span className="shrink-0 text-neutral-500">{index + 1}.</span>
+                {english ? englishTitle : korean}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </Card>
+  );
+}
 
 async function getRequestLocale(): Promise<Locale> {
   const headerStore = await headers();
@@ -53,17 +89,19 @@ function RoommateRetention({ english = false }: { english?: boolean }) {
     ["관리자 조치·정리 감사 기록", "침해 대응과 처리 이력 확인을 위해 최대 365일 보유합니다. 관리자 식별정보, 조치 종류, 대상 식별정보, 상태와 시각을 포함하며 신고 본문이나 연락 링크를 중복 저장하지 않습니다."],
   ];
   return (
-    <div className="space-y-3">
-      <p className="font-semibold text-sm">{english ? "Dorm roommate board retention" : "11. 기숙사 룸메이트 게시판 보유기간"}</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead><tr className="bg-gray-100"><th scope="col" className="border border-gray-300 p-3 text-left">{english ? "Information" : "정보 구분"}</th><th scope="col" className="border border-gray-300 p-3 text-left">{english ? "Retention and deletion" : "보유기간 및 파기 기준"}</th></tr></thead>
-          <tbody>{(english ? rows : koreanRows).map(([name, description]) => <tr key={name}><th scope="row" className="border border-gray-300 p-3 text-left align-top font-medium">{name}</th><td className="border border-gray-300 p-3 leading-relaxed">{description}</td></tr>)}</tbody>
-        </table>
-      </div>
+    <section className="space-y-3 border-t border-neutral-200 pt-4">
+      <h3 className="font-semibold text-base text-neutral-900">{english ? "Dorm roommate board retention" : "11. 기숙사 룸메이트 게시판 보유기간"}</h3>
+      <dl className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 text-sm">
+        {(english ? rows : koreanRows).map(([name, description]) => (
+          <div key={name} className="grid gap-2 p-4 sm:grid-cols-[1fr_2fr] sm:gap-6">
+            <dt className="font-medium text-neutral-900">{name}</dt>
+            <dd className="leading-relaxed text-neutral-600">{description}</dd>
+          </div>
+        ))}
+      </dl>
       <p className="text-sm text-neutral-600">{english ? "Server expiry and physical deletion are separate: access is restricted at expiry and the scheduled daily cleanup deletes expired records. These are service retention periods, not statutory retention requirements. An earlier deletion or processing-suspension request may be made through the privacy contact; where retention is legally necessary, the reason and period will be explained." : "서버의 접근 기한과 실제 삭제 시점은 구분됩니다. 기한이 지나면 열람을 제한하고 일일 예약 정리에서 만료 자료를 삭제합니다. 위 기간은 서비스 운영 기준이며 법령상 의무 보존기간을 뜻하지 않습니다. 더 이른 삭제·처리정지 요구는 개인정보 보호책임자에게 접수할 수 있고, 법령에 따라 보존해야 하는 경우 그 사유와 기간을 안내합니다."}</p>
       <p className="text-sm text-neutral-600">{english ? "Firebase Authentication logs IP addresses for a few weeks. Other authentication data remains until the operator initiates user deletion; Google states deletion from live and backup systems may take up to 180 days after that request." : "Firebase Authentication은 접속 IP 기록을 수 주간 보유합니다. 그 밖의 인증 자료는 운영자가 인증 사용자 삭제를 요청할 때까지 남으며, Google은 삭제 요청 후 실제 시스템과 백업에서 제거하는 데 최대 180일이 걸릴 수 있다고 안내합니다."} <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">{english ? "Firebase retention information" : "Firebase 보유·삭제 안내"}</a></p>
-    </div>
+    </section>
   );
 }
 
@@ -80,18 +118,25 @@ function RoommateInformation({ english = false }: { english?: boolean }) {
     ["신고·운영 정보 (해당 기능 이용 시)", "신고 사유, 선택 설명, 신고 당시 글의 근거, 보호된 신고자 식별정보, 검토 메모·상태, 작성 보류 사유·기간, 관리자 조치 기록을 신고 검토와 부정 이용 방지, 이의 처리에 이용합니다. 요청 횟수 제한에는 작성자 또는 IP에서 만든 보호된 식별정보를 이용합니다."],
   ];
   return (
-    <div className="space-y-3 text-sm">
-      <p className="font-semibold">{english ? "Dorm roommate board information" : "9. 기숙사 룸메이트 게시판 정보"}</p>
-      <ul className="space-y-3">{items.map(([title, content]) => <li key={title}><p className="font-medium">{title}</p><p className="mt-1 leading-relaxed text-neutral-600">{content}</p></li>)}</ul>
+    <section className="space-y-3 border-t border-neutral-200 pt-4 text-sm">
+      <h3 className="font-semibold text-base text-neutral-900">{english ? "Dorm roommate board information" : "9. 기숙사 룸메이트 게시판 정보"}</h3>
+      <dl className="divide-y divide-neutral-200 rounded-lg border border-neutral-200">
+        {items.map(([title, content]) => (
+          <div key={title} className="space-y-2 p-4">
+            <dt className="font-medium text-neutral-900">{title}</dt>
+            <dd className="leading-relaxed text-neutral-600">{content}</dd>
+          </div>
+        ))}
+      </dl>
       <p className="text-neutral-600">{english ? "Do not enter real names, phone numbers, exact room numbers, national identifiers, diagnoses, disability details, religious beliefs, political views, or another person's personal information. Optional entries are shown to verified users if included in a published listing. Leave them blank to keep them private." : "실명·전화번호·정확한 호실·주민등록번호, 질병 진단·장애 정보·종교·정치적 견해나 타인의 개인정보는 입력하지 마세요. 선택항목도 글에 포함해 공개하면 인증 이용자에게 표시됩니다. 공개하고 싶지 않은 항목은 입력하지 않을 수 있습니다."}</p>
-    </div>
+    </section>
   );
 }
 
 function RoommateSharing({ english = false }: { english?: boolean }) {
   return (
-    <div className="space-y-3 text-sm">
-      <p className="font-semibold">{english ? "Sharing recruitment listings" : "모집글의 이용자 간 공개"}</p>
+    <section className="space-y-3 text-sm">
+      <h3 className="font-semibold text-base text-neutral-900">{english ? "Sharing recruitment listings" : "모집글의 이용자 간 공개"}</h3>
       <ul className="list-disc space-y-2 pl-5 leading-relaxed text-neutral-600">
         <li>{english ? "Recipients: roommate board users verified with an @syuin.ac.kr email address. The purpose is to review roommate candidates and contact a writer." : "제공받는 자: @syuin.ac.kr 이메일로 인증한 룸메이트 게시판 이용자. 이용 목적: 기숙사 룸메이트 후보 확인 및 작성자와의 연락."}</li>
         <li>{english ? "Shared information: nickname, dorm/room capacity, stay dates, recruitment deadline/number needed, Open Chat link, and any selected living habits or introduction. Email addresses, authentication credentials, and internal author identifiers are not shown." : "제공 항목: 닉네임, 기숙사·인실, 거주 기간, 모집 마감일·인원, 오픈채팅 링크, 작성자가 선택한 생활습관과 소개. 이메일, 인증 비밀값과 내부 작성자 식별정보는 표시하지 않습니다."}</li>
@@ -99,7 +144,7 @@ function RoommateSharing({ english = false }: { english?: boolean }) {
         <li>{english ? "You may decline sharing and continue using verification and browsing. A listing cannot be published or edited without sharing consent. To withdraw, delete the listing from My listing or contact the operator. The site cannot retrieve copies another user has already made outside the service." : "공개 동의를 거부해도 인증과 모집글 열람은 이용할 수 있으며, 글 등록·수정은 제한됩니다. ‘내 글 관리’에서 삭제하거나 운영자에게 요청하여 공개를 철회할 수 있습니다. 다른 이용자가 이미 서비스 밖에 복사한 자료는 사이트가 회수할 수 없습니다."}</li>
       </ul>
       <p className="text-neutral-600">{english ? "Reports and evidence are available only to authorized administrators. Kakao Open Chat is an external service opened at the user's choice; SYU CAMPUS does not read or store the conversation. This link is distinct from processing entrusted to the hosting or authentication provider." : "신고 내용과 근거는 권한이 있는 관리자만 열람합니다. 카카오 오픈채팅은 이용자가 선택하여 이동하는 외부 서비스이며 SYU CAMPUS는 대화를 읽거나 저장하지 않습니다. 이 외부 링크와 인증·호스팅 업체에 대한 처리위탁은 구분합니다."}</p>
-    </div>
+    </section>
   );
 }
 
@@ -112,14 +157,26 @@ function RoommateOverseasProcessing({ english = false }: { english?: boolean }) 
     ["Vercel Inc. (privacy@vercel.com)", "미국(현재 서버 함수 리전 iad1). 서버 기능 이용 시 요청에 필요한 이메일·인증·접속 정보, 입력한 모집글·신고 정보, IP 주소와 브라우저 정보를 암호화 통신으로 처리합니다.", "웹사이트 호스팅, 요청 처리와 보안. 입력 내용은 요청을 처리하기 위해 이용하며 앱은 룸메이트 이메일·인증 비밀값·글 본문·연락 링크를 실행 로그에 기록하지 않습니다. Hobby 실행 로그의 조회 가능 기간은 1시간입니다. 사업자가 생성하는 보안·서비스 기록은 Vercel 처리 약관에 따라 목적이 종료되면 삭제하거나 익명화합니다."],
   ];
   return (
-    <div className="space-y-3 text-sm">
-      <p className="font-semibold">{english ? "Overseas processing for the roommate board" : "룸메이트 게시판의 국외 처리"}</p>
+    <section className="space-y-3 border-t border-neutral-200 pt-4 text-sm">
+      <h3 className="font-semibold text-base text-neutral-900">{english ? "Overseas processing for the roommate board" : "룸메이트 게시판의 국외 처리"}</h3>
       <p className="leading-relaxed text-neutral-600">{english ? "The authentication and server services below are entrusted processing needed to provide the service requested by the user. Transfer details are disclosed under Article 28-8(1)(3) of the Personal Information Protection Act; this disclosure is not a claim that separate overseas-transfer consent was obtained." : "아래 인증·서버 서비스는 이용자가 요청한 서비스를 제공하기 위해 필요한 처리위탁입니다. 「개인정보 보호법」 제28조의8제1항제3호에 따른 국외 처리 내용을 공개하며, 별도의 국외 이전 동의를 받았다는 의미는 아닙니다."}</p>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead><tr className="bg-gray-100"><th scope="col" className="border border-gray-300 p-3 text-left">{english ? "Recipient" : "이전받는 자"}</th><th scope="col" className="border border-gray-300 p-3 text-left">{english ? "Country, information, timing, and method" : "국가·항목·시기 및 방법"}</th><th scope="col" className="border border-gray-300 p-3 text-left">{english ? "Purpose and retention" : "목적 및 보유·이용 기간"}</th></tr></thead>
-          <tbody>{rows.map(([name, information, purpose], index) => <tr key={name}><th scope="row" className="border border-gray-300 p-3 text-left align-top font-medium">{name}{index === 0 && <a href="https://firebase.google.com/support/privacy/dpo" target="_blank" rel="noopener noreferrer" className="mt-2 block text-primary-700 underline">{english ? "Firebase privacy contact" : "Firebase 개인정보 문의"}</a>}</th><td className="border border-gray-300 p-3 leading-relaxed">{information}</td><td className="border border-gray-300 p-3 leading-relaxed">{purpose}</td></tr>)}</tbody>
-        </table>
+      <div className="space-y-3">
+        {rows.map(([name, information, purpose], index) => (
+          <div key={name} className="rounded-lg border border-neutral-200 p-4">
+            <h4 className="mb-3 font-semibold text-neutral-900">{name}</h4>
+            <dl className="space-y-3">
+              <div>
+                <dt className="font-medium">{english ? "Country, information, timing, and method" : "국가·항목·시기 및 방법"}</dt>
+                <dd className="mt-1 leading-relaxed text-neutral-600">{information}</dd>
+              </div>
+              <div>
+                <dt className="font-medium">{english ? "Purpose and retention" : "목적 및 보유·이용 기간"}</dt>
+                <dd className="mt-1 leading-relaxed text-neutral-600">{purpose}</dd>
+              </div>
+            </dl>
+            {index === 0 && <a href="https://firebase.google.com/support/privacy/dpo" target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-primary-700 underline">{english ? "Firebase privacy contact" : "Firebase 개인정보 문의"}</a>}
+          </div>
+        ))}
       </div>
       <p className="leading-relaxed text-neutral-600">{english ? "The Firestore database storing roommate records is configured in Seoul, South Korea (asia-northeast3). Domestic database storage does not prevent overseas processing: the United States server functions read and process that data. Firebase Authentication separately uses United States data centers." : "룸메이트 자료를 저장하는 Firestore 데이터베이스는 대한민국 서울(asia-northeast3)에 설정되어 있습니다. 국내 데이터베이스에 저장하더라도 미국의 서버 함수가 조회·처리하므로 국외 처리가 발생합니다. Firebase Authentication은 이 저장 위치와 별도로 미국 데이터센터를 사용합니다."}</p>
       <p className="leading-relaxed text-neutral-600">{english ? "Google's published contracting-entity terms list Google Cloud Korea LLC for a South Korean billing address and define Google under that reseller arrangement as Google Asia Pacific Pte. Ltd. and/or its affiliates. The actual contracting entity depends on the billing address and applicable agreement. These contract roles are distinct from United States processing: Google LLC is listed as a United States data-center, service-maintenance, and support entity in Google's subprocessor list. The official list below identifies other entities and countries authorized for maintenance or customer-requested support." : "Google의 공개 계약 법인 안내는 한국 결제 주소에 Google Cloud Korea LLC를 기재하고, 해당 재판매 계약에서 Google을 Google Asia Pacific Pte. Ltd. 및 문맥에 따른 계열사로 정의합니다. 실제 계약 법인은 결제 주소와 적용 계약에 따릅니다. 이 계약상 역할과 미국의 데이터 처리는 구분되며, 공식 재수탁사 목록은 Google LLC를 미국 데이터센터 운영·서비스 유지보수·기술지원 법인으로 기재합니다. 유지보수나 고객이 요청한 기술지원에 참여할 수 있는 다른 법인과 국가는 아래 공식 목록에서 확인할 수 있습니다."}</p>
@@ -131,7 +188,7 @@ function RoommateOverseasProcessing({ english = false }: { english?: boolean }) 
         <a href="https://vercel.com/legal/privacy-notice" target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">{english ? "Vercel privacy contact" : "Vercel 개인정보 문의"}</a>
         <a href="https://vercel.com/docs/logs/runtime" target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">{english ? "Vercel runtime-log retention" : "Vercel 실행 로그 보유 안내"}</a>
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -149,8 +206,11 @@ function EnglishPrivacyPage() {
         notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated October 4, 2026."
       />
 
-      <div className="space-y-6 mb-8">
-        <LegalSection title="1. Purposes of Processing">
+      <PrivacyContents english />
+
+      <div className="mb-8 space-y-6 [&_li]:leading-relaxed [&_p]:leading-relaxed">
+        <Card as="section" id="privacy-article-1" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">1. Purposes of Processing</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Sanghyeok Seo, the individual operator using the service name
@@ -179,9 +239,10 @@ function EnglishPrivacyPage() {
               17(1)(1). Optional living habits and introductions may be omitted.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="2. Retention">
+        <Card as="section" id="privacy-article-2" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">2. Retention</h2>
           <div className="space-y-3 text-neutral-700">
             <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
               <li>
@@ -215,9 +276,10 @@ function EnglishPrivacyPage() {
               follows each provider&apos;s policies.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="3. Categories of Information">
+        <Card as="section" id="privacy-article-3" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">3. Categories of Information</h2>
           <div className="space-y-3 text-neutral-700">
             <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
               <li>Local settings, drafts, participant edit tokens, and owner deletion tokens</li>
@@ -236,73 +298,74 @@ function EnglishPrivacyPage() {
             </ul>
             <RoommateInformation english />
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="4. Sharing, Processors, and Overseas Processing">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border border-gray-300 p-2 text-left">
-                    Provider
-                  </th>
-                  <th className="border border-gray-300 p-2 text-left">
-                    Purpose
-                  </th>
-                  <th className="border border-gray-300 p-2 text-left">
-                    Retention
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="border border-gray-300 p-2">Kakao</td>
-                  <td className="border border-gray-300 p-2">
-                    Campus map and location-based map SDK features
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    According to Kakao policies
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2">Google</td>
-                  <td className="border border-gray-300 p-2">
-                    Email-link authentication, Firestore data storage,
-                    analytics, Search Console, and push
-                    notifications
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    For roommate authentication and stored data, the periods
-                    described in Articles 2 and 4; other Google services follow
-                    their respective policies
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2">Vercel</td>
-                  <td className="border border-gray-300 p-2">
-                    Hosting and deployment
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    Until the processing purpose is fulfilled or the service
-                    relationship ends
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-300 p-2">Sentry</td>
-                  <td className="border border-gray-300 p-2">
-                    Error monitoring with request bodies, cookies, headers, user
-                    identity, and URL queries removed before transmission
-                  </td>
-                  <td className="border border-gray-300 p-2">
-                    According to the configured Sentry retention settings
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <Card as="section" id="privacy-article-4" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">4. Sharing, Processors, and Overseas Processing</h2>
           <div className="mt-4 space-y-3 text-sm text-neutral-700">
             <RoommateSharing english />
-            <p className="font-semibold">Processing entrusted to service providers</p>
+            <h3 className="border-t border-neutral-200 pt-4 text-base font-semibold text-neutral-900">Processing entrusted to service providers</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 p-2 text-left">
+                      Provider
+                    </th>
+                    <th className="border border-gray-300 p-2 text-left">
+                      Purpose
+                    </th>
+                    <th className="border border-gray-300 p-2 text-left">
+                      Retention
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Kakao</td>
+                    <td className="border border-gray-300 p-2">
+                      Campus map and location-based map SDK features
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      According to Kakao policies
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Google</td>
+                    <td className="border border-gray-300 p-2">
+                      Email-link authentication, Firestore data storage,
+                      analytics, Search Console, and push
+                      notifications
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      For roommate authentication and stored data, the periods
+                      described in Articles 2 and 4; other Google services follow
+                      their respective policies
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Vercel</td>
+                    <td className="border border-gray-300 p-2">
+                      Hosting and deployment
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      Until the processing purpose is fulfilled or the service
+                      relationship ends
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 p-2">Sentry</td>
+                    <td className="border border-gray-300 p-2">
+                      Error monitoring with request bodies, cookies, headers, user
+                      identity, and URL queries removed before transmission
+                    </td>
+                    <td className="border border-gray-300 p-2">
+                      According to the configured Sentry retention settings
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <p>
               The processors above handle data to operate the service on the
               operator&apos;s behalf. This is separate from sharing a writer&apos;s
@@ -310,7 +373,7 @@ function EnglishPrivacyPage() {
               such as the individual&apos;s consent or a specific legal duty.
             </p>
             <RoommateOverseasProcessing english />
-            <p className="font-semibold">Other external service processing</p>
+            <h3 className="border-t border-neutral-200 pt-4 text-base font-semibold text-neutral-900">Other external service processing</h3>
             <p>
               Other service features may use Google analytics/notifications,
               Kakao maps, Sentry error monitoring, or a configured AI
@@ -320,9 +383,10 @@ function EnglishPrivacyPage() {
               must not be submitted to the public GitHub repository or issues.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="5. Cookies and Browser Storage">
+        <Card as="section" id="privacy-article-5" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">5. Cookies and Browser Storage</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               The service primarily uses local storage for user settings. Kakao
@@ -338,9 +402,10 @@ function EnglishPrivacyPage() {
               features.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="6. Analytics, Firebase, and AI Classification">
+        <Card as="section" id="privacy-article-6" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">6. Analytics, Firebase, and AI Classification</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Google Analytics and Search Console support usage analysis and
@@ -358,9 +423,10 @@ function EnglishPrivacyPage() {
               admin-facing triage metadata.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="7. Security Measures">
+        <Card as="section" id="privacy-article-7" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">7. Security Measures</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               The service uses HTTPS, client-side storage where appropriate,
@@ -369,9 +435,10 @@ function EnglishPrivacyPage() {
               scope of its operation.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="8. User Rights and How to Exercise Them">
+        <Card as="section" id="privacy-article-8" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">8. User Rights and How to Exercise Them</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Users may request access, correction, deletion, or suspension of
@@ -388,9 +455,10 @@ function EnglishPrivacyPage() {
               the operator will explain the reason and available remedies.
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="9. Privacy Contact">
+        <Card as="section" id="privacy-article-9" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">9. Privacy Contact</h2>
           <div className="space-y-3 text-neutral-700">
             <div className="p-3 bg-gray-50 rounded border border-gray-200">
               <p className="font-semibold text-sm mb-2">Privacy Contact</p>
@@ -401,9 +469,10 @@ function EnglishPrivacyPage() {
               </p>
             </div>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="10. Remedies">
+        <Card as="section" id="privacy-article-10" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">10. Remedies</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Users may contact Korean privacy dispute or reporting agencies for
@@ -413,9 +482,10 @@ function EnglishPrivacyPage() {
               spo.go.kr), or the police (182, ecrm.cyber.go.kr).
             </p>
           </div>
-        </LegalSection>
+        </Card>
 
-        <LegalSection title="11. Policy Changes">
+        <Card as="section" id="privacy-article-11" hover={false} className="scroll-mt-24">
+          <h2 className="mb-4 text-xl font-bold text-neutral-900">11. Policy Changes</h2>
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Changes are published on this page. Important changes affecting
@@ -430,7 +500,7 @@ function EnglishPrivacyPage() {
               </p>
             </div>
           </div>
-        </LegalSection>
+        </Card>
       </div>
     </Container>
   );
@@ -455,8 +525,10 @@ export default async function PrivacyPage() {
         notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 10월 4일 최종 개정되었습니다."
       />
 
-      <div className="space-y-6 mb-8">
-        <Card>
+      <PrivacyContents />
+
+      <div className="mb-8 space-y-6 [&_li]:leading-relaxed [&_p]:leading-relaxed">
+        <Card as="section" id="privacy-article-1" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제1조 개인정보의 처리 목적
           </h2>
@@ -468,7 +540,7 @@ export default async function PrivacyPage() {
               처리합니다.
             </p>
             <div className="p-3 bg-gray-50 rounded border border-gray-200">
-              <p className="font-semibold text-sm mb-2">처리 목적</p>
+              <h3 className="font-semibold text-sm mb-2">처리 목적</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
                 <li>서비스 제공 및 운영</li>
                 <li>서비스 이용현황 통계분석 및 활용</li>
@@ -492,7 +564,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-2" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제2조 개인정보의 처리 및 보유 기간
           </h2>
@@ -504,48 +576,48 @@ export default async function PrivacyPage() {
             </p>
             <div className="space-y-2">
               <div>
-                <p className="font-semibold text-sm mb-1">1. 로컬 스토리지</p>
+                <h3 className="font-semibold text-sm mb-1">1. 로컬 스토리지</h3>
                 <p className="text-sm text-neutral-600">
                   사용자 기기에만 저장되며, 브라우저 데이터 삭제 시 함께
                   삭제됩니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">2. Kakao Maps 쿠키</p>
+                <h3 className="font-semibold text-sm mb-1">2. Kakao Maps 쿠키</h3>
                 <p className="text-sm text-neutral-600">
                   Kakao의 정책에 따라 관리됩니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   3. 서비스 이용 로그
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   서비스 운영 및 통계 분석 목적으로 필요한 기간 동안 보존됩니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   4. 문의 및 제보 정보
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   서비스 개선 검토 목적 달성 시까지 보존하며, 운영상 필요가
                   없어진 경우 삭제합니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   5. 일정 잡기 정보
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   일정 방 생성 시점부터 90일까지 보존하며, 만료된 일정 방과
                   참여자 응답은 정리될 수 있습니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   6. 푸시 알림 토큰
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   알림 발송 목적 달성 시까지 보존하며, 사용자가 알림을 차단하거나
                   토큰이 유효하지 않은 경우 삭제될 수 있습니다. 알림 발송 결과는
@@ -553,18 +625,18 @@ export default async function PrivacyPage() {
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   7. 시간표 공유 정보
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   공유 링크 생성 시점부터 90일까지 보존하며, 만료된 공유 링크는
                   조회되지 않고 정리될 수 있습니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   8. 요청 제한 및 알림 중복 방지 기록
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   요청 제한 카운터는 해당 요청 제한 구간이 끝날 때까지, 알림
                   중복 발송 방지 기록은 생성 시점부터 최대 14일까지 보존될 수
@@ -572,18 +644,18 @@ export default async function PrivacyPage() {
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   9. AI 분류 결과
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   문의 및 제보 항목의 운영자 검토 목적 달성 시까지 원 접수
                   항목과 함께 보존되며, 운영상 필요가 없어진 경우 삭제합니다.
                 </p>
               </div>
               <div>
-                <p className="font-semibold text-sm mb-1">
+                <h3 className="font-semibold text-sm mb-1">
                   10. 관리자 작업 감사 기록
-                </p>
+                </h3>
                 <p className="text-sm text-neutral-600">
                   관리자 UID·이메일, 작업 종류와 대상, 변경 전후 상태를 최대
                   365일까지 보존합니다.
@@ -592,7 +664,7 @@ export default async function PrivacyPage() {
             </div>
             <RoommateRetention />
             <div className="mt-4 p-3 bg-neutral-50 border border-neutral-200 rounded">
-              <p className="font-semibold text-sm mb-2">파기 절차 및 방법</p>
+              <h3 className="font-semibold text-sm mb-2">파기 절차 및 방법</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
                 <li>
                   서버에 저장된 정보는 보유 목적이 달성되거나 만료 시 데이터
@@ -613,22 +685,22 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-3" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제3조 처리하는 개인정보의 항목
           </h2>
           <div className="space-y-4 text-neutral-700">
             <div>
-              <p className="font-semibold text-sm mb-2">1. 수집 방법</p>
+              <h3 className="font-semibold text-sm mb-2">1. 수집 방법</h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-1">
                 <li>서비스 이용 과정에서 사용자가 직접 입력한 정보</li>
                 <li>서비스 이용 과정에서 자동으로 수집되는 정보</li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 2. 로컬 스토리지 저장 정보 (선택항목)
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600 mb-2">
                 사용자 기기에만 저장되며 서버에 전송되지 않습니다:
               </p>
@@ -640,9 +712,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 3. 자동 생성/수집 정보 (필수항목)
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>서비스 이용 기록 (앱 사용 이력, 접속 기록)</li>
                 <li>접속 IP 주소</li>
@@ -651,9 +723,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 4. 문의 및 제보 입력 정보 (선택항목)
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>문의/제보 제목 및 내용</li>
                 <li>관련 페이지 URL 또는 관련 링크</li>
@@ -662,9 +734,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 5. 일정 잡기 입력 정보 (선택항목)
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>일정 방 제목 및 설명</li>
                 <li>후보 날짜와 시간대</li>
@@ -675,9 +747,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 6. 푸시 알림 정보 (선택항목)
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>Firebase Cloud Messaging 알림 토큰</li>
                 <li>알림 구독 시점과 토큰 갱신 시점</li>
@@ -685,9 +757,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 7. 시간표 공유 정보 (선택항목)
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>공유 링크에 포함된 강의 식별자 목록</li>
                 <li>학년도 및 학기 정보</li>
@@ -695,9 +767,9 @@ export default async function PrivacyPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 8. 서비스 운영 및 보안 정보
-              </p>
+              </h3>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>요청 제한 카운터와 만료 시각</li>
                 <li>알림 중복 발송 방지 잠금 및 발송 기록</li>
@@ -709,74 +781,12 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-4" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제4조 개인정보의 제공·위탁 및 국외 이전
           </h2>
           <div className="space-y-3 text-neutral-700">
-            <p className="text-sm mb-3">
-              본 서비스는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보
-              처리업무를 위탁하고 있습니다.
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 p-2 text-left">
-                      수탁업체
-                    </th>
-                    <th className="border border-gray-300 p-2 text-left">
-                      위탁업무 내용
-                    </th>
-                    <th className="border border-gray-300 p-2 text-left">
-                      개인정보의 보유 및 이용 기간
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Kakao</td>
-                    <td className="border border-gray-300 p-2">
-                      캠퍼스 지도 API 서비스 제공
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      Kakao의 정책에 따름
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Google</td>
-                    <td className="border border-gray-300 p-2">
-                      이메일 링크 인증, Firebase 데이터 저장, 검색 최적화,
-                      분석 및 푸시 알림
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      룸메이트 인증·저장 자료는 제2조와 본 조의 기간에 따르며,
-                      그 밖의 Google 서비스 자료는 해당 정책에 따름
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Vercel</td>
-                    <td className="border border-gray-300 p-2">
-                      서비스 호스팅 및 배포
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      개인정보의 이용 목적 달성 시 또는 위탁 계약 종료 시
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 p-2">Sentry</td>
-                    <td className="border border-gray-300 p-2">
-                      오류 모니터링. 전송 전 요청 본문·쿠키·헤더·사용자 식별정보와
-                      URL 쿼리를 제거합니다.
-                    </td>
-                    <td className="border border-gray-300 p-2">
-                      설정된 Sentry 보존 정책에 따름
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4 space-y-3">
+            <div className="space-y-4">
               <RoommateSharing />
               <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                 <p className="font-semibold text-sm text-blue-900 mb-2">
@@ -789,8 +799,71 @@ export default async function PrivacyPage() {
                   제3자 제공과 구분합니다.
                 </p>
               </div>
+              <h3 className="border-t border-neutral-200 pt-4 text-base font-semibold text-neutral-900">서비스 운영을 위한 처리위탁</h3>
+              <p className="text-sm mb-3">
+                본 서비스는 원활한 개인정보 업무처리를 위하여 다음과 같이 개인정보
+                처리업무를 위탁하고 있습니다.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 p-2 text-left">
+                        수탁업체
+                      </th>
+                      <th className="border border-gray-300 p-2 text-left">
+                        위탁업무 내용
+                      </th>
+                      <th className="border border-gray-300 p-2 text-left">
+                        개인정보의 보유 및 이용 기간
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Kakao</td>
+                      <td className="border border-gray-300 p-2">
+                        캠퍼스 지도 API 서비스 제공
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        Kakao의 정책에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Google</td>
+                      <td className="border border-gray-300 p-2">
+                        이메일 링크 인증, Firebase 데이터 저장, 검색 최적화,
+                        분석 및 푸시 알림
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        룸메이트 인증·저장 자료는 제2조와 본 조의 기간에 따르며,
+                        그 밖의 Google 서비스 자료는 해당 정책에 따름
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Vercel</td>
+                      <td className="border border-gray-300 p-2">
+                        서비스 호스팅 및 배포
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        개인정보의 이용 목적 달성 시 또는 위탁 계약 종료 시
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-2">Sentry</td>
+                      <td className="border border-gray-300 p-2">
+                        오류 모니터링. 전송 전 요청 본문·쿠키·헤더·사용자 식별정보와
+                        URL 쿼리를 제거합니다.
+                      </td>
+                      <td className="border border-gray-300 p-2">
+                        설정된 Sentry 보존 정책에 따름
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <RoommateOverseasProcessing />
-              <p className="font-semibold text-sm">그 밖의 외부 서비스 처리</p>
+              <h3 className="border-t border-neutral-200 pt-4 text-base font-semibold text-neutral-900">그 밖의 외부 서비스 처리</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -886,7 +959,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-5" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제5조 쿠키(Cookie) 정보
           </h2>
@@ -956,15 +1029,15 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-6" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제6조 Google 분석도구 및 외부 처리 도구
           </h2>
           <div className="space-y-4 text-neutral-700">
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 1. Google Analytics 4 (GA4)
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600 mb-2">
                 본 서비스는 사용자 행동 분석 및 서비스 통계를 위해 Google
                 Analytics 4를 사용합니다. 룸메이트 게시판과 인증 페이지는
@@ -1006,9 +1079,9 @@ export default async function PrivacyPage() {
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 2. Google Search Console
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600 mb-2">
                 본 서비스는 검색 최적화를 위해 Google Search Console을
                 사용합니다.
@@ -1031,9 +1104,9 @@ export default async function PrivacyPage() {
               </div>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 3. Firebase 및 Firestore
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600 mb-2">
                 본 서비스는 문의, 꿀팁 제보, 일정 잡기, 푸시 알림 토큰과
                 룸메이트 게시판 자료 관리에 Firestore를 사용합니다. 학교 이메일
@@ -1060,9 +1133,9 @@ export default async function PrivacyPage() {
               </div>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 4. 운영자 AI 분류 보조
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600 mb-2">
                 운영자가 문의 및 제보를 빠르게 검토할 수 있도록, 설정된 경우 AI
                 분류 API를 이용해 접수 항목의 카테고리, 긴급도, 처리 힌트를
@@ -1098,21 +1171,21 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-7" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제7조 개인정보의 안전성 확보 조치
           </h2>
           <div className="space-y-3 text-neutral-700">
             <div>
-              <p className="font-semibold text-sm mb-2">1. 암호화</p>
+              <h3 className="font-semibold text-sm mb-2">1. 암호화</h3>
               <p className="text-sm text-neutral-600">
                 HTTPS 암호화 연결을 통해 데이터 전송 중 보호합니다.
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">
+              <h3 className="font-semibold text-sm mb-2">
                 2. 클라이언트 중심 저장
-              </p>
+              </h3>
               <p className="text-sm text-neutral-600">
                 설정 정보는 사용자 기기의 로컬 스토리지에 저장되며, 문의 및
                 제보 과정에서 사용자가 직접 입력한 정보는 서비스 개선 검토를
@@ -1122,7 +1195,7 @@ export default async function PrivacyPage() {
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">3. 접근 제한</p>
+              <h3 className="font-semibold text-sm mb-2">3. 접근 제한</h3>
               <p className="text-sm text-neutral-600">
                 관리자 기능은 Firebase Authentication과 허용된 관리자 계정을
                 통해 접근을 제한하며, 개인정보가 저장된 데이터베이스는 필요한
@@ -1130,14 +1203,14 @@ export default async function PrivacyPage() {
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">4. 기술적 대책</p>
+              <h3 className="font-semibold text-sm mb-2">4. 기술적 대책</h3>
               <p className="text-sm text-neutral-600">
                 HTTPS, Firebase 보안 설정, 서버 환경변수 관리, 관리자 인증 등
                 서비스 규모에 맞는 기술적 보호조치를 적용합니다.
               </p>
             </div>
             <div>
-              <p className="font-semibold text-sm mb-2">5. 접속기록 관리</p>
+              <h3 className="font-semibold text-sm mb-2">5. 접속기록 관리</h3>
               <p className="text-sm text-neutral-600">
                 서비스 운영과 보안 확인에 필요한 범위에서 접속 기록과 처리
                 기록을 관리하며, 불필요한 정보는 운영상 필요가 없어진 경우
@@ -1147,7 +1220,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-8" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제8조 정보주체와 법정대리인의 권리·의무 및 그 행사방법
           </h2>
@@ -1177,7 +1250,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-9" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제9조 개인정보 보호책임자에 관한 사항
           </h2>
@@ -1188,7 +1261,7 @@ export default async function PrivacyPage() {
               있습니다.
             </p>
             <div className="p-3 bg-gray-50 rounded border border-gray-200">
-              <p className="font-semibold text-sm mb-2">개인정보 보호책임자</p>
+              <h3 className="font-semibold text-sm mb-2">개인정보 보호책임자</h3>
               <p className="text-sm text-neutral-600">운영자 및 개인정보 보호책임자: 서상혁(개인)</p>
               <p className="text-sm text-neutral-600">서비스 운영 명칭: SYU KR</p>
               <p className="text-sm text-neutral-600">
@@ -1202,7 +1275,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-10" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제10조 정보주체의 권익침해에 대한 구제방법
           </h2>
@@ -1242,7 +1315,7 @@ export default async function PrivacyPage() {
           </div>
         </Card>
 
-        <Card>
+        <Card as="section" id="privacy-article-11" hover={false} className="scroll-mt-24">
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제11조 개인정보 처리방침 변경
           </h2>

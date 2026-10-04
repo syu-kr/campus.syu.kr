@@ -21,5 +21,5 @@ export default function RoommateLogout({ onStart, onSignedOut }: { onStart?: () 
       if (onSignedOut) onSignedOut(); else window.location.replace(localizePath("/campus", locale));
     } catch { setFailed(true); setPending(false); }
   }
-  return <div className="text-right"><button type="button" onClick={logout} disabled={pending} className="rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-primary-500 disabled:opacity-50">{pending ? text.submitting : text.logout}</button>{failed && <p role="alert" className="mt-2 text-sm text-red-700">{text.failed}</p>}</div>;
+  return <div className="text-right"><button type="button" onClick={logout} disabled={pending} className="inline-flex min-h-11 items-center rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500 disabled:opacity-50 sm:text-base">{pending ? text.submitting : text.logout}</button>{failed && <p role="alert" className="mt-2 text-sm text-red-700">{text.failed}</p>}</div>;
 }

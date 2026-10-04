@@ -58,7 +58,7 @@ function TermsRevisionNotice({ locale }: { locale: Locale }) {
             ? "이 개정 약관은 2026년 11월 4일 00:00(한국 시간)부터 적용됩니다. 변경 내용과 이전 약관 전문은 개정 공지에서 확인할 수 있습니다."
             : "아래는 2026년 11월 4일 00:00(한국 시간)부터 적용할 시행 예정 약관입니다. 그 전까지는 개정 공지에 보존한 현행 약관이 적용됩니다."}
       </p>
-      <Link href={localizePath("/service/notices/018-roommate-policy-update", locale)} className="mt-2 inline-flex min-h-11 items-center font-medium underline underline-offset-4">
+      <Link href={localizePath("/service/notices/017-roommate-board", locale)} className="mt-2 inline-flex min-h-11 items-center font-medium underline underline-offset-4">
         {english ? "Amendment notice and current/previous Terms in full" : "개정 공지와 현행·이전 약관 전문 확인"}
       </Link>
     </aside>

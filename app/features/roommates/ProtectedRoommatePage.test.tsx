@@ -8,7 +8,7 @@ vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-syu-locale": request.locale }),
   cookies: async () => ({ get: () => request.cookie ? { value: request.cookie } : undefined }),
 }));
-vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/campus/roommates", redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
 vi.mock("@/lib/firebaseRoommates", () => ({ clearRoommateAuth: vi.fn() }));
 vi.mock("@/lib/server/roommate-auth", () => { throw new Error("The loading shell must not load the Firebase authentication module."); });
 
