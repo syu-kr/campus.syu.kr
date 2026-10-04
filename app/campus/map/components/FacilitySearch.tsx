@@ -33,7 +33,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
 
   return (
     <div className="relative">
-      <div className="relative mb-3">
+      <div className={`relative mb-3 ${isOpen && results.length > 0 ? "z-50" : ""}`}>
         <div className="flex items-center gap-2 bg-white border border-neutral-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
           <Icon
             name="search"

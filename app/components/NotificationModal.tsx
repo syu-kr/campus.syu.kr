@@ -71,13 +71,6 @@ export function NotificationModal() {
     setIsVisible(false);
   };
 
-  const handleClick = () => {
-    if (notification?.url) {
-      window.location.href = notification.url;
-    }
-    handleClose();
-  };
-
   if (!isVisible || !notification) return null;
 
   return (
@@ -88,9 +81,16 @@ export function NotificationModal() {
       aria-atomic="true"
     >
       <div
-        className="pointer-events-auto w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl animate-in slide-in-from-bottom-5"
-        onClick={handleClick}
+        className="pointer-events-auto relative w-full max-w-md rounded-lg border border-neutral-200 bg-white p-6 shadow-2xl animate-in slide-in-from-bottom-5"
       >
+        {notification.url && (
+          <a
+            href={notification.url}
+            onClick={handleClose}
+            aria-label={notification.title}
+            className="absolute inset-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        )}
         <div className="flex items-start gap-4">
           {notification.icon && (
             <Image
@@ -120,7 +120,7 @@ export function NotificationModal() {
             e.stopPropagation();
             handleClose();
           }}
-          className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+          className="relative mt-4 text-sm text-gray-500 hover:text-gray-700"
         >
           {labels.close}
         </button>

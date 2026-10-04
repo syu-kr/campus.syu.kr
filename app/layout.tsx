@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
+import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 import { LocaleProvider } from "./components/LocaleProvider";
 import { StructuredDataScript } from "./components/StructuredDataScript";
 import { Providers } from "./providers";
@@ -171,7 +172,10 @@ export default async function RootLayout({
         <LocaleProvider locale={locale}>
           <Providers>
             <Header />
-            <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+            <main className="min-h-screen pb-20 md:pb-0">
+              {children}
+              <NotificationPermissionPrompt />
+            </main>
             <Footer locale={locale} />
             <BottomNav />
           </Providers>
