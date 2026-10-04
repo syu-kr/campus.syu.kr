@@ -7,16 +7,16 @@
 | 항목 | 확인 결과와 공개 전 할 일 |
 | --- | --- |
 | 앱 구현 | `/campus/roommates` 및 영문 경로, 메일 인증, 글·신고·admin·정리 구현. 세 플래그의 미설정 기본값은 모두 `false` |
-| 자동 검사 | 구현 검증 기록에 단위 테스트 391개, 전체 검사와 production 빌드, 별도 Auth·Firestore 에뮬레이터 통합 9개 성공 기록. PR 최종 커밋의 CI 결과를 다시 확인해야 함 |
+| 자동 검사 | 추가 경합·메일 중지·링크 오류 복구 검사 후 단위 테스트 394개와 전체 검사·production 빌드, 별도 Auth·Firestore 에뮬레이터 통합 13개 통과. PR 최종 커밋의 CI 결과는 다시 확인해야 함 |
 | 브라우저 흐름 | 가상 학생의 실제 로컬 DB 등록·신고·모집 완료·여러 탭 로그아웃 확인 |
 | 실제 학교 메일 | 실제 Firebase Auth로 발송·수신·Chrome 로그인·같은 브라우저 재방문·로그아웃 후 차단 확인. 이 시험의 게시판 세션과 요청 제한 자료는 로컬 Firestore에 격리했음 |
 | Firebase 인증 제공자 | 오늘의 읽기 전용 API 조회에서 `syu-campus`의 이메일 제공자 `enabled=true`, `passwordRequired=false` 확인. 이번 작업의 설정 PATCH 없음 |
 | Firebase 허용 도메인 | 오늘의 API 조회에도 `campus.syu.kr`이 없음. 실제 프로덕션 완료 URL을 위한 도메인 등록과 재조회 필요 |
-| 복합 인덱스 | 오늘의 API 조회에서 게시글 `status + created_at` READY. 게시글 `status + recruit_until`, 신고 `status + expires_at`, `api_rate_limits`의 `metric + window_start` 세 개는 MISSING |
+| 복합 인덱스 | 컬렉션 그룹 이름까지 재대조한 결과 표의 필수 네 개 모두 MISSING. 이전 READY 판정은 필드가 같은 다른 컬렉션 인덱스를 잘못 대조한 것으로 정정함 |
 | 운영 Rules | 네 룸메이트 컬렉션의 익명 직접 접근은 HTTP 403 확인. 새 repo Rules의 배포 상태 및 실제 학교 인증 클라이언트의 직접 접근 거부는 추가 확인 필요 |
-| 요금제와 발송 한도 | Cloud Billing 조회 HTTP 403으로 미확인. 요금제나 공개 가능한 발송량을 추정하지 않음 |
+| 요금제와 발송 한도 | Cloud Billing API는 HTTP 403이나 실제 Firebase Console에서 Spark 확인. 로그인 링크 발송 5통/일. 사용자가 Blaze 전환은 추후 직접 진행한다고 답함 |
 | Preview Firebase | 별도 테스트 프로젝트가 아직 없음. 운영 service account·DB·HMAC 키를 Preview에 재사용하지 않음 |
-| Vercel 등록 상태 | 현재 Production 환경 목록을 조회할 권한·CLI credential이 없어 owner 비밀값 등록 여부는 미확인. 값을 생성하기 전에 Production / Preview / Development별 기존 등록 이름과 범위를 확인해야 함 |
+| Vercel 등록 상태 | 대상 프로젝트의 환경 목록을 값 공개 없이 확인. `ROOMMATES_OWNER_KEY_SECRET`과 세 룸메이트 플래그는 미등록. 기존 Firebase service account는 Production/Preview에 등록되어 있으므로 새 격리 Preview를 준비할 때 운영 계정을 재사용하지 않음 |
 | 실제 기기 | 모바일 일반 브라우저, 카카오 인앱, 설치 웹앱의 인증·재방문은 미완료. PC 시험이나 viewport 변경으로 대신 판정하지 않음 |
 | 실제 메일 추가 시험 | 재발송, 수신 지연·스팸 분류, 만료·재사용, 다른 수신 기기 시험은 미완료 |
 
@@ -50,7 +50,7 @@ Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그�
 5. 운영 HTTPS에서 캠퍼스에 룸메이트 메뉴가 노출되지 않고, 직접 게시판 진입은 준비 안내이며, `/api/roommates/posts`가 `503 FEATURE_DISABLED`인지 확인한다. 미인증 admin API는 401이어야 한다.
 6. 한국어·영문 보호 페이지와 API의 `private, no-store`, `noindex, nofollow`, `no-referrer`를 확인한다. 페이지 소스에 사용자 글·연락처가 없어야 한다. 배포한 SHA, URL, 플래그 상태, HTTP 결과를 기록한다.
 
-이 단계는 코드 반영 완료다. PR에 포함된 `public/service-notices/017-roommate-board.md`는 공개 준비 중이고 아직 이용할 수 없다는 사전 안내이므로 비활성 코드와 함께 게시할 수 있다. 실제 이용 가능한 공개 안내는 활성화와 실동작 확인 후 같은 원고를 갱신한다.
+이 단계는 비활성 코드 반영이다. 사용자의 후속 요청으로 `public/service-notices/017-roommate-board.md` 원고는 공개 완료 안내로 수정했다. 현재 공지 시스템에는 초안 상태가 없으므로 이 원고를 포함한 PR을 비활성 기능 상태로 배포하면 공개 완료 문구와 실제 기능이 어긋난다. 공개 조건을 갖추고 기능 활성화와 공지 배포를 같은 출시 단계에서 진행하거나, 별도 비활성 코드 배포가 필요하면 공지를 준비 안내로 유지한 뒤 활성화 배포에서 공개 원고를 반영한다.
 
 ## 2. Firebase 및 운영 사전 준비
 
@@ -70,7 +70,7 @@ Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그�
 
 | 컬렉션 그룹 / query scope | 필드와 순서 | 쓰는 기능 | 현재 상태 |
 | --- | --- | --- | --- |
-| `roommate_posts` / COLLECTION | `status` ASC, `created_at` DESC | 학생 최신 목록과 admin 상태 필터 | 오늘의 운영 API 조회 READY, 공개 직전 재확인 |
+| `roommate_posts` / COLLECTION | `status` ASC, `created_at` DESC | 학생 최신 목록과 admin 상태 필터 | 컬렉션 이름까지 대조한 운영 API 재조회 MISSING |
 | `roommate_posts` / COLLECTION | `status` ASC, `recruit_until` ASC | admin 현재 모집글 수 | 오늘의 운영 API 조회 MISSING |
 | `roommate_reports` / COLLECTION | `status` ASC, `expires_at` ASC | admin 신고 목록과 미처리 수 | 오늘의 운영 API 조회 MISSING |
 | `api_rate_limits` / COLLECTION | `metric` ASC, `window_start` ASC | admin 사이트 메일 요청량 | 오늘의 운영 API 조회 MISSING |
@@ -120,7 +120,7 @@ firebase deploy --project syu-campus --only firestore:rules,firestore:indexes
 1. 공개할 Production의 `ROOMMATES_ENABLED=true`, `ROOMMATES_WRITES_ENABLED=true`, `ROOMMATES_EMAIL_ENABLED=true`를 적용해 새 배포한다. 짧은 읽기 전용 점검이 필요하면 `true / false / true`로 인증·조회부터 확인하고, 글 쓰기는 별도 배포로 연다. 이 단계도 학교 메일 사용자에게 공개될 수 있다.
 2. `https://campus.syu.kr`과 영문 경로에서 실제 운영 메일 완료 URL·쿠키·재방문·로그아웃을 확인한다. 승인한 최소 범위의 운영 시험 글과 신고를 등록한다면 시험 종료 처리와 보존 정책까지 기록한다.
 3. 학생용 API 성공, admin 목록·건수·신고 쿼리 성공, 비인증/타인 권한 거부, 개인정보 링크 비공개를 확인한다. 미준비 인덱스 오류·503·메일 한도 오류를 빈 목록이나 성공으로 판정하지 않는다.
-4. 기능이 실제로 열리고 필수 동작이 확인된 뒤 `public/service-notices/017-roommate-board.md`의 공개 준비 사전 안내를 실제 공개 안내로 갱신한다. PR/비활성 코드 반영 시점에는 현재 원고의 준비 중·아직 이용 불가 상태를 유지한다. 공개 안내 링크는 `/campus/roommates`를 사용하고 가입 화면 없음·학교 메일 최초 인증·같은 브라우저 재방문·카카오 연락의 실제 범위만 안내한다.
+4. 공개 완료 문구로 준비된 `public/service-notices/017-roommate-board.md` 원고를 기능 활성화와 맞춰 반영하고, 실제로 열린 뒤 안내와 기능이 일치하는지 확인한다. 원고 수정 자체를 공개 완료로 판단하지 않는다. 공개 안내 링크는 `/campus/roommates`를 사용하고 가입 화면 없음·학교 메일 최초 인증·같은 브라우저 재방문·카카오 연락의 실제 범위만 안내한다.
 5. 공개 후 초기 며칠은 담당자가 admin 신고·글·앱 메일 요청량, Firebase 실제 quota/오류, Vercel 401·429·503 및 정리 workflow 실패를 확인한다. 개인 이메일·글 본문·연락처·인증값을 관측 로그에 추가하지 않는다.
 
 ## 중지와 롤백
@@ -154,4 +154,4 @@ firebase deploy --project syu-campus --only firestore:rules,firestore:indexes
 - [ ] 운영 신고 담당자·확인 주기 및 정리 workflow 실행 성공 확인
 - [ ] 환경 변경과 재배포에 의한 중지·복구 절차 확인
 - [ ] 활성화 범위 별도 승인→Production 새 배포→실동작 확인
-- [ ] 비활성 코드 배포 시 공개 준비 사전 안내 확인, 실제 공개 확인 후 같은 공지를 공개 안내로 갱신
+- [ ] 공개 완료 공지 원고가 기능 활성화 배포와 일치하고 실제 이용 가능한 상태인지 확인

@@ -122,7 +122,7 @@ Next의 기존 환경 로더를 시험 도구에서 가로채 `.env` 로딩을 �
 
 ### 운영 인덱스·익명 접근 읽기 전용 확인
 
-Firestore 인덱스 목록 API는 HTTP 200이었다. 운영 `roommate_posts`의 `status ASC, created_at DESC, __name__ DESC` COLLECTION 인덱스가 READY이고 저장소 목록 쿼리 정의와 일치했다. 저장소에 추가한 `roommate_posts(status ASC, recruit_until ASC)`와 `roommate_reports(status ASC, expires_at ASC)` COLLECTION 인덱스는 준비된 일치 항목이 없었다. 인덱스 생성·배포는 수행하지 않았다. [공식 인덱스 목록 API](https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.collectionGroups.indexes/list)로 확인했으며 에뮬레이터 결과로 준비 상태를 대신 판단하지 않았다.
+Firestore 인덱스 목록 API는 HTTP 200이었다. 최초에는 `status ASC, created_at DESC, __name__ DESC` 필드만 대조해 목록 인덱스를 READY로 기록했으나, 공개 전 재검증에서 그 인덱스의 이름은 `site_inquiries`와 `campus_tip_suggestions` 컬렉션에 속함을 확인했다. 이 판정을 정정한다. 컬렉션 그룹 이름·query scope·필드 순서까지 대조한 결과 저장소의 룸메이트 필수 인덱스 네 개 모두 MISSING이다. 인덱스 생성·배포는 수행하지 않았다. [공식 인덱스 목록 API](https://docs.cloud.google.com/firestore/docs/reference/rest/v1/projects.databases.collectionGroups.indexes/list)로 확인했으며 에뮬레이터 결과로 준비 상태를 대신 판단하지 않았다.
 
 네 비공개 컬렉션 각각의 존재하지 않는 가상 문서 주소를 운영 REST API에서 익명 GET으로 조회했고 모두 HTTP 403이었다. 운영 자료를 읽거나 쓰지 않았다. 이것은 현재 Rules의 익명 접근 차단 증거이며, 새 Rules 전체의 배포나 인증된 학생의 직접 접근 차단·운영 트랜잭션 검증을 대신하지 않는다.
 
@@ -158,7 +158,7 @@ Firestore 인덱스 목록 API는 HTTP 200이었다. 운영 `roommate_posts`의 
 
 1. 테스트 Firebase 프로젝트와 환경별 독립 비밀값을 준비하고 클라이언트·Admin 프로젝트 일치를 확인한다.
 2. `syu-campus`의 Email link 활성화와 실제 수신은 확인했다. 운영 허용 도메인 `campus.syu.kr` 등록 및 충분한 실제 발송 한도·요금제 확인은 남아 있다. 별도 테스트 프로젝트도 사용하는 환경에서 확인한다.
-3. 저장소의 Rules·인덱스를 해당 프로젝트에 반영하고 준비 완료를 확인한다. 최신 배포 준비 조회에서 미준비인 게시글 `status + recruit_until`, 신고 `status + expires_at`, 요청 제한 `metric + window_start` 인덱스 세 개를 포함한다. 익명 직접 접근 거부는 확인했으며 인증 학생의 직접 접근 차단은 실제 Firebase에서 추가 확인한다.
+3. 저장소의 Rules·인덱스를 해당 프로젝트에 반영하고 준비 완료를 확인한다. 최신 재검증에서 게시글 `status + created_at` 및 `status + recruit_until`, 신고 `status + expires_at`, 요청 제한 `metric + window_start` 인덱스 네 개 모두 미등록이다. 익명 직접 접근 거부는 확인했으며 인증 학생의 직접 접근 차단은 실제 Firebase에서 추가 확인한다.
 4. 실제 학교 메일 수신·다른 PC 브라우저의 링크 완료·서버 쿠키 발급·같은 브라우저 재방문·로그아웃 후 차단은 확인했다. 실제 메일의 재발송·스팸 분류·만료·재사용·다른 수신 기기 시험은 남아 있다.
 5. 실제 Firebase에서 글·신고·보류·관리자 조치·정리 및 기존 관리자 로그인 분리를 검증한다. 이 정리 명령은 운영 자료를 삭제하므로 운영 대상 테스트에 사용하지 않는다.
 6. 실제 모바일·카카오 인앱 브라우저·설치 앱의 최초 인증과 재방문을 확인한다.
@@ -172,8 +172,8 @@ Firestore 인덱스 목록 API는 HTTP 200이었다. 운영 `roommate_posts`의 
 
 [PR #195](https://github.com/syu-kr/campus.syu.kr/pull/195)에 구현과 공개 준비 공지를 포함했다. CI 설정 호환성 수정 후 `NEXT_PUBLIC_FIREBASE_PROJECT_ID=ci-placeholder`를 설정한 로컬 전체 검사도 391개 테스트·61개 정적 페이지 빌드까지 종료 코드 0으로 통과했고, 독립 에뮬레이터 통합 검사 9개를 다시 실행해 16.05초에 통과했다. PR의 필수 CI 결과는 최종 원격 SHA에서 별도로 확인한다.
 
-읽기 전용 Firebase 재조회에서 이메일 링크는 활성화되어 있고 `campus.syu.kr`은 여전히 미등록이었다. 게시글 `status + created_at`은 READY였으며, 위의 두 룸메이트 인덱스와 `api_rate_limits(metric + window_start)`는 MISSING이었다. 인덱스나 인증 설정을 변경하지 않았다. Vercel Production의 실제 환경 등록 값은 확인되지 않았으며 로컬 키 유무를 운영 등록 상태로 해석하지 않는다.
+읽기 전용 Firebase 재조회에서 이메일 링크는 활성화되어 있고 `campus.syu.kr`은 여전히 미등록이었다. 공개 전 후속 검사에서 컬렉션 이름까지 대조해 이전 READY 판정을 정정했으며 필요한 네 인덱스 모두 MISSING이다. 인덱스나 인증 설정을 변경하지 않았다. Vercel 대상 프로젝트의 환경 목록을 값 공개 없이 확인한 결과 owner 비밀값과 세 룸메이트 플래그는 미등록이었다. Firebase Console의 실제 요금제는 Spark이며 사용자는 Blaze 전환을 추후 직접 진행한다고 답했다.
 
 상단 메뉴는 윤곽선 없는 텍스트 링크와 현재 페이지의 밑줄로 변경했다. 타입·lint·관련 테스트 2개, 세 화면 사이의 선택 전환, 키보드 포커스 및 320/768/1024/1440px의 한글 메뉴 배치를 확인했다.
 
-기존 형식의 [기능 추가·공개 준비 공지](../public/service-notices/017-roommate-board.md)는 아직 이용할 수 없음을 명시한다. 별도 공개 시점에는 내용을 갱신한다. 비활성 배포부터 환경 등록·인덱스·Rules·검증·활성화·롤백까지의 실행 순서는 [배포 런북](./ROOMMATE_BOARD_DEPLOYMENT.md)을 따른다.
+사용자의 요청으로 [기능 공개 공지 원고](../public/service-notices/017-roommate-board.md)를 공개 완료 문구로 수정했다. 원고 수정과 실제 공개는 구분하며, 기능이 활성화되기 전 공개 완료 원고를 운영에 게시하지 않는다. 추가 링크 오류 복구 3개와 경합·메일 중지 통합 4개를 보강한 뒤 전체 검사에서 단위 394개·빌드 61개 정적 페이지, 별도 통합 13개가 통과했다. 계획 26항목과 운영 시험의 실제 완료 범위는 [공개 전 검증표](./ROOMMATE_BOARD_RELEASE_VALIDATION.md), 실행 순서는 [배포 런북](./ROOMMATE_BOARD_DEPLOYMENT.md)을 따른다.
