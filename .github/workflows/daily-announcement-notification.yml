@@ -17,6 +17,7 @@ jobs:
   send-notification:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
 

@@ -40,9 +40,11 @@ jobs:
         run: npm ci --ignore-scripts --no-audit
 
       - name: Prepare rollback artifact
+        env:
+          CRAWL_DATA_ROLLBACK_VERSION: ${{ inputs.version }}
         run: >-
           npm run rollback:crawl-data --
-          "${{ inputs.version }}"
+          "$CRAWL_DATA_ROLLBACK_VERSION"
           "$RUNNER_TEMP/crawl-data-pages-${GITHUB_RUN_ID}"
 
       - name: Configure GitHub Pages
