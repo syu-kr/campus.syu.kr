@@ -1,10 +1,12 @@
 import type {
+  ShuttleAdditionalService,
   ShuttleBusSchedule,
   ShuttleScheduleType,
   ShuttleSpecialPeriod,
   ShuttleSpecialPeriods,
 } from "@/types";
 import { getKoreaDateTimeParts } from "@/lib/korea-time";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "mondayToThursday",
@@ -21,6 +23,7 @@ interface NextShuttleDeparture {
 
 export interface CurrentShuttleSummary {
   departures: NextShuttleDeparture[];
+  additionalServicePeriods: ShuttleSpecialPeriod[];
   isWeekend: boolean;
   isOperatingPeriod: boolean;
   isSpecialSchedule: boolean;
@@ -94,6 +97,43 @@ function getDateInfo(now: Date) {
     dateString: `${year}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`,
     isFriday: dayOfWeek === 5,
     isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+  };
+}
+
+function getRemainingShuttleServices(
+  period: ShuttleSpecialPeriod,
+  now: Date,
+): ShuttleAdditionalService[] {
+  const { dateString, currentMinutes } = getDateInfo(now);
+  if (!isDateInSpecialPeriod(period, dateString)) return [];
+
+  return (period.additionalServices ?? []).filter((service) => {
+    const end = timeToMinutes(
+      service.type === "window" ? service.endTime : service.time,
+    );
+    return end !== null && currentMinutes <= end;
+  });
+}
+
+export function formatShuttleAdditionalService(
+  service: ShuttleAdditionalService,
+  locale: Locale,
+) {
+  const text = getDictionary(locale).pages.busInfo.festivalShuttle;
+  const value =
+    service.type === "window"
+      ? text.window
+          .replace("{startTime}", service.startTime)
+          .replace("{endTime}", service.endTime)
+          .replace("{count}", String(service.vehicleCount))
+      : text.departure
+          .replace("{time}", service.time)
+          .replace("{count}", String(service.vehicleCount));
+
+  return {
+    label: text.destinations[service.destination],
+    value:
+      service.type === "window" ? `${value} · ${text.windowNote}` : value,
   };
 }
 
@@ -250,6 +290,7 @@ export function getCurrentShuttleSummary({
   if (!now) {
     return {
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: false,
       isOperatingPeriod: false,
       isSpecialSchedule: false,
@@ -264,6 +305,7 @@ export function getCurrentShuttleSummary({
   if (dateInfo.isWeekend) {
     return {
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: true,
       isOperatingPeriod: scheduleType !== null,
       isSpecialSchedule: false,
@@ -277,6 +319,7 @@ export function getCurrentShuttleSummary({
   if (!scheduleType) {
     return {
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: false,
       isOperatingPeriod: false,
       isSpecialSchedule: false,
@@ -290,6 +333,12 @@ export function getCurrentShuttleSummary({
     dateString: dateInfo.dateString,
     specialPeriods,
   });
+  const additionalServicePeriods = (specialPeriods?.specialPeriods ?? [])
+    .map((period) => ({
+      ...period,
+      additionalServices: getRemainingShuttleServices(period, now),
+    }))
+    .filter((period) => period.additionalServices.length > 0);
 
   const departures = effectiveBuses
     .map((bus): NextShuttleDeparture | null => {
@@ -314,10 +363,12 @@ export function getCurrentShuttleSummary({
 
   return {
     departures: departures.slice(0, limit),
+    additionalServicePeriods,
     isWeekend: false,
     isOperatingPeriod: true,
     isSpecialSchedule,
     scheduleLabel: getScheduleLabel(scheduleType, isSpecialSchedule),
-    hasMoreToday: departures.length > 0,
+    hasMoreToday:
+      departures.length > 0 || additionalServicePeriods.length > 0,
   };
 }

@@ -998,6 +998,23 @@ export const dictionaries = {
         publicTransitTab: "대중교통",
         loading: "로딩 중...",
         shuttleTitle: "셔틀버스",
+        festivalShuttle: {
+          title: "축제 야간 특별운행",
+          destinations: {
+            hwarangdae: "학교 → 화랑대",
+            byeollae: "학교 → 별내",
+          },
+          window: "{startTime}~{endTime} · 총 {count}대",
+          windowNote: "만차 시 바로 출발 · 화랑대까지만 운행",
+          departure: "{time} 예정 출발 · {count}대",
+          countdown: "{minutes}분 후 예정 출발 (예정 시각 기준)",
+          scheduledNow: "예정 출발 시각입니다.",
+          boarding: "탑승: 셔틀버스 정류장 (70주년기념관 좌측)",
+          notice:
+            "만차 시 빠르게 출발하거나 예정 시간보다 조기에 종료될 수 있습니다.",
+          source: "출처: 학생회 야간버스 운행 안내",
+          answer: "{date} 축제 야간 특별운행: {services}.",
+        },
         answer: {
           eyebrow: "바로 답변",
           title: "다음 셔틀 한눈에 보기",
@@ -2633,6 +2650,24 @@ export const dictionaries = {
         publicTransitTab: "Public Transit",
         loading: "Loading...",
         shuttleTitle: "Shuttle Bus",
+        festivalShuttle: {
+          title: "Festival night shuttle",
+          destinations: {
+            hwarangdae: "Campus → Hwarangdae",
+            byeollae: "Campus → Byeollae",
+          },
+          window: "{startTime}–{endTime} · {count} buses in total",
+          windowNote: "Departs when full · Goes only as far as Hwarangdae",
+          departure: "{time} scheduled departure · {count} bus",
+          countdown: "Scheduled to leave in {minutes} minutes (scheduled time)",
+          scheduledNow: "This is the scheduled departure time.",
+          boarding:
+            "Boarding: shuttle stop, to the left of the 70th Anniversary Memorial Hall",
+          notice:
+            "Buses may depart when full, and service may end earlier than scheduled.",
+          source: "Source: Student Council night bus announcement",
+          answer: "Festival night shuttle on {date}: {services}.",
+        },
         answer: {
           eyebrow: "Direct answer",
           title: "Next shuttle at a glance",

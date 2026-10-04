@@ -19,6 +19,14 @@ export type ShuttleScheduleType =
   | "mondayToThursdayVacation"
   | "fridayVacation";
 
+export type ShuttleAdditionalService = {
+  destination: "hwarangdae" | "byeollae";
+  vehicleCount: number;
+} & (
+  | { type: "window"; startTime: string; endTime: string }
+  | { type: "departure"; time: string }
+);
+
 export interface ShuttleSpecialPeriod {
   id: string;
   name: string;
@@ -33,6 +41,7 @@ export interface ShuttleSpecialPeriod {
   >;
   applicableDates: string[];
   routes: string[];
+  additionalServices?: ShuttleAdditionalService[];
 }
 
 interface ShuttleOperatingPeriod {

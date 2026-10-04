@@ -1,6 +1,31 @@
 {
   "specialPeriods": [
     {
+      "id": "festival-night-2026-10-06",
+      "name": "축제 야간 특별운행",
+      "startDate": "2026-10-06",
+      "endDate": "2026-10-06",
+      "description": "화랑대행 22:00~22:30 총 5대, 별내행 22:30 1대",
+      "type": "add",
+      "applicableDates": ["2026-10-06"],
+      "routes": [],
+      "additionalServices": [
+        {
+          "destination": "hwarangdae",
+          "vehicleCount": 5,
+          "type": "window",
+          "startTime": "22:00",
+          "endTime": "22:30"
+        },
+        {
+          "destination": "byeollae",
+          "vehicleCount": 1,
+          "type": "departure",
+          "time": "22:30"
+        }
+      ]
+    },
+    {
       "id": "online-class-week-2026",
       "name": "온라인수업 권장 주간",
       "startDate": "2026-04-28",
