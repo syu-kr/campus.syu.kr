@@ -24,6 +24,7 @@ import {
   ShuttleMap,
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
+import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import {
   createScheduleCopy,
   getShuttleScheduleType,
@@ -184,6 +185,14 @@ export default function ShuttleSection() {
   );
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
+  );
+  const additionalServiceNotices = (specialPeriods?.specialPeriods ?? []).filter(
+    (period) =>
+      (period.additionalServices?.length ?? 0) > 0 &&
+      period.endDate >= dateInfo.dateStr,
+  );
+  const timetableSpecialPeriods = activeSpecialPeriods.filter(
+    (period) => !period.additionalServices?.length,
   );
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0;
@@ -483,6 +492,19 @@ export default function ShuttleSection() {
       }
     });
 
+    activeSpecialPeriods.forEach((period) => {
+      period.additionalServices?.forEach((service) => {
+        const start = timeToMinutes(
+          service.type === "window" ? service.startTime : service.time,
+        );
+        const end = timeToMinutes(
+          service.type === "window" ? service.endTime : service.time,
+        );
+        if (start !== null) firstTime = Math.min(firstTime, start);
+        if (end !== null) lastTime = Math.max(lastTime, end);
+      });
+    });
+
     if (firstTime === Infinity || lastTime === -Infinity) {
       return false;
     }
@@ -492,7 +514,13 @@ export default function ShuttleSection() {
     const operationEnd = Math.min(24 * 60 - 1, lastTime + 30);
 
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
-  }, [busesWithSpecialPeriods, currentScheduleType, dateInfo, now]);
+  }, [
+    activeSpecialPeriods,
+    busesWithSpecialPeriods,
+    currentScheduleType,
+    dateInfo,
+    now,
+  ]);
 
   const locationUnavailableMessage = currentScheduleType
     ? text.locationUnavailableMessage
@@ -559,6 +587,18 @@ export default function ShuttleSection() {
           {text.weekdaySuffix})
         </p>
       </div>
+
+      {!specialPeriodsError && additionalServiceNotices.length > 0 && (
+        <div className="mb-6 space-y-3">
+          {additionalServiceNotices.map((period) => (
+            <ShuttleAdditionalServicesCard
+              key={period.id}
+              period={period}
+              now={now}
+            />
+          ))}
+        </div>
+      )}
 
       {(busesError || specialPeriodsError) && (
         <StateCard
@@ -864,14 +904,14 @@ export default function ShuttleSection() {
         </p>
       </Card>
 
-      {activeSpecialPeriods.length > 0 && (
+      {timetableSpecialPeriods.length > 0 && (
         <Card
           className="mb-4 border border-purple-200 bg-purple-50/70 text-sm text-purple-900"
           hover={false}
         >
           <p className="font-bold mb-2">{text.specialPeriodTitle}</p>
           <ul className="list-disc list-inside space-y-1">
-            {activeSpecialPeriods.map((period) => (
+            {timetableSpecialPeriods.map((period) => (
               <li key={period.id} className="text-purple-800">
                 {period.name}: {period.description}
               </li>
