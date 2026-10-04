@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DAILY_CRAWL_DATA_FILES,
   parseCrawlDataManifest,
+  parseCrawlSourceHealth,
   validateDailyCrawlData,
 } from "./crawl-data-contract";
 
@@ -31,6 +32,50 @@ describe("crawl data contract", () => {
       "20260724T010203-123.1",
     );
   });
+
+  it("keeps legacy source health unknown and preserves verified partial health", () => {
+    expect(parseCrawlDataManifest(createManifest()).sourceHealth).toBeUndefined();
+    const sourceHealth = {
+      "cafeteria-menu.json": {
+        status: "stale",
+        lastAttemptAt: "2026-10-04T00:00:00Z",
+        lastSuccessAt: "2026-10-03T00:00:00Z",
+        errorCode: "CRAWLER_FAILED",
+      },
+    };
+    expect(parseCrawlDataManifest({ ...createManifest(), sourceHealth }).sourceHealth).toEqual(sourceHealth);
+  });
+
+  it.each([
+    { status: "unknown", lastAttemptAt: "2026-10-04T00:00:00Z" },
+    { status: "stale", lastAttemptAt: "yesterday" },
+    { status: "stale", lastAttemptAt: "2026-02-30T00:00:00Z" },
+    { status: "stale", lastAttemptAt: "2026-10-04" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", lastSuccessAt: "bad date" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", lastSuccessAt: "2026-10-05T00:00:00Z" },
+    { status: "fresh", lastAttemptAt: "2026-10-04T00:00:00Z", errorCode: "CRAWLER_FAILED" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", errorCode: "ARBITRARY_ERROR" },
+  ])("rejects invalid source health: %j", (health) => {
+    expect(() => parseCrawlSourceHealth(health)).toThrow("출처 상태가 올바르지 않습니다");
+  });
+
+  it("accepts an unknown last success without inventing one and compares ISO offsets", () => {
+    expect(parseCrawlSourceHealth({ status: "stale", lastAttemptAt: "2026-10-04T09:00:00+09:00" })).toEqual({
+      status: "stale",
+      lastAttemptAt: "2026-10-04T09:00:00+09:00",
+    });
+    expect(() => parseCrawlSourceHealth({
+      status: "fresh",
+      lastAttemptAt: "2026-10-04T09:00:00+09:00",
+      lastSuccessAt: "2026-10-04T00:00:00Z",
+    })).not.toThrow();
+  });
+
+  it.each([null, [], { "other.json": { status: "fresh", lastAttemptAt: "2026-10-04T00:00:00Z" } }])(
+    "rejects malformed or unknown-file health maps: %j", (sourceHealth) => {
+      expect(() => parseCrawlDataManifest({ ...createManifest(), sourceHealth })).toThrow("출처 상태");
+    },
+  );
 
   it("rejects a manifest that points outside its version", () => {
     const manifest = createManifest();

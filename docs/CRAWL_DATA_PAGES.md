@@ -17,13 +17,13 @@ GitHub Pages artifact
     └── versions/
         ├── <current-version>/
         │   ├── manifest.json
-        │   └── 7개 JSON
+        │   └── 8개 JSON
         └── <previous-version>/
             ├── manifest.json
-            └── 7개 JSON
+            └── 8개 JSON
 ```
 
-`current.json`은 `version`, `publishedAt`, 7개 파일의 상대 경로·크기·SHA-256, `retainedVersions`를 포함합니다. 현재 버전과 직전 버전을 합쳐 최대 7개를 한 아티팩트에 보존합니다. 버전 경로는 immutable이고 Pages 배포 전환은 아티팩트 단위이므로 부분 게시가 노출되지 않습니다.
+`current.json`은 `version`, `publishedAt`, 8개 파일의 상대 경로·크기·SHA-256, `retainedVersions`와 optional `sourceHealth`를 포함합니다. 학사·학교생활·장학·행사·학과·SW 공지 6개, 학식과 AI 메타데이터 2개입니다. 현재 버전과 이전 버전을 합쳐 최대 7개를 한 아티팩트에 보존합니다. 버전 경로는 immutable이고 Pages 배포 전환은 아티팩트 단위이므로 미완성 아티팩트가 노출되지 않습니다.
 
 운영 base URL:
 
@@ -55,14 +55,22 @@ Pages 활성화와 배포에는 별도 Secret/Variable이 필요하지 않습니
 
 ## 일일 게시 순서
 
-1. Pages에 `current.json`이 있으면 그 버전의 7개 파일을 `public/data/`로 복원합니다.
-2. 크롤러와 AI 메타데이터 생성기를 실행합니다.
-3. 결과 JSON을 파싱하고 크기·SHA-256 manifest를 만듭니다.
-4. 내용이 현재 버전과 같으면 Pages 배포를 건너뜁니다.
-5. 내용이 바뀌면 새 버전과 이전 최대 6개 버전을 포함한 아티팩트를 준비합니다.
+1. Pages에 `current.json`이 있으면 그 버전의 8개 파일과 기존 출처 상태를 복원합니다.
+2. `npm run crawl:daily`로 7개 출처를 독립 실행하고 AI는 `npm run crawl:daily -- --ai-only`로 실행합니다. 각 자식 실행 제한은 5분, 수집·준비 job은 50분, 별도 배포 job은 10분입니다.
+3. 성공 출처는 새 자료를 사용합니다. 종료 실패·불완전 경고·잘못된 출력은 해당 출처 전체를 이전 검증본의 정확한 바이트로 복원합니다. 학과 경고도 학과 출처 전체를 보존합니다. 기준본 검증·복원·상태 저장 실패는 게시를 중단합니다.
+4. 결과 JSON을 검증하고 크기·SHA-256 및 출처 상태 manifest를 만듭니다. 내용과 상태가 모두 같으면 배포를 건너뜁니다.
+5. 내용 또는 상태가 바뀌면 새 버전과 이전 최대 6개 버전을 포함한 아티팩트를 준비합니다. 모든 출처가 실패해도 검증본과 실패 상태를 게시할 수 있습니다.
 6. `actions/deploy-pages`가 완성된 아티팩트를 한 번에 배포합니다.
 
 준비나 배포가 실패하면 이전 Pages deployment가 그대로 유지됩니다. 런타임은 Pages 조회, JSON 파싱, 크기 또는 SHA-256 검증이 실패할 때 배포에 포함된 `public/data/*.json`을 사용합니다.
+
+## 출처 상태 확인
+
+`.cache/crawl-data-health.json`과 manifest의 `sourceHealth`는 파일별 `status` (`fresh`/`stale`), `lastAttemptAt`, optional `lastSuccessAt`·`errorCode`를 보존합니다. 오류 코드는 `CRAWLER_FAILED`, `INVALID_DATA`, `INCOMPLETE_SOURCE`입니다. 게시 시각으로 과거 정상 수집 시각을 추정하지 않습니다. 기존 manifest에 상태가 없으면 이전 성공 시각은 알 수 없습니다.
+
+`/api/crawl-data/status`에서 상태를 조회합니다. 정상 응답은 60초 캐시이며 조회 실패는 503·no-store입니다. 공지·공모전·학식 화면은 관련 출처의 지연 또는 상태 조회 실패를 안내합니다. 자료 API의 기존 JSON 구조는 유지합니다.
+
+식단 전용 실행은 다른 출처 상태를, AI 비활성화는 기존 AI 자료와 상태를 유지합니다. 재시도 뒤 복구되어도 알려진 학과 경고가 있으면 보수적으로 이전본을 유지할 수 있습니다. 경고 문구가 변경되면 실행기의 불완전 수집 판정을 함께 점검합니다.
 
 ## 롤백
 
@@ -70,6 +78,8 @@ Pages 활성화와 배포에는 별도 Secret/Variable이 필요하지 않습니
 2. `Actions -> Rollback Crawl Data -> Run workflow`를 엽니다.
 3. `version`에 목표 버전을 입력해 실행합니다.
 4. 배포 후 `current.json`과 앱 API의 `X-Crawl-Data-Version`을 확인합니다.
+
+보존 버전과 롤백에는 당시 `sourceHealth`도 함께 유지됩니다. 롤백 게시 시각을 새 정상 수집 시각으로 표시하지 않습니다.
 
 로컬에서 같은 아티팩트를 검사하려면 존재하지 않는 출력 경로를 지정합니다.
 
@@ -82,7 +92,8 @@ npm run rollback:crawl-data -- <version> <output-directory>
 ## 장애 확인
 
 - `Restore current crawl data snapshot` 실패: Pages 응답 상태와 manifest/파일 무결성을 확인합니다.
-- `Prepare versioned Pages artifact` 실패: 생성된 7개 JSON의 파싱 오류 또는 이전 스냅샷 경고를 확인합니다.
+- `Run independent daily crawlers with validated fallback` 경고: 실패 출처와 `/api/crawl-data/status`의 오류 코드·최근 정상 시각을 확인합니다. job 성공만으로 모든 출처가 최신이라고 판단하지 않습니다.
+- `Prepare versioned Pages artifact` 실패: 생성된 8개 JSON의 파싱 오류 또는 이전 스냅샷 경고를 확인합니다.
 - `Deploy crawl data to GitHub Pages` 실패: Pages Source가 `GitHub Actions`인지, environment protection이 배포를 막는지 확인합니다.
 - 앱 API가 `bundled-fallback`: Pages `current.json`, 해당 버전 파일, 응답 헤더와 서버 로그를 확인합니다.
 

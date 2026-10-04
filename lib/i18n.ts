@@ -86,6 +86,24 @@ export function createLocalizedAlternates(pathname: string, locale: Locale) {
 
 export const dictionaries = {
   ko: {
+    crawlDataStatus: {
+      staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
+      staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
+      lastSuccess: "마지막 정상 수집",
+      lastAttempt: "최근 수집 시도",
+      unknownSuccess: "이전 검증본의 수집 시각은 확인되지 않았습니다.",
+      statusUnavailable: "갱신 상태를 확인할 수 없습니다. 최신 정보는 공식 원문에서 확인해 주세요.",
+      fileLabels: {
+        "announcements-academic.json": "학사공지",
+        "announcements-campus-life.json": "학교생활공지",
+        "announcements-scholarship.json": "장학공지",
+        "announcements-events.json": "행사공지",
+        "announcements-departments.json": "학과공지",
+        "announcements-sw.json": "SW중심대학공지",
+        "cafeteria-menu.json": "학식",
+        "announcement-ai-metadata.json": "공지 AI 요약",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
       description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
@@ -1688,6 +1706,24 @@ export const dictionaries = {
     },
   },
   en: {
+    crawlDataStatus: {
+      staleTitle: "Some information updates are delayed",
+      staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
+      lastSuccess: "Last successful collection",
+      lastAttempt: "Latest collection attempt",
+      unknownSuccess: "The collection time of the previous verified snapshot is unknown.",
+      statusUnavailable: "Update status is unavailable. Check the official source for the latest information.",
+      fileLabels: {
+        "announcements-academic.json": "Academic notices",
+        "announcements-campus-life.json": "Campus life notices",
+        "announcements-scholarship.json": "Scholarship notices",
+        "announcements-events.json": "Event notices",
+        "announcements-departments.json": "Department notices",
+        "announcements-sw.json": "SW-centered university notices",
+        "cafeteria-menu.json": "Cafeteria",
+        "announcement-ai-metadata.json": "Notice AI summaries",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - Student Information Hub",
       description:

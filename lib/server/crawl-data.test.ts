@@ -51,6 +51,14 @@ describe("crawl data Pages runtime", () => {
         ]),
       ),
       retainedVersions: [version],
+      sourceHealth: {
+        "cafeteria-menu.json": {
+          status: "stale",
+          lastAttemptAt: "2026-07-24T01:00:00.000Z",
+          lastSuccessAt: "2026-07-23T01:00:00.000Z",
+          errorCode: "CRAWLER_FAILED",
+        },
+      },
     };
 
     process.env.CRAWL_DATA_BASE_URL = "https://crawl-data.example.test";
@@ -65,7 +73,7 @@ describe("crawl data Pages runtime", () => {
       }),
     );
 
-    const { readDailyCrawlDataSnapshot } = await import("./crawl-data");
+    const { readDailyCrawlDataSnapshot, readDailyCrawlSourceHealth } = await import("./crawl-data");
     const snapshot = await readDailyCrawlDataSnapshot<Array<{ id: number }>>(
       "cafeteria-menu.json",
     );
@@ -75,7 +83,10 @@ describe("crawl data Pages runtime", () => {
       source: "github-pages",
       version,
       publishedAt: "2026-07-24T01:02:03.000Z",
+      sourceHealth: manifest.sourceHealth["cafeteria-menu.json"],
     });
+    expect(await readDailyCrawlSourceHealth()).toEqual(manifest.sourceHealth);
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   it("uses the bundled snapshot when Pages integrity verification fails", async () => {

@@ -5,6 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import {
   CRAWL_DATA_MAX_BYTES,
   type CrawlDataManifest,
+  type CrawlSourceHealth,
   type DailyCrawlDataFile,
   parseCrawlDataManifest,
   validateDailyCrawlData,
@@ -27,11 +28,19 @@ export interface CrawlDataSnapshot<T> {
   source: "github-pages" | "bundled-fallback";
   version: string;
   publishedAt?: string;
+  sourceHealth?: CrawlSourceHealth;
 }
 
 let manifestCache: ManifestCacheEntry | undefined;
 let remoteWarningExpiresAt = 0;
 const remoteDataCache = new Map<string, Promise<unknown>>();
+
+export async function readDailyCrawlSourceHealth(): Promise<
+  NonNullable<CrawlDataManifest["sourceHealth"]>
+> {
+  const manifest = await getCurrentManifest(getCrawlDataBaseUrl());
+  return manifest.sourceHealth ?? {};
+}
 
 export async function readDailyCrawlDataJson<T>(
   fileName: DailyCrawlDataFile,
@@ -72,6 +81,7 @@ async function readRemoteSnapshot<T>(
     source: "github-pages",
     version: manifest.version,
     publishedAt: manifest.publishedAt,
+    sourceHealth: manifest.sourceHealth?.[fileName],
   };
 }
 
