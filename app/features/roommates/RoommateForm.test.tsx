@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/app/components/LocaleProvider";
 import { getRoommateText } from "@/lib/i18n/roommates";
@@ -28,6 +28,9 @@ describe("roommate listing disclosure consent", () => {
     for (const copy of [text.disclosureRecipients, text.disclosurePurpose, text.disclosureItems, text.disclosurePeriod, text.disclosureRefusal, text.disclosureWithdrawal]) {
       expect(screen.getByText(copy)).toBeVisible();
     }
+    const disclosure = screen.getByRole("group", { name: `${text.disclosureTitle} (${text.required})` });
+    for (const label of Object.values(text.disclosureLabels)) expect(within(disclosure).getByText(label)).toBeVisible();
+    expect(disclosure.querySelector("details")).toBeNull();
     expect(screen.getByRole("link", { name: text.privacyPolicy })).toHaveAttribute("href", "/privacy");
     const consent = screen.getByRole("checkbox", { name: text.disclosureAgree });
     expect(consent).not.toBeChecked();
@@ -58,5 +61,18 @@ describe("roommate listing disclosure consent", () => {
     fireEvent.click(consent);
     await act(async () => fireEvent.submit(form));
     expect(submit).toHaveBeenCalledWith(expect.objectContaining({ disclosureConsent: true, nickname: post.nickname, openChatUrl: post.openChatUrl }));
+  });
+
+  it("keeps room capacity and recruitment dates consistent while editing the grouped fields", () => {
+    const text = getRoommateText("ko"); const post = { ...listing(), dorm: "eden" as const, roomSize: 4, roommatesNeeded: 3 };
+    render(<RoommateForm post={post} onSubmit={vi.fn()} />);
+    fireEvent.change(screen.getByRole("combobox", { name: text.dorm }), { target: { value: "peniel" } });
+    expect(screen.getByRole("combobox", { name: text.roomSize })).toHaveValue("2");
+    expect(screen.getByRole("combobox", { name: text.people })).toHaveValue("1");
+    const earlierEnd = koreaDate(Date.now() + 5 * DAY_MS);
+    fireEvent.change(screen.getByLabelText(text.stayEnd), { target: { value: earlierEnd } });
+    expect(screen.getByLabelText(text.recruitUntil)).toHaveValue(earlierEnd);
+    expect(screen.getByLabelText(text.recruitUntil)).toHaveAttribute("max", earlierEnd);
+    expect(screen.getByLabelText(text.openChat)).toHaveAccessibleDescription(text.contactHelp);
   });
 });
