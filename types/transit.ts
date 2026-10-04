@@ -52,10 +52,26 @@ interface ShuttleOperatingPeriod {
   scheduleType: "semester" | "vacation";
 }
 
+export interface ShuttleServiceException {
+  date: string;
+  routeId: string;
+  times: string[];
+  sourceUrl: string;
+  verifiedAt: string;
+}
+
+interface ShuttleClosedDate {
+  date: string;
+  sourceUrl: string;
+  verifiedAt: string;
+}
+
 export interface ShuttleSpecialPeriods {
   specialPeriods: ShuttleSpecialPeriod[];
   semesterPeriods: ShuttleOperatingPeriod[];
   vacationPeriods: ShuttleOperatingPeriod[];
+  serviceExceptions?: ShuttleServiceException[];
+  closedDates?: ShuttleClosedDate[];
 }
 
 export interface BusLocation {

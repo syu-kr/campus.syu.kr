@@ -8,6 +8,7 @@ import {
   getHomeCafeteriaMenus,
   getHomeShuttleBuses,
   getHomeShuttleSpecialPeriods,
+  getHomePublicHolidays,
 } from "@/lib/server/home-data";
 import { getKoreaNow } from "@/lib/home";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
@@ -30,6 +31,7 @@ async function HomeContent() {
     initialSchedules,
     initialShuttleBuses,
     initialShuttleSpecialPeriods,
+    initialPublicHolidays,
   ] = await Promise.all([
       getAnnouncementSummary(12),
       getAllServiceNotices(),
@@ -37,6 +39,7 @@ async function HomeContent() {
       getHomeAcademicSchedules(),
       getHomeShuttleBuses(),
       getHomeShuttleSpecialPeriods(),
+      getHomePublicHolidays(),
     ]);
 
   return (
@@ -47,6 +50,7 @@ async function HomeContent() {
       initialSchedules={initialSchedules}
       initialShuttleBuses={initialShuttleBuses}
       initialShuttleSpecialPeriods={initialShuttleSpecialPeriods}
+      initialPublicHolidays={initialPublicHolidays}
       initialNowIso={getKoreaNow().toISOString()}
     />
   );

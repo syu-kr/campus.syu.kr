@@ -6,6 +6,7 @@ import { ShuttleAdditionalServicesCard } from "./ShuttleAdditionalServicesCard";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import periods from "@/public/data/shuttle-special-periods.json";
 import type { ShuttleSpecialPeriods } from "@/types";
+import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 
 const specialPeriods = periods as ShuttleSpecialPeriods;
 const festival = specialPeriods.specialPeriods.find(
@@ -29,7 +30,9 @@ describe("festival shuttle display", () => {
   });
 
   it("keeps the home card after regular service, then restores the ended state", () => {
-    const props = { isLoading: false, isError: false, onRetry: () => {}, buses, specialPeriods };
+    const props = { isLoading: false, isError: false, onRetry: () => {}, buses, specialPeriods,
+      holidays: { schemaVersion: 1 as const, sourceUrl: PUBLIC_HOLIDAY_SOURCE_URL,
+        years: [2026], holidays: [], lastSuccessAt: "2026-10-06T00:00:00+09:00" } };
     const view = render(
       <TodayShuttleSection {...props} now={new Date("2026-10-06T22:15:00+09:00")} />,
     );
@@ -51,5 +54,12 @@ describe("festival shuttle display", () => {
     expect(screen.getByText("Campus → Hwarangdae")).toBeInTheDocument();
     expect(screen.getByText(/Scheduled to leave in 15 minutes/)).toBeInTheDocument();
     expect(screen.getByText(/service may end earlier/)).toBeInTheDocument();
+  });
+
+  it("keeps announcement times while withholding an unconfirmed countdown", () => {
+    render(<ShuttleAdditionalServicesCard period={festival}
+      now={new Date("2026-10-06T22:15:00+09:00")} showCountdown={false} />);
+    expect(screen.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
+    expect(screen.queryByText(/분 후 예정 출발/)).not.toBeInTheDocument();
   });
 });

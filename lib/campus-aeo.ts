@@ -132,13 +132,34 @@ export function createShuttleAnswerSummary({
   const festivalAnswer = additionalAnswer
     ? `${additionalAnswer} ${serviceText.boarding}. ${serviceText.notice}`
     : "";
-  const baseSummary = {
+  const baseSummary: Omit<AnswerSummary, "answer" | "items"> = {
     eyebrow: answerText.eyebrow,
     title: answerText.title,
     question: answerText.question,
     source: answerText.source,
     updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
   };
+
+  if (summary.operationEvidence.length > 0) {
+    baseSummary.source = `${text.verifiedSource}: ${Array.from(new Set(
+      summary.operationEvidence.map((record) => record.sourceUrl),
+    )).join(" · ")}`;
+    const verifiedAt = Math.min(...summary.operationEvidence.map((record) => Date.parse(record.verifiedAt)));
+    baseSummary.updatedAt = formatUpdatedAt(new Date(verifiedAt), locale, text.verifiedAt);
+  }
+
+  if (summary.operationStatus === "unconfirmed" || summary.operationStatus === "closed") {
+    return {
+      ...baseSummary,
+      answer: [
+        summary.holiday.names.join(" · "),
+        summary.operationStatus === "closed"
+          ? dictionary.publicHolidays.shuttleClosed
+          : dictionary.publicHolidays.shuttleUnconfirmed,
+        dictionary.publicHolidays.referenceSchedule,
+      ].filter(Boolean).join(" "),
+    };
+  }
 
   if (summary.isWeekend) {
     return {
@@ -168,7 +189,8 @@ export function createShuttleAnswerSummary({
     source: festivalAnswer
       ? `${baseSummary.source} / ${serviceText.source}`
       : baseSummary.source,
-    answer: `${applyTemplate(answerText.nextDeparture, {
+    answer: `${applyTemplate(summary.operationStatus === "exception"
+      ? answerText.confirmedDeparture : answerText.nextDeparture, {
       minutes: String(primaryDeparture.minutesUntil),
       routeName: primaryDeparture.routeName,
       time: primaryDeparture.time,

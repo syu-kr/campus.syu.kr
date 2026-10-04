@@ -1,4 +1,4 @@
-name: Daily Crawl - Academic, Scholarship, Campus, SW & Cafeteria Notices
+name: Daily Crawl - Notices, Cafeteria & Public Holidays
 
 on:
   schedule:
@@ -10,6 +10,14 @@ on:
     - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
+      crawl_scope:
+        description: Sources to crawl (holidays skips notices, cafeteria and AI)
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - holidays
       ai_limit:
         description: Maximum announcement summaries to generate
         required: true
@@ -36,8 +44,8 @@ jobs:
   crawl:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
-    # Eight children are capped at five minutes each; allow setup and publication time.
-    timeout-minutes: 50
+    # Nine children are capped at five minutes each; allow setup and publication time.
+    timeout-minutes: 55
     permissions:
       contents: read
       pages: read
@@ -58,6 +66,8 @@ jobs:
       CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES }}
       CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
+      # Enable only after deploying the app that accepts the public-holidays source-health key.
+      PUBLIC_HOLIDAYS_ENABLED: ${{ vars.PUBLIC_HOLIDAYS_ENABLED }}
       CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '17 20 * * *' || github.event.schedule == '17 1 * * *') }}
 
     steps:
@@ -92,10 +102,18 @@ jobs:
         run: npm run pull:crawl-data
 
       - name: Run independent daily crawlers with validated fallback
-        run: npm run crawl:daily
+        env:
+          PUBLIC_DATA_SERVICE_KEY: ${{ secrets.PUBLIC_DATA_SERVICE_KEY }}
+          HOLIDAYS_ONLY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.crawl_scope == 'holidays' }}
+        run: |
+          if [ "$HOLIDAYS_ONLY_RUN" = "true" ]; then
+            npm run crawl:daily -- --holidays-only
+          else
+            npm run crawl:daily
+          fi
 
       - name: Generate announcement AI summaries
-        if: env.CAFETERIA_ONLY_RUN != 'true'
+        if: env.CAFETERIA_ONLY_RUN != 'true' && inputs.crawl_scope != 'holidays'
         id: announcement_ai
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

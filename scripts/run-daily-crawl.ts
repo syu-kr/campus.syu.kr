@@ -28,6 +28,7 @@ const SOURCES: CrawlSource[] = [
   { fileName: "announcements-departments.json", script: "crawl_department_notices.py", command: "python" },
   { fileName: "announcements-sw.json", script: "crawl_swuniv_notices.py", command: "python" },
   { fileName: "cafeteria-menu.json", script: "crawl_cafeteria.py", command: "python" },
+  { fileName: "public-holidays.json", script: "crawl_public_holidays.py", command: "python" },
 ];
 const AI_SOURCE: CrawlSource = {
   fileName: "announcement-ai-metadata.json",
@@ -83,18 +84,25 @@ function validatePayload(fileName: DailyCrawlDataFile, payload: Buffer) {
 export async function runDailyCrawl(options: {
   dataDir?: string;
   healthPath?: string;
-  mode?: "all" | "cafeteria" | "ai";
+  mode?: "all" | "cafeteria" | "holidays" | "ai";
   aiEnabled?: boolean;
+  holidaysEnabled?: boolean;
   run?: (source: CrawlSource) => Promise<CrawlResult>;
   now?: () => Date;
 } = {}) {
   const dataDir = options.dataDir || path.join(process.cwd(), "public", "data");
   const healthPath = options.healthPath || path.join(process.cwd(), ".cache", "crawl-data-health.json");
+  const holidaysEnabled = options.holidaysEnabled ?? process.env.PUBLIC_HOLIDAYS_ENABLED === "true";
+  if (options.mode === "holidays" && !holidaysEnabled) {
+    throw new Error("Public holiday crawling is disabled; deploy the compatible app and enable PUBLIC_HOLIDAYS_ENABLED first.");
+  }
   const sources = options.mode === "ai"
     ? options.aiEnabled === false ? [] : [AI_SOURCE]
     : options.mode === "cafeteria"
       ? SOURCES.filter((source) => source.fileName === "cafeteria-menu.json")
-      : SOURCES;
+      : options.mode === "holidays"
+        ? SOURCES.filter((source) => source.fileName === "public-holidays.json")
+        : SOURCES.filter((source) => source.fileName !== "public-holidays.json" || holidaysEnabled);
   const run = options.run || runCrawler;
   const now = options.now || (() => new Date());
   let health: Partial<Record<DailyCrawlDataFile, CrawlSourceHealth>> = {};
@@ -156,7 +164,9 @@ export async function runDailyCrawl(options: {
 async function main() {
   const mode = process.argv.includes("--ai-only")
     ? "ai"
-    : process.env.CAFETERIA_ONLY_RUN === "true" ? "cafeteria" : "all";
+    : process.argv.includes("--holidays-only")
+      ? "holidays"
+      : process.env.CAFETERIA_ONLY_RUN === "true" ? "cafeteria" : "all";
   const aiEnabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
   const health = await runDailyCrawl({ mode, aiEnabled });
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
@@ -178,7 +188,7 @@ async function main() {
 
 if (typeof require !== "undefined" && require.main === module) {
   main().catch(() => {
-    console.error("[daily-crawl] baseline, rollback, or health persistence failed; publication must stop.");
+    console.error("[daily-crawl] crawling disabled or baseline, rollback, or health persistence failed; publication must stop. Check PUBLIC_HOLIDAYS_ENABLED for holidays-only runs.");
     process.exitCode = 1;
   });
 }

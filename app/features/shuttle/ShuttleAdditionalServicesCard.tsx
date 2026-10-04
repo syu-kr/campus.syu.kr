@@ -13,9 +13,11 @@ import type { ShuttleSpecialPeriod } from "@/types";
 export function ShuttleAdditionalServicesCard({
   period,
   now,
+  showCountdown = true,
 }: {
   period: ShuttleSpecialPeriod;
   now: Date;
+  showCountdown?: boolean;
 }) {
   const locale = useLocale();
   const text = useDictionary().pages.busInfo.festivalShuttle;
@@ -47,7 +49,7 @@ export function ShuttleAdditionalServicesCard({
           const departureMinutes =
             service.type === "departure" ? timeToMinutes(service.time) : null;
           const minutesUntil =
-            isToday && departureMinutes !== null
+            showCountdown && isToday && departureMinutes !== null
               ? departureMinutes - (hour * 60 + minute)
               : null;
 

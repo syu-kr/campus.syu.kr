@@ -15,6 +15,7 @@ import {
 import { fetchJson } from "./fetch-json";
 import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
+import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "./public-holidays";
 import type {
   LiveDataResponse,
   LiveDataSourceStatus,
@@ -225,6 +226,13 @@ export async function fetchCafeteriaMenu(
   } catch (error) {
     throw error;
   }
+}
+
+// 공휴일 API - 검증된 Pages 데이터 사용
+export async function fetchPublicHolidays() {
+  return parsePublicHolidaySnapshot(await fetchJson<unknown>("/api/crawl-data/public-holidays.json", {
+    fallback: emptyPublicHolidays(), throwOnError: true, timeoutMs: 12_000,
+  }));
 }
 
 // 학사일정 API - 크롤링된 실제 데이터 사용
