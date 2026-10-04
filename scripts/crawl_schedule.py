@@ -8,6 +8,7 @@ import json
 import re
 import os
 import hashlib
+from datetime import datetime
 
 from crawler_utils import DEFAULT_HEADERS, request_soup, require_env, write_json_atomic
 
@@ -19,7 +20,10 @@ def generate_stable_id(title: str, start_date: str, end_date: str) -> str:
 
 def normalize_schedule_date(year: str, month: str, date_part: str) -> str:
     """달력의 일/월.일 표기를 YYYY.MM.DD로 정규화"""
-    parts = [part.strip() for part in date_part.split(".") if part.strip()]
+    date_part = date_part.strip()
+    if not re.fullmatch(r"\d{1,2}(?:\.\d{1,2})?", date_part):
+        raise ValueError(f"Invalid schedule date component: {date_part}")
+    parts = date_part.split(".")
     if len(parts) == 2:
         schedule_month, day = parts
     else:
@@ -35,24 +39,30 @@ def parse_schedule_dates(year: str, month: str, date_text: str) -> tuple[str, st
     """범위가 12월~1월처럼 다음 해로 넘어가면 종료 연도를 보정"""
     if "~" not in date_text:
         date = normalize_schedule_date(year, month, date_text)
-        return date, date
+        start_date, end_date = date, date
+    else:
+        parts = [p.strip() for p in date_text.split("~")]
+        if len(parts) != 2:
+            raise ValueError(f"Invalid schedule date text: {date_text}")
 
-    parts = [p.strip() for p in date_text.split("~")]
-    if len(parts) != 2:
-        raise ValueError(f"Invalid schedule date text: {date_text}")
+        start_date = normalize_schedule_date(year, month, parts[0])
+        end_date = normalize_schedule_date(year, month, parts[1])
 
-    start_date = normalize_schedule_date(year, month, parts[0])
-    end_date = normalize_schedule_date(year, month, parts[1])
+        if end_date < start_date:
+            end_date = bump_date_year(end_date)
 
-    if end_date < start_date:
-        end_date = bump_date_year(end_date)
+    if not is_valid_schedule_range({"startDate": start_date, "endDate": end_date}):
+        raise ValueError(f"Invalid schedule date range: {start_date} ~ {end_date}")
 
     return start_date, end_date
 
 def is_valid_schedule_range(schedule: dict) -> bool:
-    start_date = schedule.get("startDate", "")
-    end_date = schedule.get("endDate", "")
-    return bool(start_date and end_date and start_date <= end_date)
+    try:
+        start_date = datetime.strptime(schedule.get("startDate", ""), "%Y.%m.%d")
+        end_date = datetime.strptime(schedule.get("endDate", ""), "%Y.%m.%d")
+    except (TypeError, ValueError):
+        return False
+    return start_date <= end_date
 
 def crawl_schedule():
     """학사일정 크롤링 (증분 업데이트 - 개선)"""
@@ -95,49 +105,58 @@ def crawl_schedule():
         
         new_schedules_by_key = {}
         processed_keys = set()
+        collected_months = set()
         new_count = 0
         
         for calendar in calendars:
             # Find DL element
             dl = calendar.find("dl")
             if not dl:
-                continue
+                raise RuntimeError("학사일정 월별 달력 구조를 찾지 못했습니다.")
             
             # Extract year and month
             year_elem = dl.find("div", {"class": "year"})
             month_elem = dl.find("div", {"class": "month"})
             
             if not year_elem or not month_elem:
-                continue
+                raise RuntimeError("학사일정 연도와 월을 찾지 못했습니다.")
             
             year = year_elem.text.strip()
             month = month_elem.text.strip()
+            month_start = datetime(int(year), int(month), 1)
+            month_key = month_start.strftime("%Y.%m")
+            if month_key in collected_months:
+                raise RuntimeError(f"학사일정 월별 달력이 중복되었습니다: {month_key}")
             
             print(f"\n  📍 {year}-{month}:")
             
             # Find schedule items
             li_items = dl.find_all("li")
             print(f"    Items: {len(li_items)}")
+            if not li_items:
+                raise RuntimeError(f"학사일정 월별 항목을 찾지 못했습니다: {month_key}")
             
             for li in li_items:
                 inner_dl = li.find("dl")
                 if not inner_dl:
-                    continue
+                    raise RuntimeError("학사일정 항목의 날짜와 내용을 찾지 못했습니다.")
                 
                 dt_elem = inner_dl.find("dt")
                 dd_elem = inner_dl.find("dd")
                 
                 if not dt_elem or not dd_elem:
-                    continue
+                    raise RuntimeError("학사일정 항목의 날짜와 내용을 찾지 못했습니다.")
                 
                 date_text = dt_elem.text.strip()
                 event_text = dd_elem.text.strip()
                 
                 if not date_text or not event_text:
-                    continue
+                    raise RuntimeError("학사일정 항목의 날짜 또는 내용이 비어 있습니다.")
                 
                 # Parse dates
                 start_date, end_date = parse_schedule_dates(year, month, date_text)
+                if start_date[:7] != month_key:
+                    raise RuntimeError("학사일정 항목의 시작 날짜가 달력 월과 다릅니다.")
                 
                 # Check for duplicates within current session
                 unique_key = f"{event_text}|{start_date}|{end_date}"
@@ -169,6 +188,7 @@ def crawl_schedule():
                 }
                 
                 new_schedules_by_key[unique_key] = schedule
+            collected_months.add(month_key)
         
         # 새 데이터와 기존 데이터 합치기
         if not new_schedules_by_key:
@@ -176,7 +196,7 @@ def crawl_schedule():
         
         all_schedules = list(new_schedules_by_key.values())
         
-        # 기존 데이터 중 새 데이터에 없는 항목 추가
+        # 완전히 수집한 월은 원문으로 교체하고, 미수집 월만 기존 데이터를 유지한다.
         for key, schedule in existing_schedules.items():
             if not is_valid_schedule_range(schedule):
                 print(
@@ -184,7 +204,7 @@ def crawl_schedule():
                     f"({schedule.get('startDate')} ~ {schedule.get('endDate')})"
                 )
                 continue
-            if key not in new_schedules_by_key:
+            if key not in new_schedules_by_key and schedule["startDate"][:7] not in collected_months:
                 all_schedules.append(schedule)
         
         write_json_atomic(output_path, all_schedules)

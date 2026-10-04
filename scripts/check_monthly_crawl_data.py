@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 
 DATA_DIR = Path("public/data")
@@ -18,6 +19,16 @@ def read_list(path: Path, max_bytes: int) -> list[object]:
     if not isinstance(value, list) or not value:
         raise RuntimeError(f"{path.name} must be a non-empty array")
     return value
+
+
+def is_real_schedule_date(value: object) -> bool:
+    if not isinstance(value, str) or not DATE_PATTERN.fullmatch(value):
+        return False
+    try:
+        datetime.strptime(value, "%Y.%m.%d")
+    except ValueError:
+        return False
+    return True
 
 
 def validate_phone_numbers() -> None:
@@ -53,8 +64,8 @@ def validate_schedules() -> None:
                 or item["id"] in ids
                 or not isinstance(item.get("title"), str)
                 or not item["title"].strip()
-                or not DATE_PATTERN.fullmatch(str(item.get("startDate", "")))
-                or not DATE_PATTERN.fullmatch(str(item.get("endDate", "")))
+                or not is_real_schedule_date(item.get("startDate"))
+                or not is_real_schedule_date(item.get("endDate"))
                 or item["startDate"] > item["endDate"]
             ):
                 raise RuntimeError(f"{path.name} contains an invalid schedule entry")
