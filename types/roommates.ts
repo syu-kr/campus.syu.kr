@@ -27,6 +27,10 @@ export interface RoommatePostInput {
   openChatUrl: string;
 }
 
+export interface RoommatePostSubmission extends RoommatePostInput {
+  disclosureConsent: true;
+}
+
 export interface RoommatePostSummary extends Omit<RoommatePostInput, "description" | "openChatUrl"> {
   id: string;
   status: RoommatePostStatus | "expired";

@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 import type { DecodedIdToken, UserRecord } from "firebase-admin/auth";
 import { getAuth } from "firebase-admin/auth";
 import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
-import { RoommateError } from "@/lib/roommates";
+import { areRoommatesEnabled, ROOMMATE_SESSION_COOKIE, RoommateError } from "@/lib/roommates";
 import { getRateLimitKey } from "@/lib/rate-limit";
 import { admin, getFirestore } from "@/lib/server/firestore";
 import { ApiError, enforceRateLimitKey } from "@/lib/server/http";
 
-export const ROOMMATE_SESSION_COOKIE = "__Host-roommates_session";
+export { ROOMMATE_SESSION_COOKIE } from "@/lib/roommates";
 const DAY_MS = 86_400_000;
 const SESSION_COLLECTION = "roommate_sessions";
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
@@ -20,10 +20,6 @@ export interface RoommateSession {
   authTime: number;
   expiresAt: string;
   sessionTag: string;
-}
-
-export function areRoommatesEnabled() {
-  return process.env.ROOMMATES_ENABLED === "true";
 }
 
 export function requireRoommatesEnabled() {
@@ -102,8 +98,10 @@ export function roommateErrorResponse(error: unknown) {
 }
 
 export async function enforceRoommateReadLimit(req: Request, ownerKey: string) {
-  await enforceRateLimitKey(`roommates:read:owner:${ownerKey}`, { limit: 30, windowMs: 60_000 });
-  await enforceRateLimitKey(getRateLimitKey(req, "roommates:read:ip"), { limit: 120, windowMs: 60_000 });
+  await Promise.all([
+    enforceRateLimitKey(`roommates:read:owner:${ownerKey}`, { limit: 30, windowMs: 60_000 }),
+    enforceRateLimitKey(getRateLimitKey(req, "roommates:read:ip"), { limit: 120, windowMs: 60_000 }),
+  ]);
 }
 
 function hashSessionToken(token: string) {

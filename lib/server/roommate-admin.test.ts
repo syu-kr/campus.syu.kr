@@ -69,6 +69,7 @@ describe("roommate administrator transactions", () => {
       nickname: "학생님", dorm: "eden", roomSize: 3, roommatesNeeded: 1,
       stayStart: "2026-10-04", stayEnd: "2026-11-01", recruitUntil: "2026-10-14",
       habits: {}, description: "새 모집글", openChatUrl: "https://open.kakao.com/o/fixture",
+      disclosureConsent: true,
     }, now.toMillis() + 1000);
     await mutateRoommatePost("owner-fixture", newer.id, "complete", { action: "complete", expectedVersion: 1 }, now.toMillis() + 2000);
     expect((await getMyRoommatePost("owner-fixture", now.toMillis() + 3000)).post?.id).toBe(newer.id);

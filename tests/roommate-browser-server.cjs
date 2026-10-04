@@ -65,7 +65,7 @@ globalThis.fetch = async (input, init) => {
     url.pathname = `/identitytoolkit.googleapis.com${url.pathname}`;
     return nativeFetch(url, init);
   }
-  if (url.protocol === "http:" && [AUTH_HOST, FIRESTORE_HOST, `127.0.0.1:${PORT}`].includes(url.host)) return nativeFetch(input, init);
+  if (url.protocol === "http:" && [AUTH_HOST, FIRESTORE_HOST, `127.0.0.1:${PORT}`, `localhost:${PORT}`].includes(url.host)) return nativeFetch(input, init);
   blockedExternalFetches++;
   throw new Error("External fetch is forbidden in the roommate browser test server.");
 };
@@ -107,14 +107,18 @@ async function injectTestSession(request, response) {
 
 const next = require("next");
 const nextConfig = require("../next.config.js");
-const app = next({ dev: true, dir: path.resolve(__dirname, ".."), hostname: "127.0.0.1", port: PORT, conf: { ...nextConfig, distDir: ".next/roommate-browser" } });
+// The custom dev router reloads next.config.js instead of forwarding the conf option.
+// Update this process's cached export so both loaders use the same isolated settings.
+Object.assign(nextConfig, { allowedDevOrigins: ["127.0.0.1"], distDir: ".next/roommate-browser" });
+// NextRequest normalizes loopback IPs to localhost, including locale rewrites.
+const app = next({ dev: true, dir: path.resolve(__dirname, ".."), hostname: "localhost", port: PORT, conf: nextConfig });
 const handle = app.getRequestHandler();
 
 async function start() {
   await app.prepare();
   const server = http.createServer(async (request, response) => {
     try {
-      if (request.headers.host !== `127.0.0.1:${PORT}`) { response.writeHead(403); response.end(); return; }
+      if (![`127.0.0.1:${PORT}`, `localhost:${PORT}`].includes(request.headers.host)) { response.writeHead(403); response.end(); return; }
       if (request.url === "/_roommate_test" || request.url === "/_roommate_test/login" || request.url === "/_roommate_test/status") {
         response.setHeader("cache-control", "private, no-store");
         response.setHeader("x-robots-tag", "noindex, nofollow");

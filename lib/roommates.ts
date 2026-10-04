@@ -1,6 +1,12 @@
-import type { RoommateHabits, RoommatePostFilters, RoommatePostInput, RoommateReportInput } from "@/types/roommates";
+import type { RoommateHabits, RoommatePostFilters, RoommatePostInput, RoommatePostSubmission, RoommateReportInput } from "@/types/roommates";
 
 export const DAY_MS = 86_400_000;
+export const ROOMMATE_SESSION_COOKIE = "__Host-roommates_session";
+
+export function areRoommatesEnabled() {
+  return process.env.ROOMMATES_ENABLED === "true";
+}
+
 export const ROOMMATE_DORMS = [
   { value: "peniel", label: "브니엘관", roomSizes: [2] },
   { value: "salem", label: "살렘관", roomSizes: [2] },
@@ -19,7 +25,7 @@ export const ROOMMATE_HABIT_OPTIONS = {
   sharing: ["never", "permission", "discuss"],
 } as const;
 export const ROOMMATE_REPORT_REASONS = ["spam", "false_info", "inappropriate", "privacy", "other"] as const;
-export const ROOMMATE_INPUT_FIELDS = ["nickname", "dorm", "roomSize", "stayStart", "stayEnd", "roommatesNeeded", "recruitUntil", "habits", "description", "openChatUrl"] as const;
+export const ROOMMATE_INPUT_FIELDS = ["nickname", "dorm", "roomSize", "stayStart", "stayEnd", "roommatesNeeded", "recruitUntil", "habits", "description", "openChatUrl", "disclosureConsent"] as const;
 
 export class RoommateError extends Error {
   constructor(public status: number, public code: string, message: string, public field?: string) {
@@ -90,9 +96,10 @@ export function normalizeRoommateHabits(value: unknown): RoommateHabits {
   return result as RoommateHabits;
 }
 
-export function normalizeRoommatePostInput(value: unknown, options: { now?: number; createdAt?: number; previousDeadline?: string } = {}): RoommatePostInput {
+export function normalizeRoommatePostInput(value: unknown, options: { now?: number; createdAt?: number; previousDeadline?: string } = {}): RoommatePostSubmission {
   const input = roommateObject(value);
   assertRoommateFields(input, ROOMMATE_INPUT_FIELDS);
+  if (input.disclosureConsent !== true) invalid("disclosureConsent", "작성·수정하려면 개인정보 제공에 동의해주세요.");
   const now = options.now ?? Date.now();
   const dorm = ROOMMATE_DORMS.find((option) => option.value === input.dorm);
   if (!dorm) invalid("dorm", "기숙사를 선택해주세요.");
@@ -110,6 +117,7 @@ export function normalizeRoommatePostInput(value: unknown, options: { now?: numb
     nickname: text(input.nickname, "nickname", 2, 12), dorm: dorm.value,
     roomSize: input.roomSize, stayStart, stayEnd, roommatesNeeded: Number(input.roommatesNeeded), recruitUntil,
     habits: normalizeRoommateHabits(input.habits), description: text(input.description, "description", 0, 300, true), openChatUrl,
+    disclosureConsent: true,
   };
 }
 

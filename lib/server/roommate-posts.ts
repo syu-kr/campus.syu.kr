@@ -16,6 +16,7 @@ export { DAY_MS } from "@/lib/roommates";
 const ROOMMATE_COLLECTIONS = {
   posts: "roommate_posts", owners: "roommate_owner_state", reports: "roommate_reports", sessions: "roommate_sessions",
 } as const;
+const ROOMMATE_DISCLOSURE_POLICY_VERSION = "2026-10-04";
 
 export interface RoommatePostDocument {
   owner_key: string;
@@ -36,6 +37,7 @@ export interface RoommatePostDocument {
   recruit_until: Timestamp;
   expires_at: Timestamp;
   closed_at?: Timestamp;
+  disclosure_consent?: { accepted_at: Timestamp; policy_version: string };
 }
 
 export interface RoommateOwnerStateDocument {
@@ -219,6 +221,7 @@ export async function createRoommatePost(ownerKey: string, value: unknown, now =
     const post: RoommatePostDocument = {
       ...fields, owner_key: ownerKey, status: "recruiting", version: 1,
       created_at: timestamp, updated_at: timestamp,
+      disclosure_consent: { accepted_at: timestamp, policy_version: ROOMMATE_DISCLOSURE_POLICY_VERSION },
       expires_at: admin.firestore.Timestamp.fromMillis(fields.recruit_until.toMillis() + 30 * DAY_MS),
     };
     transaction.create(postRef, post);
@@ -252,7 +255,8 @@ export async function mutateRoommatePost(ownerKey: string, id: string, action: "
       if (!isRecruiting(post, now)) throw new RoommateError(409, "POST_CLOSED", "모집 중인 글만 수정할 수 있습니다.");
       const fields = Object.fromEntries(ROOMMATE_INPUT_FIELDS.map((key) => [key, body[key]]));
       const input = normalizeRoommatePostInput(fields, { now, createdAt: post.created_at.toMillis(), previousDeadline: post.recruit_deadline });
-      updated = { ...post, ...storedInput(input), version: post.version + 1, updated_at: timestamp };
+      updated = { ...post, ...storedInput(input), version: post.version + 1, updated_at: timestamp,
+        disclosure_consent: { accepted_at: timestamp, policy_version: ROOMMATE_DISCLOSURE_POLICY_VERSION } };
       updated.expires_at = retentionExpiry(updated);
     } else {
       if (action === "complete" && post.status !== "recruiting") throw new RoommateError(409, "POST_CLOSED", "모집 중인 글만 완료할 수 있습니다.");

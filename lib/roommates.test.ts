@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { defaultRecruitDeadline, matchesRoommateFilters, normalizeRoommateHabits, normalizeRoommatePostInput, parseRoommateFilters, recruitDeadlineMillis } from "@/lib/roommates";
-import type { RoommatePostInput } from "@/types/roommates";
+import type { RoommatePostSubmission } from "@/types/roommates";
 
 const now = Date.parse("2026-10-04T06:00:00Z");
-const input: RoommatePostInput = { nickname: "삼육학생", dorm: "eden", roomSize: 3, stayStart: "2026-10-04", stayEnd: "2026-12-20", roommatesNeeded: 2, recruitUntil: "2026-11-02", habits: {}, description: "함께 지낼 분", openChatUrl: "https://open.kakao.com/o/aB123" };
+const input: RoommatePostSubmission = { nickname: "삼육학생", dorm: "eden", roomSize: 3, stayStart: "2026-10-04", stayEnd: "2026-12-20", roommatesNeeded: 2, recruitUntil: "2026-11-02", habits: {}, description: "함께 지낼 분", openChatUrl: "https://open.kakao.com/o/aB123", disclosureConsent: true };
 
 describe("roommate input validation", () => {
+  it.each([undefined, false, "true", 1, null])("requires explicit disclosure consent rather than a truthy value: %s", (disclosureConsent) => {
+    expect(() => normalizeRoommatePostInput({ ...input, disclosureConsent }, { now })).toThrow(expect.objectContaining({ status: 400, field: "disclosureConsent" }));
+  });
+
   it("uses KST calendar dates and inclusive 30-day recruiting windows", () => {
     expect(defaultRecruitDeadline(input.stayEnd, now)).toBe("2026-11-02");
     expect(recruitDeadlineMillis("2026-11-02")).toBe(Date.parse("2026-11-02T15:00:00Z"));

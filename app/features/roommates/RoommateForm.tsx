@@ -1,14 +1,16 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { useLocale } from "@/app/components/LocaleProvider";
+import { localizePath } from "@/lib/i18n";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { ROOMMATE_DORMS, RoommateError, defaultRecruitDeadline, koreaDate, normalizeRoommatePostInput } from "@/lib/roommates";
-import type { RoommateDorm, RoommatePost, RoommatePostInput } from "@/types/roommates";
+import type { RoommateDorm, RoommatePost, RoommatePostInput, RoommatePostSubmission } from "@/types/roommates";
 import { RoommateApiError, roommateErrorMessage } from "./client";
 import { HabitFields, inputClass, primaryClass, secondaryClass } from "./RoommateShared";
 
-export default function RoommateForm({ post, onSubmit, onCancel }: { post?: RoommatePost; onSubmit: (input: RoommatePostInput) => Promise<void>; onCancel?: () => void }) {
+export default function RoommateForm({ post, onSubmit, onCancel }: { post?: RoommatePost; onSubmit: (input: RoommatePostSubmission) => Promise<void>; onCancel?: () => void }) {
   const locale = useLocale(); const text = getRoommateText(locale); const formRef = useRef<HTMLFormElement>(null);
   const [value, setValue] = useState<RoommatePostInput>(() => post ? {
     nickname: post.nickname, dorm: post.dorm, roomSize: post.roomSize, roommatesNeeded: post.roommatesNeeded,
@@ -16,11 +18,12 @@ export default function RoommateForm({ post, onSubmit, onCancel }: { post?: Room
     description: post.description, openChatUrl: post.openChatUrl,
   } : { nickname: "", dorm: "peniel", roomSize: 2, roommatesNeeded: 1, stayStart: koreaDate(), stayEnd: "", recruitUntil: defaultRecruitDeadline("9999-12-31"), habits: {}, description: "", openChatUrl: "" });
   const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [errorField, setErrorField] = useState("");
+  const [disclosureConsent, setDisclosureConsent] = useState(false);
   const roomSizes = ROOMMATE_DORMS.find((dorm) => dorm.value === value.dorm)!.roomSizes;
   const maxDeadline = defaultRecruitDeadline(value.stayEnd || "9999-12-31", post ? Date.parse(post.createdAt) : undefined);
   async function submit(event: FormEvent) {
     event.preventDefault(); setError(""); setErrorField(""); setBusy(true);
-    try { const normalized = normalizeRoommatePostInput(value, post ? { createdAt: Date.parse(post.createdAt), previousDeadline: post.recruitUntil } : undefined); await onSubmit(normalized); }
+    try { const normalized = normalizeRoommatePostInput({ ...value, disclosureConsent }, post ? { createdAt: Date.parse(post.createdAt), previousDeadline: post.recruitUntil } : undefined); await onSubmit(normalized); }
     catch (err) {
       setError(err instanceof RoommateError ? text.validation[err.field?.split(".")[0] as keyof typeof text.validation] ?? text.invalid : roommateErrorMessage(err, text, locale));
       const field = err instanceof RoommateError || err instanceof RoommateApiError ? err.field : undefined;
@@ -45,7 +48,20 @@ export default function RoommateForm({ post, onSubmit, onCancel }: { post?: Room
     <fieldset><legend className="mb-3 font-semibold">{text.habits} <span className="text-sm font-normal text-neutral-500">({text.optional})</span></legend><HabitFields value={value.habits} onChange={(habits) => update("habits", habits)} /></fieldset>
     <div><label htmlFor="roommate-description" className="text-sm font-medium">{text.descriptionLabel}</label><textarea id="roommate-description" name="description" maxLength={300} rows={4} value={value.description} onChange={(event) => update("description", event.target.value)} className={inputClass} aria-describedby="roommate-description-help" /><p id="roommate-description-help" className="mt-2 text-sm text-neutral-500">{text.privacyHint}</p></div>
     {input(text.openChat, "openChatUrl", { type: "url", maxLength: 200, placeholder: "https://open.kakao.com/o/…" })}
-    <p className="text-sm leading-relaxed text-neutral-600">{text.publishHint}</p>
+    <fieldset className="rounded-lg bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-700">
+      <legend className="px-1 font-semibold text-neutral-900">{text.disclosureTitle}</legend>
+      <div id="roommate-disclosure-help" className="space-y-2">
+        <p>{text.disclosureRecipients}</p><p>{text.disclosurePurpose}</p><p>{text.disclosureItems}</p>
+        <p>{text.disclosurePeriod}</p><p>{text.disclosureRefusal}</p><p>{text.disclosureWithdrawal}</p>
+        <Link prefetch={false} href={localizePath("/privacy", locale)} className="inline-flex min-h-11 items-center text-primary-700 underline underline-offset-4">{text.privacyPolicy}</Link>
+      </div>
+      <label className="mt-2 flex min-h-11 cursor-pointer items-start gap-3 py-2 font-medium text-neutral-900">
+        <input name="disclosureConsent" type="checkbox" checked={disclosureConsent} disabled={busy}
+          aria-invalid={errorField === "disclosureConsent"} aria-describedby={errorField === "disclosureConsent" ? "roommate-disclosure-help roommate-form-error" : "roommate-disclosure-help"}
+          onChange={(event) => setDisclosureConsent(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 accent-primary-600" />
+        {text.disclosureAgree}
+      </label>
+    </fieldset>
     {error && <p id="roommate-form-error" role="alert" className="text-sm text-red-700">{error}</p>}
     <div className="flex flex-wrap gap-2"><button className={primaryClass} disabled={busy}>{busy ? text.submitting : post ? text.save : text.create}</button>{onCancel && <button type="button" disabled={busy} className={secondaryClass} onClick={onCancel}>{text.cancel}</button>}</div>
   </form>;
