@@ -132,6 +132,8 @@ const violations = [];
 
 for (const filePath of walk(appDir)) {
   if (!filePath.endsWith(".tsx")) continue;
+  // Tests contain fixture data and assertions, not shipped UI copy.
+  if (/\.(test|spec)\.tsx$/.test(filePath)) continue;
   if (excludedPathParts.some((part) => filePath.includes(part))) continue;
 
   const relativePath = normalizePath(path.relative(root, filePath));

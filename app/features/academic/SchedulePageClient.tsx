@@ -169,6 +169,9 @@ export default function SchedulePageClient({
       cells.push(
         <button
           key={day}
+          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
+          aria-pressed={isSelected}
+          aria-current={dateStr === initialDateStringDot ? "date" : undefined}
           onClick={() => setSelectedDate(dateStr)}
           className={`relative flex min-h-[48px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors sm:min-h-[58px] sm:px-2 sm:py-2 ${
             isSelected
@@ -254,6 +257,7 @@ export default function SchedulePageClient({
           <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <button
+                aria-label={text.previousMonth}
                 onClick={() =>
                   setCurrentMonth(
                     new Date(
@@ -270,6 +274,7 @@ export default function SchedulePageClient({
                 {currentMonthLabel}
               </h2>
               <button
+                aria-label={text.nextMonth}
                 onClick={() =>
                   setCurrentMonth(
                     new Date(
@@ -340,6 +345,7 @@ export default function SchedulePageClient({
               <input
                 type="text"
                 placeholder={text.searchPlaceholder}
+                aria-label={text.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -349,6 +355,7 @@ export default function SchedulePageClient({
                   onClick={() => setSearchQuery("")}
                   className="px-3 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
                   title={text.resetSearch}
+                  aria-label={text.resetSearch}
                 >
                   ✕
                 </button>
@@ -362,7 +369,7 @@ export default function SchedulePageClient({
                     ? schedules.filter((schedule) =>
                         schedule.title
                           .toLowerCase()
-                          .includes(searchQuery.toLowerCase()),
+                          .includes(searchQuery.trim().toLowerCase()),
                       )
                     : [];
 
@@ -433,7 +440,7 @@ export default function SchedulePageClient({
             )}
           </Card>
 
-          <div className="space-y-6">
+          {!searchQuery.trim() && <div className="space-y-6">
             {Object.entries(groupedByMonth)
               .sort()
               .map(([month, items]) => (
@@ -476,7 +483,7 @@ export default function SchedulePageClient({
                   </div>
                 </div>
               ))}
-          </div>
+          </div>}
         </div>
       )}
     </Container>

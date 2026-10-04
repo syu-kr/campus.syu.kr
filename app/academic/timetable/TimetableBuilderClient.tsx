@@ -60,7 +60,10 @@ import {
 } from "@/lib/timetable-display";
 import { getTimetableImageFilename } from "@/lib/timetable-image";
 import { synchronizeTimetableScrollTop } from "@/lib/timetable-scroll";
-import { getTimetableShareOwnerTokenKey } from "@/lib/timetable-share";
+import {
+  getTimetableShareOwnerTokenKey,
+  isTimetableShareForSemester,
+} from "@/lib/timetable-share";
 
 type TimetableDictionary = Dictionary["pages"]["timetable"];
 
@@ -68,6 +71,7 @@ interface TimetableApiResponse {
   success: boolean;
   data: LectureTimetableDataset;
   timestamp?: string;
+  stale?: boolean;
   error?: string;
 }
 
@@ -377,6 +381,16 @@ export function TimetableBuilderClient() {
       shareResponse.data &&
       courseById.size > 0
     ) {
+      if (!isTimetableShareForSemester(shareResponse.data, response.data)) {
+        setShareMessage(text.shareSemesterMismatch);
+        return;
+      }
+      const sharedCourseIds = new Set(
+        shareResponse.data.workspace
+          ? shareResponse.data.workspace.timetables.flatMap((item) => item.courseIds)
+          : shareResponse.data.courseIds,
+      );
+      const missingCount = [...sharedCourseIds].filter((id) => !courseById.has(id)).length;
       const restoredWorkspace = shareResponse.data.workspace
         ? filterWorkspaceCourseIds(
             shareResponse.data.workspace,
@@ -389,7 +403,11 @@ export function TimetableBuilderClient() {
           );
       setTimetableWorkspace(restoredWorkspace);
       setAppliedShareId(shareId);
-      setShareMessage(text.shareLoaded);
+      setShareMessage(
+        missingCount > 0
+          ? text.shareCoursesMissing.replace("{count}", String(missingCount))
+          : text.shareLoaded,
+      );
     }
   }, [
     appliedShareId,
@@ -397,6 +415,9 @@ export function TimetableBuilderClient() {
     createdShareId,
     shareId,
     shareResponse,
+    response.data,
+    text.shareSemesterMismatch,
+    text.shareCoursesMissing,
     text.shareLoaded,
   ]);
 
@@ -496,7 +517,6 @@ export function TimetableBuilderClient() {
   function clearShareFromUrl() {
     if (shareId) {
       router.replace(pathname, { scroll: false });
-      setAppliedShareId("");
       setCreatedShareId("");
     }
   }
@@ -836,6 +856,11 @@ export function TimetableBuilderClient() {
             <p className="text-sm text-neutral-600 sm:text-base">
               {semesterBaseLabel}
             </p>
+            {response.data.updatedAt && (
+              <p className="mt-1 text-xs text-neutral-500">
+                {text.sourceUpdatedAt}: {response.data.updatedAt}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -849,6 +874,34 @@ export function TimetableBuilderClient() {
           </button>
         </div>
       </div>
+
+      {response.stale && (
+        <div className="mb-4" role="status">
+          <StateCard
+            type="warning"
+            message={text.staleDataNotice}
+            action={
+              <>
+                {response.timestamp && (
+                  <p className="mb-2 text-xs text-amber-900">
+                    {text.lastSuccessfulFetch}: {new Date(response.timestamp).toLocaleString(
+                      locale === "ko" ? "ko-KR" : "en-US",
+                      { timeZone: "Asia/Seoul" },
+                    )}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={() => void refetch()}
+                  className="rounded-lg border border-amber-300 px-3 py-1.5 text-sm font-semibold text-amber-900"
+                >
+                  {text.retry}
+                </button>
+              </>
+            }
+          />
+        </div>
+      )}
 
       <section className="sticky top-[73px] z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
@@ -1163,7 +1216,7 @@ export function TimetableBuilderClient() {
               </DesktopWorkspaceSidebar>
             </div>
 
-            <div className="hidden lg:block xl:hidden">
+            <div className="xl:hidden">
               <SelectedCoursesPanel
                 selectedCourses={selectedCourses}
                 conflictCourseIds={conflictSummary.courseIds}
