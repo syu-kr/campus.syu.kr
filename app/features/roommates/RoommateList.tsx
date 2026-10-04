@@ -9,8 +9,8 @@ import { localizePath } from "@/lib/i18n";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import { RoommateError, koreaDate } from "@/lib/roommates";
 import type { RoommatePostFilters, RoommatePostList } from "@/types/roommates";
-import { RoommateApiError, roommateErrorMessage, roommateRequest } from "./client";
-import { HabitSummary, RoommateHeading, postTitle, secondaryClass } from "./RoommateShared";
+import { ROOMMATE_REFRESH_INTERVAL_MS, RoommateApiError, roommateErrorMessage, roommateRequest } from "./client";
+import { HabitSummary, postTitle, secondaryClass } from "./RoommateShared";
 import RoommateFilters from "./RoommateFilters";
 import { readRoommateFilterUrl, serializeRoommateFilters } from "./roommate-filters";
 import { useRoommateClock } from "./use-roommate-clock";
@@ -35,7 +35,8 @@ function RoommateListContent() {
       return roommateRequest<RoommatePostList>(`posts?${params}`, { signal });
     },
     getNextPageParam: (last) => last.nextCursor ?? undefined,
-    retry: false, gcTime: 0, staleTime: 0, refetchOnWindowFocus: true,
+    retry: false, gcTime: 0, staleTime: ROOMMATE_REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: (query) => Date.now() - query.state.errorUpdatedAt >= ROOMMATE_REFRESH_INTERVAL_MS,
   });
   const error = urlState.error ?? query.error;
   const posts = error ? [] : [...new Map((query.data?.pages.flatMap((page) => page.items) ?? []).map((post) => [post.id, post])).values()]
@@ -47,7 +48,7 @@ function RoommateListContent() {
     window.history.pushState(null, "", `${pathname}${params.size ? `?${params}` : ""}`);
   }
 
-  return <><RoommateHeading />
+  return <>
     <RoommateFilters key={search} initialFilters={urlState.filters} onApply={apply} />
     {query.isPending && !error && <div role="status" aria-label={text.loading} className="space-y-3">{[1, 2, 3].map((item) => <div key={item} className="h-28 animate-pulse rounded-xl bg-neutral-100" />)}</div>}
     {error && <div role="alert" className="mb-4 rounded-xl border border-neutral-200 bg-white p-4"><p>{roommateErrorMessage(error, text, locale)}</p>{!urlState.error && <button type="button" onClick={() => void query.refetch()} className="mt-2 text-primary-700 underline">{text.retry}</button>}</div>}

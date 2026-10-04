@@ -9,15 +9,16 @@ import { ContactModal } from "@/app/components/ContactModal";
 import { localizePath } from "@/lib/i18n";
 import { getRoommateText } from "@/lib/i18n/roommates";
 import type { RoommateMyPost, RoommatePostSubmission } from "@/types/roommates";
-import { jsonRequest, roommateErrorMessage, roommateRequest } from "./client";
-import { HabitValues, RoommateHeading, postTitle, primaryClass, secondaryClass } from "./RoommateShared";
+import { ROOMMATE_REFRESH_INTERVAL_MS, jsonRequest, roommateErrorMessage, roommateRequest } from "./client";
+import { HabitValues, postTitle, primaryClass, secondaryClass } from "./RoommateShared";
 import RoommateForm from "./RoommateForm";
 import { useRoommateClock } from "./use-roommate-clock";
 
 export default function RoommateMine() {
   const locale = useLocale(); const text = getRoommateText(locale); const queryClient = useQueryClient();
   const now = useRoommateClock();
-  const query = useQuery({ queryKey: ["roommates", "mine"], queryFn: ({ signal }) => roommateRequest<RoommateMyPost>("posts/me", { signal }), retry: false, gcTime: 0, staleTime: 0, refetchOnWindowFocus: true });
+  const query = useQuery({ queryKey: ["roommates", "mine"], queryFn: ({ signal }) => roommateRequest<RoommateMyPost>("posts/me", { signal }), retry: false, gcTime: 0, staleTime: ROOMMATE_REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: (query) => Date.now() - query.state.errorUpdatedAt >= ROOMMATE_REFRESH_INTERVAL_MS });
   const [editing, setEditing] = useState(false); const [action, setAction] = useState<"complete" | "delete" | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [contactOpen, setContactOpen] = useState(false);
   const post = query.data?.post; const held = !!query.data?.holdUntil && Date.parse(query.data.holdUntil) > now;
   async function refresh() { setEditing(false); setAction(null); await queryClient.invalidateQueries({ queryKey: ["roommates"] }); }
@@ -30,7 +31,7 @@ export default function RoommateMine() {
     try { await roommateRequest(`posts/${encodeURIComponent(post.id)}`, jsonRequest(action === "delete" ? "DELETE" : "PATCH", { ...(action === "complete" ? { action: "complete" } : {}), expectedVersion: post.version })); await refresh(); }
     catch (err) { setError(roommateErrorMessage(err, text, locale)); if ((err as { status?: number }).status === 409) void query.refetch(); } finally { setBusy(false); }
   }
-  return <><RoommateHeading title={text.mine} />
+  return <>
     {query.isPending && <p role="status">{text.loading}</p>}
     {query.error && <div role="alert"><p>{roommateErrorMessage(query.error, text, locale)}</p><button type="button" className="mt-2 text-primary-700 underline" onClick={() => void query.refetch()}>{text.retry}</button></div>}
     {held && <aside className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-semibold text-amber-900">{text.hold}</h2><p className="mt-2 text-sm text-amber-900">{text.holdHelp}</p><p className="mt-2 text-sm text-amber-900">{text.holdUntil}: {new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" }).format(new Date(query.data!.holdUntil!))}</p>{query.data?.holdReason && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-amber-900">{query.data.holdReason}</p>}<button type="button" onClick={() => setContactOpen(true)} className="mt-3 text-sm underline">{text.inquiry}</button></aside>}

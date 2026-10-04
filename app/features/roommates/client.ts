@@ -4,6 +4,7 @@ import type { RoommateText } from "@/lib/i18n/roommates";
 export const ROOMMATE_QUERY_KEY = ["roommates"] as const;
 export const ROOMMATE_CLEAR_EVENT = "roommates:clear";
 export const ROOMMATE_CHANNEL = "syu-roommates-session";
+export const ROOMMATE_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 const EMAIL_KEY = "syu-roommates-pending-email";
 const EMAIL_TTL = 24 * 60 * 60 * 1000;
 export interface PendingEmail { email: string; remember: boolean; next: string; savedAt: number }
