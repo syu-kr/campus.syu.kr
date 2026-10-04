@@ -86,6 +86,16 @@ export function createLocalizedAlternates(pathname: string, locale: Locale) {
 
 export const dictionaries = {
   ko: {
+    publicHolidays: {
+      label: "공휴일",
+      source: "공휴일 출처: 한국천문연구원",
+      updatedAt: "마지막 공휴일 확인",
+      unavailable: "공휴일 정보를 확인할 수 없습니다.",
+      stale: "공휴일 정보 갱신이 지연되고 있습니다. 최신 공지를 확인해주세요.",
+      shuttleUnconfirmed: "공휴일 또는 공휴일 정보 미확인으로 오늘의 셔틀 출발 예측을 제공하지 않습니다. 학교 운행 공지를 확인해주세요.",
+      shuttleClosed: "학교 안내에 따라 오늘 셔틀버스가 운행되지 않습니다.",
+      referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
+    },
     crawlDataStatus: {
       staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
       staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
@@ -102,6 +112,7 @@ export const dictionaries = {
         "announcements-sw.json": "SW중심대학공지",
         "cafeteria-menu.json": "학식",
         "announcement-ai-metadata.json": "공지 AI 요약",
+        "public-holidays.json": "공휴일",
       },
     },
     meta: {
@@ -1040,6 +1051,8 @@ export const dictionaries = {
             "오늘 남은 셔틀 출발편이 없습니다. 전체 시간표에서 다음 운행일을 확인하세요.",
           nextDeparture:
             "다음 셔틀은 {routeName} 노선 {time} 출발이며 약 {minutes}분 남았습니다. 2026학년도 2학기 공식 시간표 확정 전 참고용입니다.",
+          confirmedDeparture:
+            "학교에서 안내한 다음 셔틀은 {routeName} 노선 {time} 예정 출발이며 약 {minutes}분 남았습니다.",
           departureItem: "{time} 출발, 약 {minutes}분 후",
         },
         shuttleDescriptionPrefix: "캠퍼스 셔틀버스 운행 시간표",
@@ -1099,6 +1112,8 @@ export const dictionaries = {
         operationTime: "운행 시간",
         noServiceOnDate: "이 날짜에는 운행되지 않습니다.",
         lastUpdated: "최종 업데이트",
+        verifiedSource: "학교 운행 안내",
+        verifiedAt: "운행 안내 확인",
         publicTransitTitle: "대중교통 안내",
         publicTransitDescription:
           "삼육대학교 주변 버스 실시간 도착 정보",
@@ -1737,6 +1752,16 @@ export const dictionaries = {
     },
   },
   en: {
+    publicHolidays: {
+      label: "Public holiday",
+      source: "Holiday source: Korea Astronomy and Space Science Institute",
+      updatedAt: "Holidays last checked",
+      unavailable: "Public holiday information is unavailable.",
+      stale: "Public holiday updates are delayed. Check the latest official notice.",
+      shuttleUnconfirmed: "Today's shuttle departure predictions are unavailable because it is a public holiday or holiday information is unconfirmed. Check the university's service notice.",
+      shuttleClosed: "Shuttle buses are not operating today according to the university's notice.",
+      referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
+    },
     crawlDataStatus: {
       staleTitle: "Some information updates are delayed",
       staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
@@ -1753,6 +1778,7 @@ export const dictionaries = {
         "announcements-sw.json": "SW-centered university notices",
         "cafeteria-menu.json": "Cafeteria",
         "announcement-ai-metadata.json": "Notice AI summaries",
+        "public-holidays.json": "Public holidays",
       },
     },
     meta: {
@@ -2705,6 +2731,8 @@ export const dictionaries = {
             "There are no remaining shuttle departures today. Check the full timetable for the next operating day.",
           nextDeparture:
             "The next shuttle is the {routeName} route at {time}, about {minutes} minutes from now. This is for reference until the Fall 2026 timetable is officially confirmed.",
+          confirmedDeparture:
+            "The next shuttle announced by the university is the {routeName} route, scheduled for {time}, about {minutes} minutes from now.",
           departureItem: "{time} departure, about {minutes} min later",
         },
         shuttleDescriptionPrefix: "Campus shuttle timetable",
@@ -2765,6 +2793,8 @@ export const dictionaries = {
         operationTime: "Operating Times",
         noServiceOnDate: "No service on this date.",
         lastUpdated: "Last updated",
+        verifiedSource: "University shuttle notice",
+        verifiedAt: "Shuttle notice verified",
         publicTransitTitle: "Public Transit",
         publicTransitDescription:
           "Real-time arrivals for buses around Sahmyook University",

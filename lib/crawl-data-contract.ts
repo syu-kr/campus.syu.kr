@@ -1,3 +1,5 @@
+import { parsePublicHolidaySnapshot } from "./public-holidays";
+
 export const DAILY_CRAWL_DATA_FILES = [
   "announcements-academic.json",
   "announcements-campus-life.json",
@@ -7,6 +9,7 @@ export const DAILY_CRAWL_DATA_FILES = [
   "announcements-sw.json",
   "cafeteria-menu.json",
   "announcement-ai-metadata.json",
+  "public-holidays.json",
 ] as const;
 
 export type DailyCrawlDataFile = (typeof DAILY_CRAWL_DATA_FILES)[number];
@@ -27,6 +30,7 @@ export const CRAWL_DATA_MAX_BYTES: Record<DailyCrawlDataFile, number> = {
   "announcements-sw.json": 1024 * 1024,
   "cafeteria-menu.json": 128 * 1024,
   "announcement-ai-metadata.json": 8 * 1024 * 1024,
+  "public-holidays.json": 128 * 1024,
 };
 
 interface CrawlDataManifestFile {
@@ -49,6 +53,7 @@ export const CRAWL_DATA_RETAINED_VERSION_LIMIT = 7;
 const DAILY_CRAWL_DATA_FILE_SET = new Set<string>(DAILY_CRAWL_DATA_FILES);
 const LEGACY_OPTIONAL_FILES = new Set<DailyCrawlDataFile>([
   "announcements-sw.json",
+  "public-holidays.json",
 ]);
 const VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
@@ -155,7 +160,7 @@ export function parseCrawlDataManifest(value: unknown): CrawlDataManifest {
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
     const entry = files[fileName];
     if (!isRecord(entry)) {
-      if (LEGACY_OPTIONAL_FILES.has(fileName)) continue;
+      if (entry === undefined && LEGACY_OPTIONAL_FILES.has(fileName)) continue;
       throw new Error(`manifest에 ${fileName} 항목이 없습니다.`);
     }
 
@@ -204,6 +209,10 @@ export function validateDailyCrawlData(
   }
   if (fileName === "cafeteria-menu.json") {
     validateCafeteria(value);
+    return;
+  }
+  if (fileName === "public-holidays.json") {
+    parsePublicHolidaySnapshot(value);
     return;
   }
   validateAnnouncementAiMetadata(value);

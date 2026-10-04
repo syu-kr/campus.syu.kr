@@ -14,6 +14,7 @@ import {
 import {
   getHomeShuttleBuses,
   getHomeShuttleSpecialPeriods,
+  getHomePublicHolidays,
 } from "@/lib/server/home-data";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { createFAQPageSchema } from "@/lib/structured-data";
@@ -37,13 +38,15 @@ async function BusInfoStructuredData() {
   const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const now = getKoreaNow();
-  const [shuttleBuses, shuttleSpecialPeriods] = await Promise.all([
+  const [shuttleBuses, shuttleSpecialPeriods, holidays] = await Promise.all([
     getHomeShuttleBuses(),
     getHomeShuttleSpecialPeriods(),
+    getHomePublicHolidays(),
   ]);
   const shuttleSummary = getCurrentShuttleSummary({
     buses: shuttleBuses,
     specialPeriods: shuttleSpecialPeriods,
+    holidays,
     now,
     limit: 3,
   });
@@ -62,7 +65,9 @@ async function BusInfoStructuredData() {
         inLanguage: dictionary.meta.inLanguage,
         mainEntity: [
           {
-            acceptedAnswerText: answerSummary.answer,
+            acceptedAnswerText: shuttleSummary.operationEvidence.length
+              ? [answerSummary.answer, answerSummary.source, answerSummary.updatedAt].join(" ")
+              : answerSummary.answer,
             questionName: answerSummary.question,
           },
         ],

@@ -5,35 +5,56 @@ import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAcademicSchedules } from "@/lib/api";
+import { fetchAcademicSchedules, fetchPublicHolidays } from "@/lib/api";
+import { getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo } from "react";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { useUrlSearch } from "@/lib/use-url-search";
 import type { AcademicSchedule } from "@/types";
+import type { PublicHolidaySnapshot } from "@/types/public-holidays";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
+const FIVE_MINUTES = 5 * 60 * 1000;
 
 type SchedulePageClientProps = {
   initialDateStringDot: string;
   initialSchedules: AcademicSchedule[];
+  initialPublicHolidays?: PublicHolidaySnapshot;
 };
 
 export default function SchedulePageClient({
   initialDateStringDot,
   initialSchedules,
+  initialPublicHolidays,
 }: SchedulePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
-  const { data: schedules, isLoading, isError, refetch } = useQuery({
+  const holidayText = dictionary.publicHolidays;
+  const { data: academicSchedules, isLoading, isError, refetch } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
     initialData: initialSchedules,
     staleTime: THIRTY_MINUTES,
     gcTime: ONE_HOUR,
   });
+  const {
+    data: publicHolidays,
+    isError: publicHolidaysError,
+    refetch: refetchPublicHolidays,
+  } = useQuery({
+    queryKey: ["public-holidays"],
+    queryFn: () => fetchPublicHolidays(),
+    initialData: initialPublicHolidays,
+    staleTime: FIVE_MINUTES,
+    refetchInterval: FIVE_MINUTES,
+  });
+  const schedules = useMemo(
+    () => mergePublicHolidays(academicSchedules ?? [], publicHolidays),
+    [academicSchedules, publicHolidays],
+  );
 
   const initialMonth = useMemo(
     () => parseDateStringDot(initialDateStringDot),
@@ -45,6 +66,18 @@ export default function SchedulePageClient({
     () => new Date(initialMonth.getFullYear(), initialMonth.getMonth()),
   );
   const [searchQuery, setSearchQuery] = useUrlSearch();
+  const monthHolidayInfo = getPublicHoliday(
+    `${currentMonth.getFullYear()}.${String(currentMonth.getMonth() + 1).padStart(2, "0")}.01`,
+    publicHolidays,
+  );
+  const hasMonthHolidayCoverage = Boolean(
+    publicHolidays?.lastSuccessAt &&
+    publicHolidays.years.includes(currentMonth.getFullYear()),
+  );
+  const selectedHolidayInfo = getPublicHoliday(
+    selectedDate ?? "",
+    publicHolidays,
+  );
 
   const groupedByMonth = useMemo(() => {
     if (!schedules) return {};
@@ -71,10 +104,9 @@ export default function SchedulePageClient({
   }, [schedules, selectedDate]);
 
   const monthSchedules = useMemo(() => {
-    if (!schedules) return new Map();
-
-    const map = new Map<string, boolean>();
+    const map = new Set<string>();
     schedules.forEach((schedule) => {
+      if (schedule.id.startsWith("public-holiday-")) return;
       const [startYear, startMonth, startDay] = schedule.startDate.split(".");
       const [endYear, endMonth, endDay] = schedule.endDate.split(".");
 
@@ -92,7 +124,7 @@ export default function SchedulePageClient({
       const current = new Date(start);
       while (current <= end) {
         const dateStr = `${current.getFullYear()}.${String(current.getMonth() + 1).padStart(2, "0")}.${String(current.getDate()).padStart(2, "0")}`;
-        map.set(dateStr, schedule.category === "exam");
+        map.add(dateStr);
         current.setDate(current.getDate() + 1);
       }
     });
@@ -164,24 +196,33 @@ export default function SchedulePageClient({
       const dateStr = `${year}.${String(month + 1).padStart(2, "0")}.${String(day).padStart(2, "0")}`;
       const hasEvent = monthSchedules.has(dateStr);
       const hasExam = hasExamInMonth.has(dateStr);
+      const holiday = getPublicHoliday(dateStr, publicHolidays);
+      const isHoliday = holiday.status === "holiday";
       const isSelected = selectedDate === dateStr;
 
       cells.push(
         <button
           key={day}
-          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
+          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${isHoliday ? `, ${holidayText.label}: ${holiday.names.join(", ")}` : ""}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
           aria-pressed={isSelected}
           aria-current={dateStr === initialDateStringDot ? "date" : undefined}
           onClick={() => setSelectedDate(dateStr)}
-          className={`relative flex min-h-[48px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors sm:min-h-[58px] sm:px-2 sm:py-2 ${
+          className={`relative flex min-h-[58px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:min-h-[64px] sm:px-2 sm:py-2 ${
             isSelected
               ? "bg-primary-600 text-white"
-              : hasEvent
+              : hasEvent || isHoliday
                 ? "bg-neutral-100 hover:bg-neutral-200"
                 : "hover:bg-neutral-50"
           }`}
         >
-          <div className="shrink-0 font-medium leading-5">{day}</div>
+          <div className={`shrink-0 font-medium leading-5 ${isHoliday && !isSelected ? "text-red-700" : ""}`}>
+            {day}
+          </div>
+          {isHoliday && (
+            <span className="mt-0.5 max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
+              {holidayText.label}
+            </span>
+          )}
           {hasEvent && (
             <div className="mt-0.5 flex min-w-0 shrink-0 justify-center sm:mt-1">
               {hasExam ? (
@@ -220,8 +261,12 @@ export default function SchedulePageClient({
         });
   const formatItemCount = (count: number) =>
     `${text.itemCountPrefix}${count}${text.itemCountSuffix}`;
-  const getScheduleTypeLabel = (category: string) =>
-    category === "exam" ? text.exam : text.schedule;
+  const getScheduleTypeLabel = (schedule: AcademicSchedule) =>
+    schedule.id.startsWith("public-holiday-")
+      ? holidayText.label
+      : schedule.category === "exam"
+        ? text.exam
+        : text.schedule;
 
   return (
     <Container className="py-6 sm:py-8">
@@ -289,7 +334,10 @@ export default function SchedulePageClient({
               </button>
             </div>
             {renderCalendar()}
-            <div className="mt-4 flex items-center gap-4 text-xs text-neutral-600">
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-neutral-600">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-red-50 px-1 py-0.5 font-semibold text-red-700">{holidayText.label}</span>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
                 <span>{text.exam}</span>
@@ -299,6 +347,16 @@ export default function SchedulePageClient({
                 <span>{text.event}</span>
               </div>
             </div>
+            {(monthHolidayInfo.status === "unknown" || monthHolidayInfo.isStale || publicHolidaysError) && (
+              <p role="status" className="mt-3 text-xs leading-relaxed text-amber-800">
+                {!hasMonthHolidayCoverage ? holidayText.unavailable : holidayText.stale}
+                {publicHolidaysError && (
+                  <button type="button" onClick={() => refetchPublicHolidays()} className="ml-2 rounded underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-primary-500">
+                    {dictionary.home.dashboard.retry}
+                  </button>
+                )}
+              </p>
+            )}
           </Card>
 
           {selectedDate && (
@@ -318,8 +376,12 @@ export default function SchedulePageClient({
                         key={schedule.id}
                         className="text-sm text-neutral-700 flex items-start gap-2"
                       >
-                        <span className="text-xs font-semibold text-primary-600 mt-1 px-2 py-1 rounded bg-primary-50">
-                          {getScheduleTypeLabel(schedule.category)}
+                        <span className={`mt-1 rounded px-2 py-1 text-xs font-semibold ${
+                          schedule.id.startsWith("public-holiday-")
+                            ? "bg-red-50 text-red-700"
+                            : "bg-primary-50 text-primary-600"
+                        }`}>
+                          {getScheduleTypeLabel(schedule)}
                         </span>
                         <div>
                           <p className="font-medium">{schedule.title}</p>
@@ -334,6 +396,21 @@ export default function SchedulePageClient({
                       </div>
                     ))}
                   </div>
+                )}
+                {selectedHolidayInfo.status === "holiday" && publicHolidays && (
+                  <p className="mt-4 text-xs leading-relaxed text-neutral-600">
+                    <a href={publicHolidays.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                      {holidayText.source}
+                    </a>
+                    {selectedHolidayInfo.lastSuccessAt && (
+                      <> · {holidayText.updatedAt}: <time dateTime={selectedHolidayInfo.lastSuccessAt}>
+                        {new Date(selectedHolidayInfo.lastSuccessAt).toLocaleString(
+                          locale === "ko" ? "ko-KR" : "en-US",
+                          { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" },
+                        )}
+                      </time></>
+                    )}
+                  </p>
                 )}
               </Card>
               <div className="border-b border-neutral-300"></div>
@@ -427,7 +504,7 @@ export default function SchedulePageClient({
                                   </p>
                                 </div>
                                 <div className="text-xs font-semibold text-neutral-600">
-                                  {getScheduleTypeLabel(schedule.category)}
+                                  {getScheduleTypeLabel(schedule)}
                                 </div>
                               </div>
                             </Card>
@@ -475,7 +552,7 @@ export default function SchedulePageClient({
                             </p>
                           </div>
                           <div className="text-xs font-semibold text-neutral-600">
-                            {getScheduleTypeLabel(schedule.category)}
+                            {getScheduleTypeLabel(schedule)}
                           </div>
                         </div>
                       </Card>

@@ -190,6 +190,8 @@ export async function buildLocalSnapshot(
   }
 
   const sourceHealth = await readHealthCache(healthPath);
+  // Old app versions reject unknown source-health keys. Enable after the compatible app deploys.
+  if (process.env.PUBLIC_HOLIDAYS_ENABLED !== "true") delete sourceHealth["public-holidays.json"];
   const manifest = parseCrawlDataManifest({
     schemaVersion: 1,
     version,

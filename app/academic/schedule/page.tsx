@@ -12,7 +12,10 @@ import {
   localizePath,
   normalizeLocale,
 } from "@/lib/i18n";
-import { getHomeAcademicSchedules } from "@/lib/server/home-data";
+import {
+  getHomeAcademicSchedules,
+  getHomePublicHolidays,
+} from "@/lib/server/home-data";
 import { createFAQPageSchema } from "@/lib/structured-data";
 
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
@@ -32,11 +35,15 @@ async function ScheduleContent() {
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const now = getKoreaNow();
   const todayInfo = getTodayInfo(now);
-  const initialSchedules = await getHomeAcademicSchedules();
+  const [initialSchedules, initialPublicHolidays] = await Promise.all([
+    getHomeAcademicSchedules(),
+    getHomePublicHolidays(),
+  ]);
   const answerSummary = createAcademicScheduleAnswerSummary({
     locale,
     now,
     schedules: initialSchedules,
+    publicHolidays: initialPublicHolidays,
     todayInfo,
   });
   const dictionary = getDictionary(locale);
@@ -60,6 +67,7 @@ async function ScheduleContent() {
       <SchedulePageClient
         initialDateStringDot={todayInfo.dateStringDot}
         initialSchedules={initialSchedules}
+        initialPublicHolidays={initialPublicHolidays}
       />
     </>
   );

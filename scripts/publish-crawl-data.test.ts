@@ -44,6 +44,10 @@ beforeEach(async () => {
       fileName === "cafeteria-menu.json" ? {
         id: "fixture-cafeteria", name: "Fixture", weekStart: "2026-09-28",
         lastUpdated: "2026-10-04T00:00:00.000Z", menus: [],
+      } : fileName === "public-holidays.json" ? {
+        schemaVersion: 1, sourceUrl: "https://www.data.go.kr/data/15012690/openapi.do",
+        lastSuccessAt: "2026-10-04T00:00:00.000Z", years: [2026, 2027],
+        holidays: [{ date: "2026-10-09", names: ["한글날"] }],
       } : { version: 1, generatedAt: "2026-10-04T00:00:00.000Z", items: {} };
     await writeFile(path.join(dataDir, fileName), JSON.stringify(data));
   }
@@ -110,6 +114,48 @@ describe("crawler health publication", () => {
 
     expect(JSON.parse(await readFile(healthPath, "utf8"))).toEqual({ files: {} });
     expect((await buildLocalSnapshot(dataDir, healthPath)).manifest.sourceHealth).toBeUndefined();
+  });
+
+  it("keeps bundled holidays on a legacy pull and retains old versions without that optional file", async () => {
+    const manifest = await fixtureManifest("legacy-holidays");
+    delete manifest.files["public-holidays.json"];
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    remote.set("versions/legacy-holidays/manifest.json", Buffer.from(JSON.stringify(manifest)));
+    remote.delete("versions/legacy-holidays/public-holidays.json");
+    const holidayBaseline = await readFile(path.join(dataDir, "public-holidays.json"));
+
+    await pullCurrent(dataDir, healthPath);
+    expect(await readFile(path.join(dataDir, "public-holidays.json"))).toEqual(holidayBaseline);
+    const outputDir = path.join(root, "legacy-transition");
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+    const current = parseCrawlDataManifest(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "current.json"), "utf8")));
+    expect(current.files["public-holidays.json"]).toBeDefined();
+    expect(current.retainedVersions).toContain("legacy-holidays");
+    const retained = parseCrawlDataManifest(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "versions", "legacy-holidays", "manifest.json"), "utf8")));
+    expect(retained.files["public-holidays.json"]).toBeUndefined();
+  });
+
+  it("verifies holiday hashes before replacing any current local bytes", async () => {
+    const holidayBaseline = await readFile(path.join(dataDir, "public-holidays.json"));
+    const manifest = await fixtureManifest("corrupt-holidays");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    remote.set("versions/corrupt-holidays/public-holidays.json", Buffer.from("corrupt"));
+
+    await expect(pullCurrent(dataDir, healthPath)).rejects.toThrow("manifest와 일치하지 않습니다");
+    expect(await readFile(path.join(dataDir, "public-holidays.json"))).toEqual(holidayBaseline);
+  });
+
+  it("gates new holiday health until compatible app deployment while preserving the cached health", async () => {
+    await cacheHealth({ "public-holidays.json": fresh, "cafeteria-menu.json": stale });
+    vi.stubEnv("PUBLIC_HOLIDAYS_ENABLED", "");
+    const gated = await buildLocalSnapshot(dataDir, healthPath);
+    expect(gated.manifest.files["public-holidays.json"]).toBeDefined();
+    expect(gated.manifest.sourceHealth).toEqual({ "cafeteria-menu.json": stale });
+    expect(JSON.parse(await readFile(healthPath, "utf8")).files["public-holidays.json"]).toEqual(fresh);
+    vi.stubEnv("PUBLIC_HOLIDAYS_ENABLED", "true");
+    expect((await buildLocalSnapshot(dataDir, healthPath)).manifest.sourceHealth).toEqual({
+      "public-holidays.json": fresh, "cafeteria-menu.json": stale,
+    });
   });
 
   it("does not restore health when a downloaded file fails verification", async () => {

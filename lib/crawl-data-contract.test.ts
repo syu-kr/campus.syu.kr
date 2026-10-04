@@ -105,6 +105,33 @@ describe("crawl data contract", () => {
     expect(parseCrawlDataManifest(manifest).files["announcements-sw.json"]).toBeUndefined();
   });
 
+  it("accepts legacy versions without holidays while validating new holiday entries", () => {
+    const manifest = createManifest();
+    delete manifest.files["public-holidays.json"];
+    expect(parseCrawlDataManifest(manifest).files["public-holidays.json"]).toBeUndefined();
+    manifest.files["public-holidays.json"] = {
+      path: `versions/${manifest.version}/public-holidays.json`, sha256: "a".repeat(64), size: 128 * 1024 + 1,
+    };
+    expect(() => parseCrawlDataManifest(manifest)).toThrow("파일 크기가 올바르지 않습니다");
+    expect(() => parseCrawlDataManifest({ ...manifest, files: { ...manifest.files, "public-holidays.json": null } })).toThrow("항목이 없습니다");
+  });
+
+  it("validates holiday snapshots and an explicit uncollected bootstrap", () => {
+    const snapshot = {
+      schemaVersion: 1, sourceUrl: "https://www.data.go.kr/data/15012690/openapi.do",
+      lastSuccessAt: "2026-10-04T00:00:00Z", years: [2026, 2027],
+      holidays: [{ date: "2026-10-09", names: ["한글날"] }],
+    };
+    expect(() => validateDailyCrawlData("public-holidays.json", snapshot)).not.toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", {
+      ...snapshot, lastSuccessAt: null, years: [], holidays: [],
+    })).not.toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", {
+      ...snapshot, holidays: [{ date: "2026-02-30", names: ["가짜 공휴일"] }],
+    })).toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", { ...snapshot, sourceUrl: "https://example.com" })).toThrow();
+  });
+
   it("rejects inconsistent retained versions", () => {
     const manifest = createManifest();
     manifest.retainedVersions = ["another-version"];

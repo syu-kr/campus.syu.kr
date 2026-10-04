@@ -1,7 +1,9 @@
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { isScheduleOnDate, type TodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
+import { getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
 import type { AcademicSchedule, AnswerSummary, PhoneNumber } from "@/types";
+import type { PublicHolidaySnapshot } from "@/types/public-holidays";
 
 type GraduationMetadata = {
   sourceTitle: string;
@@ -12,20 +14,24 @@ export function createAcademicScheduleAnswerSummary({
   locale,
   now,
   schedules,
+  publicHolidays,
   todayInfo,
 }: {
   locale: Locale;
   now: Date;
   schedules: AcademicSchedule[];
+  publicHolidays?: PublicHolidaySnapshot;
   todayInfo: TodayInfo;
 }): AnswerSummary {
   const dictionary = getDictionary(locale);
   const text = dictionary.pages.academicSchedule;
   const answerText = text.answer;
-  const todaySchedules = schedules
+  const displaySchedules = mergePublicHolidays(schedules, publicHolidays);
+  const holiday = getPublicHoliday(todayInfo.dateStringDash, publicHolidays, now);
+  const todaySchedules = displaySchedules
     .filter((schedule) => isScheduleOnDate(schedule, todayInfo.dateStringDot))
     .sort(compareScheduleDates);
-  const nextSchedule = schedules
+  const nextSchedule = displaySchedules
     .filter(
       (schedule) =>
         schedule.endDate >= todayInfo.dateStringDot &&
@@ -57,13 +63,24 @@ export function createAcademicScheduleAnswerSummary({
         date: todayLabel,
         next: nextScheduleText,
       });
+  const hasHolidayCoverage = Boolean(
+    publicHolidays?.lastSuccessAt &&
+    publicHolidays.years.includes(Number(todayInfo.dateStringDash.slice(0, 4))),
+  );
+  const holidayNotice = !publicHolidays
+    ? ""
+    : !hasHolidayCoverage
+      ? dictionary.publicHolidays.unavailable
+      : holiday.isStale ? dictionary.publicHolidays.stale : "";
 
   return {
     eyebrow: answerText.eyebrow,
     title: answerText.title,
     question: answerText.question,
-    answer,
-    source: answerText.source,
+    answer: `${answer}${holidayNotice ? ` ${holidayNotice}` : ""}`,
+    source: publicHolidays?.lastSuccessAt
+      ? `${answerText.source} / ${dictionary.publicHolidays.source}`
+      : answerText.source,
     updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
     items: [
       {
