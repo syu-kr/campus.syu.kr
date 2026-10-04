@@ -5,6 +5,7 @@ import type { PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
 import { createShuttleAnswerSummary } from "./campus-aeo";
 import { getCurrentShuttleSummary } from "./shuttle-schedule";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "./public-holidays";
+import { getDictionary } from "./i18n";
 
 const now = new Date("2027-01-02T11:55:00+09:00");
 const evidence = { sourceUrl: "https://www.syu.ac.kr/school-life/school-bus/",
@@ -47,5 +48,32 @@ describe("verified shuttle answers", () => {
     const answer = createShuttleAnswerSummary({ locale: "ko", now: ordinaryNow, summary });
     expect(answer.source).toContain("2026년 4월 29일");
     expect(answer.answer).toContain("공식 시간표 확정 전 참고용");
+  });
+});
+
+describe("public holiday shuttle answers", () => {
+  it.each(["ko", "en"] as const)("distinguishes confirmed holidays from missing information in %s", (locale) => {
+    const now = new Date("2026-10-09T11:55:00+09:00");
+    const holidays: PublicHolidaySnapshot = {
+      schemaVersion: 1, sourceUrl: PUBLIC_HOLIDAY_SOURCE_URL, years: [2026],
+      lastSuccessAt: now.toISOString(), holidays: [{ date: "2026-10-09", names: ["한글날"] }],
+    };
+    const text = getDictionary(locale).publicHolidays;
+    const answerWith = (snapshot?: PublicHolidaySnapshot) => createShuttleAnswerSummary({
+      locale, now, summary: getCurrentShuttleSummary({ buses, now,
+        specialPeriods: periods as ShuttleSpecialPeriods, holidays: snapshot }),
+    });
+
+    const holidayAnswer = answerWith(holidays);
+    expect(holidayAnswer.answer).toContain(text.shuttleHolidayClosed);
+    expect(holidayAnswer.answer).toContain(text.referenceHolidaySchedule);
+    expect(holidayAnswer.answer).not.toContain(text.shuttleUnconfirmed);
+    expect(holidayAnswer.answer).not.toContain(text.referenceSchedule);
+    expect(holidayAnswer.items).toBeUndefined();
+
+    const unknownAnswer = answerWith();
+    expect(unknownAnswer.answer).toContain(text.shuttleUnconfirmed);
+    expect(unknownAnswer.answer).not.toContain(text.shuttleHolidayClosed);
+    expect(unknownAnswer.items).toBeUndefined();
   });
 });

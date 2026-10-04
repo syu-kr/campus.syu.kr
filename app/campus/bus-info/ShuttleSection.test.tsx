@@ -54,7 +54,16 @@ describe("public holiday shuttle display", () => {
     const cleanup = mount();
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
     await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
-    expect(screen.getByText(text.publicHolidays.shuttleUnconfirmed)).toBeInTheDocument();
+    const message = status === "holiday"
+      ? text.publicHolidays.shuttleHolidayClosed
+      : text.publicHolidays.shuttleUnconfirmed;
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(screen.queryByText(status === "holiday"
+      ? text.publicHolidays.shuttleUnconfirmed
+      : text.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
+    expect(screen.getByText(status === "holiday"
+      ? text.publicHolidays.referenceHolidaySchedule
+      : text.publicHolidays.referenceSchedule)).toBeInTheDocument();
     expect(screen.queryByText(/^현재$/)).not.toBeInTheDocument();
     expect(screen.queryByText("곧 출발하는 버스")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
@@ -70,6 +79,7 @@ describe("public holiday shuttle display", () => {
     await screen.findByText("곧 출발하는 버스");
     expect(screen.getByText(/^현재$/)).toBeInTheDocument();
     expect(screen.queryByText(text.publicHolidays.shuttleUnconfirmed)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     cleanup();
   });
 
@@ -98,6 +108,7 @@ describe("public holiday shuttle display", () => {
     const cleanup = mount();
     await screen.findByText("곧 출발하는 버스");
     expect(screen.getByText(/^현재$/)).toBeInTheDocument();
+    expect(screen.queryByText(text.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     expect(screen.queryByText("화랑대역(5번 출구) → 학교")).not.toBeInTheDocument();
     expect(screen.queryByText(text.pages.busInfo.scheduleNotice)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: text.pages.busInfo.verifiedSource }))

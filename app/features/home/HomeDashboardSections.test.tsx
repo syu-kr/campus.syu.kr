@@ -46,9 +46,9 @@ describe("home shuttle operation notices", () => {
   });
 
   it.each([
-    ["holiday", holidays, "한글날"],
-    ["missing coverage", emptyPublicHolidays(), dictionary.publicHolidays.unavailable],
-  ] as const)("suppresses departures and reports uncertainty for %s", (_scenario, snapshot, title) => {
+    ["holiday", holidays, "한글날", dictionary.publicHolidays.shuttleHolidayClosed],
+    ["missing coverage", emptyPublicHolidays(), dictionary.publicHolidays.unavailable, dictionary.publicHolidays.shuttleUnconfirmed],
+  ] as const)("suppresses departures and shows the appropriate notice for %s", (_scenario, snapshot, title, message) => {
     const props = {
       isLoading: false, isError: false, onRetry: vi.fn(), buses, specialPeriods,
       now: new Date("2026-10-09T11:55:00+09:00"),
@@ -59,7 +59,10 @@ describe("home shuttle operation notices", () => {
 
     view.rerender(<TodayShuttleSection {...props} holidays={snapshot} />);
     expect(screen.getByRole("heading", { level: 3, name: title })).toBeInTheDocument();
-    expect(screen.getByText(dictionary.publicHolidays.shuttleUnconfirmed)).toBeInTheDocument();
+    expect(screen.getByText(message)).toBeInTheDocument();
+    expect(screen.queryByText(message === dictionary.publicHolidays.shuttleHolidayClosed
+      ? dictionary.publicHolidays.shuttleUnconfirmed
+      : dictionary.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     expect(screen.queryByText(dictionary.publicHolidays.shuttleClosed)).not.toBeInTheDocument();
     expect(screen.queryByText(dictionary.home.dashboard.shuttleNoMore)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: buses[0].routeName })).not.toBeInTheDocument();

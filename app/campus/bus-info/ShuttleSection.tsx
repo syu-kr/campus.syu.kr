@@ -632,7 +632,9 @@ export default function ShuttleSection() {
             <p className="mt-1 text-sm text-amber-900">
               {dayStatus.operationStatus === "closed"
                 ? dictionary.publicHolidays.shuttleClosed
-                : dictionary.publicHolidays.shuttleUnconfirmed}
+                : dayStatus.holiday.status === "holiday"
+                  ? dictionary.publicHolidays.shuttleHolidayClosed
+                  : dictionary.publicHolidays.shuttleUnconfirmed}
             </p>
           )}
           {dayStatus.holiday.isStale && dayStatus.operationStatus === "unconfirmed" && (
@@ -975,7 +977,9 @@ export default function ShuttleSection() {
         )}
         {!canPredictDepartures && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
-            {dictionary.publicHolidays.referenceSchedule}
+            {dayStatus.holiday.status === "holiday"
+              ? dictionary.publicHolidays.referenceHolidaySchedule
+              : dictionary.publicHolidays.referenceSchedule}
           </p>
         )}
       </Card>

@@ -293,7 +293,11 @@ export function TodayShuttleSection({
           <StateCard
             type="info"
             title={summary.operationStatus === "closed" ? dictionary.home.dashboard.shuttle : summary.holiday.names.length ? summary.holiday.names.join(" · ") : dictionary.publicHolidays.unavailable}
-            message={summary.operationStatus === "closed" ? dictionary.publicHolidays.shuttleClosed : dictionary.publicHolidays.shuttleUnconfirmed}
+            message={summary.operationStatus === "closed"
+              ? dictionary.publicHolidays.shuttleClosed
+              : summary.holiday.status === "holiday"
+                ? dictionary.publicHolidays.shuttleHolidayClosed
+                : dictionary.publicHolidays.shuttleUnconfirmed}
             action={<Link href={localizePath("/campus/bus-info", locale)} className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">{dictionary.home.dashboard.shuttleSchedule}</Link>}
           />
         )}
