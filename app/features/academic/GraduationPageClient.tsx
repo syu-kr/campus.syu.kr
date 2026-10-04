@@ -16,6 +16,7 @@ import {
   getAvailableDepartments,
   getAvailableMajorTracks,
   getAvailableMajors,
+  getAvailableTransferYears,
   getChecklistItems,
   getCollegeById,
   getColleges,
@@ -89,12 +90,16 @@ export default function GraduationPageClient() {
   const admissionTypes = selection.departmentId
     ? getAvailableAdmissionTypes(selection.departmentId, selection.majorId)
     : [];
+  const transferYears = selection.admissionType === "departmentTransfer"
+    ? getAvailableTransferYears(selection.departmentId, selection.majorId)
+    : [];
   const majorTracks =
     selection.departmentId && selection.admissionType
       ? getAvailableMajorTracks(
           selection.departmentId,
           selection.majorId,
           selection.admissionType,
+          selection.transferYear,
         )
       : [];
   const selectedCollege = getCollegeById(selection.collegeId);
@@ -108,10 +113,12 @@ export default function GraduationPageClient() {
     selection.departmentId,
     selection.admissionYear,
     locale,
+    selection.majorId,
   );
   const verifiedCourses = getVerifiedCurriculumCourses(
     selection.departmentId,
     selection.admissionYear,
+    selection.majorId,
   );
   const selectedCourseSummary = summarizeSelectedCourses(
     verifiedCourses,
@@ -250,6 +257,7 @@ export default function GraduationPageClient() {
       ...INITIAL_SELECTION,
       admissionYear: selection.admissionYear,
       collegeId,
+      transferYear: undefined,
     });
   };
 
@@ -260,6 +268,7 @@ export default function GraduationPageClient() {
       majorId: undefined,
       admissionType: "",
       majorTrack: "",
+      transferYear: undefined,
     });
   };
 
@@ -549,6 +558,7 @@ export default function GraduationPageClient() {
                         majorId: major.id,
                         admissionType: "",
                         majorTrack: "",
+                        transferYear: undefined,
                       });
                     }}
                   />
@@ -574,16 +584,31 @@ export default function GraduationPageClient() {
                     updateSelection({
                       admissionType: type,
                       majorTrack: "",
+                      transferYear: undefined,
                     });
                   }}
                 />
               ))}
             </ChoiceGroup>
 
+            {transferYears.length > 0 && (
+              <ChoiceGroup label={text.labels.transferYear}>
+                {transferYears.map((year) => (
+                  <ChoiceButton
+                    key={year}
+                    selected={selection.transferYear === year}
+                    title={text.labels.transferYearOption.replace("{year}", String(year))}
+                    onClick={() => updateSelection({ transferYear: year, majorTrack: "" })}
+                  />
+                ))}
+                <p className="text-xs leading-5 text-neutral-500">{text.helps.transferYear}</p>
+              </ChoiceGroup>
+            )}
+
             <ChoiceGroup
               label={text.labels.majorTrack}
               emptyMessage={text.empty.admissionTypeFirst}
-              disabled={!selection.admissionType}
+              disabled={!selection.admissionType || (transferYears.length > 0 && !selection.transferYear)}
             >
               {majorTracks.map((track) => (
                 <ChoiceButton
@@ -598,7 +623,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.coursesTitle}
-            description={text.sections.coursesDescription}
+            description={text.sections.coursesDescription.replace("{sourceYear}", curriculumAvailability.sourceYear)}
           >
             {!selection.departmentId || !selection.admissionYear ? (
               <EmptyState message={text.empty.courseAvailability} />
@@ -608,6 +633,11 @@ export default function GraduationPageClient() {
               </div>
             ) : (
               <div className="space-y-4">
+                {curriculumAvailability.reason && (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+                    {curriculumAvailability.reason}
+                  </p>
+                )}
                 <CurriculumCourseSelector
                   courses={verifiedCourses}
                   selectedCourseIds={selectedCourseIds}
@@ -728,17 +758,18 @@ export default function GraduationPageClient() {
                         </p>
                         <EvidenceLine
                           sourceIds={item.sourceIds}
+                          sourcePages={item.sourcePages}
                           sources={sources}
                           text={text}
                         />
                       </div>
-                      <Badge color={item.shortage > 0 ? "red" : "green"}>
-                        {item.shortage > 0
+                      <Badge color={getEvaluationBadgeColor(item.status)}>
+                        {item.status === "short"
                           ? text.result.creditShortage.replace(
                               "{shortage}",
                               String(item.shortage),
                             )
-                          : text.result.satisfied}
+                          : getEvaluationStatusLabel(item.status, text)}
                       </Badge>
                     </div>
                   ))}
@@ -763,6 +794,7 @@ export default function GraduationPageClient() {
                         </p>
                         <EvidenceLine
                           sourceIds={item.sourceIds}
+                          sourcePages={item.sourcePages}
                           sources={sources}
                           text={text}
                         />
@@ -1309,7 +1341,6 @@ function ChecklistCard({
   const choices: Array<{ value: ChecklistAnswer; label: string }> = [
     { value: "satisfied", label: text.checklist.satisfied },
     { value: "incomplete", label: text.checklist.incomplete },
-    { value: "notApplicable", label: text.checklist.notApplicable },
   ];
 
   return (
@@ -1318,12 +1349,14 @@ function ChecklistCard({
       {description && (
         <p className="mt-1 text-xs leading-5 text-neutral-500">{description}</p>
       )}
+      <p className="mt-1 text-xs leading-5 text-neutral-500">{text.checklist.requiredHint}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {choices.map((choice) => (
           <button
             key={choice.value}
             type="button"
             onClick={() => onAnswer(choice.value)}
+            aria-pressed={answer === choice.value}
             className={clsx(
               "rounded-lg border px-3 py-2 text-xs font-semibold transition",
               answer === choice.value
@@ -1410,10 +1443,12 @@ function SummaryMetric({
 
 function EvidenceLine({
   sourceIds,
+  sourcePages,
   sources,
   text,
 }: {
   sourceIds: string[];
+  sourcePages?: number[];
   sources: GraduationSourceList;
   text: GraduationText;
 }) {
@@ -1433,6 +1468,7 @@ function EvidenceLine({
             `${source.title} (${source.verifiedAt} ${text.sources.verifiedSuffix})`,
         )
         .join(", ")}
+      {sourcePages?.length ? ` · ${text.sources.pagesPrefix}: ${sourcePages.join(", ")}` : ""}
     </p>
   );
 }
