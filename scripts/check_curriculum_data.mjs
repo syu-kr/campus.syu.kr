@@ -5,11 +5,12 @@ import path from "node:path";
 const root = process.cwd();
 const readJson = (relativePath) =>
   JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8"));
-const exists = (relativePath) => fs.existsSync(path.join(root, relativePath));
+const sourcePath = (filePath) => path.isAbsolute(filePath) ? filePath : path.join(root, filePath);
+const exists = (filePath) => fs.existsSync(sourcePath(filePath));
 const sha256 = (relativePath) =>
   crypto
     .createHash("sha256")
-    .update(fs.readFileSync(path.join(root, relativePath)))
+    .update(fs.readFileSync(sourcePath(relativePath)))
     .digest("hex")
     .toUpperCase();
 
@@ -228,6 +229,131 @@ verifySourceHash(
   "전체 국문 요람 PDF",
 );
 
+const curriculum2026 = readJson("public/data/curriculum-courses-2026-verified.json");
+const selectionRules2026 = readJson("public/data/curriculum-course-selection-rules-2026.json");
+const requirements2026 = readJson("public/data/graduation-requirements-2026.json");
+const departments2026 = new Map(
+  requirements2026.departments.map((department) => [department.id, department]),
+);
+const courses2026 = new Map();
+const fullyVerifiedDepartments2026 = curriculum2026.metadata.fullyVerifiedDepartmentIds;
+const humanVerified2026 = curriculum2026.courses.filter(
+  (course) => course.verificationStatus === "humanVerified",
+);
+if (
+  curriculum2026.metadata.sourceYear !== "2026" ||
+  selectionRules2026.metadata.sourceYear !== "2026" ||
+  curriculum2026.metadata.sourceSha256 !== requirements2026.metadata.sourceSha256
+) {
+  errors.push("2026 교육과정 출처 메타데이터 오류");
+}
+for (const course of curriculum2026.courses) {
+  if (!course.id || courses2026.has(course.id)) {
+    errors.push(`2026 과목 ID 누락 또는 중복: ${course.id}`);
+  }
+  courses2026.set(course.id, course);
+  const department = departments2026.get(course.departmentId);
+  if (!department) {
+    errors.push(`2026 과목 학과 ID 오류: ${course.id}`);
+  } else if (
+    course.majorId != null &&
+    !(department.majors ?? []).some((major) => major.id === course.majorId)
+  ) {
+    errors.push(`2026 과목 세부전공 ID 오류: ${course.id} -> ${course.majorId}`);
+  }
+  if (!["humanVerified", "needsReview"].includes(course.verificationStatus)) {
+    errors.push(`2026 과목 검증 상태 오류: ${course.id}`);
+  }
+  if (
+    !Array.isArray(course.sourcePages) ||
+    course.sourcePages.length === 0 ||
+    course.sourcePages.some((page) => !Number.isInteger(page) || page < 1 || page > 428)
+  ) {
+    errors.push(`2026 과목 근거 페이지 오류: ${course.id}`);
+  }
+  if (course.verificationStatus !== "humanVerified") continue;
+  if (
+    !course.name?.trim() ||
+    !course.category?.trim() ||
+    !course.departmentName?.trim() ||
+    !Number.isFinite(course.credits) || course.credits < 0 ||
+    !Number.isInteger(course.year) || course.year < 1 || course.year > 6 ||
+    !Number.isInteger(course.semester) || course.semester < 1 || course.semester > 2
+  ) {
+    errors.push(`2026 검증 완료 과목 필수값 오류: ${course.id}`);
+  }
+}
+if (
+  curriculum2026.summary.totalCourses !== curriculum2026.courses.length ||
+  curriculum2026.summary.totalVerifiedCourses !== humanVerified2026.length
+) {
+  errors.push("2026 교육과정 과목 수 요약 오류");
+}
+if (new Set(fullyVerifiedDepartments2026).size !== fullyVerifiedDepartments2026.length) {
+  errors.push("2026 전체 검증 학과 목록 중복");
+}
+for (const departmentId of fullyVerifiedDepartments2026) {
+  const courses = curriculum2026.courses.filter((course) => course.departmentId === departmentId);
+  if (
+    !departments2026.has(departmentId) ||
+    courses.length === 0 ||
+    courses.some((course) => course.verificationStatus !== "humanVerified")
+  ) {
+    errors.push(`2026 전체 검증 학과의 과목 검증 상태 오류: ${departmentId}`);
+  }
+}
+const reviewedDepartments2026 = curriculum2026.metadata.reviewedDepartmentIds ?? [];
+if (new Set(reviewedDepartments2026).size !== reviewedDepartments2026.length) {
+  errors.push("2026 전체 페이지 대조 학과 목록 중복");
+}
+for (const departmentId of reviewedDepartments2026) {
+  if (
+    !departments2026.has(departmentId) ||
+    !curriculum2026.courses.some((course) => course.departmentId === departmentId)
+  ) {
+    errors.push(`2026 전체 페이지 대조 학과 ID 또는 과목 누락: ${departmentId}`);
+  }
+}
+const groupIds2026 = new Set();
+const groupedCourseIds2026 = new Set();
+for (const group of selectionRules2026.exclusiveGroups) {
+  if (!group.id || groupIds2026.has(group.id)) {
+    errors.push(`2026 선택 규칙 ID 누락 또는 중복: ${group.id}`);
+  }
+  groupIds2026.add(group.id);
+  if (!departments2026.has(group.departmentId) || group.courseIds.length < 2) {
+    errors.push(`2026 선택 규칙 학과 또는 과목 수 오류: ${group.id}`);
+  }
+  for (const courseId of group.courseIds) {
+    const course = courses2026.get(courseId);
+    if (
+      !course ||
+      course.departmentId !== group.departmentId ||
+      course.verificationStatus !== "humanVerified"
+    ) {
+      errors.push(`2026 선택 규칙의 검증 과목 참조 오류: ${group.id} -> ${courseId}`);
+    }
+    if (groupedCourseIds2026.has(courseId)) {
+      errors.push(`2026 여러 선택 규칙에 포함된 과목: ${courseId}`);
+    }
+    groupedCourseIds2026.add(courseId);
+  }
+}
+const source2026ArgumentIndex = process.argv.indexOf("--source-2026");
+const source2026File = source2026ArgumentIndex < 0
+  ? curriculum2026.metadata.sourceFile
+  : process.argv[source2026ArgumentIndex + 1];
+if (source2026ArgumentIndex >= 0 && (!source2026File || source2026File.startsWith("--"))) {
+  errors.push("--source-2026 다음에 2026 원본 PDF 경로를 지정하세요.");
+} else {
+  verifySourceHash(
+    source2026File,
+    curriculum2026.metadata.sourceSha256,
+    "2026 학부 교육과정 PDF",
+    source2026ArgumentIndex >= 0,
+  );
+}
+
 if (errors.length > 0) {
   console.error(errors.map((error) => `- ${error}`).join("\n"));
   process.exit(1);
@@ -237,18 +363,28 @@ if (warnings.length > 0) {
   console.warn(warnings.map((warning) => `- ${warning}`).join("\n"));
 }
 
+if (source2026ArgumentIndex >= 0) {
+  console.log("2026 원본 PDF SHA256 확인 완료");
+}
 console.log(
   `교육과정 검증 데이터 확인 완료: 원본 ${ocrData.courses.length}개, 수동 검증 ${recordsById.size}개, 검토 대기 ${auditData.summary.unreviewed}개`,
 );
+console.log(
+  `2026 교육과정 데이터 확인 완료: 전체 ${curriculum2026.courses.length}개, 확정 ${humanVerified2026.length}개, 전체 페이지 대조 학과 ${reviewedDepartments2026.length}개, 전체 검증 학과 ${fullyVerifiedDepartments2026.length}개`,
+);
 
-function verifySourceHash(relativePath, expectedHash, label) {
+function verifySourceHash(relativePath, expectedHash, label, requireFile = false) {
   if (!relativePath || !expectedHash) {
     errors.push(`${label} 해시 검증 메타데이터가 누락되었습니다.`);
     return;
   }
 
   if (!exists(relativePath)) {
-    warnings.push(`${label} 원본 파일이 없어 해시 검사를 건너뜁니다: ${relativePath}`);
+    if (requireFile) {
+      errors.push(`${label} 지정한 원본 파일이 없습니다: ${relativePath}`);
+    } else {
+      warnings.push(`${label} 원본 파일이 없어 해시 검사를 건너뜁니다: ${relativePath}`);
+    }
     return;
   }
 

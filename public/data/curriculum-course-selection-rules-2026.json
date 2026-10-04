@@ -1,0 +1,448 @@
+{
+  "metadata": {
+    "sourceYear": "2026",
+    "verifiedAt": "2026-10-04",
+    "sourceSha256": "83901EA188FD6F9F99F971873D3411BF65EEF0060DE9AD0A6D5EF2F3A9DEDA85",
+    "policy": "동일 과목의 중복 개설은 1회만 합산합니다. 원문에 택1으로 명시된 실습 병합 셀도 상호배타 처리합니다."
+  },
+  "exclusiveGroups": [
+    {
+      "id": "2026-repeat-2026-cf_socialwelfare-126-0-5",
+      "departmentId": "cf_socialwelfare",
+      "label": "노작교육(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_socialwelfare-126-0-5",
+        "2026-cf_socialwelfare-126-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_socialwelfare-126-0-6",
+      "departmentId": "cf_socialwelfare",
+      "label": "지역사회공헌(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_socialwelfare-126-0-6",
+        "2026-cf_socialwelfare-126-0-21"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_socialwelfare-126-0-8",
+      "departmentId": "cf_socialwelfare",
+      "label": "사고와 표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_socialwelfare-126-0-8",
+        "2026-cf_socialwelfare-126-0-20"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_socialwelfare-126-0-14",
+      "departmentId": "cf_socialwelfare",
+      "label": "국제사회복지론 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_socialwelfare-126-0-14",
+        "2026-cf_socialwelfare-129-0-7"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_socialwelfare-128-0-6",
+      "departmentId": "cf_socialwelfare",
+      "label": "사회복지현장실습 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_socialwelfare-128-0-6",
+        "2026-cf_socialwelfare-128-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_counseling-141-0-4",
+      "departmentId": "cf_counseling",
+      "label": "지역사회공헌(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_counseling-141-0-4",
+        "2026-cf_counseling-141-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_counseling-141-0-5",
+      "departmentId": "cf_counseling",
+      "label": "사고와 표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_counseling-141-0-5",
+        "2026-cf_counseling-141-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_english-163-0-8",
+      "departmentId": "cf_english",
+      "label": "글로컬 사고와 표현 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_english-163-0-8",
+        "2026-cf_english-163-0-21"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_earlychildhood-178-0-7",
+      "departmentId": "cf_earlychildhood",
+      "label": "사고와 표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_earlychildhood-178-0-7",
+        "2026-cf_earlychildhood-178-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_earlychildhood-178-0-8",
+      "departmentId": "cf_earlychildhood",
+      "label": "AI리터러시와 문제해결 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_earlychildhood-178-0-8",
+        "2026-cf_earlychildhood-178-0-19"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_physical-207-0-12",
+      "departmentId": "cf_physical",
+      "label": "졸업인증 및 진로지도 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_physical-207-0-12",
+        "2026-cf_physical-207-0-23"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_aviation-220-0-6",
+      "departmentId": "cf_aviation",
+      "label": "사고와표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_aviation-220-0-6",
+        "2026-cf_aviation-220-0-16"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-cf_aviation-220-0-7",
+      "departmentId": "cf_aviation",
+      "label": "AI리터러시와 문제해결 중복 개설 중 택1",
+      "courseIds": [
+        "2026-cf_aviation-220-0-7",
+        "2026-cf_aviation-220-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_architecture-243-0-6",
+      "departmentId": "ff_architecture",
+      "label": "글로컬사고와 표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_architecture-243-0-6",
+        "2026-ff_architecture-243-0-16"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_architecture-243-0-7",
+      "departmentId": "ff_architecture",
+      "label": "컴퓨팅 사고력 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_architecture-243-0-7",
+        "2026-ff_architecture-243-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-257-0-4",
+      "departmentId": "ff_datacloud",
+      "label": "노작교육(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-257-0-4",
+        "2026-ff_datacloud-257-0-15"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-257-0-6",
+      "departmentId": "ff_datacloud",
+      "label": "사고와표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-257-0-6",
+        "2026-ff_datacloud-257-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-257-0-7",
+      "departmentId": "ff_datacloud",
+      "label": "AI리터러시와 문제해결(1학기/2학기택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-257-0-7",
+        "2026-ff_datacloud-257-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-260-0-4",
+      "departmentId": "ff_datacloud",
+      "label": "ICT인턴십Ⅰ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-260-0-4",
+        "2026-ff_datacloud-260-0-15"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-260-0-5",
+      "departmentId": "ff_datacloud",
+      "label": "ICT인턴십Ⅱ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-260-0-5",
+        "2026-ff_datacloud-260-0-16"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-260-0-6",
+      "departmentId": "ff_datacloud",
+      "label": "ICT인턴십Ⅲ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-260-0-6",
+        "2026-ff_datacloud-260-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_datacloud-260-0-7",
+      "departmentId": "ff_datacloud",
+      "label": "ICT인턴십Ⅳ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_datacloud-260-0-7",
+        "2026-ff_datacloud-260-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_physicaltherapy-284-0-5",
+      "departmentId": "ff_physicaltherapy",
+      "label": "사고와표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_physicaltherapy-284-0-5",
+        "2026-ff_physicaltherapy-284-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_bioconvergence-299-0-7",
+      "departmentId": "ff_bioconvergence",
+      "label": "지역사회공헌(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_bioconvergence-299-0-7",
+        "2026-ff_bioconvergence-299-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_bioconvergence-299-0-8",
+      "departmentId": "ff_bioconvergence",
+      "label": "AI리터러시와 문제해결(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_bioconvergence-299-0-8",
+        "2026-ff_bioconvergence-299-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_bioconvergence-301-0-3",
+      "departmentId": "ff_bioconvergence",
+      "label": "인성교육 영역(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_bioconvergence-301-0-3",
+        "2026-ff_bioconvergence-301-0-14"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_bioconvergence-302-0-3",
+      "departmentId": "ff_bioconvergence",
+      "label": "바이오융합캡스톤디자인 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_bioconvergence-302-0-3",
+        "2026-ff_bioconvergence-302-0-11"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_healthadmin-316-0-3",
+      "departmentId": "ff_healthadmin",
+      "label": "인성교육 영역 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_healthadmin-316-0-3",
+        "2026-ff_healthadmin-316-0-11"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_foodnutrition-328-0-6",
+      "departmentId": "ff_foodnutrition",
+      "label": "사고와표현(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_foodnutrition-328-0-6",
+        "2026-ff_foodnutrition-328-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_foodnutrition-328-0-7",
+      "departmentId": "ff_foodnutrition",
+      "label": "AI리터러시와 문제해결 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_foodnutrition-328-0-7",
+        "2026-ff_foodnutrition-328-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_foodnutrition-330-0-3",
+      "departmentId": "ff_foodnutrition",
+      "label": "인성교육 영역 I(3~4학년 중 선택) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_foodnutrition-330-0-3",
+        "2026-ff_foodnutrition-330-0-15"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-367-0-4",
+      "departmentId": "ff_computer",
+      "label": "노작교육(1학기/2학기 택1) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-367-0-4",
+        "2026-ff_computer-367-0-14"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-367-0-7",
+      "departmentId": "ff_computer",
+      "label": "AI리터러시와 문제해결(구, 컴퓨팅사고력) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-367-0-7",
+        "2026-ff_computer-367-0-16"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-370-0-3",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십Ⅰ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-370-0-3",
+        "2026-ff_computer-370-0-17"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-370-0-4",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십Ⅱ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-370-0-4",
+        "2026-ff_computer-370-0-18"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-370-0-5",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십Ⅲ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-370-0-5",
+        "2026-ff_computer-370-0-19"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_computer-370-0-6",
+      "departmentId": "ff_computer",
+      "label": "ICT인턴십Ⅳ 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_computer-370-0-6",
+        "2026-ff_computer-370-0-20"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_chemistry-383-0-6",
+      "departmentId": "ff_chemistry",
+      "label": "사고와 표현 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_chemistry-383-0-6",
+        "2026-ff_chemistry-383-0-16"
+      ]
+    },
+    {
+      "id": "2026-repeat-2026-ff_chemistry-385-0-18",
+      "departmentId": "ff_chemistry",
+      "label": "화학문헌(캡스톤디자인) 중복 개설 중 택1",
+      "courseIds": [
+        "2026-ff_chemistry-385-0-18",
+        "2026-ff_chemistry-385-0-32"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-61-0-12",
+      "departmentId": "nursing_nursing",
+      "label": "1학년 1학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-61-0-12",
+        "2026-nursing_nursing-61-0-13"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-61-0-23",
+      "departmentId": "nursing_nursing",
+      "label": "1학년 2학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-61-0-23",
+        "2026-nursing_nursing-61-0-24"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-62-0-9",
+      "departmentId": "nursing_nursing",
+      "label": "2학년 1학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-62-0-9",
+        "2026-nursing_nursing-62-0-10",
+        "2026-nursing_nursing-62-0-11",
+        "2026-nursing_nursing-62-0-12"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-62-0-23",
+      "departmentId": "nursing_nursing",
+      "label": "2학년 2학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-62-0-23",
+        "2026-nursing_nursing-62-0-24",
+        "2026-nursing_nursing-62-0-25"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-63-0-13",
+      "departmentId": "nursing_nursing",
+      "label": "3학년 1학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-63-0-13",
+        "2026-nursing_nursing-63-0-14"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-63-0-25",
+      "departmentId": "nursing_nursing",
+      "label": "3학년 2학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-63-0-25",
+        "2026-nursing_nursing-63-0-26"
+      ]
+    },
+    {
+      "id": "2026-choice-nursing_nursing-64-0-10",
+      "departmentId": "nursing_nursing",
+      "label": "4학년 1학기 전공선택 중 택1",
+      "courseIds": [
+        "2026-nursing_nursing-64-0-10",
+        "2026-nursing_nursing-64-0-11"
+      ]
+    },
+    {
+      "id": "2026-architecture-personality",
+      "departmentId": "ff_architecture",
+      "label": "인성교육 영역Ⅰ·Ⅱ 3학년 1·2학기 중 택1",
+      "courseIds": [
+        "2026-ff_architecture-245-0-3",
+        "2026-ff_architecture-245-0-12"
+      ]
+    },
+    {
+      "id": "2026-pharmacy-intensive-practice",
+      "departmentId": "pharmacy_pharm",
+      "label": "심화실무실습 5과목 중 택1",
+      "courseIds": [
+        "2026-pharmacy_pharm-83-1-10",
+        "2026-pharmacy_pharm-83-1-11",
+        "2026-pharmacy_pharm-83-1-12",
+        "2026-pharmacy_pharm-83-1-13",
+        "2026-pharmacy_pharm-83-1-14"
+      ]
+    }
+  ]
+}
