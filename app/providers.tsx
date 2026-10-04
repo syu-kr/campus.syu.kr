@@ -99,7 +99,7 @@ async function initializePushNotifications() {
   }
 
   try {
-    await enablePushNotifications();
+    await enablePushNotifications({ trigger: "automatic" });
   } catch {
     return;
   }

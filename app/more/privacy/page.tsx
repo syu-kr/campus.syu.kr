@@ -12,6 +12,7 @@ import {
 } from "@/app/components/LocaleProvider";
 import {
   FCM_TOKEN_KEY,
+  PushSubscriptionError,
   disablePushNotifications,
   enablePushNotifications,
   type PushNotificationStatus,
@@ -51,6 +52,16 @@ export default function NotificationPrivacyPage() {
   const [hasToken, setHasToken] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (retryAt === null) return;
+    const timeout = window.setTimeout(
+      () => setRetryAt(null),
+      Math.max(0, retryAt - Date.now()),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [retryAt]);
 
   const refreshStatus = () => {
     setPermission(
@@ -74,8 +85,12 @@ export default function NotificationPrivacyPage() {
       await enablePushNotifications({
         onStatus: (status) => setMessage(getStatusLabel(status, text)),
       });
+      setRetryAt(null);
     } catch (error) {
-      setMessage(getPushErrorMessage(error, text, text.enableError));
+      if (error instanceof PushSubscriptionError && error.status === 429) {
+        setRetryAt(error.retryAt ?? Date.now() + 60_000);
+      }
+      setMessage(getPushErrorMessage(error, text, text.enableError, locale));
     } finally {
       refreshStatus();
       setIsProcessing(false);
@@ -90,8 +105,9 @@ export default function NotificationPrivacyPage() {
       await disablePushNotifications();
       setMessage(text.disableSuccess);
     } catch (error) {
-      setMessage(getPushErrorMessage(error, text, text.disableError));
+      setMessage(getPushErrorMessage(error, text, text.disableError, locale));
     } finally {
+      setRetryAt(null);
       refreshStatus();
       setIsProcessing(false);
     }
@@ -146,7 +162,10 @@ export default function NotificationPrivacyPage() {
               </p>
 
               {message && (
-                <p className="mt-3 rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-700">
+                <p
+                  className="mt-3 rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-700"
+                  aria-live="polite"
+                >
                   {message}
                 </p>
               )}
@@ -157,7 +176,9 @@ export default function NotificationPrivacyPage() {
                     <button
                       type="button"
                       onClick={handleEnable}
-                      disabled={isProcessing || permission === "denied"}
+                      disabled={
+                        isProcessing || retryAt !== null || permission === "denied"
+                      }
                       className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isProcessing ? text.enableProcessing : text.enableAction}
@@ -256,7 +277,16 @@ function getPushErrorMessage(
   error: unknown,
   text: NotificationPrivacyDictionary,
   fallback: string,
+  locale: "ko" | "en",
 ): string {
+  if (error instanceof PushSubscriptionError && error.status === 429) {
+    return text.rateLimited.replace(
+      "{time}",
+      new Date(error.retryAt ?? Date.now() + 60_000).toLocaleString(
+        locale === "ko" ? "ko-KR" : "en-US",
+      ),
+    );
+  }
   if (!(error instanceof Error)) return fallback;
 
   const key = pushErrorKeys[error.message];

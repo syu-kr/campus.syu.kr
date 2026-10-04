@@ -459,6 +459,7 @@ export const dictionaries = {
         enabled: "알림 설정이 완료되었습니다.",
       },
       errorFallback: "알림 설정 중 오류가 발생했습니다.",
+      rateLimited: "요청이 많아 잠시 기다려야 합니다. {time} 이후 다시 시도해주세요.",
       title: "새 소식을 알림으로 받아보시겠어요?",
       description:
         "서비스 공지와 주요 캠퍼스 소식을 브라우저 알림으로 받을 수 있습니다. 알림 설정은 알림 및 개인정보 페이지에서 언제든지 변경할 수 있습니다.",
@@ -1656,6 +1657,7 @@ export const dictionaries = {
         permissionPrincipleDescription:
           "SYU CAMPUS는 사용자의 명시적인 브라우저 권한 없이는 푸시 알림을 보낼 수 없습니다. 이미 알림을 허용한 경우에만 알림 토큰을 등록해 서비스 공지를 받을 수 있게 합니다.",
         enableError: "알림 설정 중 오류가 발생했습니다.",
+        rateLimited: "요청이 많아 잠시 기다려야 합니다. {time} 이후 다시 시도해주세요.",
         disableSuccess:
           "FCM 알림 구독을 해제했습니다. 브라우저 알림 권한은 그대로 유지됩니다.",
         disableError: "알림 구독 해제 중 오류가 발생했습니다.",
@@ -2115,6 +2117,7 @@ export const dictionaries = {
         enabled: "Notification setup is complete.",
       },
       errorFallback: "An error occurred while setting up notifications.",
+      rateLimited: "Too many requests. Please try again after {time}.",
       title: "Would you like to receive updates?",
       description:
         "You can receive service notices and important campus updates through browser notifications. Notification settings can be changed anytime from Notifications and Privacy.",
@@ -3346,6 +3349,7 @@ export const dictionaries = {
         permissionPrincipleDescription:
           "SYU CAMPUS cannot send push notifications without explicit browser permission. Only after notifications are allowed can a token be registered to receive service notices.",
         enableError: "An error occurred while setting up notifications.",
+        rateLimited: "Too many requests. Please try again after {time}.",
         disableSuccess:
           "FCM notification subscription has been disabled. Browser notification permission is unchanged.",
         disableError:
