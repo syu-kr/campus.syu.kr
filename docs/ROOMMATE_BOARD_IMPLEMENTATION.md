@@ -37,7 +37,7 @@
 
 ## 자동 검증
 
-최종 코드에서 `npm run check`가 종료 코드 0으로 통과했다. 단위 검사와 별도 로컬 통합 검사를 구분한다. 아래 단위 검사에는 모의 응답이 포함되며, Auth·Firestore 동작은 다음 절의 실제 로컬 에뮬레이터로도 확인했다. 운영 Firebase 연동 및 실제 메일 수신 성공의 증거로 취급하지 않는다.
+당시 코드에서 `npm run check`가 종료 코드 0으로 통과했다. 단위 검사와 별도 로컬 통합 검사를 구분한다. 아래 단위 검사에는 모의 응답이 포함되며, Auth·Firestore 동작은 다음 절의 실제 로컬 에뮬레이터로도 확인했다. 운영 Firebase 연동 및 실제 메일 수신 성공의 증거로 취급하지 않는다. 추가 검사 후 최신 결과는 문서 마지막 절과 [공개 전 검증표](./ROOMMATE_BOARD_RELEASE_VALIDATION.md)에 기록한다.
 
 | 검사 | 실제 결과 |
 | --- | --- |
@@ -65,7 +65,7 @@ npm run check
 
 별도 테스트 Firebase 프로젝트가 없어 `demo-syu-roommates` 프로젝트의 로컬 에뮬레이터를 사용했다. 이미 설치된 Firebase CLI 15.29.0, Java 22.0.2와 캐시된 Firestore 에뮬레이터 1.22.0을 사용했으며 새 도구나 의존성을 설치하지 않았다. Auth는 `127.0.0.1:9098`, Firestore는 `127.0.0.1:8188`에만 열었다.
 
-`npm run test:roommates:integration`은 후속 수정 후 최종 실행에서 종료 코드 0, 1개 파일·9개 테스트 통과, 18.57초였다. 앱의 실제 Route Handler와 Firebase Admin·웹 SDK를 호출하며 다음을 검증했다.
+`npm run test:roommates:integration`은 당시 후속 수정 후 실행에서 종료 코드 0, 1개 파일·9개 테스트 통과, 18.57초였다. 앱의 실제 Route Handler와 Firebase Admin·웹 SDK를 호출하며 다음을 검증했다.
 
 | 검증 | 실제 결과 |
 | --- | --- |

@@ -2,6 +2,8 @@
 
 2026-10-04 기준 배포 준비 문서다. PR 생성과 프로덕션 공개는 별도 단계다. 현재 작업은 PR과 배포 준비까지이며, 이 문서를 작성하면서 main 병합, 운영 설정 변경, Firestore 배포, 기능 활성화나 공지 게시를 수행하지 않는다. 제품 계약은 [최종 계획](./ROOMMATE_BOARD_PLAN.md), 실행한 시험의 증거는 [구현 및 검증 기록](./ROOMMATE_BOARD_IMPLEMENTATION.md)을 기준으로 한다.
 
+사용자의 최신 결정은 **검증·PR 완료 후 조건 충족 시 공개**다. 현재 공개 완료 공지를 포함한 PR은 조건 충족 전까지 미병합으로 유지한다. 아래 비활성 코드 배포는 별도 사전 배포가 필요한 경우에만 적용하며, 현재 PR을 그대로 비활성 기능 상태로 배포하지 않는다.
+
 ## 현재 확인한 상태
 
 | 항목 | 확인 결과와 공개 전 할 일 |
@@ -40,7 +42,9 @@
 
 Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그는 admin에서 즉시 변경하는 설정이 아니다. 공개 전 Production과 Preview의 환경 선택 범위, Firebase public 값과 Admin 프로젝트의 일치 여부, 배포마다 owner 키가 바뀌지 않는지 확인한다. 현재 `initializeFirebaseAdmin()`은 service account의 프로젝트를 사용하고 인증 검증은 public project ID도 검사하므로 불일치를 두고 진행하지 않는다.
 
-## 1. PR 검토와 비활성 코드 배포
+## 1. PR 검토와 필요한 경우의 비활성 코드 배포
+
+현재 PR은 공개 조건을 충족한 후 기능 활성화와 공지를 함께 배포하는 경로를 사용한다. 아래 비활성 배포 절차는 사전 코드 반영이 별도로 필요하고 공지를 준비 안내로 맞춘 경우에만 수행한다. 현재는 PR 검토와 CI 확인까지 진행한다.
 
 1. PR 최종 커밋 SHA, 변경 범위, 검사 결과를 기록한다. 단위 검사·전체 검사와 에뮬레이터 통합 검사는 별도 결과로 표시한다. 현재 CI의 `npm run check`는 에뮬레이터 통합 스크립트를 자동 실행하지 않는다.
    로컬 production 화면 시험은 `next start --hostname localhost --port 3020`으로 실행한다. `127.0.0.1` 바인딩은 NextURL의 localhost 정규화와 내부 rewrite의 origin 판정이 어긋나 영문 쿠키에서 자체 리다이렉트를 만들 수 있으며, 같은 빌드의 localhost 바인딩 재검증에서는 `/en` 화면 200 및 언어 쿠키의 단일 리다이렉트가 정상임을 확인했다.
@@ -144,7 +148,7 @@ firebase deploy --project syu-campus --only firestore:rules,firestore:indexes
 ## 공개 승인 체크리스트
 
 - [ ] PR 최종 SHA의 필수 CI와 독립 에뮬레이터 검사 확인
-- [ ] 비활성 상태로 main→Sync→Vercel Production 반영 확인
+- [ ] 공개 조건 충족 후 main→Sync→Vercel Production 반영 확인. 별도 비활성 사전 배포가 필요한 경우에는 공지를 준비 안내로 맞춘 배포만 사용
 - [ ] Production/Preview/Actions Firebase 프로젝트·계정·HMAC 키 분리와 일치 확인
 - [ ] 운영 `campus.syu.kr` 허용 도메인 등록 및 실제 메일 완료 URL 확인
 - [ ] 실제 Firebase 요금제와 충분한 기본 발송 quota 확인
