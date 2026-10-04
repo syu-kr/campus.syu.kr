@@ -1,8 +1,8 @@
 # 룸메이트 게시판 프로덕션 배포 및 공개 절차
 
-2026-10-04 기준 배포 준비 문서다. PR 생성과 프로덕션 공개는 별도 단계다. 현재 작업은 PR과 배포 준비까지이며, 이 문서를 작성하면서 main 병합, 운영 설정 변경, Firestore 배포, 기능 활성화나 공지 게시를 수행하지 않는다. 제품 계약은 [최종 계획](./ROOMMATE_BOARD_PLAN.md), 실행한 시험의 증거는 [구현 및 검증 기록](./ROOMMATE_BOARD_IMPLEMENTATION.md)을 기준으로 한다.
+2026-10-04 기준 배포 런북과 운영 준비 기록이다. PR 생성과 프로덕션 공개는 별도 단계다. 제품 계약은 [최종 계획](./ROOMMATE_BOARD_PLAN.md), 자동·격리 환경 시험의 증거는 [구현 및 검증 기록](./ROOMMATE_BOARD_IMPLEMENTATION.md)을 기준으로 한다. 실제 배포 성공은 해당 소스 SHA의 Production 배포와 운영 HTTPS 응답을 확인한 뒤 판단한다.
 
-사용자의 최신 결정은 **검증·PR 완료 후 조건 충족 시 공개**다. 현재 공개 완료 공지를 포함한 PR은 조건 충족 전까지 미병합으로 유지한다. 아래 비활성 코드 배포는 별도 사전 배포가 필요한 경우에만 적용하며, 현재 PR을 그대로 비활성 기능 상태로 배포하지 않는다.
+사용자는 이후 **프로덕션에 먼저 배포하고 실제 환경에서 시험한 뒤 오류를 제보**하는 방향으로 변경했다. 운영 필수 설정을 준비하고 보호 브랜치 CI와 배포 경로를 확인한 뒤 기능과 공지를 함께 반영한다. 사용자가 Blaze로 직접 전환했고 2026-10-04 실제 운영 Firebase Console에서 Blaze를 확인했다. 미완료 실제 기기·추가 메일·운영 시험은 통과로 처리하지 않고 [배포 후 시험 목록](./ROOMMATE_BOARD_PRODUCTION_TESTS.md)으로 이관한다. 이 결정은 기존 공개 보류와 선행 실제 기기 시험 조건을 변경한다.
 
 ## 현재 확인한 상태
 
@@ -12,13 +12,13 @@
 | 자동 검사 | 추가 경합·메일 중지·링크 오류 복구 검사 후 단위 테스트 394개와 전체 검사·production 빌드, 별도 Auth·Firestore 에뮬레이터 통합 13개 통과. PR 최종 커밋의 CI 결과는 다시 확인해야 함 |
 | 브라우저 흐름 | 가상 학생의 실제 로컬 DB 등록·신고·모집 완료·여러 탭 로그아웃 확인 |
 | 실제 학교 메일 | 실제 Firebase Auth로 발송·수신·Chrome 로그인·같은 브라우저 재방문·로그아웃 후 차단 확인. 이 시험의 게시판 세션과 요청 제한 자료는 로컬 Firestore에 격리했음 |
-| Firebase 인증 제공자 | 오늘의 읽기 전용 API 조회에서 `syu-campus`의 이메일 제공자 `enabled=true`, `passwordRequired=false` 확인. 이번 작업의 설정 PATCH 없음 |
-| Firebase 허용 도메인 | 오늘의 API 조회에도 `campus.syu.kr`이 없음. 실제 프로덕션 완료 URL을 위한 도메인 등록과 재조회 필요 |
-| 복합 인덱스 | 컬렉션 그룹 이름까지 재대조한 결과 표의 필수 네 개 모두 MISSING. 이전 READY 판정은 필드가 같은 다른 컬렉션 인덱스를 잘못 대조한 것으로 정정함 |
-| 운영 Rules | 네 룸메이트 컬렉션의 익명 직접 접근은 HTTP 403 확인. 새 repo Rules의 배포 상태 및 실제 학교 인증 클라이언트의 직접 접근 거부는 추가 확인 필요 |
-| 요금제와 발송 한도 | Cloud Billing API는 HTTP 403이나 실제 Firebase Console에서 Spark 확인. 로그인 링크 발송 5통/일. 사용자가 Blaze 전환은 추후 직접 진행한다고 답함 |
+| Firebase 인증 제공자 | `syu-campus`의 이메일 제공자 `enabled=true`, `passwordRequired=false` 유지 확인 |
+| Firebase 허용 도메인 | 기존 도메인 목록을 보존해 `campus.syu.kr`을 추가하고 API 재조회에서 반영 확인. 실제 운영 메일 완료 동작은 배포 후 시험 |
+| 복합 인덱스 | 운영 콘솔에서 필수 네 개만 생성. 준비 기록 시점 API 상태는 모두 CREATING이며 배포 직전 READY 재확인 필요. 이전 READY 오판은 다른 컬렉션을 대조한 것으로 정정 |
+| 운영 Rules | 기존 전체 클라이언트 접근 차단을 보존해 repo Rules 반영. Ruleset `e9bef7b6-530a-4bfe-916d-078542fc0823`, 운영·repo SHA-256 `e4e795b9ad00b9eb69282b9ea8a5245ce35ab632cba2aa2e8bce90f495725abf` 일치. 실제 학교 인증 클라이언트 직접 접근 시험은 배포 후 확인 |
+| 요금제와 발송 한도 | 사용자가 직접 전환한 뒤 실제 Firebase Console에서 Blaze 확인. 공식 기본 로그인 링크 발송 기준 25,000통/일이며 추가 남용 제한이 적용될 수 있음. 이전 Spark 5통/일 제약은 현재 요금제 기준으로 적용하지 않음 |
 | Preview Firebase | 별도 테스트 프로젝트가 아직 없음. 운영 service account·DB·HMAC 키를 Preview에 재사용하지 않음 |
-| Vercel 등록 상태 | 대상 프로젝트의 환경 목록을 값 공개 없이 확인. `ROOMMATES_OWNER_KEY_SECRET`과 세 룸메이트 플래그는 미등록. 기존 Firebase service account는 Production/Preview에 등록되어 있으므로 새 격리 Preview를 준비할 때 운영 계정을 재사용하지 않음 |
+| Vercel 등록 상태 | `ROOMMATES_OWNER_KEY_SECRET`은 독립 무작위 32-byte 비밀값을 Production 전용 Secret으로 등록. 세 룸메이트 플래그는 Production 전용 Config로 `true`를 등록. 기존 Firebase service account는 Production/Preview에 등록되어 있으므로 새 격리 Preview를 준비할 때 운영 계정을 재사용하지 않음 |
 | 실제 기기 | 모바일 일반 브라우저, 카카오 인앱, 설치 웹앱의 인증·재방문은 미완료. PC 시험이나 viewport 변경으로 대신 판정하지 않음 |
 | 실제 메일 추가 시험 | 재발송, 수신 지연·스팸 분류, 만료·재사용, 다른 수신 기기 시험은 미완료 |
 
@@ -44,7 +44,7 @@ Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그�
 
 ## 1. PR 검토와 필요한 경우의 비활성 코드 배포
 
-현재 PR은 공개 조건을 충족한 후 기능 활성화와 공지를 함께 배포하는 경로를 사용한다. 아래 비활성 배포 절차는 사전 코드 반영이 별도로 필요하고 공지를 준비 안내로 맞춘 경우에만 수행한다. 현재는 PR 검토와 CI 확인까지 진행한다.
+현재 PR은 운영 필수 설정과 필수 CI를 확인한 후 기능 활성화와 공지를 함께 배포하는 경로를 사용한다. 아래 비활성 배포 절차는 사전 코드 반영이 별도로 필요하고 공지를 준비 안내로 맞춘 경우에만 수행한다.
 
 1. PR 최종 커밋 SHA, 변경 범위, 검사 결과를 기록한다. 단위 검사·전체 검사와 에뮬레이터 통합 검사는 별도 결과로 표시한다. 현재 CI의 `npm run check`는 에뮬레이터 통합 스크립트를 자동 실행하지 않는다.
    로컬 production 화면 시험은 `next start --hostname localhost --port 3020`으로 실행한다. `127.0.0.1` 바인딩은 NextURL의 localhost 정규화와 내부 rewrite의 origin 판정이 어긋나 영문 쿠키에서 자체 리다이렉트를 만들 수 있으며, 같은 빌드의 localhost 바인딩 재검증에서는 `/en` 화면 200 및 언어 쿠키의 단일 리다이렉트가 정상임을 확인했다.
@@ -74,10 +74,10 @@ Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그�
 
 | 컬렉션 그룹 / query scope | 필드와 순서 | 쓰는 기능 | 현재 상태 |
 | --- | --- | --- | --- |
-| `roommate_posts` / COLLECTION | `status` ASC, `created_at` DESC | 학생 최신 목록과 admin 상태 필터 | 컬렉션 이름까지 대조한 운영 API 재조회 MISSING |
-| `roommate_posts` / COLLECTION | `status` ASC, `recruit_until` ASC | admin 현재 모집글 수 | 오늘의 운영 API 조회 MISSING |
-| `roommate_reports` / COLLECTION | `status` ASC, `expires_at` ASC | admin 신고 목록과 미처리 수 | 오늘의 운영 API 조회 MISSING |
-| `api_rate_limits` / COLLECTION | `metric` ASC, `window_start` ASC | admin 사이트 메일 요청량 | 오늘의 운영 API 조회 MISSING |
+| `roommate_posts` / COLLECTION | `status` ASC, `created_at` DESC | 학생 최신 목록과 admin 상태 필터 | 생성 후 API 조회 CREATING. 배포 전 READY 확인 |
+| `roommate_posts` / COLLECTION | `status` ASC, `recruit_until` ASC | admin 현재 모집글 수 | 생성 후 API 조회 CREATING. 배포 전 READY 확인 |
+| `roommate_reports` / COLLECTION | `status` ASC, `expires_at` ASC | admin 신고 목록과 미처리 수 | 생성 후 API 조회 CREATING. 배포 전 READY 확인 |
+| `api_rate_limits` / COLLECTION | `metric` ASC, `window_start` ASC | admin 사이트 메일 요청량 | 생성 후 API 조회 CREATING. 배포 전 READY 확인 |
 
 승인된 환경에 저장소 Rules와 인덱스를 반영할 때 대상 프로젝트를 명시한다.
 
