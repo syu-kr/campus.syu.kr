@@ -38,6 +38,11 @@ export function Modal({
   const descriptionId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,7 +57,7 @@ export function Modal({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -95,7 +100,7 @@ export function Modal({
         previousActiveElement.focus();
       }
     };
-  }, [initialFocus, isOpen, onClose]);
+  }, [initialFocus, isOpen]);
 
   if (!isOpen) return null;
 

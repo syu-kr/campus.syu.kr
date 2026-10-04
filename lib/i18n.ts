@@ -86,6 +86,24 @@ export function createLocalizedAlternates(pathname: string, locale: Locale) {
 
 export const dictionaries = {
   ko: {
+    crawlDataStatus: {
+      staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
+      staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
+      lastSuccess: "마지막 정상 수집",
+      lastAttempt: "최근 수집 시도",
+      unknownSuccess: "이전 검증본의 수집 시각은 확인되지 않았습니다.",
+      statusUnavailable: "갱신 상태를 확인할 수 없습니다. 최신 정보는 공식 원문에서 확인해 주세요.",
+      fileLabels: {
+        "announcements-academic.json": "학사공지",
+        "announcements-campus-life.json": "학교생활공지",
+        "announcements-scholarship.json": "장학공지",
+        "announcements-events.json": "행사공지",
+        "announcements-departments.json": "학과공지",
+        "announcements-sw.json": "SW중심대학공지",
+        "cafeteria-menu.json": "학식",
+        "announcement-ai-metadata.json": "공지 AI 요약",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
       description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
@@ -495,6 +513,8 @@ export const dictionaries = {
         metaDescription: "학사일정",
         title: "학사일정",
         description: "2026학년도 학사일정을 확인하세요",
+        previousMonth: "이전 달",
+        nextMonth: "다음 달",
         weekDays: ["일", "월", "화", "수", "목", "금", "토"],
         exam: "시험",
         schedule: "일정",
@@ -537,6 +557,7 @@ export const dictionaries = {
           "과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도 모바일에서 계속 사용할 수 있습니다.",
         mobileContinue: "모바일로 계속 사용하기",
         mobileBack: "이전 페이지로 돌아가기",
+        selectionChangeConfirm: "선택 조건을 변경하면 입력한 학점, 과목, 체크리스트와 계획이 초기화됩니다. 변경할까요?",
         badges: {
           selfCheck: "자가진단",
           referenceOnly: "참고용",
@@ -656,6 +677,7 @@ export const dictionaries = {
             shareCopyFailed:
               "자동 복사에 실패했습니다. 아래 링크를 선택해 직접 복사해 주세요.",
             shareLoaded: "공유된 졸업요건 진행률을 불러왔습니다.",
+            storageUnavailable: "현재 브라우저에서는 진행 상황을 자동 저장할 수 없습니다. 파일로 내보내기를 이용해 주세요.",
             shareLoadFailed:
               "공유 링크를 읽지 못했습니다. 링크가 잘렸거나 만료되었을 수 있습니다.",
           },
@@ -842,6 +864,11 @@ export const dictionaries = {
         imageDownloaded: "시간표 이미지를 저장했습니다.",
         imageDownloadFailed: "시간표 이미지를 만들지 못했습니다.",
         shareLoaded: "공유 시간표를 불러왔습니다.",
+        shareSemesterMismatch: "공유 시간표의 학기가 현재 강의 정보와 다르거나 확인되지 않아 불러오지 않았습니다.",
+        shareCoursesMissing: "현재 강의 정보에 없는 {count}개 과목을 제외하고 공유 시간표를 불러왔습니다.",
+        sourceUpdatedAt: "강의 원본 갱신일",
+        lastSuccessfulFetch: "마지막 정상 조회",
+        staleDataNotice: "강의 정보를 갱신하지 못해 마지막 정상 저장본을 표시합니다. 변경 사항은 학교 원본에서 확인해 주세요.",
         shareCreateFailed: "공유 링크를 만들지 못했습니다.",
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
         shareCreatedCopyFailed:
@@ -1679,6 +1706,24 @@ export const dictionaries = {
     },
   },
   en: {
+    crawlDataStatus: {
+      staleTitle: "Some information updates are delayed",
+      staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
+      lastSuccess: "Last successful collection",
+      lastAttempt: "Latest collection attempt",
+      unknownSuccess: "The collection time of the previous verified snapshot is unknown.",
+      statusUnavailable: "Update status is unavailable. Check the official source for the latest information.",
+      fileLabels: {
+        "announcements-academic.json": "Academic notices",
+        "announcements-campus-life.json": "Campus life notices",
+        "announcements-scholarship.json": "Scholarship notices",
+        "announcements-events.json": "Event notices",
+        "announcements-departments.json": "Department notices",
+        "announcements-sw.json": "SW-centered university notices",
+        "cafeteria-menu.json": "Cafeteria",
+        "announcement-ai-metadata.json": "Notice AI summaries",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - Student Information Hub",
       description:
@@ -2095,6 +2140,8 @@ export const dictionaries = {
         metaDescription: "Academic schedule",
         title: "Academic Schedule",
         description: "Check the 2026 academic schedule",
+        previousMonth: "Previous month",
+        nextMonth: "Next month",
         weekDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         exam: "Exam",
         schedule: "Schedule",
@@ -2137,6 +2184,7 @@ export const dictionaries = {
           "This page has many course selections and credit inputs. Desktop use is recommended, but you can continue on mobile.",
         mobileContinue: "Continue on mobile",
         mobileBack: "Go back",
+        selectionChangeConfirm: "Changing your selection clears entered credits, courses, checklist answers, and plans. Continue?",
         badges: {
           selfCheck: "Self-check",
           referenceOnly: "Reference only",
@@ -2260,6 +2308,7 @@ export const dictionaries = {
             shareCopyFailed:
               "Automatic copy failed. Select and copy the link below.",
             shareLoaded: "Shared graduation progress loaded.",
+            storageUnavailable: "This browser cannot save your progress automatically. Export a file to keep it.",
             shareLoadFailed:
               "Could not read the share link. It may be truncated or expired.",
           },
@@ -2447,6 +2496,11 @@ export const dictionaries = {
         imageDownloaded: "The timetable image was saved.",
         imageDownloadFailed: "Could not create the timetable image.",
         shareLoaded: "Shared timetable loaded.",
+        shareSemesterMismatch: "This shared timetable has a different or unverified semester and was not loaded.",
+        shareCoursesMissing: "Shared timetable loaded without {count} courses unavailable in the current course data.",
+        sourceUpdatedAt: "Course source updated",
+        lastSuccessfulFetch: "Last successful fetch",
+        staleDataNotice: "Course data could not be refreshed. Showing the last successful snapshot. Check the university source for changes.",
         shareCreateFailed: "Could not create a share link.",
         shareCreated: "Share link created and copied to clipboard.",
         shareCreatedCopyFailed:

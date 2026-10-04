@@ -98,6 +98,12 @@ def main() -> None:
         "https://example.syu.ac.kr/special/community/notice/?var_page=2",
         "https://example.syu.ac.kr/special/community/notice/?var_page=1&K=%EA%B3%B5%EB%AA%A8",
     ]
+    from check_crawler_output_integrity import main as check_output_integrity
+
+    check_output_integrity()
+    from check_notice_snapshot_integrity import main as check_notice_integrity
+
+    check_notice_integrity()
     print("Validated notice crawler trust boundary")
 
 

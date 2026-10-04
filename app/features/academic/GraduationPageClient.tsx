@@ -64,6 +64,7 @@ export default function GraduationPageClient() {
   const colleges = getColleges();
   const [selection, setSelection] =
     useState<GraduationSelection>(INITIAL_SELECTION);
+  const [admissionYearDraft, setAdmissionYearDraft] = useState("");
   const [completedCredits, setCompletedCredits] =
     useState<CompletedCreditInput>({});
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
@@ -126,6 +127,7 @@ export default function GraduationPageClient() {
   const selectionComplete = isCompleteSelection(selection);
   const applySavedState = useCallback((saved: SavedState) => {
     setSelection(saved.selection);
+    setAdmissionYearDraft(saved.selection.admissionYear);
     setCompletedCredits(saved.completedCredits);
     setSelectedCourseIds(saved.selectedCourseIds ?? []);
     setChecklistAnswers(saved.checklistAnswers);
@@ -133,6 +135,7 @@ export default function GraduationPageClient() {
   }, []);
 
   useEffect(() => {
+    let canPersist = true;
     try {
       const sharedState = parseSavedStateFromHash(window.location.hash);
       if (sharedState) {
@@ -141,35 +144,52 @@ export default function GraduationPageClient() {
         return;
       }
 
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      let raw: string | null;
+      try {
+        raw = window.localStorage.getItem(STORAGE_KEY);
+      } catch {
+        canPersist = false;
+        setPersistenceMessage("storageUnavailable");
+        return;
+      }
       if (raw) {
         applySavedState(parseSavedStatePayload(JSON.parse(raw)));
       }
     } catch {
       if (window.location.hash.includes(SHARE_HASH_PREFIX)) {
+        canPersist = false;
         setPersistenceMessage("shareLoadFailed");
       } else {
-        window.localStorage.removeItem(STORAGE_KEY);
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          canPersist = false;
+          setPersistenceMessage("storageUnavailable");
+        }
       }
     } finally {
-      setRestored(true);
+      setRestored(canPersist);
     }
   }, [applySavedState]);
 
   useEffect(() => {
     if (!restored) return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(
-        createSavedState(
-          selection,
-          completedCredits,
-          selectedCourseIds,
-          checklistAnswers,
-          plans,
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          createSavedState(
+            selection,
+            completedCredits,
+            selectedCourseIds,
+            checklistAnswers,
+            plans,
+          ),
         ),
-      ),
-    );
+      );
+    } catch {
+      setPersistenceMessage("storageUnavailable");
+    }
   }, [
     checklistAnswers,
     completedCredits,
@@ -181,8 +201,13 @@ export default function GraduationPageClient() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-    const dismissed =
-      window.sessionStorage.getItem(MOBILE_DESKTOP_NOTICE_KEY) === "dismissed";
+    let dismissed = false;
+    try {
+      dismissed =
+        window.sessionStorage.getItem(MOBILE_DESKTOP_NOTICE_KEY) === "dismissed";
+    } catch {
+      // The notice can still be dismissed when browser storage is unavailable.
+    }
 
     if (mediaQuery.matches && !dismissed) {
       setShowMobileNotice(true);
@@ -196,21 +221,40 @@ export default function GraduationPageClient() {
     setPlans({});
   };
 
+  const confirmProgressReset = () => {
+    const hasProgress =
+      Object.values(completedCredits).some((credits) => credits !== undefined) ||
+      selectedCourseIds.length > 0 ||
+      Object.keys(checklistAnswers).length > 0 ||
+      Object.values(plans).some((plan) => plan.trim());
+    return !hasProgress || window.confirm(text.selectionChangeConfirm);
+  };
+
   const updateSelection = (next: Partial<GraduationSelection>) => {
-    setSelection((current) => ({ ...current, ...next }));
+    if (
+      Object.entries(next).every(
+        ([key, value]) => selection[key as keyof GraduationSelection] === value,
+      )
+    ) {
+      return true;
+    }
+    if (!confirmProgressReset()) return false;
+    setSelection({ ...selection, ...next });
     resetProgress();
+    return true;
   };
 
   const handleCollegeSelect = (collegeId: string) => {
-    setSelection({
+    if (collegeId === selection.collegeId) return;
+    updateSelection({
       ...INITIAL_SELECTION,
       admissionYear: selection.admissionYear,
       collegeId,
     });
-    resetProgress();
   };
 
   const handleDepartmentSelect = (departmentId: string) => {
+    if (departmentId === selection.departmentId) return;
     updateSelection({
       departmentId,
       majorId: undefined,
@@ -219,18 +263,26 @@ export default function GraduationPageClient() {
     });
   };
 
-  const handleAdmissionYearChange = (value: string) => {
-    updateSelection({ admissionYear: value.replace(/\D/g, "").slice(0, 4) });
+  const commitAdmissionYear = () => {
+    if (
+      !/^\d{4}$/.test(admissionYearDraft) ||
+      !updateSelection({ admissionYear: admissionYearDraft })
+    ) {
+      setAdmissionYearDraft(selection.admissionYear);
+    }
   };
 
   const handleMobileContinue = () => {
-    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    try {
+      window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    } catch {
+      // Closing the notice does not require browser storage.
+    }
     setShowMobileNotice(false);
   };
 
   const handleMobileBack = () => {
-    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
-    setShowMobileNotice(false);
+    handleMobileContinue();
 
     if (window.history.length > 1) {
       window.history.back();
@@ -241,10 +293,16 @@ export default function GraduationPageClient() {
   };
 
   const handleReset = () => {
+    if (!confirmProgressReset()) return;
     setSelection(INITIAL_SELECTION);
+    setAdmissionYearDraft("");
     resetProgress();
-    window.localStorage.removeItem(STORAGE_KEY);
     setPersistenceMessage(null);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      setPersistenceMessage("storageUnavailable");
+    }
     setShareFallbackUrl("");
   };
 
@@ -421,10 +479,19 @@ export default function GraduationPageClient() {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={4}
-                value={selection.admissionYear}
+                value={admissionYearDraft}
                 onChange={(event) =>
-                  handleAdmissionYearChange(event.target.value)
+                  setAdmissionYearDraft(
+                    event.target.value.replace(/\D/g, "").slice(0, 4),
+                  )
                 }
+                onBlur={commitAdmissionYear}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    event.currentTarget.blur();
+                  }
+                }}
                 placeholder={text.placeholders.admissionYear}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
               />
@@ -476,13 +543,14 @@ export default function GraduationPageClient() {
                     key={major.id}
                     selected={selection.majorId === major.id}
                     title={major.name}
-                    onClick={() =>
+                    onClick={() => {
+                      if (major.id === selection.majorId) return;
                       updateSelection({
                         majorId: major.id,
                         admissionType: "",
                         majorTrack: "",
-                      })
-                    }
+                      });
+                    }}
                   />
                 ))}
               </ChoiceGroup>
@@ -501,12 +569,13 @@ export default function GraduationPageClient() {
                   key={type}
                   selected={selection.admissionType === type}
                   title={text.admissionTypes[type]}
-                  onClick={() =>
+                  onClick={() => {
+                    if (type === selection.admissionType) return;
                     updateSelection({
                       admissionType: type,
                       majorTrack: "",
-                    })
-                  }
+                    });
+                  }}
                 />
               ))}
             </ChoiceGroup>
@@ -1094,13 +1163,15 @@ function CurriculumCourseSelector({
         {text.courses.autoApply}
       </div>
 
-      <input
-        type="search"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder={text.placeholders.courseSearch}
-        className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-      />
+      <FieldLabel label={text.placeholders.courseSearch}>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={text.placeholders.courseSearch}
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        />
+      </FieldLabel>
 
       {groups.length === 0 ? (
         <EmptyState message={text.empty.courseSearch} />
@@ -1264,13 +1335,19 @@ function ChecklistCard({
           </button>
         ))}
       </div>
-      <input
-        type="text"
-        value={plan}
-        onChange={(event) => onPlan(event.target.value)}
-        placeholder={text.placeholders.checklistPlan}
-        className="mt-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-      />
+      <label className="mt-3 block">
+        <span className="mb-1 block text-xs font-semibold text-neutral-700">
+          <span className="sr-only">{label}: </span>
+          {text.placeholders.checklistPlan}
+        </span>
+        <input
+          type="text"
+          value={plan}
+          onChange={(event) => onPlan(event.target.value)}
+          placeholder={text.placeholders.checklistPlan}
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        />
+      </label>
     </div>
   );
 }

@@ -36,7 +36,8 @@ jobs:
   crawl:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Eight children are capped at five minutes each; allow setup and publication time.
+    timeout-minutes: 50
     permissions:
       contents: read
       pages: read
@@ -90,42 +91,17 @@ jobs:
       - name: Restore current crawl data snapshot
         run: npm run pull:crawl-data
 
-      - name: Run academic notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_announcements.py
-
-      - name: Run scholarship notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_scholarships.py
-
-      - name: Run campus life notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_campus.py
-
-      - name: Run event notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_events.py
-
-      - name: Run department notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_department_notices.py
-
-      - name: Run SW-centered university notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_swuniv_notices.py
-
-      - name: Run cafeteria menu crawler
-        run: python scripts/crawl_cafeteria.py
+      - name: Run independent daily crawlers with validated fallback
+        run: npm run crawl:daily
 
       - name: Generate announcement AI summaries
         if: env.CAFETERIA_ONLY_RUN != 'true'
         id: announcement_ai
-        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_ANNOUNCEMENT_MODEL: ${{ vars.OPENAI_ANNOUNCEMENT_MODEL }}
           ANNOUNCEMENT_AI_ENABLED: ${{ vars.ANNOUNCEMENT_AI_ENABLED }}
-          ANNOUNCEMENT_AI_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.ai_limit || vars.ANNOUNCEMENT_AI_LIMIT }}
+          ANNOUNCEMENT_AI_LIMIT: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.ai_limit) || vars.ANNOUNCEMENT_AI_LIMIT }}
           ANNOUNCEMENT_AI_DELAY_MS: ${{ vars.ANNOUNCEMENT_AI_DELAY_MS }}
           ANNOUNCEMENT_AI_TIMEOUT_MS: ${{ vars.ANNOUNCEMENT_AI_TIMEOUT_MS }}
           ANNOUNCEMENT_AI_CHECKPOINT_EVERY: ${{ vars.ANNOUNCEMENT_AI_CHECKPOINT_EVERY }}
@@ -136,7 +112,7 @@ jobs:
           ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS: ${{ vars.ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS }}
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED }}
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT }}
-        run: node scripts/generate_announcement_ai_summaries.mjs
+        run: npm run crawl:daily -- --ai-only
 
       - name: Prepare versioned Pages artifact
         id: prepare

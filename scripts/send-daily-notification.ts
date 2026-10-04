@@ -146,6 +146,7 @@ async function sendNotification(
         "x-api-key": apiKey,
       },
       body: requestBody,
+      signal: AbortSignal.timeout(120_000),
     });
 
     if (!response.ok) {

@@ -36,4 +36,40 @@ describe("Modal", () => {
     expect(trigger).toHaveFocus();
     trigger.remove();
   });
+
+  it("keeps input focus across rerenders and uses the latest close callback", () => {
+    const trigger = document.createElement("button");
+    document.body.appendChild(trigger);
+    trigger.focus();
+    const previousClose = vi.fn();
+    const latestClose = vi.fn();
+    const { rerender } = render(
+      <Modal isOpen title="Search courses" onClose={previousClose}>
+        <input aria-label="Course search" />
+      </Modal>,
+    );
+    const input = screen.getByRole("textbox", { name: "Course search" });
+    input.focus();
+    fireEvent.change(input, { target: { value: "컴퓨터" } });
+
+    rerender(
+      <Modal isOpen title="Search courses" onClose={latestClose}>
+        <input aria-label="Course search" />
+      </Modal>,
+    );
+
+    expect(input).toHaveFocus();
+    expect(input).toHaveValue("컴퓨터");
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(latestClose).toHaveBeenCalledOnce();
+    expect(previousClose).not.toHaveBeenCalled();
+
+    rerender(
+      <Modal isOpen={false} title="Search courses" onClose={latestClose}>
+        <input aria-label="Course search" />
+      </Modal>,
+    );
+    expect(trigger).toHaveFocus();
+    trigger.remove();
+  });
 });

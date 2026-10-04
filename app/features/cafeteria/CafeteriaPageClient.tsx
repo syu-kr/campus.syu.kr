@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Container } from "@/app/components/Container";
+import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import {
@@ -78,6 +79,8 @@ export function CafeteriaPageClient({
         </h1>
         <p className="text-neutral-600">{text.description}</p>
       </div>
+
+      <CrawlDataStatus fileNames={["cafeteria-menu.json"]} />
 
       {isError && (
         <StateCard

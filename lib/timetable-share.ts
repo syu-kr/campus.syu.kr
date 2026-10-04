@@ -14,6 +14,18 @@ export function getTimetableShareOwnerTokenKey(shareId: string) {
   return `timetable-share-owner-token:${shareId}`;
 }
 
+export function isTimetableShareForSemester(
+  share: { year?: string | null; semester?: string | null },
+  semester: { year?: string; semester?: string },
+): boolean {
+  return Boolean(
+    share.year?.trim() &&
+      share.semester?.trim() &&
+      share.year.trim() === semester.year?.trim() &&
+      share.semester.trim() === semester.semester?.trim(),
+  );
+}
+
 export interface StoredTimetableWorkspace {
   active_timetable_id: string;
   is_compare_mode: boolean;

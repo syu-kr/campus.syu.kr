@@ -246,10 +246,10 @@ def crawl_cafeteria_menu():
         
         for i in range(1, len(header_cells)):
             date_str = header_cells[i].get_text(strip=True)
-            if date_str:
-                date_formatted, day_name = parse_korean_date(date_str)
-                if date_formatted:
-                    dates.append((date_formatted, day_name))
+            date_formatted, day_name = parse_korean_date(date_str)
+            if not date_formatted:
+                raise RuntimeError(f"학식 날짜 헤더를 해석하지 못했습니다: {date_str!r}")
+            dates.append((date_formatted, day_name))
         
         print(f"📊 발견된 날짜: {len(dates)}개")
         if not dates:
@@ -263,6 +263,11 @@ def crawl_cafeteria_menu():
         
         if len(body_rows) < 4:
             raise RuntimeError("예상되는 4개 메뉴 행을 찾지 못했습니다.")
+
+        expected_cell_counts = (len(dates), len(dates) + 1, len(dates) + 1, len(dates))
+        for row, expected in zip(body_rows[:4], expected_cell_counts):
+            if len(row.select("td")) < expected:
+                raise RuntimeError("학식 메뉴 셀이 날짜 열보다 부족합니다.")
         
         # 각 날짜별로 메뉴 구성
         menus = []

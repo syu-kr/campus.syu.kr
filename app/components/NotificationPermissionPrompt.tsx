@@ -79,7 +79,7 @@ export function NotificationPermissionPrompt() {
 
   return (
     <section
-      className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-40 md:bottom-6 md:left-auto md:right-6 md:w-[min(28rem,calc(100vw-3rem))]"
+      className="relative mx-4 my-4 md:fixed md:inset-x-auto md:bottom-6 md:right-6 md:z-40 md:m-0 md:w-[min(28rem,calc(100vw-3rem))]"
       aria-labelledby="notification-permission-title"
     >
       <div className="min-w-0 overflow-hidden rounded-xl border border-primary-100 bg-white p-4 shadow-2xl sm:p-5">

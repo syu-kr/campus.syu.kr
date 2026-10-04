@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   getRepresentativeCourseIds,
+  isTimetableShareForSemester,
   parseSharedTimetableWorkspace,
   toStoredTimetableWorkspace,
 } from "@/lib/timetable-share";
@@ -16,6 +17,14 @@ const workspace = {
 };
 
 describe("timetable share contract", () => {
+  it("requires a verified matching semester before restoring course IDs", () => {
+    const current = { year: "2026", semester: "2" };
+    expect(isTimetableShareForSemester(current, current)).toBe(true);
+    expect(isTimetableShareForSemester({ year: "2026", semester: "1" }, current)).toBe(false);
+    expect(isTimetableShareForSemester({ year: "2025", semester: "2" }, current)).toBe(false);
+    expect(isTimetableShareForSemester({ year: null, semester: null }, current)).toBe(false);
+  });
+
   it("round-trips the stored Firestore representation", () => {
     expect(parseSharedTimetableWorkspace(toStoredTimetableWorkspace(workspace)))
       .toEqual(workspace);

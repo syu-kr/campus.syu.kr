@@ -204,7 +204,13 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
     )
     title = clean_notice_title(raw_title, config.important_markers)
 
-    url = urljoin("https://www.syu.ac.kr", title_elem.get("href", ""))
+    href = title_elem.get("href")
+    if not isinstance(href, str) or not href.strip():
+        return None
+    try:
+        url = urljoin("https://www.syu.ac.kr", href)
+    except ValueError:
+        return None
     author = (
         cells[title_cell_index + 1].get_text(" ", strip=True)
         if title_cell_index + 1 < len(cells)
@@ -238,6 +244,10 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
     }
 
 
+def is_notice_candidate_row(row) -> bool:
+    return row.select_one("td a, th.step1, .tit, .notice_icon") is not None
+
+
 def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
     existing_items = [
         item for item in load_json_list(config.output_path) if is_valid_notice_item(item)
@@ -261,6 +271,7 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
     pages_crawled = 0
     reached_existing_tail = False
     first_page_checked = False
+    first_page_pinned_keys: set[str] = set()
 
     for page in range(1, config.max_pages + 1):
         soup = request_soup(session, f"{config.base_url}/{page}/")
@@ -279,13 +290,20 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
         page_non_pinned = 0
         page_new_non_pinned = 0
         page_existing_non_pinned = 0
+        page_valid_rows = 0
 
         for row in rows:
             row_data = extract_notice_row(row, config)
             if not row_data or not is_valid_notice_item(row_data):
+                if is_notice_candidate_row(row):
+                    print(f"  [warn] {config.label} 공지 행의 필수 항목을 해석하지 못했습니다")
+                    raise RuntimeError(f"{config.label} 공지 행이 불완전합니다")
                 continue
 
+            page_valid_rows += 1
             key = notice_key(row_data)
+            if page == 1 and row_data["is_pinned"]:
+                first_page_pinned_keys.add(key)
             is_existing = key in existing_id_by_key
             if not row_data["is_pinned"]:
                 page_non_pinned += 1
@@ -317,6 +335,8 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
             }
 
         if page == 1:
+            if not page_valid_rows:
+                raise RuntimeError(f"{config.label} 첫 페이지에서 유효한 공지를 찾지 못했습니다")
             first_page_checked = True
             if (
                 existing_id_by_key
@@ -352,6 +372,10 @@ def crawl_notice_board(config: NoticeCrawlerConfig) -> None:
             )
             merged.append(normalized_item)
             merged_keys.add(key)
+
+    # Only the fully parsed first page defines current pins; later pages may repeat them as regular rows.
+    for item in merged:
+        item["isPinned"] = notice_key(item) in first_page_pinned_keys
 
     write_json_atomic(config.output_path, merged)
 

@@ -14,11 +14,13 @@ import {
   type CrawlDataManifest,
   type DailyCrawlDataFile,
   parseCrawlDataManifest,
+  parseCrawlSourceHealthMap,
   validateDailyCrawlData,
   validateCrawlDataVersion,
 } from "../lib/crawl-data-contract";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
+const HEALTH_PATH = path.join(process.cwd(), ".cache", "crawl-data-health.json");
 const DEFAULT_CRAWL_DATA_BASE_URL =
   "https://syu-kr.github.io/campus.syu.kr/crawl-data";
 const FETCH_TIMEOUT_MS = 10_000;
@@ -73,8 +75,12 @@ async function main() {
   );
 }
 
-async function preparePagesArtifact(outputDir: string) {
-  const localSnapshot = await buildLocalSnapshot();
+export async function preparePagesArtifact(
+  outputDir: string,
+  dataDir = DATA_DIR,
+  healthPath = HEALTH_PATH,
+) {
+  const localSnapshot = await buildLocalSnapshot(dataDir, healthPath);
   const remoteCurrent = await fetchManifest("current.json", true);
 
   if (remoteCurrent && manifestsHaveSameFiles(remoteCurrent, localSnapshot.manifest)) {
@@ -111,7 +117,7 @@ async function preparePagesArtifact(outputDir: string) {
   );
 }
 
-async function prepareRollbackArtifact(version: string, outputDir: string) {
+export async function prepareRollbackArtifact(version: string, outputDir: string) {
   validateCrawlDataVersion(version);
   const current = await fetchManifest("current.json", false);
   if (!current) {
@@ -137,9 +143,10 @@ async function prepareRollbackArtifact(version: string, outputDir: string) {
   console.log(`[crawl-data] prepared rollback artifact for ${version}`);
 }
 
-async function pullCurrent() {
+export async function pullCurrent(dataDir = DATA_DIR, healthPath = HEALTH_PATH) {
   const manifest = await fetchManifest("current.json", true);
   if (!manifest) {
+    await writeHealthCache(healthPath, {});
     console.log(
       "[crawl-data] Pages current.json이 없어 번들 데이터를 최초 게시 기준으로 사용합니다.",
     );
@@ -147,7 +154,7 @@ async function pullCurrent() {
   }
 
   const snapshot = await downloadSnapshot(manifest.version, manifest);
-  await mkdir(DATA_DIR, { recursive: true });
+  await mkdir(dataDir, { recursive: true });
 
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
     const payload = snapshot.payloads.get(fileName);
@@ -155,20 +162,25 @@ async function pullCurrent() {
       console.log(`[crawl-data] legacy manifest: kept bundled ${fileName}`);
       continue;
     }
-    await writeFile(path.join(DATA_DIR, fileName), payload);
+    await writeFile(path.join(dataDir, fileName), payload);
     console.log(`[crawl-data] restored ${fileName}`);
   }
+
+  await writeHealthCache(healthPath, snapshot.manifest.sourceHealth ?? {});
 
   console.log(`[crawl-data] restored current version ${manifest.version}`);
 }
 
-async function buildLocalSnapshot(): Promise<CrawlDataSnapshot> {
+export async function buildLocalSnapshot(
+  dataDir = DATA_DIR,
+  healthPath = HEALTH_PATH,
+): Promise<CrawlDataSnapshot> {
   const version = buildVersion();
   const files: CrawlDataManifest["files"] = {};
   const payloads = new Map<DailyCrawlDataFile, Buffer>();
 
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
-    const payload = await readValidatedJson(fileName);
+    const payload = await readValidatedJson(fileName, dataDir);
     payloads.set(fileName, payload);
     files[fileName] = {
       path: `versions/${version}/${fileName}`,
@@ -177,12 +189,14 @@ async function buildLocalSnapshot(): Promise<CrawlDataSnapshot> {
     };
   }
 
+  const sourceHealth = await readHealthCache(healthPath);
   const manifest = parseCrawlDataManifest({
     schemaVersion: 1,
     version,
     publishedAt: new Date().toISOString(),
     files,
     retainedVersions: [version],
+    ...(Object.keys(sourceHealth).length > 0 ? { sourceHealth } : {}),
   });
 
   return { manifest, payloads };
@@ -339,8 +353,9 @@ function getCrawlDataBaseUrl(): string {
 
 async function readValidatedJson(
   fileName: DailyCrawlDataFile,
+  dataDir: string,
 ): Promise<Buffer> {
-  const payload = await readFile(path.join(DATA_DIR, fileName));
+  const payload = await readFile(path.join(dataDir, fileName));
   if (payload.byteLength > CRAWL_DATA_MAX_BYTES[fileName]) {
     throw new Error(`${fileName}이 허용 크기를 초과했습니다.`);
   }
@@ -373,7 +388,7 @@ function verifyPayload(
   }
 }
 
-function manifestsHaveSameFiles(
+export function manifestsHaveSameFiles(
   current: CrawlDataManifest,
   next: CrawlDataManifest,
 ): boolean {
@@ -383,9 +398,33 @@ function manifestsHaveSameFiles(
     if (!currentFile || !nextFile) return false;
     return (
       currentFile.sha256 === nextFile.sha256 &&
-      currentFile.size === nextFile.size
+      currentFile.size === nextFile.size &&
+      JSON.stringify(current.sourceHealth?.[fileName]) ===
+        JSON.stringify(next.sourceHealth?.[fileName])
     );
   });
+}
+
+async function readHealthCache(healthPath: string) {
+  let raw: string;
+  try {
+    raw = await readFile(healthPath, "utf8");
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") {
+      return {};
+    }
+    throw error;
+  }
+  const cache = JSON.parse(raw) as { files?: unknown } | null;
+  return parseCrawlSourceHealthMap(cache?.files);
+}
+
+async function writeHealthCache(
+  healthPath: string,
+  files: NonNullable<CrawlDataManifest["sourceHealth"]>,
+) {
+  await mkdir(path.dirname(healthPath), { recursive: true });
+  await writeFile(healthPath, `${JSON.stringify({ files }, null, 2)}\n`, "utf8");
 }
 
 async function assertOutputDoesNotExist(outputDir: string) {
@@ -431,7 +470,9 @@ function sha256(payload: Buffer): string {
   return createHash("sha256").update(payload).digest("hex");
 }
 
-main().catch((error) => {
-  console.error("[crawl-data] command failed:", error);
-  process.exitCode = 1;
-});
+if (typeof require !== "undefined" && require.main === module) {
+  main().catch((error) => {
+    console.error("[crawl-data] command failed:", error);
+    process.exitCode = 1;
+  });
+}

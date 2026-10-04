@@ -384,26 +384,20 @@ function dedupeSearchResults(results: SearchAllResult[]): SearchAllResult[] {
 
 // 전화번호 API
 export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
-  try {
-    return await fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
-      fallback: [],
-    });
-  } catch {
-    return [];
-  }
+  return fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
+    fallback: [],
+    throwOnError: true,
+  });
 }
 
 // 캠퍼스 꿀팁 자료실
 export async function fetchCampusTips(): Promise<CampusTip[]> {
-  try {
-    return await fetchJson<CampusTip[]>("/data/campus-tips.json", {
-      fallback: [],
-      noStore: false,
-      next: { revalidate: 604800 },
-    });
-  } catch {
-    return [];
-  }
+  return fetchJson<CampusTip[]>("/data/campus-tips.json", {
+    fallback: [],
+    noStore: false,
+    next: { revalidate: 604800 },
+    throwOnError: true,
+  });
 }
 
 // 버스 실시간 위치 API

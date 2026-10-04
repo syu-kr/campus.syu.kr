@@ -124,6 +124,10 @@ jobs:
         if: inputs.verify_before_sync
         run: npm ci
 
+      - name: Install Python dependencies
+        if: inputs.verify_before_sync
+        run: python -m pip install -r requirements.txt
+
       - name: Audit dependencies
         if: inputs.verify_before_sync
         run: npm audit --audit-level=moderate

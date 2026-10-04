@@ -35,6 +35,11 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
       );
     }
 
+    // ponytail: per-instance requester cap; use shared storage if distributed abuse occurs.
+    await enforceRateLimit(req, "meet-room-read", {
+      ...RATE_LIMIT,
+      windowMs: 60 * 1000,
+    });
     await enforceRateLimit(req, `meet-room:${roomId}`, RATE_LIMIT);
 
     const db = getFirestore();

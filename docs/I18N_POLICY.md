@@ -68,6 +68,7 @@ The audit scans public `app/**/*.tsx` files and fails when it finds Korean text 
 
 - `lib/i18n.ts`
 - Admin and API routes
+- Test and spec files, whose fixtures and assertions are not shipped UI copy
 - Korean legal originals in `app/terms/page.tsx` and `app/privacy/page.tsx`
 - Known source-data keys and error-message mapping tables
 

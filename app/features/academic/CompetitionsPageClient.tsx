@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
+import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
@@ -13,6 +14,7 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "@/app/components/AnnouncementAiSummary";
 import { fetchCompetitionPage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
+import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type { Dictionary } from "@/lib/i18n";
 import { formatDateWithYear } from "@/lib/utils";
 import type {
@@ -27,6 +29,13 @@ import type {
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
+const SOURCE_FILES: Record<CompetitionSourceCategory, DailyCrawlDataFile> = {
+  academic: "announcements-academic.json",
+  campus: "announcements-campus-life.json",
+  scholarship: "announcements-scholarship.json",
+  event: "announcements-events.json",
+  department: "announcements-departments.json",
+};
 const statusFilters: CompetitionStatusFilter[] = [
   "open",
   "result",
@@ -130,6 +139,10 @@ export function CompetitionsPageClient() {
         getLabel={(source) => getSourceFilterLabel(source, text)}
         onChange={handleSourceChange}
         secondary
+      />
+
+      <CrawlDataStatus
+        fileNames={selectedSource === "all" ? Object.values(SOURCE_FILES) : [SOURCE_FILES[selectedSource]]}
       />
 
       {!showLoading && !isError && (

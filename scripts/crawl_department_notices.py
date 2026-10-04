@@ -22,6 +22,7 @@ from crawler_utils import (
     extract_notice_row,
     generate_stable_id,
     is_valid_notice_item,
+    is_notice_candidate_row,
     legacy_notice_key,
     load_json_list,
     normalize_notice_url,
@@ -459,12 +460,16 @@ def crawl_department_board(
         for row in rows:
             row_data = extract_notice_row(row, config)
             if not row_data:
+                if is_notice_candidate_row(row):
+                    print(f"  [warn] {config.label} 공지 행의 필수 항목을 해석하지 못했습니다")
+                    raise RuntimeError(f"{config.label} 공지 행이 불완전합니다")
                 continue
 
             fix_department_notice_url(row, request_url, row_data)
 
-            if not is_valid_notice_item(row_data):
-                continue
+            if not is_valid_notice_item(row_data) or not is_official_syu_url(str(row_data.get("url", ""))):
+                print(f"  [warn] {config.label} 공지 행의 필수 항목 또는 공식 URL이 올바르지 않습니다")
+                raise RuntimeError(f"{config.label} 공지 행이 불완전합니다")
 
             if not is_competition_notice(row_data):
                 continue
@@ -719,7 +724,10 @@ def parse_date_key(value: str) -> int:
 
 
 def is_official_syu_url(url: str) -> bool:
-    parsed = urlsplit(url)
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return False
     host = (parsed.hostname or "").lower()
     return parsed.scheme in {"http", "https"} and (
         host == "syu.ac.kr" or host.endswith(".syu.ac.kr")
