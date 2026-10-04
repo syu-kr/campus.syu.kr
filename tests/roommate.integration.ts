@@ -18,7 +18,7 @@ import * as adminReportsRoute from "@/app/api/admin/roommate-reports/route";
 import { cleanupRoommateDocuments } from "@/scripts/roommate-cleanup";
 import { getRoommateOwnerKey, ROOMMATE_SESSION_COOKIE } from "@/lib/server/roommate-auth";
 import { koreaDate, DAY_MS } from "@/lib/roommates";
-import type { RoommatePost, RoommatePostInput } from "@/types/roommates";
+import type { RoommatePost, RoommatePostSubmission } from "@/types/roommates";
 
 const PROJECT = "demo-syu-roommates";
 const AUTH_HOST = "127.0.0.1:9098";
@@ -87,12 +87,13 @@ async function signIn(email: string, remember = true, beforeComplete?: () => voi
   return { email, auth, uid: credential.user.uid, token, link, cookie, setCookie, session, ownerKey: getRoommateOwnerKey(email) };
 }
 
-function postInput(nickname = "로컬 학생"): RoommatePostInput {
+function postInput(nickname = "로컬 학생"): RoommatePostSubmission {
   return {
     nickname, dorm: "eden", roomSize: 4, roommatesNeeded: 1,
     stayStart: koreaDate(), stayEnd: koreaDate(Date.now() + 60 * DAY_MS), recruitUntil: koreaDate(Date.now() + 20 * DAY_MS),
     habits: { smoking: "nonsmoker", bedtime: "22to24", calls: "outside" },
     description: "실제 에뮬레이터 통합 시험용 가상 게시글입니다.", openChatUrl: "https://open.kakao.com/o/TestLocal123",
+    disclosureConsent: true,
   };
 }
 
@@ -231,6 +232,26 @@ describe("roommates using real local Auth and Firestore emulators", () => {
     await responseData(await reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reader.cookie, body: { reason: "false_info", description: "가상 신고" } }), context(post.id)), 201);
     await responseData(await reportsRoute.POST(request(`/api/roommates/posts/${post.id}/reports`, { cookie: reader.cookie, body: { reason: "spam", description: "duplicate" } }), context(post.id)), 409);
     expect((await db().collection("roommate_reports").get()).size).toBe(1);
+  });
+
+  it("requires disclosure consent through the real create and edit APIs and keeps consent evidence private", async () => {
+    const author = await signIn("student-a@syuin.ac.kr");
+    const denied = await responseData<{ field: string }>(await postsRoute.POST(request("/api/roommates/posts", { cookie: author.cookie, body: { ...postInput(), disclosureConsent: false } })), 400);
+    expect(denied.field).toBe("disclosureConsent");
+    expect((await db().collection("roommate_posts").get()).empty).toBe(true);
+    const post = await createPost(author.cookie);
+    const saved = await db().collection("roommate_posts").doc(post.id).get();
+    expect(saved.get("disclosure_consent.policy_version")).toBe("2026-10-04");
+    expect(saved.get("disclosure_consent.accepted_at").toMillis()).toBeGreaterThan(0);
+    expect(post).not.toHaveProperty("disclosure_consent");
+    expect(post).not.toHaveProperty("disclosureConsent");
+    const rejectedEdit = await responseData<{ field: string }>(await detailRoute.PATCH(request(`/api/roommates/posts/${post.id}`, {
+      method: "PATCH", cookie: author.cookie, body: { ...postInput(), disclosureConsent: undefined, action: "update", expectedVersion: 1 },
+    }), context(post.id)), 400);
+    expect(rejectedEdit.field).toBe("disclosureConsent");
+    const unchanged = await db().collection("roommate_posts").doc(post.id).get();
+    expect(unchanged.get("version")).toBe(1);
+    expect(unchanged.get("disclosure_consent")).toEqual(saved.get("disclosure_consent"));
   });
 
   it("atomically records one of simultaneous duplicate reports and charges one successful attempt", async () => {

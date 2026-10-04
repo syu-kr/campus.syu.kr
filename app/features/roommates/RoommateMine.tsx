@@ -8,7 +8,7 @@ import { Modal } from "@/app/components/Modal";
 import { ContactModal } from "@/app/components/ContactModal";
 import { localizePath } from "@/lib/i18n";
 import { getRoommateText } from "@/lib/i18n/roommates";
-import type { RoommateMyPost, RoommatePostInput } from "@/types/roommates";
+import type { RoommateMyPost, RoommatePostSubmission } from "@/types/roommates";
 import { jsonRequest, roommateErrorMessage, roommateRequest } from "./client";
 import { HabitValues, RoommateHeading, postTitle, primaryClass, secondaryClass } from "./RoommateShared";
 import RoommateForm from "./RoommateForm";
@@ -21,7 +21,7 @@ export default function RoommateMine() {
   const [editing, setEditing] = useState(false); const [action, setAction] = useState<"complete" | "delete" | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [contactOpen, setContactOpen] = useState(false);
   const post = query.data?.post; const held = !!query.data?.holdUntil && Date.parse(query.data.holdUntil) > now;
   async function refresh() { setEditing(false); setAction(null); await queryClient.invalidateQueries({ queryKey: ["roommates"] }); }
-  async function update(input: RoommatePostInput) {
+  async function update(input: RoommatePostSubmission) {
     if (!post) return;
     await roommateRequest(`posts/${encodeURIComponent(post.id)}`, jsonRequest("PATCH", { action: "update", expectedVersion: post.version, ...input })); await refresh();
   }

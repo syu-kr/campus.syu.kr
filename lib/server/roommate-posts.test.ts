@@ -62,7 +62,7 @@ import { DAY_MS, koreaDate } from "@/lib/roommates";
 
 const now = Date.parse("2026-10-04T06:00:00Z");
 function input(at = now) {
-  return { nickname: "학생님", dorm: "eden", roomSize: 3, stayStart: koreaDate(at), stayEnd: koreaDate(at + 80 * DAY_MS), roommatesNeeded: 1, recruitUntil: koreaDate(at + 20 * DAY_MS), habits: {}, description: "조용한 룸메이트", openChatUrl: "https://open.kakao.com/o/aB123" };
+  return { nickname: "학생님", dorm: "eden", roomSize: 3, stayStart: koreaDate(at), stayEnd: koreaDate(at + 80 * DAY_MS), roommatesNeeded: 1, recruitUntil: koreaDate(at + 20 * DAY_MS), habits: {}, description: "조용한 룸메이트", openChatUrl: "https://open.kakao.com/o/aB123", disclosureConsent: true };
 }
 function document(id: string): RoommatePostDocument { return fixture.store.get(`roommate_posts/${id}`) as unknown as RoommatePostDocument; }
 function owner(key: string) { return fixture.store.get(`roommate_owner_state/${key}`)!; }
@@ -70,6 +70,38 @@ function owner(key: string) { return fixture.store.get(`roommate_owner_state/${k
 beforeEach(() => { fixture.store.clear(); fixture.sequence = 0; fixture.queue = Promise.resolve(); });
 
 describe("roommate post transactions", () => {
+  it("records server-side disclosure consent on each write without exposing it in student responses", async () => {
+    const missing = { ...input(), disclosureConsent: undefined };
+    await expect(createRoommatePost("owner", missing, now)).rejects.toMatchObject({ status: 400, field: "disclosureConsent" });
+    expect(fixture.store.size).toBe(0);
+    const post = await createRoommatePost("owner", input(), now);
+    expect(document(post.id).disclosure_consent).toEqual({ accepted_at: Timestamp.fromMillis(now), policy_version: "2026-10-04" });
+    expect(post).not.toHaveProperty("disclosureConsent");
+    expect(post).not.toHaveProperty("disclosure_consent");
+    await expect(mutateRoommatePost("owner", post.id, "update", { action: "update", expectedVersion: 1, ...missing }, now + 1000)).rejects.toMatchObject({ status: 400, field: "disclosureConsent" });
+    expect(document(post.id).version).toBe(1);
+    expect(document(post.id).disclosure_consent!.accepted_at.toMillis()).toBe(now);
+    const updated = await mutateRoommatePost("owner", post.id, "update", { action: "update", expectedVersion: 1, ...input() }, now + 2000);
+    expect(document(post.id).disclosure_consent!.accepted_at.toMillis()).toBe(now + 2000);
+    const detail = await getRoommatePost(post.id, "other", now + 2000);
+    const mine = await getMyRoommatePost("owner", now + 2000);
+    const list = await listRoommatePosts({}, null, now + 2000);
+    for (const response of [updated, detail, mine.post, list.items[0]]) {
+      expect(response).not.toHaveProperty("disclosureConsent");
+      expect(response).not.toHaveProperty("disclosure_consent");
+    }
+  });
+
+  it("keeps legacy posts readable and allows closing them without new disclosure consent", async () => {
+    const post = await createRoommatePost("owner", input(), now);
+    delete fixture.store.get(`roommate_posts/${post.id}`)!.disclosure_consent;
+    expect((await getRoommatePost(post.id, "other", now)).id).toBe(post.id);
+    const completed = await mutateRoommatePost("owner", post.id, "complete", { action: "complete", expectedVersion: 1 }, now + 1000);
+    expect(completed.status).toBe("completed");
+    expect((await mutateRoommatePost("owner", post.id, "delete", { expectedVersion: 2 }, now + 2000)).status).toBe("deleted");
+    expect(document(post.id)).not.toHaveProperty("disclosure_consent");
+  });
+
   it("allows only one of concurrent creations and counts successful creations", async () => {
     const result = await Promise.allSettled([createRoommatePost("owner", input(), now), createRoommatePost("owner", input(), now)]);
     expect(result.filter((item) => item.status === "fulfilled")).toHaveLength(1);
