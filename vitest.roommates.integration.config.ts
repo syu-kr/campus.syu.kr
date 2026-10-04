@@ -8,7 +8,8 @@ const emulatorEnvironment = {
   NEXT_PUBLIC_FIREBASE_PROJECT_ID: "demo-syu-roommates",
 } as const;
 for (const [name, expected] of Object.entries(emulatorEnvironment)) {
-  if (process.env[name] && process.env[name] !== expected) {
+  // Knip reads this config without executing tests; Vitest sets VITEST before loading it.
+  if (process.env.VITEST === "true" && process.env[name] && process.env[name] !== expected) {
     throw new Error(`Roommate integration tests require ${name}=${expected}`);
   }
 }

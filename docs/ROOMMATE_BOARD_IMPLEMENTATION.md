@@ -98,6 +98,7 @@ npm run test:roommates:integration
 1. 숨겨진 글 A 이후 새 글 B를 작성·완료하고 관리자가 A를 복구하면 `latest_post_id`가 B를 가리켜 내 글에 복구한 A가 나타나지 않았다. 복구 트랜잭션에서 활성 글과 최근 글 포인터를 함께 갱신하고 이 전체 순서를 회귀 테스트로 확인했다.
 2. Next.js `NextRequest`가 로컬 `127.0.0.1` 주소를 `localhost`로 정규화해 같은 사이트의 로그아웃을 잘못된 Origin으로 거부했다. 정확한 loopback Host와 동일 포트만 원래 주소로 복원하도록 수정했다. 외부 Host·forwarded-host 조작 및 다른 Origin 거부 회귀 테스트와 독립 검토를 진행했다.
 3. Firestore Timestamp 범위보다 큰 목록 cursor를 decoder가 통과시켜 HTTP 503으로 분류했다. decoder의 기존 try/catch 안에서 실제 Timestamp 생성으로 범위를 검증해 `400 INVALID_CURSOR`로 처리한다. 범위 초과 2개를 재현하고 수정 후 통과했다.
+4. CI의 Knip이 에뮬레이터 테스트 설정을 읽으면서 CI placeholder 프로젝트를 환경 불일치로 거부했다. 환경 제한은 Vitest가 실제 검사를 실행할 때 적용하고, Knip의 설정 읽기는 허용한다. CI와 같은 프로젝트 값에서 Knip 및 전체 검사가 통과했으며, 같은 값으로 통합 검사를 실행하면 시작 단계에서 여전히 거부됨을 확인했다. 지정된 demo·loopback 에뮬레이터의 통합 9개도 재실행해 통과했다.
 
 후속 경계 검사는 로그아웃 DB 삭제 실패 후 재시도, 소비한 링크의 세션 재시도 5분 만료, 일반 HTTP 503 후 동일 세션·작성 입력 복구도 확인했다. 새 검사 5개를 포함한 집중 검사 4개 파일·28개 테스트, 전체 단위 검사 79개 파일·391개 테스트와 타입·lint 검사가 통과했다.
 
@@ -168,6 +169,8 @@ Firestore 인덱스 목록 API는 HTTP 200이었다. 운영 `roommate_posts`의 
 ## PR 및 배포 준비
 
 최신 `main`은 `362708ab2cadf41805aaf37947173a93319bdcb9`로 브랜치 출발점과 일치했다. main 보호 규칙은 PR과 최신 main 기준의 `Audit and Check`, `Android TWA`, `Analyze JavaScript and TypeScript`, `Dependency Review` 통과 및 review thread 해결을 요구한다. PR 생성 단계의 전체 `npm run check`도 79개 파일·391개 테스트와 production 빌드까지 종료 코드 0으로 통과했다.
+
+[PR #195](https://github.com/syu-kr/campus.syu.kr/pull/195)에 구현과 공개 준비 공지를 포함했다. CI 설정 호환성 수정 후 `NEXT_PUBLIC_FIREBASE_PROJECT_ID=ci-placeholder`를 설정한 로컬 전체 검사도 391개 테스트·61개 정적 페이지 빌드까지 종료 코드 0으로 통과했고, 독립 에뮬레이터 통합 검사 9개를 다시 실행해 16.05초에 통과했다. PR의 필수 CI 결과는 최종 원격 SHA에서 별도로 확인한다.
 
 읽기 전용 Firebase 재조회에서 이메일 링크는 활성화되어 있고 `campus.syu.kr`은 여전히 미등록이었다. 게시글 `status + created_at`은 READY였으며, 위의 두 룸메이트 인덱스와 `api_rate_limits(metric + window_start)`는 MISSING이었다. 인덱스나 인증 설정을 변경하지 않았다. Vercel Production의 실제 환경 등록 값은 확인되지 않았으며 로컬 키 유무를 운영 등록 상태로 해석하지 않는다.
 
