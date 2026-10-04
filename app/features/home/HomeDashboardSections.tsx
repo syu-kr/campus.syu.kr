@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
+import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
@@ -272,6 +273,16 @@ export function TodayShuttleSection({
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {isError && <DashboardLoadError onRetry={onRetry} />}
+        {!isLoading &&
+          !isError &&
+          now &&
+          summary.additionalServicePeriods.map((period) => (
+            <ShuttleAdditionalServicesCard
+              key={period.id}
+              period={period}
+              now={now}
+            />
+          ))}
         {!isLoading && !isError && summary.isWeekend && (
           <StateCard
             type="info"

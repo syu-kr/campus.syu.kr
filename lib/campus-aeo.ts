@@ -1,7 +1,10 @@
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import type { TodayInfo } from "@/lib/home";
-import type { CurrentShuttleSummary } from "@/lib/shuttle-schedule";
+import {
+  formatShuttleAdditionalService,
+  type CurrentShuttleSummary,
+} from "@/lib/shuttle-schedule";
 import type { AnswerSummary, CafeteriaMenu, MenuItem } from "@/types";
 
 function getTodayCafeteriaMenu(
@@ -107,6 +110,28 @@ export function createShuttleAnswerSummary({
   const text = dictionary.pages.busInfo;
   const answerText = text.answer;
   const primaryDeparture = summary.departures[0];
+  const serviceText = text.festivalShuttle;
+  const additionalItems = summary.additionalServicePeriods.flatMap((period) =>
+    (period.additionalServices ?? []).map((service) =>
+      formatShuttleAdditionalService(service, locale),
+    ),
+  );
+  const additionalAnswer = summary.additionalServicePeriods
+    .map((period) =>
+      applyTemplate(serviceText.answer, {
+        date: period.startDate,
+        services: (period.additionalServices ?? [])
+          .map((service) => {
+            const item = formatShuttleAdditionalService(service, locale);
+            return `${item.label}: ${item.value}`;
+          })
+          .join("; "),
+      }),
+    )
+    .join(" ");
+  const festivalAnswer = additionalAnswer
+    ? `${additionalAnswer} ${serviceText.boarding}. ${serviceText.notice}`
+    : "";
   const baseSummary = {
     eyebrow: answerText.eyebrow,
     title: answerText.title,
@@ -132,24 +157,32 @@ export function createShuttleAnswerSummary({
   if (!primaryDeparture) {
     return {
       ...baseSummary,
-      answer: answerText.noMore,
+      source: festivalAnswer ? serviceText.source : baseSummary.source,
+      answer: festivalAnswer || answerText.noMore,
+      ...(festivalAnswer ? { items: additionalItems } : {}),
     };
   }
 
   return {
     ...baseSummary,
-    answer: applyTemplate(answerText.nextDeparture, {
+    source: festivalAnswer
+      ? `${baseSummary.source} / ${serviceText.source}`
+      : baseSummary.source,
+    answer: `${applyTemplate(answerText.nextDeparture, {
       minutes: String(primaryDeparture.minutesUntil),
       routeName: primaryDeparture.routeName,
       time: primaryDeparture.time,
-    }),
-    items: summary.departures.map((departure) => ({
-      label: departure.routeName,
-      value: applyTemplate(answerText.departureItem, {
-        minutes: String(departure.minutesUntil),
-        time: departure.time,
-      }),
-    })),
+    })}${festivalAnswer ? ` ${festivalAnswer}` : ""}`,
+    items: [
+      ...summary.departures.map((departure) => ({
+        label: departure.routeName,
+        value: applyTemplate(answerText.departureItem, {
+          minutes: String(departure.minutesUntil),
+          time: departure.time,
+        }),
+      })),
+      ...additionalItems,
+    ],
   };
 }
 
