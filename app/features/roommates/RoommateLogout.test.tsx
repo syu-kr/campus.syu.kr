@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
-import { RoommateError } from "@/lib/roommates";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as logoutRoute } from "@/app/api/roommates/auth/logout/route";
 import RoommateLogout from "./RoommateLogout";
 import ProtectedRoommatePage from "./ProtectedRoommatePage";
@@ -11,12 +10,13 @@ vi.mock("@/lib/firebaseRoommates", () => ({ clearRoommateAuth: vi.fn() }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("@/lib/server/roommate-auth", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/server/roommate-auth")>(),
-  getRoommatePageSession: async () => { throw new RoommateError(503, "FEATURE_DISABLED", "disabled"); },
   revokeRoommateSession: server.revoke,
 }));
 
 describe("roommate logout during feature suspension", () => {
-  it("keeps a logout control on the failed server gate without rendering private content", async () => {
+  beforeEach(() => vi.stubEnv("ROOMMATES_ENABLED", "false"));
+  afterEach(() => vi.unstubAllEnvs());
+  it("keeps a logout control while the feature is suspended without rendering private content", async () => {
     const client = new QueryClient();
     render(<QueryClientProvider client={client}>{await ProtectedRoommatePage({ path: "/campus/roommates", children: <p>private listing</p> })}</QueryClientProvider>);
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeVisible();

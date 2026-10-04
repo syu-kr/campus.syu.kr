@@ -1,11 +1,11 @@
 import { Metadata } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 import { RoommateMenuLink } from "@/app/features/roommates/RoommateMenuLink";
-import { areRoommatesEnabled } from "@/lib/server/roommate-auth";
+import { areRoommatesEnabled, ROOMMATE_SESSION_COOKIE } from "@/lib/roommates";
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
@@ -42,12 +42,13 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function CampusPage() {
   const locale = await getRequestLocale();
   const dictionary = getDictionary(locale);
+  const hasRoommateCookie = !!(await cookies()).get(ROOMMATE_SESSION_COOKIE)?.value;
   const campusMenus = [
     ...(areRoommatesEnabled() ? [{
       id: "roommates",
       title: dictionary.campus.menus.roommatesTitle,
       description: dictionary.campus.menus.roommatesDescription,
-      icon: "users",
+      icon: "home-outline",
       href: "/campus/roommates",
     }] : []),
     {
@@ -127,10 +128,14 @@ export default async function CampusPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {campusMenus.map((menu) => {
           const MenuLink = menu.id === "roommates" ? RoommateMenuLink : Link;
+          const href = localizePath(menu.href, locale);
+          const destination = menu.id === "roommates" && !hasRoommateCookie
+            ? `${localizePath("/campus/roommates/verify", locale)}?next=${encodeURIComponent(href)}`
+            : href;
           return (
             <MenuLink
               key={menu.id}
-              href={localizePath(menu.href, locale)}
+              href={destination}
               className="block"
             >
               <Card
@@ -150,7 +155,7 @@ export default async function CampusPage() {
                     <Icon
                       name={menu.icon}
                       size={28}
-                      strokeWidth={1.75}
+                      strokeWidth={menu.id === "roommates" ? 1.5 : 1.75}
                       color="currentColor"
                     />
                   </span>

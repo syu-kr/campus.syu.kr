@@ -1,6 +1,12 @@
 import type { RoommateHabits, RoommatePostFilters, RoommatePostInput, RoommateReportInput } from "@/types/roommates";
 
 export const DAY_MS = 86_400_000;
+export const ROOMMATE_SESSION_COOKIE = "__Host-roommates_session";
+
+export function areRoommatesEnabled() {
+  return process.env.ROOMMATES_ENABLED === "true";
+}
+
 export const ROOMMATE_DORMS = [
   { value: "peniel", label: "브니엘관", roomSizes: [2] },
   { value: "salem", label: "살렘관", roomSizes: [2] },

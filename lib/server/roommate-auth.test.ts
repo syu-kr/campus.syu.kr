@@ -17,7 +17,7 @@ vi.mock("@/lib/server/firestore", () => ({
 vi.mock("@/lib/server/http", async (importOriginal) => ({ ...await importOriginal<typeof import("@/lib/server/http")>(), enforceRateLimitKey: mocks.limiter }));
 
 import {
-  ROOMMATE_SESSION_COOKIE, enforceRoommateOrigin, getRoommateOwnerKey, getRoommateSessionExpiry,
+  ROOMMATE_SESSION_COOKIE, enforceRoommateOrigin, enforceRoommateReadLimit, getRoommateOwnerKey, getRoommateSessionExpiry,
   isRoommateUserValid, issueRoommateSession, normalizeSchoolEmail, requireRoommateSession,
   revokeRoommateSession, requestRoommateEmailLink, roommateErrorResponse, validateRoommateIdentity,
 } from "./roommate-auth";
@@ -49,6 +49,26 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("roommate school identity and fixed sessions", () => {
+  it("starts independent owner and IP read limits together and waits for both", async () => {
+    const resolves: (() => void)[] = [];
+    mocks.limiter.mockImplementation(() => new Promise<void>((done) => { resolves.push(done); }));
+    let allowed = false;
+    const check = enforceRoommateReadLimit(request(), "verified-owner").then(() => { allowed = true; });
+    expect(mocks.limiter).toHaveBeenCalledTimes(2);
+    expect(mocks.limiter.mock.calls.map(([key, options]) => [key, options.limit])).toEqual([
+      ["roommates:read:owner:verified-owner", 30], [expect.stringContaining("roommates:read:ip"), 120],
+    ]);
+    resolves[0](); await Promise.resolve(); expect(allowed).toBe(false);
+    resolves[1](); await check; expect(allowed).toBe(true);
+  });
+  it("denies read access if either parallel limit rejects", async () => {
+    for (const failed of [0, 1]) {
+      const error = new RoommateError(429, "RATE_LIMITED", "60초 후 다시 시도해주세요.");
+      mocks.limiter.mockReset().mockImplementation(() => mocks.limiter.mock.calls.length - 1 === failed ? Promise.reject(error) : Promise.resolve());
+      await expect(enforceRoommateReadLimit(request(), "verified-owner")).rejects.toBe(error);
+      expect(mocks.limiter).toHaveBeenCalledTimes(2);
+    }
+  });
   it("accepts chosen student IDs, normalizes case, rejects similar and staff domains", () => {
     expect(normalizeSchoolEmail(" Chosen.Name@SYUIN.AC.KR ")).toBe("chosen.name@syuin.ac.kr");
     for (const value of ["user@syu.ac.kr", "user@syuin.ac.kr.evil", "user@gmail.com", "user@@syuin.ac.kr", "@syuin.ac.kr"]) expect(() => normalizeSchoolEmail(value)).toThrow();

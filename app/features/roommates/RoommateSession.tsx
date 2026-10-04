@@ -9,7 +9,7 @@ import { protectRoommateLinkPrivacy } from "@/lib/roommate-link-privacy";
 import { ROOMMATE_CHANNEL, ROOMMATE_CLEAR_EVENT, ROOMMATE_QUERY_KEY, RoommateApiError, roommateRequest } from "./client";
 import RoommateLogout from "./RoommateLogout";
 
-export default function RoommateSession({ children, expiresAt, sessionTag }: { children: ReactNode; expiresAt: string; sessionTag?: string }) {
+export default function RoommateSession({ children, expiresAt, sessionTag }: { children: ReactNode; expiresAt?: string; sessionTag?: string }) {
   const locale = useLocale();
   const text = getRoommateText(locale);
   const queryClient = useQueryClient();
@@ -21,7 +21,9 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   const [currentExpiry, setCurrentExpiry] = useState(expiresAt);
   const channel = useRef<BroadcastChannel | null>(null);
   const alive = useRef(true);
+  const signingOut = useRef(false);
   const generation = useRef(0);
+  const inFlightGeneration = useRef<number | null>(null);
   const identity = useRef(sessionTag ?? expiresAt);
   const privateContents = useRef<HTMLDivElement>(null);
 
@@ -35,10 +37,18 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
     clear();
     window.location.replace(`${localizePath("/campus/roommates/verify", locale)}?next=${encodeURIComponent(window.location.pathname)}`);
   }, [clear, locale]);
+  const startLogout = useCallback(() => {
+    signingOut.current = true;
+    clear();
+  }, [clear]);
   const validate = useCallback(async () => {
+    // Focus, visibility and pageshow can arrive together. Reuse only the current check;
+    // conceal/logout increments generation so an older response cannot reopen the page.
+    if (signingOut.current || inFlightGeneration.current === generation.current) return;
     if (privateContents.current) privateContents.current.hidden = true;
     setChecking(true);
     const run = ++generation.current;
+    inFlightGeneration.current = run;
     try {
       const session = await roommateRequest<{ expiresAt: string; sessionTag?: string }>("auth/session");
       if (alive.current && run === generation.current) {
@@ -54,6 +64,8 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
       if (error instanceof RoommateApiError && error.status === 401) leave();
       else if (error instanceof RoommateApiError && error.code === "FEATURE_DISABLED") { clear(); setDisabled(true); }
       else { setFailed(true); }
+    } finally {
+      if (inFlightGeneration.current === run) inFlightGeneration.current = null;
     }
   }, [clear, leave]);
 
@@ -98,6 +110,7 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   }, [clear, leave, queryClient, validate]);
 
   useEffect(() => {
+    if (!currentExpiry) return;
     let timeout: number;
     const scheduleExpiry = () => {
       const remaining = Date.parse(currentExpiry) - Date.now();
@@ -109,7 +122,7 @@ export default function RoommateSession({ children, expiresAt, sessionTag }: { c
   }, [currentExpiry, leave]);
 
   return <>
-    <div className="mb-4 flex justify-end"><RoommateLogout onStart={clear} onSignedOut={leave} /></div>
+    <div className="mb-4 flex justify-end"><RoommateLogout onStart={startLogout} onSignedOut={leave} /></div>
     {disabled && <p role="status" className="rounded-xl border border-neutral-200 bg-white p-6 text-neutral-700">{text.unavailable}</p>}
     {failed && <div role="alert" className="mb-4 rounded-lg border border-neutral-200 bg-white p-4"><p>{text.failed}</p><button className="mt-2 text-primary-700 underline" type="button" onClick={() => void validate()}>{text.retry}</button></div>}
     {ready && !disabled && <div key={identityVersion} ref={privateContents} hidden={checking}>{children}</div>}
