@@ -33,6 +33,34 @@ export async function generateMetadata(): Promise<Metadata> {
       };
 }
 
+function RoommatePrivacy({ locale }: { locale: Locale }) {
+  const english = locale === "en";
+  const items = english ? [
+    "When enabled, the dorm roommate board uses Firebase email-link authentication to confirm ownership of an @syuin.ac.kr address. Firebase Authentication stores the email address and user record until a verified deletion request. This does not confirm enrollment, admission to a dorm or official room assignment.",
+    "The server stores a Firebase UID, verified authentication time, a one-way session-token hash and an email HMAC author key. Session cookies are HttpOnly and Secure, expire at a fixed 30 days (12 hours if persistent access is declined), and are deleted on logout. A pending email address is temporarily stored in the browser for up to 24 hours and removed on completion or cancellation.",
+    "Nickname, dorm and room capacity, stay dates, recruitment deadline and number of roommates, optional habits and introduction, and a Kakao open-chat link are stored to operate the board. The writer's submitted content is shown only to authenticated board users while recruiting; the email, internal author key and authentication credentials are not included in posts.",
+    "Completed, deleted, expired and hidden posts lose ordinary access immediately. Post cleanup is scheduled 30 days after the earlier of the first completion/deletion and the original recruitment deadline. Editing, hiding or repeated deletion does not extend retention. Reports, optional descriptions and a minimal snapshot of the reported post are available only to administrators and are removed 30 days after submission, even when unresolved.",
+    "An admin writing hold normally lasts 30 days and can be released or extended. Inactive author state is removed after 90 days without a valid active post or hold. Minimal admin/cleanup audit records are retained for 365 days and do not duplicate report text or contact links. Daily cleanup may run after expiry; APIs enforce access expiry independently. Firestore cleanup does not automatically remove Firebase Auth users shared with other features.",
+    "Opening a Kakao link takes the user to an external service governed by Kakao policies. The site does not read or store Kakao conversations. Firebase/Google and hosting providers process authentication, delivery and stored data as described in this policy. Roommate reports are reviewed in admin without AI classification.",
+    "For access, correction, deletion, an appeal or an issue after recruitment closes, use the existing site inquiry or the privacy contact below. Requests remain possible when the board or email sending is unavailable. Account deletion requests are checked before processing to avoid deleting shared administrator or other-feature accounts.",
+  ] : [
+    "기능이 활성화되면 기숙사 룸메이트 게시판은 Firebase 이메일 링크 인증으로 @syuin.ac.kr 주소의 소유를 확인합니다. Firebase Authentication에는 이메일과 인증 사용자 자료가 저장되며 확인된 삭제 요청 시까지 유지합니다. 재학 상태, 기숙사 입사 합격이나 공식 방 배정을 확인하는 인증은 아닙니다.",
+    "서버에는 Firebase UID, 검증된 인증 시각, 단방향 세션 토큰 해시와 이메일 HMAC 작성자 키를 저장합니다. HttpOnly·Secure 쿠키 세션은 인증 시점부터 고정 30일이며 유지 선택을 해제하면 12시간입니다. 로그아웃 시 해당 세션을 삭제합니다. 인증 대기 이메일은 브라우저에 최대 24시간 임시 보관하고 인증 완료나 취소 시 제거합니다.",
+    "닉네임, 기숙사와 인실, 거주 기간, 모집 마감일과 인원, 선택 생활습관과 소개, 카카오 오픈채팅 링크를 게시판 운영을 위해 저장합니다. 작성자가 입력한 자료는 모집 중 인증한 게시판 이용자에게만 표시합니다. 이메일, 내부 작성자 키와 인증 비밀값은 글 응답에 포함하지 않습니다.",
+    "완료·삭제·만료·숨김 글은 일반 열람과 연락을 즉시 차단합니다. 최초 완료 또는 삭제 시각과 원래 모집 마감 시각 중 이른 시각에서 30일 후 정리 대상으로 삼으며 수정·숨김·반복 삭제로 연장하지 않습니다. 신고 사유와 선택 설명, 신고 당시 글의 최소 근거는 관리자만 확인하고 접수 후 30일에 미처리 여부와 관계없이 함께 정리합니다.",
+    "관리자 작성 보류는 기본 30일이며 해제나 연장이 가능합니다. 유효한 활성 글이나 보류가 없는 작성자 상태는 최종 활동 후 90일에 정리합니다. 관리자 및 정리의 최소 감사 기록은 365일 보존하며 신고 본문과 연락 링크를 중복 보존하지 않습니다. 일일 정리가 만료 이후에 실행되더라도 API에서 접근 기한을 별도로 검사합니다. Firestore 정리는 공유된 Firebase Auth 사용자 자료를 자동 삭제하지 않습니다.",
+    "카카오 링크를 열면 Kakao 정책을 따르는 외부 서비스로 이동합니다. 사이트는 카카오 대화를 읽거나 보관하지 않습니다. Firebase·Google과 호스팅 제공자는 본 방침의 위탁 및 국외 처리 설명에 따라 인증·발송과 저장 자료를 처리합니다. 룸메이트 신고는 AI 분류 없이 admin에서 검토합니다.",
+    "열람·정정·삭제 요청, 이의제기와 모집 종료 후 문제는 기존 사이트 문의 또는 아래 개인정보 연락처로 접수할 수 있습니다. 게시판이나 인증 발송 중지 때도 해당 경로를 이용할 수 있습니다. 인증 사용자 삭제는 공유된 관리자와 다른 기능 계정을 삭제하지 않도록 요청 확인 후 처리합니다.",
+  ];
+  return (
+    <LegalSection title={english ? "Dorm Roommate Board" : "기숙사 룸메이트 게시판"}>
+      <ul className="list-disc space-y-3 pl-5 text-sm leading-relaxed text-neutral-700">
+        {items.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+    </LegalSection>
+  );
+}
+
 function EnglishPrivacyPage() {
   const legal = getDictionary("en").legal;
 
@@ -44,10 +72,11 @@ function EnglishPrivacyPage() {
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Effective Date"
-        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated September 15, 2026."
+        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated October 4, 2026."
       />
 
       <div className="space-y-6 mb-8">
+        <RoommatePrivacy locale="en" />
         <LegalSection title="1. Purposes of Processing">
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
@@ -293,10 +322,11 @@ export default async function PrivacyPage() {
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 9월 15일 최종 개정되었습니다."
+        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 10월 4일 최종 개정되었습니다."
       />
 
       <div className="space-y-6 mb-8">
+        <RoommatePrivacy locale={locale} />
         <Card>
           <h2 className="text-xl font-bold text-neutral-900 mb-4">
             제1조 개인정보의 처리 목적

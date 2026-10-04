@@ -22,13 +22,20 @@ import "./globals.css";
 
 const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
 const GOOGLE_ANALYTICS_SCRIPT = `
+  if (/^\\/(?:en\\/)?campus\\/roommates(?:\\/|$)/.test(window.location.pathname)) {
+    window['ga-disable-${GOOGLE_ANALYTICS_ID}'] = true;
+  }
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '${GOOGLE_ANALYTICS_ID}');
+  gtag('config', '${GOOGLE_ANALYTICS_ID}', {
+    page_location: window.location.origin + window.location.pathname,
+    page_referrer: document.referrer.split('?')[0].split('#')[0]
+  });
 
   (function scheduleGoogleAnalytics() {
     function loadGoogleAnalytics() {
+      if (window['ga-disable-${GOOGLE_ANALYTICS_ID}']) return;
       var script = document.createElement('script');
       script.async = true;
       script.src = 'https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}';
@@ -138,6 +145,8 @@ export default async function RootLayout({
   const locale = await getRequestLocale();
   const headerStore = await headers();
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
+  const pathname = await getRequestPathname();
+  const isRoommatePage = /^\/(?:en\/)?campus\/roommates(?:\/|$)/.test(pathname);
 
   return (
     <html lang={locale} data-scroll-behavior="smooth">
@@ -154,14 +163,14 @@ export default async function RootLayout({
           content="black-translucent"
         />
 
-        <Script
+        {!isRoommatePage && <Script
           id="google-analytics"
           nonce={nonce}
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: GOOGLE_ANALYTICS_SCRIPT,
           }}
-        />
+        />}
         <StructuredDataScript
           id="site-identity-schema"
           nonce={nonce}

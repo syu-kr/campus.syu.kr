@@ -109,6 +109,7 @@ const nextConfig = {
       "/api/contact",
       "/api/campus-tips/suggestions",
       "/api/meet/:path*",
+      "/api/roommates/:path*",
       "/api/lecture/timetable/shares/:path*",
     ];
     const noIndexPrivatePageHeaders = [
@@ -151,6 +152,10 @@ const nextConfig = {
       ...["/more/meet/:roomId", "/en/more/meet/:roomId"].map((source) => ({
         source,
         headers: noIndexPrivatePageHeaders,
+      })),
+      ...["/campus/roommates/:path*", "/en/campus/roommates/:path*", "/api/roommates/:path*", "/api/admin/roommate-posts", "/api/admin/roommate-reports"].map((source) => ({
+        source,
+        headers: [...noIndexPrivatePageHeaders, { key: "Referrer-Policy", value: "no-referrer" }],
       })),
       {
         source: "/sw.js",

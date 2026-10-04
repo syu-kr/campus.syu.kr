@@ -61,6 +61,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /roommate_sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    match /roommate_posts/{postId} {
+      allow read, write: if false;
+    }
+
+    match /roommate_owner_state/{ownerKey} {
+      allow read, write: if false;
+    }
+
+    match /roommate_reports/{reportId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
@@ -83,6 +99,10 @@ service cloud.firestore {
 | `timetable_shares` | 공유 시간표 정보 |
 | `api_rate_limits` | 서버리스 인스턴스 간 공용 요청 제한 카운터 |
 | `admin_audit_logs` | 관리자 상태 변경·AI 분류 작업 감사 기록 |
+| `roommate_sessions` | 학교 이메일 링크 인증 후 고정 만료하는 게시판 세션. 토큰 해시만 저장 |
+| `roommate_posts` | 인증 전용 기숙사 모집글과 연락 링크 |
+| `roommate_owner_state` | 이메일 HMAC 작성자 키별 활성 글 포인터와 기한 있는 작성 보류 |
+| `roommate_reports` | 관리자 전용 신고와 당시 최소 근거. 접수 후 30일 정리 |
 
 ## 운영 원칙
 
@@ -95,12 +115,16 @@ service cloud.firestore {
 
 ## 복합 인덱스
 
-`firestore.indexes.json`은 관리자 제출 목록의 상태별 최신순 조회를 위해 아래 인덱스를 관리합니다.
+`firestore.indexes.json`은 관리자 제출 목록과 룸메이트 조회의 복합 인덱스를 관리합니다. 문서 ID 정렬은 마지막 정렬 필드의 방향을 따릅니다.
 
 | 컬렉션 그룹 | 필드 |
 | --- | --- |
 | `site_inquiries` | `status` ASC, `created_at` DESC |
 | `campus_tip_suggestions` | `status` ASC, `created_at` DESC |
+| `roommate_posts` | `status` ASC, `created_at` DESC (학생 목록과 admin 상태 필터) |
+| `roommate_posts` | `status` ASC, `recruit_until` ASC (현재 모집 수) |
+| `roommate_reports` | `status` ASC, `expires_at` ASC (미처리 신고와 근거 정리 예정 순서) |
+| `api_rate_limits` | `metric` ASC, `window_start` ASC (사이트 인증 메일 요청 수) |
 
 ## TTL 설정값
 
@@ -118,6 +142,10 @@ Firestore TTL은 보존 기간을 정책에 입력하는 방식이 아닙니다.
 | `notifications_sent` | `expires_at` | 발송 시점부터 90일 후 |
 | `notifications_scheduled` | `expires_at` | 실행 시점부터 90일 후 |
 | `admin_audit_logs` | `expires_at` | 관리자 작업 시점부터 365일 후 |
+| `roommate_sessions` | `expires_at` | 검증된 인증 시각부터 고정 30일 또는 12시간 |
+| `roommate_posts` | `expires_at` | 최초 완료·삭제와 원래 모집 마감 중 이른 시각부터 30일 후 |
+
+`roommate_reports`와 `roommate_owner_state`에는 관리형 TTL을 설정하지 않습니다. 신고는 만료 직전 미처리 보존 종료의 최소 감사 기록을 같은 트랜잭션에 남겨야 하고, 작성자 상태는 유효한 보류와 활성 글을 다시 확인해야 하기 때문입니다. 일일 정리 스크립트가 신고 접수 후 30일, 비활성 작성자 최종 활동 후 90일 기준으로 처리합니다. 유효한 보류 중에는 과거 `expires_at`만으로 작성자 상태를 삭제하지 않습니다.
 
 Google Cloud Console의 Firestore **Time-to-live > Create Policy** 화면에서는 컬렉션 그룹 이름과 timestamp 필드 이름만 입력합니다. 표준 Firestore TTL 정책에는 만료 오프셋이나 단위를 별도로 설정하지 않습니다.
 
@@ -150,9 +178,9 @@ TTL로 부모 `meet_rooms` 문서를 삭제해도 Firestore는 `participants` �
 
 - GitHub Actions 저장소 비밀값에 `FIREBASE_SERVICE_ACCOUNT`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`를 등록합니다.
 - 워크플로는 `npm run cleanup-expired-firestore`를 실행합니다.
-- 정리 대상은 만료된 `meet_rooms`와 하위 `participants`, `timetable_shares`, `api_rate_limits`, `notification_send_locks`, `notifications_sent`, `notifications_scheduled`, `admin_audit_logs`입니다.
+- 정리 대상은 만료된 `meet_rooms`와 하위 `participants`, `timetable_shares`, `api_rate_limits`, `notification_send_locks`, `notifications_sent`, `notifications_scheduled`, `admin_audit_logs`, `roommate_sessions`, `roommate_posts`, `roommate_reports`, `roommate_owner_state`입니다.
 - 일반 Firestore 읽기·삭제 작업으로 처리되므로 무료 일일 할당량을 사용합니다.
-- 관리형 TTL을 나중에 활성화해도 `expires_at` 필드와 호환됩니다. 중복 정리가 필요 없다면 예약 워크플로를 비활성화합니다.
+- 관리형 TTL을 나중에 활성화해도 일반 문서의 `expires_at` 필드와 호환됩니다. 룸메이트 신고의 보존 종료 감사 기록과 작성자 상태의 재검사를 위해 예약 워크플로는 유지합니다.
 
 로컬에서 직접 정리하려면 `FIREBASE_SERVICE_ACCOUNT`가 설정된 상태에서 아래 명령을 실행합니다.
 
@@ -184,4 +212,4 @@ npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-stale-sending
 
 ## 최종 업데이트
 
-2026-09-15
+2026-10-04

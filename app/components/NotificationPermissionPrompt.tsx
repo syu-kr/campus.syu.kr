@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   FCM_TOKEN_KEY,
   enablePushNotifications,
@@ -11,11 +12,13 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 
 export function NotificationPermissionPrompt() {
   const dictionary = useDictionary();
+  const isRoommatePage = /^\/(?:en\/)?campus\/roommates(?:\/|$)/.test(usePathname());
   const [isVisible, setIsVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (isRoommatePage) return;
     const permission = "Notification" in window ? Notification.permission : null;
 
     if (
@@ -47,7 +50,7 @@ export function NotificationPermissionPrompt() {
       window.removeEventListener("keydown", showPrompt);
       window.removeEventListener("scroll", showPrompt);
     };
-  }, []);
+  }, [isRoommatePage]);
 
   const handleEnable = async () => {
     setIsProcessing(true);
@@ -75,7 +78,7 @@ export function NotificationPermissionPrompt() {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || isRoommatePage) return null;
 
   return (
     <section

@@ -1,4 +1,5 @@
 import { admin, initializeScriptFirestore } from "./firebase-admin";
+import { cleanupRoommateDocuments } from "./roommate-cleanup";
 
 const QUERY_LIMIT = 100;
 
@@ -10,6 +11,7 @@ async function cleanupExpiredFirestoreDocuments() {
     console.log("\nFirestore 만료 문서 정리 시작\n");
 
     const meetResult = await cleanupMeetRooms(db, now);
+    const roommates = await cleanupRoommateDocuments(db, now);
     const deletedTimetableShares = await deleteExpiredDocuments(
       db,
       "timetable_shares",
@@ -46,6 +48,10 @@ async function cleanupExpiredFirestoreDocuments() {
         "\n정리 완료:",
         `일정 방 ${meetResult.rooms}개`,
         `참여자 문서 ${meetResult.participants}개`,
+        `룸메이트 세션 ${roommates.sessions}개`,
+        `룸메이트 글 ${roommates.posts}개`,
+        `룸메이트 신고 ${roommates.reports}개`,
+        `룸메이트 작성자 상태 ${roommates.owners}개`,
         `공유 시간표 ${deletedTimetableShares}개`,
         `API 요청 제한 문서 ${deletedRateLimits}개`,
         `알림 중복 방지 잠금 ${deletedNotificationLocks}개 삭제\n`,

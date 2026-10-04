@@ -33,6 +33,10 @@
 | `CRAWL_DATA_BASE_URL` | 선택 | 일일 크롤링 데이터 Pages base URL override. 기본 공식 URL 사용 시 등록하지 않음 |
 | `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키. 환경별로 별도 값 사용 |
 | `RATE_LIMIT_SECRET` | 운영 필수 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. Production에서는 미등록 시 public write API가 실패함 |
+| `ROOMMATES_OWNER_KEY_SECRET` | 룸메이트 활성화 시 필수 | 검증된 학교 이메일의 작성자 키를 만드는 독립적인 무작위 32-byte 이상 HMAC 비밀값. 환경별 분리. 미설정이면 룸메이트 인증과 게시판은 503으로 거부 |
+| `ROOMMATES_ENABLED` | 선택 | 기본 `false`. 룸메이트 메뉴, 보호 페이지와 API, 사이트 메일 발송과 세션 발급의 전체 제어. 로그아웃과 admin 사고 대응은 유지 |
+| `ROOMMATES_WRITES_ENABLED` | 선택 | 기본 `false`. 신규 글과 내용 수정만 제어. 본인 삭제, 모집 완료, 신고와 재인증은 유지 |
+| `ROOMMATES_EMAIL_ENABLED` | 선택 | 기본 `false`. 사이트의 새 인증 메일 요청만 제어. 이미 받은 유효 링크의 세션 완료는 유지 |
 | `ADMIN_EMAILS` | 필수 | 쉼표로 구분한 관리자 허용 이메일 목록. 운영 관리자 목록은 Production 전용으로 관리 |
 | `OPENAI_API_KEY` | AI 분류 사용 시 필수 | `/admin` 문의/제보 분류용 Vercel 전용 OpenAI Project 서비스 계정 키. GitHub Actions용 키와 분리 |
 | `OPENAI_ADMIN_MODEL` | 선택 | 문의/제보 AI 분류 모델. 기본값 `gpt-5.6-luna` |
@@ -56,6 +60,16 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 - 값을 교체하면 기존 rate limit 문서와 다른 HMAC 문서 ID가 생성됩니다. 긴급 상황이 아니라면 자주 회전하지 않습니다.
 - Production에서는 `RATE_LIMIT_SECRET`이 없으면 요청 제한 공용 저장소를 쓰는 API가 503으로 실패합니다.
 - 값을 새로 등록하거나 교체한 뒤에는 Vercel Production을 다시 배포해야 서버리스 런타임에 반영됩니다.
+
+## 룸메이트 게시판 준비와 중지
+
+- 처음에는 세 플래그를 모두 `false`로 둡니다. 내부 검증 환경에서 필요한 제어만 명시적으로 켭니다.
+- `ROOMMATES_OWNER_KEY_SECRET`은 `RATE_LIMIT_SECRET`과 같은 생성 명령으로 독립적으로 생성하며 다른 키나 운영 값을 재사용하지 않습니다. 교체하면 작성자 연결이 달라지므로 기존 자료 이전이나 만료와 연결해 계획합니다.
+- Firebase Console에서 Email/Password 제공자의 Email link 로그인, 운영 및 테스트 허용 도메인, 한국어·영어 템플릿을 확인합니다. 실제 프로젝트 요금제와 발송 한도는 콘솔에서 확인하며 Spark 기본 로그인 메일은 하루 5통입니다. 실제 학교 메일 수신과 재전송 검증 전 운영 기능을 켜지 않습니다.
+- 별도 SMTP, Resend, 숫자 OTP 설정은 필요하지 않습니다. 학생 허용 도메인은 정확히 `syuin.ac.kr`입니다.
+- 위 플래그 변경은 Vercel 환경 변수 수정 후 재배포로 적용합니다. admin에서 환경값을 바꾸는 버튼은 제공하지 않습니다. 긴급 노출 대응은 admin 글 숨김·삭제와 작성 보류를 먼저 사용할 수 있습니다.
+- 전체 중지 후에도 admin의 글·신고 처리와 작성 보류 해제는 가능합니다. 기능 중지나 발송 중지가 Firebase 공개 인증 API 직접 호출까지 전역 차단하지는 않습니다.
+- Preview와 Development는 독립적인 테스트 Firebase 프로젝트·서비스 계정·HMAC 키를 사용합니다. 이 문서 작업은 콘솔 설정, 요금제 변경이나 실제 발송을 수행하지 않습니다.
 
 ## Vercel Runtime
 

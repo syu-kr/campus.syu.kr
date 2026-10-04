@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import { RoommateMenuLink } from "@/app/features/roommates/RoommateMenuLink";
+import { areRoommatesEnabled } from "@/lib/server/roommate-auth";
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
@@ -41,6 +43,13 @@ export default async function CampusPage() {
   const locale = await getRequestLocale();
   const dictionary = getDictionary(locale);
   const campusMenus = [
+    ...(areRoommatesEnabled() ? [{
+      id: "roommates",
+      title: dictionary.campus.menus.roommatesTitle,
+      description: dictionary.campus.menus.roommatesDescription,
+      icon: "users",
+      href: "/campus/roommates",
+    }] : []),
     {
       id: "announcements",
       title: dictionary.campus.menus.announcementsTitle,
@@ -117,8 +126,9 @@ export default async function CampusPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {campusMenus.map((menu) => {
+          const MenuLink = menu.id === "roommates" ? RoommateMenuLink : Link;
           return (
-            <Link
+            <MenuLink
               key={menu.id}
               href={localizePath(menu.href, locale)}
               className="block"
@@ -146,7 +156,7 @@ export default async function CampusPage() {
                   </span>
                 </div>
               </Card>
-            </Link>
+            </MenuLink>
           );
         })}
       </div>
