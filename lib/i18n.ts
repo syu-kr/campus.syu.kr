@@ -1025,6 +1025,17 @@ export const dictionaries = {
         shuttleTitle: "셔틀버스",
         festivalShuttle: {
           title: "축제 야간 특별운행",
+          noticeTitle: "천보축전 셔틀 운행 안내",
+          daytimeTitle: "주간 셔틀",
+          daytimeBefore: "{time} 이전: {minutes}분 간격",
+          daytimeAfter: "{time} 이후: {minutes}분 간격",
+          daytimeNotice:
+            "주간의 정확한 출발 시각과 막차 시각은 공지에 명시되어 있지 않습니다.",
+          nightTitle: "야간 귀가 버스",
+          fullDepartureNote: "만차 시 즉시 출발",
+          noticeSource: "출처: 천보축전 셔틀버스 운행 안내",
+          sourceLink: "공지 원문 보기 ↗",
+          referenceSchedule: "평상시 참고 시간표입니다. 오늘은 위 축제 운행 안내를 확인해 주세요.",
           destinations: {
             hwarangdae: "학교 → 화랑대",
             byeollae: "학교 → 별내",
@@ -2709,6 +2720,17 @@ export const dictionaries = {
         shuttleTitle: "Shuttle Bus",
         festivalShuttle: {
           title: "Festival night shuttle",
+          noticeTitle: "Cheonbo Festival shuttle service notice",
+          daytimeTitle: "Daytime shuttle",
+          daytimeBefore: "Before {time}: every {minutes} minutes",
+          daytimeAfter: "After {time}: every {minutes} minutes",
+          daytimeNotice:
+            "The announcement does not specify exact daytime departure times or the last departure.",
+          nightTitle: "Night buses",
+          fullDepartureNote: "Departs immediately when full",
+          noticeSource: "Source: Cheonbo Festival shuttle bus announcement",
+          sourceLink: "View the original announcement ↗",
+          referenceSchedule: "Regular reference timetable. For today, follow the festival service notice above.",
           destinations: {
             hwarangdae: "Campus → Hwarangdae",
             byeollae: "Campus → Byeollae",

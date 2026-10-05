@@ -221,6 +221,7 @@ export default function ShuttleSection() {
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
+  const hasDaytimeIntervals = activeSpecialPeriods.some((period) => period.daytimeIntervals);
   const additionalServiceNotices = activeSpecialPeriods.filter(
     (period) => (period.additionalServices?.length ?? 0) > 0,
   );
@@ -230,7 +231,7 @@ export default function ShuttleSection() {
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0 || isException;
   const specialScheduleIsCurrent = canPredictDepartures && !isWeekendWithoutException && hasReplacementSpecialSchedule;
-  const currentRegularScheduleType = isWeekendWithoutException || !canPredictDepartures || isException
+  const currentRegularScheduleType = isWeekendWithoutException || !canPredictDepartures || isException || hasDaytimeIntervals
     ? null
     : currentScheduleType;
   const dayButtons = [
@@ -276,6 +277,9 @@ export default function ShuttleSection() {
   const selectedButtonIsCurrent = useSpecialSchedule
     ? specialScheduleIsCurrent
     : Boolean(selectedRegularButton?.isActive);
+  const canShowUpcomingDepartures = canPredictDepartures && (
+    selectedButtonIsCurrent || (hasDaytimeIntervals && selectedType === defaultType)
+  );
   const selectedScheduleLabel = useSpecialSchedule
     ? text.specialSchedule
     : selectedRegularButton?.label || text.selectedSchedule;
@@ -414,7 +418,7 @@ export default function ShuttleSection() {
       !busesWithSpecialPeriods ||
       busesWithSpecialPeriods.length === 0 ||
       isWeekendWithoutException ||
-      !selectedButtonIsCurrent
+      !canShowUpcomingDepartures
     )
       return [];
 
@@ -422,11 +426,13 @@ export default function ShuttleSection() {
       buses: busesWithSpecialPeriods,
       scheduleType: selectedType,
       currentMinutes: dateInfo.hour * 60 + dateInfo.minute,
+      includeRegularDepartures: !hasDaytimeIntervals,
     }).filter((departure) => departure.minutesUntil <= 30);
   }, [
     busesWithSpecialPeriods,
     dateInfo,
-    selectedButtonIsCurrent,
+    canShowUpcomingDepartures,
+    hasDaytimeIntervals,
     selectedType,
     isWeekendWithoutException,
   ]);
@@ -576,7 +582,8 @@ export default function ShuttleSection() {
         </p>
       </div>
 
-      {!holidaysLoading && (!canPredictDepartures || isWeekendWithoutException) && (
+      {!holidaysLoading && (!canPredictDepartures || isWeekendWithoutException) &&
+        (!hasDaytimeIntervals || dayStatus.operationStatus === "closed") && (
         <Card className="mb-6 border border-amber-200 bg-amber-50/70" hover={false} role="status">
           <p className="text-sm text-amber-900">{nonOperatingDayMessage}</p>
         </Card>
@@ -892,14 +899,19 @@ export default function ShuttleSection() {
         hover={false}
       >
         <p className="text-sm font-semibold text-neutral-900">
-          {canPredictDepartures ? text.scheduleBase : text.selectedSchedule}: {selectedScheduleLabel}
+          {canPredictDepartures && !hasDaytimeIntervals ? text.scheduleBase : text.selectedSchedule}: {selectedScheduleLabel}
         </p>
         {isException && useSpecialSchedule ? (
           <VerifiedShuttleSources records={dayStatus.operationEvidence} />
         ) : (
           <p className="mt-1 text-xs leading-5 text-neutral-600">{text.scheduleNotice}</p>
         )}
-        {!canPredictDepartures && (
+        {hasDaytimeIntervals && (
+          <p className="mt-2 text-xs leading-5 text-neutral-600">
+            {text.festivalShuttle.referenceSchedule}
+          </p>
+        )}
+        {!canPredictDepartures && !hasDaytimeIntervals && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
             {dayStatus.operationStatus === "closed"
               ? dictionary.publicHolidays.referenceHolidaySchedule

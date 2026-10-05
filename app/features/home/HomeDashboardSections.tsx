@@ -12,7 +12,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
-import { formatShuttleAdditionalCountdown, formatShuttleAdditionalService, getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
+import { formatShuttleAdditionalCountdown, formatShuttleAdditionalService, getCurrentShuttleSummary, isDateInSpecialPeriod } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { localizePath, type Dictionary } from "@/lib/i18n";
@@ -25,7 +25,7 @@ import type {
   ShuttleSpecialPeriods,
   PublicHolidaySnapshot,
 } from "@/types";
-import type { HomeNotice, TodayInfo } from "@/lib/home";
+import { getTodayInfo, type HomeNotice, type TodayInfo } from "@/lib/home";
 
 function getCategoryFilters(dictionary: Dictionary): Array<{
   id: string;
@@ -273,25 +273,37 @@ export function TodayShuttleSection({
   const additionalDeparture = primaryDeparture?.additionalService;
   const additionalDepartureText = additionalDeparture && formatShuttleAdditionalService(additionalDeparture, locale);
   const canPredict = summary.operationStatus === "regular" || summary.operationStatus === "exception";
+  const intervalNotices = (specialPeriods?.specialPeriods ?? []).filter((period) =>
+    period.daytimeIntervals && now && isDateInSpecialPeriod(period, getTodayInfo(now).dateStringDash),
+  );
+  const noticePeriods = [...intervalNotices, ...summary.additionalServicePeriods.filter((period) => !period.daytimeIntervals)];
+  const hasDaytimeIntervals = intervalNotices.length > 0;
 
   return (
     <div>
-      <SectionTitle title={dictionary.home.dashboard.shuttle} />
+      {!isLoading &&
+        !isError &&
+        now &&
+        noticePeriods.length > 0 && (
+          <div className="mb-4 space-y-3">
+            {noticePeriods.map((period) => (
+              <ShuttleAdditionalServicesCard
+                key={period.id}
+                period={period}
+                now={now}
+                showCountdown={false}
+                href={localizePath("/campus/bus-info", locale)}
+              />
+            ))}
+          </div>
+        )}
+      {(!hasDaytimeIntervals || primaryDeparture) && (
+        <SectionTitle title={dictionary.home.dashboard.shuttle} />
+      )}
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {isError && <DashboardLoadError onRetry={onRetry} />}
-        {!isLoading &&
-          !isError &&
-          now &&
-          summary.additionalServicePeriods.map((period) => (
-            <ShuttleAdditionalServicesCard
-              key={period.id}
-              period={period}
-              now={now}
-              showCountdown={false}
-            />
-          ))}
-        {!isLoading && !isError && !canPredict && (
+        {!isLoading && !isError && !canPredict && (!hasDaytimeIntervals || summary.operationStatus === "closed") && (
           <StateCard
             type="info"
             title={summary.holiday.names.length ? summary.holiday.names.join(" · ") : summary.isWeekend && !summary.operationEvidence.length
@@ -332,6 +344,7 @@ export function TodayShuttleSection({
           !isError &&
           summary.isOperatingPeriod &&
           !primaryDeparture &&
+          !hasDaytimeIntervals &&
           !summary.hasMoreToday && (
             <StateCard
               type="info"

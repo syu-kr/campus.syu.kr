@@ -254,10 +254,12 @@ export function getNextShuttleDepartures({
   buses,
   scheduleType,
   currentMinutes,
+  includeRegularDepartures = true,
 }: {
   buses: ShuttleBusSchedule[];
   scheduleType: ShuttleScheduleType;
   currentMinutes: number;
+  includeRegularDepartures?: boolean;
 }): NextShuttleDeparture[] {
   return buses.flatMap<NextShuttleDeparture>((bus) => {
     const service = bus.additionalService;
@@ -269,6 +271,7 @@ export function getNextShuttleDepartures({
         time: service.type === "window" ? `${service.startTime}~${service.endTime}` : service.time,
         minutesUntil: Math.max(0, start - currentMinutes), additionalService: service }];
     }
+    if (!includeRegularDepartures) return [];
     const time = (bus.schedules[scheduleType] ?? []).find((time) => {
       const minutes = timeToMinutes(time);
       return minutes !== null && minutes > currentMinutes;
@@ -484,11 +487,14 @@ export function getCurrentShuttleSummary({
     specialPeriods,
   });
   const additionalServicePeriods = (isException ? [] : specialPeriods?.specialPeriods ?? [])
+    .filter((period) => isDateInSpecialPeriod(period, dateInfo.dateString))
     .map((period) => ({
       ...period,
-      additionalServices: getRemainingShuttleServices(period, now),
+      additionalServices: period.daytimeIntervals
+        ? period.additionalServices ?? []
+        : getRemainingShuttleServices(period, now),
     }))
-    .filter((period) => period.additionalServices.length > 0);
+    .filter((period) => period.daytimeIntervals || period.additionalServices.length > 0);
 
   const departures = getNextShuttleDepartures({
     buses: [...effectiveBuses, ...(isException ? [] : getShuttleAdditionalServiceBuses({
@@ -496,6 +502,7 @@ export function getCurrentShuttleSummary({
     }))],
     scheduleType: scheduleType ?? "mondayToThursday",
     currentMinutes: dateInfo.currentMinutes,
+    includeRegularDepartures: !additionalServicePeriods.some((period) => period.daytimeIntervals),
   });
 
   return {
@@ -507,6 +514,8 @@ export function getCurrentShuttleSummary({
     isSpecialSchedule,
     scheduleLabel: getScheduleLabel(scheduleType ?? "mondayToThursday", isSpecialSchedule),
     hasMoreToday:
-      departures.length > 0 || additionalServicePeriods.length > 0,
+      departures.length > 0 || additionalServicePeriods.some(
+        (period) => getRemainingShuttleServices(period, now).length > 0,
+      ),
   };
 }

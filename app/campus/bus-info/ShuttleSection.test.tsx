@@ -165,7 +165,7 @@ describe("public holiday shuttle display", () => {
 
   it("shows normal departures after ordinary-day coverage is loaded", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-10-06T11:55:00+09:00"));
+    vi.setSystemTime(new Date("2026-10-07T11:55:00+09:00"));
     const cleanup = mount();
     await screen.findByText("곧 출발하는 버스");
     expect(screen.getByText(/^현재$/)).toBeInTheDocument();
@@ -255,6 +255,50 @@ describe("public holiday shuttle display", () => {
 });
 
 describe("shuttle page festival announcement", () => {
+  it("shows the festival notice when holiday coverage is unavailable without departure predictions", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-06T10:15:00+09:00"));
+    holidaySnapshot = undefined;
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(<QueryClientProvider client={client}><ShuttleSection /></QueryClientProvider>);
+    const dictionary = getDictionary("ko");
+    await screen.findByRole("heading", { name: dictionary.pages.busInfo.festivalShuttle.noticeTitle });
+    expect(screen.queryByText(dictionary.publicHolidays.shuttleUnconfirmed)).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "곧 출발하는 버스" })).not.toBeInTheDocument();
+    expect(screen.getByText(dictionary.pages.busInfo.festivalShuttle.referenceSchedule)).toBeInTheDocument();
+    view.unmount();
+    client.clear();
+  });
+
+  const text = getDictionary("ko");
+
+  it.each(["2026-10-06", "2026-10-07"])("uses reference timetables only on the interval-only festival date: %s", async (date) => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(`${date}T10:15:00+09:00`));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(<QueryClientProvider client={client}><ShuttleSection /></QueryClientProvider>);
+    const route = await screen.findByRole("button", { name: /화랑대역\(5번 출구\) → 학교.*펼치기/ });
+    await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
+    const isFestivalDate = date === "2026-10-06";
+    expect(screen.queryByText(text.pages.busInfo.festivalShuttle.noticeTitle) !== null).toBe(isFestivalDate);
+    expect(screen.queryByText(/^현재$/) !== null).toBe(!isFestivalDate);
+    expect(screen.queryByRole("region", { name: text.pages.busInfo.upcomingBuses }) !== null).toBe(!isFestivalDate);
+    expect(screen.queryByText(text.pages.busInfo.festivalShuttle.referenceSchedule) !== null).toBe(isFestivalDate);
+    if (isFestivalDate) {
+      const notice = within(screen.getByRole("region", { name: new RegExp(text.pages.busInfo.festivalShuttle.noticeTitle) }));
+      expect(notice.getByText(/10:00 이전.*10분/)).toBeInTheDocument();
+      expect(notice.getByText(/10:00 이후.*30분/)).toBeInTheDocument();
+      expect(notice.getByText(/22:00~22:30 · 총 5대/)).toBeInTheDocument();
+      expect(notice.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
+      expect(screen.getByText(`${text.pages.busInfo.selectedSchedule}: ${text.pages.busInfo.semesterMonThu}`)).toBeInTheDocument();
+    }
+    fireEvent.click(route);
+    expect(within(route.parentElement!).getByText("10:20")).toBeInTheDocument();
+    expect(within(route.parentElement!).getByText("10:20").className.includes("bg-green")).toBe(!isFestivalDate);
+    view.unmount();
+    client.clear();
+  });
+
   it.each([
     ["2026-10-05T22:15:00+09:00", false],
     ["2026-10-06T22:15:00+09:00", true],
@@ -270,7 +314,7 @@ describe("shuttle page festival announcement", () => {
       </QueryClientProvider>,
     );
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
-    expect(screen.queryByText("축제 야간 특별운행") !== null).toBe(visible);
+    expect(screen.queryByText(text.pages.busInfo.festivalShuttle.noticeTitle) !== null).toBe(visible);
     expect(screen.queryByRole("heading", { level: 2, name: "학교 → 화랑대" }) !== null).toBe(visible);
     expect(screen.queryByRole("heading", { level: 2, name: "학교 → 별내" }) !== null).toBe(visible);
     expect(fetchBusLocationStatus).toHaveBeenCalledTimes(
@@ -293,7 +337,7 @@ describe("shuttle page festival announcement", () => {
     expect(within(hwarangdae.parentElement!).queryByText("22:00")).not.toBeInTheDocument();
     expect(within(hwarangdae.parentElement!).getAllByText(/만차 시 바로 출발/)).toHaveLength(2);
     expect(within(byeollae.parentElement!).getAllByText(/22:30 예정 출발 · 1대/)).toHaveLength(2);
-    expect(within(byeollae.parentElement!).getByText(/학생회 야간버스 운행 안내/)).toBeInTheDocument();
+    expect(within(byeollae.parentElement!).getByText(text.pages.busInfo.festivalShuttle.source)).toBeInTheDocument();
 
     for (const route of [/화랑대역\(5번 출구\) → 학교.*펼치기/, /학교 ↔ 별내역.*펼치기/]) {
       const button = screen.getByRole("button", { name: route });

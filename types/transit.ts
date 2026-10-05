@@ -43,6 +43,12 @@ export interface ShuttleSpecialPeriod {
   applicableDates: string[];
   routes: string[];
   additionalServices?: ShuttleAdditionalService[];
+  daytimeIntervals?: {
+    changeTime: string;
+    beforeMinutes: number;
+    afterMinutes: number;
+  };
+  sourceUrl?: string;
 }
 
 interface ShuttleOperatingPeriod {
