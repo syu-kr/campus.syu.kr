@@ -1,5 +1,36 @@
 import type { CafeteriaMenu, MenuItem } from "@/types";
 
+export interface CafeteriaMenuDay {
+  date: string;
+  day: string;
+  meals?: {
+    breakfast?: string[];
+    lunch?: string[] | { a_corner?: string[]; b_corner?: string[] };
+    dinner?: string[];
+  };
+}
+
+export function toCafeteriaMenus(days: CafeteriaMenuDay[]): CafeteriaMenu[] {
+  return days.map((menu, index) => {
+    const lunch: CafeteriaMenu["lunch"] = {};
+    if (Array.isArray(menu.meals?.lunch)) {
+      lunch.a = menu.meals.lunch.map((name) => ({ name }));
+    } else if (menu.meals?.lunch && typeof menu.meals.lunch === "object") {
+      lunch.a = (menu.meals.lunch.a_corner ?? []).map((name) => ({ name }));
+      lunch.b = (menu.meals.lunch.b_corner ?? []).map((name) => ({ name }));
+    }
+    return {
+      id: `cafeteria-${menu.date}-${index}`,
+      date: menu.date,
+      dayOfWeek: menu.day || "",
+      breakfast: (menu.meals?.breakfast ?? []).map((name) => ({ name })),
+      lunch,
+      dinner: (menu.meals?.dinner ?? []).map((name) => ({ name })),
+      location: "SU-Lounge",
+    };
+  });
+}
+
 const CLOSED_MEAL_LABELS = new Set([
   "운영없음",
   "운영 없음",

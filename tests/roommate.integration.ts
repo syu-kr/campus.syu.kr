@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { initializeApp, deleteApp, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { getFirestore, Timestamp, type Firestore, type WhereFilterOp } from "firebase-admin/firestore";
 import { initializeApp as initializeClientApp, deleteApp as deleteClientApp, type FirebaseApp } from "firebase/app";
 import { connectAuthEmulator, getAuth as getClientAuth, inMemoryPersistence, setPersistence, signInWithEmailLink, signOut } from "firebase/auth";
 import { NextRequest } from "next/server";
@@ -16,7 +16,10 @@ import * as reportsRoute from "@/app/api/roommates/posts/[postId]/reports/route"
 import * as adminPostsRoute from "@/app/api/admin/roommate-posts/route";
 import * as adminReportsRoute from "@/app/api/admin/roommate-reports/route";
 import { cleanupRoommateDocuments } from "@/scripts/roommate-cleanup";
+import { deleteOldTokens } from "@/scripts/cleanup_old_tokens";
+import { deleteExpiredDocuments } from "@/scripts/cleanup_meet_rooms";
 import { getRoommateOwnerKey, ROOMMATE_SESSION_COOKIE } from "@/lib/server/roommate-auth";
+import { listAdminPosts } from "@/lib/server/roommate-admin";
 import { koreaDate, DAY_MS } from "@/lib/roommates";
 import type { RoommatePost, RoommatePostSubmission } from "@/types/roommates";
 
@@ -396,5 +399,84 @@ describe("roommates using real local Auth and Firestore emulators", () => {
     expect((await db().collection("roommate_owner_state").doc(author.ownerKey).get()).exists).toBe(true);
     expect((await db().collection("admin_audit_logs").where("action", "==", "roommate_report_expired_unresolved").get()).size).toBe(1);
     expect((await getAuth().getUser(author.uid)).email).toBe(author.email);
+  });
+
+  it("enforces native cleanup updateTime preconditions and removes only still-expired records on retry", async () => {
+    assertLocalEnvironment();
+    const database = db();
+    const now = Timestamp.now();
+    const past = Timestamp.fromMillis(now.toMillis() - DAY_MS);
+    const future = Timestamp.fromMillis(now.toMillis() + DAY_MS);
+
+    for (const [collectionName, field] of [["user_devices", "last_updated"], ["api_rate_limits", "expires_at"]]) {
+      const collection = database.collection(collectionName);
+      const renewed = collection.doc("cleanup-renewed");
+      const expired = collection.doc("cleanup-expired");
+      const seed = database.batch();
+      seed.set(renewed, { [field]: past });
+      seed.set(expired, { [field]: past });
+      await seed.commit();
+      let raced = false;
+      const racingDatabase = {
+        collection: (name: string) => ({
+          where: (queryField: string, operator: WhereFilterOp, cutoff: Timestamp) => ({
+            limit: (limit: number) => ({
+              get: async () => {
+                assertLocalEnvironment();
+                expect(name).toBe(collectionName);
+                const snapshot = await database.collection(name).where(queryField, operator, cutoff).limit(limit).get();
+                if (!raced) {
+                  expect(snapshot.size).toBe(2);
+                  await renewed.update({ [field]: future });
+                  raced = true;
+                }
+                return snapshot;
+              },
+            }),
+          }),
+        }),
+        batch: () => database.batch(),
+      } as unknown as Firestore;
+      const cleanup = (target: Firestore) => collectionName === "user_devices"
+        ? deleteOldTokens(target, now)
+        : deleteExpiredDocuments(target, collectionName, now);
+
+      await expect(cleanup(racingDatabase)).rejects.toMatchObject({ code: 9 });
+      expect(raced).toBe(true);
+      expect((await renewed.get()).get(field).isEqual(future)).toBe(true);
+      expect((await expired.get()).exists).toBe(true);
+      expect(await cleanup(database)).toBe(1);
+      expect((await renewed.get()).exists).toBe(true);
+      expect((await expired.get()).exists).toBe(false);
+    }
+  });
+
+  it("uses native mail-request sum for an empty dataset and more than 1001 matching counters", async () => {
+    assertLocalEnvironment();
+    const database = db();
+    const now = Timestamp.fromDate(new Date("2026-10-05T03:00:00Z"));
+    const params = new URLSearchParams();
+    expect((await listAdminPosts(database, params, now)).mailRequests).toEqual({
+      dateUtc: "2026-10-05", count: 0, partial: false,
+    });
+    const collection = database.collection("api_rate_limits");
+    for (let offset = 0; offset < 1002; offset += 400) {
+      const batch = database.batch();
+      for (let index = offset; index < Math.min(offset + 400, 1002); index++) {
+        batch.set(collection.doc(`mail-sum-${index}`), {
+          metric: "roommate_mail_requests", window_start: "2026-10-05", count: 2,
+        });
+      }
+      await batch.commit();
+    }
+    await collection.doc("mail-other-day").set({
+      metric: "roommate_mail_requests", window_start: "2026-10-04", count: 5000,
+    });
+    await collection.doc("mail-other-metric").set({
+      metric: "fixture_other_metric", window_start: "2026-10-05", count: 5000,
+    });
+    expect((await listAdminPosts(database, params, now)).mailRequests).toEqual({
+      dateUtc: "2026-10-05", count: 2004, partial: false,
+    });
   });
 });

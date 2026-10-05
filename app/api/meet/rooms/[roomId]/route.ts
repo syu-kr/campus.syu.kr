@@ -4,7 +4,7 @@ import type { MeetParticipant, MeetRoom, MeetRoomResponse } from "@/types/meet";
 import { admin, getFirestore, timestampToIso } from "@/lib/server/firestore";
 import {
   ApiError,
-  apiServerErrorResponse,
+  apiErrorResponse,
   enforceSameOrigin,
   enforceRateLimit,
   rateLimitResponse,
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(error, "일정 방 정보를 불러오지 못했습니다");
+    return apiErrorResponse(error, "일정 방 정보를 불러오지 못했습니다");
   }
 }
 
@@ -160,7 +160,7 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(error, "일정 방을 삭제하지 못했습니다");
+    return apiErrorResponse(error, "일정 방을 삭제하지 못했습니다");
   }
 }
 

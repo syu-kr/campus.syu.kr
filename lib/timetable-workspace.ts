@@ -158,14 +158,20 @@ export function normalizeTimetableWorkspace(
   workspace: TimetableWorkspace,
 ): TimetableWorkspace {
   const seenIds = new Set<string>();
+  const providedIds = new Set(
+    workspace.timetables.map((timetable) => timetable.id.trim()),
+  );
   const timetables = workspace.timetables
     .slice(0, MAX_TIMETABLES)
     .map((timetable, index) => {
       const candidateId = timetable.id.trim();
-      const id =
-        candidateId && !seenIds.has(candidateId)
-          ? candidateId
-          : `timetable-${index + 1}`;
+      let id = candidateId;
+      if (!id || seenIds.has(id)) {
+        let suffix = index + 1;
+        do {
+          id = `timetable-${suffix++}`;
+        } while (seenIds.has(id) || providedIds.has(id));
+      }
       seenIds.add(id);
       return { id, courseIds: normalizeCourseIds(timetable.courseIds) };
     });

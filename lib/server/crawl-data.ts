@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { unstable_rethrow } from "next/navigation";
+import { readResponseBytes } from "./read-response-bytes";
 import {
   CRAWL_DATA_MAX_BYTES,
   type CrawlDataManifest,
@@ -148,26 +149,7 @@ async function fetchBuffer(url: string, maxBytes: number): Promise<Buffer> {
   if (!response.ok) {
     throw new Error(`크롤링 데이터 응답 오류: ${response.status}`);
   }
-  const declaredLength = Number(response.headers.get("content-length"));
-  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
-    throw new Error("크롤링 데이터가 허용 크기를 초과했습니다.");
-  }
-
-  if (!response.body) return Buffer.alloc(0);
-  const chunks: Uint8Array[] = [];
-  const reader = response.body.getReader();
-  let totalBytes = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    totalBytes += value.byteLength;
-    if (totalBytes > maxBytes) {
-      await reader.cancel();
-      throw new Error("크롤링 데이터가 허용 크기를 초과했습니다.");
-    }
-    chunks.push(value);
-  }
-  return Buffer.concat(chunks, totalBytes);
+  return Buffer.from(await readResponseBytes(response, maxBytes, "크롤링 데이터"));
 }
 
 function verifyPayload(

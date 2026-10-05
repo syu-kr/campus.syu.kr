@@ -4,6 +4,21 @@ import { searchAll } from "./api";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("searchAll", () => {
+  it("aborts all three source requests and rejects cancellation instead of returning partial errors", async () => {
+    const controller = new AbortController();
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal("fetch", vi.fn((_input: RequestInfo, init: RequestInit) => {
+      signals.push(init.signal as AbortSignal);
+      return new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
+      });
+    }));
+    const pending = searchAll("장학", controller.signal);
+    expect(signals).toEqual([controller.signal, controller.signal, controller.signal]);
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+  });
+
   it("keeps departments that share a phone number", async () => {
     vi.stubGlobal("fetch", vi.fn(async (input: string) => {
       if (input.includes("phone-numbers")) {

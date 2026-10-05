@@ -27,19 +27,30 @@ export function proxy(request: NextRequest) {
   const pathLocale = getLocaleFromPathname(pathname);
 
   if (pathLocale === ENGLISH_LOCALE) {
-    const rewriteUrl = request.nextUrl.clone();
+    const rewriteUrl = getLocaleUrl(request);
     rewriteUrl.pathname = stripLocalePrefix(pathname);
     return rewriteWithLocale(request, rewriteUrl, ENGLISH_LOCALE);
   }
 
   const preferredLocale = getPreferredLocale(request);
   if (preferredLocale === ENGLISH_LOCALE) {
-    const redirectUrl = request.nextUrl.clone();
+    const redirectUrl = getLocaleUrl(request);
     redirectUrl.pathname = localizePath(pathname, ENGLISH_LOCALE);
     return NextResponse.redirect(redirectUrl);
   }
 
   return nextWithLocale(request, DEFAULT_LOCALE);
+}
+
+function getLocaleUrl(request: NextRequest): URL {
+  const url = request.nextUrl;
+  const host = request.headers.get("host");
+  const port = url.port ? `:${url.port}` : "";
+  if (url.hostname === "localhost" && (host === `127.0.0.1${port}` || host === `[::1]${port}`)) {
+    // Keep Next's adapter from normalizing a local rewrite back to another host.
+    url.host = host;
+  }
+  return new URL(url);
 }
 
 function shouldSkipLocaleProxy(pathname: string) {
@@ -104,6 +115,7 @@ function getLocaleHeaders(
   requestHeaders.set(LOCALE_HEADER_NAME, locale);
   requestHeaders.set(PATHNAME_HEADER_NAME, request.nextUrl.pathname);
   requestHeaders.set(CSP_NONCE_HEADER_NAME, nonce);
+  requestHeaders.set("Content-Security-Policy", buildContentSecurityPolicy(nonce));
   return requestHeaders;
 }
 
@@ -191,5 +203,5 @@ function getSentryOrigin() {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image).*)"],
+  matcher: ["/((?!api(?:/|$)|_next/static|_next/image).*)"],
 };

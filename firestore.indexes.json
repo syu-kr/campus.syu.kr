@@ -59,6 +59,15 @@
         { "fieldPath": "metric", "order": "ASCENDING" },
         { "fieldPath": "window_start", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "api_rate_limits",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "metric", "order": "ASCENDING" },
+        { "fieldPath": "window_start", "order": "ASCENDING" },
+        { "fieldPath": "count", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

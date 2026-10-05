@@ -1,4 +1,4 @@
-import { FieldPath, Timestamp, type Firestore, type Query } from "firebase-admin/firestore";
+import { AggregateField, FieldPath, Timestamp, type Firestore, type Query } from "firebase-admin/firestore";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { NextResponse } from "next/server";
 import { AdminAuthError } from "./admin-auth";
@@ -203,7 +203,15 @@ export async function listAdminPosts(db: Firestore, params: URLSearchParams, now
   let holdsQuery = db.collection("roommate_owner_state").where("hold_until", ">", now).orderBy("hold_until", "asc").orderBy(FieldPath.documentId(), "asc");
   const holdCursor = readCursor(params.get("holdsCursor"));
   if (holdCursor) holdsQuery = holdsQuery.startAfter(holdCursor.timestamp, holdCursor.id);
-  const [snapshot, holdsSnapshot, mailSnapshot, recruiting] = await Promise.all([query.limit(21).get(), holdsQuery.limit(21).get(), db.collection("api_rate_limits").where("metric", "==", "roommate_mail_requests").where("window_start", "==", now.toDate().toISOString().slice(0, 10)).limit(1001).get(), db.collection("roommate_posts").where("status", "==", "recruiting").where("recruit_until", ">", now).count().get()]);
+  const [snapshot, holdsSnapshot, mailSnapshot, recruiting] = await Promise.all([
+    query.limit(21).get(),
+    holdsQuery.limit(21).get(),
+    db.collection("api_rate_limits")
+      .where("metric", "==", "roommate_mail_requests")
+      .where("window_start", "==", now.toDate().toISOString().slice(0, 10))
+      .aggregate({ count: AggregateField.sum("count") }).get(),
+    db.collection("roommate_posts").where("status", "==", "recruiting").where("recruit_until", ">", now).count().get(),
+  ]);
   const docs = snapshot.docs.slice(0, 20);
   const valid = docs.filter((doc) => (doc.get("expires_at") as Timestamp).toMillis() > now.toMillis());
   const refs = valid.map((doc) => db.collection("roommate_owner_state").doc(doc.get("owner_key")));
@@ -212,5 +220,5 @@ export async function listAdminPosts(db: Firestore, params: URLSearchParams, now
   const holds: AdminRoommateHold[] = holdsSnapshot.docs.slice(0, 20).map((doc) => ({ ownerKey: doc.id, latestPostId: doc.get("latest_post_id") || null, version: doc.get("version") || 1, holdUntil: doc.get("hold_until").toDate().toISOString(), reason: doc.get("hold_reason") || "" }));
   const last = docs.at(-1);
   const lastHold = holdsSnapshot.docs.slice(0, 20).at(-1);
-  return { items, holds, holdsNextCursor: holdsSnapshot.docs.length > 20 && lastHold ? nextCursor(lastHold.get("hold_until"), lastHold.id) : null, recruitingCount: recruiting.data().count, nextCursor: snapshot.docs.length > 20 && last ? nextCursor(last.get("created_at"), last.id) : null, mailRequests: { dateUtc: now.toDate().toISOString().slice(0, 10), count: mailSnapshot.docs.slice(0, 1000).reduce((sum, doc) => sum + Number(doc.get("count") || 0), 0), partial: mailSnapshot.docs.length > 1000 } };
+  return { items, holds, holdsNextCursor: holdsSnapshot.docs.length > 20 && lastHold ? nextCursor(lastHold.get("hold_until"), lastHold.id) : null, recruitingCount: recruiting.data().count, nextCursor: snapshot.docs.length > 20 && last ? nextCursor(last.get("created_at"), last.id) : null, mailRequests: { dateUtc: now.toDate().toISOString().slice(0, 10), count: mailSnapshot.data().count, partial: false } };
 }

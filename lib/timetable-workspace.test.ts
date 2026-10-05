@@ -8,11 +8,31 @@ import {
   filterWorkspaceCourseIds,
   leaveTimetableCompareMode,
   MAX_TIMETABLES,
+  normalizeTimetableWorkspace,
   removeTimetable,
   toggleTimetableCourse,
 } from "@/lib/timetable-workspace";
 
 describe("timetable workspace", () => {
+  it("repairs colliding IDs without changing another timetable's courses", () => {
+    const workspace = normalizeTimetableWorkspace({
+      activeTimetableId: "timetable-2", isCompareMode: true,
+      timetables: [
+        { id: "timetable-2", courseIds: ["course-a"] },
+        { id: "timetable-2", courseIds: ["course-b"] },
+        { id: "timetable-3", courseIds: ["course-c"] },
+        { id: "", courseIds: ["course-d"] },
+      ],
+    });
+    expect(new Set(workspace.timetables.map((item) => item.id)).size).toBe(4);
+    expect(workspace.activeTimetableId).toBe("timetable-2");
+    expect(workspace.timetables[2].id).toBe("timetable-3");
+    const edited = toggleTimetableCourse(workspace, "timetable-2", "added");
+    expect(edited.timetables.map((item) => item.courseIds)).toEqual([
+      ["course-a", "added"], ["course-b"], ["course-c"], ["course-d"],
+    ]);
+  });
+
   it("starts comparison with the current timetable and an empty alternative", () => {
     const workspace = enterTimetableCompareMode(
       createTimetableWorkspace(["course-a"]),

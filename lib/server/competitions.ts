@@ -1,5 +1,6 @@
 import { attachAnnouncementAiSummaries } from "@/lib/server/announcement-ai";
 import { readDailyCrawlDataJson } from "@/lib/server/crawl-data";
+import { getKoreaDateTimeParts } from "@/lib/korea-time";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type {
   AnnouncementCategory,
@@ -501,8 +502,7 @@ function getAiDeadlineStatus(
   const parsed = parseDeadlineDate(deadline || "");
   if (!parsed) return "unknown";
 
-  const endOfDeadline = new Date(parsed);
-  endOfDeadline.setHours(23, 59, 59, 999);
+  const endOfDeadline = new Date(`${parsed.toISOString().slice(0, 10)}T23:59:59.999+09:00`);
 
   return Date.now() > endOfDeadline.getTime() ? "past" : "future";
 }
@@ -525,7 +525,7 @@ function parseDeadlineDate(value: string): Date | null {
   if (!monthDayMatch) return null;
 
   return buildDate(
-    new Date().getFullYear(),
+    getKoreaDateTimeParts(new Date()).year,
     Number(monthDayMatch[1]),
     Number(monthDayMatch[2]),
   );
@@ -537,11 +537,11 @@ function buildDate(year: number, month: number, day: number): Date | null {
   }
   if (month < 1 || month > 12 || day < 1 || day > 31) return null;
 
-  const date = new Date(year, month - 1, day);
+  const date = new Date(Date.UTC(year, month - 1, day));
   if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
   ) {
     return null;
   }

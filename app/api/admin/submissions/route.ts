@@ -69,9 +69,10 @@ export async function GET(req: NextRequest) {
     }
     const { getFirestore } = await import("@/lib/server/firestore");
     const db = getFirestore();
+    const countsPromise = readSubmissionCounts(db, kind);
     const [submissionPage, counts] = await Promise.all([
-      readSubmissions(db, kind, status, page, limit, cursor),
-      readSubmissionCounts(db, kind),
+      readSubmissions(db, kind, status, page, limit, cursor, countsPromise),
+      countsPromise,
     ]);
 
     return NextResponse.json({ ...submissionPage, counts });
@@ -176,8 +177,11 @@ async function readSubmissions(
   page: number,
   limit: number,
   cursor: SubmissionCursor | null,
+  counts: Promise<Record<SubmissionStatus, number>>,
 ) {
-  const total = await countSubmissions(db, kind, status);
+  const total = status === "all"
+    ? await countSubmissions(db, kind)
+    : (await counts)[status];
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const reads: Promise<SubmissionRead[]>[] = [];
 
@@ -268,7 +272,6 @@ async function readCollection(
 async function countSubmissions(
   db: Firestore,
   kind: "all" | AdminSubmissionKind,
-  status: "all" | SubmissionStatus,
 ) {
   const collections: Array<"site_inquiries" | "campus_tip_suggestions"> = [];
 
@@ -281,11 +284,7 @@ async function countSubmissions(
   }
 
   const counts = await Promise.all(
-    collections.map((collection) =>
-      status === "all"
-        ? countCollection(db, collection)
-        : countByStatus(db, collection, status),
-    ),
+    collections.map((collection) => countCollection(db, collection)),
   );
 
   return counts.reduce((total, count) => total + count, 0);

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   ApiError,
-  apiServerErrorResponse,
+  apiErrorResponse,
   enforceSameOrigin,
   enforceRateLimit,
   readJsonBody,
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(
+    return apiErrorResponse(
       error,
       "시간표 공유 링크를 만들지 못했습니다.",
     );
