@@ -177,6 +177,39 @@ export function createShuttleAnswerSummary({
     };
   }
 
+  const noticePeriod = summary.additionalServicePeriods.find((period) => period.daytimeIntervals);
+  if (noticePeriod?.daytimeIntervals) {
+    const intervals = noticePeriod.daytimeIntervals;
+    const items = [
+      {
+        label: serviceText.daytimeTitle,
+        value: `${applyTemplate(serviceText.daytimeBefore, {
+          time: intervals.changeTime, minutes: String(intervals.beforeMinutes),
+        })} · ${applyTemplate(serviceText.daytimeAfter, {
+          time: intervals.changeTime, minutes: String(intervals.afterMinutes),
+        })}`,
+      },
+      ...(noticePeriod.additionalServices ?? []).map((service) => ({
+        label: serviceText.destinations[service.destination],
+        value: service.type === "window"
+          ? `${applyTemplate(serviceText.window, {
+            startTime: service.startTime, endTime: service.endTime,
+            count: String(service.vehicleCount),
+          })} · ${serviceText.fullDepartureNote}`
+          : applyTemplate(serviceText.departure, {
+            time: service.time, count: String(service.vehicleCount),
+          }),
+      })),
+    ];
+    return {
+      ...baseSummary,
+      source: serviceText.noticeSource,
+      answer: `${noticePeriod.startDate} ${serviceText.noticeTitle}: ${items
+        .map((item) => `${item.label}: ${item.value}`).join("; ")}. ${serviceText.daytimeNotice}`,
+      items,
+    };
+  }
+
   if (!primaryDeparture || primaryDeparture.additionalService) {
     return {
       ...baseSummary,

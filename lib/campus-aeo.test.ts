@@ -76,3 +76,27 @@ describe("public holiday shuttle answers", () => {
     expect(unknownAnswer.items).toBeUndefined();
   });
 });
+
+describe("festival shuttle notice answers", () => {
+  it.each(["ko", "en"] as const)("keeps the full interval notice without regular predictions in %s", (locale) => {
+    const text = getDictionary(locale).pages.busInfo.festivalShuttle;
+    for (const time of ["09:59", "22:31"]) {
+      const now = new Date(`2026-10-06T${time}:00+09:00`);
+      const holidays: PublicHolidaySnapshot = { schemaVersion: 1,
+        sourceUrl: PUBLIC_HOLIDAY_SOURCE_URL, years: [2026], holidays: [],
+        lastSuccessAt: now.toISOString() };
+      const summary = getCurrentShuttleSummary({ buses, now, holidays,
+        specialPeriods: periods as ShuttleSpecialPeriods });
+      const answer = createShuttleAnswerSummary({ locale, now, summary });
+      expect(answer.answer).toContain(text.daytimeBefore.replace("{time}", "10:00").replace("{minutes}", "10"));
+      expect(answer.answer).toContain(text.daytimeAfter.replace("{time}", "10:00").replace("{minutes}", "30"));
+      expect(answer.answer).toContain(text.daytimeNotice);
+      expect(answer.answer).toContain(text.fullDepartureNote);
+      expect(answer.answer).toContain("22:00");
+      expect(answer.answer).toContain("22:30");
+      expect(answer.answer).not.toMatch(/분 남았습니다|minutes from now|70주년|70th Anniversary|조기에 종료|end earlier|까지만|only as far/);
+      expect(answer.source).toBe(text.noticeSource);
+      expect(answer.items).toHaveLength(3);
+    }
+  });
+});

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { TodayShuttleSection } from "./HomeDashboardSections";
 import { getDictionary } from "@/lib/i18n";
 import { emptyPublicHolidays, PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
+import festivalPeriods from "@/public/data/shuttle-special-periods.json";
 import type { PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 
 const dictionary = getDictionary("ko");
@@ -29,6 +30,18 @@ const specialPeriods: ShuttleSpecialPeriods = {
 };
 
 describe("home shuttle operation notices", () => {
+  it("keeps the dated festival notice when holiday coverage is unavailable without predicting regular departures", () => {
+    render(<TodayShuttleSection isLoading={false} isError={false} onRetry={vi.fn()}
+      buses={buses} holidays={emptyPublicHolidays()}
+      specialPeriods={festivalPeriods as ShuttleSpecialPeriods}
+      now={new Date("2026-10-06T11:55:00+09:00")} />);
+
+    expect(screen.getByRole("heading", { name: dictionary.pages.busInfo.festivalShuttle.noticeTitle })).toBeInTheDocument();
+    expect(screen.getByText("10:00 이후: 30분 간격")).toBeInTheDocument();
+    expect(screen.queryByText(/12:15|분 후 예정 출발/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: buses[0].routeName })).not.toBeInTheDocument();
+  });
+
   it("shows the weekend closure even when holiday coverage is unavailable", () => {
     render(<TodayShuttleSection isLoading={false} isError={false} onRetry={vi.fn()}
       buses={buses} holidays={emptyPublicHolidays()} specialPeriods={specialPeriods}

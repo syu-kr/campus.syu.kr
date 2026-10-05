@@ -2,13 +2,18 @@
   "specialPeriods": [
     {
       "id": "festival-night-2026-10-06",
-      "name": "축제 야간 특별운행",
+      "name": "천보축전 셔틀 운행 안내",
       "startDate": "2026-10-06",
       "endDate": "2026-10-06",
-      "description": "화랑대행 22:00~22:30 총 5대, 별내행 22:30 1대",
+      "description": "10:00 이전 10분 간격, 이후 30분 간격. 화랑대행 22:00~22:30 총 5대, 별내행 22:30 1대",
       "type": "add",
       "applicableDates": ["2026-10-06"],
       "routes": [],
+      "daytimeIntervals": {
+        "changeTime": "10:00",
+        "beforeMinutes": 10,
+        "afterMinutes": 30
+      },
       "additionalServices": [
         {
           "destination": "hwarangdae",

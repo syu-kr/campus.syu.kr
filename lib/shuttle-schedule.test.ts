@@ -160,10 +160,11 @@ describe("festival night shuttle", () => {
   it.each([
     "2026-10-05T21:00:00+09:00",
     "2026-10-06T22:31:00+09:00",
-  ])("does not advertise remaining festival service at %s", (dateTime) => {
+  ])("does not predict remaining festival service at %s", (dateTime) => {
     const summary = summarize(dateTime);
-    expect(summary.additionalServicePeriods).toEqual([]);
+    expect(summary.departures).toEqual([]);
     expect(summary.hasMoreToday).toBe(false);
+    expect(summary.additionalServicePeriods).toHaveLength(dateTime.startsWith("2026-10-06") ? 1 : 0);
   });
 
   it("adds only dated forward service rows and preserves ordinary inbound/loop schedules", () => {
@@ -183,13 +184,15 @@ describe("festival night shuttle", () => {
     expect(JSON.stringify(buses)).toBe(before);
   });
 
-  it("uses the Korean date across UTC midnight and preserves regular departures", () => {
+  it("withholds regular predictions only on the Korean interval-notice date", () => {
     expect(summarize("2026-10-05T15:00:00Z").additionalServicePeriods).toHaveLength(1);
     expect(summarize("2026-10-06T15:00:00Z").additionalServicePeriods).toEqual([]);
     expect(summarize("2026-10-06T15:00:00Z").departures.length).toBeGreaterThan(0);
     expect(summarize("2026-10-06T11:55:00+09:00").departures.filter((departure) => !departure.additionalService)).toEqual(
-      summarize("2026-10-05T11:55:00+09:00").departures,
+      [],
     );
+    expect(summarize("2026-10-07T11:55:00+09:00").departures.some((departure) => !departure.additionalService)).toBe(true);
+    expect(summarize("2026-10-05T11:55:00+09:00").departures.some((departure) => !departure.additionalService)).toBe(true);
   });
 
   it.each(["ko", "en"] as const)(
@@ -197,13 +200,13 @@ describe("festival night shuttle", () => {
     (locale) => {
       const now = new Date("2026-10-06T22:15:00+09:00");
       const answer = createShuttleAnswerSummary({ locale, now, summary: summarize(now.toISOString()) });
-      expect(answer.items).toHaveLength(2);
+      expect(answer.items).toHaveLength(3);
       expect(answer.answer).toContain("22:00");
       expect(answer.answer).toContain("22:30");
       expect(answer.answer).not.toMatch(/석계|Seokgye|남은 셔틀 출발편이 없습니다|no remaining shuttle/i);
       expect(answer.source).not.toMatch(/4월 29|April 29/);
-      expect(answer.source).toMatch(/학생회|Student Council/);
-      expect(answer.answer).toMatch(/조기에 종료|end earlier/);
+      expect(answer.source).toMatch(/천보축전|festival/i);
+      expect(answer.answer).not.toMatch(/70주년|70th|조기에 종료|end earlier/);
     },
   );
 });
