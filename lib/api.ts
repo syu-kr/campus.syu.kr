@@ -15,6 +15,7 @@ import {
 import { fetchJson } from "./fetch-json";
 import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
+import { matchesPhoneQuery } from "./phone";
 import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "./public-holidays";
 import type {
   LiveDataResponse,
@@ -293,7 +294,7 @@ export async function searchAll(
   const settledResults = await Promise.allSettled([
     searchSchedules(lowerQuery),
     searchAnnouncementApi(lowerQuery),
-    searchPhoneNumberSource(normalizedQuery, lowerQuery),
+    searchPhoneNumberSource(normalizedQuery),
   ]);
 
   const results: SearchAllResult[][] = [];
@@ -353,7 +354,6 @@ async function searchAnnouncementApi(query: string): Promise<Announcement[]> {
 
 async function searchPhoneNumberSource(
   rawQuery: string,
-  lowerQuery: string,
 ): Promise<PhoneNumber[]> {
   const phoneNumbers = await fetchJson<PhoneNumber[]>(
     "/data/phone-numbers.json",
@@ -365,12 +365,7 @@ async function searchPhoneNumberSource(
     },
   );
 
-  return phoneNumbers.filter(
-    (phone) =>
-      includesQuery(phone.department, lowerQuery) ||
-      phone.phone?.includes(rawQuery) ||
-      includesQuery(phone.description, lowerQuery),
-  );
+  return phoneNumbers.filter((phone) => matchesPhoneQuery(phone, rawQuery));
 }
 
 function includesQuery(value: string | undefined, query: string): boolean {
