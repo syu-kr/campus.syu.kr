@@ -29,6 +29,16 @@ const specialPeriods: ShuttleSpecialPeriods = {
 };
 
 describe("home shuttle operation notices", () => {
+  it("shows the weekend closure even when holiday coverage is unavailable", () => {
+    render(<TodayShuttleSection isLoading={false} isError={false} onRetry={vi.fn()}
+      buses={buses} holidays={emptyPublicHolidays()} specialPeriods={specialPeriods}
+      now={new Date("2026-10-10T11:55:00+09:00")} />);
+
+    expect(screen.getByText(dictionary.home.dashboard.shuttleWeekend)).toBeInTheDocument();
+    expect(screen.queryByText(dictionary.publicHolidays.shuttleUnconfirmed)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: buses[0].routeName })).not.toBeInTheDocument();
+  });
+
   it("shows a confirmed ordinary-day closure without an unavailable-holiday title or departure prediction", () => {
     render(<TodayShuttleSection isLoading={false} isError={false} onRetry={vi.fn()}
       buses={buses} holidays={holidays} now={new Date("2026-10-08T11:55:00+09:00")}
@@ -46,7 +56,7 @@ describe("home shuttle operation notices", () => {
   });
 
   it.each([
-    ["holiday", holidays, "한글날", dictionary.publicHolidays.shuttleHolidayClosed],
+    ["holiday", holidays, "한글날", dictionary.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "한글날")],
     ["missing coverage", emptyPublicHolidays(), dictionary.publicHolidays.unavailable, dictionary.publicHolidays.shuttleUnconfirmed],
   ] as const)("suppresses departures and shows the appropriate notice for %s", (_scenario, snapshot, title, message) => {
     const props = {
@@ -60,7 +70,7 @@ describe("home shuttle operation notices", () => {
     view.rerender(<TodayShuttleSection {...props} holidays={snapshot} />);
     expect(screen.getByRole("heading", { level: 3, name: title })).toBeInTheDocument();
     expect(screen.getByText(message)).toBeInTheDocument();
-    expect(screen.queryByText(message === dictionary.publicHolidays.shuttleHolidayClosed
+    expect(screen.queryByText(snapshot.holidays.length
       ? dictionary.publicHolidays.shuttleUnconfirmed
       : dictionary.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     expect(screen.queryByText(dictionary.publicHolidays.shuttleClosed)).not.toBeInTheDocument();

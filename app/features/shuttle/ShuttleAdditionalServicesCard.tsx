@@ -24,6 +24,7 @@ export function ShuttleAdditionalServicesCard({
   const { year, month, date, hour, minute } = getKoreaDateTimeParts(now);
   const dateString = `${year}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`;
   const isToday = isDateInSpecialPeriod(period, dateString);
+  if (!isToday) return null;
   const dateLabel = new Intl.DateTimeFormat(
     locale === "ko" ? "ko-KR" : "en-US",
     { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric" },

@@ -3,6 +3,7 @@
 import { Container } from "@/app/components/Container";
 
 import { Card } from "@/app/components/Card";
+import { Badge } from "@/app/components/Badge";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -28,6 +29,10 @@ import {
 import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import {
   createScheduleCopy,
+  formatShuttleAdditionalCountdown,
+  formatShuttleAdditionalService,
+  getNextShuttleDepartures,
+  getShuttleAdditionalServiceBuses,
   getShuttleScheduleType,
   getShuttleDayStatus,
   getShuttleExceptionBuses,
@@ -35,6 +40,7 @@ import {
   isReplacementSpecialPeriod,
   isShuttleVacationDate,
   timeToMinutes,
+  type NextShuttleDeparture,
 } from "@/lib/shuttle-schedule";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Locale } from "@/lib/i18n";
@@ -67,12 +73,15 @@ export default function ShuttleSection() {
     gcTime: 30 * ONE_MINUTE,
   });
 
-  const { data: holidays } = useQuery({
+  const { data: holidays, isLoading: holidaysLoading, isError: holidaysError } = useQuery({
     queryKey: ["public-holidays"],
     queryFn: fetchPublicHolidays,
     staleTime: FIVE_MINUTES,
     refetchInterval: FIVE_MINUTES,
   });
+  const effectiveHolidays = useMemo(() => holidays && {
+    ...holidays, stale: holidays.stale || holidaysError,
+  }, [holidays, holidaysError]);
 
   const {
     data: specialPeriods,
@@ -155,11 +164,20 @@ export default function ShuttleSection() {
   }, [locale, now]);
 
   const dayStatus = getShuttleDayStatus({
-    dateString: dateInfo.dateStr, specialPeriods, holidays, now,
+    dateString: dateInfo.dateStr, specialPeriods, holidays: effectiveHolidays, now,
   });
   const isException = dayStatus.operationStatus === "exception";
   const isWeekendWithoutException = dateInfo.isWeekend && !isException;
   const canPredictDepartures = dayStatus.operationStatus === "regular" || isException;
+  const nonOperatingDayMessage = dayStatus.holiday.status === "holiday"
+    ? dictionary.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", dayStatus.holiday.names.join(" · "))
+    : dayStatus.operationEvidence.length > 0
+      ? dictionary.publicHolidays.shuttleClosed
+      : isWeekendWithoutException
+        ? text.weekendNotice
+        : dayStatus.operationStatus === "closed"
+          ? dictionary.publicHolidays.shuttleClosed
+          : dictionary.publicHolidays.shuttleUnconfirmed;
 
   const isVacationToday = useMemo(
     () => isShuttleVacationDate(dateInfo.dateStr, specialPeriods),
@@ -203,10 +221,8 @@ export default function ShuttleSection() {
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
-  const additionalServiceNotices = (specialPeriods?.specialPeriods ?? []).filter(
-    (period) =>
-      (period.additionalServices?.length ?? 0) > 0 &&
-      period.endDate >= dateInfo.dateStr,
+  const additionalServiceNotices = activeSpecialPeriods.filter(
+    (period) => (period.additionalServices?.length ?? 0) > 0,
   );
   const timetableSpecialPeriods = activeSpecialPeriods.filter(
     (period) => !period.additionalServices?.length,
@@ -287,11 +303,14 @@ export default function ShuttleSection() {
     if (isException && useSpecialSchedule) {
       return getShuttleExceptionBuses(normalizedBusList, dayStatus.serviceExceptions);
     }
+    const additionalBuses = isException ? [] : getShuttleAdditionalServiceBuses({
+      specialPeriods, dateString: dateInfo.dateStr, locale,
+    });
     const periodList = Array.isArray(specialPeriods?.specialPeriods)
       ? specialPeriods.specialPeriods
       : [];
 
-    if (normalizedBusList.length === 0) return [];
+    if (normalizedBusList.length === 0) return additionalBuses;
     if (periodList.length === 0) return normalizedBusList;
 
     // 현재 날짜의 추가 운행과, 버튼으로 선택한 대체 시간표를 분리 적용한다.
@@ -309,11 +328,11 @@ export default function ShuttleSection() {
     ];
 
     if (applicableSpecialPeriods.length === 0) {
-      return normalizedBusList;
+      return [...normalizedBusList, ...additionalBuses];
     }
 
     // 버스 데이터 복사하여 특수 기간 시간표 적용
-    return normalizedBusList.map((bus) => {
+    return [...normalizedBusList.map((bus) => {
       const schedulesCopy = createScheduleCopy(bus.schedules);
 
       // 이 버스에 적용될 특수 기간 필터링
@@ -377,23 +396,20 @@ export default function ShuttleSection() {
       });
 
       return { ...bus, schedules: schedulesCopy };
-    });
+    }), ...additionalBuses];
   }, [
     activeReplacementSpecialPeriods,
     buses,
     dateInfo.dateStr,
-    specialPeriods?.specialPeriods,
+    specialPeriods,
     useSpecialSchedule,
     isException,
     dayStatus.serviceExceptions,
+    locale,
   ]);
 
   // 노선별 가장 빨리 출발하는 버스 (30분 이내인 경우만)
-  const nextBusesWithin30Min = useMemo((): Array<{
-    routeName: string;
-    time: string;
-    minutesUntil: number;
-  }> => {
+  const nextBusesWithin30Min = useMemo((): NextShuttleDeparture[] => {
     if (
       !busesWithSpecialPeriods ||
       busesWithSpecialPeriods.length === 0 ||
@@ -402,43 +418,11 @@ export default function ShuttleSection() {
     )
       return [];
 
-    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
-    const busesByRoute = new Map<
-      string,
-      { time: string; minutesUntil: number }
-    >();
-
-    // 각 노선별로 첫 번째 버스(가장 빨리 출발)를 찾기
-    busesWithSpecialPeriods.forEach((bus) => {
-      const times = Array.isArray(bus.schedules?.[selectedType])
-        ? bus.schedules[selectedType]
-        : [];
-
-      for (const time of times) {
-        const timeMinutes = timeToMinutes(time);
-        if (timeMinutes === null) continue;
-        const minutesUntil = timeMinutes - currentMinutes;
-
-        // 첫 번째 다음 버스를 찾으면 저장하고 다음 노선으로
-        if (minutesUntil > 0) {
-          busesByRoute.set(bus.routeName, { time, minutesUntil });
-          break;
-        }
-      }
-    });
-
-    // Map을 배열로 변환하고, 30분 이내인 것만 필터링
-    const result = Array.from(busesByRoute.entries())
-      .filter(([, { minutesUntil }]) => minutesUntil <= 30)
-      .map(([routeName, { time, minutesUntil }]) => ({
-        routeName,
-        time,
-        minutesUntil,
-      }))
-      // 시간순으로 정렬
-      .sort((a, b) => a.minutesUntil - b.minutesUntil);
-
-    return result;
+    return getNextShuttleDepartures({
+      buses: busesWithSpecialPeriods,
+      scheduleType: selectedType,
+      currentMinutes: dateInfo.hour * 60 + dateInfo.minute,
+    }).filter((departure) => departure.minutesUntil <= 30);
   }, [
     busesWithSpecialPeriods,
     dateInfo,
@@ -448,44 +432,9 @@ export default function ShuttleSection() {
   ]);
 
   // 노선별 가장 빨리 오는 버스 시간 (하이라이트용)
-  const nextBusTimeByRoute = useMemo((): Map<string, string> => {
-    if (
-      !busesWithSpecialPeriods ||
-      busesWithSpecialPeriods.length === 0 ||
-      isWeekendWithoutException ||
-      !selectedButtonIsCurrent
-    )
-      return new Map();
-
-    const currentMinutes = dateInfo.hour * 60 + dateInfo.minute;
-    const timeByRoute = new Map<string, string>();
-
-    busesWithSpecialPeriods.forEach((bus) => {
-      const times = Array.isArray(bus.schedules?.[selectedType])
-        ? bus.schedules[selectedType]
-        : [];
-
-      // 각 노선별로 첫 번째 다음 버스 찾기
-      for (const time of times) {
-        const timeMinutes = timeToMinutes(time);
-        if (timeMinutes === null) continue;
-        const minutesUntil = timeMinutes - currentMinutes;
-
-        if (minutesUntil > 0) {
-          timeByRoute.set(bus.routeName, time);
-          break;
-        }
-      }
-    });
-
-    return timeByRoute;
-  }, [
-    busesWithSpecialPeriods,
-    dateInfo,
-    selectedButtonIsCurrent,
-    selectedType,
-    isWeekendWithoutException,
-  ]);
+  const nextBusTimeByRoute = new Map(
+    nextBusesWithin30Min.map((departure) => [departure.routeName, departure.time]),
+  );
 
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
@@ -564,7 +513,7 @@ export default function ShuttleSection() {
 
   // 버스 위치는 표시 가능한 시간에 바로 불러온다.
   useEffect(() => {
-    if (isWeekendWithoutException || !isWithinOperationHours) {
+    if (holidaysLoading || isWeekendWithoutException || !isWithinOperationHours) {
       return;
     }
 
@@ -572,15 +521,19 @@ export default function ShuttleSection() {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     const fetchLocations = async () => {
+      if (!isActive) return;
       try {
         const locationStatus = await fetchBusLocationStatus();
         if (!isActive) return;
 
-        setBusLocations(locationStatus.data);
-        setLastLocationUpdatedAt(new Date(locationStatus.timestamp));
-        setIsLocationStale(locationStatus.stale);
+        const hasLocationError = locationStatus.sourceStatus !== "fresh";
+        if (!hasLocationError || locationStatus.data.length > 0) {
+          setBusLocations(locationStatus.data);
+          setLastLocationUpdatedAt(new Date(locationStatus.timestamp));
+        }
+        setIsLocationStale(locationStatus.stale || hasLocationError);
         setLocationSourceStatus(locationStatus.sourceStatus);
-        setLocationError("");
+        setLocationError(hasLocationError ? text.locationError : "");
       } catch {
         if (!isActive) return;
         setLocationError(text.locationError);
@@ -589,6 +542,7 @@ export default function ShuttleSection() {
     };
 
     const scheduleNextFetch = () => {
+      if (!isActive) return;
       const delay = Math.random() * 5000 + 30000;
       timeoutId = setTimeout(async () => {
         await fetchLocations();
@@ -604,6 +558,7 @@ export default function ShuttleSection() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [
+    holidaysLoading,
     isWeekendWithoutException,
     isWithinOperationHours,
     text.locationError,
@@ -621,40 +576,9 @@ export default function ShuttleSection() {
         </p>
       </div>
 
-      {(!canPredictDepartures || dayStatus.holiday.names.length > 0) && (
+      {!holidaysLoading && (!canPredictDepartures || isWeekendWithoutException) && (
         <Card className="mb-6 border border-amber-200 bg-amber-50/70" hover={false} role="status">
-          {dayStatus.holiday.names.length > 0 && (
-            <p className="text-sm font-semibold text-amber-900">
-              {dictionary.publicHolidays.label}: {dayStatus.holiday.names.join(" · ")}
-            </p>
-          )}
-          {!canPredictDepartures && (
-            <p className="mt-1 text-sm text-amber-900">
-              {dayStatus.operationStatus === "closed"
-                ? dictionary.publicHolidays.shuttleClosed
-                : dayStatus.holiday.status === "holiday"
-                  ? dictionary.publicHolidays.shuttleHolidayClosed
-                  : dictionary.publicHolidays.shuttleUnconfirmed}
-            </p>
-          )}
-          {dayStatus.holiday.isStale && dayStatus.operationStatus === "unconfirmed" && (
-            <p className="mt-2 text-xs leading-5 text-amber-900">{dictionary.publicHolidays.stale}</p>
-          )}
-          {holidays?.lastSuccessAt && (
-            <p className="mt-2 text-xs leading-5 text-amber-900">
-              {dictionary.publicHolidays.updatedAt}: {new Intl.DateTimeFormat(
-                locale === "ko" ? "ko-KR" : "en-US",
-                { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" },
-              ).format(new Date(holidays.lastSuccessAt))}
-            </p>
-          )}
-          {holidays && (
-            <a href={holidays.sourceUrl} target="_blank" rel="noopener noreferrer"
-              className="mt-2 inline-block text-xs text-amber-900 underline underline-offset-2">
-              {dictionary.publicHolidays.source}
-            </a>
-          )}
-          <VerifiedShuttleSources records={dayStatus.operationEvidence} />
+          <p className="text-sm text-amber-900">{nonOperatingDayMessage}</p>
         </Card>
       )}
 
@@ -665,7 +589,7 @@ export default function ShuttleSection() {
               key={period.id}
               period={period}
               now={now}
-              showCountdown={dayStatus.operationStatus === "regular"}
+              showCountdown={false}
             />
           ))}
         </div>
@@ -692,21 +616,12 @@ export default function ShuttleSection() {
         />
       )}
 
-      {isWeekendWithoutException && canPredictDepartures && (
-        <Card
-          className="mb-6 border border-amber-200 bg-amber-50/70"
-          hover={false}
-        >
-          <p className="text-sm text-amber-900">
-            <strong>{text.weekendNoticeTitle}</strong> {text.weekendNotice}
-          </p>
-        </Card>
-      )}
-
       {!isWeekendWithoutException &&
         isWithinOperationHours &&
         nextBusesWithin30Min.length > 0 && (
           <Card
+            as="section"
+            aria-label={text.upcomingBuses}
             className="mb-6 border border-neutral-200 bg-white"
             hover={false}
           >
@@ -721,17 +636,22 @@ export default function ShuttleSection() {
                   key={idx}
                   className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 sm:p-4"
                 >
-                  <h3 className="mb-2 text-base font-bold text-neutral-900 sm:text-lg">
-                    {bus.routeName}
-                  </h3>
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-bold text-neutral-900 sm:text-lg">
+                      {bus.routeName}
+                    </h3>
+                    {bus.additionalService && <Badge color="purple" size="sm">{text.specialSchedule}</Badge>}
+                  </div>
                   <div className="space-y-1">
                     <p className="text-sm text-neutral-700 sm:text-base">
-                      <strong>{bus.time}</strong> {text.departs}
+                      {bus.additionalService
+                        ? formatShuttleAdditionalService(bus.additionalService, locale).value
+                        : <><strong>{bus.time}</strong> {text.departs}</>}
                     </p>
                     <p className="text-sm font-semibold text-primary-700 sm:text-base">
-                      {bus.minutesUntil}
-                      {locale === "ko" ? "" : " "}
-                      {text.departsIn}
+                      {bus.additionalService
+                        ? formatShuttleAdditionalCountdown(bus.additionalService, bus.minutesUntil, locale)
+                        : `${bus.minutesUntil}${locale === "ko" ? "" : " "}${text.departsIn}`}
                     </p>
                   </div>
                 </div>
@@ -740,7 +660,7 @@ export default function ShuttleSection() {
           </Card>
         )}
 
-      {!isWeekendWithoutException && dayStatus.operationStatus !== "closed" && (
+      {!holidaysLoading && !isWeekendWithoutException && dayStatus.operationStatus !== "closed" && (
         <Card className="mb-6">
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
@@ -810,10 +730,7 @@ export default function ShuttleSection() {
                   sourceStatus={locationSourceStatus}
                   className="mt-2"
                 />
-                <p className="mt-2 break-keep text-xs leading-5 text-neutral-600">
-                  {text.locationDisclaimer}
-                </p>
-                {(locationError || isLocationStale) && (
+                {busLocations.length > 0 && (locationError || isLocationStale) && (
                   <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                     {locationError
                       ? `${locationError} ${text.staleLocationWarning}`
@@ -833,6 +750,13 @@ export default function ShuttleSection() {
               title={text.locationUnavailableTitle}
               message={locationUnavailableMessage}
             />
+          ) : locationError && busLocations.length === 0 ? (
+            <ShuttleLocationState
+              title={text.locationError}
+              message={text.locationErrorMessage}
+            />
+          ) : !lastLocationUpdatedAt ? (
+            <Skeleton count={1} height="160px" />
           ) : busLocations.length > 0 ? (
             <>
               <div
@@ -977,7 +901,7 @@ export default function ShuttleSection() {
         )}
         {!canPredictDepartures && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
-            {dayStatus.holiday.status === "holiday"
+            {dayStatus.operationStatus === "closed"
               ? dictionary.publicHolidays.referenceHolidaySchedule
               : dictionary.publicHolidays.referenceSchedule}
           </p>
@@ -1049,10 +973,17 @@ export default function ShuttleSection() {
                 >
                   <div className="flex items-center justify-between gap-3 p-3">
                     <div className="flex-1">
-                      <h2 className="text-lg font-bold text-neutral-900 mb-1">
-                        {bus.routeName}
-                      </h2>
-                      {routeStops.length > 0 ? (
+                      <div className="mb-1 flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-bold text-neutral-900">
+                          {bus.routeName}
+                        </h2>
+                        {bus.additionalService && <Badge color="purple" size="sm">{text.specialSchedule}</Badge>}
+                      </div>
+                      {bus.additionalService ? (
+                        <p className="text-sm text-neutral-600">
+                          {formatShuttleAdditionalService(bus.additionalService, locale).value}
+                        </p>
+                      ) : routeStops.length > 0 ? (
                         <>
                           <p className="text-sm text-neutral-600">
                             {text.routeLoop}
@@ -1111,7 +1042,15 @@ export default function ShuttleSection() {
                     <p className="text-xs text-neutral-500 font-semibold mb-3 uppercase tracking-wide">
                       {text.operationTime}
                     </p>
-                    {times.length === 0 ? (
+                    {bus.additionalService ? (
+                      <div className="rounded-lg border border-purple-200 bg-purple-50 px-4 py-3">
+                        <p className="text-sm font-semibold text-purple-900">
+                          {formatShuttleAdditionalService(bus.additionalService, locale).value}
+                        </p>
+                        <p className="mt-2 text-xs leading-5 text-purple-800">{text.festivalShuttle.boarding}</p>
+                        <p className="mt-1 text-xs leading-5 text-purple-800">{text.festivalShuttle.notice}</p>
+                      </div>
+                    ) : times.length === 0 ? (
                       <div className="bg-neutral-100 border border-neutral-300 rounded-lg px-4 py-6 text-center">
                         <p className="text-sm text-neutral-600 font-medium">
                           {text.noServiceOnDate}
@@ -1168,7 +1107,9 @@ export default function ShuttleSection() {
                       </div>
                     )}
 
-                    {isException && useSpecialSchedule ? (
+                    {bus.additionalService ? (
+                      <p className="mt-3 text-xs text-neutral-500">{text.festivalShuttle.source}</p>
+                    ) : isException && useSpecialSchedule ? (
                       <VerifiedShuttleSources records={dayStatus.serviceExceptions.filter(
                         (record) => record.routeId === bus.id,
                       )} />
@@ -1212,7 +1153,7 @@ function ShuttleLocationState({
   message: string;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-8 text-center">
+    <div role="status" className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-8 text-center">
       <p className="font-semibold text-neutral-900">{title}</p>
       <p className="mx-auto mt-2 w-full max-w-[18rem] whitespace-pre-line break-keep text-sm leading-6 text-neutral-600 sm:max-w-md">
         {message}

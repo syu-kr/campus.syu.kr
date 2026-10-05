@@ -65,8 +65,7 @@ describe("public holiday shuttle answers", () => {
     });
 
     const holidayAnswer = answerWith(holidays);
-    expect(holidayAnswer.answer).toContain(text.shuttleHolidayClosed);
-    expect(holidayAnswer.answer).toContain(text.referenceHolidaySchedule);
+    expect(holidayAnswer.answer).toBe(text.shuttleHolidayClosedNamed.replace("{holiday}", "한글날"));
     expect(holidayAnswer.answer).not.toContain(text.shuttleUnconfirmed);
     expect(holidayAnswer.answer).not.toContain(text.referenceSchedule);
     expect(holidayAnswer.items).toBeUndefined();
