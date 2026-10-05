@@ -11,6 +11,7 @@ import type {
 import { readDailyCrawlDataJson, readDailyCrawlDataSnapshot } from "./crawl-data";
 import { unstable_rethrow } from "next/navigation";
 import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "../public-holidays";
+import { toCafeteriaMenus, type CafeteriaMenuDay } from "../cafeteria";
 
 export async function getHomePublicHolidays(): Promise<PublicHolidaySnapshot> {
   try {
@@ -37,42 +38,14 @@ async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
 
 export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
   const data = await readDailyCrawlDataJson<
-    Array<{ menus?: unknown[] }> | { menus?: unknown[] }
+    Array<{ menus?: CafeteriaMenuDay[] }> | { menus?: CafeteriaMenuDay[] }
   >("cafeteria-menu.json");
   const cafeteriaData = Array.isArray(data) ? data[0] : data;
   const menuDays = Array.isArray(cafeteriaData?.menus)
-    ? (cafeteriaData.menus as Array<{
-        date: string;
-        day: string;
-        meals?: {
-          breakfast?: string[];
-          lunch?: string[] | { a_corner?: string[]; b_corner?: string[] };
-          dinner?: string[];
-        };
-      }>)
+    ? cafeteriaData.menus
     : [];
 
-  return menuDays.map((menu, idx) => {
-    const lunch: CafeteriaMenu["lunch"] = {};
-
-    if (Array.isArray(menu.meals?.lunch)) {
-      lunch.a = menu.meals.lunch.map((name) => ({ name }));
-    } else if (menu.meals?.lunch && typeof menu.meals.lunch === "object") {
-      const lunchSource = menu.meals.lunch;
-      lunch.a = lunchSource.a_corner?.map((name) => ({ name })) ?? [];
-      lunch.b = lunchSource.b_corner?.map((name) => ({ name })) ?? [];
-    }
-
-    return {
-      id: `cafeteria-${menu.date}-${idx}`,
-      date: menu.date,
-      dayOfWeek: menu.day || "",
-      breakfast: menu.meals?.breakfast?.map((name) => ({ name })) ?? [],
-      lunch,
-      dinner: menu.meals?.dinner?.map((name) => ({ name })) ?? [],
-      location: "SU-Lounge",
-    };
-  });
+  return toCafeteriaMenus(menuDays);
 }
 
 export function getHomeAcademicSchedules(): Promise<AcademicSchedule[]> {

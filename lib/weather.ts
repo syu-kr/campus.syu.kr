@@ -12,47 +12,20 @@ export interface WeatherData extends LiveDataMeta {
   gridX: number;
   gridY: number;
 }
-const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000;
-
-let cachedWeather:
-  | {
-      data: WeatherData;
-      expiresAt: number;
-    }
-  | undefined;
-let pendingWeather: Promise<WeatherData | null> | undefined;
+export const WEATHER_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 /**
  * API 라우트를 통해 날씨 정보 조회
  */
-export async function fetchWeather(): Promise<WeatherData | null> {
-  const now = Date.now();
-  if (cachedWeather && cachedWeather.expiresAt > now) {
-    return cachedWeather.data;
-  }
-
-  const cacheKey = Math.floor(now / WEATHER_CACHE_TTL_MS);
-
-  pendingWeather ??= fetchJson<unknown>(`/api/weather?ts=${cacheKey}`, {
+export async function fetchWeather(): Promise<WeatherData> {
+  const data = await fetchJson<unknown>("/api/weather", {
     fallback: null,
     noStore: true,
     cache: "no-store",
     throwOnError: true,
-  })
-    .then((data) => {
-      if (!isWeatherData(data)) return null;
-
-      cachedWeather = {
-        data,
-        expiresAt: Date.now() + WEATHER_CACHE_TTL_MS,
-      };
-      return data;
-    })
-    .finally(() => {
-      pendingWeather = undefined;
-    });
-
-  return pendingWeather;
+  });
+  if (!isWeatherData(data)) throw new Error("Invalid weather response");
+  return data;
 }
 
 function isWeatherData(data: unknown): data is WeatherData {

@@ -57,7 +57,12 @@ export function Modal({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (dialogRef.current?.closest('[role="dialog"]') !== dialogs[dialogs.length - 1]) {
+        return;
+      }
       if (event.key === "Escape") {
+        event.preventDefault();
         onCloseRef.current();
         return;
       }
@@ -83,7 +88,10 @@ export function Modal({
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
 
-      if (event.shiftKey && document.activeElement === firstElement) {
+      if (!dialogRef.current.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? lastElement : firstElement).focus();
+      } else if (event.shiftKey && document.activeElement === firstElement) {
         event.preventDefault();
         lastElement.focus();
       } else if (!event.shiftKey && document.activeElement === lastElement) {

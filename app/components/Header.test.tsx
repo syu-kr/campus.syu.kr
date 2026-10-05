@@ -20,6 +20,9 @@ vi.mock("next/image", () => ({
 }));
 vi.mock("./WeatherWidget", () => ({ WeatherWidget: () => null }));
 vi.mock("./WeatherModal", () => ({ WeatherModal: () => null }));
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: () => ({ data: undefined, isPending: false, isError: false, refetch: vi.fn() }),
+}));
 
 const mockedUsePathname = vi.mocked(usePathname);
 

@@ -33,6 +33,7 @@ export function BuildingMarker({
       return;
     }
 
+    let handleClick: (() => void) | undefined;
     try {
       const position = new kakaoMaps.LatLng(
         Number(building.lat),
@@ -94,21 +95,25 @@ export function BuildingMarker({
 
       infoWindowRef.current = infoWindow;
 
-      kakaoMaps.event.addListener(marker, "click", () => {
+      handleClick = () => {
         infoWindow.open(map, marker);
         if (onInfoWindowOpen) {
           onInfoWindowOpen(infoWindow);
         }
         if (onClick) onClick(building.id);
-      });
+      };
+      kakaoMaps.event.addListener(marker, "click", handleClick);
     } catch {
       // Handle marker creation error
     }
-
+    const marker = markerRef.current;
+    const infoWindow = infoWindowRef.current;
     return () => {
-      if (markerRef.current) {
-        markerRef.current.setMap(null);
-      }
+      if (marker && handleClick) kakaoMaps.event.removeListener(marker, "click", handleClick);
+      infoWindow?.close();
+      marker?.setMap(null);
+      markerRef.current = null;
+      infoWindowRef.current = null;
     };
   }, [building, labels, locale, map, onClick, onInfoWindowOpen]);
 
@@ -126,7 +131,7 @@ export function BuildingMarker({
     } else {
       infoWindowRef.current.close();
     }
-  }, [isHighlighted, map, onInfoWindowOpen]);
+  }, [isHighlighted, map, onInfoWindowOpen, building, labels, locale]);
 
   return null;
 }

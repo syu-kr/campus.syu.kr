@@ -1,6 +1,6 @@
 "use server";
 
-import fs from "fs";
+import { readFile, readdir } from "node:fs/promises";
 import path from "path";
 
 const NOTICES_DIR = path.join(process.cwd(), "public", "service-notices");
@@ -113,42 +113,41 @@ function createPlainTextExcerpt(content: string, maxLength: number): string {
   return `${plainText.slice(0, maxLength).trimEnd()}...`;
 }
 
+function createServiceNotice(slug: string, metadata: Record<string, string>, body: string): ServiceNotice {
+  const descriptionSource = metadata.description || body;
+  return {
+    id: slug.split("-")[0],
+    slug,
+    title: metadata.title || "무제",
+    date: metadata.date || new Date().toISOString().split("T")[0],
+    author: metadata.author || "시스템",
+    excerpt: createPlainTextExcerpt(descriptionSource, 300),
+    description: createPlainTextExcerpt(descriptionSource, 160),
+  };
+}
+
+function isMissingFile(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT";
+}
+
 /**
  * 모든 서비스 공지 조회 (목록)
  */
 export async function getAllServiceNotices(): Promise<ServiceNotice[]> {
-  if (!fs.existsSync(NOTICES_DIR)) {
-    return [];
+  let files: string[];
+  try {
+    files = (await readdir(NOTICES_DIR)).filter((file) => file.endsWith(".md"));
+  } catch (error) {
+    if (isMissingFile(error)) return [];
+    throw error;
   }
-
-  const files = fs
-    .readdirSync(NOTICES_DIR)
-    .filter((file) => file.endsWith(".md"));
-
-  const notices = files
-    .map((file) => {
-      const filePath = path.join(NOTICES_DIR, file);
-      const content = fs.readFileSync(filePath, "utf-8");
-      const { metadata, body } = parseFrontmatter(content);
-
-      // 파일명에서 ID 추출 (001-service-launch.md → 001)
-      const id = file.split("-")[0];
-      const slug = file.replace(".md", "");
-      const descriptionSource = metadata.description || body;
-
-      return {
-        id,
-        slug,
-        title: metadata.title || "무제",
-        date: metadata.date || new Date().toISOString().split("T")[0],
-        author: metadata.author || "시스템",
-        excerpt: createPlainTextExcerpt(descriptionSource, 300),
-        description: createPlainTextExcerpt(descriptionSource, 160),
-      };
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  return notices;
+  const notices = await Promise.all(files.map(async (file) => {
+    const filePath = path.join(NOTICES_DIR, file);
+    const content = await readFile(filePath, "utf-8");
+    const { metadata, body } = parseFrontmatter(content);
+    return createServiceNotice(file.replace(".md", ""), metadata, body);
+  }));
+  return notices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 /**
@@ -163,25 +162,16 @@ export async function getServiceNoticeBySlug(
     return null;
   }
 
-  if (!fs.existsSync(filePath)) {
-    return null;
+  let content: string;
+  try {
+    content = await readFile(filePath, "utf-8");
+  } catch (error) {
+    if (isMissingFile(error)) return null;
+    throw error;
   }
-
-  const content = fs.readFileSync(filePath, "utf-8");
   const { metadata, body } = parseFrontmatter(content);
-  const descriptionSource = metadata.description || body;
-
-  // 파일명에서 ID 추출
-  const id = slug.split("-")[0];
-
   return {
-    id,
-    slug,
-    title: metadata.title || "무제",
-    date: metadata.date || new Date().toISOString().split("T")[0],
-    author: metadata.author || "시스템",
-    excerpt: createPlainTextExcerpt(descriptionSource, 300),
-    description: createPlainTextExcerpt(descriptionSource, 160),
+    ...createServiceNotice(slug, metadata, body),
     content: body,
   };
 }

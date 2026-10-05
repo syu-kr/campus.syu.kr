@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   ApiError,
-  apiServerErrorResponse,
+  apiErrorResponse,
   enforceRateLimit,
   enforceSameOrigin,
   rateLimitResponse,
@@ -70,7 +70,7 @@ export async function GET(req: Request, { params }: RouteContext) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(error, "공유 시간표를 불러오지 못했습니다.");
+    return apiErrorResponse(error, "공유 시간표를 불러오지 못했습니다.");
   }
 }
 
@@ -107,7 +107,7 @@ export async function DELETE(req: NextRequest, { params }: RouteContext) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(error, "공유 링크를 삭제하지 못했습니다.");
+    return apiErrorResponse(error, "공유 링크를 삭제하지 못했습니다.");
   }
 }
 

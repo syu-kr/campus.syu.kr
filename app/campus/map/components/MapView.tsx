@@ -2,7 +2,7 @@
 
 import { buildings } from "../lib/mapData";
 import { BuildingMarker } from "./BuildingMarker";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
 import {
   useDictionary,
@@ -73,10 +73,11 @@ export function MapView({
       setMap(newMap);
       setLoadState("ready");
 
-      requestAnimationFrame(() => {
+      const frame = requestAnimationFrame(() => {
         newMap.relayout();
         newMap.setCenter(options.center);
       });
+      return () => cancelAnimationFrame(frame);
     } catch {
       setLoadState("error");
     }
@@ -97,12 +98,12 @@ export function MapView({
     }
   }, [selectedBuilding, map]);
 
-  const handleInfoWindowOpen = (infoWindow: KakaoInfoWindow) => {
-    if (currentInfoWindowRef.current) {
-      currentInfoWindowRef.current.close();
+  const handleInfoWindowOpen = useCallback((infoWindow: KakaoInfoWindow) => {
+    if (currentInfoWindowRef.current !== infoWindow) {
+      currentInfoWindowRef.current?.close();
     }
     currentInfoWindowRef.current = infoWindow;
-  };
+  }, []);
 
   return (
     <>

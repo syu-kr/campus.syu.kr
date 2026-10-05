@@ -7,8 +7,9 @@ import {
 } from "firebase-admin/firestore";
 import * as fs from "fs";
 import * as path from "path";
+import { parseEnv } from "node:util";
 
-function loadEnvLocal() {
+export function loadEnvLocal() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     return;
   }
@@ -18,50 +19,24 @@ function loadEnvLocal() {
     throw new Error(".env.local 파일을 찾을 수 없습니다");
   }
 
-  const envContent = fs.readFileSync(envPath, "utf-8");
-  const startIdx = envContent.indexOf("FIREBASE_SERVICE_ACCOUNT=");
-  if (startIdx === -1) {
+  const values = parseEnv(fs.readFileSync(envPath, "utf-8")) as Record<string, string>;
+  if (!values.FIREBASE_SERVICE_ACCOUNT) {
     throw new Error("FIREBASE_SERVICE_ACCOUNT를 찾을 수 없습니다");
   }
-
-  let jsonStr = "";
-  let braceCount = 0;
-  let inJson = false;
-  let charIdx = startIdx + "FIREBASE_SERVICE_ACCOUNT=".length;
-
-  while (charIdx < envContent.length) {
-    const char = envContent[charIdx];
-
-    if (char === "{") {
-      inJson = true;
-      braceCount++;
-    }
-
-    if (inJson) {
-      jsonStr += char;
-
-      if (char === "}") {
-        braceCount--;
-        if (braceCount === 0) {
-          break;
-        }
-      }
-    }
-
-    charIdx++;
+  try {
+    JSON.parse(values.FIREBASE_SERVICE_ACCOUNT);
+  } catch {
+    throw new Error(
+      "FIREBASE_SERVICE_ACCOUNT는 한 줄 JSON 또는 따옴표로 감싼 여러 줄 JSON이어야 합니다.",
+    );
   }
-
-  if (!jsonStr) {
-    throw new Error("유효한 Firebase 서비스 계정 JSON을 찾을 수 없습니다");
-  }
-
-  process.env.FIREBASE_SERVICE_ACCOUNT = jsonStr;
-
-  const pidMatch = envContent.match(
-    /NEXT_PUBLIC_FIREBASE_PROJECT_ID=(.+?)(?:\n|$)/,
-  );
-  if (pidMatch) {
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID = pidMatch[1];
+  process.env.FIREBASE_SERVICE_ACCOUNT = values.FIREBASE_SERVICE_ACCOUNT;
+  if (
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID === undefined &&
+    values.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== undefined
+  ) {
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID =
+      values.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   }
 }
 
@@ -73,7 +48,12 @@ export async function initializeScriptFirestore() {
     throw new Error("FIREBASE_SERVICE_ACCOUNT 환경 변수가 필요합니다");
   }
 
-  const serviceAccount = JSON.parse(serviceAccountJson);
+  let serviceAccount;
+  try {
+    serviceAccount = JSON.parse(serviceAccountJson);
+  } catch {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT는 유효한 JSON이어야 합니다.");
+  }
 
   if (!getApps().length) {
     initializeApp({

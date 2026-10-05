@@ -26,26 +26,11 @@ export function usePagination<T>(
       ? mobilePageRange
       : desktopPageRange;
 
-  const startPage = Math.max(1, currentPage - Math.floor(pageRange / 2));
-  const endPage = Math.min(totalPages, startPage + pageRange - 1);
-  const adjustedStartPage = Math.max(1, endPage - pageRange + 1);
-
-  const pageNumbers = useMemo(
-    () =>
-      Array.from(
-        { length: Math.min(pageRange, endPage - adjustedStartPage + 1) },
-        (_, i) => adjustedStartPage + i,
-      ),
-    [pageRange, endPage, adjustedStartPage],
-  );
-
   return {
     currentPage,
     setCurrentPage,
     totalPages,
     paginatedItems,
     pageRange,
-    endPage,
-    pageNumbers,
   };
 }

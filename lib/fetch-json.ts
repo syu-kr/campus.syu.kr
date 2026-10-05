@@ -1,13 +1,7 @@
-type NextFetchOptions = {
-  revalidate?: number | false;
-  tags?: string[];
-};
-
 export type FetchJsonOptions<T> = Omit<RequestInit, "cache"> & {
   cache?: RequestCache;
   fallback: T;
   noStore?: boolean;
-  next?: NextFetchOptions;
   throwOnError?: boolean;
   timeoutMs?: number;
 };
@@ -17,7 +11,6 @@ export async function fetchJson<T>(
   {
     fallback,
     noStore = true,
-    next,
     throwOnError = false,
     timeoutMs,
     ...init
@@ -30,10 +23,9 @@ export async function fetchJson<T>(
     : undefined;
 
   try {
-    const requestInit: RequestInit & { next?: NextFetchOptions } = {
+    const requestInit: RequestInit = {
       ...init,
       cache: noStore ? "no-store" : init.cache,
-      next: noStore ? undefined : next,
       signal: init.signal ?? controller?.signal,
     };
 

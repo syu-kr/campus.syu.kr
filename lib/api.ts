@@ -13,6 +13,7 @@ import {
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
+import { toCafeteriaMenus, type CafeteriaMenuDay } from "./cafeteria";
 import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
 import { matchesPhoneQuery } from "./phone";
@@ -35,29 +36,25 @@ export interface AnnouncementPageResponse {
 export async function fetchAnnouncements(
   category?: AnnouncementCategory,
 ): Promise<Announcement[]> {
-  try {
-    const params = new URLSearchParams({
-      category: category || "all",
-      page: "1",
-      limit: "100",
-    });
-    const response = await fetchJson<AnnouncementPageResponse>(
-      `/api/announcements?${params}`,
-      {
-        fallback: {
-          items: [],
-          total: 0,
-          page: 1,
-          limit: 100,
-          totalPages: 1,
-        },
-        throwOnError: true,
+  const params = new URLSearchParams({
+    category: category || "all",
+    page: "1",
+    limit: "100",
+  });
+  const response = await fetchJson<AnnouncementPageResponse>(
+    `/api/announcements?${params}`,
+    {
+      fallback: {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 100,
+        totalPages: 1,
       },
-    );
-    return response.items;
-  } catch (error) {
-    throw error;
-  }
+      throwOnError: true,
+    },
+  );
+  return response.items;
 }
 
 export async function fetchAnnouncementPage({
@@ -95,16 +92,11 @@ export async function fetchAnnouncementPage({
 }
 
 export async function fetchAnnouncementSummary(): Promise<Announcement[]> {
-  try {
-    return await fetchJson<Announcement[]>("/api/announcements/summary", {
-      fallback: [],
-      noStore: false,
-      next: { revalidate: 300 },
-      throwOnError: true,
-    });
-  } catch (error) {
-    throw error;
-  }
+  return fetchJson<Announcement[]>("/api/announcements/summary", {
+    fallback: [],
+    noStore: false,
+    throwOnError: true,
+  });
 }
 
 export async function fetchCompetitionPage({
@@ -148,85 +140,22 @@ export async function fetchCompetitionPage({
 export async function fetchCafeteriaMenu(
   date?: string,
 ): Promise<CafeteriaMenu[]> {
-  try {
-    const data = await fetchJson<
-      Array<{ menus?: unknown[] }> | { menus?: unknown[] }
-    >("/api/crawl-data/cafeteria-menu.json", {
-      fallback: [],
-      throwOnError: true,
-    });
-
-    // 데이터 구조 확인
-    let cafeteriaData: { menus?: unknown[] };
-    if (Array.isArray(data) && data.length > 0) {
-      cafeteriaData = data[0];
-    } else if (data && typeof data === "object" && "menus" in data) {
-      cafeteriaData = data;
-    } else {
-      throw new Error("Invalid cafeteria data structure");
-    }
-
-    if (!cafeteriaData?.menus || !Array.isArray(cafeteriaData.menus)) {
-      throw new Error("No cafeteria data");
-    }
-
-    // 크롤러 데이터를 CafeteriaMenu 형식으로 변환
-    const menus: CafeteriaMenu[] = [];
-    const menuDays = cafeteriaData.menus as Array<{
-      date: string;
-      day: string;
-      meals?: {
-        breakfast?: string[];
-        lunch?: string[] | { a_corner?: string[]; b_corner?: string[] };
-        dinner?: string[];
-      };
-    }>;
-
-    menuDays.forEach((menu, idx) => {
-      // 중식 처리 - A/B 코너가 있는 경우와 없는 경우 모두 처리
-      const lunch: {
-        a?: Array<{ name: string }>;
-        b?: Array<{ name: string }>;
-      } = {};
-      if (menu.meals?.lunch) {
-        if (Array.isArray(menu.meals.lunch)) {
-          lunch.a = menu.meals.lunch.map((name) => ({ name }));
-        } else if (typeof menu.meals.lunch === "object") {
-          // A/B 코너가 분리된 경우
-          const aCorner =
-            (menu.meals.lunch as { a_corner?: string[] }).a_corner || [];
-          const bCorner =
-            (menu.meals.lunch as { b_corner?: string[] }).b_corner || [];
-          lunch.a = aCorner.map((name) => ({ name }));
-          lunch.b = bCorner.map((name) => ({ name }));
-        }
-      }
-
-      const breakfast =
-        menu.meals?.breakfast?.map((name) => ({
-          name,
-        })) || [];
-      const dinner = menu.meals?.dinner?.map((name) => ({ name })) || [];
-
-      menus.push({
-        id: `cafeteria-${menu.date}-${idx}`,
-        date: menu.date,
-        dayOfWeek: menu.day || "",
-        breakfast: breakfast,
-        lunch: lunch,
-        dinner: dinner,
-        location: "SU-Lounge",
-      });
-    });
-
-    if (date) {
-      return menus.filter((m) => m.date === date);
-    }
-
-    return menus;
-  } catch (error) {
-    throw error;
+  const data = await fetchJson<
+    Array<{ menus?: CafeteriaMenuDay[] }> | { menus?: CafeteriaMenuDay[] }
+  >("/api/crawl-data/cafeteria-menu.json", {
+    fallback: [],
+    throwOnError: true,
+  });
+  const cafeteriaData = Array.isArray(data) ? data[0] : data;
+  const hasSource = Array.isArray(data)
+    ? data.length > 0
+    : data && typeof data === "object" && "menus" in data;
+  if (!hasSource) {
+    throw new Error("Invalid cafeteria data structure");
   }
+  if (!Array.isArray(cafeteriaData?.menus)) throw new Error("No cafeteria data");
+  const menus = toCafeteriaMenus(cafeteriaData.menus);
+  return date ? menus.filter((menu) => menu.date === date) : menus;
 }
 
 // 공휴일 API - 검증된 Pages 데이터 사용
@@ -240,19 +169,15 @@ export async function fetchPublicHolidays() {
 export async function fetchAcademicSchedules(
   category?: string,
 ): Promise<AcademicSchedule[]> {
-  try {
-    const parsedSchedules = await fetchJson<AcademicSchedule[]>(
-      "/data/schedules-major.json",
-      { fallback: [], throwOnError: true },
-    );
+  const parsedSchedules = await fetchJson<AcademicSchedule[]>(
+    "/data/schedules-major.json",
+    { fallback: [], throwOnError: true },
+  );
 
-    if (category) {
-      return parsedSchedules.filter((s) => s.category === category);
-    }
-    return parsedSchedules;
-  } catch (error) {
-    throw error;
+  if (category) {
+    return parsedSchedules.filter((s) => s.category === category);
   }
+  return parsedSchedules;
 }
 
 // 셔틀버스 API - 크롤링된 실제 데이터 사용
@@ -285,17 +210,20 @@ export interface SearchAllResponse {
 // 검색 API - 일정, 공지, 연락처 미리보기
 export async function searchAll(
   query: string,
+  signal?: AbortSignal,
 ): Promise<SearchAllResponse> {
+  signal?.throwIfAborted();
   const normalizedQuery = query.trim();
   if (!normalizedQuery) return { items: [], failedSources: [] };
 
   const lowerQuery = normalizedQuery.toLowerCase();
 
   const settledResults = await Promise.allSettled([
-    searchSchedules(lowerQuery),
-    searchAnnouncementApi(lowerQuery),
-    searchPhoneNumberSource(normalizedQuery),
+    searchSchedules(lowerQuery, signal),
+    searchAnnouncementApi(lowerQuery, signal),
+    searchPhoneNumberSource(normalizedQuery, signal),
   ]);
+  signal?.throwIfAborted();
 
   const results: SearchAllResult[][] = [];
   const failedSources: SearchSource[] = [];
@@ -328,10 +256,10 @@ type SearchAllResult =
   | AcademicSchedule
   | PhoneNumber;
 
-async function searchSchedules(query: string): Promise<AcademicSchedule[]> {
+async function searchSchedules(query: string, signal?: AbortSignal): Promise<AcademicSchedule[]> {
   const schedules = await fetchJson<AcademicSchedule[]>(
     "/data/schedules-major.json",
-    { fallback: [], throwOnError: true },
+    { fallback: [], throwOnError: true, signal },
   );
 
   return schedules.filter(
@@ -341,12 +269,13 @@ async function searchSchedules(query: string): Promise<AcademicSchedule[]> {
   );
 }
 
-async function searchAnnouncementApi(query: string): Promise<Announcement[]> {
+async function searchAnnouncementApi(query: string, signal?: AbortSignal): Promise<Announcement[]> {
   const response = await fetchAnnouncementPage({
     category: "all",
     query,
     page: 1,
     limit: 60,
+    signal,
   });
 
   return response.items;
@@ -354,14 +283,15 @@ async function searchAnnouncementApi(query: string): Promise<Announcement[]> {
 
 async function searchPhoneNumberSource(
   rawQuery: string,
+  signal?: AbortSignal,
 ): Promise<PhoneNumber[]> {
   const phoneNumbers = await fetchJson<PhoneNumber[]>(
     "/data/phone-numbers.json",
     {
       fallback: [],
       noStore: false,
-      next: { revalidate: 604800 },
       throwOnError: true,
+      signal,
     },
   );
 
@@ -398,7 +328,6 @@ export async function fetchCampusTips(): Promise<CampusTip[]> {
   return fetchJson<CampusTip[]>("/data/campus-tips.json", {
     fallback: [],
     noStore: false,
-    next: { revalidate: 604800 },
     throwOnError: true,
   });
 }

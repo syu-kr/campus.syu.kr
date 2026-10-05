@@ -3,25 +3,27 @@ import { Timestamp } from "firebase-admin/firestore";
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 
-const mocks = vi.hoisted(() => ({ records: new Map<string, Record<string, unknown>>(), verify: vi.fn(), getUser: vi.fn(), limiter: vi.fn() }));
+const mocks = vi.hoisted(() => ({ records: new Map<string, Record<string, unknown>>(), verify: vi.fn(), getUser: vi.fn(), limiter: vi.fn(), readSession: vi.fn(), pageHeaders: vi.fn() }));
+vi.mock("next/headers", () => ({ headers: mocks.pageHeaders }));
 vi.mock("@/lib/firebaseAdmin", () => ({ initializeFirebaseAdmin: vi.fn() }));
 vi.mock("firebase-admin/auth", () => ({ getAuth: () => ({ verifyIdToken: mocks.verify, getUser: mocks.getUser }) }));
 vi.mock("@/lib/server/firestore", () => ({
   admin: { firestore: { Timestamp } },
   getFirestore: () => ({ collection: (name: string) => ({ doc: (id: string) => ({
     set: async (value: Record<string, unknown>) => { mocks.records.set(`${name}/${id}`, value); },
-    get: async () => ({ data: () => mocks.records.get(`${name}/${id}`) }),
+    get: async () => { mocks.readSession(`${name}/${id}`); return { data: () => mocks.records.get(`${name}/${id}`) }; },
     delete: async () => { mocks.records.delete(`${name}/${id}`); },
   }) }) }),
 }));
 vi.mock("@/lib/server/http", async (importOriginal) => ({ ...await importOriginal<typeof import("@/lib/server/http")>(), enforceRateLimitKey: mocks.limiter }));
 
 import {
-  ROOMMATE_SESSION_COOKIE, enforceRoommateOrigin, enforceRoommateReadLimit, getRoommateOwnerKey, getRoommateSessionExpiry,
+  ROOMMATE_SESSION_COOKIE, enforceRoommateOrigin, enforceRoommateReadLimit, getRoommateOwnerKey, getRoommatePageSession, getRoommateSessionExpiry,
   isRoommateUserValid, issueRoommateSession, normalizeSchoolEmail, requireRoommateSession,
   revokeRoommateSession, requestRoommateEmailLink, roommateErrorResponse, validateRoommateIdentity,
 } from "./roommate-auth";
 import { RoommateError } from "@/lib/roommates";
+import { clearRateLimitBuckets } from "@/lib/rate-limit";
 import { POST as issueSession } from "@/app/api/roommates/auth/session/route";
 import { POST as sendLink } from "@/app/api/roommates/auth/request-link/route";
 import { POST as logout } from "@/app/api/roommates/auth/logout/route";
@@ -42,13 +44,29 @@ beforeEach(() => {
   vi.stubEnv("ROOMMATES_ENABLED", "true"); vi.stubEnv("ROOMMATES_EMAIL_ENABLED", "true");
   vi.stubEnv("ROOMMATES_OWNER_KEY_SECRET", "test-only-owner-secret-at-least-32-characters");
   vi.stubEnv("NEXT_PUBLIC_FIREBASE_PROJECT_ID", "test-project"); vi.stubEnv("NEXT_PUBLIC_FIREBASE_API_KEY", "public-test-key");
-  mocks.records.clear(); mocks.verify.mockReset(); mocks.getUser.mockReset(); mocks.limiter.mockReset();
+  clearRateLimitBuckets();
+  mocks.records.clear(); mocks.verify.mockReset(); mocks.getUser.mockReset(); mocks.limiter.mockReset(); mocks.readSession.mockReset(); mocks.pageHeaders.mockReset();
   mocks.verify.mockResolvedValue(identity());
   mocks.getUser.mockResolvedValue({ uid: "student-uid", email: "student@syuin.ac.kr", emailVerified: true, disabled: false });
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 describe("roommate school identity and fixed sessions", () => {
+  it("caps invalid session lookups across API and verification-page requests before reading Firestore", async () => {
+    const token = "a".repeat(43);
+    for (let index = 0; index < 120; index++) {
+      await expect(requireRoommateSession(request(token))).rejects.toMatchObject({ status: 401 });
+    }
+    expect(mocks.readSession).toHaveBeenCalledTimes(120);
+    mocks.pageHeaders.mockResolvedValue(request(token).headers);
+    await expect(getRoommatePageSession()).rejects.toMatchObject({ status: 429, code: "RATE_LIMITED" });
+    await expect(requireRoommateSession(request(token, "posts"))).rejects.toMatchObject({ status: 429 });
+    expect(mocks.readSession).toHaveBeenCalledTimes(120);
+    expect(mocks.getUser).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(60_000);
+    await expect(requireRoommateSession(request(token))).rejects.toMatchObject({ status: 401 });
+    expect(mocks.readSession).toHaveBeenCalledTimes(121);
+  });
   it("starts independent owner and IP read limits together and waits for both", async () => {
     const resolves: (() => void)[] = [];
     mocks.limiter.mockImplementation(() => new Promise<void>((done) => { resolves.push(done); }));

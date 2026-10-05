@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { LocaleProvider } from "./LocaleProvider";
 import { NotificationPermissionPrompt } from "./NotificationPermissionPrompt";
+import { FooterContactButton } from "./FooterContactButton";
 import { dictionaries, type Locale } from "@/lib/i18n";
 import {
   enablePushNotifications,
@@ -51,6 +52,33 @@ describe("NotificationPermissionPrompt", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
     fireEvent.scroll(window);
     expect(screen.getByRole("heading")).toBeInTheDocument();
+  });
+
+  it.each(["ko", "en"] as const)("waits for the completed %s footer click before inserting an inline prompt", (locale) => {
+    const dictionary = dictionaries[locale];
+    render(<LocaleProvider locale={locale}>
+      <NotificationPermissionPrompt />
+      <footer><FooterContactButton /></footer>
+    </LocaleProvider>);
+    const contact = screen.getByRole("button", { name: dictionary.footer.contact });
+    fireEvent.pointerDown(contact);
+    expect(screen.queryByRole("heading", { name: dictionary.notificationPrompt.title })).not.toBeInTheDocument();
+    fireEvent.pointerUp(contact);
+    expect(screen.queryByRole("heading", { name: dictionary.notificationPrompt.title })).not.toBeInTheDocument();
+    fireEvent.click(contact);
+    expect(screen.getByRole("dialog", { name: dictionary.footer.contact })).toBeInTheDocument();
+    const prompt = screen.getByRole("region", { name: dictionary.notificationPrompt.title });
+    expect(prompt.className).not.toMatch(/(?:^|\s)(?:\w+:)?fixed(?:\s|$)/);
+    expect(enablePushNotifications).not.toHaveBeenCalled();
+  });
+
+  it("waits for key release before inserting the prompt during keyboard interaction", () => {
+    renderPrompt();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    fireEvent.keyUp(window, { key: "Tab" });
+    expect(screen.getByRole("heading")).toBeInTheDocument();
+    expect(enablePushNotifications).not.toHaveBeenCalled();
   });
 
   it.each(["ko", "en"] as const)(

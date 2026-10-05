@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { toggleTimetableCourse } from "@/lib/timetable-workspace";
 
 import {
   getRepresentativeCourseIds,
@@ -17,6 +18,22 @@ const workspace = {
 };
 
 describe("timetable share contract", () => {
+  it("keeps shared alternatives independent when input IDs collide", () => {
+    const parsed = parseSharedTimetableWorkspace({
+      activeTimetableId: "timetable-2", isCompareMode: true,
+      timetables: [
+        { id: "timetable-2", courseIds: ["course-a"] },
+        { id: "timetable-2", courseIds: ["course-b"] },
+      ],
+    });
+    expect(parsed).not.toBeNull();
+    const edited = toggleTimetableCourse(parsed!, parsed!.activeTimetableId, "course-c");
+    expect(edited.timetables.map((item) => item.courseIds)).toEqual([
+      ["course-a", "course-c"], ["course-b"],
+    ]);
+    expect(parseSharedTimetableWorkspace(toStoredTimetableWorkspace(edited))).toEqual(edited);
+  });
+
   it("requires a verified matching semester before restoring course IDs", () => {
     const current = { year: "2026", semester: "2" };
     expect(isTimetableShareForSemester(current, current)).toBe(true);

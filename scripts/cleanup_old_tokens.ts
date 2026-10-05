@@ -13,29 +13,7 @@ async function cleanupOldTokens() {
 
     console.log("\nFirestore user_devices 오래된 토큰 정리 시작\n");
 
-    let deleted = 0;
-    while (true) {
-      const snapshot = await db
-        .collection("user_devices")
-        .where("last_updated", "<=", cutoff)
-        .limit(450)
-        .get();
-
-      if (snapshot.empty) {
-        break;
-      }
-
-      const batch = db.batch();
-      snapshot.docs.forEach((doc, index) => {
-        console.log(
-          `[${deleted + index + 1}] 삭제 예정: ${doc.id}`,
-        );
-        batch.delete(doc.ref);
-      });
-
-      await batch.commit();
-      deleted += snapshot.size;
-    }
+    const deleted = await deleteOldTokens(db, cutoff);
 
     if (deleted === 0) {
       console.log(`${cutoffDays}일 이상 갱신되지 않은 토큰이 없습니다.\n`);
@@ -52,6 +30,30 @@ async function cleanupOldTokens() {
   }
 }
 
+export async function deleteOldTokens(
+  db: admin.firestore.Firestore,
+  cutoff: admin.firestore.Timestamp,
+): Promise<number> {
+  let deleted = 0;
+  while (true) {
+    const snapshot = await db
+      .collection("user_devices")
+      .where("last_updated", "<=", cutoff)
+      .limit(450)
+      .get();
+    if (snapshot.empty) return deleted;
+
+    const batch = db.batch();
+    snapshot.docs.forEach((doc, index) => {
+      console.log(`[${deleted + index + 1}] 삭제 예정: ${doc.id}`);
+      // A concurrent subscription refresh must abort this batch, not remove the token.
+      batch.delete(doc.ref, { lastUpdateTime: doc.updateTime });
+    });
+    await batch.commit();
+    deleted += snapshot.size;
+  }
+}
+
 function readCutoffDays(value: string | undefined) {
   const days = Number(value || 90);
   if (!Number.isInteger(days) || days < 7 || days > 3650) {
@@ -60,4 +62,6 @@ function readCutoffDays(value: string | undefined) {
   return days;
 }
 
-cleanupOldTokens();
+if (typeof require !== "undefined" && require.main === module) {
+  cleanupOldTokens();
+}

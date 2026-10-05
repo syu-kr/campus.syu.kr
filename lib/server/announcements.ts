@@ -21,6 +21,7 @@ export interface AnnouncementPage {
 
 interface AnnouncementSource {
   items: Announcement[];
+  categorySortedItems: Announcement[];
   fallback: boolean;
   latestDate: string;
 }
@@ -42,6 +43,8 @@ const CATEGORY_ORDER: AnnouncementCategory[] = [
   "sw",
 ];
 const ANNOUNCEMENT_CACHE_TTL_MS = 60 * 1000;
+const announcementDates = new WeakMap<Announcement, number>();
+let mergedAnnouncements: { sources: AnnouncementSource[]; items: Announcement[] } | undefined;
 const announcementCache = new Map<
   AnnouncementCategory,
   {
@@ -66,17 +69,14 @@ export async function getAnnouncementPage({
     categories.map((sourceCategory) => readAnnouncements(sourceCategory)),
   );
 
-  const filtered = sourceItems
-    .flatMap((source) => source.items)
-    .filter((announcement) => {
-      if (!normalizedQuery) return true;
-      return (
+  const ordered = orderedAnnouncements(sourceItems, category === "all");
+  const filtered = normalizedQuery
+    ? ordered.filter((announcement) => (
         announcement.title.toLowerCase().includes(normalizedQuery) ||
         announcement.author.toLowerCase().includes(normalizedQuery) ||
         announcement.content?.toLowerCase().includes(normalizedQuery)
-      );
-    })
-    .sort(category === "all" ? sortAnnouncementsByDate : sortAnnouncements);
+      ))
+    : ordered;
 
   const start = (normalizedPage - 1) * normalizedLimit;
   const items = await attachAnnouncementAiSummaries(
@@ -103,10 +103,7 @@ export async function getAnnouncementSummary(limit = 12) {
   );
 
   const items = await attachAnnouncementAiSummaries(
-    sourceItems
-      .flatMap((source) => source.items)
-      .sort(sortAnnouncementsByDate)
-      .slice(0, limit),
+    orderedAnnouncements(sourceItems, true).slice(0, limit),
   );
 
   return items.map((item) => ({
@@ -155,18 +152,29 @@ async function readAnnouncementsFromSource(
 ): Promise<AnnouncementSource> {
   const fileName = SOURCE_BY_CATEGORY[category];
   const snapshot = await readDailyCrawlDataSnapshot<Announcement[]>(fileName);
-
+  const items = snapshot.data.map((item) => {
+    const announcement = { ...item, category: item.category || category };
+    announcementDates.set(announcement, parseAnnouncementDate(announcement.date));
+    return announcement;
+  });
   return {
-    items: snapshot.data.map((item) => ({
-      ...item,
-      category: item.category || category,
-    })),
+    items,
+    categorySortedItems: [...items].sort(sortAnnouncements),
     fallback: snapshot.source === "bundled-fallback",
     latestDate: snapshot.data.reduce(
       (latest, item) => (item.date > latest ? item.date : latest),
       "",
     ),
   };
+}
+
+function orderedAnnouncements(sources: AnnouncementSource[], all: boolean) {
+  if (!all) return sources[0].categorySortedItems;
+  const previousSources = mergedAnnouncements?.sources;
+  if (!previousSources || sources.some((source, index) => source !== previousSources[index])) {
+    mergedAnnouncements = { sources, items: sources.flatMap((source) => source.items).sort(sortAnnouncementsByDate) };
+  }
+  return mergedAnnouncements!.items;
 }
 
 function sortAnnouncements(a: Announcement, b: Announcement) {
@@ -178,7 +186,7 @@ function sortAnnouncements(a: Announcement, b: Announcement) {
 }
 
 function sortAnnouncementsByDate(a: Announcement, b: Announcement) {
-  return parseAnnouncementDate(b.date) - parseAnnouncementDate(a.date);
+  return announcementDates.get(b)! - announcementDates.get(a)!;
 }
 
 function parseAnnouncementDate(date: string) {

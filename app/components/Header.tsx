@@ -5,10 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { useQuery } from "@tanstack/react-query";
 import { WeatherWidget } from "./WeatherWidget";
 import { WeatherModal } from "./WeatherModal";
 import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
-import { fetchWeather, type WeatherData } from "@/lib/weather";
+import { fetchWeather, WEATHER_REFRESH_INTERVAL_MS } from "@/lib/weather";
 import { localizePath } from "@/lib/i18n";
 import { getParentPageHref } from "@/lib/page-navigation";
 import { getRoommateText } from "@/lib/i18n/roommates";
@@ -33,7 +34,21 @@ function HeaderComponent() {
     "/campus/roommates/verify": getRoommateText(locale).verifyTitle,
   };
   const [weatherModalOpen, setWeatherModalOpen] = useState(false);
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const { data: weather, isPending, isError, refetch } = useQuery({
+    queryKey: ["weather"],
+    queryFn: fetchWeather,
+    staleTime: WEATHER_REFRESH_INTERVAL_MS,
+    refetchInterval: WEATHER_REFRESH_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+    retry: false,
+  });
+  const weatherData = weather
+    ? {
+        ...weather,
+        stale: weather.stale || isError,
+        sourceStatus: isError ? "error" as const : weather.sourceStatus,
+      }
+    : null;
   const navItems = [
     {
       label: dictionary.navigation.academic,
@@ -52,10 +67,9 @@ function HeaderComponent() {
     },
   ];
 
-  const handleWeatherClick = async () => {
-    const data = await fetchWeather();
-    setWeatherData(data);
-    setWeatherModalOpen(true);
+  const handleWeatherClick = () => setWeatherModalOpen(true);
+  const retryWeather = () => {
+    void refetch();
   };
 
   const isActive = (href: string) => {
@@ -124,7 +138,13 @@ function HeaderComponent() {
           </div>
 
           <div className="md:hidden flex shrink-0 items-center gap-2">
-            <WeatherWidget onClick={handleWeatherClick} />
+            <WeatherWidget
+              weather={weatherData}
+              loading={isPending}
+              failed={isError}
+              onClick={handleWeatherClick}
+              onRetry={retryWeather}
+            />
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -152,7 +172,13 @@ function HeaderComponent() {
               ))}
             </nav>
             <div className="my-2 w-px h-6 bg-neutral-200" />
-            <WeatherWidget onClick={handleWeatherClick} />
+            <WeatherWidget
+              weather={weatherData}
+              loading={isPending}
+              failed={isError}
+              onClick={handleWeatherClick}
+              onRetry={retryWeather}
+            />
           </div>
         </div>
       </header>
@@ -161,6 +187,7 @@ function HeaderComponent() {
         isOpen={weatherModalOpen}
         weather={weatherData}
         onClose={() => setWeatherModalOpen(false)}
+        onRetry={retryWeather}
       />
     </>
   );

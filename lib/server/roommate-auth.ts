@@ -1,5 +1,5 @@
 import { createHash, createHmac, randomBytes } from "node:crypto";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type { DecodedIdToken, UserRecord } from "firebase-admin/auth";
 import { getAuth } from "firebase-admin/auth";
@@ -7,7 +7,7 @@ import { initializeFirebaseAdmin } from "@/lib/firebaseAdmin";
 import { areRoommatesEnabled, ROOMMATE_SESSION_COOKIE, RoommateError } from "@/lib/roommates";
 import { getRateLimitKey } from "@/lib/rate-limit";
 import { admin, getFirestore } from "@/lib/server/firestore";
-import { ApiError, enforceRateLimitKey } from "@/lib/server/http";
+import { ApiError, enforceRateLimit, enforceRateLimitKey } from "@/lib/server/http";
 
 export { ROOMMATE_SESSION_COOKIE } from "@/lib/roommates";
 const DAY_MS = 86_400_000;
@@ -200,13 +200,15 @@ async function readRoommateSession(token: string): Promise<RoommateSession> {
   return session;
 }
 
-export function requireRoommateSession(req: Request) {
+export async function requireRoommateSession(req: Request) {
+  requireRoommatesEnabled();
+  // ponytail: per-instance pre-auth cap; owner and shared read limits still follow verification.
+  await enforceRateLimit(req, "roommates:session:access", { limit: 120, windowMs: 60_000, persistent: false });
   return readRoommateSession(readRequestToken(req));
 }
 
 export async function getRoommatePageSession() {
-  const store = await cookies();
-  const session = await readRoommateSession(store.get(ROOMMATE_SESSION_COOKIE)?.value ?? "");
+  const session = await requireRoommateSession(new Request("https://campus.syu.kr", { headers: await headers() }));
   return { expiresAt: session.expiresAt, sessionTag: session.sessionTag };
 }
 

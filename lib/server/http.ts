@@ -48,15 +48,6 @@ export function apiErrorResponse(error: unknown, fallbackMessage: string) {
   return NextResponse.json({ error: fallbackMessage }, { status: 500 });
 }
 
-export function apiServerErrorResponse(error: unknown, fallbackMessage: string) {
-  if (error instanceof ApiError) {
-    return apiErrorResponse(error, fallbackMessage);
-  }
-
-  console.error(`[API] ${fallbackMessage}`, error);
-  return NextResponse.json({ error: fallbackMessage }, { status: 500 });
-}
-
 export async function enforceRateLimit(
   req: Request,
   scope: string,
@@ -161,15 +152,26 @@ export async function readJsonBody<T = unknown>(
     );
   }
 
-  const rawBody = await req.text();
-  if (Buffer.byteLength(rawBody, "utf8") > maxBytes) {
-    throw new ApiError(
-      "요청 본문이 너무 큽니다.",
-      413,
-      undefined,
-      "REQUEST_TOO_LARGE",
-    );
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  const reader = req.body?.getReader();
+  if (reader) {
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > maxBytes) {
+          await reader.cancel().catch(() => {});
+          throw new ApiError("요청 본문이 너무 큽니다.", 413, undefined, "REQUEST_TOO_LARGE");
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
   }
+  const rawBody = new TextDecoder().decode(Buffer.concat(chunks, received));
 
   try {
     return JSON.parse(rawBody) as T;

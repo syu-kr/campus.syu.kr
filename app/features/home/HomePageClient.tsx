@@ -201,7 +201,7 @@ export function HomePageClient({
     refetch: refetchSearch,
   } = useQuery({
     queryKey: ["search", searchQuery],
-    queryFn: () => searchAll(searchQuery),
+    queryFn: ({ signal }) => searchAll(searchQuery, signal),
     enabled: showSearchResults && searchQuery.trim().length > 0,
     staleTime: FIVE_MINUTES,
     gcTime: TEN_MINUTES,

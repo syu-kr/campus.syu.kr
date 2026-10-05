@@ -1,8 +1,9 @@
-import { Timestamp, type Firestore } from "firebase-admin/firestore";
+import { AggregateField, Timestamp, type Firestore } from "firebase-admin/firestore";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { mutateAdminPost, mutateAdminReport, readAdminPostMutation, readAdminReportMutation } from "./roommate-admin";
+import { listAdminPosts, mutateAdminPost, mutateAdminReport, readAdminPostMutation, readAdminReportMutation } from "./roommate-admin";
 import { createRoommatePost, getMyRoommatePost, mutateRoommatePost } from "./roommate-posts";
+import firestoreIndexes from "../../firestore.indexes.json";
 
 vi.mock("@/lib/server/firestore", () => ({ admin: { firestore: { Timestamp } }, getFirestore: () => db }));
 
@@ -29,6 +30,33 @@ beforeEach(() => {
 });
 
 describe("roommate administrator transactions", () => {
+  it("declares the fields needed by the daily mail sum index", () => {
+    expect(firestoreIndexes.indexes).toContainEqual({
+      collectionGroup: "api_rate_limits",
+      queryScope: "COLLECTION",
+      fields: [
+        { fieldPath: "metric", order: "ASCENDING" },
+        { fieldPath: "window_start", order: "ASCENDING" },
+        { fieldPath: "count", order: "ASCENDING" },
+      ],
+    });
+  });
+  it("aggregates the complete day's mail count without fetching or truncating rate-limit documents", async () => {
+    const counts = Array.from({ length: 1005 }, () => 2);
+    const mail = {
+      where: vi.fn().mockReturnThis(),
+      aggregate: vi.fn(() => ({ get: async () => ({ data: () => ({ count: counts.reduce((sum, count) => sum + count, 0) }) }) })),
+    };
+    const query = {
+      where: vi.fn().mockReturnThis(), orderBy: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(),
+      get: async () => ({ docs: [] }), count: () => ({ get: async () => ({ data: () => ({ count: 0 }) }) }),
+    };
+    const listDb = { collection: (name: string) => name === "api_rate_limits" ? mail : query } as unknown as Firestore;
+    const page = await listAdminPosts(listDb, new URLSearchParams(), now);
+    expect(mail.where.mock.calls).toEqual([["metric", "==", "roommate_mail_requests"], ["window_start", "==", "2026-10-04"]]);
+    expect(mail.aggregate).toHaveBeenCalledWith({ count: AggregateField.sum("count") });
+    expect(page.mailRequests).toEqual({ dateUtc: "2026-10-04", count: 2010, partial: false });
+  });
   it("hides a post, releases its active pointer and applies a 30-day hold atomically without extending post retention", async () => {
     await mutate("hide", { reason: "스팸" });
     expect(records.get("roommate_posts/post-fixture")).toMatchObject({ status: "hidden", version: 2, expires_at: time(40) });

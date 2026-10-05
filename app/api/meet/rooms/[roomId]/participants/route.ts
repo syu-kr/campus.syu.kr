@@ -4,7 +4,7 @@ import { buildMeetSlots, filterValidAvailability } from "@/lib/meet";
 import { admin, getFirestore, nowTimestamp } from "@/lib/server/firestore";
 import {
   ApiError,
-  apiServerErrorResponse,
+  apiErrorResponse,
   enforceSameOrigin,
   enforceRateLimit,
   readJsonBody,
@@ -188,7 +188,7 @@ export async function PUT(req: NextRequest, { params }: RouteContext) {
     const rateLimited = rateLimitResponse(error);
     if (rateLimited) return rateLimited;
 
-    return apiServerErrorResponse(error, "참여 정보를 저장하지 못했습니다");
+    return apiErrorResponse(error, "참여 정보를 저장하지 못했습니다");
   }
 }
 

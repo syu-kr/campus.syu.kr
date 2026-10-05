@@ -38,6 +38,11 @@ declare global {
         type: string,
         handler: () => void,
       ) => void;
+      removeListener: (
+        target: KakaoMarker,
+        type: string,
+        handler: () => void,
+      ) => void;
     };
   }
 

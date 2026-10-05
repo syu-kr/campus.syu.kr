@@ -102,7 +102,7 @@ async function cleanupMeetRooms(
   };
 }
 
-async function deleteExpiredDocuments(
+export async function deleteExpiredDocuments(
   db: admin.firestore.Firestore,
   collectionName: string,
   now: admin.firestore.Timestamp,
@@ -122,7 +122,8 @@ async function deleteExpiredDocuments(
 
     const batch = db.batch();
     for (const document of snapshot.docs) {
-      batch.delete(document.ref);
+      // Reused rate-limit and lock documents may be renewed after the expiry query.
+      batch.delete(document.ref, { lastUpdateTime: document.updateTime });
     }
 
     await batch.commit();
@@ -153,4 +154,6 @@ async function deleteParticipants(
   }
 }
 
-cleanupExpiredFirestoreDocuments();
+if (typeof require !== "undefined" && require.main === module) {
+  cleanupExpiredFirestoreDocuments();
+}

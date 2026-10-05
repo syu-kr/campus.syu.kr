@@ -4,7 +4,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fetchAnnouncementDetailContent, loadLocalEnvFiles } from "./generate_announcement_ai_summaries.mjs";
 
 const execFileAsync = promisify(execFile);
 const SCRIPT_PATH = path.resolve(
@@ -23,11 +24,76 @@ const SOURCE_FILES = [
 const temporaryDirectories = [];
 
 afterEach(async () => {
+  vi.unstubAllGlobals();
   await Promise.all(
     temporaryDirectories.splice(0).map((directory) =>
       rm(directory, { recursive: true, force: true }),
     ),
   );
+});
+
+describe("announcement local environment", () => {
+  it("uses standard env syntax, existing exports and local-file precedence within the whitelist", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "syu-campus-announcement-ai-"));
+    temporaryDirectories.push(directory);
+    await writeFile(path.join(directory, ".env.local"), [
+      "# OPENAI_API_KEY=commented",
+      'export OPENAI_API_KEY="fixture#value" # inline comment',
+      "ANNOUNCEMENT_AI_ENABLED=false # disabled",
+      "ANNOUNCEMENT_AI_REFRESH_SINCE='2026-10-01\n'",
+      "UNRELATED_SCRIPT_ENV=untrusted",
+      "GITHUB_STEP_SUMMARY=untrusted-write-path",
+    ].join("\r\n"));
+    await writeFile(path.join(directory, ".env"), "OPENAI_API_KEY=fallback\nANNOUNCEMENT_AI_ENABLED=true\nANNOUNCEMENT_AI_LIMIT=2");
+    const environment = { ANNOUNCEMENT_AI_LIMIT: "7" };
+    loadLocalEnvFiles(directory, environment);
+    expect(environment).toEqual({
+      OPENAI_API_KEY: "fixture#value", ANNOUNCEMENT_AI_ENABLED: "false",
+      ANNOUNCEMENT_AI_REFRESH_SINCE: "2026-10-01\n", ANNOUNCEMENT_AI_LIMIT: "7",
+    });
+  });
+});
+
+describe("school announcement detail redirects", () => {
+  const content = "학교 공지사항 본문입니다. ".repeat(12).trim();
+  const html = () => new Response(`<article><p>${content}</p></article>`, {
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
+  const redirect = (location) => new Response(null, { status: 302, headers: { location } });
+
+  it("keeps relative school redirects and HTTP to HTTPS upgrades within one timeout", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(redirect("https://www.syu.ac.kr/notice/1"))
+      .mockResolvedValueOnce(redirect("../notice/2"))
+      .mockResolvedValueOnce(html());
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await fetchAnnouncementDetailContent("http://www.syu.ac.kr/notice/1", 1000)).toBe(content);
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "http://www.syu.ac.kr/notice/1", "https://www.syu.ac.kr/notice/1", "https://www.syu.ac.kr/notice/2",
+    ]);
+    const options = fetchMock.mock.calls.map(([, option]) => option);
+    expect(options.every((option) => option.redirect === "manual" && option.signal === options[0].signal)).toBe(true);
+  });
+
+  it.each(["https://external.example/notice", "https://syu.ac.kr.external.example/notice", "https://user:password@www.syu.ac.kr/notice", "https://www.syu.ac.kr:8443/notice"])(
+    "blocks disallowed hop %s before requesting it", async (target) => {
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      const fetchMock = vi.fn().mockResolvedValueOnce(redirect("/notice/2")).mockResolvedValueOnce(redirect(target));
+      vi.stubGlobal("fetch", fetchMock);
+      expect(await fetchAnnouncementDetailContent("https://www.syu.ac.kr/notice/1", 1000)).toBeNull();
+      expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+        "https://www.syu.ac.kr/notice/1", "https://www.syu.ac.kr/notice/2",
+      ]);
+    },
+  );
+
+  it("bounds school redirect loops", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const fetchMock = vi.fn().mockImplementation(async () => redirect("/notice/loop"));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await fetchAnnouncementDetailContent("https://www.syu.ac.kr/notice/1", 1000)).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+  });
 });
 
 async function runGenerator(overrides, fixtures = {}) {
@@ -187,3 +253,4 @@ describe("announcement AI metadata artifact", () => {
     );
   });
 });
+// @vitest-environment node

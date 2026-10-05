@@ -284,7 +284,7 @@ def discover_course_guide_department_names(
     session: requests.Session,
     course_guide_url: str,
 ) -> List[str]:
-    soup = safe_request_soup(session, course_guide_url)
+    soup = request_soup(session, course_guide_url)
     if not soup:
         return []
 
@@ -321,7 +321,7 @@ def discover_college_page_urls(
     course_guide_url: str,
     excluded_urls: set[str],
 ) -> List[str]:
-    soup = safe_request_soup(session, course_guide_url)
+    soup = request_soup(session, course_guide_url)
     if not soup:
         return []
 
@@ -365,7 +365,7 @@ def discover_department_sites_from_college_pages(
     seen_urls = set()
 
     for college_url in college_page_urls:
-        soup = safe_request_soup(session, college_url)
+        soup = request_soup(session, college_url)
         if not soup:
             continue
 
@@ -438,7 +438,7 @@ def discover_notice_board_url(
     department: DepartmentSite,
     query_notice_urls: set[str],
 ) -> Optional[str]:
-    soup = safe_request_soup(session, department["url"])
+    soup = request_soup(session, department["url"])
     candidates: List[tuple[int, str]] = []
 
     if soup:
@@ -524,7 +524,7 @@ def crawl_department_board(
     )
 
     for request_url in request_urls:
-        soup = safe_request_soup(session, request_url)
+        soup = request_soup(session, request_url)
         if not soup:
             continue
 
@@ -732,17 +732,6 @@ def fix_department_notice_url(
     href = link.get("href") if link else ""
     if href:
         row_data["url"] = normalize_site_url(urljoin(board_base_url, href))
-
-
-def safe_request_soup(
-    session: requests.Session,
-    url: str,
-) -> Optional[BeautifulSoup]:
-    try:
-        return request_soup(session, url)
-    except requests.RequestException as error:
-        print(f"  ⚠️ 요청 중 오류: {url} ({error})")
-        return None
 
 
 def is_competition_notice(item: NoticeItem) -> bool:

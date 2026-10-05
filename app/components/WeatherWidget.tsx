@@ -1,41 +1,21 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
-import { fetchWeather, type WeatherData } from "@/lib/weather";
+import { memo } from "react";
+import type { WeatherData } from "@/lib/weather";
 import { WeatherIcon } from "@/app/components/WeatherIcon";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Button } from "./Button";
 
 interface WeatherWidgetProps {
+  weather: WeatherData | null;
+  loading: boolean;
+  failed: boolean;
   onClick?: () => void;
+  onRetry: () => void;
 }
 
-function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
+function WeatherWidgetComponent({ weather, loading, failed, onClick, onRetry }: WeatherWidgetProps) {
   const dictionary = useDictionary();
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadWeather = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await fetchWeather();
-        if (data) {
-          setWeather(data);
-        } else {
-          setError(dictionary.weather.unavailable);
-        }
-      } catch {
-        setError(dictionary.weather.loadError);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadWeather();
-  }, [dictionary.weather.loadError, dictionary.weather.unavailable]);
 
   if (loading) {
     return (
@@ -46,16 +26,19 @@ function WeatherWidgetComponent({ onClick }: WeatherWidgetProps) {
     );
   }
 
-  if (error || !weather) {
+  if (!weather) {
     return (
-      <div
-        className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm text-neutral-500"
-        role="status"
-        title={error ?? dictionary.weather.unavailable}
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onRetry}
+        className="shrink-0 px-3 text-neutral-500"
+        aria-label={`${dictionary.weather.label}: ${dictionary.home.dashboard.retry}`}
+        title={failed ? dictionary.weather.loadError : dictionary.weather.unavailable}
       >
         <span className="font-semibold">{dictionary.weather.label}</span>
         <span>--</span>
-      </div>
+      </Button>
     );
   }
 
