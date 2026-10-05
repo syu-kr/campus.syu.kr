@@ -51,6 +51,8 @@
 | `npm run test:roommates:integration` | 로컬 Auth/Firestore emulator, 실제 SDK 통합 검사 16개 통과 |
 | Android `--offline lintDebug assembleDebug bundleRelease` | Java 17.0.14/Gradle 8.11.1, 종료 코드 0, BUILD SUCCESSFUL in 30s. 80개 작업 중 7개 실행·73개 up-to-date; debug APK/release AAB 생성, lint 오류 0/경고 33 |
 | 운영 Firestore 인덱스 | `CICAgNi47oMK` READY, 기존 인덱스 보존 및 실제 sum 질의 성공. 확인 시각 `2026-10-05T09:16:32.355Z` |
+| 원격 필수 검사 | [PR #211](https://github.com/syu-kr/campus.syu.kr/pull/211)의 head `31de18abca105847cdaae0252093da4eeb43ff31`에서 Audit and Check, Android TWA, Analyze JavaScript and TypeScript, Dependency Review 모두 SUCCESS. 앱 코드를 바꾸지 않은 후속 문서 보완도 최신 PR 검사로 확인한다. |
+| 원격 CI 환경 | [CI 실행](https://github.com/syu-kr/campus.syu.kr/actions/runs/37290786831)에서 CPython 3.11.16·requests 2.34.2·beautifulsoup4 4.15.0, pip-audit 2.10.1과 npm audit 취약점 0, 전체 111개 파일/716개 테스트·빌드 성공. Android Temurin 17.0.20-1에서 58초·80개 작업 모두 실행 및 release Digital Asset Links 검사 성공 |
 | `npm audit --audit-level=moderate --json --cache .cache/npm-audit` | 종료 코드 0, 취약점 0개; package/lockfile 변경 없음 |
 | production HTTP | 8 KiB 제한 경로에 9 KiB 첫 청크 입력 시 요청 종료 전에 413/REQUEST_TOO_LARGE 확인. KO cookie `/`, EN/KO cookie `/en` 모두 200·올바른 lang·실행 inline script 5개 nonce=CSP, production unsafe-eval 없음. EN cookie `/`는 307 `/en` 후 정상 응답 |
 | production 브라우저 | 한국어/영어 홈 검색, 한국어 연락처 2페이지/검색, 한국어 중첩 문의 모달 Tab/ShiftTab/Escape·입력/스크롤/포커스 복구, 영어 모달/클라이언트 검증·입력 보존·한국어 전환 완료. 추가 알림 카드 수정 후 영어 Footer Contact 첫 마우스 클릭으로 카드와 문의 모달이 함께 정상 표시되고, 모달 종료 후 카드의 static 배치·Footer 앞 DOM 순서 확인. 관찰한 콘솔 error 없음 |
@@ -61,7 +63,7 @@
 
 새 production 서버를 `--hostname 127.0.0.1 --port 3045`로 실행해 같은 주소의 영어 cookie redirect와 영어 hydration을 실제 확인했다. 언어 전환 후에도 검색 query가 유지됐다. 신규 알림 카드가 데스크톱 Footer의 문의 버튼을 가리는 기존 사용성 문제를 추가 수정했다. 첫 입력이 완료된 click/keyup 뒤 표시하고 Footer 앞 흐름에 배치하며, 집중 회귀 13개와 영어 Contact 첫 마우스 클릭의 실제 브라우저 동작을 확인했다. 실제 문의 전송은 하지 않았다.
 
-최신 전체 검사는 Node 22.13.0/npm 10.9.4/Next 16.3.6, Python 3.13.14와 기존 설치 requests 2.32.5/beautifulsoup4 4.14.3으로 실행했다. Android는 JBR Java 17.0.14로 재검증했다. CI의 Node/npm 버전은 맞췄지만 Python 3.11과 requirements의 requests 2.34.2/beautifulsoup4 4.15.0, Temurin Java 17 환경은 원격 CI에서 별도로 확인해야 한다. 원본 PDF 3개 부재로 해당 해시 검사는 생략됐고 Node의 punycode 사용 중단 경고가 남는다. 로컬 production HTTP·브라우저 확인에는 Firebase/Kakao 등의 공개 설정을 placeholder로 지정하고 서버 서비스 계정·메일/AI/Sentry 업로드 자격을 사용하지 않았다. 실제 학생 메일·푸시, 운영 데이터 정리, 키 제한·인증 정책 변경은 실행하지 않았다.
+최신 로컬 전체 검사는 Node 22.13.0/npm 10.9.4/Next 16.3.6, Python 3.13.14와 기존 설치 requests 2.32.5/beautifulsoup4 4.14.3으로 실행했다. Android는 JBR Java 17.0.14로 재검증했고, 원격에서 Python 3.11·requirements의 실제 버전·Temurin Java 17도 위와 같이 검증했다. 원본 PDF 3개 부재로 해당 해시 검사는 생략됐고 Node의 punycode 사용 중단 경고가 남는다. 원격 npm ci에는 jsdom/whatwg-url/undici의 선언된 Node 최소 버전보다 CI Node 22.13.0이 낮다는 EBADENGINE 경고 3개가 있어 위험 목록에 추가했다. 테스트·빌드 성공을 이 버전 조합의 공식 지원으로 해석하지 않는다. 로컬 production HTTP·브라우저 확인에는 Firebase/Kakao 등의 공개 설정을 placeholder로 지정하고 서버 서비스 계정·메일/AI/Sentry 업로드 자격을 사용하지 않았다. 실제 학생 메일·푸시, 운영 데이터 정리, 키 제한·인증 정책 변경은 실행하지 않았다.
 
 Vercel GUI에서 `ADMIN_EMAILS`의 All Environments 등록, `FIREBASE_SERVICE_ACCOUNT`와 `FIREBASE_ADMIN_SDK_KEY`의 Production·Preview 등록은 확인했다. 사용자의 선택에 따라 운영 변수와 로컬 값의 비교는 하지 않았다. 로컬 allowlist의 1개 계정은 운영 Firebase Auth에 등록되어 있고 활성 상태지만 이메일은 미검증 상태였다. 운영 Vercel allowlist가 이 계정과 같은지는 확인하지 않았다. 계정 이메일·UID·비밀 값은 결과 문서에 기록하지 않는다.
 

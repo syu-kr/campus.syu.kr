@@ -36,7 +36,8 @@
 | 항목 | 확인한 범위 / 남은 조건 |
 | --- | --- |
 | 전체 코드 검사 | Node 22.13.0/npm 10.9.4의 `npm run check` 종료 코드 0, 전체 단위 111개 파일/716개 테스트·type-check·production build 통과(`.cache/refactor-prepr-check.log`). 실제 emulator 통합 16개 및 Java 17 Android 빌드 통과. |
-| CI 버전 차이 | 최신 전체 검사에서 CI의 Node 22.13.0/npm 10.9.4를 사용했다. 로컬 Python 3.13.14와 기존 설치 requests 2.32.5/beautifulsoup4 4.14.3은 CI Python 3.11·requirements의 2.34.2/4.15.0과 다르다. Android는 JBR Java 17.0.14로 통과했으나 CI는 Temurin Java 17이다. 원격 CI 환경 검사는 별도로 필요하다. |
+| CI 버전 차이 | 로컬과 동일한 Node 22.13.0/npm 10.9.4에 더해 원격 CI의 CPython 3.11.16·requests 2.34.2·beautifulsoup4 4.15.0과 Temurin Java 17.0.20-1에서 전체 검사·빌드를 확인했다. npm audit와 pip-audit도 알려진 취약점 0개다. [원격 CI](https://github.com/syu-kr/campus.syu.kr/actions/runs/37290786831) |
+| npm engine 선언 경고 | 원격 npm ci에서 EBADENGINE 3개: Node 22 계열에서 jsdom 30.0.1은 22.22.2 이상, whatwg-url 17.1.0은 22.14.0 이상, undici 8.11.2는 22.19.0 이상을 요구해 현재 CI Node 22.13.0과 맞지 않는다. 세 패키지는 lock의 dev:true와 npm explain에서 모두 jsdom 기반 Vitest 테스트용 경로이며 운영 dependency 경로의 불일치는 확인되지 않았다. 전체 716개 테스트와 빌드는 성공했지만 테스트 환경의 선언된 지원 범위 밖의 실행이다. 이 경고와 의존성 버전은 수정 전 main에도 해당한다. 테스트 환경 정리 시 pinned Node 버전과 설치된 패키지의 engines 조건을 함께 맞춘다. |
 | 원본 PDF | 교육과정 데이터 검사는 통과했으나 원본 PDF 3개가 없어 해당 해시 검사를 생략했다. 출처 파일의 무결성 확인은 별도다. |
 | Android | Java 17.0.14/Gradle 8.11.1의 offline lintDebug/assembleDebug/bundleRelease 종료 코드 0, 30초·80개 작업(7 실행/73 up-to-date), debug APK/release AAB 생성·lint 오류 0. lint 경고 33개(아이콘 11, 방향 1, unused attribute 12, unused resource 9)가 남는다. Java 17 재실행에는 앞선 Java 22의 source/target 8 지원 중단 예정 경고가 없었다. 실제 단말의 TWA 연결·서명/스토어 배포를 확인한 것은 아니다. |
 | production 브라우저/HTTP | 로컬 빌드를 실행해 실제 요청 상한·KO/EN HTML nonce·한국어/영어 검색/모달·페이지 이동·언어 전환을 확인했다. 추가 알림 카드 수정 후 영어 Contact 첫 마우스 클릭, 모달 종료 뒤 카드의 static 배치·Footer 앞 DOM 순서도 확인했다. 공개 provider 설정은 placeholder이고 날씨 설정을 비워 실패/재시도 UI를 확인했다. 지도 실 SDK·실 날씨·메일·푸시 연결 검증은 별도다. |
