@@ -104,6 +104,12 @@ def main() -> None:
     from check_notice_snapshot_integrity import main as check_notice_integrity
 
     check_notice_integrity()
+    from check_phone_crawler import main as check_phone
+
+    check_phone()
+    from check_competition_keywords import main as check_competition_keywords
+
+    check_competition_keywords()
     print("Validated notice crawler trust boundary")
 
 

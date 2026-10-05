@@ -98,7 +98,7 @@ def parse_korean_date(date_str):
     """'3월 16일 (월)' 형식의 날짜 파싱"""
     match = re.search(r'(\d{1,2})월\s*(\d{1,2})일\s*\((.)\)', date_str)
     if match:
-        month, day, day_of_week = match.groups()
+        month, day, _ = match.groups()
         today = datetime.now()
         year = today.year
         month_int = int(month)
@@ -106,14 +106,18 @@ def parse_korean_date(date_str):
             year += 1
         elif today.month == 1 and month_int == 12:
             year -= 1
-        date_formatted = f"{year}-{int(month):02d}-{int(day):02d}"
-        return date_formatted, day_of_week
+        try:
+            parsed_date = datetime(year, month_int, int(day)).date()
+        except ValueError:
+            return None, None
+        # 날짜에서 요일을 계산해 원문 헤더의 요일 오타를 보정한다.
+        return parsed_date.isoformat(), KOREAN_DAYS[parsed_date.weekday()]
     return None, None
 
 def parse_menu_items(html_text):
     """메뉴 항목 파싱"""
     items = []
-    for item in re.split(r'<br\s*/?>', html_text):
+    for item in re.split(r'<br\b[^>]*>|</(?:p|div|li)\s*>', html_text, flags=re.IGNORECASE):
         cleaned = re.sub(r'<[^>]*>', '', item)
         cleaned = html.unescape(cleaned)
         cleaned = cleaned.replace('\xa0', ' ')

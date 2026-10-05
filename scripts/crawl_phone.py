@@ -88,9 +88,9 @@ def crawl_phone_numbers():
             
             if department and phone:
                 phones.append(normalize_phone_info({
-                    "department": department.get_text(strip=True),
-                    "phone": phone.get_text(strip=True),
-                    "description": description_elem.get_text(strip=True) if description_elem else None
+                    "department": department.get_text(" ", strip=True),
+                    "phone": phone.get_text(" ", strip=True),
+                    "description": description_elem.get_text(" ", strip=True) if description_elem else None
                 }))
         
         # 테이블 형식이 없으면 테이블에서 추출

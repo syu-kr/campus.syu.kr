@@ -49,6 +49,8 @@ def parse_schedule_dates(year: str, month: str, date_text: str) -> tuple[str, st
         end_date = normalize_schedule_date(year, month, parts[1])
 
         if end_date < start_date:
+            if end_date[:7] == start_date[:7]:
+                raise ValueError(f"Invalid schedule date range: {start_date} ~ {end_date}")
             end_date = bump_date_year(end_date)
 
     if not is_valid_schedule_range({"startDate": start_date, "endDate": end_date}):
@@ -148,7 +150,9 @@ def crawl_schedule():
                     raise RuntimeError("학사일정 항목의 날짜와 내용을 찾지 못했습니다.")
                 
                 date_text = dt_elem.text.strip()
-                event_text = dd_elem.text.strip()
+                for line_break in dd_elem.find_all("br"):
+                    line_break.replace_with(" ")
+                event_text = re.sub(r"\s+", " ", dd_elem.get_text()).strip()
                 
                 if not date_text or not event_text:
                     raise RuntimeError("학사일정 항목의 날짜 또는 내용이 비어 있습니다.")
