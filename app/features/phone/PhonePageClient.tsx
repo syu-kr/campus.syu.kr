@@ -12,6 +12,7 @@ import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { PhoneCallButton } from "@/app/components/PhoneCallButton";
+import { PaginationControls } from "@/app/components/PaginationControls";
 import { Fragment, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
@@ -58,7 +59,6 @@ export default function PhonePageClient({
     setCurrentPage,
     totalPages,
     paginatedItems: paginatedDirectory,
-    pageNumbers,
   } = usePagination(filteredDirectory, ITEMS_PER_PAGE, {
     mobilePageRange: 5,
     desktopPageRange: 5,
@@ -165,42 +165,13 @@ export default function PhonePageClient({
       </div>
 
       {!isLoading && filteredDirectory.length > ITEMS_PER_PAGE && (
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label={text.previousPage}
-            >
-              {text.previous}
-            </button>
-
-            {pageNumbers.map((pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === pageNum
-                    ? "bg-primary-600 text-white"
-                    : "border border-neutral-300 text-neutral-700 hover:bg-neutral-50"
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
-
-            <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-2 rounded-lg border border-neutral-300 text-sm font-medium text-neutral-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-              aria-label={text.nextPage}
-            >
-              {text.next}
-            </button>
-          </div>
+        <div className="flex flex-col items-center gap-4">
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            pageRange={5}
+          />
 
           <p className="text-sm text-neutral-600">
             {currentPage.toLocaleString(numberLocale)} /{" "}

@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import Link from "next/link";
@@ -92,6 +93,8 @@ export default function MeetRoomPage({ params }: PageProps) {
   const [mobileDate, setMobileDate] = useState("");
   const [overwriteConfirmOpen, setOverwriteConfirmOpen] = useState(false);
   const [participantEditToken, setParticipantEditToken] = useState("");
+  const participantTokens = useRef(new Map<string, string>());
+  const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [ownerToken, setOwnerToken] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -155,10 +158,20 @@ export default function MeetRoomPage({ params }: PageProps) {
       return;
     }
 
-    setParticipantEditToken(
-      localStorage.getItem(getParticipantTokenKey(roomId, normalizedNickname)) ||
-        "",
-    );
+    const key = getParticipantTokenKey(roomId, normalizedNickname);
+    const sessionToken = participantTokens.current.get(key);
+    if (sessionToken) {
+      setParticipantEditToken(sessionToken);
+      return;
+    }
+    try {
+      const storedToken = localStorage.getItem(key) || "";
+      setParticipantEditToken(storedToken);
+      if (storedToken) participantTokens.current.set(key, storedToken);
+    } catch {
+      setParticipantEditToken("");
+      setStorageUnavailable(true);
+    }
   }, [nickname, roomId]);
 
   const dates = useMemo(
@@ -348,11 +361,14 @@ export default function MeetRoomPage({ params }: PageProps) {
 
       if (typeof result.editToken === "string") {
         const normalizedNickname = nickname.trim().toLocaleLowerCase("ko-KR");
-        localStorage.setItem(
-          getParticipantTokenKey(roomId, normalizedNickname),
-          result.editToken,
-        );
+        const key = getParticipantTokenKey(roomId, normalizedNickname);
+        participantTokens.current.set(key, result.editToken);
         setParticipantEditToken(result.editToken);
+        try {
+          localStorage.setItem(key, result.editToken);
+        } catch {
+          setStorageUnavailable(true);
+        }
       }
 
       setStatus(text.savedStatus);
@@ -626,6 +642,11 @@ export default function MeetRoomPage({ params }: PageProps) {
               className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700"
             >
               {status}
+            </p>
+          )}
+          {storageUnavailable && (
+            <p role="status" className="text-sm text-amber-700">
+              {text.storageUnavailable}
             </p>
           )}
 

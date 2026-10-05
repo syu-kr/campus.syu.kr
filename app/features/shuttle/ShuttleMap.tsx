@@ -2,6 +2,7 @@
 
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -16,7 +17,7 @@ export interface ShuttleMapHandle {
 
 interface ShuttleMarkerData {
   marker: KakaoMarker;
-  infowindow: KakaoInfoWindow;
+  infowindow: KakaoInfoWindow & { getMap: () => KakaoMap | null };
 }
 
 interface ShuttleMapProps {
@@ -35,7 +36,25 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
     const mapRef = useRef<KakaoMap | null>(null);
     const markersRef = useRef<Map<string, ShuttleMarkerData>>(new Map());
     const currentInfoWindowRef = useRef<KakaoInfoWindow | null>(null);
+    const activeBusIdRef = useRef<string | null>(null);
+    const infoWindowDismissedRef = useRef(false);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const { status, schoolToStation, stationToSchool, unknown } = labels;
+
+    const openMarker = useCallback((busId: string) => {
+      const markerData = markersRef.current.get(busId);
+      if (!markerData || !mapRef.current) return;
+
+      const { marker, infowindow } = markerData;
+      if (currentInfoWindowRef.current !== infowindow) {
+        currentInfoWindowRef.current?.close();
+      }
+      infowindow.open(mapRef.current, marker);
+      currentInfoWindowRef.current = infowindow;
+      activeBusIdRef.current = busId;
+      infoWindowDismissedRef.current = false;
+      mapRef.current.panTo(marker.getPosition());
+    }, []);
 
     useEffect(() => {
       let cancelled = false;
@@ -68,10 +87,11 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
         });
         mapRef.current = map;
 
-        requestAnimationFrame(() => {
+        const frame = requestAnimationFrame(() => {
           map.relayout();
           map.setCenter(center);
         });
+        return () => cancelAnimationFrame(frame);
       } catch {
         // Kakao Maps can fail when the SDK or container is unavailable.
       }
@@ -96,17 +116,13 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
         4: "구리",
       };
       const statusLabels: Record<number, string> = {
-        1: labels.schoolToStation,
-        2: labels.stationToSchool,
+        1: schoolToStation,
+        2: stationToSchool,
       };
 
-      markersRef.current.forEach((markerData) => {
-        markerData.marker.setMap(null);
-        markerData.infowindow.close();
-      });
-      markersRef.current.clear();
-      currentInfoWindowRef.current = null;
-
+      const listeners: { marker: KakaoMarker; handler: () => void }[] = [];
+      const markers = new Map<string, ShuttleMarkerData>();
+      markersRef.current = markers;
       const markerPositions: KakaoLatLng[] = [];
       busLocations
         .filter((bus) => bus.status !== 0)
@@ -124,8 +140,8 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
             bus.status === 2
               ? "#d0d0d0"
               : routeColors[bus.routeid] || "#999999";
-          const routeName = routeNames[bus.routeid] || labels.unknown;
-          const statusLabel = statusLabels[bus.status] || labels.unknown;
+          const routeName = routeNames[bus.routeid] || unknown;
+          const statusLabel = statusLabels[bus.status] || unknown;
           const markerPosition = new kakaoMaps.LatLng(
             bus.latNumber,
             bus.lonNumber,
@@ -149,28 +165,30 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
               routeName,
               statusLabel,
               color,
-              labels.status,
+              status,
             ),
             removable: true,
             zIndex: 1,
-          });
+          }) as ShuttleMarkerData["infowindow"];
 
-          kakaoMaps.event.addListener(marker, "click", () => {
-            currentInfoWindowRef.current?.close();
-            if (mapRef.current) {
-              infowindow.open(mapRef.current, marker);
-            }
-            currentInfoWindowRef.current = infowindow;
-          });
-
-          markersRef.current.set(bus.id, { marker, infowindow });
+          markers.set(bus.id, { marker, infowindow });
+          const handler = () => openMarker(bus.id);
+          kakaoMaps.event.addListener(marker, "click", handler);
+          listeners.push({ marker, handler });
         });
 
+      let frame: number | undefined;
       if (markerPositions.length > 0) {
-        requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
           if (!mapRef.current) return;
 
           mapRef.current.relayout();
+          if (infoWindowDismissedRef.current) return;
+          const activeBusId = activeBusIdRef.current;
+          if (activeBusId && markersRef.current.has(activeBusId)) {
+            openMarker(activeBusId);
+            return;
+          }
 
           if (markerPositions.length === 1) {
             mapRef.current.setCenter(markerPositions[0]);
@@ -183,28 +201,34 @@ export const ShuttleMap = forwardRef<ShuttleMapHandle, ShuttleMapProps>(
           mapRef.current.setBounds(bounds, 48, 48, 48, 48);
         });
       }
-    }, [busLocations, labels, mapLoaded]);
+      return () => {
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        const activeMarker = activeBusIdRef.current && markers.get(activeBusIdRef.current);
+        if (activeMarker && !activeMarker.infowindow.getMap()) {
+          activeBusIdRef.current = null;
+          infoWindowDismissedRef.current = true;
+        }
+        listeners.forEach(({ marker, handler }) => {
+          kakaoMaps.event.removeListener(marker, "click", handler);
+        });
+        markers.forEach(({ marker, infowindow }) => {
+          marker.setMap(null);
+          infowindow.close();
+        });
+        markers.clear();
+        currentInfoWindowRef.current = null;
+      };
+    }, [busLocations, status, schoolToStation, stationToSchool, unknown, mapLoaded, openMarker]);
 
     useEffect(() => {
       if (!selectedBusId || !mapRef.current) return;
 
       openMarker(selectedBusId);
-    }, [selectedBusId]);
+    }, [selectedBusId, mapLoaded, openMarker]);
 
     useImperativeHandle(ref, () => ({
       openMarker,
     }));
-
-    function openMarker(busId: string) {
-      const markerData = markersRef.current.get(busId);
-      if (!markerData || !mapRef.current) return;
-
-      currentInfoWindowRef.current?.close();
-      const { marker, infowindow } = markerData;
-      infowindow.open(mapRef.current, marker);
-      currentInfoWindowRef.current = infowindow;
-      mapRef.current.panTo(marker.getPosition());
-    }
 
     return null;
   },

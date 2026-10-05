@@ -46,21 +46,21 @@ export function NotificationPermissionPrompt() {
 
     const showPrompt = () => {
       setIsVisible(true);
-      window.removeEventListener("pointerdown", showPrompt);
-      window.removeEventListener("keydown", showPrompt);
+      window.removeEventListener("click", showPrompt);
+      window.removeEventListener("keyup", showPrompt);
       window.removeEventListener("scroll", showPrompt);
     };
 
-    window.addEventListener("pointerdown", showPrompt, { once: true });
-    window.addEventListener("keydown", showPrompt, { once: true });
+    window.addEventListener("click", showPrompt, { once: true });
+    window.addEventListener("keyup", showPrompt, { once: true });
     window.addEventListener("scroll", showPrompt, {
       once: true,
       passive: true,
     });
 
     return () => {
-      window.removeEventListener("pointerdown", showPrompt);
-      window.removeEventListener("keydown", showPrompt);
+      window.removeEventListener("click", showPrompt);
+      window.removeEventListener("keyup", showPrompt);
       window.removeEventListener("scroll", showPrompt);
     };
   }, [isRoommatePage]);
@@ -107,7 +107,7 @@ export function NotificationPermissionPrompt() {
 
   return (
     <section
-      className="relative mx-4 my-4 md:fixed md:inset-x-auto md:bottom-6 md:right-6 md:z-40 md:m-0 md:w-[min(28rem,calc(100vw-3rem))]"
+      className="mx-auto my-4 max-w-4xl px-4"
       aria-labelledby="notification-permission-title"
     >
       <div className="min-w-0 overflow-hidden rounded-xl border border-primary-100 bg-white p-4 shadow-2xl sm:p-5">

@@ -6,17 +6,20 @@ import { WeatherIcon } from "@/app/components/WeatherIcon";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
+import { Button } from "./Button";
 
 interface WeatherModalProps {
   isOpen: boolean;
   weather: WeatherData | null;
   onClose: () => void;
+  onRetry?: () => void;
 }
 
 function WeatherModalComponent({
   isOpen,
   weather,
   onClose,
+  onRetry,
 }: WeatherModalProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
@@ -230,6 +233,11 @@ function WeatherModalComponent({
         />
       </div>
 
+      {weather.sourceStatus === "error" && onRetry && (
+        <Button type="button" variant="secondary" onClick={onRetry} className="w-full">
+          {dictionary.home.dashboard.retry}
+        </Button>
+      )}
       <button
         type="button"
         onClick={onClose}

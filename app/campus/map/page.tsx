@@ -2,7 +2,7 @@
 
 import { Container } from "@/app/components/Container";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MapView } from "./components/MapView";
 import { FacilityPanel } from "./components/FacilityPanel";
 import { FacilitySearch } from "./components/FacilitySearch";
@@ -17,11 +17,11 @@ export default function MapPage() {
   const [selectionVersion, setSelectionVersion] = useState(0);
   const mobileFacilityInfoRef = useRef<HTMLDivElement>(null);
 
-  const handleFacilitySelect = (buildingId: string) => {
+  const handleFacilitySelect = useCallback((buildingId: string) => {
     setSelectedBuilding(buildingId);
     setHighlightedBuilding(buildingId);
     setSelectionVersion((version) => version + 1);
-  };
+  }, []);
 
   useEffect(() => {
     if (!selectedBuilding || !window.matchMedia("(max-width: 1023px)").matches) {

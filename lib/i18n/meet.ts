@@ -98,6 +98,8 @@ export const koMeetPages = {
         slotsUnit: "칸",
         selectedCountPrefix: "선택한 가능 시간:",
         savedStatus: "가능한 시간이 저장되었습니다.",
+        storageUnavailable:
+          "이 브라우저에 수정 권한을 저장할 수 없습니다. 응답을 수정하려면 현재 화면을 유지해주세요.",
         loadedStatus: "기존 선택을 불러왔습니다.",
         selectOneError: "가능한 시간을 1개 이상 선택한 뒤 저장해주세요.",
         saving: "저장 중...",
@@ -247,6 +249,8 @@ export const enMeetPages = {
         slotsUnit: "slots",
         selectedCountPrefix: "Selected available times:",
         savedStatus: "Available times saved.",
+        storageUnavailable:
+          "This browser cannot save your editing access. Keep this page open to edit your response.",
         loadedStatus: "Previous selection loaded.",
         selectOneError: "Select at least one available time before saving.",
         saving: "Saving...",
