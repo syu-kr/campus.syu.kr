@@ -57,6 +57,7 @@ npm run check
 - [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙과 TTL 운영
 - [docs/CRAWL_DATA_PAGES.md](./docs/CRAWL_DATA_PAGES.md): 무료 GitHub Pages 일일 데이터·롤백 운영
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
+- [docs/SITE_AUDIT_2026-10-04.md](./docs/SITE_AUDIT_2026-10-04.md): 사이트·Actions 수정 결과, 검증 범위와 남은 확인
 
 ## 기술 스택
 

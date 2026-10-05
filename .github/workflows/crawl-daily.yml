@@ -1,4 +1,4 @@
-name: Daily Crawl - Academic, Scholarship, Campus, SW & Cafeteria Notices
+name: Daily Crawl - Notices, Cafeteria & Public Holidays
 
 on:
   schedule:
@@ -10,6 +10,14 @@ on:
     - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
+      crawl_scope:
+        description: Sources to crawl (holidays skips notices, cafeteria and AI)
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - holidays
       ai_limit:
         description: Maximum announcement summaries to generate
         required: true
@@ -36,7 +44,8 @@ jobs:
   crawl:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Nine children are capped at five minutes each; allow setup and publication time.
+    timeout-minutes: 55
     permissions:
       contents: read
       pages: read
@@ -57,6 +66,8 @@ jobs:
       CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES: ${{ vars.CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES }}
       CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS: ${{ vars.CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS }}
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
+      # Enable only after deploying the app that accepts the public-holidays source-health key.
+      PUBLIC_HOLIDAYS_ENABLED: ${{ vars.PUBLIC_HOLIDAYS_ENABLED }}
       CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '17 20 * * *' || github.event.schedule == '17 1 * * *') }}
 
     steps:
@@ -90,42 +101,25 @@ jobs:
       - name: Restore current crawl data snapshot
         run: npm run pull:crawl-data
 
-      - name: Run academic notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_announcements.py
-
-      - name: Run scholarship notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_scholarships.py
-
-      - name: Run campus life notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_campus.py
-
-      - name: Run event notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_events.py
-
-      - name: Run department notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_department_notices.py
-
-      - name: Run SW-centered university notices crawler
-        if: env.CAFETERIA_ONLY_RUN != 'true'
-        run: python scripts/crawl_swuniv_notices.py
-
-      - name: Run cafeteria menu crawler
-        run: python scripts/crawl_cafeteria.py
+      - name: Run independent daily crawlers with validated fallback
+        env:
+          PUBLIC_DATA_SERVICE_KEY: ${{ secrets.PUBLIC_DATA_SERVICE_KEY }}
+          HOLIDAYS_ONLY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.crawl_scope == 'holidays' }}
+        run: |
+          if [ "$HOLIDAYS_ONLY_RUN" = "true" ]; then
+            npm run crawl:daily -- --holidays-only
+          else
+            npm run crawl:daily
+          fi
 
       - name: Generate announcement AI summaries
-        if: env.CAFETERIA_ONLY_RUN != 'true'
+        if: env.CAFETERIA_ONLY_RUN != 'true' && inputs.crawl_scope != 'holidays'
         id: announcement_ai
-        continue-on-error: true
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_ANNOUNCEMENT_MODEL: ${{ vars.OPENAI_ANNOUNCEMENT_MODEL }}
           ANNOUNCEMENT_AI_ENABLED: ${{ vars.ANNOUNCEMENT_AI_ENABLED }}
-          ANNOUNCEMENT_AI_LIMIT: ${{ github.event_name == 'workflow_dispatch' && inputs.ai_limit || vars.ANNOUNCEMENT_AI_LIMIT }}
+          ANNOUNCEMENT_AI_LIMIT: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.ai_limit) || vars.ANNOUNCEMENT_AI_LIMIT }}
           ANNOUNCEMENT_AI_DELAY_MS: ${{ vars.ANNOUNCEMENT_AI_DELAY_MS }}
           ANNOUNCEMENT_AI_TIMEOUT_MS: ${{ vars.ANNOUNCEMENT_AI_TIMEOUT_MS }}
           ANNOUNCEMENT_AI_CHECKPOINT_EVERY: ${{ vars.ANNOUNCEMENT_AI_CHECKPOINT_EVERY }}
@@ -136,7 +130,7 @@ jobs:
           ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS: ${{ vars.ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS }}
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED }}
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT }}
-        run: node scripts/generate_announcement_ai_summaries.mjs
+        run: npm run crawl:daily -- --ai-only
 
       - name: Prepare versioned Pages artifact
         id: prepare

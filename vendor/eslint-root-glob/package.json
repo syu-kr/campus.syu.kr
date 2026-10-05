@@ -1,0 +1,15 @@
+{
+  "name": "@syu-campus/eslint-root-glob",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.cjs",
+  "license": "MIT",
+  "description": "Scoped globSync adapter for Next ESLint root directory discovery",
+  "dependencies": {
+    "tinyglobby": "0.2.17"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

@@ -13,9 +13,11 @@ import {
   fetchAcademicSchedules,
   fetchShuttleBuses,
   fetchShuttleSpecialPeriods,
+  fetchPublicHolidays,
   searchAll,
 } from "@/lib/api";
 import { fetchJson } from "@/lib/fetch-json";
+import { mergePublicHolidays } from "@/lib/public-holidays";
 import {
   categorizeSearchResults,
   getKoreaNow,
@@ -33,6 +35,7 @@ import type {
   ServiceNotice,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
+  PublicHolidaySnapshot,
 } from "@/types";
 import { SearchResultsView } from "@/app/features/home/SearchResultsView";
 import {
@@ -61,6 +64,7 @@ interface HomePageClientProps {
   initialSchedules: AcademicSchedule[];
   initialShuttleBuses: ShuttleBusSchedule[];
   initialShuttleSpecialPeriods: ShuttleSpecialPeriods;
+  initialPublicHolidays?: PublicHolidaySnapshot;
   initialNowIso: string;
 }
 
@@ -71,6 +75,7 @@ export function HomePageClient({
   initialSchedules,
   initialShuttleBuses,
   initialShuttleSpecialPeriods,
+  initialPublicHolidays,
   initialNowIso,
 }: HomePageClientProps) {
   const locale = useLocale();
@@ -154,6 +159,15 @@ export function HomePageClient({
     gcTime: ONE_HOUR,
   });
 
+  const { data: publicHolidays, isError: holidaysError, refetch: refetchHolidays } = useQuery({
+    queryKey: ["public-holidays"], queryFn: fetchPublicHolidays,
+    initialData: initialPublicHolidays, staleTime: FIVE_MINUTES,
+    refetchInterval: FIVE_MINUTES,
+  });
+  const effectiveHolidays = useMemo(() => publicHolidays && {
+    ...publicHolidays, stale: publicHolidays.stale || holidaysError,
+  }, [publicHolidays, holidaysError]);
+
   const {
     data: shuttleBuses,
     isLoading: shuttleBusesLoading,
@@ -218,11 +232,10 @@ export function HomePageClient({
   }, [cafeteria, hasStaleCafeteriaData, todayInfo.dateStringDash]);
 
   const todaySchedules = useMemo(() => {
-    if (!schedules) return [];
-    return schedules.filter((schedule) =>
+    return mergePublicHolidays(schedules ?? [], effectiveHolidays).filter((schedule) =>
       isScheduleOnDate(schedule, todayInfo.dateStringDot),
     );
-  }, [schedules, todayInfo.dateStringDot]);
+  }, [schedules, effectiveHolidays, todayInfo.dateStringDot]);
 
   const categorizedResults = useMemo(() => {
     return categorizeSearchResults(
@@ -287,9 +300,11 @@ export function HomePageClient({
         onRetry={() => {
           void refetchShuttleBuses();
           void refetchShuttleSpecialPeriods();
+          void refetchHolidays();
         }}
         buses={shuttleBuses}
         specialPeriods={shuttleSpecialPeriods}
+        holidays={effectiveHolidays}
         now={now}
       />
       <HomeNoticesSection
@@ -316,7 +331,7 @@ export function HomePageClient({
       <TodaySchedulesSection
         isLoading={schedulesLoading}
         isError={schedulesError}
-        onRetry={() => refetchSchedules()}
+        onRetry={() => { void refetchSchedules(); void refetchHolidays(); }}
         schedules={todaySchedules}
       />
 

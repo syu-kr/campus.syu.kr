@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   DAILY_CRAWL_DATA_FILES,
   parseCrawlDataManifest,
+  parseCrawlSourceHealth,
   validateDailyCrawlData,
 } from "./crawl-data-contract";
 
@@ -32,6 +33,50 @@ describe("crawl data contract", () => {
     );
   });
 
+  it("keeps legacy source health unknown and preserves verified partial health", () => {
+    expect(parseCrawlDataManifest(createManifest()).sourceHealth).toBeUndefined();
+    const sourceHealth = {
+      "cafeteria-menu.json": {
+        status: "stale",
+        lastAttemptAt: "2026-10-04T00:00:00Z",
+        lastSuccessAt: "2026-10-03T00:00:00Z",
+        errorCode: "CRAWLER_FAILED",
+      },
+    };
+    expect(parseCrawlDataManifest({ ...createManifest(), sourceHealth }).sourceHealth).toEqual(sourceHealth);
+  });
+
+  it.each([
+    { status: "unknown", lastAttemptAt: "2026-10-04T00:00:00Z" },
+    { status: "stale", lastAttemptAt: "yesterday" },
+    { status: "stale", lastAttemptAt: "2026-02-30T00:00:00Z" },
+    { status: "stale", lastAttemptAt: "2026-10-04" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", lastSuccessAt: "bad date" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", lastSuccessAt: "2026-10-05T00:00:00Z" },
+    { status: "fresh", lastAttemptAt: "2026-10-04T00:00:00Z", errorCode: "CRAWLER_FAILED" },
+    { status: "stale", lastAttemptAt: "2026-10-04T00:00:00Z", errorCode: "ARBITRARY_ERROR" },
+  ])("rejects invalid source health: %j", (health) => {
+    expect(() => parseCrawlSourceHealth(health)).toThrow("출처 상태가 올바르지 않습니다");
+  });
+
+  it("accepts an unknown last success without inventing one and compares ISO offsets", () => {
+    expect(parseCrawlSourceHealth({ status: "stale", lastAttemptAt: "2026-10-04T09:00:00+09:00" })).toEqual({
+      status: "stale",
+      lastAttemptAt: "2026-10-04T09:00:00+09:00",
+    });
+    expect(() => parseCrawlSourceHealth({
+      status: "fresh",
+      lastAttemptAt: "2026-10-04T09:00:00+09:00",
+      lastSuccessAt: "2026-10-04T00:00:00Z",
+    })).not.toThrow();
+  });
+
+  it.each([null, [], { "other.json": { status: "fresh", lastAttemptAt: "2026-10-04T00:00:00Z" } }])(
+    "rejects malformed or unknown-file health maps: %j", (sourceHealth) => {
+      expect(() => parseCrawlDataManifest({ ...createManifest(), sourceHealth })).toThrow("출처 상태");
+    },
+  );
+
   it("rejects a manifest that points outside its version", () => {
     const manifest = createManifest();
     manifest.files["cafeteria-menu.json"].path =
@@ -58,6 +103,33 @@ describe("crawl data contract", () => {
     delete manifest.files["announcements-sw.json"];
 
     expect(parseCrawlDataManifest(manifest).files["announcements-sw.json"]).toBeUndefined();
+  });
+
+  it("accepts legacy versions without holidays while validating new holiday entries", () => {
+    const manifest = createManifest();
+    delete manifest.files["public-holidays.json"];
+    expect(parseCrawlDataManifest(manifest).files["public-holidays.json"]).toBeUndefined();
+    manifest.files["public-holidays.json"] = {
+      path: `versions/${manifest.version}/public-holidays.json`, sha256: "a".repeat(64), size: 128 * 1024 + 1,
+    };
+    expect(() => parseCrawlDataManifest(manifest)).toThrow("파일 크기가 올바르지 않습니다");
+    expect(() => parseCrawlDataManifest({ ...manifest, files: { ...manifest.files, "public-holidays.json": null } })).toThrow("항목이 없습니다");
+  });
+
+  it("validates holiday snapshots and an explicit uncollected bootstrap", () => {
+    const snapshot = {
+      schemaVersion: 1, sourceUrl: "https://www.data.go.kr/data/15012690/openapi.do",
+      lastSuccessAt: "2026-10-04T00:00:00Z", years: [2026, 2027],
+      holidays: [{ date: "2026-10-09", names: ["한글날"] }],
+    };
+    expect(() => validateDailyCrawlData("public-holidays.json", snapshot)).not.toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", {
+      ...snapshot, lastSuccessAt: null, years: [], holidays: [],
+    })).not.toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", {
+      ...snapshot, holidays: [{ date: "2026-02-30", names: ["가짜 공휴일"] }],
+    })).toThrow();
+    expect(() => validateDailyCrawlData("public-holidays.json", { ...snapshot, sourceUrl: "https://example.com" })).toThrow();
   });
 
   it("rejects inconsistent retained versions", () => {

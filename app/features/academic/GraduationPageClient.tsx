@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import clsx from "clsx";
 
 import { Badge } from "@/app/components/Badge";
+import { buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
@@ -16,6 +17,7 @@ import {
   getAvailableDepartments,
   getAvailableMajorTracks,
   getAvailableMajors,
+  getAvailableTransferYears,
   getChecklistItems,
   getCollegeById,
   getColleges,
@@ -64,6 +66,7 @@ export default function GraduationPageClient() {
   const colleges = getColleges();
   const [selection, setSelection] =
     useState<GraduationSelection>(INITIAL_SELECTION);
+  const [admissionYearDraft, setAdmissionYearDraft] = useState("");
   const [completedCredits, setCompletedCredits] =
     useState<CompletedCreditInput>({});
   const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
@@ -88,12 +91,16 @@ export default function GraduationPageClient() {
   const admissionTypes = selection.departmentId
     ? getAvailableAdmissionTypes(selection.departmentId, selection.majorId)
     : [];
+  const transferYears = selection.admissionType === "departmentTransfer"
+    ? getAvailableTransferYears(selection.departmentId, selection.majorId)
+    : [];
   const majorTracks =
     selection.departmentId && selection.admissionType
       ? getAvailableMajorTracks(
           selection.departmentId,
           selection.majorId,
           selection.admissionType,
+          selection.transferYear,
         )
       : [];
   const selectedCollege = getCollegeById(selection.collegeId);
@@ -107,10 +114,12 @@ export default function GraduationPageClient() {
     selection.departmentId,
     selection.admissionYear,
     locale,
+    selection.majorId,
   );
   const verifiedCourses = getVerifiedCurriculumCourses(
     selection.departmentId,
     selection.admissionYear,
+    selection.majorId,
   );
   const selectedCourseSummary = summarizeSelectedCourses(
     verifiedCourses,
@@ -126,6 +135,7 @@ export default function GraduationPageClient() {
   const selectionComplete = isCompleteSelection(selection);
   const applySavedState = useCallback((saved: SavedState) => {
     setSelection(saved.selection);
+    setAdmissionYearDraft(saved.selection.admissionYear);
     setCompletedCredits(saved.completedCredits);
     setSelectedCourseIds(saved.selectedCourseIds ?? []);
     setChecklistAnswers(saved.checklistAnswers);
@@ -133,6 +143,7 @@ export default function GraduationPageClient() {
   }, []);
 
   useEffect(() => {
+    let canPersist = true;
     try {
       const sharedState = parseSavedStateFromHash(window.location.hash);
       if (sharedState) {
@@ -141,35 +152,52 @@ export default function GraduationPageClient() {
         return;
       }
 
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      let raw: string | null;
+      try {
+        raw = window.localStorage.getItem(STORAGE_KEY);
+      } catch {
+        canPersist = false;
+        setPersistenceMessage("storageUnavailable");
+        return;
+      }
       if (raw) {
         applySavedState(parseSavedStatePayload(JSON.parse(raw)));
       }
     } catch {
       if (window.location.hash.includes(SHARE_HASH_PREFIX)) {
+        canPersist = false;
         setPersistenceMessage("shareLoadFailed");
       } else {
-        window.localStorage.removeItem(STORAGE_KEY);
+        try {
+          window.localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          canPersist = false;
+          setPersistenceMessage("storageUnavailable");
+        }
       }
     } finally {
-      setRestored(true);
+      setRestored(canPersist);
     }
   }, [applySavedState]);
 
   useEffect(() => {
     if (!restored) return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(
-        createSavedState(
-          selection,
-          completedCredits,
-          selectedCourseIds,
-          checklistAnswers,
-          plans,
+    try {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          createSavedState(
+            selection,
+            completedCredits,
+            selectedCourseIds,
+            checklistAnswers,
+            plans,
+          ),
         ),
-      ),
-    );
+      );
+    } catch {
+      setPersistenceMessage("storageUnavailable");
+    }
   }, [
     checklistAnswers,
     completedCredits,
@@ -181,8 +209,13 @@ export default function GraduationPageClient() {
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-    const dismissed =
-      window.sessionStorage.getItem(MOBILE_DESKTOP_NOTICE_KEY) === "dismissed";
+    let dismissed = false;
+    try {
+      dismissed =
+        window.sessionStorage.getItem(MOBILE_DESKTOP_NOTICE_KEY) === "dismissed";
+    } catch {
+      // The notice can still be dismissed when browser storage is unavailable.
+    }
 
     if (mediaQuery.matches && !dismissed) {
       setShowMobileNotice(true);
@@ -196,41 +229,70 @@ export default function GraduationPageClient() {
     setPlans({});
   };
 
+  const confirmProgressReset = () => {
+    const hasProgress =
+      Object.values(completedCredits).some((credits) => credits !== undefined) ||
+      selectedCourseIds.length > 0 ||
+      Object.keys(checklistAnswers).length > 0 ||
+      Object.values(plans).some((plan) => plan.trim());
+    return !hasProgress || window.confirm(text.selectionChangeConfirm);
+  };
+
   const updateSelection = (next: Partial<GraduationSelection>) => {
-    setSelection((current) => ({ ...current, ...next }));
+    if (
+      Object.entries(next).every(
+        ([key, value]) => selection[key as keyof GraduationSelection] === value,
+      )
+    ) {
+      return true;
+    }
+    if (!confirmProgressReset()) return false;
+    setSelection({ ...selection, ...next });
     resetProgress();
+    return true;
   };
 
   const handleCollegeSelect = (collegeId: string) => {
-    setSelection({
+    if (collegeId === selection.collegeId) return;
+    updateSelection({
       ...INITIAL_SELECTION,
       admissionYear: selection.admissionYear,
       collegeId,
+      transferYear: undefined,
     });
-    resetProgress();
   };
 
   const handleDepartmentSelect = (departmentId: string) => {
+    if (departmentId === selection.departmentId) return;
     updateSelection({
       departmentId,
       majorId: undefined,
       admissionType: "",
       majorTrack: "",
+      transferYear: undefined,
     });
   };
 
-  const handleAdmissionYearChange = (value: string) => {
-    updateSelection({ admissionYear: value.replace(/\D/g, "").slice(0, 4) });
+  const commitAdmissionYear = () => {
+    if (
+      !/^\d{4}$/.test(admissionYearDraft) ||
+      !updateSelection({ admissionYear: admissionYearDraft })
+    ) {
+      setAdmissionYearDraft(selection.admissionYear);
+    }
   };
 
   const handleMobileContinue = () => {
-    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    try {
+      window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
+    } catch {
+      // Closing the notice does not require browser storage.
+    }
     setShowMobileNotice(false);
   };
 
   const handleMobileBack = () => {
-    window.sessionStorage.setItem(MOBILE_DESKTOP_NOTICE_KEY, "dismissed");
-    setShowMobileNotice(false);
+    handleMobileContinue();
 
     if (window.history.length > 1) {
       window.history.back();
@@ -241,10 +303,16 @@ export default function GraduationPageClient() {
   };
 
   const handleReset = () => {
+    if (!confirmProgressReset()) return;
     setSelection(INITIAL_SELECTION);
+    setAdmissionYearDraft("");
     resetProgress();
-    window.localStorage.removeItem(STORAGE_KEY);
     setPersistenceMessage(null);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      setPersistenceMessage("storageUnavailable");
+    }
     setShareFallbackUrl("");
   };
 
@@ -361,14 +429,14 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleMobileContinue}
-                className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+                className={buttonStyles("primary")}
               >
                 {text.mobileContinue}
               </button>
               <button
                 type="button"
                 onClick={handleMobileBack}
-                className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.mobileBack}
               </button>
@@ -402,7 +470,7 @@ export default function GraduationPageClient() {
           <button
             type="button"
             onClick={() => setIsContactOpen(true)}
-            className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+            className={buttonStyles("secondary")}
           >
             {text.contactWrongInfo}
           </button>
@@ -421,10 +489,19 @@ export default function GraduationPageClient() {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={4}
-                value={selection.admissionYear}
+                value={admissionYearDraft}
                 onChange={(event) =>
-                  handleAdmissionYearChange(event.target.value)
+                  setAdmissionYearDraft(
+                    event.target.value.replace(/\D/g, "").slice(0, 4),
+                  )
                 }
+                onBlur={commitAdmissionYear}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    event.currentTarget.blur();
+                  }
+                }}
                 placeholder={text.placeholders.admissionYear}
                 className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
               />
@@ -476,13 +553,15 @@ export default function GraduationPageClient() {
                     key={major.id}
                     selected={selection.majorId === major.id}
                     title={major.name}
-                    onClick={() =>
+                    onClick={() => {
+                      if (major.id === selection.majorId) return;
                       updateSelection({
                         majorId: major.id,
                         admissionType: "",
                         majorTrack: "",
-                      })
-                    }
+                        transferYear: undefined,
+                      });
+                    }}
                   />
                 ))}
               </ChoiceGroup>
@@ -501,20 +580,36 @@ export default function GraduationPageClient() {
                   key={type}
                   selected={selection.admissionType === type}
                   title={text.admissionTypes[type]}
-                  onClick={() =>
+                  onClick={() => {
+                    if (type === selection.admissionType) return;
                     updateSelection({
                       admissionType: type,
                       majorTrack: "",
-                    })
-                  }
+                      transferYear: undefined,
+                    });
+                  }}
                 />
               ))}
             </ChoiceGroup>
 
+            {transferYears.length > 0 && (
+              <ChoiceGroup label={text.labels.transferYear}>
+                {transferYears.map((year) => (
+                  <ChoiceButton
+                    key={year}
+                    selected={selection.transferYear === year}
+                    title={text.labels.transferYearOption.replace("{year}", String(year))}
+                    onClick={() => updateSelection({ transferYear: year, majorTrack: "" })}
+                  />
+                ))}
+                <p className="text-xs leading-5 text-neutral-500">{text.helps.transferYear}</p>
+              </ChoiceGroup>
+            )}
+
             <ChoiceGroup
               label={text.labels.majorTrack}
               emptyMessage={text.empty.admissionTypeFirst}
-              disabled={!selection.admissionType}
+              disabled={!selection.admissionType || (transferYears.length > 0 && !selection.transferYear)}
             >
               {majorTracks.map((track) => (
                 <ChoiceButton
@@ -529,7 +624,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.coursesTitle}
-            description={text.sections.coursesDescription}
+            description={text.sections.coursesDescription.replace("{sourceYear}", curriculumAvailability.sourceYear)}
           >
             {!selection.departmentId || !selection.admissionYear ? (
               <EmptyState message={text.empty.courseAvailability} />
@@ -539,6 +634,11 @@ export default function GraduationPageClient() {
               </div>
             ) : (
               <div className="space-y-4">
+                {curriculumAvailability.reason && (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+                    {curriculumAvailability.reason}
+                  </p>
+                )}
                 <CurriculumCourseSelector
                   courses={verifiedCourses}
                   selectedCourseIds={selectedCourseIds}
@@ -659,17 +759,18 @@ export default function GraduationPageClient() {
                         </p>
                         <EvidenceLine
                           sourceIds={item.sourceIds}
+                          sourcePages={item.sourcePages}
                           sources={sources}
                           text={text}
                         />
                       </div>
-                      <Badge color={item.shortage > 0 ? "red" : "green"}>
-                        {item.shortage > 0
+                      <Badge color={getEvaluationBadgeColor(item.status)}>
+                        {item.status === "short"
                           ? text.result.creditShortage.replace(
                               "{shortage}",
                               String(item.shortage),
                             )
-                          : text.result.satisfied}
+                          : getEvaluationStatusLabel(item.status, text)}
                       </Badge>
                     </div>
                   ))}
@@ -694,6 +795,7 @@ export default function GraduationPageClient() {
                         </p>
                         <EvidenceLine
                           sourceIds={item.sourceIds}
+                          sourcePages={item.sourcePages}
                           sources={sources}
                           text={text}
                         />
@@ -801,7 +903,7 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.reset}
               </button>
@@ -809,7 +911,7 @@ export default function GraduationPageClient() {
                 type="button"
                 onClick={() => window.print()}
                 disabled={!requirement}
-                className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-200"
+                className={buttonStyles("primary")}
               >
                 {text.sidebar.print}
               </button>
@@ -818,14 +920,14 @@ export default function GraduationPageClient() {
               <button
                 type="button"
                 onClick={handleExport}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.exportPlan}
               </button>
               <button
                 type="button"
                 onClick={() => importFileInputRef.current?.click()}
-                className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                className={buttonStyles("secondary")}
               >
                 {text.sidebar.importPlan}
               </button>
@@ -841,7 +943,7 @@ export default function GraduationPageClient() {
               type="button"
               onClick={() => void handleShareProgress()}
               disabled={!selectionComplete}
-              className="mt-2 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+              className={buttonStyles("primary", "mt-2 w-full")}
             >
               {text.sidebar.shareProgress}
             </button>
@@ -885,7 +987,7 @@ export default function GraduationPageClient() {
             <button
               type="button"
               onClick={() => setIsContactOpen(true)}
-              className="mt-4 w-full rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+              className={buttonStyles("primary", "mt-4 w-full")}
             >
               {text.contactWrongInfo}
             </button>
@@ -1045,7 +1147,7 @@ function CurriculumCourseSelector({
             type="button"
             onClick={onReset}
             disabled={selectedCourseIds.length === 0}
-            className="rounded-lg border border-green-300 bg-white px-3 py-2 text-xs font-semibold text-green-800 hover:bg-green-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className={buttonStyles("secondary")}
           >
             {text.courses.reset}
           </button>
@@ -1094,13 +1196,15 @@ function CurriculumCourseSelector({
         {text.courses.autoApply}
       </div>
 
-      <input
-        type="search"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder={text.placeholders.courseSearch}
-        className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-      />
+      <FieldLabel label={text.placeholders.courseSearch}>
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={text.placeholders.courseSearch}
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        />
+      </FieldLabel>
 
       {groups.length === 0 ? (
         <EmptyState message={text.empty.courseSearch} />
@@ -1238,7 +1342,6 @@ function ChecklistCard({
   const choices: Array<{ value: ChecklistAnswer; label: string }> = [
     { value: "satisfied", label: text.checklist.satisfied },
     { value: "incomplete", label: text.checklist.incomplete },
-    { value: "notApplicable", label: text.checklist.notApplicable },
   ];
 
   return (
@@ -1247,12 +1350,14 @@ function ChecklistCard({
       {description && (
         <p className="mt-1 text-xs leading-5 text-neutral-500">{description}</p>
       )}
+      <p className="mt-1 text-xs leading-5 text-neutral-500">{text.checklist.requiredHint}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         {choices.map((choice) => (
           <button
             key={choice.value}
             type="button"
             onClick={() => onAnswer(choice.value)}
+            aria-pressed={answer === choice.value}
             className={clsx(
               "rounded-lg border px-3 py-2 text-xs font-semibold transition",
               answer === choice.value
@@ -1264,13 +1369,19 @@ function ChecklistCard({
           </button>
         ))}
       </div>
-      <input
-        type="text"
-        value={plan}
-        onChange={(event) => onPlan(event.target.value)}
-        placeholder={text.placeholders.checklistPlan}
-        className="mt-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
-      />
+      <label className="mt-3 block">
+        <span className="mb-1 block text-xs font-semibold text-neutral-700">
+          <span className="sr-only">{label}: </span>
+          {text.placeholders.checklistPlan}
+        </span>
+        <input
+          type="text"
+          value={plan}
+          onChange={(event) => onPlan(event.target.value)}
+          placeholder={text.placeholders.checklistPlan}
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+        />
+      </label>
     </div>
   );
 }
@@ -1333,10 +1444,12 @@ function SummaryMetric({
 
 function EvidenceLine({
   sourceIds,
+  sourcePages,
   sources,
   text,
 }: {
   sourceIds: string[];
+  sourcePages?: number[];
   sources: GraduationSourceList;
   text: GraduationText;
 }) {
@@ -1356,6 +1469,7 @@ function EvidenceLine({
             `${source.title} (${source.verifiedAt} ${text.sources.verifiedSuffix})`,
         )
         .join(", ")}
+      {sourcePages?.length ? ` · ${text.sources.pagesPrefix}: ${sourcePages.join(", ")}` : ""}
     </p>
   );
 }

@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Container } from "@/app/components/Container";
+import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { Button } from "@/app/components/Button";
 import {
   CafeteriaClosedCard,
   CafeteriaInfoCards,
@@ -79,6 +81,8 @@ export function CafeteriaPageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
+      <CrawlDataStatus fileNames={["cafeteria-menu.json"]} />
+
       {isError && (
         <StateCard
           type="error"
@@ -86,13 +90,12 @@ export function CafeteriaPageClient({
           title={dictionary.home.dashboard.loadFailedTitle}
           message={dictionary.home.dashboard.loadFailedMessage}
           action={
-            <button
+            <Button
               type="button"
               onClick={() => refetch()}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
               {dictionary.home.dashboard.retry}
-            </button>
+            </Button>
           }
         />
       )}

@@ -243,8 +243,8 @@ python scripts/crawl_phone.py
 일일 워크플로는 다음 순서를 지킵니다.
 
 1. `current.json`이 있으면 현재 스냅샷을 작업 디렉터리로 복원합니다.
-2. 크롤러와 AI 메타데이터 생성기를 실행합니다.
-3. 새 버전과 직전 최대 6개 버전을 포함한 Pages 아티팩트를 만들고 각 파일의 크기·SHA-256을 manifest에 기록합니다.
+2. `npm run crawl:daily`와 `npm run crawl:daily -- --ai-only`로 출처별 실행·검증·원복을 수행합니다. 실패·불완전 경고가 있는 출처는 전체를 이전 검증본으로 복원하며 성공 출처의 갱신은 유지합니다. AI 생성 실패 경고도 기존 AI 파일 전체 보존으로 처리합니다. 기준본 검증·원복·상태 저장 실패는 게시를 중단합니다.
+3. 새 버전과 직전 최대 6개 버전을 포함한 Pages 아티팩트를 만들고 각 파일의 크기·SHA-256·출처 상태를 manifest에 기록합니다. 자료가 같아도 실패·회복 상태가 달라지면 게시합니다.
 4. 모든 준비가 성공한 아티팩트만 GitHub Pages에 원자적으로 배포합니다.
 
 최초 실행은 `current.json`이 없어도 저장소의 번들 fallback에서 시작합니다. 게시 실패 시 기존 Pages 배포는 바뀌지 않습니다. 문제가 있는 버전으로 전환된 경우 Actions의 `Rollback Crawl Data` 워크플로에 `current.json`의 `retainedVersions` 중 하나를 입력합니다.

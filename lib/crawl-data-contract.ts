@@ -1,3 +1,5 @@
+import { parsePublicHolidaySnapshot } from "./public-holidays";
+
 export const DAILY_CRAWL_DATA_FILES = [
   "announcements-academic.json",
   "announcements-campus-life.json",
@@ -7,9 +9,17 @@ export const DAILY_CRAWL_DATA_FILES = [
   "announcements-sw.json",
   "cafeteria-menu.json",
   "announcement-ai-metadata.json",
+  "public-holidays.json",
 ] as const;
 
 export type DailyCrawlDataFile = (typeof DAILY_CRAWL_DATA_FILES)[number];
+
+export interface CrawlSourceHealth {
+  status: "fresh" | "stale";
+  lastAttemptAt: string;
+  lastSuccessAt?: string;
+  errorCode?: "CRAWLER_FAILED" | "INVALID_DATA" | "INCOMPLETE_SOURCE";
+}
 
 export const CRAWL_DATA_MAX_BYTES: Record<DailyCrawlDataFile, number> = {
   "announcements-academic.json": 4 * 1024 * 1024,
@@ -20,6 +30,7 @@ export const CRAWL_DATA_MAX_BYTES: Record<DailyCrawlDataFile, number> = {
   "announcements-sw.json": 1024 * 1024,
   "cafeteria-menu.json": 128 * 1024,
   "announcement-ai-metadata.json": 8 * 1024 * 1024,
+  "public-holidays.json": 128 * 1024,
 };
 
 interface CrawlDataManifestFile {
@@ -34,6 +45,7 @@ export interface CrawlDataManifest {
   publishedAt: string;
   files: Partial<Record<DailyCrawlDataFile, CrawlDataManifestFile>>;
   retainedVersions: string[];
+  sourceHealth?: Partial<Record<DailyCrawlDataFile, CrawlSourceHealth>>;
 }
 
 export const CRAWL_DATA_RETAINED_VERSION_LIMIT = 7;
@@ -41,9 +53,53 @@ export const CRAWL_DATA_RETAINED_VERSION_LIMIT = 7;
 const DAILY_CRAWL_DATA_FILE_SET = new Set<string>(DAILY_CRAWL_DATA_FILES);
 const LEGACY_OPTIONAL_FILES = new Set<DailyCrawlDataFile>([
   "announcements-sw.json",
+  "public-holidays.json",
 ]);
 const VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
+const ISO_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/;
+
+export function parseCrawlSourceHealth(value: unknown): CrawlSourceHealth {
+  if (
+    !isRecord(value) ||
+    (value.status !== "fresh" && value.status !== "stale") ||
+    !isIsoTimestamp(value.lastAttemptAt) ||
+    (value.lastSuccessAt !== undefined && !isIsoTimestamp(value.lastSuccessAt)) ||
+    (typeof value.lastSuccessAt === "string" &&
+      Date.parse(value.lastSuccessAt) > Date.parse(value.lastAttemptAt)) ||
+    (value.errorCode !== undefined &&
+      (value.status === "fresh" ||
+        typeof value.errorCode !== "string" ||
+        !["CRAWLER_FAILED", "INVALID_DATA", "INCOMPLETE_SOURCE"].includes(value.errorCode)))
+  ) {
+    throw new Error("크롤링 출처 상태가 올바르지 않습니다.");
+  }
+
+  return {
+    status: value.status,
+    lastAttemptAt: value.lastAttemptAt,
+    ...(value.lastSuccessAt !== undefined ? { lastSuccessAt: value.lastSuccessAt as string } : {}),
+    ...(value.errorCode !== undefined ? { errorCode: value.errorCode as CrawlSourceHealth["errorCode"] } : {}),
+  };
+}
+
+export function parseCrawlSourceHealthMap(
+  value: unknown,
+): Partial<Record<DailyCrawlDataFile, CrawlSourceHealth>> {
+  if (!isRecord(value)) {
+    throw new Error("크롤링 출처 상태 목록이 올바르지 않습니다.");
+  }
+  if (Object.keys(value).some((fileName) => !isDailyCrawlDataFile(fileName))) {
+    throw new Error("크롤링 출처 상태에 허용되지 않은 파일이 있습니다.");
+  }
+  const health: Partial<Record<DailyCrawlDataFile, CrawlSourceHealth>> = {};
+  for (const fileName of DAILY_CRAWL_DATA_FILES) {
+    if (value[fileName] !== undefined) {
+      health[fileName] = parseCrawlSourceHealth(value[fileName]);
+    }
+  }
+  return health;
+}
 
 export function isDailyCrawlDataFile(
   value: string,
@@ -63,7 +119,7 @@ export function parseCrawlDataManifest(value: unknown): CrawlDataManifest {
     throw new Error("크롤링 데이터 manifest가 객체가 아닙니다.");
   }
 
-  const { schemaVersion, version, publishedAt, files, retainedVersions } = value;
+  const { schemaVersion, version, publishedAt, files, retainedVersions, sourceHealth } = value;
   if (schemaVersion !== 1) {
     throw new Error("지원하지 않는 크롤링 데이터 manifest 버전입니다.");
   }
@@ -104,7 +160,7 @@ export function parseCrawlDataManifest(value: unknown): CrawlDataManifest {
   for (const fileName of DAILY_CRAWL_DATA_FILES) {
     const entry = files[fileName];
     if (!isRecord(entry)) {
-      if (LEGACY_OPTIONAL_FILES.has(fileName)) continue;
+      if (entry === undefined && LEGACY_OPTIONAL_FILES.has(fileName)) continue;
       throw new Error(`manifest에 ${fileName} 항목이 없습니다.`);
     }
 
@@ -137,6 +193,9 @@ export function parseCrawlDataManifest(value: unknown): CrawlDataManifest {
     publishedAt,
     files: parsedFiles,
     retainedVersions: parsedRetainedVersions,
+    ...(sourceHealth !== undefined
+      ? { sourceHealth: parseCrawlSourceHealthMap(sourceHealth) }
+      : {}),
   };
 }
 
@@ -150,6 +209,10 @@ export function validateDailyCrawlData(
   }
   if (fileName === "cafeteria-menu.json") {
     validateCafeteria(value);
+    return;
+  }
+  if (fileName === "public-holidays.json") {
+    parsePublicHolidaySnapshot(value);
     return;
   }
   validateAnnouncementAiMetadata(value);
@@ -277,4 +340,16 @@ function isStringArray(value: unknown): value is string[] {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isIsoTimestamp(value: unknown): value is string {
+  if (
+    typeof value !== "string" ||
+    !ISO_TIMESTAMP_PATTERN.test(value) ||
+    Number.isNaN(Date.parse(value))
+  ) {
+    return false;
+  }
+  const date = value.slice(0, 10);
+  return new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date;
 }

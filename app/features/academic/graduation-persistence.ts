@@ -176,6 +176,7 @@ function normalizeSelection(value: unknown): GraduationSelection {
   const admissionType = readUnion(record.admissionType, VALID_ADMISSION_TYPES);
   const majorTrack = readUnion(record.majorTrack, VALID_MAJOR_TRACKS);
   const majorId = readString(record.majorId);
+  const transferYear = Number(record.transferYear);
 
   return {
     admissionYear: readString(record.admissionYear).replace(/\D/g, "").slice(0, 4),
@@ -184,6 +185,8 @@ function normalizeSelection(value: unknown): GraduationSelection {
     majorId: majorId || undefined,
     admissionType: admissionType ?? "",
     majorTrack: majorTrack ?? "",
+    ...(Number.isInteger(transferYear) && transferYear >= 1 && transferYear <= 4
+      ? { transferYear } : {}),
   };
 }
 

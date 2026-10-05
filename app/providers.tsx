@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 import { NotificationModal } from "@/components/NotificationModal";
-import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import {
   FCM_TOKEN_KEY,
   enablePushNotifications,
@@ -58,7 +57,6 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <NotificationModal />
-      <NotificationPermissionPrompt />
       {children}
     </QueryClientProvider>
   );
@@ -101,7 +99,7 @@ async function initializePushNotifications() {
   }
 
   try {
-    await enablePushNotifications();
+    await enablePushNotifications({ trigger: "automatic" });
   } catch {
     return;
   }

@@ -1,10 +1,15 @@
 import type {
+  ShuttleAdditionalService,
   ShuttleBusSchedule,
   ShuttleScheduleType,
+  ShuttleServiceException,
   ShuttleSpecialPeriod,
   ShuttleSpecialPeriods,
 } from "@/types";
+import type { PublicHolidaySnapshot } from "@/types/public-holidays";
 import { getKoreaDateTimeParts } from "@/lib/korea-time";
+import { getPublicHoliday } from "@/lib/public-holidays";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "mondayToThursday",
@@ -20,12 +25,73 @@ interface NextShuttleDeparture {
 }
 
 export interface CurrentShuttleSummary {
+  holiday: ReturnType<typeof getPublicHoliday>;
+  operationStatus: "regular" | "unconfirmed" | "closed" | "exception";
+  operationEvidence: Pick<ShuttleServiceException, "sourceUrl" | "verifiedAt">[];
   departures: NextShuttleDeparture[];
+  additionalServicePeriods: ShuttleSpecialPeriod[];
   isWeekend: boolean;
   isOperatingPeriod: boolean;
   isSpecialSchedule: boolean;
   scheduleLabel: string;
   hasMoreToday: boolean;
+}
+
+export function getShuttleDayStatus({
+  dateString,
+  specialPeriods,
+  holidays,
+  now = new Date(),
+}: {
+  dateString: string;
+  specialPeriods?: ShuttleSpecialPeriods;
+  holidays?: PublicHolidaySnapshot;
+  now?: Date;
+}) {
+  const holiday = getPublicHoliday(dateString, holidays, now);
+  const isVerified = (record: { sourceUrl: string; verifiedAt: string }) => {
+    const verifiedAt = Date.parse(record.verifiedAt);
+    if (!Number.isFinite(verifiedAt) || verifiedAt > now.getTime()) return false;
+    try {
+      const source = new URL(record.sourceUrl);
+      return source.protocol === "https:" && !source.username && !source.password &&
+        (source.hostname === "syu.ac.kr" || source.hostname.endsWith(".syu.ac.kr"));
+    } catch {
+      return false;
+    }
+  };
+  const serviceExceptions = (specialPeriods?.serviceExceptions ?? []).filter(
+    (record) => record.date === dateString && isVerified(record) &&
+      typeof record.routeId === "string" && record.routeId.length > 0 &&
+      Array.isArray(record.times) && record.times.length > 0 &&
+      record.times.every((time) => typeof time === "string" && timeToMinutes(time) !== null),
+  );
+  const closedDate = (specialPeriods?.closedDates ?? []).find(
+    (record) => record.date === dateString && isVerified(record),
+  );
+  const operationStatus: CurrentShuttleSummary["operationStatus"] =
+    serviceExceptions.length > 0 ? "exception" : closedDate ? "closed" :
+      holiday.status === "not-holiday" ? "regular" : "unconfirmed";
+  const operationEvidence = (operationStatus === "exception" ? serviceExceptions : closedDate ? [closedDate] : [])
+    .map(({ sourceUrl, verifiedAt }) => ({ sourceUrl, verifiedAt }));
+  return { holiday, operationStatus, serviceExceptions, operationEvidence };
+}
+
+export function getShuttleExceptionBuses(
+  buses: ShuttleBusSchedule[],
+  exceptions: ShuttleServiceException[],
+): ShuttleBusSchedule[] {
+  return buses.flatMap((bus) => {
+    const times = Array.from(new Set(exceptions
+      .filter((record) => record.routeId === bus.id)
+      .flatMap((record) => record.times)))
+      .sort((a, b) => (timeToMinutes(a) ?? 0) - (timeToMinutes(b) ?? 0));
+    if (times.length === 0) return [];
+    return [{
+      ...bus,
+      schedules: Object.fromEntries(SCHEDULE_TYPES.map((type) => [type, times])) as ShuttleBusSchedule["schedules"],
+    }];
+  });
 }
 
 export function createScheduleCopy(
@@ -94,6 +160,43 @@ function getDateInfo(now: Date) {
     dateString: `${year}-${String(month).padStart(2, "0")}-${String(date).padStart(2, "0")}`,
     isFriday: dayOfWeek === 5,
     isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+  };
+}
+
+function getRemainingShuttleServices(
+  period: ShuttleSpecialPeriod,
+  now: Date,
+): ShuttleAdditionalService[] {
+  const { dateString, currentMinutes } = getDateInfo(now);
+  if (!isDateInSpecialPeriod(period, dateString)) return [];
+
+  return (period.additionalServices ?? []).filter((service) => {
+    const end = timeToMinutes(
+      service.type === "window" ? service.endTime : service.time,
+    );
+    return end !== null && currentMinutes <= end;
+  });
+}
+
+export function formatShuttleAdditionalService(
+  service: ShuttleAdditionalService,
+  locale: Locale,
+) {
+  const text = getDictionary(locale).pages.busInfo.festivalShuttle;
+  const value =
+    service.type === "window"
+      ? text.window
+          .replace("{startTime}", service.startTime)
+          .replace("{endTime}", service.endTime)
+          .replace("{count}", String(service.vehicleCount))
+      : text.departure
+          .replace("{time}", service.time)
+          .replace("{count}", String(service.vehicleCount));
+
+  return {
+    label: text.destinations[service.destination],
+    value:
+      service.type === "window" ? `${value} · ${text.windowNote}` : value,
   };
 }
 
@@ -239,17 +342,23 @@ function applySpecialPeriods({
 export function getCurrentShuttleSummary({
   buses,
   specialPeriods,
+  holidays,
   now,
   limit = 3,
 }: {
   buses?: ShuttleBusSchedule[];
   specialPeriods?: ShuttleSpecialPeriods;
+  holidays?: PublicHolidaySnapshot;
   now: Date | null;
   limit?: number;
 }): CurrentShuttleSummary {
   if (!now) {
     return {
+      holiday: getPublicHoliday("", holidays),
+      operationStatus: "unconfirmed",
+      operationEvidence: [],
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: false,
       isOperatingPeriod: false,
       isSpecialSchedule: false,
@@ -259,11 +368,25 @@ export function getCurrentShuttleSummary({
   }
 
   const dateInfo = getDateInfo(now);
+  const { holiday, operationStatus, serviceExceptions, operationEvidence } = getShuttleDayStatus({
+    dateString: dateInfo.dateString, specialPeriods, holidays, now,
+  });
+  const isException = operationStatus === "exception";
   const scheduleType = getShuttleScheduleType(now, specialPeriods);
 
-  if (dateInfo.isWeekend) {
+  if (operationStatus === "unconfirmed" || operationStatus === "closed") {
     return {
+      holiday, operationStatus, operationEvidence, departures: [], additionalServicePeriods: [],
+      isWeekend: dateInfo.isWeekend, isOperatingPeriod: scheduleType !== null,
+      isSpecialSchedule: false, scheduleLabel: "참고 시간표", hasMoreToday: false,
+    };
+  }
+
+  if (dateInfo.isWeekend && !isException) {
+    return {
+      holiday, operationStatus, operationEvidence,
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: true,
       isOperatingPeriod: scheduleType !== null,
       isSpecialSchedule: false,
@@ -274,9 +397,11 @@ export function getCurrentShuttleSummary({
     };
   }
 
-  if (!scheduleType) {
+  if (!scheduleType && !isException) {
     return {
+      holiday, operationStatus, operationEvidence,
       departures: [],
+      additionalServicePeriods: [],
       isWeekend: false,
       isOperatingPeriod: false,
       isSpecialSchedule: false,
@@ -285,15 +410,24 @@ export function getCurrentShuttleSummary({
     };
   }
 
-  const { buses: effectiveBuses, isSpecialSchedule } = applySpecialPeriods({
+  const { buses: effectiveBuses, isSpecialSchedule } = isException ? {
+    buses: getShuttleExceptionBuses(Array.isArray(buses) ? buses : [], serviceExceptions),
+    isSpecialSchedule: true,
+  } : applySpecialPeriods({
     buses: Array.isArray(buses) ? buses : [],
     dateString: dateInfo.dateString,
     specialPeriods,
   });
+  const additionalServicePeriods = (isException ? [] : specialPeriods?.specialPeriods ?? [])
+    .map((period) => ({
+      ...period,
+      additionalServices: getRemainingShuttleServices(period, now),
+    }))
+    .filter((period) => period.additionalServices.length > 0);
 
   const departures = effectiveBuses
     .map((bus): NextShuttleDeparture | null => {
-      const nextTime = bus.schedules[scheduleType].find((time) => {
+      const nextTime = bus.schedules[scheduleType ?? "mondayToThursday"].find((time) => {
         const minutes = timeToMinutes(time);
         return minutes !== null && minutes > dateInfo.currentMinutes;
       });
@@ -313,11 +447,14 @@ export function getCurrentShuttleSummary({
     .sort((a, b) => a.minutesUntil - b.minutesUntil);
 
   return {
+    holiday, operationStatus, operationEvidence,
     departures: departures.slice(0, limit),
+    additionalServicePeriods,
     isWeekend: false,
     isOperatingPeriod: true,
     isSpecialSchedule,
-    scheduleLabel: getScheduleLabel(scheduleType, isSpecialSchedule),
-    hasMoreToday: departures.length > 0,
+    scheduleLabel: getScheduleLabel(scheduleType ?? "mondayToThursday", isSpecialSchedule),
+    hasMoreToday:
+      departures.length > 0 || additionalServicePeriods.length > 0,
   };
 }

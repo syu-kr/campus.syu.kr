@@ -11,6 +11,7 @@ import {
   fetchShuttleBuses,
   fetchBusLocationStatus,
   fetchShuttleSpecialPeriods,
+  fetchPublicHolidays,
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
 import {
@@ -24,9 +25,12 @@ import {
   ShuttleMap,
   type ShuttleMapHandle,
 } from "@/app/features/shuttle/ShuttleMap";
+import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import {
   createScheduleCopy,
   getShuttleScheduleType,
+  getShuttleDayStatus,
+  getShuttleExceptionBuses,
   isDateInSpecialPeriod,
   isReplacementSpecialPeriod,
   isShuttleVacationDate,
@@ -61,6 +65,13 @@ export default function ShuttleSection() {
     queryFn: () => fetchShuttleBuses(),
     staleTime: FIVE_MINUTES,
     gcTime: 30 * ONE_MINUTE,
+  });
+
+  const { data: holidays } = useQuery({
+    queryKey: ["public-holidays"],
+    queryFn: fetchPublicHolidays,
+    staleTime: FIVE_MINUTES,
+    refetchInterval: FIVE_MINUTES,
   });
 
   const {
@@ -143,6 +154,13 @@ export default function ShuttleSection() {
     };
   }, [locale, now]);
 
+  const dayStatus = getShuttleDayStatus({
+    dateString: dateInfo.dateStr, specialPeriods, holidays, now,
+  });
+  const isException = dayStatus.operationStatus === "exception";
+  const isWeekendWithoutException = dateInfo.isWeekend && !isException;
+  const canPredictDepartures = dayStatus.operationStatus === "regular" || isException;
+
   const isVacationToday = useMemo(
     () => isShuttleVacationDate(dateInfo.dateStr, specialPeriods),
     [dateInfo.dateStr, specialPeriods],
@@ -185,10 +203,18 @@ export default function ShuttleSection() {
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
+  const additionalServiceNotices = (specialPeriods?.specialPeriods ?? []).filter(
+    (period) =>
+      (period.additionalServices?.length ?? 0) > 0 &&
+      period.endDate >= dateInfo.dateStr,
+  );
+  const timetableSpecialPeriods = activeSpecialPeriods.filter(
+    (period) => !period.additionalServices?.length,
+  );
   const hasReplacementSpecialSchedule =
-    activeReplacementSpecialPeriods.length > 0;
-  const specialScheduleIsCurrent = activeReplacementSpecialPeriods.length > 0;
-  const currentRegularScheduleType = dateInfo.isWeekend
+    activeReplacementSpecialPeriods.length > 0 || isException;
+  const specialScheduleIsCurrent = canPredictDepartures && !isWeekendWithoutException && hasReplacementSpecialSchedule;
+  const currentRegularScheduleType = isWeekendWithoutException || !canPredictDepartures || isException
     ? null
     : currentScheduleType;
   const dayButtons = [
@@ -258,6 +284,9 @@ export default function ShuttleSection() {
       ...bus,
       schedules: createScheduleCopy(bus.schedules),
     }));
+    if (isException && useSpecialSchedule) {
+      return getShuttleExceptionBuses(normalizedBusList, dayStatus.serviceExceptions);
+    }
     const periodList = Array.isArray(specialPeriods?.specialPeriods)
       ? specialPeriods.specialPeriods
       : [];
@@ -355,6 +384,8 @@ export default function ShuttleSection() {
     dateInfo.dateStr,
     specialPeriods?.specialPeriods,
     useSpecialSchedule,
+    isException,
+    dayStatus.serviceExceptions,
   ]);
 
   // 노선별 가장 빨리 출발하는 버스 (30분 이내인 경우만)
@@ -366,7 +397,7 @@ export default function ShuttleSection() {
     if (
       !busesWithSpecialPeriods ||
       busesWithSpecialPeriods.length === 0 ||
-      dateInfo.isWeekend ||
+      isWeekendWithoutException ||
       !selectedButtonIsCurrent
     )
       return [];
@@ -413,6 +444,7 @@ export default function ShuttleSection() {
     dateInfo,
     selectedButtonIsCurrent,
     selectedType,
+    isWeekendWithoutException,
   ]);
 
   // 노선별 가장 빨리 오는 버스 시간 (하이라이트용)
@@ -420,7 +452,7 @@ export default function ShuttleSection() {
     if (
       !busesWithSpecialPeriods ||
       busesWithSpecialPeriods.length === 0 ||
-      dateInfo.isWeekend ||
+      isWeekendWithoutException ||
       !selectedButtonIsCurrent
     )
       return new Map();
@@ -452,15 +484,20 @@ export default function ShuttleSection() {
     dateInfo,
     selectedButtonIsCurrent,
     selectedType,
+    isWeekendWithoutException,
   ]);
 
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
+    const operationBuses = isException
+      ? getShuttleExceptionBuses(Array.isArray(buses) ? buses : [], dayStatus.serviceExceptions)
+      : busesWithSpecialPeriods;
+    const operationScheduleType = currentScheduleType ?? (isException ? defaultType : null);
     if (
-      !busesWithSpecialPeriods ||
-      busesWithSpecialPeriods.length === 0 ||
+      dayStatus.operationStatus === "closed" ||
+      operationBuses.length === 0 ||
       !now ||
-      !currentScheduleType
+      !operationScheduleType
     )
       return false;
 
@@ -469,9 +506,9 @@ export default function ShuttleSection() {
     let lastTime = -Infinity;
 
     // 현재 요일의 모든 버스 시간에서 첫차와 마지막차 찾기
-    busesWithSpecialPeriods.forEach((bus) => {
-      const times = Array.isArray(bus.schedules?.[currentScheduleType])
-        ? bus.schedules[currentScheduleType]
+    operationBuses.forEach((bus) => {
+      const times = Array.isArray(bus.schedules?.[operationScheduleType])
+        ? bus.schedules[operationScheduleType]
         : [];
       if (times.length > 0) {
         times.forEach((time) => {
@@ -483,6 +520,19 @@ export default function ShuttleSection() {
       }
     });
 
+    (isException ? [] : activeSpecialPeriods).forEach((period) => {
+      period.additionalServices?.forEach((service) => {
+        const start = timeToMinutes(
+          service.type === "window" ? service.startTime : service.time,
+        );
+        const end = timeToMinutes(
+          service.type === "window" ? service.endTime : service.time,
+        );
+        if (start !== null) firstTime = Math.min(firstTime, start);
+        if (end !== null) lastTime = Math.max(lastTime, end);
+      });
+    });
+
     if (firstTime === Infinity || lastTime === -Infinity) {
       return false;
     }
@@ -492,18 +542,29 @@ export default function ShuttleSection() {
     const operationEnd = Math.min(24 * 60 - 1, lastTime + 30);
 
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
-  }, [busesWithSpecialPeriods, currentScheduleType, dateInfo, now]);
+  }, [
+    activeSpecialPeriods,
+    busesWithSpecialPeriods,
+    currentScheduleType,
+    dateInfo,
+    now,
+    buses,
+    dayStatus.operationStatus,
+    dayStatus.serviceExceptions,
+    defaultType,
+    isException,
+  ]);
 
-  const locationUnavailableMessage = currentScheduleType
+  const locationUnavailableMessage = currentScheduleType || isException
     ? text.locationUnavailableMessage
     : text.locationUnavailablePeriodMessage;
-  const outsideOperationMessage = currentScheduleType
+  const outsideOperationMessage = currentScheduleType || isException
     ? text.outsideOperation
     : text.outsideOperationPeriod;
 
   // 버스 위치는 표시 가능한 시간에 바로 불러온다.
   useEffect(() => {
-    if (dateInfo.isWeekend || !isWithinOperationHours) {
+    if (isWeekendWithoutException || !isWithinOperationHours) {
       return;
     }
 
@@ -543,7 +604,7 @@ export default function ShuttleSection() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, [
-    dateInfo.isWeekend,
+    isWeekendWithoutException,
     isWithinOperationHours,
     text.locationError,
   ]);
@@ -559,6 +620,56 @@ export default function ShuttleSection() {
           {text.weekdaySuffix})
         </p>
       </div>
+
+      {(!canPredictDepartures || dayStatus.holiday.names.length > 0) && (
+        <Card className="mb-6 border border-amber-200 bg-amber-50/70" hover={false} role="status">
+          {dayStatus.holiday.names.length > 0 && (
+            <p className="text-sm font-semibold text-amber-900">
+              {dictionary.publicHolidays.label}: {dayStatus.holiday.names.join(" · ")}
+            </p>
+          )}
+          {!canPredictDepartures && (
+            <p className="mt-1 text-sm text-amber-900">
+              {dayStatus.operationStatus === "closed"
+                ? dictionary.publicHolidays.shuttleClosed
+                : dayStatus.holiday.status === "holiday"
+                  ? dictionary.publicHolidays.shuttleHolidayClosed
+                  : dictionary.publicHolidays.shuttleUnconfirmed}
+            </p>
+          )}
+          {dayStatus.holiday.isStale && dayStatus.operationStatus === "unconfirmed" && (
+            <p className="mt-2 text-xs leading-5 text-amber-900">{dictionary.publicHolidays.stale}</p>
+          )}
+          {holidays?.lastSuccessAt && (
+            <p className="mt-2 text-xs leading-5 text-amber-900">
+              {dictionary.publicHolidays.updatedAt}: {new Intl.DateTimeFormat(
+                locale === "ko" ? "ko-KR" : "en-US",
+                { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" },
+              ).format(new Date(holidays.lastSuccessAt))}
+            </p>
+          )}
+          {holidays && (
+            <a href={holidays.sourceUrl} target="_blank" rel="noopener noreferrer"
+              className="mt-2 inline-block text-xs text-amber-900 underline underline-offset-2">
+              {dictionary.publicHolidays.source}
+            </a>
+          )}
+          <VerifiedShuttleSources records={dayStatus.operationEvidence} />
+        </Card>
+      )}
+
+      {!specialPeriodsError && additionalServiceNotices.length > 0 && (
+        <div className="mb-6 space-y-3">
+          {additionalServiceNotices.map((period) => (
+            <ShuttleAdditionalServicesCard
+              key={period.id}
+              period={period}
+              now={now}
+              showCountdown={dayStatus.operationStatus === "regular"}
+            />
+          ))}
+        </div>
+      )}
 
       {(busesError || specialPeriodsError) && (
         <StateCard
@@ -581,7 +692,7 @@ export default function ShuttleSection() {
         />
       )}
 
-      {dateInfo.isWeekend && (
+      {isWeekendWithoutException && canPredictDepartures && (
         <Card
           className="mb-6 border border-amber-200 bg-amber-50/70"
           hover={false}
@@ -592,7 +703,7 @@ export default function ShuttleSection() {
         </Card>
       )}
 
-      {!dateInfo.isWeekend &&
+      {!isWeekendWithoutException &&
         isWithinOperationHours &&
         nextBusesWithin30Min.length > 0 && (
           <Card
@@ -629,7 +740,7 @@ export default function ShuttleSection() {
           </Card>
         )}
 
-      {!dateInfo.isWeekend && (
+      {!isWeekendWithoutException && dayStatus.operationStatus !== "closed" && (
         <Card className="mb-6">
           <div className="mb-4">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-3 sm:gap-0">
@@ -857,21 +968,30 @@ export default function ShuttleSection() {
         hover={false}
       >
         <p className="text-sm font-semibold text-neutral-900">
-          {text.scheduleBase}: {selectedScheduleLabel}
+          {canPredictDepartures ? text.scheduleBase : text.selectedSchedule}: {selectedScheduleLabel}
         </p>
-        <p className="mt-1 text-xs leading-5 text-neutral-600">
-          {text.scheduleNotice}
-        </p>
+        {isException && useSpecialSchedule ? (
+          <VerifiedShuttleSources records={dayStatus.operationEvidence} />
+        ) : (
+          <p className="mt-1 text-xs leading-5 text-neutral-600">{text.scheduleNotice}</p>
+        )}
+        {!canPredictDepartures && (
+          <p className="mt-2 text-xs leading-5 text-neutral-600">
+            {dayStatus.holiday.status === "holiday"
+              ? dictionary.publicHolidays.referenceHolidaySchedule
+              : dictionary.publicHolidays.referenceSchedule}
+          </p>
+        )}
       </Card>
 
-      {activeSpecialPeriods.length > 0 && (
+      {timetableSpecialPeriods.length > 0 && (
         <Card
           className="mb-4 border border-purple-200 bg-purple-50/70 text-sm text-purple-900"
           hover={false}
         >
           <p className="font-bold mb-2">{text.specialPeriodTitle}</p>
           <ul className="list-disc list-inside space-y-1">
-            {activeSpecialPeriods.map((period) => (
+            {timetableSpecialPeriods.map((period) => (
               <li key={period.id} className="text-purple-800">
                 {period.name}: {period.description}
               </li>
@@ -1024,11 +1144,11 @@ export default function ShuttleSection() {
                               isNextBus &&
                               minutesUntil <= 30 &&
                               selectedButtonIsCurrent &&
-                              !dateInfo.isWeekend;
+                              !isWeekendWithoutException;
                             const isPassedTime =
                               minutesUntil < 0 &&
                               selectedButtonIsCurrent &&
-                              !dateInfo.isWeekend;
+                              !isWeekendWithoutException;
                             const timeChipClass = isPassedTime
                               ? "bg-gray-100 border border-gray-300 text-gray-500"
                               : isWithin30Min
@@ -1048,9 +1168,15 @@ export default function ShuttleSection() {
                       </div>
                     )}
 
-                    <p className="text-xs text-neutral-500 mt-3">
-                      {text.lastUpdated}: {bus.lastUpdated}
-                    </p>
+                    {isException && useSpecialSchedule ? (
+                      <VerifiedShuttleSources records={dayStatus.serviceExceptions.filter(
+                        (record) => record.routeId === bus.id,
+                      )} />
+                    ) : (
+                      <p className="text-xs text-neutral-500 mt-3">
+                        {text.lastUpdated}: {bus.lastUpdated}
+                      </p>
+                    )}
                   </div>
                 )}
               </Card>
@@ -1059,6 +1185,23 @@ export default function ShuttleSection() {
       </div>
     </Container>
   );
+}
+
+function VerifiedShuttleSources({ records }: {
+  records: { sourceUrl: string; verifiedAt: string }[];
+}) {
+  const text = useDictionary().pages.busInfo;
+  const sources = Array.from(new Map(records.map((record) => [
+    `${record.sourceUrl} ${record.verifiedAt}`, record,
+  ])).values());
+  return sources.map((record) => (
+    <p key={`${record.sourceUrl} ${record.verifiedAt}`} className="mt-2 text-xs leading-5 text-neutral-600">
+      <a href={record.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+        {text.verifiedSource}
+      </a>
+      {" · "}{text.verifiedAt}: <time dateTime={record.verifiedAt}>{record.verifiedAt}</time>
+    </p>
+  ));
 }
 
 function ShuttleLocationState({

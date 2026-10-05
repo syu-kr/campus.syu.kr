@@ -15,6 +15,8 @@ const PERMANENT_REDIRECTS = [
   ["/en/more/campus-tips", "/en/campus/campus-tips"],
   ["/more/campus-tips/suggest", "/campus/campus-tips/suggest"],
   ["/en/more/campus-tips/suggest", "/en/campus/campus-tips/suggest"],
+  ["/service/notices/018-roommate-policy-update", "/service/notices/017-roommate-board"],
+  ["/en/service/notices/018-roommate-policy-update", "/en/service/notices/017-roommate-board"],
 ];
 
 const nextConfig = {
@@ -109,6 +111,7 @@ const nextConfig = {
       "/api/contact",
       "/api/campus-tips/suggestions",
       "/api/meet/:path*",
+      "/api/roommates/:path*",
       "/api/lecture/timetable/shares/:path*",
     ];
     const noIndexPrivatePageHeaders = [
@@ -151,6 +154,10 @@ const nextConfig = {
       ...["/more/meet/:roomId", "/en/more/meet/:roomId"].map((source) => ({
         source,
         headers: noIndexPrivatePageHeaders,
+      })),
+      ...["/campus/roommates/:path*", "/en/campus/roommates/:path*", "/api/roommates/:path*", "/api/admin/roommate-posts", "/api/admin/roommate-reports"].map((source) => ({
+        source,
+        headers: [...noIndexPrivatePageHeaders, { key: "Referrer-Policy", value: "no-referrer" }],
       })),
       {
         source: "/sw.js",

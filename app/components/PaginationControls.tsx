@@ -1,6 +1,7 @@
 "use client";
 
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "./Button";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -32,29 +33,27 @@ export function PaginationControls({
       aria-label={dictionary.pagination.label}
       className="mt-8 flex flex-wrap items-center justify-center gap-1 md:gap-2"
     >
-      <button
+      <Button
+        variant="secondary"
         type="button"
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-50 md:px-3"
+        className="px-2 md:px-3"
       >
         {dictionary.pagination.previous}
-      </button>
+      </Button>
 
       {pageNumbers.map((page) => (
-        <button
+        <Button
           key={page}
           type="button"
           aria-current={currentPage === page ? "page" : undefined}
           onClick={() => onPageChange(page)}
-          className={`rounded-lg px-2 py-2 text-sm transition-colors md:px-3 ${
-            currentPage === page
-              ? "bg-primary-600 text-white"
-              : "bg-neutral-200 text-neutral-900 hover:bg-neutral-300"
-          }`}
+          variant={currentPage === page ? "primary" : "secondary"}
+          className="min-w-11 px-2 md:px-3"
         >
           {page}
-        </button>
+        </Button>
       ))}
 
       {endPage < totalPages && (
@@ -62,7 +61,7 @@ export function PaginationControls({
           aria-label={dictionary.pagination.pageSelect}
           value={currentPage}
           onChange={(event) => onPageChange(Number(event.target.value))}
-          className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 focus:ring-2 focus:ring-primary-500 md:px-3"
+          className="min-h-11 rounded-button border border-neutral-300 bg-white px-2 py-2 text-sm text-neutral-700 focus-visible:ring-2 focus-visible:ring-primary-500 md:px-3"
         >
           <option value={currentPage}>{currentPage}</option>
           {Array.from({ length: totalPages }, (_, index) => index + 1)
@@ -75,14 +74,15 @@ export function PaginationControls({
         </select>
       )}
 
-      <button
+      <Button
+        variant="secondary"
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
-        className="rounded-lg bg-neutral-200 px-2 py-2 text-sm text-neutral-900 transition-colors hover:bg-neutral-300 disabled:cursor-not-allowed disabled:opacity-50 md:px-3"
+        className="px-2 md:px-3"
       >
         {dictionary.pagination.next}
-      </button>
+      </Button>
     </nav>
   );
 }

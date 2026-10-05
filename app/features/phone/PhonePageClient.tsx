@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+import { Button } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/app/components/LocaleProvider";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
+import { StateCard } from "@/app/components/StateCard";
 import { PhoneCallButton } from "@/app/components/PhoneCallButton";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -34,7 +36,7 @@ export default function PhonePageClient({
   const ITEMS_PER_PAGE = 10;
   const [searchQuery, setSearchQuery] = useUrlSearch();
 
-  const { data: phoneData, isLoading } = useQuery({
+  const { data: phoneData, isLoading, isError, refetch } = useQuery({
     queryKey: ["phone-numbers"],
     queryFn: () => fetchPhoneNumbers(),
     initialData: initialPhoneNumbers,
@@ -91,7 +93,23 @@ export default function PhonePageClient({
         searchOnChange
       />
 
-      {!isLoading && (
+      {isError && (
+        <StateCard
+          type="error"
+          className="mb-6"
+          title={dictionary.home.dashboard.loadFailedTitle}
+          message={dictionary.home.dashboard.loadFailedMessage}
+          action={
+            <Button
+              onClick={() => refetch()}
+            >
+              {dictionary.home.dashboard.retry}
+            </Button>
+          }
+        />
+      )}
+
+      {!isLoading && (!isError || Boolean(phoneData?.length)) && (
         <div className="mb-4 text-sm text-neutral-600">
           {formatPhoneCount(filteredDirectory.length, text.itemsFoundSuffix, locale)}
           {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
@@ -111,7 +129,7 @@ export default function PhonePageClient({
 
       <div className="space-y-3">
         {isLoading && <Skeleton count={5} />}
-        {!isLoading && filteredDirectory.length === 0 ? (
+        {!isLoading && !isError && filteredDirectory.length === 0 ? (
           <Card>
             <div className="py-8 text-center text-neutral-500">
               {text.empty}

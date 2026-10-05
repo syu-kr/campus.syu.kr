@@ -6,8 +6,24 @@ import type {
   PhoneNumber,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
+  PublicHolidaySnapshot,
 } from "@/types";
-import { readDailyCrawlDataJson } from "./crawl-data";
+import { readDailyCrawlDataJson, readDailyCrawlDataSnapshot } from "./crawl-data";
+import { unstable_rethrow } from "next/navigation";
+import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "../public-holidays";
+
+export async function getHomePublicHolidays(): Promise<PublicHolidaySnapshot> {
+  try {
+    const snapshot = await readDailyCrawlDataSnapshot<unknown>("public-holidays.json");
+    return {
+      ...parsePublicHolidaySnapshot(snapshot.data),
+      stale: snapshot.source === "bundled-fallback" || snapshot.sourceHealth?.status === "stale",
+    };
+  } catch (error) {
+    unstable_rethrow(error);
+    return emptyPublicHolidays();
+  }
+}
 
 async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
   try {

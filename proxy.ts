@@ -170,6 +170,7 @@ function buildContentSecurityPolicy(nonce: string) {
       "https://*.kakao.com",
       "https://*.kakaocdn.net",
       "https://*.daumcdn.net",
+      getSentryOrigin(),
     ].filter(Boolean).join(" "),
     "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://libmo.syu.ac.kr",
     "worker-src 'self' blob:",
@@ -178,6 +179,15 @@ function buildContentSecurityPolicy(nonce: string) {
   ]
     .filter(Boolean)
     .join("; ");
+}
+
+function getSentryOrigin() {
+  try {
+    const dsn = new URL(process.env.NEXT_PUBLIC_SENTRY_DSN || "");
+    return dsn.protocol === "https:" ? dsn.origin : "";
+  } catch {
+    return "";
+  }
 }
 
 export const config = {

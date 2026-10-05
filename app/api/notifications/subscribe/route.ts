@@ -21,6 +21,7 @@ const TOKEN_RATE_LIMIT = {
 };
 
 export async function POST(req: NextRequest) {
+  let rateLimitScope = "subscribe-ip";
   try {
     enforceSameOrigin(req);
     await enforceRateLimit(req, "notification-subscribe", RATE_LIMIT);
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    rateLimitScope = "subscribe-token-ip";
     await enforceRateLimit(
       req,
       `notification-token:${getTokenDocumentId(fcm_token)}`,
@@ -73,7 +75,10 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     const rateLimited = rateLimitResponse(error);
-    if (rateLimited) return rateLimited;
+    if (rateLimited) {
+      rateLimited.headers.set("X-RateLimit-Scope", rateLimitScope);
+      return rateLimited;
+    }
 
     return apiErrorResponse(error, "구독 처리 중 오류가 발생했습니다");
   }

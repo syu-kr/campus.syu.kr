@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isDailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import { readDailyCrawlDataSnapshot } from "@/lib/server/crawl-data";
+import { parsePublicHolidaySnapshot } from "@/lib/public-holidays";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,11 @@ export async function GET(_request: Request, { params }: RouteContext) {
   try {
     const snapshot = await readDailyCrawlDataSnapshot<unknown>(fileName);
 
-    return NextResponse.json(snapshot.data, {
+    const data = fileName === "public-holidays.json" ? {
+      ...parsePublicHolidaySnapshot(snapshot.data),
+      stale: snapshot.source === "bundled-fallback" || snapshot.sourceHealth?.status === "stale",
+    } : snapshot.data;
+    return NextResponse.json(data, {
       headers: {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
         "X-Crawl-Data-Source": snapshot.source,

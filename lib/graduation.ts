@@ -1,7 +1,7 @@
 import departmentRuleData from "@/public/data/graduation-department-rules.json";
-import curriculumSelectionRuleData from "@/public/data/curriculum-course-selection-rules.json";
-import verifiedCurriculumData from "@/public/data/curriculum-courses-2025-verified.json";
-import graduationRequirements2025 from "@/public/data/graduation-requirements-2025.json";
+import curriculumSelectionRuleData from "@/public/data/curriculum-course-selection-rules-2026.json";
+import verifiedCurriculumData from "@/public/data/curriculum-courses-2026-verified.json";
+import graduationRequirements2026 from "@/public/data/graduation-requirements-2026.json";
 import graduationSourceData from "@/public/data/graduation-sources.json";
 import {
   DEFAULT_LOCALE,
@@ -72,6 +72,11 @@ export interface RequirementProfile {
   totalCredits: number;
   categories: CreditCategories;
   graduationConditions: string[];
+  requiredCourses?: string[];
+  transferYear?: number;
+  sourcePages?: number[];
+  verificationStatus?: "verified" | "needsReview";
+  reviewCreditKeys?: Array<CreditCategoryKey | "totalCredits">;
   warnings?: string[];
 }
 
@@ -104,6 +109,7 @@ interface DepartmentRule {
   description: string;
   sourceIds: string[];
   verificationStatus: "verified" | "needsReview";
+  sourceYear?: string;
 }
 
 export interface VerifiedCurriculumCourse {
@@ -115,6 +121,9 @@ export interface VerifiedCurriculumCourse {
   credits: number;
   year: number;
   semester: number;
+  majorId?: string | null;
+  verificationStatus?: "humanVerified" | "needsReview";
+  sourcePages?: number[];
 }
 
 interface VerifiedCurriculumData {
@@ -122,6 +131,7 @@ interface VerifiedCurriculumData {
     sourceYear: string;
     generatedAt: string;
     fullyVerifiedDepartmentIds: string[];
+    reviewedDepartmentIds?: string[];
   };
   courses: VerifiedCurriculumCourse[];
 }
@@ -155,6 +165,7 @@ export interface GraduationSelection {
   majorId?: string;
   admissionType: AdmissionType | "";
   majorTrack: MajorTrack | "";
+  transferYear?: number;
 }
 
 export type CompletedCreditInput = Partial<
@@ -167,6 +178,7 @@ export interface ChecklistItem {
   description?: string;
   sourceIds: string[];
   verificationStatus: "verified" | "needsReview";
+  sourcePages?: number[];
 }
 
 interface CreditEvaluationItem {
@@ -176,7 +188,8 @@ interface CreditEvaluationItem {
   completed: number;
   shortage: number;
   sourceIds: string[];
-  status: "satisfied" | "short";
+  sourcePages?: number[];
+  status: EvaluationStatus;
 }
 
 interface ChecklistEvaluationItem extends ChecklistItem {
@@ -193,8 +206,10 @@ export interface GraduationEvaluationResult {
   totalCheckCount: number;
 }
 
-const GRADUATION_DATA = graduationRequirements2025 as GraduationData;
-const DEPARTMENT_RULES = departmentRuleData.rules as DepartmentRule[];
+const GRADUATION_DATA = graduationRequirements2026 as GraduationData;
+const DEPARTMENT_RULES = (departmentRuleData.rules as DepartmentRule[]).filter(
+  (rule) => rule.sourceYear === GRADUATION_DATA.metadata.sourceYear,
+);
 const SOURCES = graduationSourceData.sources as GraduationSource[];
 const VERIFIED_CURRICULUM = verifiedCurriculumData as VerifiedCurriculumData;
 const CURRICULUM_SELECTION_RULES =
@@ -261,6 +276,7 @@ export function getAvailableMajorTracks(
   departmentId: string,
   majorId: string | undefined,
   admissionType: AdmissionType | "",
+  transferYear?: number,
 ): MajorTrack[] {
   const group = resolveRequirementGroup(departmentId, majorId);
   if (!group || !admissionType) return [];
@@ -269,10 +285,20 @@ export function getAvailableMajorTracks(
       .filter(
         (profile) =>
           profile.requirementGroup === group &&
-          profile.admissionType === admissionType,
+          profile.admissionType === admissionType &&
+          (profile.transferYear === undefined || profile.transferYear === transferYear),
       )
       .map((profile) => profile.majorTrack),
   );
+}
+
+export function getAvailableTransferYears(departmentId: string, majorId?: string) {
+  const group = resolveRequirementGroup(departmentId, majorId);
+  return unique(
+    GRADUATION_DATA.requirementProfiles
+      .filter((profile) => profile.requirementGroup === group && profile.admissionType === "departmentTransfer")
+      .flatMap((profile) => profile.transferYear === undefined ? [] : [profile.transferYear]),
+  ).sort((a, b) => a - b);
 }
 
 export function resolveRequirement(
@@ -288,7 +314,8 @@ export function resolveRequirement(
     (profile) =>
       profile.requirementGroup === group &&
       profile.admissionType === selection.admissionType &&
-      profile.majorTrack === selection.majorTrack,
+      profile.majorTrack === selection.majorTrack &&
+      (profile.transferYear === undefined || profile.transferYear === selection.transferYear),
   );
 }
 
@@ -297,7 +324,7 @@ export function getInputCreditKeys(
 ): Array<CreditCategoryKey | "totalCredits"> {
   return CREDIT_CATEGORY_ORDER.filter(
     (key) =>
-      key === "totalCredits" || Number(requirement.categories[key] ?? 0) > 0,
+      key === "totalCredits" ? requirement.totalCredits > 0 : Number(requirement.categories[key] ?? 0) > 0,
   );
 }
 
@@ -307,11 +334,12 @@ export function getChecklistItems(
 ): ChecklistItem[] {
   if (!requirement) return [];
 
-  const commonItems = requirement.graduationConditions.map(
+  const commonItems = [...requirement.graduationConditions, ...(requirement.requiredCourses ?? [])].map(
     (condition, index) => ({
       id: `common-${requirement.id}-${index}`,
       label: condition,
-      sourceIds: ["syu-graduation-guide", "graduation-self-check-sheet"],
+      sourceIds: ["syu-2026-handbook"],
+      sourcePages: requirement.sourcePages,
       verificationStatus: "verified" as const,
     }),
   );
@@ -324,10 +352,7 @@ export function getChecklistItems(
 
 export function getSourcesForSelection(departmentId: string) {
   const ids = new Set([
-    "syu-graduation-guide",
-    "syu-major-system",
-    "graduation-self-check-sheet",
-    "syu-2025-handbook",
+    "syu-2026-handbook",
     ...DEPARTMENT_RULES.filter((rule) => rule.departmentId === departmentId)
       .flatMap((rule) => rule.sourceIds),
   ]);
@@ -338,18 +363,31 @@ export function getVerifiedCurriculumAvailability(
   departmentId: string,
   admissionYear: string,
   locale: Locale = DEFAULT_LOCALE,
+  majorId?: string,
 ) {
   const text = getDictionary(normalizeLocale(locale)).pages.graduation;
-  const courses = VERIFIED_CURRICULUM.courses.filter(
-    (course) => course.departmentId === departmentId,
+  if (getAvailableMajors(departmentId).length > 0 &&
+    !getAvailableMajors(departmentId).some((major) => major.id === majorId)) {
+    return {
+      available: false,
+      sourceYear: VERIFIED_CURRICULUM.metadata.sourceYear,
+      usesReferenceCurriculum: false,
+      courseCount: 0,
+      reason: text.courses.majorFirstReason,
+    };
+  }
+  const departmentCourses = VERIFIED_CURRICULUM.courses.filter(
+    (course) => course.departmentId === departmentId && (!course.majorId || course.majorId === majorId),
   );
+  const courses = departmentCourses.filter((course) => course.verificationStatus === "humanVerified");
   const sourceYear = VERIFIED_CURRICULUM.metadata.sourceYear;
   const fullyVerified =
     VERIFIED_CURRICULUM.metadata.fullyVerifiedDepartmentIds.includes(
       departmentId,
     );
 
-  if (!fullyVerified || courses.length === 0) {
+  const reviewed = fullyVerified || VERIFIED_CURRICULUM.metadata.reviewedDepartmentIds?.includes(departmentId);
+  if (!reviewed || courses.length === 0) {
     return {
       available: false,
       sourceYear,
@@ -360,31 +398,36 @@ export function getVerifiedCurriculumAvailability(
   }
 
   const usesReferenceCurriculum = admissionYear !== sourceYear;
+  const pendingCount = departmentCourses.length - courses.length;
   return {
     available: true,
     sourceYear,
     usesReferenceCurriculum,
     courseCount: courses.length,
-    reason: usesReferenceCurriculum
+    reason: [usesReferenceCurriculum
       ? text.courses.referenceReason
           .replace("{admissionYear}", admissionYear)
           .replace("{sourceYear}", sourceYear)
-      : "",
+      : "", pendingCount > 0 ? text.courses.partialReviewReason.replace("{count}", String(pendingCount)) : ""]
+      .filter(Boolean).join(" "),
   };
 }
 
 export function getVerifiedCurriculumCourses(
   departmentId: string,
   admissionYear: string,
+  majorId?: string,
 ) {
   const availability = getVerifiedCurriculumAvailability(
     departmentId,
     admissionYear,
+    DEFAULT_LOCALE,
+    majorId,
   );
   if (!availability.available) return [];
 
   return VERIFIED_CURRICULUM.courses
-    .filter((course) => course.departmentId === departmentId)
+    .filter((course) => isEligibleCourse(course, departmentId, majorId))
     .sort(
       (a, b) =>
         a.year - b.year ||
@@ -508,8 +551,12 @@ export function evaluateGraduation(
       required,
       completed,
       shortage,
-      sourceIds: ["syu-graduation-guide", "graduation-self-check-sheet"],
-      status: shortage > 0 ? ("short" as const) : ("satisfied" as const),
+      sourceIds: ["syu-2026-handbook"],
+      sourcePages: requirement.sourcePages,
+      status: requirement.verificationStatus === "needsReview" &&
+          (!requirement.reviewCreditKeys || requirement.reviewCreditKeys.includes(key))
+          ? ("checkRequired" as const)
+          : shortage > 0 ? ("short" as const) : ("satisfied" as const),
     };
   });
 
@@ -520,11 +567,9 @@ export function evaluateGraduation(
         ...item,
         answer,
         status:
-          answer === "satisfied" || answer === "notApplicable"
-            ? ("satisfied" as const)
-            : answer === "incomplete"
-              ? ("short" as const)
-              : ("checkRequired" as const),
+          answer === "incomplete" ? ("short" as const)
+            : answer === "satisfied" && item.verificationStatus === "verified"
+              ? ("satisfied" as const) : ("checkRequired" as const),
       };
     },
   );
@@ -537,10 +582,11 @@ export function evaluateGraduation(
             .replace("{sourceYear}", GRADUATION_DATA.metadata.sourceYear),
         ]
       : []),
-    ...(selection.admissionType === "transfer3"
+    ...(["transfer2", "transfer3", "transfer4"].includes(selection.admissionType)
       ? [text.result.transfer3Warning]
       : []),
     ...(requirement.warnings ?? []),
+    ...(requirement.verificationStatus === "needsReview" ? [text.result.sourceReviewWarning] : []),
     ...(getDepartmentById(selection.departmentId)?.warnings ?? []),
   ];
   const statuses = [
@@ -549,7 +595,7 @@ export function evaluateGraduation(
   ];
   const overallStatus = statuses.includes("short")
     ? "short"
-    : statuses.includes("checkRequired") || warnings.length > 0
+    : statuses.includes("checkRequired") || warnings.length > 0 || requirement.verificationStatus === "needsReview"
       ? "checkRequired"
       : "satisfied";
 
@@ -569,15 +615,24 @@ export function isCompleteSelection(selection: GraduationSelection) {
     selection.admissionYear &&
       selection.collegeId &&
       selection.departmentId &&
-      (majors.length === 0 || selection.majorId) &&
+      getDepartmentById(selection.departmentId)?.collegeId === selection.collegeId &&
+      (majors.length === 0 || majors.some((major) => major.id === selection.majorId)) &&
       selection.admissionType &&
-      selection.majorTrack,
+      selection.majorTrack &&
+      resolveRequirement(selection),
   );
+}
+
+function isEligibleCourse(course: VerifiedCurriculumCourse, departmentId: string, majorId?: string) {
+  return course.departmentId === departmentId &&
+    course.verificationStatus === "humanVerified" &&
+    (!course.majorId || course.majorId === majorId);
 }
 
 function resolveRequirementGroup(departmentId: string, majorId?: string) {
   const department = getDepartmentById(departmentId);
   if (!department) return;
+  if (department.majors?.length && !department.majors.some((major) => major.id === majorId)) return;
   return (
     department.majors?.find((major) => major.id === majorId)?.requirementGroup ??
     department.requirementGroup
@@ -585,7 +640,7 @@ function resolveRequirementGroup(departmentId: string, majorId?: string) {
 }
 
 function normalizeCredit(value: number | undefined) {
-  if (value == null || Number.isNaN(value)) return 0;
+  if (value == null || !Number.isFinite(value)) return 0;
   return Math.max(value, 0);
 }
 

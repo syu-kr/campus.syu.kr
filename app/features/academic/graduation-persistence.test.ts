@@ -74,4 +74,18 @@ describe("graduation persistence", () => {
   it("ignores unrelated URL hashes", () => {
     expect(parseGraduationSavedStateFromHash("#section")).toBeNull();
   });
+
+  it("keeps the department transfer year in exported and shared progress", () => {
+    const transferState = {
+      ...state,
+      selection: { ...state.selection, admissionType: "departmentTransfer" as const, transferYear: 3 },
+    };
+    const url = buildGraduationShareUrl(transferState, "https://campus.syu.kr/academic/graduation");
+    expect(parseGraduationSavedStateFromHash(new URL(url).hash)).toEqual(transferState);
+  });
+
+  it.each([0, 5, 2.5, "invalid"])("ignores an invalid department transfer year: %s", (transferYear) => {
+    const parsed = parseGraduationSavedStatePayload({ ...state, selection: { ...state.selection, transferYear } });
+    expect(parsed.selection.transferYear).toBeUndefined();
+  });
 });

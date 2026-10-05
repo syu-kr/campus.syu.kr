@@ -2,6 +2,7 @@
 
 import { Modal } from "@/app/components/Modal";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { Button } from "./Button";
 
 export interface SubmissionSummaryItem {
   label: string;
@@ -68,14 +69,14 @@ export function SubmissionResultModal({
           </dl>
         )}
 
-        <button
+        <Button
           type="button"
           autoFocus
           onClick={onClose}
-          className="mt-5 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          className="mt-5 w-full"
         >
           {text.confirm}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

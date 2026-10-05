@@ -86,6 +86,37 @@ export function createLocalizedAlternates(pathname: string, locale: Locale) {
 
 export const dictionaries = {
   ko: {
+    publicHolidays: {
+      label: "공휴일",
+      source: "공휴일 출처: 한국천문연구원",
+      updatedAt: "마지막 공휴일 확인",
+      unavailable: "공휴일 정보를 확인할 수 없습니다.",
+      stale: "공휴일 정보 갱신이 지연되고 있습니다. 최신 공지를 확인해주세요.",
+      shuttleHolidayClosed: "오늘은 공휴일로 셔틀을 운영하지 않습니다. 셔틀 시간표를 확인해주세요.",
+      shuttleUnconfirmed: "공휴일 정보를 확인할 수 없어 오늘의 셔틀 운행 정보를 안내하기 어렵습니다. 셔틀 시간표를 확인해주세요.",
+      shuttleClosed: "학교 안내에 따라 오늘 셔틀버스가 운행되지 않습니다.",
+      referenceHolidaySchedule: "아래 시간표는 운행일 기준입니다.",
+      referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
+    },
+    crawlDataStatus: {
+      staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
+      staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
+      lastSuccess: "마지막 정상 수집",
+      lastAttempt: "최근 수집 시도",
+      unknownSuccess: "이전 검증본의 수집 시각은 확인되지 않았습니다.",
+      statusUnavailable: "갱신 상태를 확인할 수 없습니다. 최신 정보는 공식 원문에서 확인해 주세요.",
+      fileLabels: {
+        "announcements-academic.json": "학사공지",
+        "announcements-campus-life.json": "학교생활공지",
+        "announcements-scholarship.json": "장학공지",
+        "announcements-events.json": "행사공지",
+        "announcements-departments.json": "학과공지",
+        "announcements-sw.json": "SW중심대학공지",
+        "cafeteria-menu.json": "학식",
+        "announcement-ai-metadata.json": "공지 AI 요약",
+        "public-holidays.json": "공휴일",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
       description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
@@ -349,6 +380,8 @@ export const dictionaries = {
         gymDescription: "헬스장, 스포츠 센터 정보",
         healthCenterTitle: "보건소",
         healthCenterDescription: "학생 의료 서비스",
+        roommatesTitle: "룸메이트 구하기",
+        roommatesDescription: "학교 이메일로 인증하고 기숙사 룸메이트 찾기",
       },
     },
     more: {
@@ -439,6 +472,7 @@ export const dictionaries = {
         enabled: "알림 설정이 완료되었습니다.",
       },
       errorFallback: "알림 설정 중 오류가 발생했습니다.",
+      rateLimited: "요청이 많아 잠시 기다려야 합니다. {time} 이후 다시 시도해주세요.",
       title: "새 소식을 알림으로 받아보시겠어요?",
       description:
         "서비스 공지와 주요 캠퍼스 소식을 브라우저 알림으로 받을 수 있습니다. 알림 설정은 알림 및 개인정보 페이지에서 언제든지 변경할 수 있습니다.",
@@ -495,6 +529,8 @@ export const dictionaries = {
         metaDescription: "학사일정",
         title: "학사일정",
         description: "2026학년도 학사일정을 확인하세요",
+        previousMonth: "이전 달",
+        nextMonth: "다음 달",
         weekDays: ["일", "월", "화", "수", "목", "금", "토"],
         exam: "시험",
         schedule: "일정",
@@ -530,13 +566,14 @@ export const dictionaries = {
       graduation: {
         metaTitle: "졸업요건 자가진단 | SYU CAMPUS",
         metaDescription:
-          "입학년도, 학과, 입학유형에 맞는 졸업요건을 확인하고 이수 현황을 점검하세요.",
+          "2026학년도 요람 기준으로 업데이트한 졸업요건을 확인하고, 입학년도와 소속 조건에 따라 이수 현황을 점검하세요.",
         mobileBadge: "데스크톱 권장",
         mobileTitle: "졸업요건 자가진단은 큰 화면이 더 편합니다",
         mobileDescription:
           "과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도 모바일에서 계속 사용할 수 있습니다.",
         mobileContinue: "모바일로 계속 사용하기",
         mobileBack: "이전 페이지로 돌아가기",
+        selectionChangeConfirm: "선택 조건을 변경하면 입력한 학점, 과목, 체크리스트와 계획이 초기화됩니다. 변경할까요?",
         badges: {
           selfCheck: "자가진단",
           referenceOnly: "참고용",
@@ -544,7 +581,7 @@ export const dictionaries = {
         },
         title: "졸업요건 자가진단",
         description:
-          "입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의 이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이 아닙니다.",
+          "2026학년도 요람 기준으로 업데이트했습니다. 입학년도와 소속 조건에 맞는 참고 요건을 확인하고, SU-WINGs의 이수학점과 비학점 조건을 직접 점검하세요. 이 결과는 공식 졸업 판정이 아닙니다.",
         sourceNoticePrefix: "현재 학점 기준은 ",
         sourceNoticeSuffix:
           "을 구조화한 참고값입니다. 자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직 과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시 확인하세요.",
@@ -568,7 +605,7 @@ export const dictionaries = {
             "입학년도부터 순서대로 선택하세요. 조건을 바꾸면 입력한 진단 내용은 초기화됩니다.",
           coursesTitle: "2. 검증 과목 선택",
           coursesDescription:
-            "원문 PDF 전체 페이지 검증이 완료된 학과는 입학년도와 관계없이 현재 검증된 2025년 교육과정을 참고 기준으로 과목 선택 합계를 지원합니다.",
+            "{sourceYear}학년도 요람의 교육과정 전체 페이지 대조를 마친 학과에서 확정 과목만 선택 합계에 사용합니다.",
           creditsTitle: "3. 학점 입력",
           creditsDescription:
             "과목 선택으로 계산된 값은 참고용입니다. SU-WINGs의 인정학점, 교양 영역, 자유선택 학점을 확인해 직접 보정하세요.",
@@ -587,6 +624,8 @@ export const dictionaries = {
           major: "전공",
           detailMajor: "세부전공",
           admissionType: "입학유형",
+          transferYear: "전과 학년",
+          transferYearOption: "{year}학년 전과",
           majorTrack: "전공형태",
         },
         placeholders: {
@@ -598,6 +637,7 @@ export const dictionaries = {
           admissionYear:
             "학번 대신 입학 연도를 입력하세요. 예: 2024년 입학이면",
           majorRequired: "세부전공 선택 필요",
+          transferYear: "전과 시점의 학년을 선택하세요. 요람의 학년별 전과 요건을 적용합니다.",
           previousCondition: "이전 조건을 먼저 선택하세요.",
         },
         empty: {
@@ -614,7 +654,7 @@ export const dictionaries = {
         },
         metrics: {
           totalChecks: "전체 확인 항목",
-          satisfied: "충족·해당없음",
+          satisfied: "충족",
           remaining: "남은 확인",
         },
         result: {
@@ -634,10 +674,13 @@ export const dictionaries = {
           admissionYearWarning:
             "{admissionYear}년 입학생은 현재 {sourceYear}학년도 요람 참고값과 다를 수 있어 학과 확인이 필요합니다.",
           transfer3Warning:
-            "3학년 편입 졸업학점은 자가진단표와 최신 본부 안내 사이에 차이가 있어 SU-WINGs와 학과사무실 확인이 필요합니다.",
+            "편입생의 이수·인정학점과 선수과목 적용은 SU-WINGs 및 학과사무실에서 확인해야 합니다.",
+          sourceReviewWarning:
+            "요람의 상충하거나 확인되지 않은 항목은 학과 확인 전까지 충족으로 판정하지 않습니다.",
         },
         sources: {
           verifiedSuffix: "확인",
+          pagesPrefix: "근거 쪽",
           openOfficialPage: "공식 페이지 열기",
         },
         sidebar: {
@@ -656,6 +699,7 @@ export const dictionaries = {
             shareCopyFailed:
               "자동 복사에 실패했습니다. 아래 링크를 선택해 직접 복사해 주세요.",
             shareLoaded: "공유된 졸업요건 진행률을 불러왔습니다.",
+            storageUnavailable: "현재 브라우저에서는 진행 상황을 자동 저장할 수 없습니다. 파일로 내보내기를 이용해 주세요.",
             shareLoadFailed:
               "공유 링크를 읽지 못했습니다. 링크가 잘렸거나 만료되었을 수 있습니다.",
           },
@@ -685,6 +729,9 @@ export const dictionaries = {
             "자동 반영: 총 취득학점, 교양필수, 전공필수, 전공선택, 주전공. 교양선택의 세부 영역과 자유선택 학점은 과목표만으로 확정할 수 없어 직접 입력해야 합니다.",
           unavailableReason:
             "이 학과는 아직 교육과정 전체 페이지 검증이 완료되지 않았습니다.",
+          majorFirstReason: "세부전공을 먼저 선택하세요.",
+          partialReviewReason:
+            "원문 수치가 상충하거나 확인이 필요한 {count}개 과목은 선택 합계에서 제외했습니다.",
           referenceReason:
             "{admissionYear}년 입학생도 현재 검증된 {sourceYear}년 교육과정을 기준으로 과목을 선택할 수 있습니다. 실제 적용 교육과정은 SU-WINGs와 학과사무실에서 반드시 확인하세요.",
         },
@@ -697,6 +744,7 @@ export const dictionaries = {
           satisfied: "이수",
           incomplete: "미이수",
           notApplicable: "해당 없음",
+          requiredHint: "필수 항목은 ‘해당 없음’으로 처리할 수 없습니다.",
         },
         banners: {
           shortTitle: "부족하거나 미이수인 항목이 있습니다",
@@ -842,6 +890,11 @@ export const dictionaries = {
         imageDownloaded: "시간표 이미지를 저장했습니다.",
         imageDownloadFailed: "시간표 이미지를 만들지 못했습니다.",
         shareLoaded: "공유 시간표를 불러왔습니다.",
+        shareSemesterMismatch: "공유 시간표의 학기가 현재 강의 정보와 다르거나 확인되지 않아 불러오지 않았습니다.",
+        shareCoursesMissing: "현재 강의 정보에 없는 {count}개 과목을 제외하고 공유 시간표를 불러왔습니다.",
+        sourceUpdatedAt: "강의 원본 갱신일",
+        lastSuccessfulFetch: "마지막 정상 조회",
+        staleDataNotice: "강의 정보를 갱신하지 못해 마지막 정상 저장본을 표시합니다. 변경 사항은 학교 원본에서 확인해 주세요.",
         shareCreateFailed: "공유 링크를 만들지 못했습니다.",
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
         shareCreatedCopyFailed:
@@ -969,6 +1022,23 @@ export const dictionaries = {
         publicTransitTab: "대중교통",
         loading: "로딩 중...",
         shuttleTitle: "셔틀버스",
+        festivalShuttle: {
+          title: "축제 야간 특별운행",
+          destinations: {
+            hwarangdae: "학교 → 화랑대",
+            byeollae: "학교 → 별내",
+          },
+          window: "{startTime}~{endTime} · 총 {count}대",
+          windowNote: "만차 시 바로 출발 · 화랑대까지만 운행",
+          departure: "{time} 예정 출발 · {count}대",
+          countdown: "{minutes}분 후 예정 출발 (예정 시각 기준)",
+          scheduledNow: "예정 출발 시각입니다.",
+          boarding: "탑승: 셔틀버스 정류장 (70주년기념관 좌측)",
+          notice:
+            "만차 시 빠르게 출발하거나 예정 시간보다 조기에 종료될 수 있습니다.",
+          source: "출처: 학생회 야간버스 운행 안내",
+          answer: "{date} 축제 야간 특별운행: {services}.",
+        },
         answer: {
           eyebrow: "바로 답변",
           title: "다음 셔틀 한눈에 보기",
@@ -983,6 +1053,8 @@ export const dictionaries = {
             "오늘 남은 셔틀 출발편이 없습니다. 전체 시간표에서 다음 운행일을 확인하세요.",
           nextDeparture:
             "다음 셔틀은 {routeName} 노선 {time} 출발이며 약 {minutes}분 남았습니다. 2026학년도 2학기 공식 시간표 확정 전 참고용입니다.",
+          confirmedDeparture:
+            "학교에서 안내한 다음 셔틀은 {routeName} 노선 {time} 예정 출발이며 약 {minutes}분 남았습니다.",
           departureItem: "{time} 출발, 약 {minutes}분 후",
         },
         shuttleDescriptionPrefix: "캠퍼스 셔틀버스 운행 시간표",
@@ -1042,6 +1114,8 @@ export const dictionaries = {
         operationTime: "운행 시간",
         noServiceOnDate: "이 날짜에는 운행되지 않습니다.",
         lastUpdated: "최종 업데이트",
+        verifiedSource: "학교 운행 안내",
+        verifiedAt: "운행 안내 확인",
         publicTransitTitle: "대중교통 안내",
         publicTransitDescription:
           "삼육대학교 주변 버스 실시간 도착 정보",
@@ -1600,6 +1674,7 @@ export const dictionaries = {
         permissionPrincipleDescription:
           "SYU CAMPUS는 사용자의 명시적인 브라우저 권한 없이는 푸시 알림을 보낼 수 없습니다. 이미 알림을 허용한 경우에만 알림 토큰을 등록해 서비스 공지를 받을 수 있게 합니다.",
         enableError: "알림 설정 중 오류가 발생했습니다.",
+        rateLimited: "요청이 많아 잠시 기다려야 합니다. {time} 이후 다시 시도해주세요.",
         disableSuccess:
           "FCM 알림 구독을 해제했습니다. 브라우저 알림 권한은 그대로 유지됩니다.",
         disableError: "알림 구독 해제 중 오류가 발생했습니다.",
@@ -1679,6 +1754,37 @@ export const dictionaries = {
     },
   },
   en: {
+    publicHolidays: {
+      label: "Public holiday",
+      source: "Holiday source: Korea Astronomy and Space Science Institute",
+      updatedAt: "Holidays last checked",
+      unavailable: "Public holiday information is unavailable.",
+      stale: "Public holiday updates are delayed. Check the latest official notice.",
+      shuttleHolidayClosed: "Shuttle buses do not operate today because it is a public holiday. Please check the shuttle timetable.",
+      shuttleUnconfirmed: "Today's shuttle service information is unavailable because public holiday information could not be confirmed. Please check the shuttle timetable.",
+      shuttleClosed: "Shuttle buses are not operating today according to the university's notice.",
+      referenceHolidaySchedule: "The timetable below applies to operating days.",
+      referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
+    },
+    crawlDataStatus: {
+      staleTitle: "Some information updates are delayed",
+      staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
+      lastSuccess: "Last successful collection",
+      lastAttempt: "Latest collection attempt",
+      unknownSuccess: "The collection time of the previous verified snapshot is unknown.",
+      statusUnavailable: "Update status is unavailable. Check the official source for the latest information.",
+      fileLabels: {
+        "announcements-academic.json": "Academic notices",
+        "announcements-campus-life.json": "Campus life notices",
+        "announcements-scholarship.json": "Scholarship notices",
+        "announcements-events.json": "Event notices",
+        "announcements-departments.json": "Department notices",
+        "announcements-sw.json": "SW-centered university notices",
+        "cafeteria-menu.json": "Cafeteria",
+        "announcement-ai-metadata.json": "Notice AI summaries",
+        "public-holidays.json": "Public holidays",
+      },
+    },
     meta: {
       title: "SYU CAMPUS - Student Information Hub",
       description:
@@ -1948,6 +2054,8 @@ export const dictionaries = {
         gymDescription: "Gym and sports center info",
         healthCenterTitle: "Health Center",
         healthCenterDescription: "Student medical services",
+        roommatesTitle: "Find a Roommate",
+        roommatesDescription: "Verify your school email and find a dorm roommate",
       },
     },
     more: {
@@ -2039,6 +2147,7 @@ export const dictionaries = {
         enabled: "Notification setup is complete.",
       },
       errorFallback: "An error occurred while setting up notifications.",
+      rateLimited: "Too many requests. Please try again after {time}.",
       title: "Would you like to receive updates?",
       description:
         "You can receive service notices and important campus updates through browser notifications. Notification settings can be changed anytime from Notifications and Privacy.",
@@ -2095,6 +2204,8 @@ export const dictionaries = {
         metaDescription: "Academic schedule",
         title: "Academic Schedule",
         description: "Check the 2026 academic schedule",
+        previousMonth: "Previous month",
+        nextMonth: "Next month",
         weekDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         exam: "Exam",
         schedule: "Schedule",
@@ -2130,13 +2241,14 @@ export const dictionaries = {
       graduation: {
         metaTitle: "Graduation Requirement Check | SYU CAMPUS",
         metaDescription:
-          "Check reference graduation requirements by admission year, department, and admission type.",
+          "Check graduation requirements updated using the 2026 handbook and review your progress by admission year and department.",
         mobileBadge: "Desktop recommended",
         mobileTitle: "Graduation checks are easier on a larger screen",
         mobileDescription:
           "This page has many course selections and credit inputs. Desktop use is recommended, but you can continue on mobile.",
         mobileContinue: "Continue on mobile",
         mobileBack: "Go back",
+        selectionChangeConfirm: "Changing your selection clears entered credits, courses, checklist answers, and plans. Continue?",
         badges: {
           selfCheck: "Self-check",
           referenceOnly: "Reference only",
@@ -2144,7 +2256,7 @@ export const dictionaries = {
         },
         title: "Graduation Requirement Check",
         description:
-          "Review reference requirements for your admission year and department, then compare them with your SU-WINGs credits and non-credit requirements. This result is not an official graduation decision.",
+          "Updated using the 2026 handbook. Review reference requirements for your admission year and department, then compare them with your SU-WINGs credits and non-credit requirements. This result is not an official graduation decision.",
         sourceNoticePrefix: "The current credit criteria are reference values structured from ",
         sourceNoticeSuffix:
           ". Update times may differ by source. Transfer, department transfer, multi-major, and teaching-track students must check the official sources and department office shown with the result.",
@@ -2168,7 +2280,7 @@ export const dictionaries = {
             "Select each condition in order. Changing a condition resets the entered check data.",
           coursesTitle: "2. Select Verified Courses",
           coursesDescription:
-            "For departments whose original PDF pages have been fully verified, course totals are supported using the currently verified 2025 curriculum as a reference, regardless of admission year.",
+            "Only confirmed courses are included in selection totals for departments whose full curriculum pages have been compared with the {sourceYear} handbook.",
           creditsTitle: "3. Enter Credits",
           creditsDescription:
             "Course-selected totals are only a reference. Adjust recognized credits, liberal arts areas, and free electives using SU-WINGs.",
@@ -2188,6 +2300,8 @@ export const dictionaries = {
           major: "Major",
           detailMajor: "Detailed Major",
           admissionType: "Admission Type",
+          transferYear: "Year of Department Transfer",
+          transferYearOption: "Department transfer in year {year}",
           majorTrack: "Major Track",
         },
         placeholders: {
@@ -2199,6 +2313,7 @@ export const dictionaries = {
           admissionYear:
             "Enter your admission year instead of your student number. If you entered in 2024:",
           majorRequired: "Detailed major selection required",
+          transferYear: "Select your academic year when changing departments to apply the handbook's requirements for that year.",
           previousCondition: "Select the previous condition first.",
         },
         empty: {
@@ -2218,7 +2333,7 @@ export const dictionaries = {
         },
         metrics: {
           totalChecks: "Total Checks",
-          satisfied: "Satisfied/N/A",
+          satisfied: "Satisfied",
           remaining: "Remaining",
         },
         result: {
@@ -2238,10 +2353,13 @@ export const dictionaries = {
           admissionYearWarning:
             "Students admitted in {admissionYear} may differ from the current {sourceYear} handbook reference values, so department confirmation is required.",
           transfer3Warning:
-            "Third-year transfer graduation credits may differ between the self-check sheet and the latest office guidance. Check SU-WINGs and your department office.",
+            "Transfer students must confirm earned and recognized credits and prerequisite requirements through SU-WINGs and their department office.",
+          sourceReviewWarning:
+            "Conflicting or unverified handbook items remain pending until confirmed by your department.",
         },
         sources: {
           verifiedSuffix: "verified",
+          pagesPrefix: "Source pages",
           openOfficialPage: "Open official page",
         },
         sidebar: {
@@ -2260,6 +2378,7 @@ export const dictionaries = {
             shareCopyFailed:
               "Automatic copy failed. Select and copy the link below.",
             shareLoaded: "Shared graduation progress loaded.",
+            storageUnavailable: "This browser cannot save your progress automatically. Export a file to keep it.",
             shareLoadFailed:
               "Could not read the share link. It may be truncated or expired.",
           },
@@ -2289,6 +2408,9 @@ export const dictionaries = {
             "Auto-applied fields: total credits, required liberal arts, required major, elective major, and major total. Liberal arts sub-areas and free electives cannot be finalized from the course table alone and must be entered manually.",
           unavailableReason:
             "This department's full curriculum pages have not been verified yet.",
+          majorFirstReason: "Select a detailed major first.",
+          partialReviewReason:
+            "Excluded {count} courses with conflicting source values or items that still need confirmation from selection totals.",
           referenceReason:
             "Students admitted in {admissionYear} can use the currently verified {sourceYear} curriculum as a course-selection reference. Always confirm your actual curriculum in SU-WINGs and with your department office.",
         },
@@ -2301,6 +2423,7 @@ export const dictionaries = {
           satisfied: "Completed",
           incomplete: "Incomplete",
           notApplicable: "Not applicable",
+          requiredHint: "Required items cannot be marked as not applicable.",
         },
         banners: {
           shortTitle: "Some items are short or incomplete",
@@ -2447,6 +2570,11 @@ export const dictionaries = {
         imageDownloaded: "The timetable image was saved.",
         imageDownloadFailed: "Could not create the timetable image.",
         shareLoaded: "Shared timetable loaded.",
+        shareSemesterMismatch: "This shared timetable has a different or unverified semester and was not loaded.",
+        shareCoursesMissing: "Shared timetable loaded without {count} courses unavailable in the current course data.",
+        sourceUpdatedAt: "Course source updated",
+        lastSuccessfulFetch: "Last successful fetch",
+        staleDataNotice: "Course data could not be refreshed. Showing the last successful snapshot. Check the university source for changes.",
         shareCreateFailed: "Could not create a share link.",
         shareCreated: "Share link created and copied to clipboard.",
         shareCreatedCopyFailed:
@@ -2575,6 +2703,24 @@ export const dictionaries = {
         publicTransitTab: "Public Transit",
         loading: "Loading...",
         shuttleTitle: "Shuttle Bus",
+        festivalShuttle: {
+          title: "Festival night shuttle",
+          destinations: {
+            hwarangdae: "Campus → Hwarangdae",
+            byeollae: "Campus → Byeollae",
+          },
+          window: "{startTime}–{endTime} · {count} buses in total",
+          windowNote: "Departs when full · Goes only as far as Hwarangdae",
+          departure: "{time} scheduled departure · {count} bus",
+          countdown: "Scheduled to leave in {minutes} minutes (scheduled time)",
+          scheduledNow: "This is the scheduled departure time.",
+          boarding:
+            "Boarding: shuttle stop, to the left of the 70th Anniversary Memorial Hall",
+          notice:
+            "Buses may depart when full, and service may end earlier than scheduled.",
+          source: "Source: Student Council night bus announcement",
+          answer: "Festival night shuttle on {date}: {services}.",
+        },
         answer: {
           eyebrow: "Direct answer",
           title: "Next shuttle at a glance",
@@ -2589,6 +2735,8 @@ export const dictionaries = {
             "There are no remaining shuttle departures today. Check the full timetable for the next operating day.",
           nextDeparture:
             "The next shuttle is the {routeName} route at {time}, about {minutes} minutes from now. This is for reference until the Fall 2026 timetable is officially confirmed.",
+          confirmedDeparture:
+            "The next shuttle announced by the university is the {routeName} route, scheduled for {time}, about {minutes} minutes from now.",
           departureItem: "{time} departure, about {minutes} min later",
         },
         shuttleDescriptionPrefix: "Campus shuttle timetable",
@@ -2649,6 +2797,8 @@ export const dictionaries = {
         operationTime: "Operating Times",
         noServiceOnDate: "No service on this date.",
         lastUpdated: "Last updated",
+        verifiedSource: "University shuttle notice",
+        verifiedAt: "Shuttle notice verified",
         publicTransitTitle: "Public Transit",
         publicTransitDescription:
           "Real-time arrivals for buses around Sahmyook University",
@@ -3233,6 +3383,7 @@ export const dictionaries = {
         permissionPrincipleDescription:
           "SYU CAMPUS cannot send push notifications without explicit browser permission. Only after notifications are allowed can a token be registered to receive service notices.",
         enableError: "An error occurred while setting up notifications.",
+        rateLimited: "Too many requests. Please try again after {time}.",
         disableSuccess:
           "FCM notification subscription has been disabled. Browser notification permission is unchanged.",
         disableError:

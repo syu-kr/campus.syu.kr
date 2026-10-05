@@ -1,7 +1,10 @@
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import type { TodayInfo } from "@/lib/home";
-import type { CurrentShuttleSummary } from "@/lib/shuttle-schedule";
+import {
+  formatShuttleAdditionalService,
+  type CurrentShuttleSummary,
+} from "@/lib/shuttle-schedule";
 import type { AnswerSummary, CafeteriaMenu, MenuItem } from "@/types";
 
 function getTodayCafeteriaMenu(
@@ -107,13 +110,60 @@ export function createShuttleAnswerSummary({
   const text = dictionary.pages.busInfo;
   const answerText = text.answer;
   const primaryDeparture = summary.departures[0];
-  const baseSummary = {
+  const serviceText = text.festivalShuttle;
+  const additionalItems = summary.additionalServicePeriods.flatMap((period) =>
+    (period.additionalServices ?? []).map((service) =>
+      formatShuttleAdditionalService(service, locale),
+    ),
+  );
+  const additionalAnswer = summary.additionalServicePeriods
+    .map((period) =>
+      applyTemplate(serviceText.answer, {
+        date: period.startDate,
+        services: (period.additionalServices ?? [])
+          .map((service) => {
+            const item = formatShuttleAdditionalService(service, locale);
+            return `${item.label}: ${item.value}`;
+          })
+          .join("; "),
+      }),
+    )
+    .join(" ");
+  const festivalAnswer = additionalAnswer
+    ? `${additionalAnswer} ${serviceText.boarding}. ${serviceText.notice}`
+    : "";
+  const baseSummary: Omit<AnswerSummary, "answer" | "items"> = {
     eyebrow: answerText.eyebrow,
     title: answerText.title,
     question: answerText.question,
     source: answerText.source,
     updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
   };
+
+  if (summary.operationEvidence.length > 0) {
+    baseSummary.source = `${text.verifiedSource}: ${Array.from(new Set(
+      summary.operationEvidence.map((record) => record.sourceUrl),
+    )).join(" · ")}`;
+    const verifiedAt = Math.min(...summary.operationEvidence.map((record) => Date.parse(record.verifiedAt)));
+    baseSummary.updatedAt = formatUpdatedAt(new Date(verifiedAt), locale, text.verifiedAt);
+  }
+
+  if (summary.operationStatus === "unconfirmed" || summary.operationStatus === "closed") {
+    return {
+      ...baseSummary,
+      answer: [
+        summary.holiday.names.join(" · "),
+        summary.operationStatus === "closed"
+          ? dictionary.publicHolidays.shuttleClosed
+          : summary.holiday.status === "holiday"
+            ? dictionary.publicHolidays.shuttleHolidayClosed
+            : dictionary.publicHolidays.shuttleUnconfirmed,
+        summary.holiday.status === "holiday"
+          ? dictionary.publicHolidays.referenceHolidaySchedule
+          : dictionary.publicHolidays.referenceSchedule,
+      ].filter(Boolean).join(" "),
+    };
+  }
 
   if (summary.isWeekend) {
     return {
@@ -132,24 +182,33 @@ export function createShuttleAnswerSummary({
   if (!primaryDeparture) {
     return {
       ...baseSummary,
-      answer: answerText.noMore,
+      source: festivalAnswer ? serviceText.source : baseSummary.source,
+      answer: festivalAnswer || answerText.noMore,
+      ...(festivalAnswer ? { items: additionalItems } : {}),
     };
   }
 
   return {
     ...baseSummary,
-    answer: applyTemplate(answerText.nextDeparture, {
+    source: festivalAnswer
+      ? `${baseSummary.source} / ${serviceText.source}`
+      : baseSummary.source,
+    answer: `${applyTemplate(summary.operationStatus === "exception"
+      ? answerText.confirmedDeparture : answerText.nextDeparture, {
       minutes: String(primaryDeparture.minutesUntil),
       routeName: primaryDeparture.routeName,
       time: primaryDeparture.time,
-    }),
-    items: summary.departures.map((departure) => ({
-      label: departure.routeName,
-      value: applyTemplate(answerText.departureItem, {
-        minutes: String(departure.minutesUntil),
-        time: departure.time,
-      }),
-    })),
+    })}${festivalAnswer ? ` ${festivalAnswer}` : ""}`,
+    items: [
+      ...summary.departures.map((departure) => ({
+        label: departure.routeName,
+        value: applyTemplate(answerText.departureItem, {
+          minutes: String(departure.minutesUntil),
+          time: departure.time,
+        }),
+      })),
+      ...additionalItems,
+    ],
   };
 }
 

@@ -142,7 +142,7 @@ function PhoneSearchResultCard({
           department={phone.department}
           phone={phone.phone}
           phoneNumbers={phone.phoneNumbers}
-          className="inline-flex items-center justify-center gap-1.5 rounded bg-primary-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-primary-700"
+          className="shrink-0 px-3"
         >
           {dictionary.labels.phone}
         </PhoneCallButton>

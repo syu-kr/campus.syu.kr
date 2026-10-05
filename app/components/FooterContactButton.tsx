@@ -13,7 +13,7 @@ export function FooterContactButton() {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="font-medium text-primary-600 hover:text-primary-700 transition-colors"
+        className="cursor-pointer text-neutral-500 hover:text-neutral-700 transition-colors"
       >
         {dictionary.footer.contact}
       </button>

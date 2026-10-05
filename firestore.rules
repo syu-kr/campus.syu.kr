@@ -46,6 +46,22 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /roommate_sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    match /roommate_posts/{postId} {
+      allow read, write: if false;
+    }
+
+    match /roommate_owner_state/{ownerKey} {
+      allow read, write: if false;
+    }
+
+    match /roommate_reports/{reportId} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

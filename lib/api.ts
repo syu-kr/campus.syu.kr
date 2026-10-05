@@ -15,6 +15,7 @@ import {
 import { fetchJson } from "./fetch-json";
 import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
+import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "./public-holidays";
 import type {
   LiveDataResponse,
   LiveDataSourceStatus,
@@ -227,6 +228,13 @@ export async function fetchCafeteriaMenu(
   }
 }
 
+// 공휴일 API - 검증된 Pages 데이터 사용
+export async function fetchPublicHolidays() {
+  return parsePublicHolidaySnapshot(await fetchJson<unknown>("/api/crawl-data/public-holidays.json", {
+    fallback: emptyPublicHolidays(), throwOnError: true, timeoutMs: 12_000,
+  }));
+}
+
 // 학사일정 API - 크롤링된 실제 데이터 사용
 export async function fetchAcademicSchedules(
   category?: string,
@@ -384,26 +392,20 @@ function dedupeSearchResults(results: SearchAllResult[]): SearchAllResult[] {
 
 // 전화번호 API
 export async function fetchPhoneNumbers(): Promise<PhoneNumber[]> {
-  try {
-    return await fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
-      fallback: [],
-    });
-  } catch {
-    return [];
-  }
+  return fetchJson<PhoneNumber[]>("/data/phone-numbers.json", {
+    fallback: [],
+    throwOnError: true,
+  });
 }
 
 // 캠퍼스 꿀팁 자료실
 export async function fetchCampusTips(): Promise<CampusTip[]> {
-  try {
-    return await fetchJson<CampusTip[]>("/data/campus-tips.json", {
-      fallback: [],
-      noStore: false,
-      next: { revalidate: 604800 },
-    });
-  } catch {
-    return [];
-  }
+  return fetchJson<CampusTip[]>("/data/campus-tips.json", {
+    fallback: [],
+    noStore: false,
+    next: { revalidate: 604800 },
+    throwOnError: true,
+  });
 }
 
 // 버스 실시간 위치 API

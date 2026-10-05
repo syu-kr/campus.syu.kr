@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useId, useRef } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { buttonStyles } from "./Button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ export function Modal({
   const descriptionId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,7 +58,7 @@ export function Modal({
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -95,7 +101,7 @@ export function Modal({
         previousActiveElement.focus();
       }
     };
-  }, [initialFocus, isOpen, onClose]);
+  }, [initialFocus, isOpen]);
 
   if (!isOpen) return null;
 
@@ -157,7 +163,7 @@ export function Modal({
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className={buttonStyles("ghost", "w-11 shrink-0 px-0")}
               aria-label={closeLabel}
             >
               x

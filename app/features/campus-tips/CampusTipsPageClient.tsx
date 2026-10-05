@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/app/components/Badge";
+import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { CampusTipSuggestionForm } from "@/app/features/campus-tips/CampusTipSuggestionForm";
@@ -79,7 +80,7 @@ export default function CampusTipsPage() {
   >("all");
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
-  const { data: tips = [], isLoading } = useQuery({
+  const { data: tips = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["campus-tips"],
     queryFn: () => fetchCampusTips(),
     staleTime: ONE_HOUR,
@@ -166,13 +167,11 @@ export default function CampusTipsPage() {
             </h1>
             <p className="text-neutral-600">{text.description}</p>
           </div>
-          <button
-            type="button"
+          <Button
             onClick={() => setIsSuggestionModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
           >
             {text.suggestAction}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -225,7 +224,23 @@ export default function CampusTipsPage() {
         </div>
       </div>
 
-      {!isLoading && (
+      {isError && (
+        <StateCard
+          type="error"
+          className="mb-6"
+          title={dictionary.home.dashboard.loadFailedTitle}
+          message={dictionary.home.dashboard.loadFailedMessage}
+          action={
+            <Button
+              onClick={() => refetch()}
+            >
+              {dictionary.home.dashboard.retry}
+            </Button>
+          }
+        />
+      )}
+
+      {!isLoading && (!isError || tips.length > 0) && (
         <div className="mb-4 text-sm text-neutral-600">
           {filteredTips.length}
           {text.countSeparator}
@@ -244,7 +259,7 @@ export default function CampusTipsPage() {
       <div className="space-y-3">
         {isLoading && <Skeleton count={6} />}
 
-        {!isLoading && filteredTips.length === 0 && (
+        {!isLoading && !isError && filteredTips.length === 0 && (
           <StateCard type="info" message={text.emptyMessage} />
         )}
 

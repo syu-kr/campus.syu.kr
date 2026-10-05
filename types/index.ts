@@ -7,3 +7,4 @@ export * from "./competitions";
 export * from "./submissions";
 export * from "./phone";
 export * from "./transit";
+export * from "./public-holidays";

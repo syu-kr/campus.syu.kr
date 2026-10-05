@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
+import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
@@ -22,6 +23,7 @@ import type {
   ServiceNotice,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
+  PublicHolidaySnapshot,
 } from "@/types";
 import type { HomeNotice, TodayInfo } from "@/lib/home";
 
@@ -247,6 +249,7 @@ export function TodayShuttleSection({
   onRetry,
   buses,
   specialPeriods,
+  holidays,
   now,
 }: {
   isLoading: boolean;
@@ -254,6 +257,7 @@ export function TodayShuttleSection({
   onRetry: () => void;
   buses?: ShuttleBusSchedule[];
   specialPeriods?: ShuttleSpecialPeriods;
+  holidays?: PublicHolidaySnapshot;
   now: Date | null;
 }) {
   const dictionary = useDictionary();
@@ -261,10 +265,12 @@ export function TodayShuttleSection({
   const summary = getCurrentShuttleSummary({
     buses,
     specialPeriods,
+    holidays,
     now,
     limit: 3,
   });
   const primaryDeparture = summary.departures[0];
+  const canPredict = summary.operationStatus === "regular" || summary.operationStatus === "exception";
 
   return (
     <div>
@@ -272,7 +278,30 @@ export function TodayShuttleSection({
       <div className="space-y-3">
         {isLoading && <Skeleton count={2} />}
         {isError && <DashboardLoadError onRetry={onRetry} />}
-        {!isLoading && !isError && summary.isWeekend && (
+        {!isLoading &&
+          !isError &&
+          now &&
+          summary.additionalServicePeriods.map((period) => (
+            <ShuttleAdditionalServicesCard
+              key={period.id}
+              period={period}
+              now={now}
+              showCountdown={canPredict}
+            />
+          ))}
+        {!isLoading && !isError && !canPredict && (
+          <StateCard
+            type="info"
+            title={summary.operationStatus === "closed" ? dictionary.home.dashboard.shuttle : summary.holiday.names.length ? summary.holiday.names.join(" · ") : dictionary.publicHolidays.unavailable}
+            message={summary.operationStatus === "closed"
+              ? dictionary.publicHolidays.shuttleClosed
+              : summary.holiday.status === "holiday"
+                ? dictionary.publicHolidays.shuttleHolidayClosed
+                : dictionary.publicHolidays.shuttleUnconfirmed}
+            action={<Link href={localizePath("/campus/bus-info", locale)} className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">{dictionary.home.dashboard.shuttleSchedule}</Link>}
+          />
+        )}
+        {!isLoading && !isError && canPredict && summary.isWeekend && (
           <StateCard
             type="info"
             message={dictionary.home.dashboard.shuttleWeekend}
@@ -288,6 +317,7 @@ export function TodayShuttleSection({
         )}
         {!isLoading &&
           !isError &&
+          canPredict &&
           !summary.isWeekend &&
           !summary.isOperatingPeriod && (
           <StateCard
@@ -304,6 +334,7 @@ export function TodayShuttleSection({
           />
         )}
         {!isLoading &&
+          canPredict &&
           !summary.isWeekend &&
           !isError &&
           summary.isOperatingPeriod &&
@@ -418,10 +449,10 @@ export function TodaySchedulesSection({
                     <div className="flex items-center justify-between">
                       <div>
                         <Badge
-                          color={schedule.category === "exam" ? "red" : "blue"}
+                          color={schedule.category === "exam" || schedule.id.startsWith("public-holiday-") ? "red" : "blue"}
                           size="sm"
                         >
-                          {getCategoryLabel(schedule.category, locale)}
+                          {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, locale)}
                         </Badge>
                         <h3 className="mt-2 font-semibold text-neutral-900">
                           {schedule.title}

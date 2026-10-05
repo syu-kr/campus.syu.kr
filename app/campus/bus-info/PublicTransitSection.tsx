@@ -7,7 +7,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetch-json";
 import { BusArrivalsAtStop, BusArrival } from "@/types";
-import { useState, useMemo, type KeyboardEvent } from "react";
+import { useEffect, useState, useMemo, type KeyboardEvent } from "react";
 import clsx from "clsx";
 import BusDetailModal from "./BusDetailModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -51,8 +51,7 @@ export default function PublicTransitSection() {
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
   const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
-  const [selectedBus, setSelectedBus] = useState<BusArrival | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
   // 10초마다 자동 갱신
   const {
@@ -111,6 +110,13 @@ export default function PublicTransitSection() {
       }),
     [arrivals, selectedStopId],
   );
+  const selectedBus =
+    selectedStop?.arrivals.find((arrival) => arrival.routeId === selectedRouteId) ??
+    null;
+
+  useEffect(() => {
+    if (selectedRouteId && !selectedBus) setSelectedRouteId(null);
+  }, [selectedBus, selectedRouteId]);
 
   // 도착 시간순으로 정렬된 버스들 (운행 중인 버스 우선, 정보 없음은 마지막)
   const sortedArrivals: EnrichedBusArrival[] = useMemo(
@@ -138,8 +144,7 @@ export default function PublicTransitSection() {
   );
 
   const openBusDetail = (arrival: BusArrival) => {
-    setSelectedBus(arrival);
-    setIsModalOpen(true);
+    setSelectedRouteId(arrival.routeId);
   };
 
   const handleBusCardKeyDown = (
@@ -409,11 +414,8 @@ export default function PublicTransitSection() {
 
       <BusDetailModal
         bus={selectedBus}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedBus(null);
-        }}
+        isOpen={Boolean(selectedRouteId)}
+        onClose={() => setSelectedRouteId(null)}
       />
     </Container>
   );

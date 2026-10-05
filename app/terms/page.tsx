@@ -12,8 +12,15 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+
+const REVISED_TERMS_EFFECTIVE_AT = Date.parse("2026-11-04T00:00:00+09:00");
+
+function revisedTermsAreEffective() {
+  return Date.now() >= REVISED_TERMS_EFFECTIVE_AT;
+}
 
 async function getRequestLocale(): Promise<Locale> {
   const headerStore = await headers();
@@ -25,13 +32,37 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return locale === "en"
     ? {
-        title: "Terms of Use",
+        title: revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use",
         description: "SYU CAMPUS Terms of Use",
       }
     : {
-        title: "이용약관",
+        title: revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)",
         description: "SYU CAMPUS 이용약관",
       };
+}
+
+function TermsRevisionNotice({ locale }: { locale: Locale }) {
+  const effective = revisedTermsAreEffective();
+  const english = locale === "en";
+  return (
+    <aside className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm leading-relaxed text-blue-900">
+      <p className="font-semibold">
+        {english ? "Terms amendment announced October 4, 2026" : "이용약관 개정 공지: 2026년 10월 4일"}
+      </p>
+      <p className="mt-2">
+        {english
+          ? effective
+            ? "These revised Terms apply from 00:00 Korean time on November 4, 2026. The amendment notice explains the changes and preserves the previous Terms."
+            : "This is the upcoming Terms text, scheduled to apply from 00:00 Korean time on November 4, 2026. Until then, the current Terms preserved in the amendment notice remain applicable."
+          : effective
+            ? "이 개정 약관은 2026년 11월 4일 00:00(한국 시간)부터 적용됩니다. 변경 내용과 이전 약관 전문은 개정 공지에서 확인할 수 있습니다."
+            : "아래는 2026년 11월 4일 00:00(한국 시간)부터 적용할 시행 예정 약관입니다. 그 전까지는 개정 공지에 보존한 현행 약관이 적용됩니다."}
+      </p>
+      <Link href={localizePath("/service/notices/017-roommate-board", locale)} className="mt-2 inline-flex min-h-11 items-center font-medium underline underline-offset-4">
+        {english ? "Amendment notice and current/previous Terms in full" : "개정 공지와 현행·이전 약관 전문 확인"}
+      </Link>
+    </aside>
+  );
 }
 
 const serviceItems = [
@@ -60,6 +91,10 @@ const serviceItems = [
     title: "일정 잡기",
     description:
       "초대 링크를 통해 참여자의 가능한 시간을 모으고 일정 조율을 돕는 기능",
+  },
+  {
+    title: "기숙사 룸메이트 게시판",
+    description: "학교 이메일 인증 이용자의 모집글 게시, 카카오 오픈채팅 연결 및 신고 접수",
   },
   {
     title: "알림",
@@ -103,6 +138,11 @@ const englishServiceItems = [
       "Campus notices, maps, shuttle information, cafeteria menus, library seat status, and campus facilities",
   },
   {
+    title: "Dorm Roommate Board",
+    description:
+      "School-email-verified recruitment listings, Kakao Open Chat links, and reports",
+  },
+  {
     title: "Student Tools",
     description:
       "Scholarship notices, campus tips, contact/suggestion forms, schedule coordination, notifications, search, and PWA support",
@@ -132,27 +172,54 @@ function NumberedParagraph({
   );
 }
 
+function RoommateTerms({ english = false }: { english?: boolean }) {
+  const items = english ? [
+    "The board is for finding Sahmyook University dorm roommates. An @syuin.ac.kr email sign-in link verifies mailbox access. There is no separate registration form or password, but Firebase Authentication creates or uses an authentication user record. This does not verify current enrollment, dorm admission, or official roommate assignments. Follow the university's official application and assignment procedures.",
+    "Users are responsible for the accuracy of their recruitment posts and must not impersonate others, disclose personal information without permission, post spam, harass others or submit abusive reports. Avoid real names, phone numbers and exact room numbers. Recruitment is limited to one active post per email and up to 30 calendar days including the creation date.",
+    "Listings and contact links are visible to verified board users while recruiting. Contact then takes place through the writer's Kakao Open Chat link, under Kakao's terms. The provider does not arrange rooms, guarantee a match, or read external conversations. Completed and deleted listings cannot be reopened. These limits do not exclude the provider's duties to protect personal information or address reported misuse under applicable law.",
+    "Administrators review reports and may hide or delete a listing or place its author on a writing hold for privacy exposure, impersonation, spam, harassment, or other violations. A hold normally lasts 30 days; its reason and end time appear in My listing. Administrators may release it or extend it with a reason. A hold ending does not automatically restore a hidden listing. Report counts alone do not trigger hiding. During a hold, reporting and completing or deleting your own listing remain available.",
+    "You may raise a report-related question or appeal through the site's Contact page, including after recruitment ends. Reports are reviewed by administrators without AI classification. Immediate or round-the-clock response is not promised, but statutory user rights and complaint-handling duties continue to apply.",
+    "The board, new posts/edits or new authentication emails may be paused separately for operation. Personal-data processing and retention follow the Privacy Policy. Roommate reports do not use the site's AI classification tools for other submissions.",
+  ] : [
+    "게시판은 삼육대학교 기숙사 룸메이트 모집을 위한 기능입니다. @syuin.ac.kr 이메일의 로그인 링크로 메일 소유를 확인합니다. 별도 가입 화면이나 비밀번호는 없지만 Firebase Authentication에 인증 사용자 자료가 생성되거나 기존 자료가 사용됩니다. 재학 상태, 입사 합격이나 공식 방 배정을 확인하는 인증은 아닙니다. 학교의 공식 신청 및 지정 절차를 따라야 합니다.",
+    "이용자는 모집 내용의 정확성을 확인하고 사칭, 동의 없는 개인정보 공개, 스팸, 괴롭힘과 악의적인 신고를 하지 않아야 합니다. 실명, 전화번호와 정확한 호실은 적지 않습니다. 이메일당 활성 모집글 1개와 등록일 포함 최대 30일 모집 기간을 적용합니다.",
+    "모집 중인 글과 연락 링크는 학교 이메일로 인증한 게시판 이용자에게 공개됩니다. 연락은 작성자의 카카오 오픈채팅 링크에서 이루어지며 Kakao의 약관을 따릅니다. 제공자는 방 배정이나 매칭 성사를 보증하지 않고 외부 대화를 열람하지 않습니다. 완료하거나 삭제한 글은 다시 모집 중으로 돌릴 수 없습니다. 이 안내는 제공자의 개인정보 보호나 신고된 침해에 관한 법령상 의무를 배제하지 않습니다.",
+    "관리자는 신고를 검토하여 개인정보 노출, 사칭, 스팸, 괴롭힘 또는 그 밖의 약관 위반에 대해 글 숨김·삭제나 작성 보류를 적용할 수 있습니다. 보류는 기본 30일이며 사유와 종료 시각은 ‘내 글 관리’에서 확인할 수 있습니다. 관리자는 보류를 해제하거나 사유를 기재하여 연장할 수 있습니다. 보류 종료만으로 숨김 글이 자동 복구되지는 않습니다. 신고 수만으로 자동 숨김 처리하지 않으며, 보류 중에도 신고와 본인 글의 완료·삭제는 가능합니다.",
+    "신고 처리에 관한 문의나 이의제기는 모집 종료 후에도 사이트 문의로 접수할 수 있습니다. 룸메이트 신고는 AI 분류 없이 관리자가 검토합니다. 상시·즉시 대응을 보장하지 않지만, 법령상 이용자 권리와 불만 처리 의무를 제한하지 않습니다.",
+    "운영상 게시판 전체, 신규 작성과 수정, 새 인증 메일 발송을 각각 중지할 수 있습니다. 개인정보 처리와 보존은 개인정보처리방침을 따릅니다. 다른 문의·제보에 사용하는 AI 분류 도구는 룸메이트 신고에 적용하지 않습니다.",
+  ];
+  return (
+    <LegalSection title={english ? "Article 4. Dorm Roommate Board" : "제4조 기숙사 룸메이트 게시판"}>
+      <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-neutral-700">
+        {items.map((item) => <li key={item}>{item}</li>)}
+      </ol>
+    </LegalSection>
+  );
+}
+
 function EnglishTermsPage() {
   const legal = getDictionary("en").legal;
 
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
-        title="Terms of Use"
-        description="Terms for using the SYU CAMPUS service. Effective March 23, 2026. Last updated June 21, 2026."
+        title={revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use"}
+        description="SYU CAMPUS Terms amendment announced October 4, 2026. Effective November 4, 2026."
         homeHref={localizePath("/", "en")}
         homeLabel={legal.home}
         noticeTitle="Important Notice"
         noticeTone="red"
         notice="SYU CAMPUS is not an official Sahmyook University service. This English version is provided for convenience; if it differs from the Korean version, the Korean version applies."
       />
+      <TermsRevisionNotice locale="en" />
 
       <div className="space-y-6 mb-8">
         <LegalSection title="Article 1. Purpose">
           <p className="text-neutral-700 leading-relaxed">
-            These Terms define the rights and obligations between SYU KR and
-            users regarding the use of SYU CAMPUS, a web platform that helps
-            Sahmyook University students check academic and campus information.
+            These Terms define the rights and obligations between Sanghyeok
+            Seo, the individual operator using the service name SYU KR
+            (the provider), and users of SYU CAMPUS, a web platform for Sahmyook
+            University students.
           </p>
         </LegalSection>
 
@@ -169,7 +236,7 @@ function EnglishTermsPage() {
               ],
               [
                 "Provider",
-                "SYU KR, the operator and maintainer of the SYU CAMPUS service.",
+                "Sanghyeok Seo, the individual who develops, operates, and maintains SYU CAMPUS under the service operating name SYU KR.",
               ],
             ].map(([title, description], index) => (
               <div key={title}>
@@ -212,8 +279,10 @@ function EnglishTermsPage() {
               ))}
             </ul>
             <NumberedParagraph number={2}>
-              Information may be collected from publicly available university
-              sources or maintained as JSON data.
+              Academic and campus information may be collected from public
+              university sources or maintained as JSON data. Recruitment
+              listings are written by users and are distinct from official
+              university notices.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
               The provider may change, pause, or terminate service features when
@@ -222,7 +291,9 @@ function EnglishTermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="Article 4. User Responsibilities">
+        <RoommateTerms english />
+
+        <LegalSection title="Article 5. User Responsibilities">
           <div className="space-y-2 text-neutral-700">
             <p>Users must not engage in the following actions:</p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
@@ -233,7 +304,7 @@ function EnglishTermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="Article 5. Data and Privacy">
+        <LegalSection title="Article 6. Data and Privacy">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
               The service may store basic settings in local storage on the
@@ -264,14 +335,31 @@ function EnglishTermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="Article 6. Limitation of Liability">
+        <LegalSection title="Article 7. Restrictions and Termination">
+          <div className="space-y-3 text-neutral-700">
+            <NumberedParagraph number={1}>
+              The provider may restrict access for violations of these Terms.
+              Where possible, the reason and scope of a restriction are
+              communicated. Urgent security or privacy risks may be addressed
+              before notice, with an opportunity to raise an appeal afterward.
+            </NumberedParagraph>
+            <NumberedParagraph number={2}>
+              Security incidents, technical issues, or university policy changes
+              may temporarily interrupt the service. The provider will give at
+              least 30 days&apos; notice before permanently ending the service.
+            </NumberedParagraph>
+          </div>
+        </LegalSection>
+
+        <LegalSection title="Article 8. Responsibility and Service Limits">
           <div className="space-y-3 text-neutral-700">
             <p>
-              To the fullest extent permitted by law, the provider is not liable
-              for damages caused by user misuse, network or system issues,
-              changes in university systems or policies, third-party actions, or
-              inaccuracies in external data unless caused by intentional
-              misconduct or gross negligence.
+              The provider takes reasonable steps to maintain service accuracy,
+              security, and availability. Responsibility for damage is
+              determined under applicable law, considering each party&apos;s
+              fault and the cause of the damage. These Terms do not exclude
+              liability that cannot lawfully be excluded or transfer the
+              provider&apos;s statutory duties to users.
             </p>
             <p className="text-sm text-neutral-600">
               External information such as cafeteria menus, library status,
@@ -281,17 +369,29 @@ function EnglishTermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="Article 7. Changes and Governing Law">
+        <LegalSection title="Article 9. Changes to the Terms">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
               The provider may update these Terms when necessary and will post
-              notice of material changes in advance.
+              the reason and details at least seven days before a change takes
+              effect. A change that disadvantages users or materially affects
+              their rights will be announced at least 30 days in advance.
             </NumberedParagraph>
             <NumberedParagraph number={2}>
-              These Terms are governed by the laws of the Republic of Korea, and
-              disputes may be submitted to the competent courts of Korea.
+              Users who do not agree to the revised Terms may stop using the
+              service and request deletion of their personal information. Where
+              consent is legally required, it will be obtained separately;
+              silence or continued use alone will not replace it.
             </NumberedParagraph>
           </div>
+        </LegalSection>
+
+        <LegalSection title="Article 10. Governing Law and Jurisdiction">
+          <p className="text-neutral-700 leading-relaxed">
+            These Terms are governed by the laws of the Republic of Korea.
+            Disputes may be submitted to the courts having jurisdiction under
+            applicable law.
+          </p>
         </LegalSection>
       </div>
     </Container>
@@ -309,22 +409,23 @@ export default async function TermsPage() {
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
-        title="이용약관"
-        description="SYU CAMPUS 서비스 이용약관입니다. 2026년 3월 23일 시행, 2026년 6월 21일 개정"
+        title={revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)"}
+        description="SYU CAMPUS 이용약관 개정안입니다. 2026년 10월 4일 공지, 2026년 11월 4일 시행."
         homeHref={localizePath("/", locale)}
         homeLabel={legal.home}
         noticeTitle="중요 공지"
         noticeTone="red"
-        notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 제공되는 모든 자료는 참고용이며, 정확한 정보는 학교 공식 웹사이트를 참고하시기 바랍니다."
+        notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 학사·캠퍼스 안내는 참고용이며 학교 공식 웹사이트에서 확인해주세요. 룸메이트 모집글은 이용자가 작성한 내용입니다."
       />
+      <TermsRevisionNotice locale={locale} />
 
       <div className="space-y-6 mb-8">
         <LegalSection title="제1조 목적">
           <p className="text-neutral-700 leading-relaxed">
             이 약관은 삼육대학교 학생들을 위해 제공되는 &quot;SYU CAMPUS&quot;
-            (이하 &quot;서비스&quot;)의 이용과 관련하여 SYU KR(이하
-            &quot;제공자&quot;)과 이용자의 권리 및 의무를 정하는 것을 목적으로
-            합니다.
+            (이하 &quot;서비스&quot;)의 이용과 관련하여 서상혁(개인, 서비스
+            운영 명칭 &quot;SYU KR&quot;, 이하 &quot;제공자&quot;)과 이용자의
+            권리 및 의무를 정하는 것을 목적으로 합니다.
           </p>
         </LegalSection>
 
@@ -341,7 +442,7 @@ export default async function TermsPage() {
               ],
               [
                 "제공자",
-                "SYU CAMPUS 서비스를 개발, 운영, 관리하는 SYU KR을 의미합니다.",
+                "SYU KR이라는 운영 명칭으로 SYU CAMPUS 서비스를 개발, 운영, 관리하는 개인 서상혁을 의미합니다.",
               ],
             ].map(([title, description], index) => (
               <div key={title}>
@@ -367,7 +468,7 @@ export default async function TermsPage() {
                 참고용 자료
               </p>
               <p className="text-xs text-orange-800 mt-1">
-                본 서비스의 모든 자료(공지사항, 시간표, 학식 정보 등)는
+                학사·캠퍼스 안내 자료(공지사항, 시간표, 학식 정보 등)는
                 참고용입니다. 정확한 정보는 반드시 삼육대학교 공식 웹사이트를
                 확인하시기 바랍니다.
               </p>
@@ -384,24 +485,26 @@ export default async function TermsPage() {
               ))}
             </ul>
             <NumberedParagraph number={2}>
-              제공되는 정보는 공개된 학교 공식 정보를 크롤링하거나 JSON 데이터
-              형태로 관리됩니다.
+              학사·캠퍼스 안내 정보는 공개된 학교 공식 정보를 수집하거나 JSON
+              데이터 형태로 관리됩니다. 모집글은 이용자가 직접 작성한 자료이며
+              학교 공식 공지와 구분됩니다.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
               제공자는 운영상 필요시 사전 공지 후 서비스의 내용을 변경하거나
               일시 중단할 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={4}>
-              본 서비스는 삼육대학교의 공식 서비스가 아니며, SYU KR에 의해
-              개발되었습니다. 제공자는 정보의 정확성과 안정성을 위해 합리적인
-              노력을 다하나, 무료 참고용 정보 서비스의 특성상 제공자의 고의
-              또는 중대한 과실이 없는 한 서비스 이용으로 발생한 손해에 대해
-              책임을 지지 않습니다.
+              본 서비스는 삼육대학교의 공식 서비스가 아니며, 제공자가
+              개발·운영합니다. 제공자는 정보의 정확성과 안정성을 위해 합리적인
+              노력을 합니다. 서비스 이용으로 발생한 손해에 대한 책임은
+              제8조와 관계 법령에 따릅니다.
             </NumberedParagraph>
           </div>
         </LegalSection>
 
-        <LegalSection title="제4조 사용자의 책임">
+        <RoommateTerms />
+
+        <LegalSection title="제5조 사용자의 책임">
           <div className="space-y-2 text-neutral-700">
             <p>이용자는 서비스 이용 시 다음 행위를 하여서는 안 됩니다:</p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
@@ -412,7 +515,7 @@ export default async function TermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="제5조 데이터 및 개인정보">
+        <LegalSection title="제6조 데이터 및 개인정보">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
               서비스는 로컬 스토리지를 이용하여 기본적인 사용자 설정 정보를
@@ -462,11 +565,13 @@ export default async function TermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="제6조 서비스 제공의 제한 및 종료">
+        <LegalSection title="제7조 서비스 제공의 제한 및 종료">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
-              이용자가 본 약관을 위반하는 경우, 제공자는 사전 통지 없이 서비스
-              이용을 제한하거나 중단할 수 있습니다.
+              이용자가 본 약관을 위반하는 경우, 제공자는 서비스 이용을 제한할
+              수 있으며 가능한 경우 제한 사유와 범위를 안내합니다. 긴급한
+              보안 위협이나 개인정보 침해는 먼저 조치한 뒤 안내할 수 있으며,
+              이용자는 사이트 문의를 통해 이의를 제기할 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={2}>
               서비스의 보안 문제, 학교 정책 변경, 기술적 문제 등으로 인해 일시
@@ -479,11 +584,15 @@ export default async function TermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="제7조 책임의 제한">
+        <LegalSection title="제8조 책임 및 서비스의 한계">
           <div className="space-y-3 text-neutral-700">
             <p>
-              제공자는 다음의 경우 제공자의 고의 또는 중대한 과실이 없는 한
-              서비스로 인해 발생한 손해에 대해 책임을 지지 않습니다:
+              제공자는 서비스의 정확성, 보안과 안정성을 위해 합리적인 노력을
+              합니다. 손해배상 책임은 각 당사자의 귀책사유와 손해의 원인 등을
+              고려하여 관계 법령에 따라 정합니다. 이 약관은 법령상 배제할 수
+              없는 책임을 제외하거나 제공자의 의무를 이용자에게 전가하지
+              않습니다. 다음의 사유는 서비스의 정확성이나 이용 가능성에
+              영향을 줄 수 있습니다:
             </p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
               {liabilityLimits.map((limit) => (
@@ -498,29 +607,33 @@ export default async function TermsPage() {
           </div>
         </LegalSection>
 
-        <LegalSection title="제8조 약관의 변경">
+        <LegalSection title="제9조 약관의 변경">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
               제공자는 필요한 경우 이 약관을 변경할 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={2}>
               약관 변경 시 변경 사유 및 변경 내용을 명시하여 최소 7일 이전에
-              공지합니다.
+              공지합니다. 이용자에게 불리하거나 권리에 중대한 영향을 주는
+              변경은 최소 30일 이전에 공지합니다.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
               변경된 약관에 동의하지 않는 이용자는 서비스 이용을 중단할 수
-              있습니다.
+              있으며 개인정보 삭제를 요청할 수 있습니다. 법령상 동의가 필요한
+              사항은 별도로 동의를 받으며, 응답이 없거나 계속 이용한다는
+              이유만으로 이를 대신하지 않습니다.
             </NumberedParagraph>
           </div>
         </LegalSection>
 
-        <LegalSection title="제9조 준거법 및 관할">
+        <LegalSection title="제10조 준거법 및 관할">
           <div className="space-y-3 text-neutral-700">
             <NumberedParagraph number={1}>
               이 약관의 해석 및 수정은 대한민국의 법을 적용합니다.
             </NumberedParagraph>
             <NumberedParagraph number={2}>
-              분쟁 발생 시 대한민국의 일반법원에 제소할 수 있습니다.
+              분쟁 발생 시 관계 법령에 따라 관할권이 있는 법원에 제소할 수
+              있습니다.
             </NumberedParagraph>
           </div>
         </LegalSection>

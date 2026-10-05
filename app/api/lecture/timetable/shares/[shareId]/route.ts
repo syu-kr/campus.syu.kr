@@ -23,10 +23,16 @@ interface RouteContext {
   }>;
 }
 
-export async function GET(_req: Request, { params }: RouteContext) {
+export async function GET(req: Request, { params }: RouteContext) {
   try {
     const { shareId: rawShareId } = await params;
     const shareId = normalizeShareId(rawShareId);
+    // ponytail: per-instance requester cap; use shared storage if distributed abuse occurs.
+    await enforceRateLimit(req, "timetable-share-read", {
+      limit: 120,
+      windowMs: 60 * 1000,
+      persistent: false,
+    });
     const snapshot = await getFirestore()
       .collection("timetable_shares")
       .doc(shareId)
@@ -61,6 +67,9 @@ export async function GET(_req: Request, { params }: RouteContext) {
       },
     });
   } catch (error) {
+    const rateLimited = rateLimitResponse(error);
+    if (rateLimited) return rateLimited;
+
     return apiServerErrorResponse(error, "공유 시간표를 불러오지 못했습니다.");
   }
 }

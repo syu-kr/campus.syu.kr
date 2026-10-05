@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
 import { Container } from "@/app/components/Container";
+import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
@@ -12,11 +13,18 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useUrlSearch } from "@/lib/use-url-search";
+import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type { AnnouncementCategory } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
+const SOURCE_FILES: Record<AnnouncementCategory, DailyCrawlDataFile> = {
+  academic: "announcements-academic.json",
+  campus: "announcements-campus-life.json",
+  scholarship: "announcements-scholarship.json",
+  sw: "announcements-sw.json",
+};
 
 interface AnnouncementListPageProps {
   category: AnnouncementCategory | "all";
@@ -77,6 +85,10 @@ export function AnnouncementListPage({
           setCurrentPage(1);
         }}
         searchOnChange
+      />
+
+      <CrawlDataStatus
+        fileNames={category === "all" ? Object.values(SOURCE_FILES) : [SOURCE_FILES[category]]}
       />
 
       {!showLoading && !isError && Boolean(data?.fallbackSources?.length) && (

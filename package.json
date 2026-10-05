@@ -8,7 +8,9 @@
     "node": ">=22.13.0"
   },
   "overrides": {
+    "@fastify/busboy": "3.2.2",
     "@grpc/grpc-js": "1.14.5",
+    "fast-glob@3.3.1": "$fast-glob",
     "minimatch@^3.0.0": {
       "brace-expansion": "$brace-expansion"
     },
@@ -28,6 +30,9 @@
       "vendor/brace-expansion-compat/index.cjs": [
         "exports"
       ]
+    },
+    "workspaces": {
+      "vendor/eslint-root-glob": {}
     }
   },
   "scripts": {
@@ -41,16 +46,19 @@
     "check:twa": "node scripts/check-twa-readiness.mjs",
     "check:twa:release": "node scripts/check-twa-readiness.mjs --release",
     "check:unused": "knip",
-    "check:python": "python scripts/check_python_syntax.py && python scripts/check_crawler_utils.py && python scripts/check_monthly_crawl_data.py",
+    "check:python": "python scripts/check_python_syntax.py && python scripts/check_crawler_utils.py && python scripts/check_monthly_crawl_data.py && python scripts/check_public_holidays.py",
     "check:graduation": "node scripts/check_graduation_data.mjs",
     "check:curriculum": "node scripts/check_curriculum_data.mjs",
     "check:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --dry-run",
     "test:unit": "vitest run",
+    "test:roommates:integration": "vitest run --config vitest.roommates.integration.config.ts",
+    "test:roommates:browser": "node tests/roommate-browser-server.cjs",
     "test:unit:watch": "vitest",
     "audit:curriculum": "python scripts/audit_curriculum_courses.py",
     "build:verified-curriculum": "python scripts/build_verified_curriculum.py",
     "generate:announcement-ai": "node scripts/generate_announcement_ai_summaries.mjs",
     "pull:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --pull-current",
+    "crawl:daily": "ts-node --files --project tsconfig.json scripts/run-daily-crawl.ts",
     "prepare:crawl-data-pages": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --prepare-pages",
     "rollback:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --rollback",
     "check": "npm run lint && npm run type-check && npm run check:i18n && npm run check:twa && npm run check:unused && npm run check:python && npm run check:graduation && npm run check:curriculum && npm run check:crawl-data && npm run test:unit && npm run build",
@@ -85,6 +93,7 @@
     "brace-expansion-v5": "npm:brace-expansion@5.0.12",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.6",
+    "fast-glob": "file:vendor/eslint-root-glob",
     "jsdom": "^30.0.1",
     "knip": "^6.29.0",
     "postcss": "8.5.28",

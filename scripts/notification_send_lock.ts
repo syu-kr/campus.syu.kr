@@ -5,15 +5,15 @@ const DELETE_FAILED_FLAG = "--delete-failed";
 const DELETE_STALE_SENDING_FLAG = "--delete-stale-sending";
 const MAX_SENDING_AGE_MINUTES = 30;
 
-async function main() {
-  const args = process.argv.slice(2);
+export async function runNotificationSendLock(args = process.argv.slice(2)) {
   const dedupeKey = args.find((arg) => !arg.startsWith("--"));
   const shouldDeleteFailed = args.includes(DELETE_FAILED_FLAG);
   const shouldDeleteStaleSending = args.includes(DELETE_STALE_SENDING_FLAG);
 
   if (!dedupeKey) {
     printUsage();
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const db = await initializeScriptFirestore();
@@ -31,38 +31,54 @@ async function main() {
   const status = String(data.status || "unknown");
   printLock(dedupeKey, status, data);
 
-  if (shouldDeleteFailed) {
-    if (status !== "failed") {
-      throw new Error(
-        `${DELETE_FAILED_FLAG} only deletes locks with status=failed. Current status: ${status}`,
-      );
-    }
+  if (shouldDeleteFailed || shouldDeleteStaleSending) {
+    const deleted = await db.runTransaction(async (transaction) => {
+      const currentSnapshot = await transaction.get(ref);
+      if (!currentSnapshot.exists) return false;
 
-    await ref.delete();
-    console.log("Deleted failed notification send lock.");
-    return;
-  }
+      const currentData = currentSnapshot.data() || {};
+      const currentStatus = String(currentData.status || "unknown");
+      const requiredStatus = shouldDeleteFailed ? "failed" : "sending";
+      const flag = shouldDeleteFailed
+        ? DELETE_FAILED_FLAG
+        : DELETE_STALE_SENDING_FLAG;
+      if (currentStatus !== requiredStatus) {
+        throw new Error(
+          `${flag} only deletes locks with status=${requiredStatus}. Current status: ${currentStatus}`,
+        );
+      }
 
-  if (shouldDeleteStaleSending) {
-    if (status !== "sending") {
-      throw new Error(
-        `${DELETE_STALE_SENDING_FLAG} only deletes locks with status=sending. Current status: ${status}`,
-      );
-    }
+      if (shouldDeleteStaleSending && !shouldDeleteFailed) {
+        const updatedAt = readTimestampMs(
+          currentData.updated_at ?? currentData.created_at,
+        );
+        const now = Date.now();
+        if (
+          updatedAt === null ||
+          !Number.isFinite(updatedAt) ||
+          updatedAt > now
+        ) {
+          throw new Error(
+            "Refusing to delete a sending lock with an unknown, invalid, or future timestamp. Inspect manually.",
+          );
+        }
 
-    const updatedAt = readTimestampMs(data.updated_at ?? data.created_at);
-    const ageMinutes = updatedAt
-      ? Math.floor((Date.now() - updatedAt) / 60000)
-      : null;
+        const ageMinutes = Math.floor((now - updatedAt) / 60000);
+        if (ageMinutes < MAX_SENDING_AGE_MINUTES) {
+          throw new Error(
+            `Refusing to delete a recent sending lock (${ageMinutes}m old). Wait at least ${MAX_SENDING_AGE_MINUTES}m or inspect manually.`,
+          );
+        }
+      }
 
-    if (ageMinutes !== null && ageMinutes < MAX_SENDING_AGE_MINUTES) {
-      throw new Error(
-        `Refusing to delete a recent sending lock (${ageMinutes}m old). Wait at least ${MAX_SENDING_AGE_MINUTES}m or inspect manually.`,
-      );
-    }
-
-    await ref.delete();
-    console.log("Deleted stale sending notification send lock.");
+      transaction.delete(ref);
+      return true;
+    });
+    console.log(
+      deleted
+        ? `Deleted ${shouldDeleteFailed ? "failed" : "stale sending"} notification send lock.`
+        : "The notification send lock no longer exists. No mutation was performed.",
+    );
     return;
   }
 
@@ -131,7 +147,9 @@ function readTimestampMs(value: unknown): number | null {
   return value instanceof admin.firestore.Timestamp ? value.toMillis() : null;
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exit(1);
-});
+if (typeof require !== "undefined" && require.main === module) {
+  runNotificationSendLock().catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}
