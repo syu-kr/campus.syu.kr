@@ -1,9 +1,12 @@
 """Check trust-boundary behavior shared by notice crawlers."""
 
 import os
+import io
+from contextlib import redirect_stdout
 from unittest.mock import patch
 
 from bs4 import BeautifulSoup
+import requests
 
 from crawl_department_notices import (
     build_notice_request_urls,
@@ -69,9 +72,35 @@ def main() -> None:
             return response
 
     flaky_session = FlakySession()
-    with patch("crawler_utils.time.sleep"):
+    recovered_output = io.StringIO()
+    with patch("crawler_utils.time.sleep"), redirect_stdout(recovered_output):
         assert request_soup(flaky_session, "https://www.syu.ac.kr") is not None
     assert flaky_session.calls == REQUEST_ATTEMPTS
+    assert "[retry]" in recovered_output.getvalue()
+    assert "[warn]" not in recovered_output.getvalue()
+
+    class FailedSession:
+        def __init__(self, status=None):
+            self.status = status
+            self.calls = 0
+
+        def request(self, method: str, url: str, timeout: int, stream: bool):
+            del method, url, timeout, stream
+            self.calls += 1
+            if self.status is None:
+                raise requests.RequestException("fixture timeout")
+            response = FakeResponse()
+            response.status_code = self.status
+            return response
+
+    for status in [500, 404, None]:
+        failed_session = FailedSession(status)
+        failed_output = io.StringIO()
+        with patch("crawler_utils.time.sleep"), redirect_stdout(failed_output):
+            assert request_soup(failed_session, "https://www.syu.ac.kr") is None
+        assert failed_session.calls == (1 if status == 404 else REQUEST_ATTEMPTS)
+        assert failed_output.getvalue().count("[warn]") == 1
+        assert failed_output.getvalue().count("[retry]") == failed_session.calls - 1
 
     standard_board = to_notice_board_base_url(
         "https://example.syu.ac.kr/department/community/notice/",

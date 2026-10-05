@@ -159,6 +159,20 @@ describe("independent daily crawler publication", () => {
     expect(health["announcements-academic.json"]?.lastSuccessAt).toBe(PREVIOUS);
   });
 
+  it("publishes a successful source after recovered retry logs", async () => {
+    const health = await runDailyCrawl({ ...options(), run: async ({ fileName }) => {
+      if (fileName === "announcements-academic.json") {
+        await writeFile(path.join(directory, fileName), JSON.stringify(notice("재시도 성공 공지")));
+        return { exitCode: 0, incomplete: hasIncompleteCrawlOutput("[retry] 요청 실패: upstream (500)\n크롤링 완료") };
+      }
+      return { exitCode: 0 };
+    } });
+    expect(health["announcements-academic.json"]).toEqual({
+      status: "fresh", lastAttemptAt: ATTEMPT, lastSuccessAt: ATTEMPT,
+    });
+    expect(JSON.parse(await readFile(path.join(directory, "announcements-academic.json"), "utf8"))[0].title).toBe("재시도 성공 공지");
+  });
+
   it("updates only holidays and preserves notice, cafeteria, AI bytes and skipped health", async () => {
     const skippedFiles: DailyCrawlDataFile[] = [...NOTICE_FILES, "cafeteria-menu.json", "announcement-ai-metadata.json"];
     const baselines = await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))));
@@ -262,6 +276,7 @@ describe("independent daily crawler publication", () => {
 
   it("recognizes known incomplete-source logs without treating a closed cafeteria as a failure", () => {
     expect(hasIncompleteCrawlOutput("  [warn] 요청 오류: upstream timeout")).toBe(true);
+    expect(hasIncompleteCrawlOutput("  [retry] 요청 오류: upstream timeout")).toBe(false);
     expect(hasIncompleteCrawlOutput("  ⚠️ 공지사항 링크를 찾지 못했습니다")).toBe(true);
     expect(hasIncompleteCrawlOutput("학과 홈페이지 매칭 결과가 없어 기존 데이터를 유지했습니다")).toBe(true);
     expect(hasIncompleteCrawlOutput("[Announcement AI] generation failed")).toBe(true);

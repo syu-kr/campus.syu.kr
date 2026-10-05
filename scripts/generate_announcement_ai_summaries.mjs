@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { parseEnv } from "node:util";
 import {
   ANNOUNCEMENT_AI_DEFAULT_MODEL,
   ANNOUNCEMENT_AI_PROMPT_VERSION,
@@ -12,7 +14,9 @@ import {
   sanitizeAnnouncementSummaryForPublication,
 } from "./announcement-openai.mjs";
 
-loadLocalEnvFiles();
+const isMain = process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+if (isMain) loadLocalEnvFiles();
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const OUTPUT_FILE = path.join(DATA_DIR, "announcement-ai-metadata.json");
@@ -307,38 +311,25 @@ async function writeMetadata(
   return true;
 }
 
-function loadLocalEnvFiles() {
+export function loadLocalEnvFiles(directory = process.cwd(), environment = process.env) {
+  const keys = [
+    "OPENAI_API_KEY", "OPENAI_ANNOUNCEMENT_MODEL",
+    "ANNOUNCEMENT_AI_LIMIT", "ANNOUNCEMENT_AI_DELAY_MS", "ANNOUNCEMENT_AI_TIMEOUT_MS",
+    "ANNOUNCEMENT_AI_CHECKPOINT_EVERY", "ANNOUNCEMENT_AI_MAX_RETRIES",
+    "ANNOUNCEMENT_AI_ENABLED", "ANNOUNCEMENT_AI_REFRESH_GENERATION", "ANNOUNCEMENT_AI_REFRESH_SINCE",
+    "ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS", "ANNOUNCEMENT_DETAIL_FETCH_ENABLED",
+    "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED", "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT",
+  ];
   for (const fileName of [".env.local", ".env"]) {
-    const filePath = path.join(process.cwd(), fileName);
+    const filePath = path.join(directory, fileName);
     if (!existsSync(filePath)) continue;
-
-    const raw = readFileSync(filePath, "utf8");
-    for (const line of raw.split(/\r?\n/)) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
-
-      const separatorIndex = trimmed.indexOf("=");
-      if (separatorIndex <= 0) continue;
-
-      const key = trimmed.slice(0, separatorIndex).trim();
-      if (!key || process.env[key] !== undefined) continue;
-
-      process.env[key] = normalizeEnvValue(
-        trimmed.slice(separatorIndex + 1).trim(),
-      );
+    const values = parseEnv(readFileSync(filePath, "utf8"));
+    for (const key of keys) {
+      if (environment[key] === undefined && values[key] !== undefined) {
+        environment[key] = values[key];
+      }
     }
   }
-}
-
-function normalizeEnvValue(value) {
-  if (
-    (value.startsWith('"') && value.endsWith('"')) ||
-    (value.startsWith("'") && value.endsWith("'"))
-  ) {
-    return value.slice(1, -1).replace(/\\n/g, "\n");
-  }
-
-  return value;
 }
 
 async function readAnnouncements() {
@@ -420,18 +411,30 @@ async function enrichAnnouncementContent(announcement, { timeoutMs }) {
   };
 }
 
-async function fetchAnnouncementDetailContent(url, timeoutMs) {
+export async function fetchAnnouncementDetailContent(url, timeoutMs) {
   if (!canFetchDetailUrl(url)) return null;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    const signal = AbortSignal.timeout(timeoutMs);
+    let response;
+    for (let redirects = 0; redirects <= 5; redirects++) {
+      response = await fetch(url, {
+        redirect: "manual",
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        signal,
+      });
+      if (![301, 302, 303, 307, 308].includes(response.status)) break;
+      const location = response.headers.get("location");
+      await response.body?.cancel();
+      if (!location || redirects === 5) throw new Error("Invalid or excessive detail redirects");
+      const nextUrl = new URL(location, url).href;
+      if (!canFetchDetailUrl(nextUrl)) throw new Error("Detail redirect left the school domain");
+      url = nextUrl;
+    }
 
     if (!response.ok) {
       console.warn(`Detail fetch failed ${response.status}: ${url}`);
@@ -495,6 +498,7 @@ function canFetchDetailUrl(value) {
     const url = new URL(value);
     return (
       (url.protocol === "https:" || url.protocol === "http:") &&
+      !url.username && !url.password && !url.port &&
       (url.hostname === "syu.ac.kr" || url.hostname.endsWith(".syu.ac.kr"))
     );
   } catch {
@@ -863,7 +867,7 @@ function wait(ms) {
   });
 }
 
-main().catch(async (error) => {
+if (isMain) main().catch(async (error) => {
   console.error("[Announcement AI] fatal error", {
     name: error?.name || "Error",
     code: error?.code,

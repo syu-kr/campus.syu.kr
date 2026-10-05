@@ -118,7 +118,7 @@ def main() -> None:
         )
         for valid_board in [board(row("일반 학과 안내")), board('<tr><td colspan="5">공지가 없습니다</td></tr>'), board()]:
             log = io.StringIO()
-            with patch.object(departments, "safe_request_soup", return_value=valid_board), contextlib.redirect_stdout(log):
+            with patch.object(departments, "request_soup", return_value=valid_board), contextlib.redirect_stdout(log):
                 candidates = departments.crawl_department_board(None, department_config, department, {}, [], 0)
             assert candidates == {}
             assert "[warn]" not in log.getvalue()
@@ -133,13 +133,13 @@ def main() -> None:
         )
         for meaningful_row in [row("공모전 정상 후보"), row("일반 학과 안내")]:
             log = io.StringIO()
-            with patch.object(departments, "safe_request_soup", return_value=board(untitled, meaningful_row)), contextlib.redirect_stdout(log):
+            with patch.object(departments, "request_soup", return_value=board(untitled, meaningful_row)), contextlib.redirect_stdout(log):
                 candidates = departments.crawl_department_board(None, department_config, department, {}, [], 0)
             assert len(candidates) == (1 if "공모전" in meaningful_row else 0)
             assert "[info]" in log.getvalue()
             assert "[warn]" not in log.getvalue()
 
-        with patch.object(departments, "safe_request_soup", return_value=board(untitled)), contextlib.redirect_stdout(io.StringIO()):
+        with patch.object(departments, "request_soup", return_value=board(untitled)), contextlib.redirect_stdout(io.StringIO()):
             try:
                 departments.crawl_department_board(None, department_config, department, {}, [], 0)
             except RuntimeError:
@@ -168,7 +168,7 @@ def main() -> None:
                 patch.object(departments, "discover_college_page_urls", return_value=["https://www.syu.ac.kr/engineering"]),
                 patch.object(departments, "discover_department_sites_from_college_pages", return_value=[department]),
                 patch.object(departments, "discover_notice_board_url", return_value=department_config.base_url),
-                patch.object(departments, "safe_request_soup", return_value=board(row("공모전 정상 후보"), malformed)),
+                patch.object(departments, "request_soup", return_value=board(row("공모전 정상 후보"), malformed)),
                 contextlib.redirect_stdout(log),
             ):
                 try:

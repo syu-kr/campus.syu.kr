@@ -37,6 +37,7 @@ const AI_SOURCE: CrawlSource = {
 };
 
 export function hasIncompleteCrawlOutput(output: string) {
+  // Recoverable request attempts use [retry]; only exhausted or invalid sources emit [warn].
   // ponytail: known warnings are conservative; replace with structured crawler outcomes if formats change.
   return /\[warn\]|⚠|학과 홈페이지 매칭 결과가 없어|\[Announcement AI\] generation failed|OPENAI_API_KEY is not configured/.test(output);
 }

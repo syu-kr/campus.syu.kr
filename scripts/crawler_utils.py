@@ -134,8 +134,10 @@ def request_soup(
         try:
             response = session.request(method, url, timeout=timeout, stream=True)
             if response.status_code != 200:
-                print(f"  [warn] 요청 실패: {url} ({response.status_code})")
-                if response.status_code < 500 or attempt + 1 == REQUEST_ATTEMPTS:
+                retrying = response.status_code >= 500 and attempt + 1 < REQUEST_ATTEMPTS
+                level = "retry" if retrying else "warn"
+                print(f"  [{level}] 요청 실패: {url} ({response.status_code})")
+                if not retrying:
                     return None
                 time.sleep(2**attempt)
                 continue
@@ -161,8 +163,10 @@ def request_soup(
 
             return BeautifulSoup(b"".join(chunks), "html.parser")
         except (requests.RequestException, ValueError) as error:
-            print(f"  [warn] 요청 오류: {url} ({error})")
-            if attempt + 1 == REQUEST_ATTEMPTS:
+            retrying = attempt + 1 < REQUEST_ATTEMPTS
+            level = "retry" if retrying else "warn"
+            print(f"  [{level}] 요청 오류: {url} ({error})")
+            if not retrying:
                 return None
             time.sleep(2**attempt)
         finally:
