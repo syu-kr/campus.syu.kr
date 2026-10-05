@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import time
+from datetime import datetime
 from typing import Dict, List, Optional
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit, urlunsplit
 
@@ -38,43 +39,111 @@ OUTPUT_PATH = "public/data/announcements-departments.json"
 
 COMPETITION_HINT_TERMS = (
     "공모전",
-    "공모 이벤트",
     "공모이벤트",
-    "공모 안내",
-    "공모 모집",
+    "공모안내",
+    "공모모집",
+    "공모및",
+    "공모/",
     "공모사업",
-    "아이디어 공모",
-    "콘텐츠 공모",
-    "프로젝트 공모",
-    "프로그램 공모",
-    "후기 공모",
-    "수기 공모",
-    "에세이 공모",
-    "리포트 공모",
-    "보고서 공모",
-    "독후감 공모",
-    "ucc 공모",
-    "영상 공모",
-    "v-log 공모",
-    "vlog 공모",
+    "아이디어공모",
+    "idea공모",
+    "콘텐츠공모",
+    "컨텐츠공모",
+    "프로젝트공모",
+    "프로그램공모",
+    "후기공모",
+    "수기공모",
+    "에세이공모",
+    "리포트공모",
+    "보고서공모",
+    "독후감공모",
+    "ucc공모",
+    "영상공모",
+    "v-log공모",
+    "vlog공모",
+    "디자인공모",
+    "사진공모",
+    "포스터공모",
+    "슬로건공모",
+    "로고공모",
+    "캐릭터공모",
+    "웹툰공모",
     "경진대회",
     "경시대회",
     "발표대회",
     "발명대회",
     "말하기대회",
-    "말하기 대회",
     "토론대회",
-    "토론 대회",
-    "글쓰기 대회",
+    "글쓰기대회",
+    "에세이대회",
+    "스피치릴레이",
+    "스피치대회",
+    "프레젠테이션경진",
+    "프레젠테이션대회",
     "해커톤",
+    "해카톤",
     "hackathon",
+    "데이터톤",
+    "datathon",
     "아이디어톤",
-    "캡스톤디자인 경진",
-    "캡스톤 디자인 경진",
-    "대회",
+    "ideathon",
+    "아이디어챌린지",
+    "ideachallenge",
+    "캡스톤디자인경진",
+    "캡스톤경진",
     "선발대회",
-    "코딩테스트 대회",
-    "프로그래밍 경진",
+    "코딩테스트대회",
+    "코딩대회",
+    "프로그래밍경진",
+    "프로그래밍대회",
+    "개발자대회",
+    "데이터분석대회",
+    "데이터활용대회",
+    "데이터경진",
+    "언어능력평가대회",
+    "시각화대회",
+    "디자인대회",
+    "미술디자인실기대회",
+    "미술실기대회",
+    "사진대회",
+    "사진촬영대회",
+    "영상제작대회",
+    "조립대회",
+    "경제유니버시아드",
+    "무용대회",
+    "무용경연대회",
+    "버스킹대회",
+    "피칭대회",
+    "창업경진",
+    "창업콘테스트",
+    "창업아이디어콘테스트",
+    "창업경연",
+    "codingcontest",
+    "codingcompetition",
+    "programmingcontest",
+    "programmingcompetition",
+    "designcontest",
+    "designcompetition",
+    "photographycontest",
+    "photographycompetition",
+    "essaycontest",
+    "essaycompetition",
+    "startupcontest",
+    "startuppitchcompetition",
+    "startuppitchcontest",
+    "businessplancompetition",
+    "pitchcompetition",
+    "pitchcontest",
+    "보안ctf",
+    "해킹ctf",
+    "ctf대회",
+    "ctf참가",
+    "ctf모집",
+    "capturetheflagcompetition",
+    "capturetheflagcontest",
+    "capturetheflag대회",
+    "capturetheflag참가",
+    "capturetheflag모집",
 )
 
 COMPETITION_SEARCH_TERMS = (
@@ -82,6 +151,10 @@ COMPETITION_SEARCH_TERMS = (
     "대회",
     "경진",
     "해커톤",
+    "데이터톤",
+    "아이디어톤",
+    "챌린지",
+    "콘테스트",
 )
 
 NOTICE_TEXT_TERMS = ("공지사항", "공지", "notice")
@@ -441,6 +514,8 @@ def crawl_department_board(
     search_max_pages: int,
 ) -> Dict[str, NoticeItem]:
     crawled: Dict[str, NoticeItem] = {}
+    valid_rows = 0
+    skipped_untitled = 0
     request_urls = build_notice_request_urls(
         config.base_url,
         config.max_pages,
@@ -467,10 +542,31 @@ def crawl_department_board(
 
             fix_department_notice_url(row, request_url, row_data)
 
+            title_link = row.select_one("td a")
+            if (
+                not row_data["title"]
+                and title_link is not None
+                and title_link.select_one(".tit") is not None
+                and not title_link.get_text(" ", strip=True)
+                and not title_link.select_one("img, svg")
+                and not row_data["is_pinned"]
+                and is_valid_notice_item({**row_data, "title": "untitled"})
+                and is_official_syu_url(str(row_data.get("url", "")))
+            ):
+                try:
+                    datetime.strptime(str(row_data["date"]), "%Y.%m.%d")
+                except ValueError:
+                    pass
+                else:
+                    skipped_untitled += 1
+                    print(f"  [info] {config.label} 원문 제목이 없는 행 제외: {row_data['url']}")
+                    continue
+
             if not is_valid_notice_item(row_data) or not is_official_syu_url(str(row_data.get("url", ""))):
                 print(f"  [warn] {config.label} 공지 행의 필수 항목 또는 공식 URL이 올바르지 않습니다")
                 raise RuntimeError(f"{config.label} 공지 행이 불완전합니다")
 
+            valid_rows += 1
             if not is_competition_notice(row_data):
                 continue
 
@@ -505,6 +601,10 @@ def crawl_department_board(
                 "isImportant": row_data["is_important"],
                 "isPinned": row_data["is_pinned"],
             })
+
+    if skipped_untitled and not valid_rows:
+        print(f"  [warn] {config.label} 원문 제목이 없는 행 외에 유효한 공지를 찾지 못했습니다")
+        raise RuntimeError(f"{config.label} 공지 목록을 검증하지 못했습니다")
 
     return crawled
 
@@ -646,7 +746,7 @@ def safe_request_soup(
 
 
 def is_competition_notice(item: NoticeItem) -> bool:
-    text = normalize_text(
+    text = re.sub(r"\s+", "",
         " ".join(
             [
                 str(item.get("title", "")),
@@ -659,24 +759,27 @@ def is_competition_notice(item: NoticeItem) -> bool:
     if is_excluded_competition_text(text):
         return False
 
-    return any(term.lower() in text for term in COMPETITION_HINT_TERMS)
+    return any(term in text for term in COMPETITION_HINT_TERMS)
 
 
 def is_excluded_competition_text(text: str) -> bool:
     if "수상안전" in text:
         return True
 
-    if ("아산상" in text or "수상 후보" in text or "수상후보" in text) and (
+    if any(term in text for term in (
+        "아산상", "인재상", "수상후보", "수상자추천", "수상추천", "포상후보",
+        "표창후보", "표창대상자추천", "정부포상추천", "포상대상자추천",
+    )) and (
         "공모전" not in text
     ):
         return True
 
     if "체육대회" in text and any(
-        term in text for term in ("수업", "정상수업", "진행요원", "기간 중")
+        term in text for term in ("수업", "정상수업", "진행요원", "기간중")
     ):
         return True
 
-    if "학술대회" in text and "논문 공모" not in text:
+    if "학술대회" in text and not any(term in text for term in ("논문공모전", "논문경진")):
         return True
 
     return False
@@ -799,6 +902,10 @@ def read_csv_env(name: str, fallback: tuple[str, ...]) -> List[str]:
 
         seen_values.add(key)
         values.append(normalized)
+
+    # 환경변수에 복사된 이전 기본값도 확장된 기본 검색어로 이행한다.
+    if name == "CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS" and set(values) == {"공모", "대회", "경진", "해커톤"}:
+        return list(fallback)
 
     return values or list(fallback)
 

@@ -18,10 +18,11 @@ const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "fridayVacation",
 ];
 
-interface NextShuttleDeparture {
+export interface NextShuttleDeparture {
   routeName: string;
   time: string;
   minutesUntil: number;
+  additionalService?: ShuttleAdditionalService;
 }
 
 export interface CurrentShuttleSummary {
@@ -69,8 +70,10 @@ export function getShuttleDayStatus({
   const closedDate = (specialPeriods?.closedDates ?? []).find(
     (record) => record.date === dateString && isVerified(record),
   );
+  const dayOfWeek = new Date(`${dateString.replaceAll(".", "-")}T00:00:00Z`).getUTCDay();
   const operationStatus: CurrentShuttleSummary["operationStatus"] =
-    serviceExceptions.length > 0 ? "exception" : closedDate ? "closed" :
+    serviceExceptions.length > 0 ? "exception" :
+      closedDate || holiday.status === "holiday" || dayOfWeek === 0 || dayOfWeek === 6 ? "closed" :
       holiday.status === "not-holiday" ? "regular" : "unconfirmed";
   const operationEvidence = (operationStatus === "exception" ? serviceExceptions : closedDate ? [closedDate] : [])
     .map(({ sourceUrl, verifiedAt }) => ({ sourceUrl, verifiedAt }));
@@ -198,6 +201,83 @@ export function formatShuttleAdditionalService(
     value:
       service.type === "window" ? `${value} · ${text.windowNote}` : value,
   };
+}
+
+export function formatShuttleAdditionalCountdown(
+  service: ShuttleAdditionalService,
+  minutesUntil: number,
+  locale: Locale,
+): string {
+  const text = getDictionary(locale).pages.busInfo.festivalShuttle;
+  if (service.type === "window") {
+    return minutesUntil > 0
+      ? text.windowStartsIn.replace("{minutes}", String(minutesUntil))
+      : text.windowScheduled;
+  }
+  return minutesUntil > 0
+    ? text.countdown.replace("{minutes}", String(minutesUntil))
+    : text.scheduledNow;
+}
+
+export function getShuttleAdditionalServiceBuses({
+  specialPeriods,
+  dateString,
+  locale = "ko",
+}: {
+  specialPeriods?: ShuttleSpecialPeriods;
+  dateString: string;
+  locale?: Locale;
+}): ShuttleBusSchedule[] {
+  return (specialPeriods?.specialPeriods ?? [])
+    .filter((period) => isDateInSpecialPeriod(period, dateString))
+    .flatMap((period) => (period.additionalServices ?? []).flatMap((service) => {
+      const start = timeToMinutes(service.type === "window" ? service.startTime : service.time);
+      const end = timeToMinutes(service.type === "window" ? service.endTime : service.time);
+      if (start === null || end === null || start > end ||
+        !Number.isInteger(service.vehicleCount) || service.vehicleCount < 1 ||
+        !["hwarangdae", "byeollae"].includes(service.destination)) return [];
+      const routeName = formatShuttleAdditionalService(service, locale).label;
+      const [startLocation, endLocation] = routeName.split(" → ");
+      return [{
+        id: `${period.id}-${service.destination}`,
+        routeName, startLocation, endLocation,
+        schedules: Object.fromEntries(SCHEDULE_TYPES.map((type) => [type,
+          service.type === "departure" ? [service.time] : [],
+        ])) as ShuttleBusSchedule["schedules"],
+        additionalService: service,
+        lastUpdated: "",
+      }];
+    }));
+}
+
+export function getNextShuttleDepartures({
+  buses,
+  scheduleType,
+  currentMinutes,
+}: {
+  buses: ShuttleBusSchedule[];
+  scheduleType: ShuttleScheduleType;
+  currentMinutes: number;
+}): NextShuttleDeparture[] {
+  return buses.flatMap<NextShuttleDeparture>((bus) => {
+    const service = bus.additionalService;
+    if (service) {
+      const start = timeToMinutes(service.type === "window" ? service.startTime : service.time);
+      const end = timeToMinutes(service.type === "window" ? service.endTime : service.time);
+      if (start === null || end === null || currentMinutes > end) return [];
+      return [{ routeName: bus.routeName,
+        time: service.type === "window" ? `${service.startTime}~${service.endTime}` : service.time,
+        minutesUntil: Math.max(0, start - currentMinutes), additionalService: service }];
+    }
+    const time = (bus.schedules[scheduleType] ?? []).find((time) => {
+      const minutes = timeToMinutes(time);
+      return minutes !== null && minutes > currentMinutes;
+    });
+    const minutes = time ? timeToMinutes(time) : null;
+    return time && minutes !== null
+      ? [{ routeName: bus.routeName, time, minutesUntil: minutes - currentMinutes }]
+      : [];
+  }).sort((a, b) => a.minutesUntil - b.minutesUntil);
 }
 
 export function isShuttleVacationDate(
@@ -382,21 +462,6 @@ export function getCurrentShuttleSummary({
     };
   }
 
-  if (dateInfo.isWeekend && !isException) {
-    return {
-      holiday, operationStatus, operationEvidence,
-      departures: [],
-      additionalServicePeriods: [],
-      isWeekend: true,
-      isOperatingPeriod: scheduleType !== null,
-      isSpecialSchedule: false,
-      scheduleLabel: scheduleType
-        ? getScheduleLabel(scheduleType, false)
-        : "운행 기간 외",
-      hasMoreToday: false,
-    };
-  }
-
   if (!scheduleType && !isException) {
     return {
       holiday, operationStatus, operationEvidence,
@@ -425,26 +490,13 @@ export function getCurrentShuttleSummary({
     }))
     .filter((period) => period.additionalServices.length > 0);
 
-  const departures = effectiveBuses
-    .map((bus): NextShuttleDeparture | null => {
-      const nextTime = bus.schedules[scheduleType ?? "mondayToThursday"].find((time) => {
-        const minutes = timeToMinutes(time);
-        return minutes !== null && minutes > dateInfo.currentMinutes;
-      });
-
-      if (!nextTime) return null;
-
-      const nextMinutes = timeToMinutes(nextTime);
-      if (nextMinutes === null) return null;
-
-      return {
-        routeName: bus.routeName,
-        time: nextTime,
-        minutesUntil: nextMinutes - dateInfo.currentMinutes,
-      };
-    })
-    .filter((item): item is NextShuttleDeparture => item !== null)
-    .sort((a, b) => a.minutesUntil - b.minutesUntil);
+  const departures = getNextShuttleDepartures({
+    buses: [...effectiveBuses, ...(isException ? [] : getShuttleAdditionalServiceBuses({
+      specialPeriods, dateString: dateInfo.dateString,
+    }))],
+    scheduleType: scheduleType ?? "mondayToThursday",
+    currentMinutes: dateInfo.currentMinutes,
+  });
 
   return {
     holiday, operationStatus, operationEvidence,

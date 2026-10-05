@@ -12,7 +12,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
-import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
+import { formatShuttleAdditionalCountdown, formatShuttleAdditionalService, getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { formatDate, getCategoryLabel } from "@/lib/utils";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { localizePath, type Dictionary } from "@/lib/i18n";
@@ -270,6 +270,8 @@ export function TodayShuttleSection({
     limit: 3,
   });
   const primaryDeparture = summary.departures[0];
+  const additionalDeparture = primaryDeparture?.additionalService;
+  const additionalDepartureText = additionalDeparture && formatShuttleAdditionalService(additionalDeparture, locale);
   const canPredict = summary.operationStatus === "regular" || summary.operationStatus === "exception";
 
   return (
@@ -286,33 +288,24 @@ export function TodayShuttleSection({
               key={period.id}
               period={period}
               now={now}
-              showCountdown={canPredict}
+              showCountdown={false}
             />
           ))}
         {!isLoading && !isError && !canPredict && (
           <StateCard
             type="info"
-            title={summary.operationStatus === "closed" ? dictionary.home.dashboard.shuttle : summary.holiday.names.length ? summary.holiday.names.join(" · ") : dictionary.publicHolidays.unavailable}
-            message={summary.operationStatus === "closed"
-              ? dictionary.publicHolidays.shuttleClosed
-              : summary.holiday.status === "holiday"
-                ? dictionary.publicHolidays.shuttleHolidayClosed
-                : dictionary.publicHolidays.shuttleUnconfirmed}
+            title={summary.holiday.names.length ? summary.holiday.names.join(" · ") : summary.isWeekend && !summary.operationEvidence.length
+              ? undefined : summary.operationStatus === "closed" ? dictionary.home.dashboard.shuttle : dictionary.publicHolidays.unavailable}
+            message={summary.holiday.status === "holiday"
+              ? dictionary.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", summary.holiday.names.join(" · "))
+              : summary.operationEvidence.length > 0
+                ? dictionary.publicHolidays.shuttleClosed
+                : summary.isWeekend
+                  ? dictionary.home.dashboard.shuttleWeekend
+                  : summary.operationStatus === "closed"
+                    ? dictionary.publicHolidays.shuttleClosed
+                    : dictionary.publicHolidays.shuttleUnconfirmed}
             action={<Link href={localizePath("/campus/bus-info", locale)} className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">{dictionary.home.dashboard.shuttleSchedule}</Link>}
-          />
-        )}
-        {!isLoading && !isError && canPredict && summary.isWeekend && (
-          <StateCard
-            type="info"
-            message={dictionary.home.dashboard.shuttleWeekend}
-            action={
-              <Link
-                href={localizePath("/campus/bus-info", locale)}
-                className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-              >
-                {dictionary.home.dashboard.shuttleSchedule}
-              </Link>
-            }
           />
         )}
         {!isLoading &&
@@ -369,19 +362,23 @@ export function TodayShuttleSection({
                     )}
                   </div>
                   <h3 className="truncate text-base font-semibold text-neutral-900">
-                    {primaryDeparture.routeName}
+                    {additionalDepartureText ? additionalDepartureText.label : primaryDeparture.routeName}
                   </h3>
                   <p className="mt-1 text-sm text-neutral-600">
-                    {primaryDeparture.time} {dictionary.home.dashboard.departs}
+                    {additionalDepartureText ? additionalDepartureText.value : `${primaryDeparture.time} ${dictionary.home.dashboard.departs}`}
                   </p>
                 </div>
                 <div className="flex items-end justify-between gap-3 sm:block sm:text-right">
-                  <p className="text-3xl font-bold leading-none text-primary-700">
+                  {additionalDeparture ? (
+                    <p className="text-sm font-semibold text-primary-700">
+                      {formatShuttleAdditionalCountdown(additionalDeparture, primaryDeparture.minutesUntil, locale)}
+                    </p>
+                  ) : <p className="text-3xl font-bold leading-none text-primary-700">
                     {primaryDeparture.minutesUntil}
                     <span className="ml-1 text-base font-semibold">
                       {dictionary.home.dashboard.minutesAfter}
                     </span>
-                  </p>
+                  </p>}
                 </div>
               </div>
 
@@ -393,12 +390,14 @@ export function TodayShuttleSection({
                       className="rounded-lg border border-white/80 bg-white/80 px-3 py-2"
                     >
                       <p className="truncate text-xs font-semibold text-neutral-800">
-                        {departure.routeName}
+                        {departure.additionalService
+                          ? formatShuttleAdditionalService(departure.additionalService, locale).label
+                          : departure.routeName}
                       </p>
                       <p className="mt-1 text-xs text-neutral-600">
-                        {departure.time} {dictionary.home.dashboard.departs} ·{" "}
-                        {departure.minutesUntil}
-                        {dictionary.home.dashboard.minutesAfter}
+                        {departure.additionalService
+                          ? `${formatShuttleAdditionalService(departure.additionalService, locale).value} · ${formatShuttleAdditionalCountdown(departure.additionalService, departure.minutesUntil, locale)}`
+                          : `${departure.time} ${dictionary.home.dashboard.departs} · ${departure.minutesUntil}${dictionary.home.dashboard.minutesAfter}`}
                       </p>
                     </div>
                   ))}

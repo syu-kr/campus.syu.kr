@@ -14,19 +14,22 @@ const festival = specialPeriods.specialPeriods.find(
 )!;
 
 describe("festival shuttle display", () => {
-  it("shows an advance announcement and only counts down on the applicable date", () => {
+  it("shows the announcement and countdown only on the applicable date", () => {
     const view = render(
       <ShuttleAdditionalServicesCard period={festival} now={new Date("2026-10-05T22:15:00+09:00")} />,
     );
-    expect(screen.getByText(/22:00~22:30 · 총 5대/)).toBeInTheDocument();
-    expect(screen.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
-    expect(screen.getByText(/70주년기념관 좌측/)).toBeInTheDocument();
+    expect(screen.queryByText("축제 야간 특별운행")).not.toBeInTheDocument();
     expect(screen.queryByText(/분 후 예정 출발/)).not.toBeInTheDocument();
     view.rerender(
       <ShuttleAdditionalServicesCard period={festival} now={new Date("2026-10-06T22:15:00+09:00")} />,
     );
+    expect(screen.getByText(/22:00~22:30 · 총 5대/)).toBeInTheDocument();
+    expect(screen.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
+    expect(screen.getByText(/70주년기념관 좌측/)).toBeInTheDocument();
     expect(screen.getByText("15분 후 예정 출발 (예정 시각 기준)")).toBeInTheDocument();
     expect(screen.queryByText(/운행 중|5대 남/)).not.toBeInTheDocument();
+    view.rerender(<ShuttleAdditionalServicesCard period={festival} now={new Date("2026-10-07T00:00:00+09:00")} />);
+    expect(screen.queryByText("축제 야간 특별운행")).not.toBeInTheDocument();
   });
 
   it("keeps the home card after regular service, then restores the ended state", () => {

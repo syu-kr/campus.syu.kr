@@ -76,35 +76,44 @@ const KEYWORD_RULES: Array<{
   {
     label: "공모전",
     kind: "contest",
-    terms: ["공모전", "공모이벤트", "공모 이벤트"],
+    terms: ["공모전", "공모이벤트"],
   },
   {
     label: "프로그램 공모",
     kind: "program",
-    terms: ["프로젝트 공모", "프로그램 공모", "봉사 프로그램 공모"],
+    terms: ["프로젝트공모", "프로그램공모"],
   },
   {
     label: "공모",
     kind: "contest",
     terms: [
-      "공모 안내",
-      "공모 모집",
-      "공모 및",
+      "공모안내",
+      "공모모집",
+      "공모및",
       "공모/",
       "공모사업",
-      "아이디어 공모",
-      "콘텐츠 공모",
-      "프로젝트 공모",
-      "프로그램 공모",
-      "후기 공모",
-      "수기 공모",
-      "에세이 공모",
-      "리포트 공모",
-      "보고서 공모",
-      "독후감 공모",
-      "ucc 공모",
-      "v-log 공모",
-      "vlog 공모",
+      "아이디어공모",
+      "idea공모",
+      "콘텐츠공모",
+      "컨텐츠공모",
+      "프로젝트공모",
+      "프로그램공모",
+      "후기공모",
+      "수기공모",
+      "에세이공모",
+      "리포트공모",
+      "보고서공모",
+      "독후감공모",
+      "ucc공모",
+      "v-log공모",
+      "vlog공모",
+      "디자인공모",
+      "사진공모",
+      "포스터공모",
+      "슬로건공모",
+      "로고공모",
+      "캐릭터공모",
+      "웹툰공모",
     ],
   },
   {
@@ -115,48 +124,95 @@ const KEYWORD_RULES: Array<{
   {
     label: "해커톤",
     kind: "hackathon",
-    terms: ["해커톤", "hackathon"],
+    terms: ["해커톤", "해카톤", "hackathon"],
+  },
+  {
+    label: "데이터톤",
+    kind: "competition",
+    terms: ["데이터톤", "datathon"],
   },
   {
     label: "아이디어톤",
     kind: "idea",
-    terms: ["아이디어톤", "idea 공모", "아이디어 공모"],
+    terms: ["아이디어톤", "ideathon", "idea공모", "아이디어공모", "아이디어챌린지", "ideachallenge"],
   },
   {
     label: "캡스톤디자인",
     kind: "capstone",
-    terms: ["캡스톤디자인 경진", "캡스톤 디자인 경진"],
+    terms: ["캡스톤디자인경진", "캡스톤경진"],
   },
   {
     label: "발표/토론",
     kind: "presentation",
     terms: [
       "말하기대회",
-      "말하기 대회",
       "토론대회",
-      "토론 대회",
-      "글쓰기 대회",
-      "스피치 릴레이",
-      "프레젠테이션 경진",
+      "글쓰기대회",
+      "에세이대회",
+      "스피치릴레이",
+      "스피치대회",
+      "프레젠테이션경진",
+      "프레젠테이션대회",
     ],
   },
   {
     label: "영상/UCC",
-    kind: "competition",
-    terms: ["ucc", "영상 공모", "v-log", "vlog"],
+    kind: "contest",
+    terms: ["ucc공모", "영상공모", "v-log공모", "vlog공모", "영상제작대회"],
   },
   {
     label: "대회",
     kind: "competition",
     terms: [
-      "대회 안내",
-      "대회 모집",
-      "대회 참가",
-      "대회 개최",
-      "대회 결과",
       "선발대회",
-      "코딩테스트 대회",
-      "프로그래밍 경진",
+      "코딩테스트대회",
+      "코딩대회",
+      "프로그래밍경진",
+      "프로그래밍대회",
+      "개발자대회",
+      "데이터분석대회",
+      "데이터활용대회",
+      "데이터경진",
+      "언어능력평가대회",
+      "시각화대회",
+      "디자인대회",
+      "미술디자인실기대회",
+      "미술실기대회",
+      "사진대회",
+      "사진촬영대회",
+      "조립대회",
+      "경제유니버시아드",
+      "무용대회",
+      "무용경연대회",
+      "버스킹대회",
+      "codingcontest",
+      "codingcompetition",
+      "programmingcontest",
+      "programmingcompetition",
+      "designcontest",
+      "designcompetition",
+      "photographycontest",
+      "photographycompetition",
+      "essaycontest",
+      "essaycompetition",
+    ],
+  },
+  {
+    label: "창업/피칭",
+    kind: "competition",
+    terms: [
+      "피칭대회", "창업경진", "창업콘테스트", "창업아이디어콘테스트", "창업경연",
+      "startupcontest", "startuppitchcompetition", "startuppitchcontest",
+      "businessplancompetition", "pitchcompetition", "pitchcontest",
+    ],
+  },
+  {
+    label: "보안/CTF",
+    kind: "competition",
+    terms: [
+      "보안ctf", "해킹ctf", "ctf대회", "ctf참가", "ctf모집",
+      "capturetheflagcompetition", "capturetheflagcontest", "capturetheflag대회",
+      "capturetheflag참가", "capturetheflag모집",
     ],
   },
 ];
@@ -321,19 +377,21 @@ function applyCompetitionAnalysis(
 }
 
 function getMatchedKeywords(searchableText: string): string[] {
+  const compactText = searchableText.replace(/\s/g, "");
   return KEYWORD_RULES.flatMap((rule) =>
-    rule.terms.some((term) => searchableText.includes(term))
+    rule.terms.some((term) => compactText.includes(term))
       ? [rule.label]
       : [],
   );
 }
 
 function isExcludedCompetition(searchableText: string): boolean {
+  searchableText = searchableText.replace(/\s/g, "");
   if (searchableText.includes("수상안전")) return true;
   if (
-    searchableText.includes("아산상") ||
-    searchableText.includes("수상 후보") ||
-    searchableText.includes("수상후보")
+    ["아산상", "인재상", "수상후보", "수상자추천", "수상추천", "포상후보",
+      "표창후보", "표창대상자추천", "정부포상추천", "포상대상자추천",
+    ].some((term) => searchableText.includes(term))
   ) {
     return !searchableText.includes("공모전");
   }
@@ -343,14 +401,15 @@ function isExcludedCompetition(searchableText: string): boolean {
     (searchableText.includes("수업") ||
       searchableText.includes("정상수업") ||
       searchableText.includes("진행요원") ||
-      searchableText.includes("기간 중"))
+      searchableText.includes("기간중"))
   ) {
     return true;
   }
 
   if (
     searchableText.includes("학술대회") &&
-    !searchableText.includes("논문 공모")
+    !searchableText.includes("논문공모전") &&
+    !searchableText.includes("논문경진")
   ) {
     return true;
   }
@@ -383,44 +442,13 @@ function getCompetitionStatus(
 }
 
 function getCompetitionKind(searchableText: string): CompetitionKind {
-  if (searchableText.includes("해커톤")) return "hackathon";
-  if (searchableText.includes("hackathon")) return "hackathon";
-  if (searchableText.includes("캡스톤디자인 경진")) return "capstone";
-  if (searchableText.includes("캡스톤 디자인 경진")) return "capstone";
-  if (searchableText.includes("아이디어톤")) return "idea";
-  if (searchableText.includes("아이디어 공모")) return "idea";
-  if (searchableText.includes("idea 공모")) return "idea";
-  if (
-    searchableText.includes("말하기대회") ||
-    searchableText.includes("말하기 대회") ||
-    searchableText.includes("토론대회") ||
-    searchableText.includes("토론 대회") ||
-    searchableText.includes("글쓰기 대회") ||
-    searchableText.includes("스피치 릴레이") ||
-    searchableText.includes("프레젠테이션 경진")
-  ) {
-    return "presentation";
-  }
-  if (
-    searchableText.includes("경진대회") ||
-    searchableText.includes("경시대회") ||
-    searchableText.includes("발표대회") ||
-    searchableText.includes("발명대회") ||
-    searchableText.includes("선발대회") ||
-    searchableText.includes("코딩테스트 대회") ||
-    searchableText.includes("프로그래밍 경진")
-  ) {
-    return "competition";
-  }
-  if (
-    searchableText.includes("프로젝트 공모") ||
-    searchableText.includes("프로그램 공모") ||
-    searchableText.includes("봉사 프로그램 공모")
-  ) {
-    return "program";
-  }
-
-  return "contest";
+  const compactText = searchableText.replace(/\s/g, "");
+  const kindOrder: CompetitionKind[] = [
+    "hackathon", "capstone", "idea", "presentation", "competition", "program", "contest",
+  ];
+  return kindOrder.find((kind) => KEYWORD_RULES.some((rule) =>
+    rule.kind === kind && rule.terms.some((term) => compactText.includes(term)),
+  )) ?? "contest";
 }
 
 function getSearchText(announcement: CompetitionAnnouncement): string {

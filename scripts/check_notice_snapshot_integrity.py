@@ -30,6 +30,18 @@ def board(*rows: str) -> BeautifulSoup:
 
 
 def main() -> None:
+    title_config = crawler.NoticeCrawlerConfig(
+        category="academic", label="title fixture", base_url="https://www.syu.ac.kr/academic/",
+        output_path="unused.json", default_author="교무처",
+    )
+    for title_markup in [
+        '<span class="md_cate">장학</span> 신청 안내',
+        '<span class="md_cate">장학</span><span class="tit">신청 안내</span>',
+        '<span class="tit"><span class="md_cate">장학</span> 신청 안내</span>',
+    ]:
+        source_row = board(row("title").replace('<span class="tit">title</span>', title_markup)).select_one("tr")
+        assert crawler.extract_notice_row(source_row, title_config)["title"] == "장학 신청 안내"
+
     with tempfile.TemporaryDirectory(prefix="syu-notice-integrity-") as directory:
         output = Path(directory) / "notices.json"
         old_items = [
@@ -64,7 +76,7 @@ def main() -> None:
         assert all(not item["isPinned"] for item in notices)
 
         missing_anchor = row("missing-anchor").replace('<a href="/blog/missing-anchor">', "").replace("</a>", "")
-        for malformed in [row("missing-date", date=""), row("missing-url", href=""), row("invalid-url", href="https://[broken"), missing_anchor]:
+        for malformed in [row("missing-date", date=""), row("missing-url", href=""), row("invalid-url", href="https://[broken"), missing_anchor, row("")]:
             output.write_bytes(baseline)
             log = io.StringIO()
             with patch.object(crawler, "request_soup", return_value=board(row("valid"), malformed)), contextlib.redirect_stdout(log):
@@ -111,7 +123,38 @@ def main() -> None:
             assert candidates == {}
             assert "[warn]" not in log.getvalue()
 
-        for malformed in [row("공모전 날짜 누락", date=""), missing_anchor, row("공모전 잘못된 URL", href="javascript:alert(1)")]:
+        untitled = (
+            '<tr><th class="step1" scope="row">13</th><td class="step2"><h3>'
+            '<a class="itembx" href="https://www.syu.ac.kr/english/1179-2/?pageds=1&amp;k=test">'
+            '<span class="tit"></span></a></h3></td><td class="step3">삼육대학교</td>'
+            '<td class="step4">2015.09.10</td><td class="step5">'
+            '<a class="file_icon" href="" title="첨부파일 다운로드">file download</a></td>'
+            '<td class="step6 mo_hidden">10,546</td></tr>'
+        )
+        for meaningful_row in [row("공모전 정상 후보"), row("일반 학과 안내")]:
+            log = io.StringIO()
+            with patch.object(departments, "safe_request_soup", return_value=board(untitled, meaningful_row)), contextlib.redirect_stdout(log):
+                candidates = departments.crawl_department_board(None, department_config, department, {}, [], 0)
+            assert len(candidates) == (1 if "공모전" in meaningful_row else 0)
+            assert "[info]" in log.getvalue()
+            assert "[warn]" not in log.getvalue()
+
+        with patch.object(departments, "safe_request_soup", return_value=board(untitled)), contextlib.redirect_stdout(io.StringIO()):
+            try:
+                departments.crawl_department_board(None, department_config, department, {}, [], 0)
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("An entirely untitled department board was accepted")
+
+        for malformed in [
+            row("공모전 날짜 누락", date=""), missing_anchor,
+            row("공모전 잘못된 URL", href="javascript:alert(1)"),
+            row("", date=""), row("", date="2026.99.99"), row("", href="https://example.com/notice"),
+            row("", pinned=True), row("").replace('<span class="tit"></span>', ""),
+            row("").replace('<span class="tit"></span>', '<span class="tit"></span>숨은 원문 제목'),
+            row("").replace('<span class="tit"></span>', '<span class="tit"><img alt="이미지 제목"></span>'),
+        ]:
             output.write_bytes(baseline)
             log = io.StringIO()
             with (

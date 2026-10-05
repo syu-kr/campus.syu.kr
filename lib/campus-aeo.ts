@@ -151,17 +151,15 @@ export function createShuttleAnswerSummary({
   if (summary.operationStatus === "unconfirmed" || summary.operationStatus === "closed") {
     return {
       ...baseSummary,
-      answer: [
-        summary.holiday.names.join(" · "),
-        summary.operationStatus === "closed"
-          ? dictionary.publicHolidays.shuttleClosed
-          : summary.holiday.status === "holiday"
-            ? dictionary.publicHolidays.shuttleHolidayClosed
-            : dictionary.publicHolidays.shuttleUnconfirmed,
-        summary.holiday.status === "holiday"
-          ? dictionary.publicHolidays.referenceHolidaySchedule
-          : dictionary.publicHolidays.referenceSchedule,
-      ].filter(Boolean).join(" "),
+      answer: summary.holiday.status === "holiday"
+        ? applyTemplate(dictionary.publicHolidays.shuttleHolidayClosedNamed, {
+          holiday: summary.holiday.names.join(" · "),
+        })
+        : summary.operationStatus === "closed"
+          ? summary.isWeekend && summary.operationEvidence.length === 0
+            ? answerText.weekend
+            : dictionary.publicHolidays.shuttleClosed
+          : `${dictionary.publicHolidays.shuttleUnconfirmed} ${dictionary.publicHolidays.referenceSchedule}`,
     };
   }
 
@@ -179,7 +177,7 @@ export function createShuttleAnswerSummary({
     };
   }
 
-  if (!primaryDeparture) {
+  if (!primaryDeparture || primaryDeparture.additionalService) {
     return {
       ...baseSummary,
       source: festivalAnswer ? serviceText.source : baseSummary.source,
@@ -200,7 +198,7 @@ export function createShuttleAnswerSummary({
       time: primaryDeparture.time,
     })}${festivalAnswer ? ` ${festivalAnswer}` : ""}`,
     items: [
-      ...summary.departures.map((departure) => ({
+      ...summary.departures.filter((departure) => !departure.additionalService).map((departure) => ({
         label: departure.routeName,
         value: applyTemplate(answerText.departureItem, {
           minutes: String(departure.minutesUntil),

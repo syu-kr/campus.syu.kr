@@ -191,11 +191,14 @@ def extract_notice_row(row, config: NoticeCrawlerConfig) -> Optional[Dict[str, o
     for noisy in title_root.select(".new, .new_icon, .file_icon, img, svg"):
         noisy.decompose()
     category_elem = title_root.select_one(".md_cate")
+    category_text = category_elem.get_text(" ", strip=True) if category_elem else ""
+    if category_elem:
+        category_elem.decompose()
     title_text_elem = title_root.select_one(".tit")
     raw_title = " ".join(
         part
         for part in [
-            category_elem.get_text(" ", strip=True) if category_elem else "",
+            category_text,
             title_text_elem.get_text(" ", strip=True)
             if title_text_elem
             else title_root.get_text(" ", strip=True),

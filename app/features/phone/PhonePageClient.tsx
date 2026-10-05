@@ -12,9 +12,10 @@ import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { PhoneCallButton } from "@/app/components/PhoneCallButton";
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
+import { getPhoneDisplayText, matchesPhoneQuery } from "@/lib/phone";
 import { usePagination } from "@/lib/use-pagination";
 import { useUrlSearch } from "@/lib/use-url-search";
 import type { PhoneNumber } from "@/types";
@@ -49,13 +50,7 @@ export default function PhonePageClient({
     if (!phoneData) return [];
     if (!searchQuery.trim()) return phoneData;
 
-    const lowerQuery = searchQuery.toLowerCase();
-    return phoneData.filter(
-      (item) =>
-        item.department.toLowerCase().includes(lowerQuery) ||
-        item.phone.includes(searchQuery) ||
-        item.description?.toLowerCase().includes(lowerQuery),
-    );
+    return phoneData.filter((item) => matchesPhoneQuery(item, searchQuery));
   }, [searchQuery, phoneData]);
 
   const {
@@ -140,11 +135,18 @@ export default function PhonePageClient({
           paginatedDirectory.map((item) => (
             <Card key={`${item.department}-${item.phone}`}>
               <div className="flex items-center justify-between gap-4">
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-lg font-bold text-neutral-900 mb-1">
                     {item.department}
                   </h3>
-                  <p className="text-sm text-neutral-600">{item.phone}</p>
+                  <p className="text-sm text-neutral-600 break-words">
+                    {getPhoneDisplayText(item).split(", ").map((number, index) => (
+                      <Fragment key={`${number}-${index}`}>
+                        {index > 0 && ", "}
+                        <span className="inline-block max-w-full">{number}</span>
+                      </Fragment>
+                    ))}
+                  </p>
                   {item.description && (
                     <p className="mt-1 text-sm text-neutral-500">
                       {item.description}

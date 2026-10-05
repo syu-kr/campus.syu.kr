@@ -25,6 +25,35 @@ export function getPhoneNumberOptions(
   return parsedNumbers.length ? parsedNumbers : [phone.phone].filter(Boolean);
 }
 
+export function getPhoneDisplayText(
+  phone: Pick<PhoneNumber, "phone" | "phoneNumbers">,
+): string {
+  const extraText = phone.phone
+    .replace(PHONE_NUMBER_PATTERN, "")
+    .replace(/[\s,;/|-]+/g, "");
+
+  // Keep source labels, extensions and shortened ranges rather than guessing them.
+  return extraText ? phone.phone : getPhoneNumberOptions(phone).join(", ");
+}
+
+export function matchesPhoneQuery(phone: PhoneNumber, query: string): boolean {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return true;
+
+  if (
+    [phone.department, phone.description, phone.phone].some((value) =>
+      value?.toLowerCase().includes(normalizedQuery),
+    )
+  ) {
+    return true;
+  }
+
+  const digits = normalizedQuery.replace(/[\s().+-]/g, "");
+  return /^\d+$/.test(digits) && getPhoneNumberOptions(phone).some((number) =>
+    number.replace(/\D/g, "").includes(digits),
+  );
+}
+
 export function getTelHref(phoneNumber: string): string {
   const trimmed = phoneNumber.trim();
   const digits = trimmed.startsWith("+")

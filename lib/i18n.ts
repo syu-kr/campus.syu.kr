@@ -93,6 +93,7 @@ export const dictionaries = {
       unavailable: "공휴일 정보를 확인할 수 없습니다.",
       stale: "공휴일 정보 갱신이 지연되고 있습니다. 최신 공지를 확인해주세요.",
       shuttleHolidayClosed: "오늘은 공휴일로 셔틀을 운영하지 않습니다. 셔틀 시간표를 확인해주세요.",
+      shuttleHolidayClosedNamed: "{holiday} 때문에 오늘은 셔틀을 운영하지 않습니다.",
       shuttleUnconfirmed: "공휴일 정보를 확인할 수 없어 오늘의 셔틀 운행 정보를 안내하기 어렵습니다. 셔틀 시간표를 확인해주세요.",
       shuttleClosed: "학교 안내에 따라 오늘 셔틀버스가 운행되지 않습니다.",
       referenceHolidaySchedule: "아래 시간표는 운행일 기준입니다.",
@@ -1033,6 +1034,8 @@ export const dictionaries = {
           departure: "{time} 예정 출발 · {count}대",
           countdown: "{minutes}분 후 예정 출발 (예정 시각 기준)",
           scheduledNow: "예정 출발 시각입니다.",
+          windowStartsIn: "{minutes}분 후 안내된 운행 시간대가 시작됩니다.",
+          windowScheduled: "안내된 운행 시간대입니다.",
           boarding: "탑승: 셔틀버스 정류장 (70주년기념관 좌측)",
           notice:
             "만차 시 빠르게 출발하거나 예정 시간보다 조기에 종료될 수 있습니다.",
@@ -1069,15 +1072,13 @@ export const dictionaries = {
         liveLocation: "실시간 버스 위치",
         liveLocationDescription:
           "삼육대학교 셔틀 위치 데이터 기준입니다.",
-        autoUpdateLocation: "5-10초마다 자동으로 업데이트됩니다.",
+        autoUpdateLocation: "약 30초마다 자동으로 업데이트됩니다.",
         lastLocationUpdate: "마지막 위치 갱신",
         staleLocationWarning:
           "기존 정보가 오래되었을 수 있습니다.",
         outsideOperation: "현재 운행 시간표 기준 운행 시간 밖입니다.",
         outsideOperationPeriod:
           "현재는 학기·방학 셔틀 운행 기간이 아니어서 실시간 위치를 표시하지 않습니다.",
-        locationDisclaimer:
-          "셔틀 위치는 참고용이며 실제 위치와 다를 수 있습니다. 위치 정보의 지연이나 오차로 인한 이용 결과에 대해 SYU CAMPUS는 책임을 지지 않습니다.",
         locationUnavailableTitle: "현재는 위치 표시 시간이 아닙니다",
         locationUnavailableMessage:
           "현재 운행 시간표 기준 운행 시간 밖입니다.\n아래 시간표에서 다음 운행 정보를 확인하세요.",
@@ -1088,7 +1089,9 @@ export const dictionaries = {
         locationEmptyMessage:
           "운행 시간표와 실제 위치 데이터가 잠시 다를 수 있습니다. 아래 시간표와 학교 공지를 함께 확인해주세요.",
         locationError:
-          "실시간 위치 정보를 새로 가져오지 못했습니다.",
+          "실시간 위치 정보를 불러오지 못했습니다.",
+        locationErrorMessage:
+          "잠시 후 다시 확인하거나 아래 시간표를 확인해주세요.",
         unknown: "알 수 없음",
         status: "상태",
         schoolToStation: "학교 → 역",
@@ -1761,6 +1764,7 @@ export const dictionaries = {
       unavailable: "Public holiday information is unavailable.",
       stale: "Public holiday updates are delayed. Check the latest official notice.",
       shuttleHolidayClosed: "Shuttle buses do not operate today because it is a public holiday. Please check the shuttle timetable.",
+      shuttleHolidayClosedNamed: "Shuttle buses do not operate today because of {holiday}.",
       shuttleUnconfirmed: "Today's shuttle service information is unavailable because public holiday information could not be confirmed. Please check the shuttle timetable.",
       shuttleClosed: "Shuttle buses are not operating today according to the university's notice.",
       referenceHolidaySchedule: "The timetable below applies to operating days.",
@@ -2714,6 +2718,8 @@ export const dictionaries = {
           departure: "{time} scheduled departure · {count} bus",
           countdown: "Scheduled to leave in {minutes} minutes (scheduled time)",
           scheduledNow: "This is the scheduled departure time.",
+          windowStartsIn: "The announced service window starts in {minutes} minutes.",
+          windowScheduled: "This is the announced service window.",
           boarding:
             "Boarding: shuttle stop, to the left of the 70th Anniversary Memorial Hall",
           notice:
@@ -2751,15 +2757,13 @@ export const dictionaries = {
         liveLocation: "Live Bus Location",
         liveLocationDescription:
           "Based on Sahmyook University shuttle location data.",
-        autoUpdateLocation: "Updates automatically every 5-10 seconds.",
+        autoUpdateLocation: "Updates automatically about every 30 seconds.",
         lastLocationUpdate: "Last location update",
         staleLocationWarning:
           "The existing location data may be outdated.",
         outsideOperation: "Outside operating hours for the current timetable.",
         outsideOperationPeriod:
           "Live locations are unavailable outside the semester and vacation shuttle operating periods.",
-        locationDisclaimer:
-          "Shuttle locations are for reference only and may differ from actual positions. SYU CAMPUS is not responsible for outcomes caused by delayed or inaccurate location data.",
         locationUnavailableTitle: "Location display is unavailable now",
         locationUnavailableMessage:
           "It is outside operating hours for the current timetable.\nCheck the timetable below for the next departure.",
@@ -2770,7 +2774,9 @@ export const dictionaries = {
         locationEmptyMessage:
           "The timetable and live location data may differ temporarily. Please also check the timetable below and official school notices.",
         locationError:
-          "Could not refresh live location information.",
+          "Could not load live location information.",
+        locationErrorMessage:
+          "Try again shortly or check the timetable below.",
         unknown: "Unknown",
         status: "Status",
         schoolToStation: "Campus → Station",

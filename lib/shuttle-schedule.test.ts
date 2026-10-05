@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { createShuttleAnswerSummary } from "./campus-aeo";
 import {
   getCurrentShuttleSummary,
+  getShuttleDayStatus,
+  getShuttleAdditionalServiceBuses,
   timeToMinutes,
 } from "./shuttle-schedule";
 import buses from "@/public/data/shuttle-bus-schedule.json";
@@ -53,7 +55,6 @@ describe("public holiday shuttle operation", () => {
   });
 
   it.each([
-    ["public holiday", holidays],
     ["unknown year", { ...holidays, years: [2025], holidays: [] }],
     ["stale non-holiday", { ...holidays, holidays: [], lastSuccessAt: "2026-09-01T00:00:00Z" }],
     ["missing snapshot", undefined],
@@ -68,6 +69,24 @@ describe("public holiday shuttle operation", () => {
     expect(summary.departures).toEqual([]);
     expect(summary.additionalServicePeriods).toEqual([]);
     expect(summary.hasMoreToday).toBe(false);
+  });
+
+  it.each([false, true])("closes a confirmed holiday even when stale=%s", (stale) => {
+    const summary = summarizeWith({ holidays: { ...holidays, stale } });
+    expect(summary.operationStatus).toBe("closed");
+    expect(summary.holiday.names).toEqual(["한글날"]);
+    expect(summary.departures).toEqual([]);
+    expect(summary.additionalServicePeriods).toEqual([]);
+  });
+
+  it("closes the substitute holiday and weekends using the Korean date", () => {
+    expect(getShuttleDayStatus({ dateString: "2026-10-05", now,
+      holidays: { ...holidays, holidays: [{ date: "2026-10-05", names: ["대체공휴일(개천절)"] }] },
+    }).operationStatus).toBe("closed");
+    const summary = summarizeWith({ now: new Date("2027-01-01T15:01:00Z"), holidays: undefined });
+    expect(summary.operationStatus).toBe("closed");
+    expect(summary.isWeekend).toBe(true);
+    expect(summary.departures).toEqual([]);
   });
 
   it("honors only verified route-specific service, including weekends outside operating periods", () => {
@@ -92,7 +111,7 @@ describe("public holiday shuttle operation", () => {
       { ...exception, times: ["24:00"] },
     ]) {
       expect(summarizeWith({ specialPeriods: { ...specialPeriods, serviceExceptions: [record] } })
-        .operationStatus).toBe("unconfirmed");
+        .operationStatus).toBe("closed");
     }
   });
 
@@ -107,7 +126,7 @@ describe("public holiday shuttle operation", () => {
       .operationStatus).toBe("exception");
   });
 
-  it.each(["ko", "en"] as const)("keeps the %s search answer consistent with holiday uncertainty", (locale) => {
+  it.each(["ko", "en"] as const)("keeps the %s search answer consistent with holiday closure", (locale) => {
     const answer = createShuttleAnswerSummary({ locale, now, summary: summarizeWith() });
     expect(answer.answer).toContain("한글날");
     expect(answer.answer).not.toMatch(/12:00|분 남았습니다|minutes from now/);
@@ -120,7 +139,13 @@ describe("festival night shuttle", () => {
     "keeps both announced services available at %s after regular departures end",
     (time) => {
       const summary = summarize(`2026-10-06T${time}:00+09:00`);
-      expect(summary.departures).toEqual([]);
+      expect(summary.departures.map((departure) => departure.routeName)).toEqual([
+        "학교 → 화랑대", "학교 → 별내",
+      ]);
+      expect(summary.departures[0].time).toBe("22:00~22:30");
+      expect(summary.departures[0].additionalService?.type).toBe("window");
+      expect(summary.departures[1].time).toBe("22:30");
+      expect(summary.departures[1].additionalService?.type).toBe("departure");
       expect(summary.hasMoreToday).toBe(true);
       expect(summary.additionalServicePeriods[0].additionalServices).toEqual([
         {
@@ -141,11 +166,28 @@ describe("festival night shuttle", () => {
     expect(summary.hasMoreToday).toBe(false);
   });
 
+  it("adds only dated forward service rows and preserves ordinary inbound/loop schedules", () => {
+    const before = JSON.stringify(buses);
+    const rows = getShuttleAdditionalServiceBuses({ specialPeriods, dateString: "2026-10-06" });
+    expect(rows).toHaveLength(2);
+    expect(rows[0].startLocation).toBe("학교");
+    expect(rows[0].endLocation).toBe("화랑대");
+    expect(rows[0].schedules.mondayToThursday).toEqual([]);
+    expect(rows[1].schedules.mondayToThursday).toEqual(["22:30"]);
+    expect(rows[1].stops).toBeUndefined();
+    expect(rows.every((row) => row.lastUpdated === "")).toBe(true);
+    for (const dateString of ["2026-10-05", "2026-10-07"]) {
+      expect(getShuttleAdditionalServiceBuses({ specialPeriods, dateString })).toEqual([]);
+    }
+    expect(summarize("2026-10-06T22:15:00+09:00").departures.map((row) => row.minutesUntil)).toEqual([0, 15]);
+    expect(JSON.stringify(buses)).toBe(before);
+  });
+
   it("uses the Korean date across UTC midnight and preserves regular departures", () => {
     expect(summarize("2026-10-05T15:00:00Z").additionalServicePeriods).toHaveLength(1);
     expect(summarize("2026-10-06T15:00:00Z").additionalServicePeriods).toEqual([]);
     expect(summarize("2026-10-06T15:00:00Z").departures.length).toBeGreaterThan(0);
-    expect(summarize("2026-10-06T11:55:00+09:00").departures).toEqual(
+    expect(summarize("2026-10-06T11:55:00+09:00").departures.filter((departure) => !departure.additionalService)).toEqual(
       summarize("2026-10-05T11:55:00+09:00").departures,
     );
   });

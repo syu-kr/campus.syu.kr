@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
 import type { Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
@@ -11,6 +12,7 @@ import { Badge } from "./Badge";
 import { Card } from "./Card";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 import { PhoneCallButton } from "./PhoneCallButton";
+import { getPhoneDisplayText } from "@/lib/phone";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
@@ -125,12 +127,17 @@ function PhoneSearchResultCard({
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <h3 className="font-medium text-neutral-900">
             {highlightText(phone.department, query)}
           </h3>
-          <p className="text-sm text-primary-600 font-semibold mt-1">
-            {highlightText(phone.phone, query)}
+          <p className="text-sm text-primary-600 font-semibold mt-1 break-words">
+            {getPhoneDisplayText(phone).split(", ").map((number, index) => (
+              <Fragment key={`${number}-${index}`}>
+                {index > 0 && ", "}
+                <span className="inline-block max-w-full">{highlightText(number, query)}</span>
+              </Fragment>
+            ))}
           </p>
           {phone.description && (
             <p className="mt-1 text-xs text-neutral-600 line-clamp-2">

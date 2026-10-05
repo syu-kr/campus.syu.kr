@@ -37,4 +37,21 @@ describe("searchAll", () => {
     expect(result.items).toHaveLength(1);
     expect(result.failedSources).toEqual(["announcements"]);
   });
+
+  it("finds either phone number without hyphens", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: string) => {
+      if (input.includes("phone-numbers")) {
+        return Response.json([{
+          department: "교목처 교목팀",
+          phone: "02-3399-3328 02-3399-3334",
+          phoneNumbers: ["02-3399-3328", "02-3399-3334"],
+        }]);
+      }
+      return Response.json(input.includes("announcements") ? { items: [] } : []);
+    }));
+
+    const result = await searchAll("0233993334");
+    expect(result.items).toHaveLength(1);
+    expect(result.failedSources).toEqual([]);
+  });
 });

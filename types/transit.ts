@@ -11,6 +11,7 @@ export interface ShuttleBusSchedule {
     fridayVacation: string[];
   };
   lastUpdated: string;
+  additionalService?: ShuttleAdditionalService;
 }
 
 export type ShuttleScheduleType =

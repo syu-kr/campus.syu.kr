@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -104,10 +105,38 @@ def main() -> None:
                 menus = json.loads(menu_path.read_text(encoding="utf-8"))["menus"]
                 assert menus[0]["meals"] == cafeteria.closed_meals()
 
+                for markup in [
+                    '밥<br class="menu-separator">국',
+                    "<p>밥</p><p>국</p>", "<div>밥</div><div>국</div>",
+                    "<ul><li>밥</li><li>국</li></ul>",
+                ]:
+                    assert cafeteria.parse_menu_items(markup) == ["밥", "국"]
+                assert cafeteria.parse_menu_items("<strong>볶음</strong>밥<br />국") == ["볶음밥", "국"]
+
+                with patch.object(cafeteria, "datetime", wraps=datetime) as clock:
+                    clock.now.return_value = datetime(2026, 10, 5)
+                    assert cafeteria.parse_korean_date("2월 31일 (월)") == (None, None)
+                    assert cafeteria.parse_korean_date("10월 5일 (화)") == ("2026-10-05", "월")
+                    invalid_date_headers = ["2월 31일 (월)", *headers[1:]]
+                    menu_path.write_bytes(baseline)
+                    with patch.object(cafeteria, "request_soup", return_value=menu_table(invalid_date_headers, rows)):
+                        try:
+                            cafeteria.crawl_cafeteria_menu()
+                        except RuntimeError:
+                            pass
+                        else:
+                            raise AssertionError("Impossible cafeteria date was accepted")
+                    assert menu_path.read_bytes() == baseline
+                    clock.now.return_value = datetime(2026, 12, 31)
+                    assert cafeteria.parse_korean_date("1월 1일 (금)") == ("2027-01-01", "금")
+                    clock.now.return_value = datetime(2027, 1, 1)
+                    assert cafeteria.parse_korean_date("12월 31일 (목)") == ("2026-12-31", "목")
+
                 for date_text, month in [
                     ("31", "2"), ("31", "4"), ("1", "13"), ("0", "2"),
                     ("10.12.3", "10"), ("10..12", "10"), ("10.12x", "10"),
                     ("10.12 ~ 13.14.15", "10"),
+                    ("12 ~ 10", "10"), ("10.12 ~ 10.10", "10"),
                 ]:
                     schedule_path.write_bytes(b"[]\r\n")
                     with patch.object(schedule, "request_soup", return_value=calendar(date_text, month)):
@@ -133,6 +162,21 @@ def main() -> None:
                 assert len(updated) == 2
                 assert updated[0]["startDate"] == "2026.10.12"
                 assert updated[1] == previous_schedules[2]
+
+                formatted_month = calendar("12", "10")
+                formatted_month.select_one("dd").replace_with(BeautifulSoup(
+                    "<dd>수강신청<br class='separator'>\n  정정 기간</dd>", "html.parser",
+                ))
+                with patch.object(schedule, "request_soup", return_value=formatted_month):
+                    schedule.crawl_schedule()
+                assert json.loads(schedule_path.read_text(encoding="utf-8"))[0]["title"] == "수강신청 정정 기간"
+
+                inline_month = calendar("12", "10")
+                inline_month.select_one("dd").replace_with(BeautifulSoup("<dd><strong>중간</strong>고사</dd>", "html.parser"))
+                with patch.object(schedule, "request_soup", return_value=inline_month):
+                    schedule.crawl_schedule()
+                inline_event = json.loads(schedule_path.read_text(encoding="utf-8"))[0]
+                assert inline_event["title"] == "중간고사" and inline_event["category"] == "exam"
 
                 partial_month = calendar("12", "10")
                 partial_month.select_one("ul").append(BeautifulSoup("<li><dl><dt>13</dt></dl></li>", "html.parser"))
