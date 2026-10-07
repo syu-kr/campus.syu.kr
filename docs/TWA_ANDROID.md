@@ -23,7 +23,7 @@
 - Android Gradle Plugin `8.9.1`
 - Gradle `8.11.1`
 - JDK 17
-- `minSdkVersion 23`, `targetSdkVersion 36`
+- `minSdkVersion 24` (Android 7.0 이상), `targetSdkVersion 36`
 - 앱 버전 `1.0.0`, 버전 코드 `1`
 
 ## Digital Asset Links
