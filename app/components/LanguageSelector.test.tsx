@@ -25,7 +25,7 @@ beforeEach(() => {
   vi.stubGlobal("window", new Proxy(window, {
     get(target, key) {
       return key === "location"
-        ? { hash: target.location.hash, assign: navigate }
+        ? { origin: target.location.origin, hash: target.location.hash, assign: navigate }
         : Reflect.get(target, key, target);
     },
   }));
@@ -49,8 +49,28 @@ describe("language document navigation", () => {
     route.query = "search=notice&mode=full";
     fireEvent.change(renderSelector(locale), { target: { value: nextLocale } });
 
-    expect(navigate).toHaveBeenCalledExactlyOnceWith(`${destination}?search=notice&mode=full#shuttle-map`);
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(`${window.location.origin}${destination}?search=notice&mode=full#shuttle-map`);
     expect(cookieAtNavigation).toContain(`${LOCALE_COOKIE_NAME}=${nextLocale}`);
+  });
+
+  it.each([
+    "javascript:alert(1)",
+    "https://other.example/escape",
+    "//other.example/escape",
+    "/en//other.example/escape",
+    "/\\other.example/escape",
+  ])("keeps an unsafe pathname %s on the current origin", (pathname) => {
+    route.pathname = pathname;
+    route.query = "redirect=javascript%3Aalert%281%29";
+    window.history.replaceState(null, "", "/en/campus/bus-info#javascript:alert(1)");
+    fireEvent.change(renderSelector("en"), { target: { value: "ko" } });
+
+    expect(navigate).toHaveBeenCalledOnce();
+    const destination = new URL(navigate.mock.calls[0][0]);
+    expect(destination.origin).toBe(window.location.origin);
+    expect(destination.protocol).toBe("http:");
+    expect(destination.searchParams.get("redirect")).toBe("javascript:alert(1)");
+    expect(destination.hash).toBe("#javascript:alert(1)");
   });
 
   it.each(["ko", "en"] as const)("leaves the current %s language and document untouched", (locale) => {

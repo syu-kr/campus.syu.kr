@@ -22,8 +22,10 @@ export function LanguageSelector() {
   const handleChange = (nextLocale: Locale) => {
     if (nextLocale === locale) return;
 
-    const query = searchParams.toString();
-    const href = `${pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    const destination = new URL(window.location.origin);
+    destination.pathname = localizePath(pathname, nextLocale);
+    destination.search = searchParams.toString();
+    destination.hash = window.location.hash;
 
     document.cookie = [
       `${LOCALE_COOKIE_NAME}=${nextLocale}`,
@@ -33,7 +35,7 @@ export function LanguageSelector() {
     ].join("; ");
 
     // shortcut: reloading the root locale clears client drafts; replace only after safe RSC switching is verified.
-    window.location.assign(localizePath(href, nextLocale));
+    window.location.assign(destination.href);
   };
 
   return (
