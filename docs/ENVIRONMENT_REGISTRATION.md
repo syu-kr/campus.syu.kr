@@ -73,7 +73,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ## Vercel Runtime
 
-Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.13.0 이상으로 맞춥니다. 운영에서는 Vercel의 Node.js 24.x 런타임 사용을 권장합니다.
+Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.22.2 이상으로 맞춥니다. 운영에서는 Vercel의 Node.js 24.x 런타임 사용을 권장합니다.
 
 Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합니다. Vercel 함수 번들에서 `firebase-admin@14`의 `jwks-rsa@4` -> `jose@6` 조합이 CommonJS/ESM 로딩 오류를 일으킬 수 있으므로, 이 프로젝트는 Firebase Admin SDK를 13.x 안정 조합으로 고정합니다.
 
