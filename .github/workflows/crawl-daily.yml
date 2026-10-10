@@ -44,8 +44,8 @@ jobs:
   crawl:
     if: github.repository == 'syu-kr/campus.syu.kr'
     runs-on: ubuntu-latest
-    # Nine children are capped at five minutes each; allow setup and publication time.
-    timeout-minutes: 55
+    # Departments: 15 minutes; eight other children: 5 each; leave 15 for setup/publication.
+    timeout-minutes: 70
     permissions:
       contents: read
       pages: read
@@ -87,7 +87,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: "22.13.0"
+          node-version: "22.22.2"
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
