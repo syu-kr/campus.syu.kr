@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   LOCALE_COOKIE_NAME,
@@ -14,15 +14,16 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 export function LanguageSelector() {
-  const router = useRouter();
   const pathname = usePathname() || "/";
   const searchParams = useSearchParams();
   const locale = useLocale();
   const dictionary = useDictionary();
 
   const handleChange = (nextLocale: Locale) => {
+    if (nextLocale === locale) return;
+
     const query = searchParams.toString();
-    const href = `${pathname}${query ? `?${query}` : ""}`;
+    const href = `${pathname}${query ? `?${query}` : ""}${window.location.hash}`;
 
     document.cookie = [
       `${LOCALE_COOKIE_NAME}=${nextLocale}`,
@@ -31,8 +32,8 @@ export function LanguageSelector() {
       "SameSite=Lax",
     ].join("; ");
 
-    router.push(localizePath(href, nextLocale));
-    router.refresh();
+    // shortcut: reloading the root locale clears client drafts; replace only after safe RSC switching is verified.
+    window.location.assign(localizePath(href, nextLocale));
   };
 
   return (

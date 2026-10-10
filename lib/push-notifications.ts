@@ -219,29 +219,40 @@ async function registerPushNotifications(
 
     if (!recentlySynced) {
       updateStatus("saving-fcm-token");
-      const retry = readStoredObject(TOKEN_RETRY_KEY);
-      if (
-        (retry.scope === "subscribe-ip" || retry.token === token) &&
-        typeof retry.retryAt === "number" &&
-        Number.isFinite(retry.retryAt) &&
-        retry.retryAt > now &&
-        retry.retryAt <= now + MAX_RETRY_MS
-      ) {
-        throw new PushSubscriptionError(
-          429,
-          retry.retryAt,
-          retry.scope === "subscribe-ip" ? "subscribe-ip" : "subscribe-token-ip",
-          true,
-        );
-      }
+      checkSubscriptionCooldown(token);
 
       // Keep an uncertain write available to opt-out without marking it subscribed.
       const previousPendingToken = localStorage.getItem(TOKEN_PENDING_KEY);
       localStorage.setItem(TOKEN_PENDING_KEY, token);
-      const response = await requestPushSubscription("POST", token);
+      let response: Response;
+      let hasUncertainWrite = false;
+      try {
+        response = await requestPushSubscription("POST", token);
+      } catch (error) {
+        if (
+          trigger !== "automatic" ||
+          !(error instanceof TypeError) ||
+          !navigator.onLine ||
+          document.visibilityState !== "visible"
+        ) {
+          throw error;
+        }
+        hasUncertainWrite = true;
+        await new Promise((resolve) => window.setTimeout(resolve, 5000));
+        if ("Notification" in window && Notification.permission !== "granted") {
+          setNotificationPreference("disabled");
+          await unregisterPushNotifications();
+          return null;
+        }
+        if (cancelled()) return null;
+        if (!navigator.onLine || document.visibilityState !== "visible") throw error;
+        checkSubscriptionCooldown(token);
+        response = await requestPushSubscription("POST", token);
+      }
 
       if (!response.ok) {
-        if (response.status >= 400 && response.status < 500) {
+        // A rejected retry does not rule out the earlier POST having reached the server.
+        if (response.status >= 400 && response.status < 500 && !hasUncertainWrite) {
           if (previousPendingToken) {
             localStorage.setItem(TOKEN_PENDING_KEY, previousPendingToken);
           } else {
@@ -305,6 +316,25 @@ async function registerPushNotifications(
       });
     }
     throw error;
+  }
+}
+
+function checkSubscriptionCooldown(token: string) {
+  const now = Date.now();
+  const retry = readStoredObject(TOKEN_RETRY_KEY);
+  if (
+    (retry.scope === "subscribe-ip" || retry.token === token) &&
+    typeof retry.retryAt === "number" &&
+    Number.isFinite(retry.retryAt) &&
+    retry.retryAt > now &&
+    retry.retryAt <= now + MAX_RETRY_MS
+  ) {
+    throw new PushSubscriptionError(
+      429,
+      retry.retryAt,
+      retry.scope === "subscribe-ip" ? "subscribe-ip" : "subscribe-token-ip",
+      true,
+    );
   }
 }
 
