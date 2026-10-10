@@ -42,7 +42,10 @@ export function hasIncompleteCrawlOutput(output: string) {
   return /\[warn\]|⚠|학과 홈페이지 매칭 결과가 없어|\[Announcement AI\] generation failed|OPENAI_API_KEY is not configured/.test(output);
 }
 
-function runCrawler(source: CrawlSource): Promise<CrawlResult> {
+export function runCrawler(source: CrawlSource): Promise<CrawlResult> {
+  const timeoutMs = (source.fileName === "announcements-departments.json" ? 15 : 5) * 60 * 1000;
+  const startedAt = Date.now();
+  console.log(`[daily-crawl] ${source.fileName}: starting (limit=${timeoutMs / 1000}s)`);
   return new Promise((resolve) => {
     const script = path.join("scripts", source.script);
     const child = spawn(
@@ -50,7 +53,7 @@ function runCrawler(source: CrawlSource): Promise<CrawlResult> {
       source.command === "python" ? ["-u", script] : [script],
       {
         stdio: ["ignore", "pipe", "pipe"],
-        timeout: 5 * 60 * 1000,
+        timeout: timeoutMs,
       },
     );
     let incomplete = false;
@@ -70,8 +73,14 @@ function runCrawler(source: CrawlSource): Promise<CrawlResult> {
       observe(output);
       process.stderr.write(output);
     });
-    child.on("error", () => resolve({ exitCode: null, incomplete }));
-    child.on("close", (exitCode) => resolve({ exitCode, incomplete }));
+    child.on("error", (error: NodeJS.ErrnoException) => {
+      console.error(`[daily-crawl] ${source.fileName}: process error=${error.code || "unknown"} after ${((Date.now() - startedAt) / 1000).toFixed(1)}s`);
+      resolve({ exitCode: null, incomplete });
+    });
+    child.on("close", (exitCode, signal) => {
+      console.log(`[daily-crawl] ${source.fileName}: closed after ${((Date.now() - startedAt) / 1000).toFixed(1)}s (exit=${exitCode}, signal=${signal || "none"}, limit=${timeoutMs / 1000}s)`);
+      resolve({ exitCode, incomplete });
+    });
   });
 }
 
@@ -149,6 +158,7 @@ export async function runDailyCrawl(options: {
         ...(previous?.lastSuccessAt ? { lastSuccessAt: previous.lastSuccessAt } : {}),
         errorCode,
       };
+      console.warn(`::warning::${source.fileName}: ${errorCode}; preserved previous validated bytes; last success=${previous?.lastSuccessAt || "unknown"}`);
     } else {
       health[source.fileName] = { status: "fresh", lastAttemptAt, lastSuccessAt: lastAttemptAt };
     }

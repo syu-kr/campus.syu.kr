@@ -7,6 +7,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   CRAWL_DATA_RETAINED_VERSION_LIMIT,
   CRAWL_DATA_MAX_BYTES,
@@ -316,7 +317,7 @@ async function fetchManifest(
     throw new Error(`${relativePath} 응답 오류: ${response.status}`);
   }
 
-  const payload = Buffer.from(await response.arrayBuffer());
+  const payload = response.payload;
   if (payload.byteLength > MAX_MANIFEST_BYTES) {
     throw new Error(`${relativePath}가 허용 크기를 초과했습니다.`);
   }
@@ -331,16 +332,35 @@ async function fetchBuffer(relativePath: string): Promise<Buffer> {
   if (!response.ok) {
     throw new Error(`${relativePath} 응답 오류: ${response.status}`);
   }
-  return Buffer.from(await response.arrayBuffer());
+  return response.payload;
 }
 
-function fetchRemote(relativePath: string): Promise<Response> {
+async function fetchRemote(relativePath: string) {
   const baseUrl = getCrawlDataBaseUrl();
   const url = new URL(relativePath, `${baseUrl}/`);
-  return fetch(url, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (![502, 503, 504].includes(response.status) || attempt === 2) {
+        // Read the body inside the retry boundary; validation stays outside it.
+        const payload = response.ok
+          ? Buffer.from(await response.arrayBuffer())
+          : Buffer.alloc(0);
+        if (!response.ok) await response.body?.cancel();
+        return { ok: response.ok, status: response.status, payload };
+      }
+      await response.body?.cancel();
+      console.warn(`[crawl-data] ${relativePath}: HTTP ${response.status}, retry ${attempt + 1}/2`);
+    } catch (error) {
+      if (attempt === 2) throw error;
+      console.warn(`[crawl-data] ${relativePath}: download failed, retry ${attempt + 1}/2`);
+    }
+    await delay(1000 * (attempt + 1));
+  }
+  throw new Error(`${relativePath} 다운로드 재시도가 소진됐습니다.`);
 }
 
 function getCrawlDataBaseUrl(): string {

@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import io
 import os
 import re
 import sys
@@ -33,7 +32,7 @@ from crawler_utils import (
     write_json_atomic,
 )
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8", line_buffering=True, write_through=True)
 
 OUTPUT_PATH = "public/data/announcements-departments.json"
 
@@ -207,12 +206,15 @@ def crawl_department_notices() -> None:
     session = requests.Session()
     session.headers.update(DEFAULT_HEADERS)
 
+    print("학과 공지 공모전/대회 후보 크롤링 시작")
+    print("교육과정 페이지 조회 시작")
+    course_guide_soup = request_soup(session, course_guide_url)
     target_department_names = discover_course_guide_department_names(
-        session,
+        course_guide_soup,
         course_guide_url,
     )
     college_page_urls = discover_college_page_urls(
-        session,
+        course_guide_soup,
         course_guide_url,
         excluded_college_urls,
     )
@@ -224,7 +226,6 @@ def crawl_department_notices() -> None:
     if max_departments > 0:
         departments = departments[:max_departments]
 
-    print("학과 공지 공모전/대회 후보 크롤링 시작")
     print(f"교육과정 학과명: {len(target_department_names)}개")
     print(f"단과대학 페이지: {len(college_page_urls)}개")
     print(f"매칭된 공식 학과 홈페이지: {len(departments)}개")
@@ -238,6 +239,7 @@ def crawl_department_notices() -> None:
     new_by_key: Dict[str, NoticeItem] = {}
 
     for index, department in enumerate(departments, start=1):
+        print(f"  {index}/{len(departments)} {department['name']}: 홈페이지 조회 시작")
         board_base_url = discover_notice_board_url(
             session,
             department,
@@ -281,10 +283,9 @@ def crawl_department_notices() -> None:
 
 
 def discover_course_guide_department_names(
-    session: requests.Session,
+    soup: Optional[BeautifulSoup],
     course_guide_url: str,
 ) -> List[str]:
-    soup = request_soup(session, course_guide_url)
     if not soup:
         return []
 
@@ -317,11 +318,10 @@ def discover_course_guide_department_names(
 
 
 def discover_college_page_urls(
-    session: requests.Session,
+    soup: Optional[BeautifulSoup],
     course_guide_url: str,
     excluded_urls: set[str],
 ) -> List[str]:
-    soup = request_soup(session, course_guide_url)
     if not soup:
         return []
 
@@ -364,7 +364,8 @@ def discover_department_sites_from_college_pages(
     departments: List[DepartmentSite] = []
     seen_urls = set()
 
-    for college_url in college_page_urls:
+    for index, college_url in enumerate(college_page_urls, start=1):
+        print(f"단과대학 {index}/{len(college_page_urls)} 홈페이지 조회 시작")
         soup = request_soup(session, college_url)
         if not soup:
             continue
@@ -523,8 +524,11 @@ def crawl_department_board(
         search_max_pages,
     )
 
-    for request_url in request_urls:
+    for index, request_url in enumerate(request_urls, start=1):
+        started_at = time.monotonic()
+        print(f"  {department['name']} 공지 {index}/{len(request_urls)} 조회 시작")
         soup = request_soup(session, request_url)
+        print(f"  {department['name']} 공지 {index}/{len(request_urls)} 조회 완료 ({time.monotonic() - started_at:.1f}초)")
         if not soup:
             continue
 
