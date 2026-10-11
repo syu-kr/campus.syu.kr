@@ -57,7 +57,7 @@ Pages 활성화와 배포에는 별도 Secret/Variable이 필요하지 않습니
 ## 일일 게시 순서
 
 1. Pages에 `current.json`이 있으면 그 버전의 8~9개 파일과 기존 출처 상태를 복원합니다. 기존 버전에 공휴일 파일이 없으면 배포에 포함된 공휴일 기준본을 유지합니다.
-2. `npm run crawl:daily`로 7개 출처를 독립 실행하고 공휴일 활성화 시 8개 출처를 실행합니다. AI는 `npm run crawl:daily -- --ai-only`로 실행합니다. 각 자식 실행 제한은 5분, 수집·준비 job은 55분, 별도 배포 job은 10분입니다.
+2. `npm run crawl:daily`로 7개 출처를 독립 실행하고 공휴일 활성화 시 8개 출처를 실행합니다. AI는 `npm run crawl:daily -- --ai-only`로 실행합니다. 학과 공지 자식 실행 제한은 15분, 나머지 자식은 5분입니다. 수집·준비 job은 70분, 별도 배포 job은 10분입니다. Daily Crawl은 잠금 파일의 최소 Node 요구사항을 만족하는 22.22.2를 사용합니다.
 3. 성공 출처는 새 자료를 사용합니다. 종료 실패·불완전 경고·잘못된 출력은 해당 출처 전체를 이전 검증본의 정확한 바이트로 복원합니다. 학과 경고도 학과 출처 전체를 보존합니다. 기준본 검증·복원·상태 저장 실패는 게시를 중단합니다.
 4. 결과 JSON을 검증하고 크기·SHA-256 및 출처 상태 manifest를 만듭니다. 내용과 상태가 모두 같으면 배포를 건너뜁니다.
 5. 내용 또는 상태가 바뀌면 새 버전과 이전 최대 6개 버전을 포함한 아티팩트를 준비합니다. 모든 출처가 실패해도 검증본과 실패 상태를 게시할 수 있습니다.
@@ -102,8 +102,9 @@ npm run rollback:crawl-data -- <version> <output-directory>
 
 ## 장애 확인
 
-- `Restore current crawl data snapshot` 실패: Pages 응답 상태와 manifest/파일 무결성을 확인합니다.
-- `Run independent daily crawlers with validated fallback` 경고: 실패 출처와 `/api/crawl-data/status`의 오류 코드·최근 정상 시각을 확인합니다. job 성공만으로 모든 출처가 최신이라고 판단하지 않습니다.
+- `Restore current crawl data snapshot` 실패: Pages 응답 상태와 manifest/파일 무결성을 확인합니다. 네트워크·응답 본문 읽기 실패와 HTTP 502·503·504는 총 3회 시도하며 1초·2초 뒤 재시도합니다. 재시도 소진, 다른 HTTP 오류 또는 manifest/JSON/크기/SHA-256 검증 실패는 게시를 중단합니다. 복원 실패를 숨기고 bundled 기준본으로 새 버전을 게시하지 않습니다.
+- `Run independent daily crawlers with validated fallback` 경고: 실패 출처와 `/api/crawl-data/status`의 오류 코드·최근 정상 시각을 확인합니다. job 성공만으로 모든 출처가 최신이라고 판단하지 않습니다. 실패한 실행 출처는 Actions warning을 남기며, 자식 시작·종료 로그에는 경과시간, 종료 코드·신호, 시간 제한을 기록합니다. `SIGTERM`과 제한에 도달한 경과시간은 자식 시간 제한을 확인하는 근거입니다.
+- 학과 공지는 교육과정 페이지를 한 번 조회해 학과명·단과대학 링크를 함께 해석하고, 단과대학·학과·공지 페이지 진행 로그를 즉시 출력합니다. 학과 수, 검색어, 페이지 범위는 시간 제한을 맞추기 위해 줄이지 않습니다. 15분을 초과하면 검증본과 `stale` 상태를 보존하고 로그의 마지막 진행 단계부터 조사합니다.
 - `Prepare versioned Pages artifact` 실패: 생성된 9개 JSON의 파싱 오류 또는 이전 스냅샷 경고를 확인합니다.
 - `Deploy crawl data to GitHub Pages` 실패: Pages Source가 `GitHub Actions`인지, environment protection이 배포를 막는지 확인합니다.
 - 앱 API가 `bundled-fallback`: Pages `current.json`, 해당 버전 파일, 응답 헤더와 서버 로그를 확인합니다.

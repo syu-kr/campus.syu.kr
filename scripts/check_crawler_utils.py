@@ -2,6 +2,9 @@
 
 import os
 import io
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
@@ -21,7 +24,32 @@ from crawler_utils import (
 )
 
 
+def check_crawler_stdout() -> None:
+    modules = (
+        "crawl_announcements", "crawl_scholarships", "crawl_campus", "crawl_events",
+        "crawl_department_notices", "crawl_swuniv_notices", "crawl_cafeteria",
+    )
+    with ThreadPoolExecutor(max_workers=1) as reader:
+        for module in modules:
+            child = subprocess.Popen(
+                [sys.executable, "-u", "-c", (
+                    f"import sys; sys.path.insert(0, 'scripts'); import {module}; "
+                    "assert sys.stdout.line_buffering and sys.stdout.write_through; "
+                    "print('ready'); sys.stdin.readline()"
+                )],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                text=True, encoding="utf-8",
+            )
+            try:
+                # The child waits for input; the line must arrive before process exit.
+                assert reader.submit(child.stdout.readline).result(timeout=10) == "ready\n", module
+            finally:
+                child.kill()
+                child.communicate(timeout=10)
+
+
 def main() -> None:
+    check_crawler_stdout()
     config = NoticeCrawlerConfig(
         category="academic",
         label="test",

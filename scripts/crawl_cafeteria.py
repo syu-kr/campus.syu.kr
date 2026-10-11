@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
-import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stdout.reconfigure(encoding="utf-8", line_buffering=True, write_through=True)
 """
 학식 메뉴 크롤링 스크립트 (날짜별 업데이트)
 매일 실행됨 - 같은 날짜 메뉴는 덮어쓰고, 새로운 날짜는 추가

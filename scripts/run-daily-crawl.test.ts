@@ -4,7 +4,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CRAWL_DATA_MAX_BYTES, type DailyCrawlDataFile } from "../lib/crawl-data-contract";
-import { hasIncompleteCrawlOutput, runDailyCrawl } from "./run-daily-crawl";
+import { hasIncompleteCrawlOutput, runCrawler, runDailyCrawl } from "./run-daily-crawl";
 
 const ATTEMPT = "2026-10-04T03:00:00.000Z";
 const PREVIOUS = "2026-10-03T03:00:00.000Z";
@@ -49,6 +49,7 @@ beforeEach(async () => {
     },
   } }));
   vi.spyOn(console, "log").mockImplementation(() => undefined);
+  vi.spyOn(console, "warn").mockImplementation(() => undefined);
 });
 
 afterEach(async () => {
@@ -58,6 +59,43 @@ afterEach(async () => {
 });
 
 const options = () => ({ dataDir: directory, healthPath, holidaysEnabled: true, now: () => new Date(ATTEMPT) });
+
+describe("crawler process diagnostics", () => {
+  it.each([
+    ["announcements-departments.json", 900],
+    ["announcement-ai-metadata.json", 300],
+  ] as const)("runs %s with its source budget and observes child warnings before exit", async (fileName, limitSeconds) => {
+    const fixturePath = path.join(directory, "crawler-fixture.cjs");
+    await writeFile(fixturePath, "process.stdout.write('[warn] fixture warning\\n'); process.exitCode = 1;");
+    const output = vi.spyOn(process.stdout, "write").mockReturnValue(true);
+    const result = await runCrawler({
+      fileName, command: "node", script: path.relative(path.resolve("scripts"), fixturePath),
+    });
+
+    expect(result).toEqual({ exitCode: 1, incomplete: true });
+    expect(output).toHaveBeenCalledWith("[warn] fixture warning\n");
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`starting (limit=${limitSeconds}s)`));
+    expect(console.log).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`closed after \\d+\\.\\ds \\(exit=1, signal=none, limit=${limitSeconds}s\\)`)));
+  });
+
+  it("reports child signal termination and preserves its failed baseline", async () => {
+    const fixturePath = path.join(directory, "crawler-signal.cjs");
+    await writeFile(fixturePath, "process.kill(process.pid, 'SIGTERM');");
+    const health = await runDailyCrawl({ ...options(), run: async (source) => {
+      if (source.fileName !== "announcements-academic.json") return { exitCode: 0 };
+      return runCrawler({ ...source, command: "node", script: path.relative(path.resolve("scripts"), fixturePath) });
+    } });
+
+    expect(await readFile(path.join(directory, "announcements-academic.json"))).toEqual(original);
+    expect(health["announcements-academic.json"]).toEqual({
+      status: "stale", lastAttemptAt: ATTEMPT, lastSuccessAt: PREVIOUS, errorCode: "CRAWLER_FAILED",
+    });
+    expect(health["announcements-sw.json"]?.status).toBe("fresh");
+    const signal = process.platform === "win32" ? "none" : "SIGTERM";
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`signal=${signal}`));
+    expect(console.warn).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("::warning::announcements-academic.json: CRAWLER_FAILED"));
+  });
+});
 
 describe("independent daily crawler publication", () => {
   it("restores exact failed bytes while keeping another source's successful update", async () => {

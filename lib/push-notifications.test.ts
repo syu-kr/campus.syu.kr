@@ -335,6 +335,233 @@ describe("push notifications", () => {
     );
   });
 
+  describe("automatic subscription network recovery", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+      vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    });
+
+    async function startNetworkFailure() {
+      let rejectPost!: (error: Error) => void;
+      fetchMock.mockImplementationOnce(() => new Promise<Response>((_, reject) => { rejectPost = reject; }));
+      const enabling = push.enablePushNotifications({ trigger: "automatic" });
+      void enabling.catch(() => {});
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+      rejectPost(new TypeError("Load failed"));
+      await vi.advanceTimersByTimeAsync(0);
+      return { enabling };
+    }
+
+    it("retries once after five seconds without renewing the token or recording success early", async () => {
+      writeSynced();
+      getToken.mockResolvedValue(TOKEN_B);
+      const { enabling } = await startNetworkFailure();
+
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBe(TOKEN_A);
+      expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_B);
+      expect(readSynced()).toEqual({ token: TOKEN_A, savedAt: NOW });
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(fetchMock).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(1);
+
+      await expect(enabling).resolves.toBe(TOKEN_B);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(getToken).toHaveBeenCalledOnce();
+      expect(fetchMock.mock.calls.map((call) => JSON.parse(call[1]?.body as string).fcm_token))
+        .toEqual([TOKEN_B, TOKEN_B]);
+      expect(readSynced()).toEqual({ token: TOKEN_B, savedAt: Date.now() });
+      expect(readSynced().savedAt).toBeGreaterThan(NOW);
+      expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it("stops after the second failure, reports once, and leaves the uncertain token available to opt out", async () => {
+      getToken.mockResolvedValue(TOKEN_B);
+      fetchMock.mockRejectedValue(new TypeError("still offline"));
+      const { enabling } = await startNetworkFailure();
+      const rejection = expect(enabling).rejects.toThrow("still offline");
+      await vi.advanceTimersByTimeAsync(20_000);
+      await rejection;
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(captureException).toHaveBeenCalledOnce();
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBe(TOKEN_A);
+      expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_B);
+      expect(readSynced()).toBeNull();
+      fetchMock.mockResolvedValue(response());
+      await push.disablePushNotifications();
+      expect(fetchMock.mock.calls.slice(2).map((call) => JSON.parse(call[1]?.body as string).fcm_token).sort())
+        .toEqual([TOKEN_A, TOKEN_B].sort());
+      expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+    });
+
+    it.each([400, 403, 429, 500])("does not retry an HTTP %s response", async (status) => {
+      fetchMock.mockResolvedValue(response(status));
+      await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toMatchObject({ status });
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(captureException).toHaveBeenCalledOnce();
+      if (status < 500) expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+    });
+
+    it("keeps the 429 cooldown when the retry receives a rate-limit response", async () => {
+      fetchMock.mockResolvedValue(response(429, { "Retry-After": "120", "X-RateLimit-Scope": "subscribe-ip" }));
+      const { enabling } = await startNetworkFailure();
+      const rejection = expect(enabling).rejects.toMatchObject({ status: 429, fromCooldown: false });
+      await vi.advanceTimersByTimeAsync(5000);
+      await rejection;
+
+      await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toMatchObject({
+        status: 429, fromCooldown: true, scope: "subscribe-ip",
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(captureException).toHaveBeenCalledOnce();
+    });
+
+    it.each([400, 429])("preserves the first uncertain write when its retry receives HTTP %s", async (status) => {
+      writeSynced();
+      getToken.mockResolvedValue(TOKEN_B);
+      fetchMock.mockResolvedValue(response(status, { "Retry-After": "120", "X-RateLimit-Scope": "subscribe-ip" }));
+      const { enabling } = await startNetworkFailure();
+      const rejection = expect(enabling).rejects.toMatchObject({ status });
+      await vi.advanceTimersByTimeAsync(5000);
+      await rejection;
+
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBe(TOKEN_A);
+      expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_B);
+      expect(readSynced()).toEqual({ token: TOKEN_A, savedAt: NOW });
+      expect(captureException).toHaveBeenCalledOnce();
+      if (status === 429) {
+        await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toMatchObject({
+          status: 429, fromCooldown: true, scope: "subscribe-ip",
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(captureException).toHaveBeenCalledOnce();
+        expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_B);
+      }
+
+      fetchMock.mockResolvedValue(response());
+      await push.disablePushNotifications();
+      const deletes = fetchMock.mock.calls.slice(2);
+      expect(deletes.every((call) => call[1]?.method === "DELETE")).toBe(true);
+      expect(deletes.map((call) => JSON.parse(call[1]?.body as string).fcm_token).sort())
+        .toEqual([TOKEN_A, TOKEN_B].sort());
+      expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+    });
+
+    it.each(["subscribe-ip", "subscribe-token-ip"])("rechecks a newly recorded %s cooldown before retrying", async (scope) => {
+      const { enabling } = await startNetworkFailure();
+      localStorage.setItem(RETRY_KEY, JSON.stringify({ token: TOKEN_A, scope, retryAt: NOW + 120_000 }));
+      const rejection = expect(enabling).rejects.toMatchObject({ status: 429, fromCooldown: true, scope });
+      await vi.advanceTimersByTimeAsync(5000);
+      await rejection;
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(captureException).not.toHaveBeenCalled();
+      expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_A);
+    });
+
+    it.each(["offline", "hidden"])("does not schedule a retry while already %s", async (state) => {
+      if (state === "offline") vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+      else vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+      fetchMock.mockRejectedValue(new TypeError("Load failed"));
+      await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toThrow("Load failed");
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it.each(["offline", "hidden", "preference", "revision"])("rechecks %s after the delay", async (state) => {
+      const { enabling } = await startNetworkFailure();
+      if (state === "offline") vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+      else if (state === "hidden") vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+      else if (state === "preference") localStorage.setItem("notification_preference", "disabled");
+      else localStorage.setItem("notification_disabled_revision", "another-tab-disabled");
+      const result = state === "offline" || state === "hidden"
+        ? expect(enabling).rejects.toThrow("Load failed")
+        : expect(enabling).resolves.toBeNull();
+      await vi.advanceTimersByTimeAsync(5000);
+      await result;
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(localStorage.getItem("fcm_token_pending")).toBe(TOKEN_A);
+    });
+
+    it("cleans up the uncertain write when permission is revoked during the retry delay", async () => {
+      getToken.mockResolvedValue(TOKEN_B);
+      const { enabling } = await startNetworkFailure();
+      vi.stubGlobal("Notification", { permission: "denied" });
+      await vi.advanceTimersByTimeAsync(5000);
+      await expect(enabling).resolves.toBeNull();
+
+      expect(fetchMock.mock.calls.map((call) => call[1]?.method)).toEqual(["POST", "DELETE", "DELETE"]);
+      expect(fetchMock.mock.calls.slice(1).map((call) => JSON.parse(call[1]?.body as string).fcm_token).sort())
+        .toEqual([TOKEN_A, TOKEN_B].sort());
+      expect(deleteToken).toHaveBeenCalledOnce();
+      expect(push.getNotificationPreference()).toBe("disabled");
+      expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBeNull();
+      expect(readSynced()).toBeNull();
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it("preserves shared calls, the operation queue, and native locking during recovery", async () => {
+      const request = vi.fn(async (...args: unknown[]) => (args.at(-1) as () => Promise<unknown>)());
+      Object.defineProperty(navigator, "locks", { configurable: true, value: { request } });
+      const { enabling } = await startNetworkFailure();
+      const shared = push.enablePushNotifications({ trigger: "automatic" });
+      const manual = push.enablePushNotifications({ trigger: "manual" });
+      expect(request).toHaveBeenCalledOnce();
+      expect(getToken).toHaveBeenCalledOnce();
+      await vi.advanceTimersByTimeAsync(5000);
+      await expect(Promise.all([enabling, shared, manual])).resolves.toEqual([TOKEN_A, TOKEN_A, TOKEN_A]);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(getToken).toHaveBeenCalledTimes(2);
+      expect(request).toHaveBeenCalledTimes(2);
+      expect(request.mock.calls.every((call) => call[0] === "syu-push-notifications")).toBe(true);
+    });
+
+    it("lets queued opt-out delete both tokens without sending the scheduled retry", async () => {
+      getToken.mockResolvedValue(TOKEN_B);
+      const { enabling } = await startNetworkFailure();
+      const disabling = push.disablePushNotifications();
+      expect(push.getNotificationPreference()).toBe("disabled");
+      await vi.advanceTimersByTimeAsync(5000);
+      await expect(enabling).resolves.toBeNull();
+      await disabling;
+      expect(fetchMock.mock.calls.map((call) => call[1]?.method)).toEqual(["POST", "DELETE", "DELETE"]);
+      expect(localStorage.getItem("fcm_token_pending")).toBeNull();
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBeNull();
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it("does not retry manual calls, DELETE, or Firebase failures", async () => {
+      fetchMock.mockRejectedValue(new TypeError("Load failed"));
+      await expect(push.enablePushNotifications()).rejects.toThrow("Load failed");
+      expect(fetchMock).toHaveBeenCalledOnce();
+      await expect(push.disablePushNotifications()).rejects.toThrow();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      fetchMock.mockClear();
+      localStorage.setItem("notification_preference", "enabled");
+      getToken.mockRejectedValue(new TypeError("Firebase failure"));
+      await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toThrow("Firebase failure");
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("does not retry an aborted or timed-out POST", async () => {
+      fetchMock.mockRejectedValueOnce(new DOMException("aborted", "AbortError"));
+      await expect(push.enablePushNotifications({ trigger: "automatic" })).rejects.toThrow("aborted");
+      fetchMock.mockImplementationOnce(() => new Promise<Response>(() => {}));
+      const enabling = push.enablePushNotifications({ trigger: "automatic" });
+      const rejection = expect(enabling).rejects.toThrow("알림 서버 응답 시간이 초과되었습니다.");
+      await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+      const signal = fetchMock.mock.calls[1][1]?.signal as AbortSignal;
+      await vi.advanceTimersByTimeAsync(15_000);
+      await rejection;
+      expect(signal.aborted).toBe(true);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("shares one same-tab enable operation and reports completion to both callers", async () => {
     const firstStatus = vi.fn();
     const secondStatus = vi.fn();

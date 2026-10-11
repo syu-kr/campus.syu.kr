@@ -111,6 +111,27 @@ def main() -> None:
         assert request.call_count == 1
         assert output.read_bytes() == baseline
 
+        guide_url = "https://www.syu.ac.kr/academic/course-guide/"
+        course_guide = BeautifulSoup(
+            '<a href="?c=cse">컴퓨터공학부</a>'
+            '<a href="/admissions-education/college/engineering/">공과대학</a>',
+            "html.parser",
+        )
+        assert departments.discover_course_guide_department_names(course_guide, guide_url) == ["컴퓨터공학부"]
+        assert departments.discover_college_page_urls(course_guide, guide_url, set()) == [
+            "https://www.syu.ac.kr/admissions-education/college/engineering/",
+        ]
+        with (
+            patch.dict(os.environ, {"CRAWL_DEPARTMENT_COURSE_GUIDE_URL": guide_url}),
+            patch.object(departments, "OUTPUT_PATH", str(output)),
+            patch.object(departments, "request_soup", return_value=course_guide) as guide_request,
+            patch.object(departments, "discover_department_sites_from_college_pages", return_value=[]),
+            contextlib.redirect_stdout(io.StringIO()),
+        ):
+            departments.crawl_department_notices()
+        assert guide_request.call_count == 1
+        assert guide_request.call_args.args[1] == guide_url
+
         department = {"name": "컴퓨터공학부", "url": "https://www.syu.ac.kr/cse"}
         department_config = crawler.NoticeCrawlerConfig(
             category="campus", label="department fixture", base_url="https://www.syu.ac.kr/cse/community/notice/page",

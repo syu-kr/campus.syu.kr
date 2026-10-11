@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """장학공지 크롤링 스크립트."""
 
-import io
 import sys
 
 from crawler_utils import NoticeCrawlerConfig, crawl_notice_board, require_env
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8", line_buffering=True, write_through=True)
 
 
 def crawl_scholarship_notice():
