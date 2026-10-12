@@ -76,7 +76,7 @@
     "firebase-admin": "^13.10.0",
     "html-to-image": "^1.11.13",
     "next": "^16.3.8",
-    "openai": "^7.5.0",
+    "openai": "^7.23.0",
     "react": "^19.2.7",
     "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0"
