@@ -21,7 +21,7 @@
 
 - Bubblewrap CLI `1.25.0`
 - Android Gradle Plugin `8.9.1`
-- Gradle `8.11.1`
+- Gradle `8.14.6`
 - JDK 17
 - `minSdkVersion 23`, `targetSdkVersion 36`
 - 앱 버전 `1.0.0`, 버전 코드 `1`
