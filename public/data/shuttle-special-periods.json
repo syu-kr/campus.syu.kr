@@ -109,6 +109,22 @@
       "routes": ["shuttle-1"]
     },
     {
+      "id": "midterm-fall-2026",
+      "name": "중간고사 연장 운행",
+      "startDate": "2026-10-20",
+      "endDate": "2026-10-26",
+      "description": "추가 운행 (석계역행)",
+      "type": "add",
+      "addedTimes": ["18:40", "19:00"],
+      "applicableDates": [
+        "2026-10-20",
+        "2026-10-21",
+        "2026-10-22",
+        "2026-10-26"
+      ],
+      "routes": ["shuttle-1"]
+    },
+    {
       "id": "final-2026",
       "name": "기말고사 연장 운행",
       "startDate": "2026-06-09",

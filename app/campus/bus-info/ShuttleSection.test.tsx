@@ -382,10 +382,10 @@ describe("shuttle page festival announcement", () => {
     client.clear();
   });
 
-  it("keeps exam extensions in the timetable and respects the selected day", async () => {
+  it.each(["2026-04-21", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-26"])("keeps exam extensions in the timetable and respects the selected day: %s", async (date) => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date("2026-04-21T18:35:00+09:00"));
-    holidaySnapshot = { ...holidaySnapshot!, lastSuccessAt: "2026-04-21T00:00:00+09:00" };
+    vi.setSystemTime(new Date(`${date}T18:35:00+09:00`));
+    holidaySnapshot = { ...holidaySnapshot!, lastSuccessAt: `${date}T00:00:00+09:00` };
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const view = render(<QueryClientProvider client={client}><ShuttleSection /></QueryClientProvider>);
     const upcoming = within(await screen.findByRole("region", { name: "곧 출발하는 버스" }));
