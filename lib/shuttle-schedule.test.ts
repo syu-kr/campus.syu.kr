@@ -134,6 +134,35 @@ describe("public holiday shuttle operation", () => {
   });
 });
 
+describe("fall midterm shuttle extensions", () => {
+  it.each(["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-26"])(
+    "includes both added departures only for Seokgye on %s and ends after the last departure",
+    (date) => {
+      for (const [time, nextTime] of [["18:35", "18:40"], ["18:45", "19:00"]]) {
+        const summary = summarize(`${date}T${time}:00+09:00`);
+        expect(summary.isSpecialSchedule).toBe(true);
+        expect(summary.departures).toEqual([
+          { routeName: buses[1].routeName, time: nextTime, minutesUntil: time === "18:35" ? 5 : 15 },
+        ]);
+        expect(summary.hasMoreToday).toBe(true);
+      }
+      const ended = summarize(`${date}T19:01:00+09:00`);
+      expect(ended.departures).toEqual([]);
+      expect(ended.hasMoreToday).toBe(false);
+    },
+  );
+
+  it.each(["2026-10-19", "2026-10-23", "2026-10-24", "2026-10-25", "2026-10-27"])(
+    "does not extend service on the unannounced date %s",
+    (date) => {
+      const summary = summarize(`${date}T18:35:00+09:00`);
+      expect(summary.isSpecialSchedule).toBe(false);
+      expect(summary.departures).toEqual([]);
+      expect(summary.hasMoreToday).toBe(false);
+    },
+  );
+});
+
 describe("festival night shuttle", () => {
   it.each(["18:16", "21:59", "22:00", "22:29", "22:30"])(
     "keeps both announced services available at %s after regular departures end",
