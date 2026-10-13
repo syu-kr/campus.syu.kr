@@ -59,7 +59,7 @@ describe("Sentry privacy scrubber", () => {
   });
 
   it("preserves absent or non-string Next.js request-error context paths", () => {
-    expect(scrubSentryEvent({}).contexts).toBeUndefined();
+    expect(scrubSentryEvent({})).not.toHaveProperty("contexts");
     expect(scrubSentryEvent({ contexts: { runtime: { name: "node" } } }).contexts)
       .toEqual({ runtime: { name: "node" } });
     for (const requestPath of [undefined, null, 42]) {
