@@ -27,6 +27,49 @@ describe("Sentry privacy scrubber", () => {
     ).toMatchObject({ data: { from: "/a", to: "/b" } });
   });
 
+  it.each([
+    ["/academic?token=synthetic-query-secret", "/academic"],
+    ["/academic#synthetic-fragment-secret", "/academic"],
+    ["/academic?token=synthetic-query-secret#synthetic-fragment-secret", "/academic"],
+    ["https://campus.syu.kr/academic?token=synthetic-query-secret", "https://campus.syu.kr/academic"],
+  ])("scrubs the Next.js request-error context path %s", (requestPath, expectedPath) => {
+    const event = scrubSentryEvent({
+      contexts: {
+        nextjs: {
+          request_path: requestPath,
+          router_kind: "App Router",
+          router_path: "/academic",
+          route_type: "render",
+        },
+        runtime: { name: "node" },
+      },
+    });
+
+    expect(event.contexts).toEqual({
+      nextjs: {
+        request_path: expectedPath,
+        router_kind: "App Router",
+        router_path: "/academic",
+        route_type: "render",
+      },
+      runtime: { name: "node" },
+    });
+    expect(JSON.stringify(event)).not.toContain("synthetic-query-secret");
+    expect(JSON.stringify(event)).not.toContain("synthetic-fragment-secret");
+  });
+
+  it("preserves absent or non-string Next.js request-error context paths", () => {
+    expect(scrubSentryEvent({}).contexts).toBeUndefined();
+    expect(scrubSentryEvent({ contexts: { runtime: { name: "node" } } }).contexts)
+      .toEqual({ runtime: { name: "node" } });
+    for (const requestPath of [undefined, null, 42]) {
+      const contexts = { nextjs: { request_path: requestPath, route_type: "render" } };
+      const event = scrubSentryEvent({ contexts });
+      expect(event.contexts?.nextjs?.request_path).toBe(requestPath);
+      expect(event.contexts?.nextjs?.route_type).toBe("render");
+    }
+  });
+
   it.each(["", "?query-secret", "#fragment-secret", "?query-secret#fragment-secret"])(
     "masks FCM registration tokens across event URLs with suffix %s",
     (suffix) => {
