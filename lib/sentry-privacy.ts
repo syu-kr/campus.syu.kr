@@ -4,6 +4,11 @@ export function scrubSentryEvent<T extends Event>(event: T): T {
   delete event.user;
   if (event.transaction) event.transaction = scrubUrl(event.transaction);
 
+  const nextjsContext = event.contexts?.nextjs;
+  if (typeof nextjsContext?.request_path === "string") {
+    nextjsContext.request_path = scrubUrl(nextjsContext.request_path);
+  }
+
   if (event.request) {
     if (event.request.url) event.request.url = scrubUrl(event.request.url);
     delete event.request.cookies;
