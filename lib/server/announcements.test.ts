@@ -83,3 +83,38 @@ it("keeps source order for equal global dates while prioritizing pinned notices 
   expect((await getAnnouncementSummary()).map((item) => item.id)).toEqual(expected);
   expect((await getAnnouncementPage({ category: "academic" })).items.map((item) => item.id)).toEqual(["pinned", "important", "ordinary"]);
 });
+
+it("lists every resolvable sitemap item without pagination or AI enrichment", async () => {
+  const academic = Array.from({ length: 110 }, (_, index) => notice(`notice-${index}`, "2026.10.05"));
+  mocks.read.mockImplementation(async (file: string) => ({
+    source: "github-pages",
+    data: file === "announcements-academic.json"
+      ? [...academic, notice("wrong-source", "2026.10.05", { category: "sw" })]
+      : file === "announcements-sw.json"
+        ? [notice("sw-notice", "2026.10.05", { category: "sw" })]
+        : [],
+  }));
+  const { getAnnouncementSitemapItems } = await import("./announcements");
+  const items = await getAnnouncementSitemapItems();
+  expect(items).toHaveLength(111);
+  expect(items).toContainEqual({ category: "academic", id: "notice-109" });
+  expect(items).toContainEqual({ category: "sw", id: "sw-notice" });
+  expect(items.some((item) => item.id === "wrong-source")).toBe(false);
+  expect(mocks.attach).not.toHaveBeenCalled();
+  expect(mocks.read).toHaveBeenCalledTimes(4);
+});
+
+it("refreshes sitemap items from published data after the source cache expires", async () => {
+  mocks.read.mockImplementation(async (file: string) => ({
+    source: "bundled-fallback",
+    data: file === "announcements-academic.json" ? [notice("old", "2026.10.01")] : [],
+  }));
+  const { getAnnouncementSitemapItems } = await import("./announcements");
+  expect(await getAnnouncementSitemapItems()).toEqual([{ category: "academic", id: "old" }]);
+  mocks.read.mockImplementation(async (file: string) => ({
+    source: "github-pages",
+    data: file === "announcements-campus-life.json" ? [notice("new", "2026.10.05", { category: "campus" })] : [],
+  }));
+  vi.advanceTimersByTime(60_000);
+  expect(await getAnnouncementSitemapItems()).toEqual([{ category: "campus", id: "new" }]);
+});

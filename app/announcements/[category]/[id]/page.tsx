@@ -20,6 +20,7 @@ import {
   normalizeLocale,
 } from "@/lib/i18n";
 import { createArticleSchema } from "@/lib/structured-data";
+import { getAnnouncementDetailPath } from "@/lib/announcement-path";
 import {
   formatDateWithYear,
   getCategoryColor,
@@ -76,7 +77,7 @@ export async function generateMetadata({
     announcement.aiSummary?.summary ||
     announcement.content ||
     text.detailFallbackDescription;
-  const detailPath = getAnnouncementDetailPath(announcement);
+  const detailPath = getAnnouncementDetailPath(announcement.category, announcement.id);
 
   return {
     title: `${announcement.title} | SYU CAMPUS`,
@@ -116,7 +117,7 @@ async function AnnouncementDetailContent({
   const dictionary = getDictionary(locale);
   const text = dictionary.pages.announcements;
   const aiLabels = dictionary.labels.aiSummaryDetails;
-  const detailPath = getAnnouncementDetailPath(announcement);
+  const detailPath = getAnnouncementDetailPath(announcement.category, announcement.id);
   const detailUrl = `${SITE_ORIGIN}${localizePath(detailPath, locale)}`;
   const articleDescription =
     announcement.aiSummary?.summary ||
@@ -311,12 +312,6 @@ function normalizeAnnouncementCategory(
   return VALID_CATEGORIES.includes(value as AnnouncementCategory)
     ? (value as AnnouncementCategory)
     : null;
-}
-
-function getAnnouncementDetailPath(announcement: Announcement) {
-  return `/announcements/${announcement.category}/${encodeURIComponent(
-    announcement.id,
-  )}`;
 }
 
 function formatAiDetail(value: string, fallback: string) {
