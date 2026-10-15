@@ -24,7 +24,7 @@ interface LunchSectionProps {
   highlighted?: boolean;
 }
 
-function MealItemCard({ item }: { item: MenuItem }) {
+export function MealItemCard({ item }: { item: MenuItem }) {
   return (
     <div className="text-sm">
       <p className="text-neutral-700 font-medium">{item.name}</p>
@@ -208,13 +208,10 @@ export function CafeteriaClosedCard({
   );
 }
 
-export function CafeteriaInfoCards() {
+export function CafeteriaInfoCards({ restaurant = "su-lounge" }: { restaurant?: "su-lounge" | "manna" }) {
   const text = useDictionary().pages.cafeteria;
-  const operatingHours = [
-    splitOperatingHour(text.breakfastHours),
-    splitOperatingHour(text.lunchHours),
-    splitOperatingHour(text.dinnerHours),
-  ];
+  const hours = restaurant === "manna" ? text.studentRestaurant : text;
+  const operatingHours = [hours.breakfastHours, hours.lunchHours, hours.dinnerHours].map(splitOperatingHour);
 
   return (
     <>
@@ -255,7 +252,7 @@ export function CafeteriaInfoCards() {
             color="rgb(161, 98, 7)"
           />
           <span>
-            <strong>{text.allergyTitle}</strong> {text.allergyMessage}
+            <strong>{text.allergyTitle}</strong> {restaurant === "manna" ? text.studentRestaurant.allergyMessage : text.allergyMessage}
           </span>
         </p>
       </div>
@@ -288,7 +285,17 @@ export function CafeteriaNoticeCards() {
   );
 }
 
-export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
+export function TodayMenuCardFrame({
+  date,
+  location,
+  children,
+  headingId,
+}: {
+  date: string;
+  location: string;
+  children: ReactNode;
+  headingId?: string;
+}) {
   const text = useDictionary().pages.cafeteria;
 
   return (
@@ -301,18 +308,26 @@ export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
           <Badge color="green" size="sm">
             {text.todayMarker}
           </Badge>
-          <h2 className="text-xl font-bold text-neutral-900">
+          <h2 id={headingId} className="text-xl font-bold text-neutral-900">
             {text.todayMenu}
           </h2>
           <span className="text-sm font-medium text-neutral-500">
-            {menu.date}
+            {date}
           </span>
         </div>
-        <p className="text-sm text-neutral-600">{menu.location}</p>
+        <p className="text-sm text-neutral-600">{location}</p>
       </div>
 
-      <MenuSections menu={menu} />
+      {children}
     </Card>
+  );
+}
+
+export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
+  return (
+    <TodayMenuCardFrame date={menu.date} location={menu.location}>
+      <MenuSections menu={menu} />
+    </TodayMenuCardFrame>
   );
 }
 

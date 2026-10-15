@@ -53,6 +53,12 @@ export function CafeteriaPageClient({
   const menus = snapshot.menus;
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("restaurant") === "manna") {
+      setActiveRestaurant("manna");
+    }
+  }, []);
+
+  useEffect(() => {
     setNow(getKoreaNow());
     const timer = setInterval(() => setNow(getKoreaNow()), 60 * 1000);
     return () => clearInterval(timer);

@@ -40,6 +40,7 @@ function page(data = snapshot, locale: Locale = "ko", now = initialNowIso) {
 }
 
 beforeEach(() => {
+  window.history.replaceState({}, "", "/campus/cafeteria");
   vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
   vi.setSystemTime(new Date(initialNowIso));
   vi.mocked(fetchCafeteriaSnapshot).mockReset().mockResolvedValue(snapshot);
@@ -150,6 +151,18 @@ function renderPage(initialMenus = menus, locale: Locale = "ko") {
 }
 
 describe("cafeteria selection and weekly menu", () => {
+  it("opens Manna House from a home link and allows switching back to SU-Lounge", () => {
+    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna");
+    renderPage();
+    const selector = screen.getByRole("group", { name: text.restaurantPicker });
+    const manna = within(selector).getByRole("button", { name: text.mannaTab });
+    expect(manna).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("manna-menu")).toBeInTheDocument();
+    fireEvent.click(within(selector).getByRole("button", { name: text.suLoungeTitle }));
+    expect(manna).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByText("오늘의 SU 메뉴")).toBeInTheDocument();
+  });
+
   it("defaults to SU-Lounge and shows today's menu above only the current week's menus", () => {
     renderPage();
 
