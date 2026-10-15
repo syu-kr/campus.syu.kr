@@ -81,7 +81,6 @@ export function createAcademicScheduleAnswerSummary({
     source: publicHolidays?.lastSuccessAt
       ? `${answerText.source} / ${dictionary.publicHolidays.source}`
       : answerText.source,
-    updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
     items: [
       {
         label: answerText.dateLabel,

@@ -10,6 +10,20 @@ export interface CafeteriaMenuDay {
   };
 }
 
+interface CafeteriaMenuData {
+  menus?: CafeteriaMenuDay[];
+  checkedAt?: string | null;
+  stale?: boolean;
+}
+
+export type CafeteriaMenuPayload = CafeteriaMenuData | CafeteriaMenuData[];
+
+export interface CafeteriaSnapshot {
+  menus: CafeteriaMenu[];
+  checkedAt: string | null;
+  stale: boolean;
+}
+
 export function toCafeteriaMenus(days: CafeteriaMenuDay[]): CafeteriaMenu[] {
   return days.map((menu, index) => {
     const lunch: CafeteriaMenu["lunch"] = {};

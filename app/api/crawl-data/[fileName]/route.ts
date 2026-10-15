@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isDailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import { readDailyCrawlDataSnapshot } from "@/lib/server/crawl-data";
 import { parsePublicHolidaySnapshot } from "@/lib/public-holidays";
+import type { CafeteriaMenuPayload } from "@/lib/cafeteria";
 
 export const runtime = "nodejs";
 
@@ -23,10 +24,20 @@ export async function GET(_request: Request, { params }: RouteContext) {
   try {
     const snapshot = await readDailyCrawlDataSnapshot<unknown>(fileName);
 
-    const data = fileName === "public-holidays.json" ? {
+    let data = fileName === "public-holidays.json" ? {
       ...parsePublicHolidaySnapshot(snapshot.data),
       stale: snapshot.source === "bundled-fallback" || snapshot.sourceHealth?.status === "stale",
     } : snapshot.data;
+    if (fileName === "cafeteria-menu.json") {
+      const cafeteria = snapshot.data as CafeteriaMenuPayload;
+      const metadata = {
+        checkedAt: snapshot.source === "bundled-fallback" ? null : snapshot.sourceHealth?.lastSuccessAt ?? null,
+        stale: snapshot.source === "bundled-fallback" || snapshot.sourceHealth?.status === "stale",
+      };
+      data = Array.isArray(cafeteria)
+        ? cafeteria.map((entry) => ({ ...entry, ...metadata }))
+        : { ...cafeteria, ...metadata };
+    }
     return NextResponse.json(data, {
       headers: {
         "Cache-Control": "public, max-age=60, stale-while-revalidate=300",

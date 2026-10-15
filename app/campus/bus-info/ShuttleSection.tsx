@@ -1,6 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
+import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
 
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
@@ -15,6 +16,9 @@ import {
   fetchPublicHolidays,
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
+import type { AnswerSource, PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
+import { createShuttleAnswerSummary } from "@/lib/campus-aeo";
+import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 import {
   useState,
   useMemo,
@@ -32,6 +36,7 @@ import {
   formatShuttleAdditionalCountdown,
   formatShuttleAdditionalService,
   getNextShuttleDepartures,
+  getCurrentShuttleSummary,
   getShuttleAdditionalServiceBuses,
   getShuttleScheduleType,
   getShuttleDayStatus,
@@ -56,7 +61,15 @@ const SCHEDULE_TYPES: ShuttleScheduleType[] = [
   "fridayVacation",
 ];
 
-export default function ShuttleSection() {
+export type ShuttleInitialData = {
+  buses: ShuttleBusSchedule[];
+  specialPeriods: ShuttleSpecialPeriods;
+  holidays: PublicHolidaySnapshot;
+  nowISO: string;
+  nonce?: string;
+};
+
+export default function ShuttleSection({ initialData }: { initialData?: ShuttleInitialData }) {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
@@ -69,6 +82,7 @@ export default function ShuttleSection() {
   } = useQuery({
     queryKey: ["shuttle-buses"],
     queryFn: () => fetchShuttleBuses(),
+    initialData: initialData?.buses,
     staleTime: FIVE_MINUTES,
     gcTime: 30 * ONE_MINUTE,
   });
@@ -76,6 +90,7 @@ export default function ShuttleSection() {
   const { data: holidays, isLoading: holidaysLoading, isError: holidaysError } = useQuery({
     queryKey: ["public-holidays"],
     queryFn: fetchPublicHolidays,
+    initialData: initialData?.holidays,
     staleTime: FIVE_MINUTES,
     refetchInterval: FIVE_MINUTES,
   });
@@ -90,12 +105,13 @@ export default function ShuttleSection() {
   } = useQuery({
     queryKey: ["shuttle-special-periods"],
     queryFn: () => fetchShuttleSpecialPeriods(),
+    initialData: initialData?.specialPeriods,
     staleTime: FIVE_MINUTES,
     gcTime: 30 * ONE_MINUTE,
   });
 
   // 현재 시간을 매초 업데이트
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState(() => initialData ? new Date(initialData.nowISO) : new Date());
   const [busLocations, setBusLocations] = useState<BusLocation[]>([]);
   const [locationError, setLocationError] = useState("");
   const [lastLocationUpdatedAt, setLastLocationUpdatedAt] =
@@ -221,6 +237,40 @@ export default function ShuttleSection() {
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
+  const answerSummary = createShuttleAnswerSummary({
+    locale,
+    now,
+    summary: getCurrentShuttleSummary({
+      buses: buses ?? [], specialPeriods, holidays: effectiveHolidays, now, limit: 3,
+    }),
+  });
+  if (busesError || specialPeriodsError) {
+    answerSummary.answer = dictionary.home.dashboard.loadFailedMessage;
+    answerSummary.items = undefined;
+  }
+  const answerSources: AnswerSource[] = dayStatus.operationEvidence.length > 0
+    ? dayStatus.operationEvidence.map((record) => ({
+      name: text.verifiedSource, url: record.sourceUrl, checkedAt: record.verifiedAt,
+    }))
+    : [{
+      name: text.verifiedSource,
+      url: "https://www.syu.ac.kr/school-life/school-bus/",
+      note: [
+        text.scheduleNotice,
+        ...activeSpecialPeriods.filter((period) => !period.sourceUrl)
+          .map((period) => `${period.name} · ${dictionary.answerSummary.unknownCheckedAt}`),
+      ].join(" "),
+    }, ...activeSpecialPeriods.flatMap((period) => period.sourceUrl
+      ? [{ name: period.name, url: period.sourceUrl }]
+      : [])];
+  answerSources.push({
+    name: dictionary.publicHolidays.source,
+    url: PUBLIC_HOLIDAY_SOURCE_URL,
+    checkedAt: effectiveHolidays?.lastSuccessAt,
+    note: dayStatus.holiday.isStale
+      ? dictionary.publicHolidays.stale
+      : dayStatus.holiday.status === "unknown" ? dictionary.publicHolidays.unavailable : undefined,
+  });
   const hasDaytimeIntervals = activeSpecialPeriods.some((period) => period.daytimeIntervals);
   const additionalServiceNotices = activeSpecialPeriods.filter(
     (period) => (period.additionalServices?.length ?? 0) > 0,
@@ -581,6 +631,15 @@ export default function ShuttleSection() {
           {text.weekdaySuffix})
         </p>
       </div>
+
+      <AnswerSummarySection
+        summary={answerSummary}
+        sources={answerSources}
+        schemaId="shuttle-answer-schema"
+        path="/campus/bus-info"
+        basisAt={now.toISOString()}
+        nonce={initialData?.nonce}
+      />
 
       {!holidaysLoading && (!canPredictDepartures || isWeekendWithoutException) &&
         (!hasDaytimeIntervals || dayStatus.operationStatus === "closed") && (

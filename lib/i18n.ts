@@ -156,6 +156,13 @@ export const dictionaries = {
       githubTitle: "GitHub 저장소",
       countrySetting: "국가/언어 설정",
     },
+    answerSummary: {
+      sourceLabel: "공식 출처",
+      checkedAtLabel: "데이터 확인 시각",
+      unknownCheckedAt: "확인 시각 미기록",
+      basisLabel: "답변 기준 시각",
+      unofficialNotice: "학교 공식 서비스가 아닌 참고 정보입니다. 기한과 운행·운영 여부는 공식 출처에서 다시 확인해주세요.",
+    },
     trust: {
       title: "출처와 검증 기준",
       description:
@@ -1218,7 +1225,7 @@ export const dictionaries = {
           "오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
         staleMenuTitle: "식단 정보 갱신 대기 중입니다",
         staleMenuMessage:
-          "현재 주간 식단이 아직 갱신되지 않아 이전 주 데이터를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
+          "식단의 최신 상태를 확인하지 못해 현재 메뉴를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
         closedTodayTitle: "오늘은 운영하지 않습니다",
         closedTodayMessage:
           "공휴일 또는 운영하지 않는 날입니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
@@ -1843,6 +1850,13 @@ export const dictionaries = {
       githubRepo: "SYU CAMPUS GitHub repository",
       githubTitle: "GitHub repository",
       countrySetting: "Country / Language",
+    },
+    answerSummary: {
+      sourceLabel: "Official sources",
+      checkedAtLabel: "Data checked at",
+      unknownCheckedAt: "Check time not recorded",
+      basisLabel: "Answer as of",
+      unofficialNotice: "This is an unofficial reference service. Recheck deadlines, shuttle service, and opening information with the official sources.",
     },
     trust: {
       title: "Sources and Verification",
@@ -2916,7 +2930,7 @@ export const dictionaries = {
           "Today's menu is unavailable. Check another date in the weekly menu.",
         staleMenuTitle: "Menu update pending",
         staleMenuMessage:
-          "This week's menu has not been updated yet, so previous-week data is hidden. Please check again shortly.",
+          "The latest menu could not be confirmed, so current menus are hidden. Please check again shortly.",
         closedTodayTitle: "Closed today",
         closedTodayMessage:
           "The cafeteria is closed for a holiday or non-operating day. Check another date in the weekly menu.",

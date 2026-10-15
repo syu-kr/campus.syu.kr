@@ -5,14 +5,17 @@ import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules, fetchPublicHolidays } from "@/lib/api";
-import { getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
+import { emptyPublicHolidays, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
+import { createAcademicScheduleAnswerSummary } from "@/lib/academic-aeo";
+import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { useUrlSearch } from "@/lib/use-url-search";
-import type { AcademicSchedule } from "@/types";
+import type { AcademicSchedule, AnswerSource } from "@/types";
 import type { PublicHolidaySnapshot } from "@/types/public-holidays";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -21,19 +24,24 @@ const FIVE_MINUTES = 5 * 60 * 1000;
 
 type SchedulePageClientProps = {
   initialDateStringDot: string;
+  initialNowIso: string;
   initialSchedules: AcademicSchedule[];
   initialPublicHolidays?: PublicHolidaySnapshot;
+  nonce?: string;
 };
 
 export default function SchedulePageClient({
   initialDateStringDot,
+  initialNowIso,
   initialSchedules,
   initialPublicHolidays,
+  nonce,
 }: SchedulePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
   const holidayText = dictionary.publicHolidays;
+  const [now, setNow] = useState(() => new Date(initialNowIso));
   const { data: academicSchedules, isLoading, isError, refetch } = useQuery({
     queryKey: ["schedules"],
     queryFn: () => fetchAcademicSchedules(),
@@ -42,7 +50,7 @@ export default function SchedulePageClient({
     gcTime: ONE_HOUR,
   });
   const {
-    data: publicHolidays,
+    data: holidaySnapshot,
     isError: publicHolidaysError,
     refetch: refetchPublicHolidays,
   } = useQuery({
@@ -52,10 +60,44 @@ export default function SchedulePageClient({
     staleTime: FIVE_MINUTES,
     refetchInterval: FIVE_MINUTES,
   });
+  useEffect(() => {
+    setNow(getKoreaNow());
+    const timer = setInterval(() => setNow(getKoreaNow()), 60 * 1000);
+    return () => clearInterval(timer);
+  }, [academicSchedules, holidaySnapshot]);
+  const publicHolidays = useMemo(() => {
+    const snapshot = holidaySnapshot ?? emptyPublicHolidays();
+    return publicHolidaysError ? { ...snapshot, stale: true } : snapshot;
+  }, [holidaySnapshot, publicHolidaysError]);
   const schedules = useMemo(
     () => mergePublicHolidays(academicSchedules ?? [], publicHolidays),
     [academicSchedules, publicHolidays],
   );
+  const todayInfo = getTodayInfo(now);
+  const currentAnswerSummary = createAcademicScheduleAnswerSummary({
+    locale, now, schedules: academicSchedules ?? [], publicHolidays, todayInfo,
+  });
+  const answerSummary = isError ? {
+    ...currentAnswerSummary,
+    answer: dictionary.home.dashboard.loadFailedMessage,
+    items: undefined,
+  } : currentAnswerSummary;
+  const holidayInfo = getPublicHoliday(todayInfo.dateStringDash, publicHolidays, now);
+  const holidayCovered = publicHolidays.years.includes(Number(todayInfo.dateStringDash.slice(0, 4)));
+  const sources: AnswerSource[] = [
+    {
+      name: text.title,
+      url: "https://www.syu.ac.kr/academic/major-schedule/",
+      checkedAt: null,
+      note: isError ? dictionary.home.dashboard.loadFailedMessage : undefined,
+    },
+    {
+      name: holidayText.source,
+      url: publicHolidays.sourceUrl,
+      checkedAt: publicHolidays.lastSuccessAt,
+      note: !holidayCovered ? holidayText.unavailable : holidayInfo.isStale ? holidayText.stale : undefined,
+    },
+  ];
 
   const initialMonth = useMemo(
     () => parseDateStringDot(initialDateStringDot),
@@ -70,6 +112,7 @@ export default function SchedulePageClient({
   const monthHolidayInfo = getPublicHoliday(
     `${currentMonth.getFullYear()}.${String(currentMonth.getMonth() + 1).padStart(2, "0")}.01`,
     publicHolidays,
+    now,
   );
   const hasMonthHolidayCoverage = Boolean(
     publicHolidays?.lastSuccessAt &&
@@ -78,6 +121,7 @@ export default function SchedulePageClient({
   const selectedHolidayInfo = getPublicHoliday(
     selectedDate ?? "",
     publicHolidays,
+    now,
   );
 
   const groupedByMonth = useMemo(() => {
@@ -277,6 +321,15 @@ export default function SchedulePageClient({
         </h1>
         <p className="text-neutral-600">{text.description}</p>
       </div>
+
+      <AnswerSummarySection
+        summary={answerSummary}
+        sources={sources}
+        schemaId="academic-schedule-answer-schema"
+        path="/academic/schedule"
+        basisAt={now.toISOString()}
+        nonce={nonce}
+      />
 
       {isError && (
         <StateCard

@@ -13,7 +13,7 @@ import {
   PhoneNumber,
 } from "@/types";
 import { fetchJson } from "./fetch-json";
-import { toCafeteriaMenus, type CafeteriaMenuDay } from "./cafeteria";
+import { toCafeteriaMenus, type CafeteriaMenuPayload, type CafeteriaSnapshot } from "./cafeteria";
 import { toBusLocation } from "./shuttle-location";
 import { sortSearchResults } from "./search";
 import { matchesPhoneQuery } from "./phone";
@@ -140,9 +140,12 @@ export async function fetchCompetitionPage({
 export async function fetchCafeteriaMenu(
   date?: string,
 ): Promise<CafeteriaMenu[]> {
-  const data = await fetchJson<
-    Array<{ menus?: CafeteriaMenuDay[] }> | { menus?: CafeteriaMenuDay[] }
-  >("/api/crawl-data/cafeteria-menu.json", {
+  const { menus } = await fetchCafeteriaSnapshot();
+  return date ? menus.filter((menu) => menu.date === date) : menus;
+}
+
+export async function fetchCafeteriaSnapshot(): Promise<CafeteriaSnapshot> {
+  const data = await fetchJson<CafeteriaMenuPayload>("/api/crawl-data/cafeteria-menu.json", {
     fallback: [],
     throwOnError: true,
   });
@@ -154,8 +157,13 @@ export async function fetchCafeteriaMenu(
     throw new Error("Invalid cafeteria data structure");
   }
   if (!Array.isArray(cafeteriaData?.menus)) throw new Error("No cafeteria data");
-  const menus = toCafeteriaMenus(cafeteriaData.menus);
-  return date ? menus.filter((menu) => menu.date === date) : menus;
+  return {
+    menus: toCafeteriaMenus(cafeteriaData.menus),
+    checkedAt: typeof cafeteriaData.checkedAt === "string" &&
+      Number.isFinite(Date.parse(cafeteriaData.checkedAt))
+      ? cafeteriaData.checkedAt : null,
+    stale: cafeteriaData.stale === true,
+  };
 }
 
 // 공휴일 API - 검증된 Pages 데이터 사용

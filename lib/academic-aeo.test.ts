@@ -28,6 +28,7 @@ describe("academic search answers with public holidays", () => {
     expect(answer.answer).toContain("중간고사");
     expect(answer.items?.[1].value).toBe("2");
     expect(answer.source).toContain(getDictionary(locale).publicHolidays.source);
+    expect(answer.updatedAt).toBeUndefined();
   });
 
   it("states missing coverage and stale collection without treating either as an absence of holidays", () => {

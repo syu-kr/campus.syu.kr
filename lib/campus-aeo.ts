@@ -1,4 +1,4 @@
-import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
+import { isCafeteriaClosedDay, isCafeteriaMenuDataStale, isClosedMealItems } from "@/lib/cafeteria";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import type { TodayInfo } from "@/lib/home";
 import {
@@ -21,13 +21,14 @@ function getTodayCafeteriaMenu(
 export function createCafeteriaAnswerSummary({
   locale,
   menus,
-  now,
   todayInfo,
+  stale = false,
 }: {
   locale: Locale;
   menus: CafeteriaMenu[];
   now: Date;
   todayInfo: TodayInfo;
+  stale?: boolean;
 }): AnswerSummary {
   const dictionary = getDictionary(locale);
   const text = dictionary.pages.cafeteria;
@@ -38,8 +39,11 @@ export function createCafeteriaAnswerSummary({
     title: answerText.title,
     question: answerText.question,
     source: answerText.source,
-    updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
   };
+
+  if (stale || isCafeteriaMenuDataStale(menus, todayInfo.dateStringDash)) {
+    return { ...baseSummary, answer: text.staleMenuMessage };
+  }
 
   if (todayInfo.isWeekend) {
     return {
@@ -99,7 +103,6 @@ export function createCafeteriaAnswerSummary({
 
 export function createShuttleAnswerSummary({
   locale,
-  now,
   summary,
 }: {
   locale: Locale;
@@ -137,7 +140,6 @@ export function createShuttleAnswerSummary({
     title: answerText.title,
     question: answerText.question,
     source: answerText.source,
-    updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
   };
 
   if (summary.operationEvidence.length > 0) {
