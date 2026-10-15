@@ -827,7 +827,6 @@ export const dictionaries = {
         date: "작성일:",
         views: "조회수:",
         originalLink: "원문 공지 보기",
-        summaryDetail: "요약 상세",
         detailFallbackTitle: "공지사항",
         detailFallbackDescription: "공지사항 상세",
         detailContentFallback:
@@ -2548,7 +2547,6 @@ export const dictionaries = {
         date: "Published:",
         views: "Views:",
         originalLink: "View original notice",
-        summaryDetail: "Summary details",
         detailFallbackTitle: "Notice",
         detailFallbackDescription: "Notice detail",
         detailContentFallback:

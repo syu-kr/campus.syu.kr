@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 import type { Announcement } from "@/types";
 import { getDictionary } from "@/lib/i18n";
@@ -18,29 +18,59 @@ const announcement: Announcement = {
   url: "https://www.syu.ac.kr/notice/123",
 };
 
-it("preserves the original notice click and adds a separate focusable detail link", () => {
+const summarizedAnnouncement: Announcement = {
+  ...announcement,
+  aiSummary: {
+    summary: "테스트 요약 내용",
+    target: "전체 재학생",
+    deadline: "2026-10-31",
+    requiredAction: "신청서 제출",
+    keywords: ["신청"],
+    importance: "normal",
+    confidence: "high",
+    generatedAt: "2026-10-14T00:00:00Z",
+    sourceHash: "test",
+  },
+};
+
+it("keeps the original notice as the only link when no AI summary is available", () => {
   const dictionary = getDictionary("ko");
   const { container } = render(<AnnouncementCard announcement={announcement} href={announcement.url} external />);
   const original = screen.getByRole("link", { name: `${announcement.title} ${dictionary.labels.notice}` });
-  const detail = screen.getByRole("link", { name: `${announcement.title} ${dictionary.pages.announcements.summaryDetail}` });
 
   expect(original).toHaveAttribute("href", announcement.url);
   expect(original).toHaveAttribute("target", "_blank");
-  expect(detail).toHaveAttribute("href", "/announcements/academic/notice%2F123");
-  expect(detail).not.toHaveAttribute("target");
-  expect(detail).toHaveClass("pointer-events-auto");
-  expect(detail.className).toContain("focus:ring-2");
+  expect(original).toHaveAttribute("rel", "noopener noreferrer");
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(screen.queryByRole("button")).not.toBeInTheDocument();
   expect(container.querySelector("a a")).toBeNull();
-  detail.focus();
-  expect(detail).toHaveFocus();
+  original.focus();
+  expect(original).toHaveFocus();
 });
 
-it("exposes locale-correct detail links from home announcement cards", () => {
+it("opens the full AI summary without an additional summary detail link", () => {
+  const labels = getDictionary("ko").labels.aiSummaryDetails;
+  render(<AnnouncementCard announcement={summarizedAnnouncement} href={announcement.url} external />);
+
+  const summary = screen.getByRole("button", { name: labels.open });
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(screen.queryByText("요약 상세")).not.toBeInTheDocument();
+  expect(summary).toHaveClass("pointer-events-auto");
+  summary.focus();
+  expect(summary).toHaveFocus();
+  fireEvent.click(summary);
+  expect(screen.getByRole("dialog", { name: labels.title })).toHaveTextContent("신청서 제출");
+});
+
+it("keeps the localized full AI summary viewer on home announcement previews", () => {
+  const labels = getDictionary("en").labels.aiSummaryDetails;
   render(
     <LocaleProvider locale="en">
-      <HomeNoticeCard notice={{ type: "announcement", data: announcement }} />
+      <HomeNoticeCard notice={{ type: "announcement", data: summarizedAnnouncement }} />
     </LocaleProvider>,
   );
-  expect(screen.getByRole("link", { name: `${announcement.title} Summary details` }))
-    .toHaveAttribute("href", "/en/announcements/academic/notice%2F123");
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(screen.queryByText("Summary details")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: labels.open }));
+  expect(screen.getByRole("dialog", { name: labels.title })).toHaveTextContent("신청서 제출");
 });

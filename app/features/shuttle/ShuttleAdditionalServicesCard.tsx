@@ -15,11 +15,13 @@ export function ShuttleAdditionalServicesCard({
   period,
   now,
   showCountdown = true,
+  showSource = true,
   href,
 }: {
   period: ShuttleSpecialPeriod;
   now: Date;
   showCountdown?: boolean;
+  showSource?: boolean;
   href?: string;
 }) {
   const locale = useLocale();
@@ -103,12 +105,16 @@ export function ShuttleAdditionalServicesCard({
           <p className="mt-2 text-xs leading-5 text-neutral-700">{text.notice}</p>
         </>
       )}
-      <p className="mt-2 text-xs text-neutral-500">{intervals ? text.noticeSource : text.source}</p>
-      {period.sourceUrl && (
-        <a href={period.sourceUrl} target="_blank" rel="noopener noreferrer"
-          className="relative z-10 mt-2 inline-block text-sm text-primary-700 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-          {text.sourceLink}
-        </a>
+      {showSource && (
+        <>
+          <p className="mt-2 text-xs text-neutral-500">{intervals ? text.noticeSource : text.source}</p>
+          {period.sourceUrl && (
+            <a href={period.sourceUrl} target="_blank" rel="noopener noreferrer"
+              className="relative z-10 mt-2 inline-block text-sm text-primary-700 underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {text.sourceLink}
+            </a>
+          )}
+        </>
       )}
     </Card>
   );

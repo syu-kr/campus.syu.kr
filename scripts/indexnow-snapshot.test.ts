@@ -116,7 +116,7 @@ describe("IndexNow content snapshots", () => {
     after["app/features/academic/SchedulePageClient.tsx"] = { hash: "new" };
     const changed = changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after));
     expect(changed).toEqual([`${origin}/academic/schedule`, `${origin}/en/academic/schedule`]);
-    after["app/components/AnswerSummarySection.tsx"] = { hash: "new" };
+    after["app/components/SourceAttribution.tsx"] = { hash: "new" };
     expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toContain(`${origin}/campus/cafeteria`);
   });
 

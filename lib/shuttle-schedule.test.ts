@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import { createShuttleAnswerSummary } from "./campus-aeo";
 import {
   getCurrentShuttleSummary,
   getShuttleDayStatus,
@@ -126,12 +125,6 @@ describe("public holiday shuttle operation", () => {
       .operationStatus).toBe("exception");
   });
 
-  it.each(["ko", "en"] as const)("keeps the %s search answer consistent with holiday closure", (locale) => {
-    const answer = createShuttleAnswerSummary({ locale, now, summary: summarizeWith() });
-    expect(answer.answer).toContain("한글날");
-    expect(answer.answer).not.toMatch(/12:00|분 남았습니다|minutes from now/);
-    expect(answer.items).toBeUndefined();
-  });
 });
 
 describe("fall midterm shuttle extensions", () => {
@@ -224,18 +217,4 @@ describe("festival night shuttle", () => {
     expect(summarize("2026-10-05T11:55:00+09:00").departures.some((departure) => !departure.additionalService)).toBe(true);
   });
 
-  it.each(["ko", "en"] as const)(
-    "describes the interval, one-way destinations and announcement source in %s search answers",
-    (locale) => {
-      const now = new Date("2026-10-06T22:15:00+09:00");
-      const answer = createShuttleAnswerSummary({ locale, now, summary: summarize(now.toISOString()) });
-      expect(answer.items).toHaveLength(3);
-      expect(answer.answer).toContain("22:00");
-      expect(answer.answer).toContain("22:30");
-      expect(answer.answer).not.toMatch(/석계|Seokgye|남은 셔틀 출발편이 없습니다|no remaining shuttle/i);
-      expect(answer.source).not.toMatch(/4월 29|April 29/);
-      expect(answer.source).toMatch(/천보축전|festival/i);
-      expect(answer.answer).not.toMatch(/70주년|70th|조기에 종료|end earlier/);
-    },
-  );
 });

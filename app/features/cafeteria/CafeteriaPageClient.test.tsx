@@ -34,17 +34,9 @@ function page(data = snapshot, locale: Locale = "ko", now = initialNowIso) {
   return {
     client,
     tree: <QueryClientProvider client={client}><LocaleProvider locale={locale}>
-      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} nonce="test-nonce" />
+      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} />
     </LocaleProvider></QueryClientProvider>,
   };
-}
-
-function expectMatchingAnswer(container: ParentNode) {
-  const visible = container.querySelector("[data-answer-text]")!;
-  const script = container.querySelector("#cafeteria-answer-schema")!;
-  const schema = JSON.parse(script.textContent!);
-  expect(schema.mainEntity[0].acceptedAnswer.text).toBe(visible.textContent);
-  return visible.textContent!;
 }
 
 beforeEach(() => {
@@ -57,20 +49,28 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("cafeteria visible answer and JSON-LD", () => {
-  it.each(["ko", "en"] as const)("renders the same initial server answer with the real source confirmation in %s", (locale) => {
-    const { tree, client } = page(snapshot, locale);
-    client.setQueryData(["cafeteria-weekly"], []);
+describe("cafeteria menu content and sources", () => {
+  it.each(["ko", "en"] as const)("renders the initial menu once and places source links after the notices in %s", (locale) => {
+    const dictionary = getDictionary(locale);
+    const { tree } = page(snapshot, locale);
     const container = document.createElement("div");
     container.innerHTML = renderToString(tree);
-    expect(expectMatchingAnswer(container)).toContain("비빔밥");
-    expect(container.querySelector(`time[datetime='${checkedAt}']`)).not.toBeNull();
-    expect(container.querySelector("a[href='https://www.syu.ac.kr/school-life/facility-information/cafeteria/']")).not.toBeNull();
-    expect(container.querySelector("#cafeteria-answer-schema")).toHaveAttribute("nonce", "test-nonce");
-    expect(client.getQueryData(["cafeteria-weekly"])).toEqual([]);
+    const view = within(container);
+    const source = view.getByRole("link", { name: dictionary.pages.cafeteria.answer.source });
+    const notice = view.getByText(dictionary.pages.cafeteria.noticeTitle);
+
+    expect(view.getAllByText("비빔밥")).toHaveLength(1);
+    expect(view.getByRole("heading", { name: dictionary.pages.cafeteria.todayMenu })).not.toBeNull();
+    expect(source).toHaveAttribute("href", "https://www.syu.ac.kr/school-life/facility-information/cafeteria/");
+    expect(notice.compareDocumentPosition(source) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(view.queryByText(dictionary.pages.cafeteria.answer.title)).toBeNull();
+    expect(view.queryByText(dictionary.pages.cafeteria.answer.question)).toBeNull();
+    expect(view.queryByText(dictionary.answerSummary.basisLabel, { exact: false })).toBeNull();
+    expect(view.queryByText(dictionary.answerSummary.unknownCheckedAt, { exact: false })).toBeNull();
+    expect(container.querySelector("time, [data-answer-text], #cafeteria-answer-schema")).toBeNull();
   });
 
-  it("updates menus, confirmation, visible answer and schema together after a refetch", async () => {
+  it("updates today's menu after a refetch without adding a duplicate summary", async () => {
     const { tree, client } = page();
     const { container } = render(tree);
     const nextCheckedAt = "2026-10-15T03:01:00Z";
@@ -80,9 +80,10 @@ describe("cafeteria visible answer and JSON-LD", () => {
       menus: toCafeteriaMenus([{ date: "2026-10-15", day: "목", meals: { lunch: ["칼국수"] } }]),
     });
     await act(async () => { await client.invalidateQueries({ queryKey: ["cafeteria-weekly-snapshot"] }); });
-    await waitFor(() => expect(expectMatchingAnswer(container)).toContain("칼국수"));
-    expect(container.querySelector(`time[datetime='${nextCheckedAt}']`)).not.toBeNull();
-    expect(expectMatchingAnswer(container)).not.toContain("비빔밥");
+    await waitFor(() => expect(screen.getByText("칼국수")).toBeInTheDocument());
+    expect(screen.getAllByText("칼국수")).toHaveLength(1);
+    expect(screen.queryByText("비빔밥")).not.toBeInTheDocument();
+    expect(container.querySelector("[data-answer-text], #cafeteria-answer-schema")).toBeNull();
   });
 
   it("keeps retained menus qualified after a failed refetch and preserves manual retry", async () => {
@@ -90,22 +91,23 @@ describe("cafeteria visible answer and JSON-LD", () => {
     const { container } = render(tree);
     vi.mocked(fetchCafeteriaSnapshot).mockRejectedValueOnce(new Error("offline"));
     await act(async () => { await client.invalidateQueries({ queryKey: ["cafeteria-weekly-snapshot"] }); });
-    await waitFor(() => expect(expectMatchingAnswer(container)).toBe(getDictionary("ko").pages.cafeteria.staleMenuMessage));
+    await waitFor(() => expect(screen.getByText(getDictionary("ko").home.dashboard.loadFailedTitle)).toBeInTheDocument());
+    expect(screen.getAllByRole("status").some((status) => status.textContent?.includes(text.staleMenuMessage))).toBe(true);
     expect(screen.getByRole("button", { name: getDictionary("ko").home.dashboard.retry })).toBeVisible();
     expect(screen.queryByText("비빔밥")).not.toBeInTheDocument();
-    expect(container.querySelector(`time[datetime='${checkedAt}']`)).not.toBeNull();
+    expect(container.querySelector("time")).toBeNull();
   });
 
-  it("shows missing confirmation and stale data without claiming that the request checked the source", () => {
+  it("warns about stale data and keeps unknown source confirmation times hidden", () => {
     const { tree } = page({ ...snapshot, checkedAt: null, stale: true });
     const { container } = render(tree);
-    expect(expectMatchingAnswer(container)).toBe(getDictionary("ko").pages.cafeteria.staleMenuMessage);
-    expect(screen.getByText(new RegExp(getDictionary("ko").answerSummary.unknownCheckedAt))).toBeVisible();
+    expect(screen.getAllByRole("status").some((status) => status.textContent?.includes(text.staleMenuMessage))).toBe(true);
+    expect(screen.queryByText(new RegExp(getDictionary("ko").answerSummary.unknownCheckedAt))).not.toBeInTheDocument();
     expect(screen.queryByText("비빔밥")).not.toBeInTheDocument();
     expect(container.querySelector(`time[datetime='${checkedAt}']`)).toBeNull();
   });
 
-  it("changes the visible answer and JSON-LD on Korea midnight using the same menus", () => {
+  it("changes today's menu on Korea midnight using the same weekly menus", () => {
     const now = "2026-10-15T14:59:00Z";
     vi.setSystemTime(new Date(now));
     const { tree } = page({
@@ -113,10 +115,12 @@ describe("cafeteria visible answer and JSON-LD", () => {
       menus: [...snapshot.menus, ...toCafeteriaMenus([{ date: "2026-10-16", day: "금", meals: { lunch: ["볶음밥"] } }])],
     }, "ko", now);
     const { container } = render(tree);
-    expect(expectMatchingAnswer(container)).toContain("비빔밥");
+    const today = within(container.querySelector<HTMLElement>("#today-menu")!);
+    expect(today.getByText("비빔밥")).toBeInTheDocument();
     act(() => { vi.advanceTimersByTime(60_000); });
-    expect(expectMatchingAnswer(container)).toContain("2026-10-16");
-    expect(expectMatchingAnswer(container)).toContain("볶음밥");
+    expect(today.getByText("2026-10-16")).toBeInTheDocument();
+    expect(today.getByText("볶음밥")).toBeInTheDocument();
+    expect(today.queryByText("비빔밥")).not.toBeInTheDocument();
   });
 });
 
@@ -185,6 +189,7 @@ describe("cafeteria selection and weekly menu", () => {
     expect(screen.queryByText(text.operationHours)).not.toBeInTheDocument();
     expect(container.querySelector("[data-answer-text]")).toBeNull();
     expect(container.querySelector("#cafeteria-answer-schema")).toBeNull();
+    expect(screen.queryByRole("link", { name: text.answer.source })).not.toBeInTheDocument();
 
     const suLounge = within(selector).getByRole("button", { name: "SU-Lounge" });
     expect(suLounge).toHaveAttribute("aria-pressed", "false");
@@ -193,7 +198,7 @@ describe("cafeteria selection and weekly menu", () => {
     expect(manna).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByText("오늘의 SU 메뉴")).toBeInTheDocument();
     expect(screen.queryByTestId("manna-menu")).not.toBeInTheDocument();
-    expect(expectMatchingAnswer(container)).toContain("오늘의 SU 메뉴");
+    expect(screen.getByRole("link", { name: text.answer.source })).toBeInTheDocument();
   });
 
   it("keeps previous-week menus hidden and warns when current-week data is unavailable", () => {
@@ -215,9 +220,9 @@ describe("cafeteria selection and weekly menu", () => {
 
   it("hides current-week menu cards when the source snapshot is stale", () => {
     const { tree } = page({ ...snapshot, menus, stale: true });
-    const { container } = render(tree);
+    render(tree);
 
-    expect(expectMatchingAnswer(container)).toBe(text.staleMenuMessage);
+    expect(screen.getAllByRole("status").some((status) => status.textContent?.includes(text.staleMenuMessage))).toBe(true);
     expect(screen.queryByText("오늘의 SU 메뉴")).not.toBeInTheDocument();
     expect(screen.queryByText("이번 주 월요일 메뉴")).not.toBeInTheDocument();
     expect(screen.queryByText("이번 주 일요일 메뉴")).not.toBeInTheDocument();
