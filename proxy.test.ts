@@ -30,10 +30,16 @@ describe.each(["development", "production"] as const)("Kakao Maps CSP script per
       expect(scriptSrc).not.toContain("'unsafe-inline'");
       expect(scriptSrc?.includes("'unsafe-eval'")).toBe(environment === "development");
       expect(scriptSrc).not.toContain("https://*.kakaocdn.net");
-      expect(scriptSrc?.includes("http://t1.kakaocdn.net")).toBe(environment === "development");
       expect(imgSrc).toContain("https://*.kakaocdn.net");
-      expect(imgSrc?.includes("http://mts.kakaocdn.net")).toBe(environment === "development");
-      expect(imgSrc?.includes("http://t1.kakaocdn.net")).toBe(environment === "development");
+      if (environment === "development") {
+        expect(scriptSrc).toContain("http://t1.kakaocdn.net");
+        expect(imgSrc).toContain("http://mts.kakaocdn.net");
+        expect(imgSrc).toContain("http://t1.kakaocdn.net");
+      } else {
+        expect(scriptSrc).not.toContain("http://t1.kakaocdn.net");
+        expect(imgSrc).not.toContain("http://mts.kakaocdn.net");
+        expect(imgSrc).not.toContain("http://t1.kakaocdn.net");
+      }
       expect(imgSrc).not.toContain("http://*.kakaocdn.net");
       expect(csp.includes("upgrade-insecure-requests")).toBe(environment === "production");
       expect(response.headers.get("x-middleware-request-content-security-policy")).toBe(csp);
