@@ -12,8 +12,6 @@ import {
 } from "@/lib/utils";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
-import { getAnnouncementDetailPath } from "@/lib/announcement-path";
-import { localizePath } from "@/lib/i18n";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -100,14 +98,6 @@ function AnnouncementCardComponent({
           <span>{formatDateWithYear(announcement.date)}</span>
           <span>{announcement.author || dictionary.labels.sahmyookUniversity}</span>
         </div>
-        <Link
-          href={localizePath(getAnnouncementDetailPath(announcement.category, announcement.id), locale)}
-          prefetch={false}
-          aria-label={`${announcement.title} ${dictionary.pages.announcements.summaryDetail}`}
-          className="pointer-events-auto self-start rounded px-2 py-2 text-sm font-medium text-primary-700 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          {dictionary.pages.announcements.summaryDetail}
-        </Link>
       </div>
     </Card>
   );

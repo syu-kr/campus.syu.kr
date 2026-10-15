@@ -1,104 +1,10 @@
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { isScheduleOnDate, type TodayInfo } from "@/lib/home";
-import { formatDateRange } from "@/lib/utils";
-import { getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
-import type { AcademicSchedule, AnswerSummary, PhoneNumber } from "@/types";
-import type { PublicHolidaySnapshot } from "@/types/public-holidays";
+import type { AnswerSummary, PhoneNumber } from "@/types";
 
 type GraduationMetadata = {
   sourceTitle: string;
   lastVerifiedAt: string;
 };
-
-export function createAcademicScheduleAnswerSummary({
-  locale,
-  now,
-  schedules,
-  publicHolidays,
-  todayInfo,
-}: {
-  locale: Locale;
-  now: Date;
-  schedules: AcademicSchedule[];
-  publicHolidays?: PublicHolidaySnapshot;
-  todayInfo: TodayInfo;
-}): AnswerSummary {
-  const dictionary = getDictionary(locale);
-  const text = dictionary.pages.academicSchedule;
-  const answerText = text.answer;
-  const displaySchedules = mergePublicHolidays(schedules, publicHolidays);
-  const holiday = getPublicHoliday(todayInfo.dateStringDash, publicHolidays, now);
-  const todaySchedules = displaySchedules
-    .filter((schedule) => isScheduleOnDate(schedule, todayInfo.dateStringDot))
-    .sort(compareScheduleDates);
-  const nextSchedule = displaySchedules
-    .filter(
-      (schedule) =>
-        schedule.endDate >= todayInfo.dateStringDot &&
-        !isScheduleOnDate(schedule, todayInfo.dateStringDot),
-    )
-    .sort(compareScheduleDates)[0];
-  const todayLabel = formatDateRange(
-    todayInfo.dateStringDot,
-    todayInfo.dateStringDot,
-    locale,
-  );
-  const nextScheduleText = nextSchedule
-    ? applyTemplate(answerText.nextSchedule, {
-        date: formatDateRange(
-          nextSchedule.startDate,
-          nextSchedule.endDate,
-          locale,
-        ),
-        title: nextSchedule.title,
-      })
-    : answerText.noNext;
-  const answer = todaySchedules.length
-    ? applyTemplate(answerText.today, {
-        date: todayLabel,
-        items: formatScheduleTitleList(todaySchedules, locale),
-        next: nextScheduleText,
-      })
-    : applyTemplate(answerText.noToday, {
-        date: todayLabel,
-        next: nextScheduleText,
-      });
-  const hasHolidayCoverage = Boolean(
-    publicHolidays?.lastSuccessAt &&
-    publicHolidays.years.includes(Number(todayInfo.dateStringDash.slice(0, 4))),
-  );
-  const holidayNotice = !publicHolidays
-    ? ""
-    : !hasHolidayCoverage
-      ? dictionary.publicHolidays.unavailable
-      : holiday.isStale ? dictionary.publicHolidays.stale : "";
-
-  return {
-    eyebrow: answerText.eyebrow,
-    title: answerText.title,
-    question: answerText.question,
-    answer: `${answer}${holidayNotice ? ` ${holidayNotice}` : ""}`,
-    source: publicHolidays?.lastSuccessAt
-      ? `${answerText.source} / ${dictionary.publicHolidays.source}`
-      : answerText.source,
-    items: [
-      {
-        label: answerText.dateLabel,
-        value: todayLabel,
-      },
-      {
-        label: answerText.todayCountLabel,
-        value: todaySchedules.length.toLocaleString(
-          locale === "ko" ? "ko-KR" : "en-US",
-        ),
-      },
-      {
-        label: answerText.nextScheduleLabel,
-        value: nextSchedule ? nextSchedule.title : answerText.noNextShort,
-      },
-    ],
-  };
-}
 
 export function createGraduationAnswerSummary({
   locale,
@@ -209,25 +115,6 @@ export function createPhoneAnswerSummary({
   };
 }
 
-function formatScheduleTitleList(
-  schedules: AcademicSchedule[],
-  locale: Locale,
-) {
-  const dictionary = getDictionary(locale);
-  const answerText = dictionary.pages.academicSchedule.answer;
-  const visibleSchedules = schedules.slice(0, 3);
-  const visibleText = visibleSchedules
-    .map((schedule) => schedule.title)
-    .join(answerText.itemSeparator);
-  const remainingCount = schedules.length - visibleSchedules.length;
-
-  if (remainingCount <= 0) return visibleText;
-
-  return `${visibleText}${applyTemplate(answerText.moreSuffix, {
-    count: remainingCount.toLocaleString(locale === "ko" ? "ko-KR" : "en-US"),
-  })}`;
-}
-
 function formatPhoneContact(
   contact: PhoneNumber,
   answerText: ReturnType<typeof getDictionary>["pages"]["phone"]["answer"],
@@ -237,10 +124,6 @@ function formatPhoneContact(
     description: contact.description ?? answerText.noDescription,
     phone: contact.phone,
   });
-}
-
-function compareScheduleDates(a: AcademicSchedule, b: AcademicSchedule) {
-  return a.startDate.localeCompare(b.startDate) || a.endDate.localeCompare(b.endDate);
 }
 
 function formatUpdatedAt(now: Date, locale: Locale, prefix: string) {

@@ -101,6 +101,14 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase app id |
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | Web Push VAPID public key |
 
+### Kakao Maps SDK 도메인
+
+`NEXT_PUBLIC_KAKAO_MAP_KEY`에는 Kakao 앱의 **JavaScript 키**를 사용합니다. [Kakao Maps 가이드](https://apis.map.kakao.com/web/guide/)에 따라 `앱 설정 → 앱 → 플랫폼 키 → 해당 JavaScript 키 → JavaScript SDK 도메인`에 운영 주소 `https://campus.syu.kr`와 개발 주소 `http://localhost:3000`을 등록합니다.
+
+개발 서버는 `npm run dev`로 실행하고 `http://localhost:3000`으로 접속합니다. SDK는 프로토콜·호스트·포트가 일치하는지 검사하므로 `http://127.0.0.1:3000`이나 별도 포트를 사용하려면 그 주소도 해당 키의 SDK 도메인에 등록해야 합니다. 미등록 주소의 SDK 요청은 `401`과 `domain mismatched` JSON을 반환하며, 브라우저에서는 이 응답이 `ERR_BLOCKED_BY_ORB`로 보일 수 있습니다.
+
+HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타일 이미지도 HTTP 주소를 사용합니다. `proxy.ts`는 개발 환경에서만 확인된 Kakao 지도 CDN의 HTTP 스크립트·이미지 호스트를 허용하며, 운영 환경에서는 HTTPS 허용 목록과 `upgrade-insecure-requests`를 적용합니다.
+
 ## GitHub Actions Secrets
 
 등록 위치:

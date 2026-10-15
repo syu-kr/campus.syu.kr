@@ -4,11 +4,11 @@ import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
+import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { Button } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
 import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
-import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { StudentRestaurantMenu } from "@/app/features/cafeteria/StudentRestaurantMenu";
@@ -20,7 +20,6 @@ import {
   WeeklyMenuCard,
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
 import { fetchCafeteriaSnapshot } from "@/lib/api";
-import { createCafeteriaAnswerSummary } from "@/lib/campus-aeo";
 import {
   getCafeteriaWeekMenus,
   isCafeteriaClosedDay,
@@ -32,16 +31,13 @@ import { getKoreaNow, getTodayInfo } from "@/lib/home";
 interface CafeteriaPageClientProps {
   initialSnapshot: CafeteriaSnapshot;
   initialNowIso: string;
-  nonce?: string;
 }
 
 export function CafeteriaPageClient({
   initialSnapshot,
   initialNowIso,
-  nonce,
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
-  const locale = useLocale();
   const text = dictionary.pages.cafeteria;
   const [activeRestaurant, setActiveRestaurant] = useState<"su-lounge" | "manna">("su-lounge");
   const [now, setNow] = useState(() => new Date(initialNowIso));
@@ -147,25 +143,6 @@ export function CafeteriaPageClient({
                 {!isLoading && todayMenu && !isCafeteriaClosedDay(todayMenu) && <TodayMenuCard menu={todayMenu} />}
               </section>
 
-              <AnswerSummarySection
-                summary={createCafeteriaAnswerSummary({
-                  locale,
-                  menus,
-                  now,
-                  todayInfo,
-                  stale: hasStaleMenuData,
-                })}
-                sources={[{
-                  name: text.answer.source,
-                  url: "https://www.syu.ac.kr/school-life/facility-information/cafeteria/",
-                  checkedAt: snapshot.checkedAt,
-                }]}
-                schemaId="cafeteria-answer-schema"
-                path="/campus/cafeteria"
-                basisAt={now.toISOString()}
-                nonce={nonce}
-              />
-
               <CafeteriaInfoCards />
 
               <section className="mb-8" aria-labelledby="su-lounge-weekly-heading">
@@ -187,6 +164,12 @@ export function CafeteriaPageClient({
           )}
         </div>
         <CafeteriaNoticeCards />
+        {activeRestaurant === "su-lounge" && (
+          <SourceAttribution sources={[{
+            name: text.answer.source,
+            url: "https://www.syu.ac.kr/school-life/facility-information/cafeteria/",
+          }]} />
+        )}
       </Container>
     </>
   );

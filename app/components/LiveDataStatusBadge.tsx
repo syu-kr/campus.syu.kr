@@ -7,7 +7,7 @@ import clsx from "clsx";
 
 interface LiveDataStatusBadgeProps {
   locale: Locale;
-  sourceLabel: string;
+  sourceLabel?: string;
   timestamp?: string | Date | null;
   stale?: boolean;
   sourceStatus?: LiveDataSourceStatus;
@@ -51,10 +51,12 @@ export function LiveDataStatusBadge({
       <span>
         {text.updated}: {formattedTime}
       </span>
-      <span className="text-neutral-400">|</span>
-      <span>
-        {text.source}: {sourceLabel}
-      </span>
+      {sourceLabel && (
+        <>
+          <span className="text-neutral-400">|</span>
+          <span>{text.source}: {sourceLabel}</span>
+        </>
+      )}
     </div>
   );
 }

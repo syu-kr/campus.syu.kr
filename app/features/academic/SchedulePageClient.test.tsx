@@ -2,6 +2,7 @@ import { useState } from "react";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SchedulePageClient from "./SchedulePageClient";
+import { LocaleProvider } from "@/app/components/LocaleProvider";
 import { getDictionary } from "@/lib/i18n";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 import type { PublicHolidaySnapshot } from "@/types/public-holidays";
@@ -94,92 +95,80 @@ describe("academic calendar public holidays", () => {
   });
 });
 
-function expectMatchingAnswer() {
-  const section = screen.getByRole("region", { name: getDictionary("ko").pages.academicSchedule.answer.title });
-  const script = document.getElementById("academic-schedule-answer-schema")!;
-  const schema = JSON.parse(script.textContent!);
-  const visibleAnswer = section.querySelector("[data-answer-text]")!;
-  expect(schema.mainEntity[0].acceptedAnswer.text).toBe(visibleAnswer.textContent);
-  expect(schema.mainEntity[0].name).toBe(getDictionary("ko").pages.academicSchedule.answer.question);
-  return { section, script, answer: visibleAnswer.textContent! };
-}
+describe("academic schedule content and sources", () => {
+  it.each(["ko", "en"] as const)("keeps calendar content and only one set of source links at the bottom in %s", (locale) => {
+    const dictionary = getDictionary(locale);
+    const { container } = render(<LocaleProvider locale={locale}>
+      <SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
+        initialSchedules={[{ id: "exam", title: "중간고사", startDate: "2026.10.09", endDate: "2026.10.10", category: "exam" }]}
+        initialPublicHolidays={holidaySnapshot()} />
+    </LocaleProvider>);
+    const schedule = screen.getByRole("heading", { name: "중간고사" });
+    const source = screen.getByRole("link", { name: dictionary.pages.academicSchedule.title });
+    const holidaySource = screen.getByRole("link", { name: dictionary.publicHolidays.source });
 
-describe("academic answer provenance", () => {
-  it("shows an unknown academic confirmation time and the holiday's actual timestamp separately", () => {
-    const checkedAt = "2026-10-08T12:34:00Z";
-    render(<SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
-      initialSchedules={[]} initialPublicHolidays={holidaySnapshot({ lastSuccessAt: checkedAt, stale: true })} nonce="test-nonce" />);
-    const { section, script, answer } = expectMatchingAnswer();
-    expect(within(section).getByRole("link", { name: "학사일정" }))
-      .toHaveAttribute("href", "https://www.syu.ac.kr/academic/major-schedule/");
-    expect(within(section).getByText(getDictionary("ko").answerSummary.unknownCheckedAt, { exact: false })).toBeInTheDocument();
-    expect(section.querySelector(`time[datetime="${checkedAt}"]`)).toBeInTheDocument();
-    expect(script).toHaveAttribute("nonce", "test-nonce");
-    expect(answer).toContain("한글날");
-    expect(answer).toContain(getDictionary("ko").publicHolidays.stale);
+    expect(screen.getByRole("button", { name: /한글날/ })).toBeInTheDocument();
+    expect(source).toHaveAttribute("href", "https://www.syu.ac.kr/academic/major-schedule/");
+    expect(holidaySource).toHaveAttribute("href", PUBLIC_HOLIDAY_SOURCE_URL);
+    expect(schedule.compareDocumentPosition(source) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(schedule.compareDocumentPosition(holidaySource) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText(dictionary.pages.academicSchedule.answer.title)).not.toBeInTheDocument();
+    expect(screen.queryByText(dictionary.pages.academicSchedule.answer.question)).not.toBeInTheDocument();
+    expect(screen.queryByText(dictionary.answerSummary.basisLabel, { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByText(dictionary.answerSummary.unknownCheckedAt, { exact: false })).not.toBeInTheDocument();
+    expect(container.querySelector("time, [data-answer-text], #academic-schedule-answer-schema")).toBeNull();
   });
 
-  it("updates the visible answer and JSON-LD with query data while list search leaves today's answer intact", () => {
+  it("updates calendar and list data while search leaves the selected day's schedules intact", () => {
     const props = { initialDateStringDot: "2026.10.09", initialNowIso: "2026-10-09T03:00:00Z", initialSchedules: [], initialPublicHolidays: holidaySnapshot() };
     const view = render(<SchedulePageClient {...props} />);
-    expect(expectMatchingAnswer().answer).toContain("한글날");
+    expect(screen.getByRole("heading", { name: "한글날" })).toBeInTheDocument();
 
     queryOverrides.schedules = { data: [{ id: "exam", title: "변경된 시험", startDate: "2026.10.09", endDate: "2026.10.09", category: "exam" }] };
     queryOverrides["public-holidays"] = { data: holidaySnapshot({ lastSuccessAt: "2026-10-09T01:00:00Z", holidays: [] }) };
     view.rerender(<SchedulePageClient {...props} />);
-    const { answer, section } = expectMatchingAnswer();
-    expect(answer).toContain("변경된 시험");
-    expect(answer).not.toContain("한글날");
     expect(screen.getByRole("heading", { name: "변경된 시험" })).toBeInTheDocument();
-    expect(section.querySelector('time[datetime="2026-10-09T01:00:00Z"]')).toBeInTheDocument();
+    expect(screen.queryByText("한글날")).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("textbox", { name: "일정 검색..." }), { target: { value: "없는 검색어" } });
     expect(screen.queryByRole("heading", { name: "변경된 시험" })).not.toBeInTheDocument();
-    expect(expectMatchingAnswer().answer).toBe(answer);
+    expect(screen.getByText("변경된 시험")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "학사일정" })).toBeInTheDocument();
   });
 
-  it("refreshes the Korean basis date and answer across midnight without inventing a source confirmation", () => {
-    vi.setSystemTime(new Date("2026-10-08T14:59:30Z"));
-    render(<SchedulePageClient initialDateStringDot="2026.10.08" initialNowIso="2026-10-08T14:59:30Z"
-      initialSchedules={[]} initialPublicHolidays={holidaySnapshot({ lastSuccessAt: "2026-10-08T12:00:00Z" })} />);
-    const before = expectMatchingAnswer().answer;
-    expect(before).toContain("2026년 10월 8일");
+  it("refreshes holiday freshness warnings as the retained snapshot ages", () => {
+    render(<SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
+      initialSchedules={[]} initialPublicHolidays={holidaySnapshot({ lastSuccessAt: "2026-10-06T03:00:30Z" })} />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(60 * 1000));
-    const { answer, section } = expectMatchingAnswer();
-    expect(answer).toContain("2026년 10월 9일");
-    expect(answer).toContain("진행 중인 주요 학사일정은 한글날");
-    expect(section.querySelector('time[datetime="2026-10-08T12:00:00Z"]')).toBeInTheDocument();
-    expect(within(section).getByText(getDictionary("ko").answerSummary.unknownCheckedAt, { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(getDictionary("ko").publicHolidays.stale);
+    expect(screen.getByRole("button", { name: /공휴일: 한글날/ })).toBeInTheDocument();
   });
 
   it("marks retained holiday data stale when its refresh fails", () => {
     queryOverrides["public-holidays"] = { data: holidaySnapshot(), isError: true };
     render(<SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
       initialSchedules={[]} />);
-    expect(expectMatchingAnswer().answer).toContain(getDictionary("ko").publicHolidays.stale);
     expect(screen.getByRole("status")).toHaveTextContent(getDictionary("ko").publicHolidays.stale);
+    expect(screen.getByRole("button", { name: /공휴일: 한글날/ })).toBeInTheDocument();
   });
 
   it.each([
     { label: "retained", schedules: [{ id: "exam", title: "변경 전 시험", startDate: "2026.10.09", endDate: "2026.10.09", category: "exam" as const }] },
     { label: "empty", schedules: [] },
-  ])("warns in the visible answer and JSON-LD when the $label academic data refresh fails", ({ schedules }) => {
+  ])("keeps an error and retry when the $label academic data refresh fails", ({ schedules }) => {
     const dictionary = getDictionary("ko");
     const checkedAt = "2026-10-08T12:34:00Z";
     queryOverrides.schedules = { data: schedules, isError: true };
     render(<SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
       initialSchedules={schedules} initialPublicHolidays={holidaySnapshot({ lastSuccessAt: checkedAt })} />);
 
-    const { section, answer } = expectMatchingAnswer();
-    expect(answer).toBe(dictionary.home.dashboard.loadFailedMessage);
-    expect(answer).not.toContain("변경 전 시험");
     expect(screen.getByText(dictionary.home.dashboard.loadFailedTitle)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: dictionary.home.dashboard.retry })).toBeInTheDocument();
-    const source = within(section).getByRole("link", { name: "학사일정" }).closest("li")!;
+    const source = screen.getByRole("link", { name: "학사일정" }).closest("li")!;
     expect(source).toHaveTextContent(dictionary.home.dashboard.loadFailedMessage);
-    expect(source).toHaveTextContent(dictionary.answerSummary.unknownCheckedAt);
-    expect(section.querySelector(`time[datetime="${checkedAt}"]`)).toBeInTheDocument();
-    expect(section.querySelectorAll("a")).toHaveLength(2);
+    expect(source).not.toHaveTextContent(dictionary.answerSummary.unknownCheckedAt);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
     if (schedules.length) {
       expect(screen.getByRole("heading", { name: "변경 전 시험" })).toBeInTheDocument();
     }
