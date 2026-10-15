@@ -12,6 +12,8 @@
 GitHub Pages artifact
 ├── .nojekyll
 ├── index.html
+├── cafeteria/
+│   └── student-restaurant-1.json (만나의집 최초 정상 수집 후)
 └── crawl-data/
     ├── current.json
     └── versions/
@@ -24,6 +26,8 @@ GitHub Pages artifact
 ```
 
 `current.json`은 `version`, `publishedAt`, 9개 파일의 상대 경로·크기·SHA-256, `retainedVersions`와 optional `sourceHealth`를 포함합니다. 학사·학교생활·장학·행사·학과·SW 공지 6개, 학식·공휴일·AI 메타데이터 3개입니다. 공휴일이 없는 기존 8개 파일 manifest도 조회·복원·롤백할 수 있습니다. 현재 버전과 이전 버전을 합쳐 최대 7개를 한 아티팩트에 보존합니다. 버전 경로는 immutable이고 Pages 배포 전환은 아티팩트 단위이므로 미완성 아티팩트가 노출되지 않습니다.
+
+만나의집(기숙사 식당)은 기존 SU Lounge와 별도인 `cafeteria/student-restaurant-1.json`을 사용합니다. 이 파일은 일일 manifest의 필드나 기존 9개 파일을 변경하지 않고 동일 아티팩트에 보존합니다. 일일·주간·롤백은 같은 concurrency 그룹으로 직렬화하며, 일일 자료 롤백 중에도 만나의집은 최신 정상 JSON을 유지합니다. [만나의집 운영 문서](STUDENT_RESTAURANT.md)에서 Secrets와 주간 예약을 설정합니다.
 
 운영 base URL:
 
