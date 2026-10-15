@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -24,6 +24,12 @@ let root: string;
 let dataDir: string;
 let healthPath: string;
 let remote: Map<string, Buffer>;
+const studentRestaurantFile = "cafeteria/student-restaurant-1.json";
+const studentRestaurantMenu = {
+  updatedAt: "2026-10-04T00:00:00.000Z",
+  weekStart: "2026-09-28",
+  days: [{ date: "2026-09-28", breakfast: [], lunch: ["식단 테스트"], dinner: null }],
+};
 const fresh: CrawlSourceHealth = {
   status: "fresh",
   lastAttemptAt: "2026-10-04T00:00:00.000Z",
@@ -62,7 +68,7 @@ beforeEach(async () => {
   vi.stubEnv("GITHUB_RUN_ID", "fixture");
   vi.stubEnv("GITHUB_OUTPUT", path.join(root, "github-output"));
   vi.stubGlobal("fetch", vi.fn(async (input: URL) => {
-    const pathname = new URL(input).pathname.replace(/^\/crawl-data\//, "");
+    const pathname = new URL(input).pathname.replace(/^\/crawl-data\//, "").replace(/^\//, "");
     const payload = remote.get(pathname);
     return new Response(payload ? new Uint8Array(payload) : null, { status: payload ? 200 : 404 });
   }));
@@ -179,7 +185,7 @@ describe("crawler health publication", () => {
 
     await pullCurrent(dataDir, healthPath);
 
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(2);
     expect(delay).not.toHaveBeenCalled();
     expect(await readFile(path.join(dataDir, "cafeteria-menu.json"))).toEqual(baseline);
     expect(JSON.parse(await readFile(healthPath, "utf8"))).toEqual({ files: {} });
@@ -306,5 +312,115 @@ describe("crawler health publication", () => {
   it("rejects malformed local health instead of publishing guessed freshness", async () => {
     await cacheHealth({ "cafeteria-menu.json": { ...fresh, errorCode: "CRAWLER_FAILED" } });
     await expect(buildLocalSnapshot(dataDir, healthPath)).rejects.toThrow("출처 상태가");
+  });
+});
+
+describe("standalone student restaurant publication", () => {
+  it("restores validated student restaurant JSON alongside the current crawl snapshot", async () => {
+    const manifest = await fixtureManifest("with-student-restaurant");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    const payload = Buffer.from(JSON.stringify(studentRestaurantMenu));
+    remote.set(studentRestaurantFile, payload);
+
+    await pullCurrent(dataDir, healthPath);
+
+    expect(await readFile(path.join(root, studentRestaurantFile))).toEqual(payload);
+  });
+
+  it("publishes a student restaurant change even when crawl data and health are unchanged", async () => {
+    const manifest = await fixtureManifest("unchanged-crawl");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    remote.set(studentRestaurantFile, Buffer.from(JSON.stringify(studentRestaurantMenu)));
+    const next = Buffer.from(JSON.stringify({ ...studentRestaurantMenu, updatedAt: "2026-10-05T00:00:00.000Z" }));
+    await mkdir(path.join(root, "cafeteria"));
+    await writeFile(path.join(root, studentRestaurantFile), next);
+
+    const outputDir = path.join(root, "student-artifact");
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+
+    expect(await readFile(path.join(root, "github-output"), "utf8")).toContain("changed=true");
+    expect(await readFile(path.join(outputDir, studentRestaurantFile))).toEqual(next);
+    const current = parseCrawlDataManifest(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "current.json"), "utf8")));
+    expect(await readFile(path.join(outputDir, "crawl-data", "versions", current.version, "cafeteria-menu.json")))
+      .toEqual(await readFile(path.join(dataDir, "cafeteria-menu.json")));
+  });
+
+  it("skips publishing an unchanged student restaurant and crawl snapshot", async () => {
+    const manifest = await fixtureManifest("same-restaurant");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    remote.set(studentRestaurantFile, Buffer.from(JSON.stringify(studentRestaurantMenu)));
+    await pullCurrent(dataDir, healthPath);
+
+    await preparePagesArtifact(path.join(root, "unneeded"), dataDir, healthPath);
+
+    expect(await readFile(path.join(root, "github-output"), "utf8")).toContain("changed=false");
+  });
+
+  it("preserves the remote standalone JSON when preparing without a local copy", async () => {
+    const payload = Buffer.from(JSON.stringify(studentRestaurantMenu));
+    remote.set(studentRestaurantFile, payload);
+    const outputDir = path.join(root, "preserved");
+
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+
+    expect(await readFile(path.join(outputDir, studentRestaurantFile))).toEqual(payload);
+  });
+
+  it("rejects malformed local JSON with a static error and never copies the rejected payload", async () => {
+    await mkdir(path.join(root, "cafeteria"));
+    await writeFile(path.join(root, studentRestaurantFile), "invalid https://fixture.invalid/private-path");
+
+    await expect(preparePagesArtifact(path.join(root, "rejected"), dataDir, healthPath))
+      .rejects.toThrow("만나의집 식단 JSON이 올바르지 않습니다.");
+    await expect(readFile(path.join(root, "rejected", studentRestaurantFile))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("keeps the latest standalone JSON when rolling crawl data back", async () => {
+    const manifest = await fixtureManifest("rollback-with-student");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    const payload = Buffer.from(JSON.stringify(studentRestaurantMenu));
+    remote.set(studentRestaurantFile, payload);
+    const outputDir = path.join(root, "rollback-student");
+
+    await prepareRollbackArtifact(manifest.version, outputDir);
+
+    expect(await readFile(path.join(outputDir, studentRestaurantFile))).toEqual(payload);
+    expect(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "current.json"), "utf8")).version).toBe(manifest.version);
+  });
+
+  it.each(["malformed", "sensitive-field", "too-large", "unavailable"])("refuses %s remote restaurant data before changing any local file", async (failure) => {
+    const manifest = await fixtureManifest("invalid-student");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    remote.set(studentRestaurantFile, Buffer.from(failure === "malformed" ? "{" : failure === "too-large" ? " ".repeat(128 * 1024 + 1) :
+      JSON.stringify({ ...studentRestaurantMenu, imageHash: "must-stay-private" })));
+    if (failure === "unavailable") {
+      const original = vi.mocked(fetch).getMockImplementation()!;
+      vi.mocked(fetch).mockImplementation(async (input, init) =>
+        new URL(String(input)).pathname.includes("/cafeteria/") ? new Response(null, { status: 500 }) : original(input, init));
+    }
+    const baseline = await readFile(path.join(dataDir, "cafeteria-menu.json"));
+    await cacheHealth({ "cafeteria-menu.json": fresh });
+    const healthBaseline = await readFile(healthPath);
+
+    await expect(pullCurrent(dataDir, healthPath)).rejects.toThrow();
+    expect(await readFile(path.join(dataDir, "cafeteria-menu.json"))).toEqual(baseline);
+    expect(await readFile(healthPath)).toEqual(healthBaseline);
+    await expect(preparePagesArtifact(path.join(root, "invalid-artifact"), dataDir, healthPath)).rejects.toThrow();
+  });
+
+  it("copies only validated public JSON, excluding private state, images and unrelated repository files", async () => {
+    await mkdir(path.join(root, "cafeteria"));
+    await writeFile(path.join(root, studentRestaurantFile), JSON.stringify(studentRestaurantMenu));
+    await writeFile(path.join(root, "cafeteria", "raw-image.png"), "private");
+    await writeFile(path.join(root, ".cache", "student-state.json"), JSON.stringify({ imageHash: "private" }));
+    await writeFile(path.join(root, "README.md"), "private");
+    const outputDir = path.join(root, "whitelisted");
+
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+
+    expect((await readdir(outputDir)).sort()).toEqual([".nojekyll", "cafeteria", "crawl-data", "index.html"]);
+    expect(await readdir(path.join(outputDir, "cafeteria"))).toEqual(["student-restaurant-1.json"]);
+    expect(Object.keys(JSON.parse(await readFile(path.join(outputDir, studentRestaurantFile), "utf8"))).sort())
+      .toEqual(["days", "updatedAt", "weekStart"]);
   });
 });

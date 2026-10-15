@@ -19,6 +19,7 @@ import {
   validateDailyCrawlData,
   validateCrawlDataVersion,
 } from "../lib/crawl-data-contract";
+import { parseStudentRestaurantMenu } from "../lib/student-restaurant";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data");
 const HEALTH_PATH = path.join(process.cwd(), ".cache", "crawl-data-health.json");
@@ -26,6 +27,8 @@ const DEFAULT_CRAWL_DATA_BASE_URL =
   "https://syu-kr.github.io/campus.syu.kr/crawl-data";
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_MANIFEST_BYTES = 64 * 1024;
+const STUDENT_RESTAURANT_FILE = "student-restaurant-1.json";
+const MAX_STUDENT_RESTAURANT_BYTES = 128 * 1024;
 
 interface CrawlDataSnapshot {
   manifest: CrawlDataManifest;
@@ -37,6 +40,7 @@ async function main() {
 
   if (args.includes("--dry-run")) {
     const snapshot = await buildLocalSnapshot();
+    await readLocalStudentRestaurant(DATA_DIR);
     console.log(
       `[crawl-data] dry-run validated ${snapshot.payloads.size} files`,
     );
@@ -83,8 +87,13 @@ export async function preparePagesArtifact(
 ) {
   const localSnapshot = await buildLocalSnapshot(dataDir, healthPath);
   const remoteCurrent = await fetchManifest("current.json", true);
+  const remoteStudentRestaurant = await fetchStudentRestaurant();
+  const studentRestaurant = (await readLocalStudentRestaurant(dataDir)) ?? remoteStudentRestaurant;
+  const sameStudentRestaurant = studentRestaurant === undefined
+    ? remoteStudentRestaurant === undefined
+    : remoteStudentRestaurant !== undefined && studentRestaurant.equals(remoteStudentRestaurant);
 
-  if (remoteCurrent && manifestsHaveSameFiles(remoteCurrent, localSnapshot.manifest)) {
+  if (remoteCurrent && manifestsHaveSameFiles(remoteCurrent, localSnapshot.manifest) && sameStudentRestaurant) {
     console.log(
       `[crawl-data] no changes since version ${remoteCurrent.version}; Pages deploy skipped`,
     );
@@ -108,6 +117,7 @@ export async function preparePagesArtifact(
     snapshots,
     localSnapshot.manifest.version,
     retainedVersions,
+    studentRestaurant,
   );
   await writeGitHubOutput("changed", "true");
   await writeGitHubOutput("version", localSnapshot.manifest.version);
@@ -137,8 +147,9 @@ export async function prepareRollbackArtifact(version: string, outputDir: string
   const snapshots = await Promise.all(
     orderedVersions.map((item) => downloadSnapshot(item)),
   );
+  const studentRestaurant = await fetchStudentRestaurant();
 
-  await writePagesArtifact(outputDir, snapshots, version, orderedVersions);
+  await writePagesArtifact(outputDir, snapshots, version, orderedVersions, studentRestaurant);
   await writeGitHubOutput("changed", "true");
   await writeGitHubOutput("version", version);
   console.log(`[crawl-data] prepared rollback artifact for ${version}`);
@@ -146,7 +157,9 @@ export async function prepareRollbackArtifact(version: string, outputDir: string
 
 export async function pullCurrent(dataDir = DATA_DIR, healthPath = HEALTH_PATH) {
   const manifest = await fetchManifest("current.json", true);
+  const studentRestaurant = await fetchStudentRestaurant();
   if (!manifest) {
+    await writeStudentRestaurant(studentRestaurantPath(dataDir), studentRestaurant);
     await writeHealthCache(healthPath, {});
     console.log(
       "[crawl-data] Pages current.json이 없어 번들 데이터를 최초 게시 기준으로 사용합니다.",
@@ -167,6 +180,7 @@ export async function pullCurrent(dataDir = DATA_DIR, healthPath = HEALTH_PATH) 
     console.log(`[crawl-data] restored ${fileName}`);
   }
 
+  await writeStudentRestaurant(studentRestaurantPath(dataDir), studentRestaurant);
   await writeHealthCache(healthPath, snapshot.manifest.sourceHealth ?? {});
 
   console.log(`[crawl-data] restored current version ${manifest.version}`);
@@ -253,6 +267,7 @@ async function writePagesArtifact(
   snapshots: CrawlDataSnapshot[],
   currentVersion: string,
   retainedVersions: string[],
+  studentRestaurant?: Buffer,
 ) {
   await assertOutputDoesNotExist(outputDir);
 
@@ -305,6 +320,47 @@ async function writePagesArtifact(
     path.join(crawlDataRoot, "current.json"),
     serializeManifest(currentManifest),
   );
+  await writeStudentRestaurant(path.join(root, "cafeteria", STUDENT_RESTAURANT_FILE), studentRestaurant);
+}
+
+function studentRestaurantPath(dataDir: string) {
+  return path.join(path.dirname(dataDir), "cafeteria", STUDENT_RESTAURANT_FILE);
+}
+
+function validateStudentRestaurantPayload(payload: Buffer): Buffer {
+  if (payload.byteLength > MAX_STUDENT_RESTAURANT_BYTES) {
+    throw new Error("만나의집 식단 JSON이 허용 크기를 초과했습니다.");
+  }
+  try {
+    parseStudentRestaurantMenu(JSON.parse(payload.toString("utf8")) as unknown);
+  } catch {
+    throw new Error("만나의집 식단 JSON이 올바르지 않습니다.");
+  }
+  return payload;
+}
+
+async function readLocalStudentRestaurant(dataDir: string): Promise<Buffer | undefined> {
+  let payload: Buffer;
+  try {
+    payload = await readFile(studentRestaurantPath(dataDir));
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") return undefined;
+    throw error;
+  }
+  return validateStudentRestaurantPayload(payload);
+}
+
+async function fetchStudentRestaurant(): Promise<Buffer | undefined> {
+  const response = await fetchRemote(`../cafeteria/${STUDENT_RESTAURANT_FILE}`);
+  if (response.status === 404) return undefined;
+  if (!response.ok) throw new Error(`만나의집 식단 JSON 응답 오류: ${response.status}`);
+  return validateStudentRestaurantPayload(response.payload);
+}
+
+async function writeStudentRestaurant(filePath: string, payload?: Buffer) {
+  if (!payload) return;
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, payload);
 }
 
 async function fetchManifest(

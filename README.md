@@ -56,6 +56,7 @@ npm run check
 - [docs/SEARCH_INDEXING_GUIDE.md](./docs/SEARCH_INDEXING_GUIDE.md): SEO/AEO/GEO 색인 및 Google Search Console 점검 절차
 - [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md): Firestore 보안 규칙과 TTL 운영
 - [docs/CRAWL_DATA_PAGES.md](./docs/CRAWL_DATA_PAGES.md): 무료 GitHub Pages 일일 데이터·롤백 운영
+- [docs/STUDENT_RESTAURANT.md](./docs/STUDENT_RESTAURANT.md): 만나의집(기숙사 식당) 이미지 식단 자동화·Secrets·Pages 설정
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
 - [docs/SITE_AUDIT_2026-10-04.md](./docs/SITE_AUDIT_2026-10-04.md): 사이트·Actions 수정 결과, 검증 범위와 남은 확인
 
@@ -108,6 +109,12 @@ python scripts/crawl_cafeteria.py
 python scripts/crawl_schedule.py
 python scripts/crawl_phone.py
 ```
+
+### 만나의집(기숙사 식당)
+
+기존 SU Lounge와 별도로, 만나의집은 이미지가 변경될 때만 OpenAI로 날짜별 조식·중식·석식을 추출합니다. 저장소 Actions Secrets에 `HAKSIK_API_URL`과 `OPENAI_API_KEY`를 직접 등록하고 Pages Source를 `GitHub Actions`로 설정한 다음, `Weekly Crawl - 만나의집 (기숙사 식당)`을 `main`에서 수동 실행합니다. 이후 매주 월요일 07:00 KST에 갱신합니다. 원본 주소는 공개 파일이나 Vercel 환경변수에 넣지 않습니다.
+
+공개 결과는 [Pages 식단 JSON](https://syu-kr.github.io/campus.syu.kr/cafeteria/student-restaurant-1.json)이며, 분석이나 배포 실패 시 마지막 정상본을 유지합니다. 첫 정상 게시 후 Vercel의 `NEXT_PUBLIC_CAFETERIA_JSON_URL`에 이 공개 주소를 등록하고 앱을 재배포하면 `/campus/cafeteria`의 `만나의 집` 버튼에서 오늘의 메뉴와 이번 주 메뉴를 확인할 수 있습니다. 기본 선택은 `SU-Lounge`이며 다른 주의 식단은 표시하지 않습니다. Mock 테스트, 스케줄 변경, 재실행, HTTP 통신의 보안 한계는 [설정·운영 문서](./docs/STUDENT_RESTAURANT.md)를 확인하세요.
 
 ## 배포
 

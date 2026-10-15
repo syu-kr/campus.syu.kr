@@ -1193,7 +1193,26 @@ export const dictionaries = {
       },
       cafeteria: {
         title: "삼육대학교 학식",
-        description: "주간 식단 및 영양정보를 확인하세요",
+        studentRestaurant: {
+          title: "만나의집 (기숙사 식당)",
+          extractionNote: "식단표 이미지에서 AI로 추출한 정보입니다. 읽기 어렵거나 제공 여부가 불명확한 식사는 ‘식단 확인 불가’로 표시합니다.",
+          notConfigured: "만나의집 식단은 준비 중입니다.",
+          loading: "만나의집 식단을 불러오는 중입니다.",
+          errorTitle: "만나의집 식단을 불러오지 못했습니다",
+          errorMessage: "잠시 후 다시 시도해주세요. 표시된 식단이 있다면 날짜를 확인해주세요.",
+          empty: "아직 공개된 만나의집 식단이 없습니다.",
+          staleTitle: "이전 날짜의 만나의집 식단입니다",
+          staleMessage: "이번 주 식단이 아직 없습니다. 이전 주의 식단은 표시하지 않습니다.",
+          upcomingTitle: "예정 날짜의 만나의집 식단입니다",
+          upcomingMessage: "이번 주 식단이 아직 없습니다. 다음 주의 식단은 표시하지 않습니다.",
+          unknownMeal: "식단 확인 불가",
+          updatedAt: "마지막 정상 분석:",
+          koreaTime: "(한국시간)",
+        },
+        restaurantPicker: "식당 선택",
+        suLoungeTitle: "SU-Lounge",
+        mannaTab: "만나의 집",
+        description: "만나의집과 SU Lounge의 주간 식단을 확인하세요",
         metaDescription:
           "삼육대학교 주간 식단과 오늘의 학식 정보를 확인하세요.",
         answer: {
@@ -1248,7 +1267,7 @@ export const dictionaries = {
         allergyMessage:
           "음식 알레르기가 있다면 표시된 항목을 참고하여 식사를 선택하세요. 제공 데이터 기준이므로 중증 알레르기가 있다면 식당에 직접 확인하세요.",
         noticeTitle: "알림:",
-        mannaUnavailable: "현재 만나의 집 식단은 제공되지 않습니다.",
+        restaurantNotice: "상단 버튼으로 SU-Lounge와 만나의 집 식단을 선택하세요. 운영 시간과 알레르기 안내는 SU-Lounge 기준입니다.",
         todayMenu: "오늘의 메뉴",
         todayMenuAria: "오늘의 메뉴로 이동",
         todayMarker: "오늘",
@@ -2898,7 +2917,26 @@ export const dictionaries = {
       },
       cafeteria: {
         title: "Sahmyook University Cafeteria",
-        description: "Check weekly menus and nutrition information",
+        studentRestaurant: {
+          title: "Manna House (dormitory cafeteria)",
+          extractionNote: "AI extracts this menu from an image. Meals that cannot be read or whose availability is unclear are marked ‘Menu unavailable’.",
+          notConfigured: "Manna House menus are being prepared.",
+          loading: "Loading Manna House menus.",
+          errorTitle: "Could not load Manna House menus",
+          errorMessage: "Please try again shortly. Check the dates of any menus still shown.",
+          empty: "No Manna House menus have been published yet.",
+          staleTitle: "These Manna House menus are from previous dates",
+          staleMessage: "This week's menus are not available yet. Previous weeks are not displayed.",
+          upcomingTitle: "These Manna House menus are for upcoming dates",
+          upcomingMessage: "This week's menus are not available yet. Future weeks are not displayed.",
+          unknownMeal: "Menu unavailable",
+          updatedAt: "Last successful analysis:",
+          koreaTime: "(Korea time)",
+        },
+        restaurantPicker: "Choose a cafeteria",
+        suLoungeTitle: "SU-Lounge",
+        mannaTab: "Manna House",
+        description: "Check weekly menus for Manna House and SU Lounge",
         metaDescription:
           "Check Sahmyook University weekly cafeteria menus and today's meals.",
         answer: {
@@ -2953,8 +2991,8 @@ export const dictionaries = {
         allergyMessage:
           "If you have food allergies, use the listed items as a reference when choosing meals. The data is provider-based, so confirm directly with the cafeteria for severe allergies.",
         noticeTitle: "Notice:",
-        mannaUnavailable:
-          "Manna House menu information is currently not provided.",
+        restaurantNotice:
+          "Use the buttons above to choose SU-Lounge or Manna House. Operating hours and allergy information apply to SU-Lounge.",
         todayMenu: "Today's Menu",
         todayMenuAria: "Go to today's menu",
         todayMarker: "Today",

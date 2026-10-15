@@ -11,6 +11,26 @@ afterEach(() => {
 });
 
 describe("Sentry CSP connection permission", () => {
+  it.each(["/campus/cafeteria", "/en/campus/cafeteria"])("allows only the configured public menu origin for %s", (pathname) => {
+    vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "https://fixture.github.io/project/cafeteria/student-restaurant-1.json");
+    const response = proxy(new NextRequest(`https://campus.syu.kr${pathname}`));
+    const csp = response.headers.get("Content-Security-Policy") ?? "";
+    const connectSrc = csp.split("; ").find((part) => part.startsWith("connect-src"));
+    expect(connectSrc).toContain("https://fixture.github.io");
+    expect(csp).not.toContain("/project/cafeteria");
+    expect(response.headers.get("x-middleware-request-content-security-policy")).toBe(csp);
+  });
+
+  it.each(["", "invalid", "http://fixture.invalid/cafeteria/student-restaurant-1.json", "https://fixture.invalid/private", "https://user:secret@fixture.invalid/cafeteria/student-restaurant-1.json", "https://foo;sandbox/cafeteria/student-restaurant-1.json", "https://*/cafeteria/student-restaurant-1.json"])("does not allow an invalid public menu host: %s", (value) => {
+    vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", value);
+    const csp = proxy(new NextRequest("https://campus.syu.kr/campus/cafeteria")).headers.get("Content-Security-Policy") ?? "";
+    expect(csp).not.toContain("fixture.invalid");
+    expect(csp).not.toContain("secret");
+    const connectSrc = csp.split("; ").find((part) => part.startsWith("connect-src"));
+    expect(connectSrc?.split(" ")).not.toContain("https://*");
+    expect(csp).not.toContain(";sandbox");
+  });
+
   it.each(["127.0.0.1:3045", "[::1]:3045"])("keeps loopback locale navigation on %s through the real Next adapter", async (host) => {
     const makeRequest = async (pathname: string) => (await adapter({
       page: "/proxy",

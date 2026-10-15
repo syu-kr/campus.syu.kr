@@ -60,6 +60,7 @@
     "generate:announcement-ai": "node scripts/generate_announcement_ai_summaries.mjs",
     "pull:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --pull-current",
     "crawl:daily": "ts-node --files --project tsconfig.json scripts/run-daily-crawl.ts",
+    "collect:student-restaurant": "ts-node --files --project tsconfig.json scripts/collect-student-restaurant.ts",
     "prepare:crawl-data-pages": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --prepare-pages",
     "rollback:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --rollback",
     "check": "npm run lint && npm run type-check && npm run check:i18n && npm run check:twa && npm run check:unused && npm run check:python && npm run check:graduation && npm run check:curriculum && npm run check:crawl-data && npm run test:unit && npm run build",

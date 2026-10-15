@@ -24,6 +24,17 @@ export interface CafeteriaSnapshot {
   stale: boolean;
 }
 
+export function getCafeteriaWeekMenus<T extends { date: string }>(menus: T[] | undefined, today: string): T[] {
+  const monday = new Date(`${today}T00:00:00Z`);
+  if (!Number.isFinite(monday.getTime())) return [];
+  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
+  const start = monday.toISOString().slice(0, 10);
+  monday.setUTCDate(monday.getUTCDate() + 7);
+  const end = monday.toISOString().slice(0, 10);
+  return (menus ?? []).filter(({ date }) => date >= start && date < end)
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
 export function toCafeteriaMenus(days: CafeteriaMenuDay[]): CafeteriaMenu[] {
   return days.map((menu, index) => {
     const lunch: CafeteriaMenu["lunch"] = {};
