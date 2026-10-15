@@ -1,8 +1,12 @@
-interface StudentRestaurantDay {
-  date: string;
+interface StudentRestaurantMeals {
   breakfast: string[] | null;
   lunch: string[] | null;
   dinner: string[] | null;
+}
+
+interface StudentRestaurantDay extends StudentRestaurantMeals {
+  date: string;
+  ingredients?: StudentRestaurantMeals;
 }
 
 export interface StudentRestaurantMenu {
@@ -24,10 +28,10 @@ function invalid(): never {
   throw new Error("Invalid student restaurant menu");
 }
 
-function exactObject(value: unknown, keys: string[]): Record<string, unknown> {
+function exactObject(value: unknown, keys: string[], optionalKeys: string[] = []): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) invalid();
   const object = value as Record<string, unknown>;
-  if (Object.keys(object).length !== keys.length || keys.some((key) => !Object.hasOwn(object, key))) invalid();
+  if (Object.keys(object).some((key) => !keys.includes(key) && !optionalKeys.includes(key)) || keys.some((key) => !Object.hasOwn(object, key))) invalid();
   return object;
 }
 
@@ -60,12 +64,16 @@ export function parseStudentRestaurantMenu(value: unknown): StudentRestaurantMen
   if (new Date(start).getUTCDay() !== 1 || !Array.isArray(object.days) || object.days.length > 14) invalid();
   const dates = new Set<string>();
   const days = object.days.map((value: unknown) => {
-    const day = exactObject(value, ["date", "breakfast", "lunch", "dinner"]);
+    const day = exactObject(value, ["date", "breakfast", "lunch", "dinner"], ["ingredients"]);
     const date = dateValue(day.date);
     const time = Date.parse(`${date}T00:00:00Z`);
     if (dates.has(date) || time < start || time >= start + 14 * 86_400_000) invalid();
     dates.add(date);
-    return { date, breakfast: mealValue(day.breakfast), lunch: mealValue(day.lunch), dinner: mealValue(day.dinner) };
+    const ingredients = Object.hasOwn(day, "ingredients") ? exactObject(day.ingredients, ["breakfast", "lunch", "dinner"]) : undefined;
+    return {
+      date, breakfast: mealValue(day.breakfast), lunch: mealValue(day.lunch), dinner: mealValue(day.dinner),
+      ...(ingredients ? { ingredients: { breakfast: mealValue(ingredients.breakfast), lunch: mealValue(ingredients.lunch), dinner: mealValue(ingredients.dinner) } } : {}),
+    };
   }).sort((a, b) => a.date.localeCompare(b.date));
   return { updatedAt: object.updatedAt, weekStart, days };
 }

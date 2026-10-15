@@ -21,6 +21,23 @@ describe("Manna House public schema", () => {
     expect(() => parseStudentRestaurantMenu({ ...menu(), [field]: "private" })).toThrow();
   });
 
+  it("preserves optional raw ingredient cells including duplicates and unavailable meals", () => {
+    const ingredients = { breakfast: null, lunch: ["콩,밀/계란", "콩,밀/계란"], dinner: [] };
+    const value = { ...menu(), days: [{ ...menu().days[0], ingredients }] };
+    expect(parseStudentRestaurantMenu(value).days[0].ingredients).toEqual(ingredients);
+    expect(parseStudentRestaurantMenu(menu()).days[0]).not.toHaveProperty("ingredients");
+  });
+
+  it.each([
+    null,
+    { breakfast: null, lunch: [], dinner: null, imageUrl: "private" },
+    { breakfast: null, lunch: ["https://private.invalid"], dinner: null },
+    { breakfast: null, lunch: [], dinner: "milk" },
+    { breakfast: null, lunch: [] },
+  ])("rejects malformed or private ingredients", (ingredients) => {
+    expect(() => parseStudentRestaurantMenu({ ...menu(), days: [{ ...menu().days[0], ingredients }] })).toThrow();
+  });
+
   it("accepts both consecutive weeks including the last Sunday without exposing extra metadata", () => {
     const value = menu();
     value.days = Array.from({ length: 14 }, (_, offset) => ({
