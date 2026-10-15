@@ -13,9 +13,9 @@ beforeAll(async () => {
   const pixels = Buffer.from(Array.from({ length: 80 }, (_, index) => [index % 10 * 25, Math.floor(index / 10) * 30, 0]).flat());
   image.bytes = await sharp(pixels, { raw: { width: 10, height: 8, channels: 3 } }).png().toBuffer();
 });
-const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: ["테스트 메뉴"], dinner: null }] };
+const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: [Array.from("테스트 메뉴")], dinner: null }] };
 const ingredientMeals = { breakfast: null, lunch: ["원문 재료"], dinner: null };
-const ingredientExtraction = { ...extraction, days: [{ ...extraction.days[0], ...ingredientMeals }] };
+const ingredientExtraction = { ...extraction, days: [{ ...extraction.days[0], ...ingredientMeals, lunch: ingredientMeals.lunch.map((name) => Array.from(name)) }] };
 const options = { apiKey: "mock-key", now: new Date("2026-10-15T00:00:00Z") };
 beforeEach(() => {
   vi.resetAllMocks();
@@ -54,23 +54,46 @@ describe("Manna House OpenAI extraction", () => {
     expect(firstPixels).toEqual([sourceGray[0], sourceGray[4], sourceGray[30], sourceGray[34]]);
   });
   it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
-    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"] }] };
-    const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: ["콩,밀/계란", "콩,밀/계란"] }] };
+    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: [Array.from("원문쨩/괄호(가)")] }] };
+    const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: [Array.from("콩,밀/계란"), Array.from("콩,밀/계란")] }] };
     create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(literal) })
       .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredients) });
     const result = await analyzeStudentRestaurantImage(image, options);
     expect(result.days[0].lunch).toEqual(["원문쨩/괄호(가)"]);
     expect(result.days[0].ingredients).toEqual({ ...ingredientMeals, lunch: ["콩,밀/계란", "콩,밀/계란"] });
   });
+  it.each([
+    { lunch: ["whole string"] },
+    { lunch: [["두글자"]] },
+    { lunch: [["가"]] },
+    { lunch: [[]] },
+    { lunch: [Array.from({ length: 161 }, () => "가")] },
+    { lunch: [["가", "\n"]] },
+    { lunch: [Array.from("https://private.invalid/menu")] },
+    { lunch: [[" "]] },
+  ])("rejects malformed, unsafe or oversized character cells", async ({ lunch }) => {
+    create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify({
+      ...extraction, days: [{ ...extraction.days[0], lunch }],
+    }) });
+    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+  });
+  it("preserves one Unicode code point without assuming one UTF-16 unit", async () => {
+    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({
+      ...extraction, days: [{ ...extraction.days[0], lunch: [["🍚"]] }],
+    }) });
+    expect((await analyzeStudentRestaurantImage(image, options)).days[0].lunch).toEqual(["🍚"]);
+  });
   it("starts both independent transcriptions before either response and waits for both", async () => {
     let menuResponse!: (value: unknown) => void;
     let ingredientsResponse!: (value: unknown) => void;
+    let requestsStarted = 0;
     let started!: () => void;
     const bothStarted = new Promise<void>((resolve) => { started = resolve; });
     create.mockImplementation((request) => new Promise((resolve) => {
       if (request.text.format.name === "student_restaurant_menu") menuResponse = resolve;
       else ingredientsResponse = resolve;
-      if (menuResponse && ingredientsResponse) started();
+      requestsStarted += 1;
+      if (requestsStarted === 2) started();
     }));
     const pending = analyzeStudentRestaurantImage(image, options);
     await bothStarted;
@@ -124,7 +147,7 @@ describe("Manna House OpenAI extraction", () => {
     const result = await analyzeStudentRestaurantImage(image, { ...options, now: new Date("2030-01-01T00:00:00Z") });
     expect(result.weekStart).toBe("2026-10-12");
     expect(result.days.map((day) => day.date)).toEqual(["2026-10-12", "2026-10-19"]);
-    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6.1-sol", reasoning: { effort: "xhigh" }, max_output_tokens: 30000 });
+    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6.1-sol", reasoning: { effort: "xhigh" }, max_output_tokens: 40000 });
     expect(construct).toHaveBeenCalledWith(expect.objectContaining({ timeout: 480_000, maxRetries: 1 }));
     expect(create.mock.calls[0][0].input[0].content[1].detail).toBe("original");
   });
