@@ -142,6 +142,8 @@ function buildContentSecurityPolicy(nonce: string) {
     "https://www.gstatic.com",
     "https://apis.google.com",
     "https://dapi.kakao.com",
+    "https://t1.kakaocdn.net",
+    !isProduction ? "http://t1.kakaocdn.net" : "",
     "https://t1.daumcdn.net",
     !isProduction ? "http://t1.daumcdn.net" : "",
   ].filter(Boolean);
@@ -166,6 +168,8 @@ function buildContentSecurityPolicy(nonce: string) {
       "https://*.daumcdn.net",
       "https://*.kakaocdn.net",
       "https://t1.daumcdn.net",
+      !isProduction ? "http://mts.kakaocdn.net" : "",
+      !isProduction ? "http://t1.kakaocdn.net" : "",
       !isProduction ? "http://*.daumcdn.net" : "",
     ].filter(Boolean).join(" "),
     [

@@ -10,6 +10,37 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+describe.each(["development", "production"] as const)("Kakao Maps CSP script permission in %s", (environment) => {
+  it.each(["/campus/map", "/en/campus/map", "/campus/bus-info", "/en/campus/bus-info"])(
+    "allows the SDK and its CDN with the request nonce for %s",
+    async (pathname) => {
+      vi.stubEnv("NODE_ENV", environment);
+      vi.resetModules();
+      const { proxy: environmentProxy } = await import("./proxy");
+      const origin = environment === "production" ? "https://campus.syu.kr" : "http://localhost:3000";
+      const response = environmentProxy(new NextRequest(`${origin}${pathname}`));
+      const csp = response.headers.get("Content-Security-Policy") ?? "";
+      const scriptSrc = csp.split("; ").find((part) => part.startsWith("script-src"))?.split(" ");
+      const imgSrc = csp.split("; ").find((part) => part.startsWith("img-src"))?.split(" ");
+      const nonce = response.headers.get("x-middleware-request-x-csp-nonce");
+
+      expect(scriptSrc).toContain("https://dapi.kakao.com");
+      expect(scriptSrc).toContain(new URL("https://t1.kakaocdn.net/mapjsapi/js/main/4.5.29/kakao.js").origin);
+      expect(scriptSrc).toContain(`'nonce-${nonce}'`);
+      expect(scriptSrc).not.toContain("'unsafe-inline'");
+      expect(scriptSrc?.includes("'unsafe-eval'")).toBe(environment === "development");
+      expect(scriptSrc).not.toContain("https://*.kakaocdn.net");
+      expect(scriptSrc?.includes("http://t1.kakaocdn.net")).toBe(environment === "development");
+      expect(imgSrc).toContain("https://*.kakaocdn.net");
+      expect(imgSrc?.includes("http://mts.kakaocdn.net")).toBe(environment === "development");
+      expect(imgSrc?.includes("http://t1.kakaocdn.net")).toBe(environment === "development");
+      expect(imgSrc).not.toContain("http://*.kakaocdn.net");
+      expect(csp.includes("upgrade-insecure-requests")).toBe(environment === "production");
+      expect(response.headers.get("x-middleware-request-content-security-policy")).toBe(csp);
+    },
+  );
+});
+
 describe("Sentry CSP connection permission", () => {
   it.each(["/campus/cafeteria", "/en/campus/cafeteria"])("allows only the configured public menu origin for %s", (pathname) => {
     vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "https://fixture.github.io/project/cafeteria/student-restaurant-1.json");
