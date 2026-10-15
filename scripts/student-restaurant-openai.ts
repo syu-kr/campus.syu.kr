@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import sharp from "sharp";
 import { parseStudentRestaurantMenu, type StudentRestaurantMenu } from "../lib/student-restaurant";
 
-export const STUDENT_RESTAURANT_MODEL = "gpt-6.1-sol";
+export const STUDENT_RESTAURANT_MODEL = "gpt-6-astra";
 
 const mealSchema = { type: ["array", "null"], items: { type: "string" }, maxItems: 40 };
 const ingredientsSchema = {
@@ -95,12 +95,12 @@ export async function analyzeStudentRestaurantImage(
   try {
     const model = options.model || STUDENT_RESTAURANT_MODEL;
     const client = options.client ?? new OpenAI({
-      apiKey: options.apiKey, baseURL: "https://api.openai.com/v1", timeout: 300_000, maxRetries: 1, logLevel: "off",
+      apiKey: options.apiKey, baseURL: "https://api.openai.com/v1", timeout: 480_000, maxRetries: 1, logLevel: "off",
     });
     const images = await imageInputs(image, model === STUDENT_RESTAURANT_MODEL ? "original" : "high");
     const response = await client.responses.create({
       model,
-      ...(model === STUDENT_RESTAURANT_MODEL ? { reasoning: { effort: "high" as const } } : {}),
+      ...(model === STUDENT_RESTAURANT_MODEL ? { reasoning: { effort: "xhigh" as const } } : {}),
       store: false,
       instructions: INSTRUCTIONS,
       input: [{ role: "user", content: [
@@ -108,7 +108,7 @@ export async function analyzeStudentRestaurantImage(
         ...images,
       ] }],
       text: { format: { type: "json_schema", name: "student_restaurant_menu", strict: true, schema: STUDENT_RESTAURANT_EXTRACTION_SCHEMA } },
-      max_output_tokens: 20000,
+      max_output_tokens: 30000,
     });
     if (response.status !== "completed" || response.output.some((item) =>
       item.type === "message" && item.content.some((part) => part.type === "refusal"))) throw new Error();

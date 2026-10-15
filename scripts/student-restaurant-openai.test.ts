@@ -64,7 +64,8 @@ describe("Manna House OpenAI extraction", () => {
     const result = await analyzeStudentRestaurantImage(image, { ...options, now: new Date("2030-01-01T00:00:00Z") });
     expect(result.weekStart).toBe("2026-10-12");
     expect(result.days.map((day) => day.date)).toEqual(["2026-10-12", "2026-10-19"]);
-    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6.1-sol", reasoning: { effort: "high" }, max_output_tokens: 20000 });
+    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6-astra", reasoning: { effort: "xhigh" }, max_output_tokens: 30000 });
+    expect(construct).toHaveBeenCalledWith(expect.objectContaining({ timeout: 480_000, maxRetries: 1 }));
     expect(create.mock.calls[0][0].input[0].content[1].detail).toBe("original");
   });
   it("resolves a year boundary using the printed weekday and image metadata", async () => {
