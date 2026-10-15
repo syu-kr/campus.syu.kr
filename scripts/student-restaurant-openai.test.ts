@@ -30,16 +30,19 @@ describe("Manna House OpenAI extraction", () => {
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
     const tiles = request.input[0].content.slice(2);
-    const firstPixels: number[][] = [];
+    const firstPixels: number[] = [];
     for (const tile of tiles) {
       expect(tile).toMatchObject({ type: "input_image", detail: "high" });
       const bytes = Buffer.from(tile.image_url.split(",")[1], "base64");
       const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
-      expect(info).toMatchObject({ width: 12, height: 10 });
-      expect(data.subarray(0, 3)).toEqual(data.subarray(3, 6));
-      firstPixels.push(Array.from(data.subarray(0, 3)));
+      expect(info).toMatchObject({ width: 12, height: 10, channels: 3 });
+      expect(data[0]).toBe(data[1]);
+      expect(data[0]).toBe(data[2]);
+      expect(data[0]).toBe(data[3]);
+      firstPixels.push(data[0]);
     }
-    expect(firstPixels).toEqual([[0, 0, 0], [100, 0, 0], [0, 90, 0], [100, 90, 0]]);
+    const sourceGray = await sharp(image.bytes).greyscale().raw().toBuffer();
+    expect(firstPixels).toEqual([sourceGray[0], sourceGray[4], sourceGray[30], sourceGray[34]]);
   });
   it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
     const reviewed = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"], ingredients: { breakfast: null, lunch: ["콩,밀/계란", "콩,밀/계란"], dinner: null } }] };
@@ -64,7 +67,7 @@ describe("Manna House OpenAI extraction", () => {
     const result = await analyzeStudentRestaurantImage(image, { ...options, now: new Date("2030-01-01T00:00:00Z") });
     expect(result.weekStart).toBe("2026-10-12");
     expect(result.days.map((day) => day.date)).toEqual(["2026-10-12", "2026-10-19"]);
-    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6-astra", reasoning: { effort: "xhigh" }, max_output_tokens: 30000 });
+    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6.1-sol", reasoning: { effort: "xhigh" }, max_output_tokens: 30000 });
     expect(construct).toHaveBeenCalledWith(expect.objectContaining({ timeout: 480_000, maxRetries: 1 }));
     expect(create.mock.calls[0][0].input[0].content[1].detail).toBe("original");
   });
