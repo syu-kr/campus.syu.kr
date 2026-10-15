@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { collectStudentRestaurant, downloadStudentRestaurantImage, parseStudentRestaurantApiUrl, studentRestaurantHash, studentRestaurantImageUrl } from "./student-restaurant";
+import { collectStudentRestaurant, downloadStudentRestaurantImage, parseStudentRestaurantApiUrl, parseStudentRestaurantReview, reviewedStudentRestaurantMenu, studentRestaurantHash, studentRestaurantImageUrl, type StudentRestaurantImage } from "./student-restaurant";
 
 const apiUrl = new URL("https://source.invalid/mobileapp/shop/165");
 const source = (uploadFileName = "/uploadimages/sikdan/fixture.png") => ({
@@ -81,6 +81,78 @@ describe("Manna House source security", () => {
   it("sanitizes network errors", async () => {
     const request = vi.fn().mockRejectedValue(new Error("https://source.invalid/private Authorization: secret"));
     await expect(downloadStudentRestaurantImage(apiUrl, request)).rejects.toThrow(/^STUDENT_RESTAURANT_DOWNLOAD_FAILED$/);
+  });
+});
+
+describe("Manna House source-bound review", () => {
+  const reviewEvent = {
+    inputs: { reviewed_menu_json: JSON.stringify(menu), reviewed_image_sha256: studentRestaurantHash(image) },
+  };
+  const header = "Sun, 11 Oct 2026 22:39:00 GMT";
+
+  it("accepts no review for ordinary manual runs and parses only the two explicit review inputs", () => {
+    for (const event of [{}, { inputs: {} }, { inputs: { reviewed_menu_json: " ", reviewed_image_sha256: " " } }]) {
+      expect(parseStudentRestaurantReview(event)).toBeUndefined();
+    }
+    expect(parseStudentRestaurantReview(reviewEvent)).toEqual({ menu, imageHash: studentRestaurantHash(image) });
+    expect(parseStudentRestaurantReview({ inputs: { ...reviewEvent.inputs, reviewed_image_sha256: studentRestaurantHash(image).toUpperCase() } }))
+      .toEqual({ menu, imageHash: studentRestaurantHash(image) });
+  });
+
+  it.each([
+    { inputs: { reviewed_menu_json: JSON.stringify(menu) } },
+    { inputs: { reviewed_image_sha256: studentRestaurantHash(image) } },
+    { inputs: { ...reviewEvent.inputs, reviewed_image_sha256: "not-a-sha256" } },
+    { inputs: { ...reviewEvent.inputs, reviewed_menu_json: "private invalid JSON" } },
+    { inputs: { ...reviewEvent.inputs, reviewed_menu_json: JSON.stringify({ ...menu, days: [{ date: "2026-10-12" }] }) } },
+    { inputs: { ...reviewEvent.inputs, reviewed_menu_json: JSON.stringify({ ...menu, weekStart: "2026-10-13" }) } },
+    { inputs: { ...reviewEvent.inputs, reviewed_menu_json: JSON.stringify({ ...menu, days: [{ ...menu.days[0], lunch: ["https://private.invalid"] }] }) } },
+    { inputs: { ...reviewEvent.inputs, reviewed_menu_json: 123 } },
+  ])("rejects partial, malformed or unsafe review input without echoing its contents", (event) => {
+    expect(() => parseStudentRestaurantReview(event)).toThrow(/^INVALID_STUDENT_RESTAURANT_REVIEW$/);
+  });
+
+  it("replaces an already cached OCR result once and skips AI on the next unchanged automatic run", async () => {
+    const options = { apiUrl, outputPath, statePath, analysisContext: "fixture-model" };
+    await collectStudentRestaurant({ ...options, analyze: async () => menu, request: requests(image, header) });
+    const reviewed = { ...menu, days: [{ ...menu.days[0], lunch: ["검수한/원문(쨩)"], ingredients: { breakfast: null, lunch: ["콩,밀", "콩,밀"], dinner: null } }] };
+    const review = parseStudentRestaurantReview({ inputs: { ...reviewEvent.inputs, reviewed_menu_json: JSON.stringify(reviewed) } })!;
+    const now = new Date("2026-10-16T00:00:00Z");
+    const analyze = vi.fn(async (downloaded: StudentRestaurantImage) => reviewedStudentRestaurantMenu(review, downloaded, now));
+    await expect(collectStudentRestaurant({ ...options, forceAnalysis: true, analyze, request: requests(image, header) })).resolves.toBe("updated");
+    expect(analyze).toHaveBeenCalledTimes(1);
+    const published = await readFile(outputPath, "utf8");
+    expect(JSON.parse(published)).toEqual({ ...reviewed, updatedAt: now.toISOString() });
+    expect(published).not.toMatch(/reviewed_|imageHash|lastModified|source\.invalid|base64/);
+    const state = await readFile(statePath, "utf8");
+    const automaticAnalyze = vi.fn().mockRejectedValue(new Error("AI must not run for the reviewed image"));
+    await expect(collectStudentRestaurant({ ...options, analyze: automaticAnalyze, request: requests(image, header) })).resolves.toBe("unchanged");
+    expect(automaticAnalyze).not.toHaveBeenCalled();
+    expect(await readFile(outputPath, "utf8")).toBe(published);
+    expect(await readFile(statePath, "utf8")).toBe(state);
+  });
+
+  it("preserves the previous public JSON and checkpoint on a review source, date or schema mismatch", async () => {
+    const options = { apiUrl, outputPath, statePath, analysisContext: "fixture-model" };
+    await collectStudentRestaurant({ ...options, analyze: async () => menu, request: requests(image, header) });
+    const published = await readFile(outputPath, "utf8");
+    const state = await readFile(statePath, "utf8");
+    const review = parseStudentRestaurantReview(reviewEvent)!;
+    const oldMenu = { ...menu, weekStart: "2020-10-12", days: [{ ...menu.days[0], date: "2020-10-12" }] };
+    const cases = [
+      { review, bytes: Buffer.concat([image, Buffer.from([2])]), header },
+      { review: { ...review, menu: oldMenu }, bytes: image, header },
+      { review, bytes: image, header: undefined },
+      { review: { ...review, menu: { ...menu, weekStart: "invalid" } }, bytes: image, header },
+    ];
+    for (const entry of cases) {
+      await expect(collectStudentRestaurant({
+        ...options, forceAnalysis: true, request: requests(entry.bytes, entry.header),
+        analyze: async (downloaded) => reviewedStudentRestaurantMenu(entry.review, downloaded),
+      })).rejects.toThrow();
+      expect(await readFile(outputPath, "utf8")).toBe(published);
+      expect(await readFile(statePath, "utf8")).toBe(state);
+    }
   });
 });
 
