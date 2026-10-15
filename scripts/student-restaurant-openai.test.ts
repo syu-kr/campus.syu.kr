@@ -11,17 +11,26 @@ vi.mock("openai", () => ({ default: class {
 const image = { bytes: Buffer.alloc(0), contentType: "image/png", lastModified: "2026-10-11T22:39:00Z" };
 const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: ["테스트 메뉴"], dinner: null }] };
 const options = { apiKey: "mock-key", now: new Date("2026-10-15T00:00:00Z") };
-beforeAll(async () => {
-  const pixels = Buffer.alloc(40 * 12 * 3);
-  for (let y = 0; y < 12; y++) {
-    for (let x = 0; x < 40; x++) {
-      const color = x >= 19 && x <= 20 || y >= 5 && y <= 6 ? [0, 0, 255]
-        : y < 5 ? x < 19 ? [255, 0, 0] : [0, 255, 0] : x < 19 ? [255, 255, 0] : [255, 0, 255];
-      pixels.set(color, (y * 40 + x) * 3);
+async function tableImage(tables = 1, widths = [12, 12, 12]) {
+  const tableWidth = widths.reduce((sum, width) => sum + width, 0);
+  const width = tables * tableWidth + (tables - 1) * 12 + 1;
+  const height = 24;
+  const pixels = Buffer.alloc(width * height * 3, 255);
+  for (let table = 0; table < tables; table++) {
+    const offset = table * (tableWidth + 12);
+    const boundaries = [offset];
+    for (const columnWidth of widths) boundaries.push(boundaries.at(-1)! + columnWidth);
+    for (let y = 0; y < height; y++) {
+      for (let x = offset; x <= offset + tableWidth; x++) {
+        const column = boundaries.findIndex((boundary) => boundary > x) - 1;
+        const color = boundaries.includes(x) ? [0, 0, 0] : column === 0 ? [255, 255, 0] : column % 2 === 1 ? [255, 0, 0] : [0, 255, 0];
+        pixels.set(color, (y * width + x) * 3);
+      }
     }
   }
-  image.bytes = await sharp(pixels, { raw: { width: 40, height: 12, channels: 3 } }).png().toBuffer();
-});
+  return sharp(pixels, { raw: { width, height, channels: 3 } }).png().toBuffer();
+}
+beforeAll(async () => { image.bytes = await tableImage(); });
 beforeEach(() => { vi.clearAllMocks(); create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify(extraction) }); });
 
 describe("Manna House OpenAI extraction", () => {
@@ -35,30 +44,26 @@ describe("Manna House OpenAI extraction", () => {
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
   });
-  it("sends the original plus four overlapping 3x PNG quadrants without source metadata", async () => {
+  it("detects menu/ingredient pairs and joins only full-height 3x menu columns with meal labels", async () => {
     await analyzeStudentRestaurantImage(image, options);
     const content = create.mock.calls[0][0].input[0].content;
     const images = content.filter((part: { type: string }) => part.type === "input_image");
-    expect(images).toHaveLength(5);
-    for (const [index, label] of ["상단 왼쪽", "상단 오른쪽", "하단 왼쪽", "하단 오른쪽"].entries()) {
-      expect(content[2 + index * 2].text).toContain(label);
-    }
+    expect(images).toHaveLength(2);
+    expect(content[2].text).toContain("1번째 표의 1번째 요일 전체 높이 확대본");
     expect(create.mock.calls[0][0].instructions).toContain("중복 생성하지 않는다");
     expect(create.mock.calls[0][0].instructions).toContain("판독 가능한 메뉴를 null로 처리하지 않는다");
-    for (const [index, part] of images.slice(1).entries()) {
+    for (const part of images.slice(1)) {
       expect(part.image_url).toMatch(/^data:image\/png;base64,/);
       const bytes = Buffer.from(part.image_url.split(",")[1], "base64");
-      expect(await sharp(bytes).metadata()).toMatchObject({ format: "png", width: 63, height: 21 });
+      expect(await sharp(bytes).metadata()).toMatchObject({ format: "png", width: 72, height: 72 });
       const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
-      const corners = [0, info.width - 1, (info.height - 1) * info.width, info.width * info.height - 1]
-        .map((pixel) => [...data.subarray(pixel * info.channels, pixel * info.channels + 3)]);
-      const blue = [0, 0, 255];
-      expect(corners).toEqual([
-        [[255, 0, 0], blue, blue, blue],
-        [blue, [0, 255, 0], blue, blue],
-        [blue, blue, [255, 255, 0], blue],
-        [blue, blue, blue, [255, 0, 255]],
-      ][index]);
+      for (const y of [3, 68]) {
+        const colors = [18, 54].map((x) => {
+          const pixel = (y * info.width + x) * info.channels;
+          return [...data.subarray(pixel, pixel + 3)];
+        });
+        expect(colors).toEqual([[255, 255, 0], [255, 0, 0]]);
+      }
     }
     expect(JSON.stringify(create.mock.calls[0][0])).not.toContain(image.lastModified);
   });
@@ -69,15 +74,29 @@ describe("Manna House OpenAI extraction", () => {
     }
     expect(create).not.toHaveBeenCalled();
   });
+  it("rejects undetected, unpaired or uneven table layouts before calling the API", async () => {
+    for (const bytes of [
+      await sharp({ create: { width: 40, height: 24, channels: 3, background: "white" } }).png().toBuffer(),
+      await tableImage(1, [12, 12, 12, 12]),
+      await tableImage(1, [12, 24, 12]),
+    ]) {
+      await expect(analyzeStudentRestaurantImage({ ...image, bytes }, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+    }
+    expect(create).not.toHaveBeenCalled();
+  });
+  it("rejects output that omits a detected weekday", async () => {
+    await expect(analyzeStudentRestaurantImage({ ...image, bytes: await tableImage(2) }, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+  });
   it("extracts both weeks and resolves the year from image modification metadata, independent of execution time", async () => {
     create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify({
       ...extraction, days: [{ ...extraction.days[0], day: 19 }, extraction.days[0]],
     }) });
-    const result = await analyzeStudentRestaurantImage(image, { ...options, now: new Date("2030-01-01T00:00:00Z") });
+    const result = await analyzeStudentRestaurantImage({ ...image, bytes: await tableImage(2) }, { ...options, now: new Date("2030-01-01T00:00:00Z") });
     expect(result.weekStart).toBe("2026-10-12");
     expect(result.days.map((day) => day.date)).toEqual(["2026-10-12", "2026-10-19"]);
     expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-5.4", reasoning: { effort: "high" }, max_output_tokens: 20000 });
     expect(create.mock.calls[0][0].input[0].content[1].detail).toBe("original");
+    expect(create.mock.calls[0][0].input[0].content.filter((part: { type: string }) => part.type === "input_image")).toHaveLength(3);
   });
   it("resolves a year boundary using the printed weekday and image metadata", async () => {
     create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify({
