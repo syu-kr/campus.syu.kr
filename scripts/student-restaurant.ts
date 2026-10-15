@@ -6,6 +6,13 @@ import { parseStudentRestaurantMenu, type StudentRestaurantMenu } from "../lib/s
 const MAX_API_BYTES = 1024 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const IMAGE_PATH = /^\/uploadimages\/sikdan\/[a-z0-9_-]+\.(png|jpe?g|webp)$/i;
+const ANALYSIS_VERSION = 2;
+
+export interface StudentRestaurantImage {
+  bytes: Buffer;
+  contentType: string;
+  lastModified: string | null;
+}
 
 export function parseStudentRestaurantApiUrl(value: string): URL {
   try {
@@ -48,11 +55,14 @@ async function boundedDownload(url: URL, maxBytes: number, allowedTypes: string[
       }
     } finally { await reader.cancel(); }
     if (size === 0) throw new Error();
-    return { bytes: Buffer.concat(chunks), contentType };
+    const modifiedHeader = response.headers.get("last-modified");
+    const modifiedTime = Date.parse(modifiedHeader ?? "");
+    const lastModified = Number.isFinite(modifiedTime) && new Date(modifiedTime).toUTCString() === modifiedHeader ? new Date(modifiedTime).toISOString() : null;
+    return { bytes: Buffer.concat(chunks), contentType, lastModified };
   } catch { throw new Error("STUDENT_RESTAURANT_DOWNLOAD_FAILED"); }
 }
 
-export async function downloadStudentRestaurantImage(apiUrl: URL, request: typeof fetch = fetch) {
+export async function downloadStudentRestaurantImage(apiUrl: URL, request: typeof fetch = fetch): Promise<StudentRestaurantImage> {
   const api = await boundedDownload(apiUrl, MAX_API_BYTES, ["application/json"], request);
   let value: unknown;
   try { value = JSON.parse(api.bytes.toString("utf8")); } catch { throw new Error("INVALID_STUDENT_RESTAURANT_SOURCE"); }
@@ -80,24 +90,26 @@ export async function collectStudentRestaurant(options: {
   apiUrl: URL;
   outputPath: string;
   statePath: string;
-  analyze: (image: { bytes: Buffer; contentType: string }) => Promise<StudentRestaurantMenu>;
+  analyze: (image: StudentRestaurantImage) => Promise<StudentRestaurantMenu>;
+  analysisContext?: string;
   request?: typeof fetch;
 }): Promise<"updated" | "unchanged"> {
   const image = await downloadStudentRestaurantImage(options.apiUrl, options.request);
   const imageHash = studentRestaurantHash(image.bytes);
+  const analysisContextHash = studentRestaurantHash(JSON.stringify([image.lastModified, options.analysisContext ?? ""]));
   const previous = await optionalRead(options.outputPath);
   const state = await optionalRead(options.statePath);
   if (previous && state) {
     try {
       parseStudentRestaurantMenu(JSON.parse(previous));
       const checkpoint = JSON.parse(state) as Record<string, unknown>;
-      if (checkpoint.imageHash === imageHash && checkpoint.outputHash === studentRestaurantHash(previous)) return "unchanged";
+      if (checkpoint.analysisVersion === ANALYSIS_VERSION && checkpoint.imageHash === imageHash && checkpoint.analysisContextHash === analysisContextHash && checkpoint.outputHash === studentRestaurantHash(previous)) return "unchanged";
     } catch { /* A missing or invalid checkpoint must never suppress analysis. */ }
   }
   const menu = parseStudentRestaurantMenu(await options.analyze(image));
   if (!menu.days.length || menu.days.every((day) => [day.breakfast, day.lunch, day.dinner].every((meal) => meal === null))) throw new Error("STUDENT_RESTAURANT_EMPTY_ANALYSIS");
   const output = `${JSON.stringify(menu, null, 2)}\n`;
-  const nextState = JSON.stringify({ imageHash, outputHash: studentRestaurantHash(output) });
+  const nextState = JSON.stringify({ analysisVersion: ANALYSIS_VERSION, imageHash, analysisContextHash, outputHash: studentRestaurantHash(output) });
   const outputTemp = `${options.outputPath}.tmp`;
   const stateTemp = `${options.statePath}.tmp`;
   await mkdir(path.dirname(options.outputPath), { recursive: true });

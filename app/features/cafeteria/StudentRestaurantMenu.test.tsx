@@ -121,6 +121,19 @@ describe("Manna House menu", () => {
     expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["2026-10-15", "월요일 조식", "다음 주 조식"],
+    ["2026-10-19", "다음 주 조식", "월요일 조식"],
+  ])("shows only the current week from the same two-week publication on %s", async (today, visibleMeal, hiddenMeal) => {
+    vi.stubGlobal("fetch", mockJson({
+      ...menu, days: [...menu.days, { date: "2026-10-19", breakfast: ["다음 주 조식"], lunch: [], dinner: null }],
+    }));
+    renderMenu(today);
+    expect(await screen.findByText(visibleMeal)).toBeInTheDocument();
+    expect(screen.queryByText(hiddenMeal)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
+  });
+
   it("includes Sunday in the current week and shows its menu as today", async () => {
     vi.stubGlobal("fetch", mockJson({
       ...menu,

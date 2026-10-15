@@ -21,9 +21,25 @@ describe("Manna House public schema", () => {
     expect(() => parseStudentRestaurantMenu({ ...menu(), [field]: "private" })).toThrow();
   });
 
-  it.each(["2026-02-30", "2026-10-1", "unknown", "2026-10-19"])("rejects impossible, malformed, or out of week date %s", (date) => {
+  it("accepts both consecutive weeks including the last Sunday without exposing extra metadata", () => {
+    const value = menu();
+    value.days = Array.from({ length: 14 }, (_, offset) => ({
+      ...value.days[0], date: new Date(Date.UTC(2026, 9, 12 + offset)).toISOString().slice(0, 10),
+    }));
+    const result = parseStudentRestaurantMenu(value);
+    expect(result.days).toHaveLength(14);
+    expect(result.days[7].date).toBe("2026-10-19");
+    expect(result.days[13].date).toBe("2026-10-25");
+    expect(Object.keys(result)).toEqual(["updatedAt", "weekStart", "days"]);
+  });
+
+  it.each(["2026-02-30", "2026-10-1", "unknown", "2026-10-11", "2026-10-26"])("rejects impossible, malformed, or out of two-week date %s", (date) => {
     const value = menu(); value.days[0].date = date;
     expect(() => parseStudentRestaurantMenu(value)).toThrow();
+  });
+
+  it("rejects more than fourteen days", () => {
+    expect(() => parseStudentRestaurantMenu({ ...menu(), days: Array.from({ length: 15 }, () => menu().days[0]) })).toThrow();
   });
 
   it("rejects duplicate dates, non-Monday week start, invalid timestamps and invalid meals", () => {
