@@ -1,91 +1,38 @@
-name: Weekly Crawl - 만나의집 (기숙사 식당)
+name: Manna OCR validation (temporary branch only)
 
 on:
-  schedule:
-    # Sunday 22:00 UTC = Monday 07:00 KST.
-    - cron: "0 22 * * 0"
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: crawl-data-pages
-  cancel-in-progress: false
-
 jobs:
-  collect-and-deploy:
-    if: github.repository == 'syu-kr/campus.syu.kr' && github.ref == 'refs/heads/main'
+  validate:
+    if: github.repository == 'syu-kr/campus.syu.kr' && github.ref == 'refs/heads/codex/fix-manna-image-detail'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    env:
-      PUBLIC_HOLIDAYS_ENABLED: ${{ vars.PUBLIC_HOLIDAYS_ENABLED }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: "22.22.2"
-
       - name: Use pinned npm
         run: npm install -g npm@10.9.4
-
       - name: Install Node dependencies
         run: npm ci --ignore-scripts --no-audit
-
-      - name: Restore successful internal image state
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .cache/student-restaurant/state.json
-          key: student-restaurant-state-v1-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: student-restaurant-state-v1-
-
       - name: Restore current public data
         run: npm run pull:crawl-data
-
-      - name: Collect and validate 만나의집 menu
+      - name: Validate extraction without publishing
         env:
           HAKSIK_API_URL: ${{ secrets.HAKSIK_API_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: npm run collect:student-restaurant
-
-      - name: Prepare public Pages artifact
-        id: prepare
-        run: npm run prepare:crawl-data-pages -- "$RUNNER_TEMP/crawl-data-pages-${GITHUB_RUN_ID}"
-
-      - name: Configure GitHub Pages
-        if: steps.prepare.outputs.changed == 'true'
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
-
-      - name: Upload public Pages artifact
-        if: steps.prepare.outputs.changed == 'true'
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+      - name: Save menu JSON for original-image comparison
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          path: ${{ runner.temp }}/crawl-data-pages-${{ github.run_id }}
+          name: manna-ocr-validation
+          path: public/cafeteria/student-restaurant-1.json
           retention-days: 1
-
-      - name: Deploy public Pages artifact
-        if: steps.prepare.outputs.changed == 'true'
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
-
-      # Save only after successful deployment, or when the verified public data was unchanged.
-      - name: Save successful internal image state
-        if: success() && (steps.deployment.outcome == 'success' || steps.prepare.outputs.changed == 'false')
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: .cache/student-restaurant/state.json
-          key: student-restaurant-state-v1-${{ github.run_id }}-${{ github.run_attempt }}

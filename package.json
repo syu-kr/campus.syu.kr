@@ -99,6 +99,7 @@
     "jsdom": "^30.0.1",
     "knip": "^6.29.0",
     "postcss": "8.5.28",
+    "sharp": "0.35.5",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
