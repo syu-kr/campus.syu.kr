@@ -16,12 +16,12 @@ Actions Secrets → 원본 API → 이미지 메모리 다운로드 → SHA-256 
 | --- | --- | --- |
 | `HAKSIK_API_URL` | Actions Secret | 사용자가 확인한 원본 API 전체 주소 |
 | `OPENAI_API_KEY` | Actions Secret | 이미지 분석용 OpenAI 프로젝트 키 |
-| `OPENAI_MODEL` | Actions Variable, 선택 | 기본값 `gpt-5.4`를 다른 이미지·Structured Outputs 지원 모델로 변경 |
+| `OPENAI_MODEL` | Actions Variable, 선택 | 기본값 `gpt-6.1-sol`을 다른 이미지·Structured Outputs 지원 모델로 변경 |
 | `NEXT_PUBLIC_CAFETERIA_JSON_URL` | Vercel 앱 공개 환경변수 | 정상 배포한 공개 Pages JSON 주소만 지정한 뒤 앱 재배포 |
 
 원본 주소는 Actions의 수집 단계에만 전달됩니다. Vercel 환경변수나 `NEXT_PUBLIC_` 변수에 등록하지 않습니다. `.env.example`의 빈 `HAKSIK_API_URL=`은 이름을 안내하기 위한 것이며, 실제 수집은 GitHub Actions에서만 실행합니다. 필요한 Secret이 비어 있으면 변수 이름만 포함한 오류로 중단합니다.
 
-기본 모델은 복잡한 두 주 식단표에서 요일·끼니·메뉴/재료 열을 구분하기 위해 `gpt-5.4`와 중간 추론을 사용합니다. [공식 모델 문서](https://developers.openai.com/api/docs/models/gpt-5.4)에서 이미지 입력·Responses API·Structured Outputs 지원을 확인할 수 있습니다. 기본 모델에는 작은 한글을 읽을 수 있도록 원본 해상도 입력(`detail: original`)을 사용하고, 다른 모델로 변경하면 호환되는 `high` 입력을 사용합니다. 초기 실제 검증에서 소형 모델의 열 혼합과 연도 추정 오류가 발견되어 모델과 판독 규칙을 강화했습니다. 모델 변경 후에는 수동 실행과 실제 식단 대조로 품질을 확인합니다.
+기본 모델은 복잡한 두 주 식단표에서 요일·끼니·메뉴/재료 열과 작은 한글을 구분하도록 `gpt-6.1-sol`과 높은 추론을 사용합니다. [공식 모델 문서](https://developers.openai.com/api/docs/models/gpt-6.1-sol)에서 이미지 입력·Responses API·Structured Outputs 지원을 확인할 수 있습니다. 기본 모델에는 원본 해상도 입력(`detail: original`)을 사용하고, 다른 모델로 변경하면 호환되는 `high` 입력을 사용합니다. 원본 한 장을 메모리의 Base64 Data URL로 전달하며 이미지 전처리나 별도 의존성은 추가하지 않습니다. 한 메뉴의 줄바꿈은 이어 읽고, 특식도 정상 메뉴로 취급하며 원문의 오타·비표준 표기를 임의 교정하지 않도록 지시합니다. 초기 실제 검증에서 열 혼합·연도 추정·특식 누락과 메뉴명 오독이 발견되어 모델과 판독 규칙을 강화했습니다. 모델 변경 후에는 수동 실행과 실제 식단 대조로 품질을 확인합니다.
 
 AI는 이미지의 월·일·요일과 인쇄된 연도만 추출합니다. 연도가 없으면 이미지 HTTP `Last-Modified`의 연도 전후에서 수정 시각과 45일 이내이고 요일이 일치하는 날짜가 유일할 때만 확정합니다. 실행 시각은 `updatedAt`에만 사용합니다. 이미지 연도와 수정 시각이 충돌하거나 연도 근거가 없으면 게시를 중단합니다. 수정 시각은 식단 게시 시점의 근거로 사용하므로 오래된 표를 다시 올린 경우에는 운영자 확인이 필요합니다.
 
@@ -35,7 +35,7 @@ AI는 이미지의 월·일·요일과 인쇄된 연도만 추출합니다. 연�
 
 워크플로는 예약 실행과 수동 실행만 허용하고 공식 저장소의 `main`에서만 동작합니다. PR 코드에 Secret을 전달하는 트리거가 없습니다. 저장소 쓰기 권한과 자동 커밋은 필요하지 않습니다. Pages 배포용 `pages: write`, `id-token: write`와 소스 조회용 `contents: read`만 사용합니다.
 
-기본 예약은 월요일 오전 07:00 KST입니다. `.github/workflows/student-restaurant.yml`의 `cron: "0 22 * * 0"`은 일요일 22:00 UTC를 뜻합니다. 변경할 때 KST에서 9시간을 빼고 요일도 함께 변환합니다. Actions 예약은 실행 대기나 지연이 발생할 수 있습니다.
+예약은 월요일 오전 07:00 KST 수집과 09:00 KST 재확인입니다. 첫 수집 뒤에 새 이미지가 올라올 수 있어 재확인하며, 변경이 없으면 AI 분석과 재배포를 생략합니다. `.github/workflows/student-restaurant.yml`의 `cron: "0 22 * * 0"`은 일요일 22:00 UTC, `cron: "0 0 * * 1"`은 월요일 00:00 UTC를 뜻합니다. 변경할 때 KST에서 9시간을 빼고 요일도 함께 변환합니다. Actions 예약은 실행 대기나 지연이 발생할 수 있습니다.
 
 ## 데이터·상태·기존 배포 보존
 

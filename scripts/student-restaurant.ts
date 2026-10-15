@@ -6,7 +6,7 @@ import { parseStudentRestaurantMenu, type StudentRestaurantMenu } from "../lib/s
 const MAX_API_BYTES = 1024 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const IMAGE_PATH = /^\/uploadimages\/sikdan\/[a-z0-9_-]+\.(png|jpe?g|webp)$/i;
-const ANALYSIS_VERSION = 2;
+const ANALYSIS_VERSION = 3;
 
 export interface StudentRestaurantImage {
   bytes: Buffer;

@@ -4,6 +4,8 @@ on:
   schedule:
     # Sunday 22:00 UTC = Monday 07:00 KST.
     - cron: "0 22 * * 0"
+    # Monday 00:00 UTC = Monday 09:00 KST; catch later uploads.
+    - cron: "0 0 * * 1"
   workflow_dispatch:
 
 permissions:

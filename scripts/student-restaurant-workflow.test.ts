@@ -10,6 +10,7 @@ describe("student restaurant workflow security", () => {
     expect(triggers).toContain("schedule:");
     expect(triggers).toContain("workflow_dispatch:");
     expect(triggers).toContain('cron: "0 22 * * 0"');
+    expect(triggers).toContain('cron: "0 0 * * 1"');
     expect(triggers).not.toMatch(/pull_request|push:|workflow_run/);
     expect(workflow).toContain("github.ref == 'refs/heads/main'");
     expect(workflow).not.toContain("contents: write");

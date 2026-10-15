@@ -19,6 +19,9 @@ describe("Manna House OpenAI extraction", () => {
     expect(construct).toHaveBeenCalledWith(expect.objectContaining({ logLevel: "off", baseURL: "https://api.openai.com/v1" }));
     const request = create.mock.calls[0][0];
     expect(request).toMatchObject({ model: "configured-model", store: false, text: { format: { type: "json_schema", strict: true } } });
+    expect(request.reasoning).toBeUndefined();
+    expect(request.input[0].content).toHaveLength(2);
+    expect(create).toHaveBeenCalledTimes(1);
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
   });
@@ -29,7 +32,7 @@ describe("Manna House OpenAI extraction", () => {
     const result = await analyzeStudentRestaurantImage(image, { ...options, now: new Date("2030-01-01T00:00:00Z") });
     expect(result.weekStart).toBe("2026-10-12");
     expect(result.days.map((day) => day.date)).toEqual(["2026-10-12", "2026-10-19"]);
-    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-5.4", reasoning: { effort: "medium" } });
+    expect(create.mock.calls[0][0]).toMatchObject({ model: "gpt-6.1-sol", reasoning: { effort: "high" }, max_output_tokens: 20000 });
     expect(create.mock.calls[0][0].input[0].content[1].detail).toBe("original");
   });
   it("resolves a year boundary using the printed weekday and image metadata", async () => {
