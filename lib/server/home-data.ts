@@ -8,10 +8,10 @@ import type {
   ShuttleSpecialPeriods,
   PublicHolidaySnapshot,
 } from "@/types";
-import { readDailyCrawlDataJson, readDailyCrawlDataSnapshot } from "./crawl-data";
+import { readDailyCrawlDataSnapshot } from "./crawl-data";
 import { unstable_rethrow } from "next/navigation";
 import { emptyPublicHolidays, parsePublicHolidaySnapshot } from "../public-holidays";
-import { toCafeteriaMenus, type CafeteriaMenuDay } from "../cafeteria";
+import { toCafeteriaMenus, type CafeteriaMenuPayload, type CafeteriaSnapshot } from "../cafeteria";
 
 export async function getHomePublicHolidays(): Promise<PublicHolidaySnapshot> {
   try {
@@ -37,15 +37,21 @@ async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
 }
 
 export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
-  const data = await readDailyCrawlDataJson<
-    Array<{ menus?: CafeteriaMenuDay[] }> | { menus?: CafeteriaMenuDay[] }
-  >("cafeteria-menu.json");
-  const cafeteriaData = Array.isArray(data) ? data[0] : data;
+  return (await getHomeCafeteriaSnapshot()).menus;
+}
+
+export async function getHomeCafeteriaSnapshot(): Promise<CafeteriaSnapshot> {
+  const snapshot = await readDailyCrawlDataSnapshot<CafeteriaMenuPayload>("cafeteria-menu.json");
+  const cafeteriaData = Array.isArray(snapshot.data) ? snapshot.data[0] : snapshot.data;
   const menuDays = Array.isArray(cafeteriaData?.menus)
     ? cafeteriaData.menus
     : [];
 
-  return toCafeteriaMenus(menuDays);
+  return {
+    menus: toCafeteriaMenus(menuDays),
+    checkedAt: snapshot.source === "bundled-fallback" ? null : snapshot.sourceHealth?.lastSuccessAt ?? null,
+    stale: snapshot.source === "bundled-fallback" || snapshot.sourceHealth?.status === "stale",
+  };
 }
 
 export function getHomeAcademicSchedules(): Promise<AcademicSchedule[]> {

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchCafeteriaMenu } from "../api";
-import { getHomeCafeteriaMenus } from "./home-data";
-import { readDailyCrawlDataJson } from "./crawl-data";
+import { fetchCafeteriaMenu, fetchCafeteriaSnapshot } from "../api";
+import { getHomeCafeteriaMenus, getHomeCafeteriaSnapshot } from "./home-data";
+import { readDailyCrawlDataSnapshot } from "./crawl-data";
 
-vi.mock("./crawl-data", () => ({ readDailyCrawlDataJson: vi.fn() }));
+vi.mock("./crawl-data", () => ({ readDailyCrawlDataSnapshot: vi.fn() }));
 afterEach(() => vi.unstubAllGlobals());
 
 const source = { menus: [
@@ -14,7 +14,7 @@ const source = { menus: [
 
 describe("shared cafeteria conversion", () => {
   it.each([source, [source]])("preserves both source shapes, meal corners, IDs, and the client date filter", async (data) => {
-    vi.mocked(readDailyCrawlDataJson).mockResolvedValue(data);
+    vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({ data, source: "github-pages", version: "v1" });
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(data)));
     const menus = await getHomeCafeteriaMenus();
     expect(await fetchCafeteriaMenu()).toEqual(menus);
@@ -27,9 +27,45 @@ describe("shared cafeteria conversion", () => {
   });
 
   it("keeps the server empty-list fallback and the client malformed-source error", async () => {
-    vi.mocked(readDailyCrawlDataJson).mockResolvedValue({});
+    vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({ data: {}, source: "github-pages", version: "v1" });
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
     await expect(getHomeCafeteriaMenus()).resolves.toEqual([]);
     await expect(fetchCafeteriaMenu()).rejects.toThrow("Invalid cafeteria data structure");
+  });
+
+  it.each([
+    { source: "github-pages" as const, status: "fresh" as const, checkedAt: "2026-10-05T01:00:00Z", stale: false },
+    { source: "github-pages" as const, status: "stale" as const, checkedAt: "2026-10-05T01:00:00Z", stale: true },
+    { source: "bundled-fallback" as const, status: "fresh" as const, checkedAt: null, stale: true },
+  ])("keeps the source confirmation attached to the exact $source/$status snapshot", async ({ source: dataSource, status, checkedAt, stale }) => {
+    vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({
+      data: { ...source, lastUpdated: "2026-10-07T04:00:00" },
+      source: dataSource,
+      version: "v1",
+      publishedAt: "2026-10-07T03:00:00Z",
+      sourceHealth: { status, lastAttemptAt: "2026-10-07T02:00:00Z", lastSuccessAt: "2026-10-05T01:00:00Z" },
+    });
+    expect(await getHomeCafeteriaSnapshot()).toMatchObject({ checkedAt, stale });
+  });
+
+  it("does not substitute legacy update/publication/request times for a missing source confirmation", async () => {
+    const data = { ...source, lastUpdated: "2026-10-07T04:00:00" };
+    vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({ data, source: "github-pages", version: "v1", publishedAt: "2026-10-07T03:00:00Z" });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(data)));
+    expect(await getHomeCafeteriaSnapshot()).toMatchObject({ checkedAt: null, stale: false });
+    expect(await fetchCafeteriaSnapshot()).toMatchObject({ checkedAt: null, stale: false });
+  });
+
+  it.each([source, [source]])("carries API confirmation and stale state without breaking either source shape", async (data) => {
+    const metadata = { checkedAt: "2026-10-05T01:00:00Z", stale: true };
+    const response = Array.isArray(data) ? data.map((entry) => ({ ...entry, ...metadata })) : { ...data, ...metadata };
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(response)));
+    expect(await fetchCafeteriaSnapshot()).toMatchObject(metadata);
+    expect(await fetchCafeteriaMenu()).toHaveLength(3);
+  });
+
+  it("treats an invalid confirmation as unknown", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ...source, checkedAt: "bad time" })));
+    expect((await fetchCafeteriaSnapshot()).checkedAt).toBeNull();
   });
 });
