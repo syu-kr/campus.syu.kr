@@ -84,7 +84,7 @@ describe("public holiday shuttle display", () => {
     holidaySnapshot = { ...holidaySnapshot!, lastSuccessAt: `${date}T00:00:00+09:00`,
       holidays: [{ date, names: [holiday] }] };
     const cleanup = mount();
-    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", holiday))).toHaveLength(2);
+    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", holiday))).toHaveLength(1);
     expect(screen.queryByText(text.pages.busInfo.liveLocation)).not.toBeInTheDocument();
     expect(screen.queryByText(text.publicHolidays.shuttleUnconfirmed)).not.toBeInTheDocument();
     expect(screen.queryByText(new RegExp(text.publicHolidays.updatedAt))).not.toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("public holiday shuttle display", () => {
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     resolveHolidays({ ...holidaySnapshot!, holidays: [{ date: "2026-10-05", names: ["대체공휴일(개천절)"] }] });
-    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "대체공휴일(개천절)"))).toHaveLength(2);
+    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "대체공휴일(개천절)"))).toHaveLength(1);
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     cleanup();
   });
@@ -156,7 +156,7 @@ describe("public holiday shuttle display", () => {
     holidayRequestFailure = true;
     await client.refetchQueries({ queryKey: ["public-holidays"] });
     await waitFor(() => expect(client.getQueryState(["public-holidays"])?.status).toBe("error"));
-    expect(await screen.findAllByText(isHoliday ? holidayMessage : text.publicHolidays.shuttleUnconfirmed)).toHaveLength(isHoliday ? 2 : 1);
+    expect(await screen.findAllByText(isHoliday ? holidayMessage : text.publicHolidays.shuttleUnconfirmed)).toHaveLength(1);
     expect(screen.queryByText(text.pages.busInfo.upcomingBuses)).not.toBeInTheDocument();
     if (isHoliday) expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     view.unmount();
@@ -181,7 +181,7 @@ describe("public holiday shuttle display", () => {
       sourceUrl: "https://www.syu.ac.kr/school-life/school-bus/", verifiedAt: "2026-10-08" }] };
     const cleanup = mount();
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
-    expect(screen.getAllByText(text.publicHolidays.shuttleClosed)).toHaveLength(2);
+    expect(screen.getAllByText(text.publicHolidays.shuttleClosed)).toHaveLength(1);
     expect(screen.queryByText(/^현재$/)).not.toBeInTheDocument();
     expect(screen.queryByText("곧 출발하는 버스")).not.toBeInTheDocument();
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
@@ -243,7 +243,7 @@ describe("public holiday shuttle display", () => {
     expect(screen.queryByText(text.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     expect(screen.queryByText("화랑대역(5번 출구) → 학교")).not.toBeInTheDocument();
     expect(screen.queryByText(text.pages.busInfo.scheduleNotice)).not.toBeInTheDocument();
-    expect(within(document.getElementById("shuttle-schedules")!).getByRole("link", { name: text.pages.busInfo.verifiedSource }))
+    expect(within(screen.getByRole("list", { name: text.answerSummary.sourceLabel })).getByRole("link", { name: text.pages.busInfo.verifiedSource }))
       .toHaveAttribute("href", "https://www.syu.ac.kr/school-life/school-bus/");
     fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
     expect(screen.queryByText(/최종 업데이트: 2026-04-29/)).not.toBeInTheDocument();
@@ -337,7 +337,7 @@ describe("shuttle page festival announcement", () => {
     expect(within(hwarangdae.parentElement!).queryByText("22:00")).not.toBeInTheDocument();
     expect(within(hwarangdae.parentElement!).getAllByText(/만차 시 바로 출발/)).toHaveLength(2);
     expect(within(byeollae.parentElement!).getAllByText(/22:30 예정 출발 · 1대/)).toHaveLength(2);
-    expect(within(byeollae.parentElement!).getByText(text.pages.busInfo.festivalShuttle.source)).toBeInTheDocument();
+    expect(within(byeollae.parentElement!).queryByText(text.pages.busInfo.festivalShuttle.source)).not.toBeInTheDocument();
 
     for (const route of [/화랑대역\(5번 출구\) → 학교.*펼치기/, /학교 ↔ 별내역.*펼치기/]) {
       const button = screen.getByRole("button", { name: route });

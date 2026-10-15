@@ -159,7 +159,7 @@ function isRouteCode(file: string, route: string) {
   if ((dataRoute || route.startsWith("/announcements/")) && /^(lib\/(server\/(crawl-data|home-data|read-response-bytes)|crawl-data-contract)|app\/api\/crawl-data\/)/.test(file)) return true;
   if ((announcementList || route === "/") && /^app\/api\/announcements\//.test(file)) return true;
   if (route === "/academic/competitions" && /^lib\/server\/announcement-ai\./.test(file)) return true;
-  if (["/", "/campus/bus-info", "/campus/cafeteria"].includes(route) && /^lib\/(campus-aeo|cafeteria|shuttle)/.test(file)) return true;
+  if (["/", "/campus/bus-info", "/campus/cafeteria"].includes(route) && /^lib\/(cafeteria|shuttle)/.test(file)) return true;
   if (["/", "/academic/schedule", "/academic/graduation", "/campus/bus-info", "/campus/cafeteria", "/campus/library", "/campus/phone"].includes(route) && /^lib\/(home|public-holidays)/.test(file)) return true;
   if (["/academic/schedule", "/academic/graduation", "/campus/phone"].includes(route) && /^lib\/academic-aeo/.test(file)) return true;
   if ((route === "/" || route.startsWith("/service/notices")) && /^lib\/serviceNotices/.test(file)) return true;

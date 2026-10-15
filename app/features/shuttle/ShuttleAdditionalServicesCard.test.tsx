@@ -6,6 +6,7 @@ import { ShuttleAdditionalServicesCard } from "./ShuttleAdditionalServicesCard";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import periods from "@/public/data/shuttle-special-periods.json";
 import type { ShuttleSpecialPeriods } from "@/types";
+import { getDictionary } from "@/lib/i18n";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 
 const specialPeriods = periods as ShuttleSpecialPeriods;
@@ -118,5 +119,20 @@ describe("festival shuttle display", () => {
     expect(sourceLink.parentElement?.closest("a")).toBeNull();
     expect(screen.getByRole("link", { name: "천보축전 셔틀 운행 안내" }))
       .toHaveAttribute("href", "/campus/bus-info");
+  });
+
+  it.each(["ko", "en"] as const)("can hide only source attribution while retaining the notice and countdown in %s", (locale) => {
+    const text = getDictionary(locale).pages.busInfo.festivalShuttle;
+    render(<LocaleProvider locale={locale}>
+      <ShuttleAdditionalServicesCard period={{ ...festival, sourceUrl: "https://example.com/notice" }}
+        now={new Date("2026-10-06T22:15:00+09:00")} showSource={false} />
+    </LocaleProvider>);
+
+    expect(screen.getByText(text.noticeTitle)).toBeInTheDocument();
+    expect(screen.getByText(text.daytimeNotice)).toBeInTheDocument();
+    expect(screen.getByText(text.countdown.replace("{minutes}", "15"))).toBeInTheDocument();
+    expect(screen.queryByText(text.noticeSource)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.source)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: text.sourceLink })).not.toBeInTheDocument();
   });
 });

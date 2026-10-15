@@ -1,7 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
-import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
+import { SourceAttribution } from "@/app/components/SourceAttribution";
 
 import { Card } from "@/app/components/Card";
 import { Badge } from "@/app/components/Badge";
@@ -17,7 +17,6 @@ import {
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
 import type { AnswerSource, PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
-import { createShuttleAnswerSummary } from "@/lib/campus-aeo";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 import {
   useState,
@@ -36,7 +35,6 @@ import {
   formatShuttleAdditionalCountdown,
   formatShuttleAdditionalService,
   getNextShuttleDepartures,
-  getCurrentShuttleSummary,
   getShuttleAdditionalServiceBuses,
   getShuttleScheduleType,
   getShuttleDayStatus,
@@ -66,7 +64,6 @@ export type ShuttleInitialData = {
   specialPeriods: ShuttleSpecialPeriods;
   holidays: PublicHolidaySnapshot;
   nowISO: string;
-  nonce?: string;
 };
 
 export default function ShuttleSection({ initialData }: { initialData?: ShuttleInitialData }) {
@@ -237,36 +234,19 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
-  const answerSummary = createShuttleAnswerSummary({
-    locale,
-    now,
-    summary: getCurrentShuttleSummary({
-      buses: buses ?? [], specialPeriods, holidays: effectiveHolidays, now, limit: 3,
-    }),
-  });
-  if (busesError || specialPeriodsError) {
-    answerSummary.answer = dictionary.home.dashboard.loadFailedMessage;
-    answerSummary.items = undefined;
-  }
-  const answerSources: AnswerSource[] = dayStatus.operationEvidence.length > 0
-    ? dayStatus.operationEvidence.map((record) => ({
-      name: text.verifiedSource, url: record.sourceUrl, checkedAt: record.verifiedAt,
+  const sources: AnswerSource[] = dayStatus.operationEvidence.length > 0
+    ? Array.from(new Set(dayStatus.operationEvidence.map((record) => record.sourceUrl))).map((url) => ({
+      name: text.verifiedSource, url,
     }))
     : [{
       name: text.verifiedSource,
       url: "https://www.syu.ac.kr/school-life/school-bus/",
-      note: [
-        text.scheduleNotice,
-        ...activeSpecialPeriods.filter((period) => !period.sourceUrl)
-          .map((period) => `${period.name} · ${dictionary.answerSummary.unknownCheckedAt}`),
-      ].join(" "),
     }, ...activeSpecialPeriods.flatMap((period) => period.sourceUrl
       ? [{ name: period.name, url: period.sourceUrl }]
       : [])];
-  answerSources.push({
+  sources.push({
     name: dictionary.publicHolidays.source,
     url: PUBLIC_HOLIDAY_SOURCE_URL,
-    checkedAt: effectiveHolidays?.lastSuccessAt,
     note: dayStatus.holiday.isStale
       ? dictionary.publicHolidays.stale
       : dayStatus.holiday.status === "unknown" ? dictionary.publicHolidays.unavailable : undefined,
@@ -327,7 +307,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   const selectedButtonIsCurrent = useSpecialSchedule
     ? specialScheduleIsCurrent
     : Boolean(selectedRegularButton?.isActive);
-  const canShowUpcomingDepartures = canPredictDepartures && (
+  const canShowUpcomingDepartures = !busesError && !specialPeriodsError && canPredictDepartures && (
     selectedButtonIsCurrent || (hasDaytimeIntervals && selectedType === defaultType)
   );
   const selectedScheduleLabel = useSpecialSchedule
@@ -632,15 +612,6 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         </p>
       </div>
 
-      <AnswerSummarySection
-        summary={answerSummary}
-        sources={answerSources}
-        schemaId="shuttle-answer-schema"
-        path="/campus/bus-info"
-        basisAt={now.toISOString()}
-        nonce={initialData?.nonce}
-      />
-
       {!holidaysLoading && (!canPredictDepartures || isWeekendWithoutException) &&
         (!hasDaytimeIntervals || dayStatus.operationStatus === "closed") && (
         <Card className="mb-6 border border-amber-200 bg-amber-50/70" hover={false} role="status">
@@ -656,6 +627,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
               period={period}
               now={now}
               showCountdown={false}
+              showSource={false}
             />
           ))}
         </div>
@@ -790,7 +762,6 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                 </p>
                 <LiveDataStatusBadge
                   locale={locale}
-                  sourceLabel={dictionary.liveData.sources.shuttle}
                   timestamp={lastLocationUpdatedAt}
                   stale={isLocationStale}
                   sourceStatus={locationSourceStatus}
@@ -960,9 +931,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         <p className="text-sm font-semibold text-neutral-900">
           {canPredictDepartures && !hasDaytimeIntervals ? text.scheduleBase : text.selectedSchedule}: {selectedScheduleLabel}
         </p>
-        {isException && useSpecialSchedule ? (
-          <VerifiedShuttleSources records={dayStatus.operationEvidence} />
-        ) : (
+        {!(isException && useSpecialSchedule) && (
           <p className="mt-1 text-xs leading-5 text-neutral-600">{text.scheduleNotice}</p>
         )}
         {hasDaytimeIntervals && (
@@ -1178,13 +1147,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                       </div>
                     )}
 
-                    {bus.additionalService ? (
-                      <p className="mt-3 text-xs text-neutral-500">{text.festivalShuttle.source}</p>
-                    ) : isException && useSpecialSchedule ? (
-                      <VerifiedShuttleSources records={dayStatus.serviceExceptions.filter(
-                        (record) => record.routeId === bus.id,
-                      )} />
-                    ) : (
+                    {!bus.additionalService && !(isException && useSpecialSchedule) && (
                       <p className="text-xs text-neutral-500 mt-3">
                         {text.lastUpdated}: {bus.lastUpdated}
                       </p>
@@ -1195,25 +1158,9 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
             );
           })}
       </div>
+      <SourceAttribution sources={sources} />
     </Container>
   );
-}
-
-function VerifiedShuttleSources({ records }: {
-  records: { sourceUrl: string; verifiedAt: string }[];
-}) {
-  const text = useDictionary().pages.busInfo;
-  const sources = Array.from(new Map(records.map((record) => [
-    `${record.sourceUrl} ${record.verifiedAt}`, record,
-  ])).values());
-  return sources.map((record) => (
-    <p key={`${record.sourceUrl} ${record.verifiedAt}`} className="mt-2 text-xs leading-5 text-neutral-600">
-      <a href={record.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-        {text.verifiedSource}
-      </a>
-      {" · "}{text.verifiedAt}: <time dateTime={record.verifiedAt}>{record.verifiedAt}</time>
-    </p>
-  ));
 }
 
 function ShuttleLocationState({

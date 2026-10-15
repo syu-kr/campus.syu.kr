@@ -40,8 +40,9 @@ it("updates a different department from one number to three and back to one", ()
   expect(screen.queryByText(numbers[0])).not.toBeInTheDocument();
 });
 
-it("keeps original announcement links and exposes separate localized summary detail links", () => {
+it("keeps the original notice link and localized full AI summary without a duplicate detail link", () => {
   const title = "검색 테스트 공지";
+  const labels = getDictionary("en").labels.aiSummaryDetails;
   const { container } = render(
     <LocaleProvider locale="en">
       <SearchResultCard item={{
@@ -54,14 +55,28 @@ it("keeps original announcement links and exposes separate localized summary det
         views: 0,
         isImportant: false,
         url: "https://www.syu.ac.kr/notice/123",
+        aiSummary: {
+          summary: "검색 테스트 요약",
+          target: "전체 재학생",
+          deadline: "2026-10-31",
+          requiredAction: "신청서 제출",
+          keywords: ["신청"],
+          importance: "normal",
+          confidence: "high",
+          generatedAt: "2026-10-14T00:00:00Z",
+          sourceHash: "test",
+        },
       }} />
     </LocaleProvider>,
   );
   expect(screen.getByRole("link", { name: title })).toHaveAttribute("target", "_blank");
-  const detail = screen.getByRole("link", { name: `${title} Summary details` });
-  expect(detail).toHaveAttribute("href", "/en/announcements/campus/search%2F123");
-  expect(detail).toHaveClass("pointer-events-auto");
+  expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(screen.queryByText("Summary details")).not.toBeInTheDocument();
+  const summary = screen.getByRole("button", { name: labels.open });
+  expect(summary).toHaveClass("pointer-events-auto");
   expect(container.querySelector("a a")).toBeNull();
-  detail.focus();
-  expect(detail).toHaveFocus();
+  summary.focus();
+  expect(summary).toHaveFocus();
+  fireEvent.click(summary);
+  expect(screen.getByRole("dialog", { name: labels.title })).toHaveTextContent("신청서 제출");
 });

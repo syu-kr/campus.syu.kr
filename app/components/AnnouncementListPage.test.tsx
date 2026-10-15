@@ -46,10 +46,14 @@ function page() {
   );
 }
 
-it("renders initial notices and detail links into server HTML without a browser request", () => {
+it("renders initial notices and safe original links without a duplicate detail link or browser request", () => {
   const html = renderToStaticMarkup(page());
   expect(html).toContain("서버 초기 공지");
-  expect(html).toContain('href="/announcements/academic/initial"');
+  expect(html).toContain('href="https://www.syu.ac.kr/notice/initial"');
+  expect(html).toContain('target="_blank"');
+  expect(html).toContain('rel="noopener noreferrer"');
+  expect(html).not.toContain('href="/announcements/academic/initial"');
+  expect(html).not.toContain("요약 상세");
   expect(fetchAnnouncementPage).not.toHaveBeenCalled();
 });
 

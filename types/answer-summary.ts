@@ -16,6 +16,5 @@ export type AnswerSummary = {
 export type AnswerSource = {
   name: string;
   url: string;
-  checkedAt?: string | null;
   note?: string;
 };

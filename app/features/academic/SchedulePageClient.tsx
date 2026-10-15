@@ -5,11 +5,10 @@ import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
-import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
+import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules, fetchPublicHolidays } from "@/lib/api";
 import { emptyPublicHolidays, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
-import { createAcademicScheduleAnswerSummary } from "@/lib/academic-aeo";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
@@ -27,7 +26,6 @@ type SchedulePageClientProps = {
   initialNowIso: string;
   initialSchedules: AcademicSchedule[];
   initialPublicHolidays?: PublicHolidaySnapshot;
-  nonce?: string;
 };
 
 export default function SchedulePageClient({
@@ -35,7 +33,6 @@ export default function SchedulePageClient({
   initialNowIso,
   initialSchedules,
   initialPublicHolidays,
-  nonce,
 }: SchedulePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
@@ -74,27 +71,17 @@ export default function SchedulePageClient({
     [academicSchedules, publicHolidays],
   );
   const todayInfo = getTodayInfo(now);
-  const currentAnswerSummary = createAcademicScheduleAnswerSummary({
-    locale, now, schedules: academicSchedules ?? [], publicHolidays, todayInfo,
-  });
-  const answerSummary = isError ? {
-    ...currentAnswerSummary,
-    answer: dictionary.home.dashboard.loadFailedMessage,
-    items: undefined,
-  } : currentAnswerSummary;
   const holidayInfo = getPublicHoliday(todayInfo.dateStringDash, publicHolidays, now);
   const holidayCovered = publicHolidays.years.includes(Number(todayInfo.dateStringDash.slice(0, 4)));
   const sources: AnswerSource[] = [
     {
       name: text.title,
       url: "https://www.syu.ac.kr/academic/major-schedule/",
-      checkedAt: null,
       note: isError ? dictionary.home.dashboard.loadFailedMessage : undefined,
     },
     {
       name: holidayText.source,
       url: publicHolidays.sourceUrl,
-      checkedAt: publicHolidays.lastSuccessAt,
       note: !holidayCovered ? holidayText.unavailable : holidayInfo.isStale ? holidayText.stale : undefined,
     },
   ];
@@ -118,12 +105,6 @@ export default function SchedulePageClient({
     publicHolidays?.lastSuccessAt &&
     publicHolidays.years.includes(currentMonth.getFullYear()),
   );
-  const selectedHolidayInfo = getPublicHoliday(
-    selectedDate ?? "",
-    publicHolidays,
-    now,
-  );
-
   const groupedByMonth = useMemo(() => {
     if (!schedules) return {};
 
@@ -322,15 +303,6 @@ export default function SchedulePageClient({
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <AnswerSummarySection
-        summary={answerSummary}
-        sources={sources}
-        schemaId="academic-schedule-answer-schema"
-        path="/academic/schedule"
-        basisAt={now.toISOString()}
-        nonce={nonce}
-      />
-
       {isError && (
         <StateCard
           type="error"
@@ -448,21 +420,6 @@ export default function SchedulePageClient({
                       </div>
                     ))}
                   </div>
-                )}
-                {selectedHolidayInfo.status === "holiday" && publicHolidays && (
-                  <p className="mt-4 text-xs leading-relaxed text-neutral-600">
-                    <a href={publicHolidays.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                      {holidayText.source}
-                    </a>
-                    {selectedHolidayInfo.lastSuccessAt && (
-                      <> · {holidayText.updatedAt}: <time dateTime={selectedHolidayInfo.lastSuccessAt}>
-                        {new Date(selectedHolidayInfo.lastSuccessAt).toLocaleString(
-                          locale === "ko" ? "ko-KR" : "en-US",
-                          { timeZone: "Asia/Seoul", dateStyle: "medium", timeStyle: "short" },
-                        )}
-                      </time></>
-                    )}
-                  </p>
                 )}
               </Card>
               <div className="border-b border-neutral-300"></div>
@@ -616,6 +573,7 @@ export default function SchedulePageClient({
           </div>}
         </div>
       )}
+      <SourceAttribution sources={sources} />
     </Container>
   );
 }
