@@ -110,6 +110,17 @@ describe("IndexNow production readiness", () => {
       await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl: productionFetch(overrides), sleep: vi.fn(), now: () => now })).rejects.toThrow("expected change");
     }
   });
+  it("rejects a streaming noindex response for an existing page even with its canonical", async () => {
+    const page = `<link rel="canonical" href="${url}" /><meta name="robots" content="noindex" />`;
+    await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", {
+      fetchImpl: productionFetch({ page }), sleep: vi.fn(), now: () => now,
+    })).rejects.toThrow("expected change");
+  });
+  it("does not mistake an outage with noindex for a published deletion", async () => {
+    await expect(verifyIndexNowProduction(sourceSha, manifest, [url], {}, "12345678", {
+      fetchImpl: productionFetch({ pageStatus: 503, page: '<meta name="robots" content="noindex" />' }), sleep: vi.fn(), now: () => now,
+    })).rejects.toThrow("expected change");
+  });
   it("rejects a key mismatch and stale production source before any submission", async () => {
     await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl: productionFetch({ key: "wrong" }), sleep: vi.fn(), now: () => now })).rejects.toThrow("key file");
     await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl: productionFetch({ source: "wrong" }), sleep: vi.fn(), now: () => now })).rejects.toThrow("source SHA");

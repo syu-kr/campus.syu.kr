@@ -4,7 +4,7 @@ import { getMatchingAnnouncementAiSummary } from "../lib/server/announcement-ai"
 import { getCompetitionMatch, toCompetitionCandidate } from "../lib/server/competitions";
 import type { Announcement, AnnouncementAiSummary, CompetitionSourceCategory, ShuttleSpecialPeriods } from "../types";
 
-export type SnapshotFile = { hash: string; data?: unknown };
+export type SnapshotFile = { hash: string; data?: unknown; stale?: boolean };
 export type IndexNowSnapshot = Record<string, string>;
 const ORIGIN = "https://campus.syu.kr";
 const SOURCES = {
@@ -88,9 +88,12 @@ export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): Inde
       return getCompetitionMatch(withAi).length ? [visibleAnnouncement(withAi)] : [];
     });
   });
-  contentByRoute["/campus/cafeteria"] = data("cafeteria-menu.json");
-  contentByRoute["/campus/bus-info"] = [data("shuttle-bus-schedule.json"), data("shuttle-special-periods.json"), data("public-holidays.json")];
-  contentByRoute["/academic/schedule"] = [data("schedules-major.json"), data("public-holidays.json")];
+  const holidays = { data: data("public-holidays.json"), stale: files["public/data/public-holidays.json"]?.stale === true };
+  contentByRoute["/campus/cafeteria"] = {
+    data: data("cafeteria-menu.json"), stale: files["public/data/cafeteria-menu.json"]?.stale === true,
+  };
+  contentByRoute["/campus/bus-info"] = [data("shuttle-bus-schedule.json"), data("shuttle-special-periods.json"), holidays];
+  contentByRoute["/academic/schedule"] = [data("schedules-major.json"), holidays];
   contentByRoute["/campus/phone"] = data("phone-numbers.json");
   contentByRoute["/campus/campus-tips"] = data("campus-tips.json");
   contentByRoute["/campus/library"] = (data("shuttle-special-periods.json") as ShuttleSpecialPeriods | null)?.semesterPeriods ?? null;
@@ -134,7 +137,7 @@ function visibleAnnouncement<T extends Announcement>(item: T) {
 
 function isRouteCode(file: string, route: string) {
   // shortcut: Dependencies are explicit; extend this map when adding a page or source.
-  if (/^(next\.config\.|app\/(layout\.|globals\.|providers\.|components\/|fonts\/)|lib\/(i18n|utils|korea-time|structured-data|public-routes|push-notifications|firebase)(\.|\/))/.test(file)) return true;
+  if (file === "proxy.ts" || /^(next\.config\.|app\/(layout\.|globals\.|providers\.|components\/|fonts\/)|lib\/(i18n|utils|korea-time|structured-data|public-routes|push-notifications|firebase)(\.|\/))/.test(file)) return true;
   if (ROUTE_CODE[route]?.some((prefix) => file.startsWith(prefix))) return true;
   const parts = route === "/" ? [] : route.slice(1).split("/");
   const directory = `app/${parts.join("/")}`;

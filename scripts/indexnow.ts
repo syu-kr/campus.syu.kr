@@ -101,9 +101,10 @@ export async function verifyIndexNowProduction(
     const response = await request(url);
     const html = new TextDecoder().decode(await readResponseBytes(response, 12 * 1024 * 1024, "IndexNow page probe"));
     const removed = !next[url];
-    const gone = [301, 302, 307, 308, 404, 410].includes(response.status) || /<meta[^>]+name="robots"[^>]+content="[^"]*noindex/.test(html);
+    const noindex = /<meta[^>]+name="robots"[^>]+content="[^"]*noindex/.test(html);
+    const gone = [301, 302, 307, 308, 404, 410].includes(response.status) || (response.status === 200 && noindex);
     const canonical = html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/)?.[1];
-    if (removed ? !gone : response.status !== 200 || canonical !== url) throw new Error(`Production page does not reflect the expected change: ${url}`);
+    if (removed ? !gone : response.status !== 200 || canonical !== url || noindex) throw new Error(`Production page does not reflect the expected change: ${url}`);
   }
   await assertIndexNowTarget(sourceSha, manifest.version, fetchImpl);
   return [...probes.values()];
@@ -132,7 +133,10 @@ async function collectFiles(fetchImpl: typeof fetch, send: boolean) {
     if (bytes.byteLength !== descriptor.size || createHash("sha256").update(bytes).digest("hex") !== descriptor.sha256) throw new Error(`Pages data hash mismatch: ${file}`);
     const data = JSON.parse(new TextDecoder().decode(bytes));
     validateDailyCrawlData(file as keyof typeof CRAWL_DATA_MAX_BYTES, data);
-    files[`public/data/${file}`] = { hash: descriptor.sha256, data };
+    files[`public/data/${file}`] = {
+      hash: descriptor.sha256, data,
+      stale: manifest.sourceHealth?.[file as keyof typeof manifest.files]?.status === "stale",
+    };
   }
   return { sourceSha: source.trim(), manifest, observedAt, fingerprints: buildIndexNowSnapshot(files) };
 }

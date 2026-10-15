@@ -55,6 +55,18 @@ describe("IndexNow content snapshots", () => {
     ]);
   });
 
+  it.each([
+    ["cafeteria-menu.json", ["/", "/campus/cafeteria"]],
+    ["public-holidays.json", ["/", "/academic/schedule", "/campus/bus-info"]],
+  ] as const)("tracks source freshness changes only where %s changes the rendered answer", (file, routes) => {
+    const before = files(), after = files();
+    before[`public/data/${file}`].stale = false;
+    after[`public/data/${file}`].stale = true;
+    const expected = routes.flatMap((route) => [`${origin}${route}`, `${origin}${route === "/" ? "/en" : `/en${route}`}`]).sort();
+    expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual(expected);
+    expect(changedIndexNowUrls(buildIndexNowSnapshot(after), buildIndexNowSnapshot(before))).toEqual(expected);
+  });
+
   it("tracks matching AI content but ignores regenerated metadata and rejects stale AI source hashes", () => {
     const before = files(), after = files();
     const sourceHash = createHash("sha256").update([notice.category, notice.id, notice.title, notice.date, notice.author, notice.content, notice.url].join("\n")).digest("hex").slice(0, 16);
@@ -84,6 +96,13 @@ describe("IndexNow content snapshots", () => {
     expect(changed).toEqual([`${origin}/academic/schedule`, `${origin}/en/academic/schedule`]);
     after["app/components/AnswerSummarySection.tsx"] = { hash: "new" };
     expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toContain(`${origin}/campus/cafeteria`);
+  });
+
+  it("tracks proxy changes that determine language and canonical URLs for every public page", () => {
+    const before = files(), after = files();
+    before["proxy.ts"] = { hash: "old" }; after["proxy.ts"] = { hash: "new" };
+    const baseline = buildIndexNowSnapshot(before);
+    expect(changedIndexNowUrls(baseline, buildIndexNowSnapshot(after))).toEqual(Object.keys(baseline).sort());
   });
 
   it.each([
