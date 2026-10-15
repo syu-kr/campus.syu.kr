@@ -13,9 +13,9 @@ beforeAll(async () => {
   const pixels = Buffer.from(Array.from({ length: 80 }, (_, index) => [index % 10 * 25, Math.floor(index / 10) * 30, 0]).flat());
   image.bytes = await sharp(pixels, { raw: { width: 10, height: 8, channels: 3 } }).png().toBuffer();
 });
-const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: [Array.from("테스트 메뉴")], dinner: null }] };
+const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: ["테스트 메뉴"], dinner: null }] };
 const ingredientMeals = { breakfast: null, lunch: ["원문 재료"], dinner: null };
-const ingredientExtraction = { ...extraction, days: [{ ...extraction.days[0], ...ingredientMeals, lunch: ingredientMeals.lunch.map((name) => Array.from(name)) }] };
+const ingredientExtraction = { ...extraction, days: [{ ...extraction.days[0], ...ingredientMeals }] };
 const options = { apiKey: "mock-key", now: new Date("2026-10-15T00:00:00Z") };
 beforeEach(() => {
   vi.resetAllMocks();
@@ -32,7 +32,7 @@ describe("Manna House OpenAI extraction", () => {
     const request = create.mock.calls[0][0];
     expect(request).toMatchObject({ model: "configured-model", store: false, text: { format: { type: "json_schema", strict: true } } });
     expect(request.reasoning).toBeUndefined();
-    expect(request.input[0].content).toHaveLength(6);
+    expect(request.input[0].content).toHaveLength(11);
     expect(create).toHaveBeenCalledTimes(2);
     expect(create.mock.calls[1][0].input).toEqual(request.input);
     expect(create.mock.calls[1][0].text.format.name).toBe("student_restaurant_ingredients");
@@ -40,48 +40,49 @@ describe("Manna House OpenAI extraction", () => {
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
     const tiles = request.input[0].content.slice(2);
     const firstPixels: number[] = [];
-    for (const tile of tiles) {
+    for (const [index, tile] of tiles.entries()) {
       expect(tile).toMatchObject({ type: "input_image", detail: "high" });
       const bytes = Buffer.from(tile.image_url.split(",")[1], "base64");
       const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
-      expect(info).toMatchObject({ width: 12, height: 10, channels: 3 });
+      expect(info).toMatchObject({ width: index % 3 === 1 ? 24 : 16, height: 16, channels: 3 });
       expect(data[0]).toBe(data[1]);
       expect(data[0]).toBe(data[2]);
       expect(data[0]).toBe(data[3]);
       firstPixels.push(data[0]);
     }
     const sourceGray = await sharp(image.bytes).greyscale().raw().toBuffer();
-    expect(firstPixels).toEqual([sourceGray[0], sourceGray[4], sourceGray[30], sourceGray[34]]);
+    expect(firstPixels).toEqual([0, 2, 6, 20, 22, 26, 40, 42, 46].map((index) => sourceGray[index]));
   });
   it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
-    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: [Array.from("원문쨩/괄호(가)")] }] };
-    const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: [Array.from("콩,밀/계란"), Array.from("콩,밀/계란")] }] };
+    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"] }] };
+    const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: ["콩,밀/계란", "콩,밀/계란"] }] };
     create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(literal) })
       .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredients) });
     const result = await analyzeStudentRestaurantImage(image, options);
     expect(result.days[0].lunch).toEqual(["원문쨩/괄호(가)"]);
     expect(result.days[0].ingredients).toEqual({ ...ingredientMeals, lunch: ["콩,밀/계란", "콩,밀/계란"] });
   });
-  it.each([
-    { lunch: ["whole string"] },
-    { lunch: [["두글자"]] },
-    { lunch: [["가"]] },
-    { lunch: [[]] },
-    { lunch: [Array.from({ length: 161 }, () => "가")] },
-    { lunch: [["가", "\n"]] },
-    { lunch: [Array.from("https://private.invalid/menu")] },
-    { lunch: [[" "]] },
-  ])("rejects malformed, unsafe or oversized character cells", async ({ lunch }) => {
-    create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify({
-      ...extraction, days: [{ ...extraction.days[0], lunch }],
-    }) });
-    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
-  });
-  it("preserves one Unicode code point without assuming one UTF-16 unit", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({
-      ...extraction, days: [{ ...extraction.days[0], lunch: [["🍚"]] }],
-    }) });
-    expect((await analyzeStudentRestaurantImage(image, options)).days[0].lunch).toEqual(["🍚"]);
+  it("keeps enlarged tiles within 4096 pixels and preserves a nonzero thin edge", async () => {
+    const pixels = Buffer.alloc(4000 * 2 * 3, 255);
+    for (const row of [0, 1]) {
+      pixels.fill(0, row * 4000 * 3, row * 4000 * 3 + 3);
+      pixels.fill(0, (row * 4000 + 3999) * 3, (row * 4000 + 4000) * 3);
+    }
+    const bytes = await sharp(pixels, { raw: { width: 4000, height: 2, channels: 3 } }).png().toBuffer();
+    await analyzeStudentRestaurantImage({ ...image, bytes }, options);
+    const tiles = create.mock.calls[0][0].input[0].content.slice(2);
+    expect(tiles).toHaveLength(9);
+    for (const tile of tiles) {
+      const metadata = await sharp(Buffer.from(tile.image_url.split(",")[1], "base64")).metadata();
+      expect(metadata.width).toBeGreaterThanOrEqual(1);
+      expect(metadata.width).toBeLessThanOrEqual(4096);
+      expect(metadata.height).toBeGreaterThanOrEqual(1);
+      expect(metadata.height).toBeLessThanOrEqual(4096);
+    }
+    const first = await sharp(Buffer.from(tiles[0].image_url.split(",")[1], "base64")).raw().toBuffer();
+    const last = await sharp(Buffer.from(tiles[8].image_url.split(",")[1], "base64")).raw().toBuffer({ resolveWithObject: true });
+    expect(first[0]).toBe(0);
+    expect(last.data[(last.info.width - 1) * last.info.channels]).toBe(0);
   });
   it("starts both independent transcriptions before either response and waits for both", async () => {
     let menuResponse!: (value: unknown) => void;
