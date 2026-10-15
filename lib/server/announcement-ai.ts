@@ -26,12 +26,8 @@ export async function attachAnnouncementAiSummaries(
   if (!metadata) return announcements;
 
   return announcements.map((announcement) => {
-    const key = getAnnouncementAiMetadataKey(announcement);
-    const aiSummary =
-      metadata.items[key] ??
-      metadata.items[getLegacyAnnouncementAiMetadataKey(announcement)];
-
-    if (!aiSummary || !sourceHashMatches(aiSummary, announcement)) {
+    const aiSummary = getMatchingAnnouncementAiSummary(announcement, metadata.items);
+    if (!aiSummary) {
       return announcement;
     }
 
@@ -40,6 +36,15 @@ export async function attachAnnouncementAiSummaries(
       aiSummary,
     };
   });
+}
+
+export function getMatchingAnnouncementAiSummary(
+  announcement: Announcement,
+  items: Record<string, AnnouncementAiSummary>,
+) {
+  const summary = items[getAnnouncementAiMetadataKey(announcement)] ??
+    items[getLegacyAnnouncementAiMetadataKey(announcement)];
+  return summary && sourceHashMatches(summary, announcement) ? summary : undefined;
 }
 
 function getAnnouncementAiMetadataKey(announcement: Announcement) {

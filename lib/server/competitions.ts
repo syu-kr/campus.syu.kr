@@ -1,6 +1,6 @@
-import { attachAnnouncementAiSummaries } from "@/lib/server/announcement-ai";
-import { readDailyCrawlDataJson } from "@/lib/server/crawl-data";
-import { getKoreaDateTimeParts } from "@/lib/korea-time";
+import { attachAnnouncementAiSummaries } from "./announcement-ai";
+import { readDailyCrawlDataJson } from "./crawl-data";
+import { getKoreaDateTimeParts } from "../korea-time";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type {
   AnnouncementCategory,
@@ -319,7 +319,7 @@ async function readCompetitionAnnouncementsFromSource(
     .filter((item): item is CompetitionAnnouncement => item !== null);
 }
 
-function toCompetitionCandidate(
+export function toCompetitionCandidate(
   item: RawAnnouncement,
   sourceCategory: CompetitionSourceCategory,
   index: number,
@@ -360,11 +360,10 @@ function toCompetitionCandidate(
 function applyCompetitionAnalysis(
   announcement: CompetitionAnnouncement,
 ): CompetitionAnnouncement | null {
-  const searchableText = getCompetitionAnalysisText(announcement);
-  const matchedKeywords = getMatchedKeywords(searchableText);
+  const matchedKeywords = getCompetitionMatch(announcement);
 
   if (matchedKeywords.length === 0) return null;
-  if (isExcludedCompetition(searchableText)) return null;
+  const searchableText = getCompetitionAnalysisText(announcement);
 
   return {
     ...announcement,
@@ -375,6 +374,11 @@ function applyCompetitionAnalysis(
     competitionKind: getCompetitionKind(searchableText),
     matchedKeywords,
   };
+}
+
+export function getCompetitionMatch(announcement: CompetitionAnnouncement): string[] {
+  const searchableText = getCompetitionAnalysisText(announcement);
+  return isExcludedCompetition(searchableText) ? [] : getMatchedKeywords(searchableText);
 }
 
 function getMatchedKeywords(searchableText: string): string[] {
