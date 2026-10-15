@@ -50,21 +50,8 @@ async function imageInputs(image: { bytes: Buffer; contentType: string }, detail
   const options = { limitInputPixels: 16_000_000 };
   const metadata = await sharp(image.bytes, options).metadata();
   if (!metadata.width || !metadata.height || metadata.width < 2 || metadata.height < 2) throw new Error();
-  const { data, info } = await sharp(image.bytes, options).flatten({ background: "#ffffff" })
-    .toColourspace("srgb").removeAlpha().raw().toBuffer({ resolveWithObject: true });
-  if (info.channels !== 3 || info.width !== metadata.width || info.height !== metadata.height) throw new Error();
-  const blueInk = Buffer.alloc(info.width * info.height, 255);
-  let hasBlueInk = false;
-  for (let offset = 0; offset < data.length; offset += 3) {
-    if (data[offset + 2] > data[offset] && data[offset + 2] > data[offset + 1]) {
-      blueInk[offset / 3] = 0;
-      hasBlueInk = true;
-    }
-  }
-  const original = { type: "input_image" as const, image_url: `data:${image.contentType};base64,${image.bytes.toString("base64")}`, detail };
-  const inputs = { menu: [original], ingredients: [original] };
-  let menuBytes = image.bytes.byteLength;
-  let ingredientBytes = image.bytes.byteLength;
+  const inputs = [{ type: "input_image" as const, image_url: `data:${image.contentType};base64,${image.bytes.toString("base64")}`, detail }];
+  let totalBytes = image.bytes.byteLength;
   for (const row of [0, 1, 2]) {
     for (const column of [0, 1, 2]) {
       const left = Math.max(0, Math.floor(metadata.width * (column / 3 - 0.06)));
@@ -72,18 +59,11 @@ async function imageInputs(image: { bytes: Buffer; contentType: string }, detail
       const width = Math.min(metadata.width, Math.ceil(metadata.width * ((column + 1) / 3 + 0.06))) - left;
       const height = Math.min(metadata.height, Math.ceil(metadata.height * ((row + 1) / 3 + 0.06))) - top;
       const scale = Math.min(4, 4096 / Math.max(width, height));
-      const resize = { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)), kernel: "nearest" as const, fit: "inside" as const };
-      const menuTile = await sharp(image.bytes, options).extract({ left, top, width, height }).greyscale()
-        .resize(resize).png().toBuffer();
-      const ingredientTile = hasBlueInk
-        ? await sharp(blueInk, { ...options, raw: { width: info.width, height: info.height, channels: 1 } })
-          .extract({ left, top, width, height }).resize(resize).png().toBuffer()
-        : menuTile;
-      menuBytes += menuTile.byteLength;
-      ingredientBytes += ingredientTile.byteLength;
-      if (menuBytes > 30 * 1024 * 1024 || ingredientBytes > 30 * 1024 * 1024) throw new Error();
-      inputs.menu.push({ type: "input_image", image_url: `data:image/png;base64,${menuTile.toString("base64")}`, detail });
-      inputs.ingredients.push({ type: "input_image", image_url: `data:image/png;base64,${ingredientTile.toString("base64")}`, detail });
+      const tile = await sharp(image.bytes, options).extract({ left, top, width, height }).greyscale()
+        .resize(Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale)), { kernel: "nearest", fit: "inside" }).png().toBuffer();
+      totalBytes += tile.byteLength;
+      if (totalBytes > 30 * 1024 * 1024) throw new Error();
+      inputs.push({ type: "input_image", image_url: `data:image/png;base64,${tile.toString("base64")}`, detail });
     }
   }
   return inputs;
@@ -126,7 +106,7 @@ export async function analyzeStudentRestaurantImage(
         instructions: `${INSTRUCTIONS}\n${EXTRACTION_TASKS[column]}`,
         input: [{ role: "user", content: [
           { type: "input_text", text: "전체 원본과 확대 조각을 대조하여 지정된 열만 위 규칙과 스키마에 따라 전사하세요." },
-          ...images[column],
+          ...images,
         ] }],
         text: { format: { type: "json_schema", name: `student_restaurant_${column}`, strict: true, schema: STUDENT_RESTAURANT_EXTRACTION_SCHEMA } },
         max_output_tokens: 40000,

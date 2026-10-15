@@ -53,45 +53,6 @@ describe("Manna House OpenAI extraction", () => {
     const sourceGray = await sharp(image.bytes).greyscale().raw().toBuffer();
     expect(firstPixels).toEqual([0, 2, 6, 20, 22, 26, 40, 42, 46].map((index) => sourceGray[index]));
   });
-  it("separates blue punctuation at source resolution without changing the original image", async () => {
-    const pixels = Buffer.alloc(10 * 8 * 4, 255);
-    const put = (x: number, y: number, rgba: number[]) => pixels.set(rgba, (y * 10 + x) * 4);
-    put(0, 0, [0, 0, 0, 255]);
-    put(1, 0, [110, 110, 110, 255]);
-    put(2, 0, [0, 128, 255, 255]);
-    put(1, 1, [0, 128, 255, 255]);
-    put(0, 2, [254, 254, 255, 255]);
-    put(2, 2, [0, 0, 255, 0]);
-    const bytes = await sharp(pixels, { raw: { width: 10, height: 8, channels: 4 } }).png().toBuffer();
-    const originalBytes = Buffer.from(bytes);
-    await analyzeStudentRestaurantImage({ ...image, bytes }, options);
-    const menu = create.mock.calls[0][0].input[0].content;
-    const ingredients = create.mock.calls[1][0].input[0].content;
-    expect(menu).toHaveLength(11);
-    expect(ingredients).toHaveLength(11);
-    expect(menu[1]).toEqual(ingredients[1]);
-    expect(menu[1].image_url).toBe(`data:image/png;base64,${originalBytes.toString("base64")}`);
-    expect(bytes.equals(originalBytes)).toBe(true);
-    const { data, info } = await sharp(Buffer.from(ingredients[2].image_url.split(",")[1], "base64"))
-      .toColourspace("srgb").removeAlpha().raw().toBuffer({ resolveWithObject: true });
-    expect(info).toMatchObject({ width: 16, height: 16, channels: 3 });
-    const pixel = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
-    for (const [x, y] of [[2, 0], [1, 1], [0, 2]]) {
-      expect(pixel(x * 4, y * 4)).toEqual([0, 0, 0]);
-      expect(pixel(x * 4 + 3, y * 4 + 3)).toEqual([0, 0, 0]);
-    }
-    for (const [x, y] of [[0, 0], [1, 0], [2, 2]]) expect(pixel(x * 4, y * 4)).toEqual([255, 255, 255]);
-    const gray = await sharp(Buffer.from(menu[2].image_url.split(",")[1], "base64"))
-      .removeAlpha().raw().toBuffer();
-    expect(gray[0]).toBe(0);
-  });
-  it("uses the unchanged gray tiles when a grayscale palette image has no blue ink", async () => {
-    const bytes = await sharp(Buffer.alloc(4 * 4, 128), { raw: { width: 4, height: 4, channels: 1 } })
-      .png({ palette: true }).toBuffer();
-    await analyzeStudentRestaurantImage({ ...image, bytes }, options);
-    expect(create).toHaveBeenCalledTimes(2);
-    expect(create.mock.calls[1][0].input).toEqual(create.mock.calls[0][0].input);
-  });
   it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
     const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"] }] };
     const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: ["콩,밀/계란", "콩,밀/계란"] }] };
