@@ -59,3 +59,18 @@ it("uses the Korean year for yearless deadlines at the New Year boundary and rej
   ({ getCompetitionPage } = await import("./competitions"));
   expect((await getCompetitionPage({ source: "department", status: "all" })).items[0].competitionStatus).toBe("open");
 });
+
+it("matches competition content independently of the current time and excludes unrelated candidates", async () => {
+  const { getCompetitionMatch, toCompetitionCandidate } = await import("./competitions");
+  const candidate = toCompetitionCandidate({ title: "테스트 공모전", content: "2026.10.05 마감" }, "event", 0)!;
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date("2026-10-04T00:00:00Z"));
+  const before = getCompetitionMatch(candidate);
+  vi.setSystemTime(new Date("2027-01-01T00:00:00Z"));
+  expect(getCompetitionMatch(candidate)).toEqual(before);
+  expect(before).toContain("공모전");
+  expect(getCompetitionMatch(toCompetitionCandidate({ title: "수상안전 공모전" }, "department", 0)!)).toEqual([]);
+  expect(getCompetitionMatch(toCompetitionCandidate({ title: "학과 일반 안내" }, "department", 0)!)).toEqual([]);
+  expect(mocks.read).not.toHaveBeenCalled();
+  expect(mocks.attach).not.toHaveBeenCalled();
+});

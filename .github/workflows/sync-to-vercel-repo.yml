@@ -172,6 +172,9 @@ jobs:
             --exclude "*.py[cod]" \
             --exclude ".vscode/"
 
+          source_sha="$(git rev-parse HEAD)"
+          printf '{"sourceSha":"%s"}\n' "$source_sha" > "$DESTINATION_DIR/public/indexnow-deployment.json"
+
       - name: Push changes to destination repository
         run: |
           cd "$DESTINATION_DIR"

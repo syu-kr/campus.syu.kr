@@ -1,0 +1,130 @@
+name: Notify IndexNow
+
+on:
+  workflow_run:
+    workflows:
+      - Sync to Vercel Repository
+      - Daily Crawl - Notices, Cafeteria & Public Holidays
+      - Rollback Crawl Data
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      send:
+        description: Submit verified changes to IndexNow (otherwise dry-run)
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: indexnow-production
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    if: >-
+      github.repository == 'syu-kr/campus.syu.kr' &&
+      vars.INDEXNOW_ENABLED == 'true' &&
+      (
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_repository.full_name == github.repository &&
+          github.event.workflow_run.head_branch == 'main'
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.22.2"
+          cache: npm
+
+      - name: Use pinned npm
+        run: npm install -g npm@10.9.4
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit
+
+      - name: Restore latest trusted IndexNow state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          mkdir -p .cache/indexnow
+          INDEXNOW_WORKFLOW_ID="$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/indexnow.yml" --jq '.id')"
+          export INDEXNOW_WORKFLOW_ID
+          # A rerun of an older run may have newer state; order by artifact creation.
+          artifacts="$(gh api --method GET --paginate \
+            "repos/$GITHUB_REPOSITORY/actions/artifacts" \
+            -f name=indexnow-state -f per_page=100 \
+            --jq '.artifacts[] | select(.name == "indexnow-state" and .expired == false and .workflow_run.head_branch == "main" and .workflow_run.head_repository_id == .workflow_run.repository_id) | [.created_at, .id, .workflow_run.id] | @tsv' \
+            | sort -t $'\t' -k1,1r -k2,2nr)"
+
+          while IFS=$'\t' read -r created_at artifact_id run_id; do
+            [ -n "$artifact_id" ] || continue
+            trusted="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" \
+              --jq '.workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber) and .head_repository.full_name == env.GITHUB_REPOSITORY and .head_branch == "main" and .path == ".github/workflows/indexnow.yml" and (.event == "workflow_run" or .event == "workflow_dispatch") and (.status == "completed" or (.id == (env.GITHUB_RUN_ID | tonumber) and ((env.GITHUB_RUN_ATTEMPT // "1") | tonumber) > 1))')"
+            [ "$trusted" = "true" ] || continue
+            artifact_count="$(gh api \
+              "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.name == "indexnow-state" and .expired == false)] | length')"
+            if [ "$artifact_count" -ne 1 ]; then
+              echo "Missing or ambiguous IndexNow state artifacts in run $run_id."
+              exit 1
+            fi
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name indexnow-state --dir .cache/indexnow
+            test -s .cache/indexnow/state.json
+            echo "Restored IndexNow state artifact $artifact_id from run $run_id."
+            exit 0
+          done <<< "$artifacts"
+
+          echo "No previous IndexNow state; the CLI will establish a baseline."
+
+      - name: Verify production and process changed URLs
+        env:
+          SEND: ${{ github.event_name == 'workflow_run' || inputs.send }}
+        run: |
+          if [ "$SEND" = "true" ]; then
+            npm run indexnow -- --state-file .cache/indexnow/state.json --report-file .cache/indexnow/report.json --send
+          else
+            npm run indexnow -- --state-file .cache/indexnow/state.json --report-file .cache/indexnow/report.json
+          fi
+
+      - name: Preserve IndexNow state
+        if: always() && hashFiles('.cache/indexnow/state.json') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: indexnow-state
+          path: .cache/indexnow/state.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
+
+      - name: Preserve IndexNow report
+        if: always() && hashFiles('.cache/indexnow/report.json') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: indexnow-report
+          path: .cache/indexnow/report.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
