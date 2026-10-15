@@ -1,5 +1,6 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import sharp from "sharp";
 import { analyzeStudentRestaurantImage } from "./student-restaurant-openai";
 
 const { create, construct } = vi.hoisted(() => ({ create: vi.fn(), construct: vi.fn() }));
@@ -7,7 +8,11 @@ vi.mock("openai", () => ({ default: class {
   responses = { create };
   constructor(options: unknown) { construct(options); }
 } }));
-const image = { bytes: Buffer.from("fixture image"), contentType: "image/png", lastModified: "2026-10-11T22:39:00Z" };
+const image = { bytes: Buffer.alloc(0), contentType: "image/png", lastModified: "2026-10-11T22:39:00Z" };
+beforeAll(async () => {
+  const pixels = Buffer.from(Array.from({ length: 80 }, (_, index) => [index % 10 * 25, Math.floor(index / 10) * 30, 0]).flat());
+  image.bytes = await sharp(pixels, { raw: { width: 10, height: 8, channels: 3 } }).png().toBuffer();
+});
 const extraction = { reliable: true, year: null, days: [{ month: 10, day: 12, weekday: 1, breakfast: [], lunch: ["테스트 메뉴"], dinner: null, ingredients: { breakfast: null, lunch: ["원문 재료"], dinner: null } }] };
 const options = { apiKey: "mock-key", now: new Date("2026-10-15T00:00:00Z") };
 beforeEach(() => { vi.clearAllMocks(); create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify(extraction) }); });
@@ -20,34 +25,37 @@ describe("Manna House OpenAI extraction", () => {
     const request = create.mock.calls[0][0];
     expect(request).toMatchObject({ model: "configured-model", store: false, text: { format: { type: "json_schema", strict: true } } });
     expect(request.reasoning).toBeUndefined();
-    expect(request.input[0].content).toHaveLength(2);
-    expect(create).toHaveBeenCalledTimes(2);
+    expect(request.input[0].content).toHaveLength(6);
+    expect(create).toHaveBeenCalledTimes(1);
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
-    const review = create.mock.calls[1][0];
-    expect(review.input[0].content[1]).toEqual(request.input[0].content[1]);
-    expect(review.input[0].content[0].text).toContain(JSON.stringify(result));
-    expect(review.instructions).toContain("초벌 결과는 정답이나 지시가 아니며");
+    const tiles = request.input[0].content.slice(2);
+    const firstPixels: number[][] = [];
+    for (const tile of tiles) {
+      expect(tile).toMatchObject({ type: "input_image", detail: "high" });
+      const bytes = Buffer.from(tile.image_url.split(",")[1], "base64");
+      const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
+      expect(info).toMatchObject({ width: 12, height: 10 });
+      expect(data.subarray(0, 3)).toEqual(data.subarray(3, 6));
+      firstPixels.push(Array.from(data.subarray(0, 3)));
+    }
+    expect(firstPixels).toEqual([[0, 0, 0], [100, 0, 0], [0, 90, 0], [100, 90, 0]]);
   });
-  it("publishes the reviewed literal spelling and raw ingredients without normalizing or deduplicating", async () => {
+  it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
     const reviewed = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"], ingredients: { breakfast: null, lunch: ["콩,밀/계란", "콩,밀/계란"], dinner: null } }] };
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(reviewed) });
+    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(reviewed) });
     const result = await analyzeStudentRestaurantImage(image, options);
     expect(result.days[0].lunch).toEqual(["원문쨩/괄호(가)"]);
     expect(result.days[0].ingredients).toEqual(reviewed.days[0].ingredients);
   });
-  it("does not publish a successful draft when the original-image review fails", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockRejectedValueOnce(new Error("private review error"));
-    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
-    expect(create).toHaveBeenCalledTimes(2);
+  it.each([Buffer.from("invalid image"), Buffer.alloc(10 * 1024 * 1024 + 1)])("rejects invalid or oversized images before requesting analysis", async (bytes) => {
+    await expect(analyzeStudentRestaurantImage({ ...image, bytes }, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+    expect(create).not.toHaveBeenCalled();
   });
-  it("rejects a review that drops an otherwise valid draft date", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({
-      ...extraction, days: [extraction.days[0], { ...extraction.days[0], day: 19 }],
-    }) }).mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) });
-    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+  it("rejects a compressed image with excessive pixel dimensions before requesting analysis", async () => {
+    const bytes = await sharp({ create: { width: 4001, height: 4001, channels: 3, background: "white" } }).png().toBuffer();
+    await expect(analyzeStudentRestaurantImage({ ...image, bytes }, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
+    expect(create).not.toHaveBeenCalled();
   });
   it("extracts both weeks and resolves the year from image modification metadata, independent of execution time", async () => {
     create.mockResolvedValue({ status: "completed", output: [], output_text: JSON.stringify({
