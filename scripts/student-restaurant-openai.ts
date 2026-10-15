@@ -81,7 +81,7 @@ export async function analyzeStudentRestaurantImage(
     const crops = await Promise.all(regions.map((region) => source.clone().extract(region)
       .resize(region.width * 2, height * 2).png().toBuffer()));
     if (crops.some((bytes) => bytes.byteLength > 10 * 1024 * 1024)) throw new Error();
-    const detail = model === STUDENT_RESTAURANT_MODEL ? "original" : "high";
+    const detail = model === STUDENT_RESTAURANT_MODEL ? "original" as const : "high" as const;
     const client = options.client ?? new OpenAI({
       apiKey: options.apiKey, baseURL: "https://api.openai.com/v1", timeout: 300_000, maxRetries: 1, logLevel: "off",
     });
