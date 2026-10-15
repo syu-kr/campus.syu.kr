@@ -120,6 +120,34 @@ If GSC shows only the English URL, check these in order:
 - The static academic schedule and base shuttle files currently have no source-check timestamp. They explicitly show `Check time not recorded`. Request time, file modification time, publication time, and Git commit dates are not substituted. Future data collection should record verification separately when it actually happens.
 - Check the Korean and English initial HTML for one page-answer JSON-LD script, matching visible question/answer text, official source links, and separate per-source check times. Retry/failure, stale data, midnight, and shuttle departure boundaries should keep visible answers and JSON-LD consistent.
 
+## IndexNow 변경 알림 (PR 3)
+
+IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알립니다. `https://api.indexnow.org/indexnow`에 한 번 제출하며 참여 검색엔진에 공유됩니다. Naver/Bing 메타태그 소유확인과 별개입니다. HTTP 200은 수신, 202는 키 검증 대기이며, 수집·색인·검색 노출·AI 인용 완료를 뜻하지 않습니다. [공식 명세](https://www.indexnow.org/documentation), [FAQ](https://www.indexnow.org/faq), [네이버 안내](https://searchadvisor.naver.com/guide/indexnow-about)
+
+### 활성화 순서
+
+1. 이 변경을 운영 배포한 뒤 `https://campus.syu.kr/indexnow-key.txt`의 본문이 저장소의 `public/indexnow-key.txt`와 같은지 확인합니다. 이 값은 공개 소유확인 키이며 비밀 API 토큰이 아닙니다. 별도 Naver/Bing 인증값이나 새 GitHub secret은 필요하지 않습니다. UTF-8 키 파일과 명시적인 `keyLocation`을 사용합니다. [네이버 키 규칙](https://searchadvisor.naver.com/guide/indexnow-api-key)
+2. 운영 `https://campus.syu.kr/indexnow-deployment.json`의 `sourceSha`가 원본 저장소의 배포 커밋인지 확인합니다. 이 파일은 기존 Sync workflow가 배포 저장소에만 생성하며, 인덱싱 대상에 넣지 않습니다.
+3. 원본 저장소 Actions variable `INDEXNOW_ENABLED=true`를 설정합니다. 미설정 상태에서는 `Notify IndexNow` job이 건너뛰므로 PR 작성·CI에서 운영 제출을 실행하지 않습니다.
+4. Actions의 `Notify IndexNow`를 main에서 수동 실행합니다. 기본 `send=false`는 dry-run입니다. 실제 처리는 `send=true`로 실행합니다. 첫 실제 실행은 확인된 현재 URL 지문을 **baseline으로 저장하고 전체 과거 URL을 제출하지 않습니다.** 이후 성공한 코드 동기화·Daily Crawl·Rollback 게시 완료가 자동 처리를 시작합니다.
+
+로컬에서는 `npm run indexnow`로 공개 데이터를 읽어 변경 계획만 확인합니다. `--send`를 지정하지 않으면 제출·운영 probe·이전 상태 수정은 없습니다. 실제 전송은 clean committed checkout에서만 허용됩니다. 수동 비교에는 `--state-file`, `--report-file` 경로를 지정할 수 있으며 기본 파일은 `.cache/indexnow/state.json`, `.cache/indexnow/report.json`입니다.
+
+### 변경 판단과 게시 확인
+
+- sitemap과 같은 공개 경로 목록을 사용하며 한·영 URL을 각각 관리합니다. 공지별 본문·유효한 AI 요약, 학식·공휴일 내용, 정적 자료·서비스 공지 및 페이지 코드 지문을 비교합니다. 이전 상태에만 남은 공개 URL은 삭제 알림 대상입니다. admin, roommate, API, 개인 방·공유 경로를 제출하지 않습니다.
+- 확인 시각·발행 시각·조회수·AI 생성 이력만 달라진 경우나 현재 시간·셔틀 countdown만 흐른 경우는 제출하지 않습니다. 코드 의존성은 명시적인 경로 매핑이며 공통 UI·번역 변경은 공개 페이지를 보수적으로 무효화합니다. 페이지나 데이터 공급 경로를 추가할 때 `scripts/indexnow-snapshot.ts`의 매핑과 회귀 테스트도 함께 갱신합니다.
+- 코드 SHA marker, 공개 키 파일, 운영 데이터 API의 `X-Crawl-Data-Source=github-pages`와 버전을 확인합니다. 새 활성 Pages 버전은 이번 실행에서 처음 관측한 시각부터 최대 6분의 캐시 갱신 구간을 둡니다. rollback의 옛 `publishedAt`을 새 게시 시각으로 취급하지 않습니다.
+- 변경된 정적 페이지와 각 공지 category/언어·서비스 공지 template의 대표 URL에서 HTTP/canonical을 확인합니다. 전체 과거 공지에 대량 HTTP probe를 하지 않습니다. 삭제는 404/410, 리디렉션 또는 streaming noindex 응답으로 확인합니다. 제출 직전과 각 재시도 직전에 source SHA와 활성 Pages 버전을 다시 대조하며 중간에 배포가 바뀌면 중단합니다.
+
+### 상태, 재시도와 실패 복구
+
+- 신뢰된 main의 동일 IndexNow workflow artifact에서 상태를 복원하며 실행은 직렬화합니다. 손상된 상태·다운로드 오류는 baseline으로 조용히 초기화하지 않습니다. 실제 첫 실행에만 baseline을 만들고, dry-run은 기존 상태를 변경하지 않습니다.
+- URL 중복을 제거하고 최대 10,000개씩 전송합니다. 같은 URL의 내용이 5분 내 다시 바뀌면 간격을 기다린 뒤 재검증합니다. 수락된 배치마다 지문을 저장하므로 뒷배치 실패 후 재실행할 때 완료된 작업을 반복하지 않습니다.
+- 네트워크·5xx는 짧은 backoff로 최대 3회 시도합니다. 400/403/422는 설정/입력 오류로 중단합니다. 429는 `Retry-After`를 존중하고 최소 10분 후 한 번만 재시도하며, 더 긴 대기가 요구되면 즉시 중단하고 나중에 실행하도록 기록합니다. 각 재시도의 상태·횟수·대기시간을 Actions 로그에 남깁니다.
+- `indexnow-state`와 `indexnow-report` artifact는 90일 보존합니다. 부분 실패에서도 마지막으로 저장된 상태와 오류 보고서를 유지합니다. 실패 후 원인을 수정하고 main에서 `send=true`로 다시 실행하면 남은 차이를 처리합니다. 90일 이상 상태가 없으면 이전 변경 이력을 추측하지 않고 새 baseline부터 시작합니다.
+- 보고서의 accepted/키 검증 대기 수와 실제 Webmaster Tools 색인 상태는 별개로 확인합니다. 공개 키 파일을 회전할 때는 파일 배포를 먼저 확인합니다. 제출 성공으로 네이버·Bing 계정 소유확인까지 완료됐다고 판단하지 않습니다.
+
 ## Monitoring
 
 Track these signals weekly after release:
