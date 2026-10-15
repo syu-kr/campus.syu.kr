@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { createHash } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { buildIndexNowSnapshot, changedIndexNowUrls, type SnapshotFile } from "./indexnow-snapshot";
 
 const origin = "https://campus.syu.kr";
@@ -17,6 +17,28 @@ function files(): Record<string, SnapshotFile> {
 }
 
 describe("IndexNow content snapshots", () => {
+  it.each(["object keys", "source paths"])("preserves production fingerprints across host locales for mixed-language %s", (target) => {
+    const input = files();
+    if (target === "object keys") {
+      input["public/data/graduation-requirements-2026.json"] = { hash: "fixture", data: {
+        aliases: { cf_business: "경영학과", ff_datacloud: "데이터클라우드공학과", 데이터클라우드공학과: "컴퓨터공학부", 빅데이터클라우드공학과: "컴퓨터공학부", 자유전공학부: "자유전공" },
+      } };
+    } else {
+      input["app/components/English.tsx"] = { hash: "english" };
+      input["app/components/한글.tsx"] = { hash: "korean" };
+    }
+    const compare = String.prototype.localeCompare;
+    const snapshots = ["en-US", "ko-KR"].map((hostLocale) => {
+      const spy = vi.spyOn(String.prototype, "localeCompare").mockImplementation(function (
+        this: string, other: string, locales?: Intl.LocalesArgument, options?: Intl.CollatorOptions,
+      ) { return compare.call(this, other, locales ?? hostLocale, options); });
+      try { return buildIndexNowSnapshot(input); }
+      finally { spy.mockRestore(); }
+    });
+    expect(snapshots[1]).toEqual(snapshots[0]);
+    expect(changedIndexNowUrls(snapshots[0], snapshots[1])).toEqual([]);
+  });
+
   it("adds only valid public bilingual routes and detects a removed notice", () => {
     const before = files();
     before["public/service-notices/001-test.md"] = { hash: "notice" };

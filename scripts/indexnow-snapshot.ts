@@ -40,6 +40,7 @@ const VOLATILE = new Set([
   "crawledAt", "views", "sourceHash", "inputHash", "detailContentHash", "model", "contentSource",
 ]);
 
+// Keep the production baseline's ordering regardless of the host locale.
 export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): IndexNowSnapshot {
   const result: IndexNowSnapshot = {};
   const data = (name: string) => files[`public/data/${name}`]?.data ?? null;
@@ -50,7 +51,7 @@ export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): Inde
     if (!codes.has(template)) {
       codes.set(template, digest(Object.entries(files).filter(([file]) =>
         !/\.(test|spec)\./.test(file) && isRouteCode(file, template),
-      ).sort(([a], [b]) => a.localeCompare(b)).map(([file, value]) => [file, value.hash])));
+      ).sort(([a], [b]) => a.localeCompare(b, "en-US")).map(([file, value]) => [file, value.hash])));
     }
     return codes.get(template)!;
   };
@@ -103,7 +104,7 @@ export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): Inde
   for (const [file, value] of notices) put(`/service/notices/${file.split("/").at(-1)!.slice(0, -3)}`, value.hash);
   contentByRoute["/"] = [
     // The home page renders the latest twelve notices, not the historical archive.
-    [...allAnnouncements].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12),
+    [...allAnnouncements].sort((a, b) => b.date.localeCompare(a.date, "en-US")).slice(0, 12),
     contentByRoute["/service/notices"], contentByRoute["/campus/cafeteria"],
     contentByRoute["/campus/bus-info"], contentByRoute["/academic/schedule"],
   ];
@@ -119,7 +120,7 @@ export function changedIndexNowUrls(previous: IndexNowSnapshot, next: IndexNowSn
 function semantic(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(semantic);
   if (value && typeof value === "object") return Object.fromEntries(
-    Object.entries(value).filter(([key]) => !VOLATILE.has(key)).sort(([a], [b]) => a.localeCompare(b))
+    Object.entries(value).filter(([key]) => !VOLATILE.has(key)).sort(([a], [b]) => a.localeCompare(b, "en-US"))
       .map(([key, item]) => [key, semantic(item)]),
   );
   return value;
