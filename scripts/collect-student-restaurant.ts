@@ -1,5 +1,5 @@
 import path from "node:path";
-import { analyzeStudentRestaurantImage } from "./student-restaurant-openai";
+import { analyzeStudentRestaurantImage, STUDENT_RESTAURANT_MODEL } from "./student-restaurant-openai";
 import { collectStudentRestaurant, parseStudentRestaurantApiUrl } from "./student-restaurant";
 
 async function main() {
@@ -10,11 +10,13 @@ async function main() {
     return;
   }
   try {
+    const model = process.env.OPENAI_MODEL?.trim() || STUDENT_RESTAURANT_MODEL;
     const result = await collectStudentRestaurant({
       apiUrl: parseStudentRestaurantApiUrl(process.env.HAKSIK_API_URL!.trim()),
       outputPath: path.join(process.cwd(), "public/cafeteria/student-restaurant-1.json"),
       statePath: path.join(process.cwd(), ".cache/student-restaurant/state.json"),
-      analyze: (image) => analyzeStudentRestaurantImage(image, { apiKey: process.env.OPENAI_API_KEY!.trim(), model: process.env.OPENAI_MODEL?.trim() }),
+      analysisContext: model,
+      analyze: (image) => analyzeStudentRestaurantImage(image, { apiKey: process.env.OPENAI_API_KEY!.trim(), model }),
     });
     console.log(`Manna House menu: ${result}.`);
   } catch {

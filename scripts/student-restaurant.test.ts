@@ -22,11 +22,11 @@ beforeEach(async () => {
   outputPath = path.join(root, "public", "cafeteria", "student-restaurant-1.json");
   statePath = path.join(root, "private", "state.json");
 });
-afterEach(async () => { await rm(root, { recursive: true, force: true }); });
+afterEach(async () => { vi.useRealTimers(); await rm(root, { recursive: true, force: true }); });
 
-function requests(bytes = image) {
+function requests(bytes = image, lastModified?: string) {
   return vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify(source()), { headers: { "content-type": "application/json" } }))
-    .mockResolvedValueOnce(new Response(bytes, { headers: { "content-type": "image/png" } }));
+    .mockResolvedValueOnce(new Response(bytes, { headers: { "content-type": "image/png", ...(lastModified ? { "last-modified": lastModified } : {}) } }));
 }
 
 describe("Manna House source security", () => {
@@ -50,6 +50,15 @@ describe("Manna House source security", () => {
     expect(request).toHaveBeenCalledTimes(2);
     expect(request.mock.calls[0][1]).toMatchObject({ redirect: "error", cache: "no-store", signal: expect.any(AbortSignal) });
     expect(parseStudentRestaurantApiUrl("http://source.invalid/menu").protocol).toBe("http:");
+  });
+  it.each([
+    ["Sun, 11 Oct 2026 22:39:00 GMT", "2026-10-11T22:39:00.000Z"],
+    [undefined, null],
+    ["invalid", null],
+    ["Mon, 30 Feb 2026 00:00:00 GMT", null],
+  ])("carries only a valid image Last-Modified timestamp (%s)", async (header, expected) => {
+    const result = await downloadStudentRestaurantImage(apiUrl, requests(image, header));
+    expect(result).toEqual({ bytes: image, contentType: "image/png", lastModified: expected });
   });
   it.each([
     new Response("failed", { status: 500 }),
@@ -79,14 +88,53 @@ describe("Manna House collection", () => {
   it("analyzes first run, hashes bytes, and skips only a matching successful output pair", async () => {
     const analyze = vi.fn().mockResolvedValue(menu);
     const options = { apiUrl, outputPath, statePath, analyze };
-    await expect(collectStudentRestaurant({ ...options, request: requests() })).resolves.toBe("updated");
+    await expect(collectStudentRestaurant({ ...options, request: requests(image, "Sun, 11 Oct 2026 22:39:00 GMT") })).resolves.toBe("updated");
+    expect(analyze).toHaveBeenCalledWith({ bytes: image, contentType: "image/png", lastModified: "2026-10-11T22:39:00.000Z" });
     const before = await readFile(outputPath, "utf8");
     expect(JSON.parse(before)).toEqual(menu);
-    expect(JSON.parse(await readFile(statePath, "utf8"))).toEqual({ imageHash: studentRestaurantHash(image), outputHash: studentRestaurantHash(before) });
-    await expect(collectStudentRestaurant({ ...options, request: requests() })).resolves.toBe("unchanged");
+    expect(JSON.parse(await readFile(statePath, "utf8"))).toEqual({ analysisVersion: 2, imageHash: studentRestaurantHash(image), analysisContextHash: studentRestaurantHash(JSON.stringify(["2026-10-11T22:39:00.000Z", ""])), outputHash: studentRestaurantHash(before) });
+    await expect(collectStudentRestaurant({ ...options, request: requests(image, "Sun, 11 Oct 2026 22:39:00 GMT") })).resolves.toBe("unchanged");
     expect(analyze).toHaveBeenCalledTimes(1);
     expect(await readFile(outputPath, "utf8")).toBe(before);
-    expect(before).not.toMatch(/source\.invalid|imageHash|outputHash|uploadFileName|base64/);
+    expect(before).not.toMatch(/source\.invalid|analysisVersion|lastModified|imageHash|analysisContextHash|outputHash|uploadFileName|base64/);
+  });
+  it.each([undefined, 1, 2])("reanalyzes legacy checkpoints without the extraction context (%s)", async (analysisVersion) => {
+    await collectStudentRestaurant({ apiUrl, outputPath, statePath, analyze: async () => menu, request: requests() });
+    const previous = await readFile(outputPath, "utf8");
+    await writeFile(statePath, JSON.stringify({ analysisVersion, imageHash: studentRestaurantHash(image), outputHash: studentRestaurantHash(previous) }));
+    const analyze = vi.fn().mockResolvedValue(menu);
+    await expect(collectStudentRestaurant({ apiUrl, outputPath, statePath, analyze, request: requests() })).resolves.toBe("updated");
+    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(await readFile(statePath, "utf8")).analysisVersion).toBe(2);
+  });
+  it("reanalyzes unchanged image bytes when the date reference or model changes", async () => {
+    const analyze = vi.fn().mockResolvedValue(menu);
+    const options = { apiUrl, outputPath, statePath, analyze, analysisContext: "fixture-model-a" };
+    const header = "Sun, 11 Oct 2026 22:39:00 GMT";
+    const nextHeader = "Mon, 12 Oct 2026 22:39:00 GMT";
+    await expect(collectStudentRestaurant({ ...options, request: requests(image, header) })).resolves.toBe("updated");
+    await expect(collectStudentRestaurant({ ...options, request: requests(image, header) })).resolves.toBe("unchanged");
+    expect(analyze).toHaveBeenCalledTimes(1);
+    await expect(collectStudentRestaurant({ ...options, request: requests(image, nextHeader) })).resolves.toBe("updated");
+    await expect(collectStudentRestaurant({ ...options, analysisContext: "fixture-model-b", request: requests(image, nextHeader) })).resolves.toBe("updated");
+    expect(analyze).toHaveBeenCalledTimes(3);
+    const checkpoint = await readFile(statePath, "utf8");
+    expect(JSON.parse(checkpoint).analysisContextHash).toBe(studentRestaurantHash(JSON.stringify(["2026-10-12T22:39:00.000Z", "fixture-model-b"])));
+    expect(checkpoint).not.toMatch(/fixture-model|2026-10-|GMT|lastModified/);
+  });
+  it("keeps both weeks cached when the unchanged image is collected in the next week", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-12T00:00:00Z"));
+    const twoWeeks = { ...menu, days: [...menu.days, { ...menu.days[0], date: "2026-10-19", lunch: ["다음 주 메뉴"] }] };
+    const analyze = vi.fn().mockResolvedValue(twoWeeks);
+    const options = { apiUrl, outputPath, statePath, analyze };
+    await expect(collectStudentRestaurant({ ...options, request: requests() })).resolves.toBe("updated");
+    const before = await readFile(outputPath, "utf8");
+    vi.setSystemTime(new Date("2026-10-19T00:00:00Z"));
+    await expect(collectStudentRestaurant({ ...options, request: requests() })).resolves.toBe("unchanged");
+    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(await readFile(outputPath, "utf8"))).toEqual(twoWeeks);
+    expect(await readFile(outputPath, "utf8")).toBe(before);
   });
   it("detects changed bytes even at the same image path", async () => {
     const analyze = vi.fn().mockResolvedValue(menu);

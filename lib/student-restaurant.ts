@@ -57,13 +57,13 @@ export function parseStudentRestaurantMenu(value: unknown): StudentRestaurantMen
     new Date(object.updatedAt).toISOString().replace(".000Z", "Z") !== object.updatedAt.replace(".000Z", "Z")) invalid();
   const weekStart = dateValue(object.weekStart);
   const start = Date.parse(`${weekStart}T00:00:00Z`);
-  if (new Date(start).getUTCDay() !== 1 || !Array.isArray(object.days) || object.days.length > 7) invalid();
+  if (new Date(start).getUTCDay() !== 1 || !Array.isArray(object.days) || object.days.length > 14) invalid();
   const dates = new Set<string>();
   const days = object.days.map((value: unknown) => {
     const day = exactObject(value, ["date", "breakfast", "lunch", "dinner"]);
     const date = dateValue(day.date);
     const time = Date.parse(`${date}T00:00:00Z`);
-    if (dates.has(date) || time < start || time >= start + 7 * 86_400_000) invalid();
+    if (dates.has(date) || time < start || time >= start + 14 * 86_400_000) invalid();
     dates.add(date);
     return { date, breakfast: mealValue(day.breakfast), lunch: mealValue(day.lunch), dinner: mealValue(day.dinner) };
   }).sort((a, b) => a.date.localeCompare(b.date));
