@@ -27,6 +27,7 @@
 | `SHUTTLE_REFERER` | 필수 | endpoint 및 page와 동일한 origin의 upstream 요청 Referer |
 | `SHUTTLE_USER_AGENT` | 필수 | 셔틀 upstream 요청 User-Agent |
 | `SHUTTLE_CHALLENGE_SALT` | 필수 | 공개 클라이언트 challenge 응답 계산값. 서버 환경변수로 관리 |
+| `SHUTTLE_TRACE_HEADER_COMPAT_HOST` | 선택 | 자동 추적 헤더를 거부하는 셔틀 원본의 정확한 hostname. 비공개 서버 설정으로 관리하며 미설정 시 헤더 유지 |
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열. 운영 값은 Production 전용 |
