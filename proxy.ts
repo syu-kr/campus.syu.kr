@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { parseStudentRestaurantPublicUrl } from "@/lib/student-restaurant";
 
 import {
   DEFAULT_LOCALE,
@@ -183,6 +184,7 @@ function buildContentSecurityPolicy(nonce: string) {
       "https://*.kakaocdn.net",
       "https://*.daumcdn.net",
       getSentryOrigin(),
+      getCafeteriaOrigin(),
     ].filter(Boolean).join(" "),
     "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://libmo.syu.ac.kr",
     "worker-src 'self' blob:",
@@ -197,6 +199,14 @@ function getSentryOrigin() {
   try {
     const dsn = new URL(process.env.NEXT_PUBLIC_SENTRY_DSN || "");
     return dsn.protocol === "https:" ? dsn.origin : "";
+  } catch {
+    return "";
+  }
+}
+
+function getCafeteriaOrigin() {
+  try {
+    return parseStudentRestaurantPublicUrl(process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL?.trim() ?? "").origin;
   } catch {
     return "";
   }

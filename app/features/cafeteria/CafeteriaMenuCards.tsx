@@ -282,7 +282,7 @@ export function CafeteriaNoticeCards() {
   return (
     <div className="mt-8 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3">
       <p className="text-sm leading-6 text-neutral-700">
-        <strong>{text.noticeTitle}</strong> {text.mannaUnavailable}
+        <strong>{text.noticeTitle}</strong> {text.restaurantNotice}
       </p>
     </div>
   );
@@ -293,8 +293,7 @@ export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
 
   return (
     <Card
-      id="today-menu"
-      className="mb-8 scroll-mt-24 border border-neutral-200 shadow-none"
+      className="mb-8 border border-neutral-200 shadow-none"
       hover={false}
     >
       <div className="mb-6">
