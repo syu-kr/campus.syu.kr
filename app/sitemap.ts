@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
 import { localizePath } from "@/lib/i18n";
+import { getAnnouncementDetailPath } from "@/lib/announcement-path";
+import { getAnnouncementSitemapItems } from "@/lib/server/announcements";
+
+export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://campus.syu.kr";
 
@@ -52,7 +56,10 @@ const PUBLIC_ROUTES = [
 type PublicRoute = (typeof PUBLIC_ROUTES)[number];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const serviceNotices = await getAllServiceNotices();
+  const [serviceNotices, announcements] = await Promise.all([
+    getAllServiceNotices(),
+    getAnnouncementSitemapItems(),
+  ]);
   const staticRoutes: MetadataRoute.Sitemap = PUBLIC_ROUTES.map((route) =>
     createSitemapEntry(route, "ko"),
   );
@@ -79,11 +86,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const announcementRoutes: MetadataRoute.Sitemap = announcements.flatMap(
+    ({ category, id }) => {
+      const route = getAnnouncementDetailPath(category, id);
+      return (["ko", "en"] as const).map((locale) => ({
+        url: `${BASE_URL}${localizePath(route, locale)}`,
+        changeFrequency: "daily" as const,
+        priority: locale === "ko" ? 0.7 : 0.6,
+        alternates: createAlternates(route),
+      }));
+    },
+  );
+
   return [
     ...staticRoutes,
     ...englishStaticRoutes,
     ...noticeRoutes,
     ...englishNoticeRoutes,
+    ...announcementRoutes,
   ];
 }
 

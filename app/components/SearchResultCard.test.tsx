@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, it } from "vitest";
 import { getDictionary } from "@/lib/i18n";
 import { SearchResultCard } from "./SearchResultCard";
+import { LocaleProvider } from "./LocaleProvider";
 
 it("displays both phone numbers with a comma and offers separate call links", () => {
   const dictionary = getDictionary("ko");
@@ -37,4 +38,30 @@ it("updates a different department from one number to three and back to one", ()
   rerender(<SearchResultCard item={{ department, phone: "02-5555-6666", phoneNumbers: ["02-5555-6666"] }} />);
   expect(screen.getByRole("link", { name: callLabel })).toHaveAttribute("href", "tel:0255556666");
   expect(screen.queryByText(numbers[0])).not.toBeInTheDocument();
+});
+
+it("keeps original announcement links and exposes separate localized summary detail links", () => {
+  const title = "검색 테스트 공지";
+  const { container } = render(
+    <LocaleProvider locale="en">
+      <SearchResultCard item={{
+        id: "search/123",
+        title,
+        content: "검색 내용",
+        category: "campus",
+        date: "2026-10-14",
+        author: "학생처",
+        views: 0,
+        isImportant: false,
+        url: "https://www.syu.ac.kr/notice/123",
+      }} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("link", { name: title })).toHaveAttribute("target", "_blank");
+  const detail = screen.getByRole("link", { name: `${title} Summary details` });
+  expect(detail).toHaveAttribute("href", "/en/announcements/campus/search%2F123");
+  expect(detail).toHaveClass("pointer-events-auto");
+  expect(container.querySelector("a a")).toBeNull();
+  detail.focus();
+  expect(detail).toHaveFocus();
 });

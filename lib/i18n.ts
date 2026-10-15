@@ -526,8 +526,8 @@ export const dictionaries = {
         detailFallbackDescription: "공지사항 상세",
       },
       academicSchedule: {
-        metaTitle: "학사일정 | SYU CAMPUS",
-        metaDescription: "학사일정",
+        metaTitle: "삼육대학교 학사일정 | SYU CAMPUS",
+        metaDescription: "삼육대학교 학사일정에서 수강신청, 학기 시작과 종료, 시험 등 주요 일정을 확인하세요.",
         title: "학사일정",
         description: "2026학년도 학사일정을 확인하세요",
         previousMonth: "이전 달",
@@ -792,19 +792,19 @@ export const dictionaries = {
         },
       },
       announcements: {
-        allTitle: "전체 공지",
+        allTitle: "삼육대학교 전체 공지",
         allDescription:
           "학사공지, 캠퍼스공지, 장학금, SW중심대학 공지를 최신순으로 확인하세요",
         allError: "공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-        academicTitle: "학사공지",
+        academicTitle: "삼육대학교 학사공지",
         academicDescription: "학사 관련 주요 공지사항을 확인하세요",
         academicError:
           "학사공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-        campusTitle: "캠퍼스공지",
+        campusTitle: "삼육대학교 캠퍼스공지",
         campusDescription: "캠퍼스 생활 및 주요 공지사항을 확인하세요",
         campusError:
           "캠퍼스공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
-        swTitle: "SW중심대학 공지",
+        swTitle: "삼육대학교 SW중심대학 공지",
         swDescription: "SW·AI 교육, 장학금 및 프로그램 공지를 확인하세요",
         swError:
           "SW중심대학 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
@@ -820,6 +820,7 @@ export const dictionaries = {
         date: "작성일:",
         views: "조회수:",
         originalLink: "원문 공지 보기",
+        summaryDetail: "요약 상세",
         detailFallbackTitle: "공지사항",
         detailFallbackDescription: "공지사항 상세",
         detailContentFallback:
@@ -1022,7 +1023,7 @@ export const dictionaries = {
         shuttleTab: "셔틀버스",
         publicTransitTab: "대중교통",
         loading: "로딩 중...",
-        shuttleTitle: "셔틀버스",
+        shuttleTitle: "삼육대학교 셔틀버스 시간표",
         festivalShuttle: {
           title: "축제 야간 특별운행",
           noticeTitle: "천보축전 셔틀 운행 안내",
@@ -1184,7 +1185,7 @@ export const dictionaries = {
         },
       },
       cafeteria: {
-        title: "학식",
+        title: "삼육대학교 학식",
         description: "주간 식단 및 영양정보를 확인하세요",
         metaDescription:
           "삼육대학교 주간 식단과 오늘의 학식 정보를 확인하세요.",
@@ -2215,8 +2216,8 @@ export const dictionaries = {
         detailFallbackDescription: "Notice detail",
       },
       academicSchedule: {
-        metaTitle: "Academic Schedule | SYU CAMPUS",
-        metaDescription: "Academic schedule",
+        metaTitle: "Sahmyook University Academic Schedule | SYU CAMPUS",
+        metaDescription: "Check Sahmyook University academic dates for course registration, semester start and end, exams, and other key events.",
         title: "Academic Schedule",
         description: "Check the 2026 academic schedule",
         previousMonth: "Previous month",
@@ -2486,18 +2487,18 @@ export const dictionaries = {
         },
       },
       announcements: {
-        allTitle: "All Notices",
+        allTitle: "Sahmyook University Notices",
         allDescription:
           "Browse academic, campus, scholarship, and SW-centered university notices by newest first",
         allError: "Could not load notices. Please try again shortly.",
-        academicTitle: "Academic Notices",
+        academicTitle: "Sahmyook University Academic Notices",
         academicDescription: "Check important academic notices",
         academicError:
           "Could not load academic notices. Please try again shortly.",
-        campusTitle: "Campus Notices",
+        campusTitle: "Sahmyook University Campus Notices",
         campusDescription: "Check campus life and major notices",
         campusError: "Could not load campus notices. Please try again shortly.",
-        swTitle: "SW-Centered University Notices",
+        swTitle: "SW-Centered University Notices at Sahmyook University",
         swDescription:
           "Check SW and AI education, scholarship, and program notices",
         swError:
@@ -2514,6 +2515,7 @@ export const dictionaries = {
         date: "Published:",
         views: "Views:",
         originalLink: "View original notice",
+        summaryDetail: "Summary details",
         detailFallbackTitle: "Notice",
         detailFallbackDescription: "Notice detail",
         detailContentFallback:
@@ -2717,7 +2719,7 @@ export const dictionaries = {
         shuttleTab: "Shuttle Bus",
         publicTransitTab: "Public Transit",
         loading: "Loading...",
-        shuttleTitle: "Shuttle Bus",
+        shuttleTitle: "Sahmyook University Shuttle Timetable",
         festivalShuttle: {
           title: "Festival night shuttle",
           noticeTitle: "Cheonbo Festival shuttle service notice",
@@ -2881,7 +2883,7 @@ export const dictionaries = {
         },
       },
       cafeteria: {
-        title: "Cafeteria",
+        title: "Sahmyook University Cafeteria",
         description: "Check weekly menus and nutrition information",
         metaDescription:
           "Check Sahmyook University weekly cafeteria menus and today's meals.",

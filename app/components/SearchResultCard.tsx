@@ -13,6 +13,7 @@ import { Card } from "./Card";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 import { PhoneCallButton } from "./PhoneCallButton";
 import { getPhoneDisplayText } from "@/lib/phone";
+import { getAnnouncementDetailPath } from "@/lib/announcement-path";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
@@ -109,6 +110,14 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
           <p className="mt-2 text-xs text-neutral-500">
             {announcement.author} · {announcement.date}
           </p>
+          <Link
+            href={localizePath(getAnnouncementDetailPath(announcement.category, announcement.id), locale)}
+            prefetch={false}
+            aria-label={`${announcement.title} ${dictionary.pages.announcements.summaryDetail}`}
+            className="pointer-events-auto mt-2 inline-block rounded px-2 py-2 text-sm font-medium text-primary-700 hover:underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            {dictionary.pages.announcements.summaryDetail}
+          </Link>
         </div>
       </div>
     </Card>

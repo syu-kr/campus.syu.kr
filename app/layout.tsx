@@ -147,6 +147,8 @@ export default async function RootLayout({
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const pathname = await getRequestPathname();
   const isRoommatePage = /^\/(?:en\/)?campus\/roommates(?:\/|$)/.test(pathname);
+  const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
+  const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
   return (
     <html lang={locale} data-scroll-behavior="smooth">
@@ -155,6 +157,13 @@ export default async function RootLayout({
           name="google-site-verification"
           content="Gy1EGZh0gfxtv6UGI1szYk9uo1YzjaDMyoHRca7EZj4"
         />
+        {/* Ownership verifiers must see these tags in the initial HTML head. */}
+        {naverVerification && (
+          <meta name="naver-site-verification" content={naverVerification} />
+        )}
+        {bingVerification && (
+          <meta name="msvalidate.01" content={bingVerification} />
+        )}
         <meta name="theme-color" content="#3182F6" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

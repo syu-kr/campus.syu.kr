@@ -10,7 +10,7 @@ import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
-import { fetchAnnouncementPage } from "@/lib/api";
+import { fetchAnnouncementPage, type AnnouncementPageResponse } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { useUrlSearch } from "@/lib/use-url-search";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
@@ -31,6 +31,7 @@ interface AnnouncementListPageProps {
   title: string;
   description: string;
   errorMessage: string;
+  initialPage?: AnnouncementPageResponse;
 }
 
 export function AnnouncementListPage({
@@ -38,6 +39,7 @@ export function AnnouncementListPage({
   title,
   description,
   errorMessage,
+  initialPage,
 }: AnnouncementListPageProps) {
   const dictionary = useDictionary();
   const [inputQuery, setInputQuery] = useUrlSearch();
@@ -54,6 +56,7 @@ export function AnnouncementListPage({
         limit: ITEMS_PER_PAGE,
         signal,
       }),
+    initialData: !searchQuery && currentPage === 1 ? initialPage : undefined,
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });

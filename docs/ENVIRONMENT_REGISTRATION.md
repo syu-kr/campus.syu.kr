@@ -30,6 +30,8 @@
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열. 운영 값은 Production 전용 |
+| `NAVER_SITE_VERIFICATION` | 선택 | 네이버 소유확인 메타태그의 `content` 값. Production에 등록하고 재배포. HTML에서 공개되며 미설정·공백이면 태그 생략 |
+| `BING_SITE_VERIFICATION` | 선택 | Bing `msvalidate.01` 메타태그의 `content` 값. Production에 등록하고 재배포. GSC 가져오기·DNS 인증 사용 시 불필요 |
 | `CRAWL_DATA_BASE_URL` | 선택 | 일일 크롤링 데이터 Pages base URL override. 기본 공식 URL 사용 시 등록하지 않음 |
 | `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키. 환경별로 별도 값 사용 |
 | `RATE_LIMIT_SECRET` | 운영 필수 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. Production에서는 미등록 시 public write API가 실패함 |
@@ -44,6 +46,8 @@
 | `ADMIN_CLASSIFIER_AI_TIMEOUT_MS` | 선택 | 문의/제보 AI 분류 timeout. 기본값 `15000` |
 | `ADMIN_CLASSIFIER_AI_MAX_RETRIES` | 선택 | OpenAI SDK 재시도 횟수. 기본값 `2` |
 | `TOKEN_CLEANUP_DAYS` | 선택 | 오래된 FCM 토큰 삭제 기준 일수. 기본값 `90` |
+
+네이버·Bing 인증값 발급, 초기 HTML 확인과 사이트맵 제출은 [SEARCH_INDEXING_GUIDE.md](./SEARCH_INDEXING_GUIDE.md)를 따릅니다.
 
 ### RATE_LIMIT_SECRET 생성 및 등록
 

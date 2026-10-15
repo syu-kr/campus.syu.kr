@@ -19,11 +19,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.campus.menus.busTitle} | SYU CAMPUS`,
-    description: dictionary.campus.menus.busDescription,
+    title: `${dictionary.pages.busInfo.shuttleTitle} | SYU CAMPUS`,
+    description: `${dictionary.pages.busInfo.shuttleDescriptionPrefix}. ${dictionary.campus.menus.busDescription}`,
     openGraph: {
-      title: `${dictionary.campus.menus.busTitle} | SYU CAMPUS`,
-      description: dictionary.campus.menus.busDescription,
+      title: `${dictionary.pages.busInfo.shuttleTitle} | SYU CAMPUS`,
+      description: `${dictionary.pages.busInfo.shuttleDescriptionPrefix}. ${dictionary.campus.menus.busDescription}`,
       type: "website",
       url: `https://campus.syu.kr${localizePath("/campus/bus-info", locale)}`,
     },

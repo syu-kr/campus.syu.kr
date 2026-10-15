@@ -125,6 +125,18 @@ export async function getAnnouncementById(
   return withAiSummary ?? announcement;
 }
 
+export async function getAnnouncementSitemapItems(): Promise<
+  Pick<Announcement, "category" | "id">[]
+> {
+  const sources = await Promise.all(CATEGORY_ORDER.map(readAnnouncements));
+
+  return sources.flatMap(({ items }, index) =>
+    items
+      .filter((item) => item.category === CATEGORY_ORDER[index])
+      .map(({ category, id }) => ({ category, id })),
+  );
+}
+
 async function readAnnouncements(
   category: AnnouncementCategory,
 ): Promise<AnnouncementSource> {
