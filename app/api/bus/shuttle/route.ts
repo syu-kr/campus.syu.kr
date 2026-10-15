@@ -169,7 +169,7 @@ function fetchTextFromUrl(
 
           if (statusCode < 200 || statusCode >= 300) {
             const error = new Error(
-              `Shuttle location API returned ${statusCode}`,
+              `Shuttle location API ${options.method ?? "GET"} ${url.pathname} returned ${statusCode}`,
             ) as Error & { statusCode: number };
             error.statusCode = statusCode;
             reject(error);
@@ -183,6 +183,12 @@ function fetchTextFromUrl(
         });
       },
     );
+
+    if (url.hostname === process.env.SHUTTLE_TRACE_HEADER_COMPAT_HOST) {
+      // This explicitly configured upstream rejects the platform's tracing headers.
+      request.removeHeader("x-vercel-id");
+      request.removeHeader("x-invocation-id");
+    }
 
     request.setTimeout(SHUTTLE_REQUEST_TIMEOUT_MS, () => {
       request.destroy(new Error("Shuttle location API request timed out"));
