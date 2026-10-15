@@ -9,6 +9,13 @@ export type AnswerSummary = {
   question: string;
   answer: string;
   source: string;
-  updatedAt: string;
+  updatedAt?: string;
   items?: AnswerSummaryItem[];
+};
+
+export type AnswerSource = {
+  name: string;
+  url: string;
+  checkedAt?: string | null;
+  note?: string;
 };

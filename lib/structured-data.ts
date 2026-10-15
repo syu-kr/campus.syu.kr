@@ -27,6 +27,7 @@ export type SchemaOrgDocument<TNode extends SchemaOrgNode> = TNode & {
 export type FAQPageQuestion = {
   questionName: string;
   acceptedAnswerText: string;
+  citationUrls?: string[];
 };
 
 export type ArticleSchemaInput = {
@@ -125,6 +126,7 @@ export function createFAQPageSchema({
       acceptedAnswer: {
         "@type": "Answer",
         text: item.acceptedAnswerText,
+        ...(item.citationUrls?.length ? { citation: item.citationUrls } : {}),
       },
     })),
   };

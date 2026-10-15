@@ -1,74 +1,30 @@
-import { Suspense } from "react";
 import { headers } from "next/headers";
 
-import { SchedulePageSkeleton } from "@/app/components/PageLoadingSkeletons";
-import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import SchedulePageClient from "@/app/features/academic/SchedulePageClient";
-import { createAcademicScheduleAnswerSummary } from "@/lib/academic-aeo";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
-import {
-  LOCALE_HEADER_NAME,
-  getDictionary,
-  localizePath,
-  normalizeLocale,
-} from "@/lib/i18n";
 import {
   getHomeAcademicSchedules,
   getHomePublicHolidays,
 } from "@/lib/server/home-data";
-import { createFAQPageSchema } from "@/lib/structured-data";
 
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
-const SITE_ORIGIN = "https://campus.syu.kr";
 
-export default function SchedulePage() {
-  return (
-    <Suspense fallback={<SchedulePageSkeleton />}>
-      <ScheduleContent />
-    </Suspense>
-  );
-}
-
-async function ScheduleContent() {
+export default async function SchedulePage() {
   const headerStore = await headers();
-  const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
-  const now = getKoreaNow();
-  const todayInfo = getTodayInfo(now);
   const [initialSchedules, initialPublicHolidays] = await Promise.all([
     getHomeAcademicSchedules(),
     getHomePublicHolidays(),
   ]);
-  const answerSummary = createAcademicScheduleAnswerSummary({
-    locale,
-    now,
-    schedules: initialSchedules,
-    publicHolidays: initialPublicHolidays,
-    todayInfo,
-  });
-  const dictionary = getDictionary(locale);
-
+  const now = getKoreaNow();
+  const todayInfo = getTodayInfo(now);
   return (
-    <>
-      <StructuredDataScript
-        id="academic-schedule-answer-schema"
-        nonce={nonce}
-        data={createFAQPageSchema({
-          inLanguage: dictionary.meta.inLanguage,
-          mainEntity: [
-            {
-              acceptedAnswerText: answerSummary.answer,
-              questionName: answerSummary.question,
-            },
-          ],
-          url: `${SITE_ORIGIN}${localizePath("/academic/schedule", locale)}`,
-        })}
-      />
-      <SchedulePageClient
-        initialDateStringDot={todayInfo.dateStringDot}
-        initialSchedules={initialSchedules}
-        initialPublicHolidays={initialPublicHolidays}
-      />
-    </>
+    <SchedulePageClient
+      initialDateStringDot={todayInfo.dateStringDot}
+      initialNowIso={now.toISOString()}
+      initialSchedules={initialSchedules}
+      initialPublicHolidays={initialPublicHolidays}
+      nonce={nonce}
+    />
   );
 }

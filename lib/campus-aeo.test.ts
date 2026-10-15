@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import periods from "@/public/data/shuttle-special-periods.json";
 import type { PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
-import { createShuttleAnswerSummary } from "./campus-aeo";
+import { createCafeteriaAnswerSummary, createShuttleAnswerSummary } from "./campus-aeo";
+import { getTodayInfo } from "./home";
 import { getCurrentShuttleSummary } from "./shuttle-schedule";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "./public-holidays";
 import { getDictionary } from "./i18n";
@@ -10,6 +11,20 @@ import { getDictionary } from "./i18n";
 const now = new Date("2027-01-02T11:55:00+09:00");
 const evidence = { sourceUrl: "https://www.syu.ac.kr/school-life/school-bus/",
   verifiedAt: "2026-12-31T12:00:00+09:00" };
+
+it.each(["ko", "en"] as const)("does not turn request time into cafeteria or baseline shuttle verification in %s", (locale) => {
+  const requestNow = new Date("2026-10-15T12:00:00+09:00");
+  const cafeteria = createCafeteriaAnswerSummary({ locale, now: requestNow, menus: [], todayInfo: getTodayInfo(requestNow) });
+  const shuttle = createShuttleAnswerSummary({ locale, now: requestNow, summary: getCurrentShuttleSummary({ buses, now: requestNow }) });
+  expect(cafeteria.updatedAt).toBeUndefined();
+  expect(shuttle.updatedAt).toBeUndefined();
+});
+
+it.each(["ko", "en"] as const)("gives a stale rather than closed or current-menu answer when freshness cannot be verified in %s", (locale) => {
+  const requestNow = new Date("2026-10-15T12:00:00+09:00");
+  const answer = createCafeteriaAnswerSummary({ locale, now: requestNow, menus: [], todayInfo: getTodayInfo(requestNow), stale: true });
+  expect(answer.answer).toBe(getDictionary(locale).pages.cafeteria.staleMenuMessage);
+});
 
 describe("verified shuttle answers", () => {
   it.each(["ko", "en"] as const)("uses the confirmed exception source in %s", (locale) => {

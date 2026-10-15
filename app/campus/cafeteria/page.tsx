@@ -1,66 +1,22 @@
-import { Suspense } from "react";
 import { headers } from "next/headers";
 
-import { CafeteriaPageSkeleton } from "@/app/components/PageLoadingSkeletons";
-import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import { CafeteriaPageClient } from "@/app/features/cafeteria/CafeteriaPageClient";
-import { createCafeteriaAnswerSummary } from "@/lib/campus-aeo";
-import { getKoreaNow, getTodayInfo } from "@/lib/home";
-import {
-  LOCALE_HEADER_NAME,
-  getDictionary,
-  localizePath,
-  normalizeLocale,
-} from "@/lib/i18n";
-import { getHomeCafeteriaMenus } from "@/lib/server/home-data";
-import { createFAQPageSchema } from "@/lib/structured-data";
+import { getKoreaNow } from "@/lib/home";
+import { getHomeCafeteriaSnapshot } from "@/lib/server/home-data";
 
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
-const SITE_ORIGIN = "https://campus.syu.kr";
 
-export default function CafeteriaPage() {
-  return (
-    <Suspense fallback={<CafeteriaPageSkeleton />}>
-      <CafeteriaContent />
-    </Suspense>
-  );
-}
-
-async function CafeteriaContent() {
+export default async function CafeteriaPage() {
   const headerStore = await headers();
-  const locale = normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
+  const initialSnapshot = await getHomeCafeteriaSnapshot();
   const now = getKoreaNow();
-  const todayInfo = getTodayInfo(now);
-  const initialMenus = await getHomeCafeteriaMenus();
-  const answerSummary = createCafeteriaAnswerSummary({
-    locale,
-    menus: initialMenus,
-    now,
-    todayInfo,
-  });
-  const dictionary = getDictionary(locale);
 
   return (
-    <>
-      <StructuredDataScript
-        id="cafeteria-answer-schema"
-        nonce={nonce}
-        data={createFAQPageSchema({
-          inLanguage: dictionary.meta.inLanguage,
-          mainEntity: [
-            {
-              acceptedAnswerText: answerSummary.answer,
-              questionName: answerSummary.question,
-            },
-          ],
-          url: `${SITE_ORIGIN}${localizePath("/campus/cafeteria", locale)}`,
-        })}
-      />
-      <CafeteriaPageClient
-        initialMenus={initialMenus}
-        initialNowIso={now.toISOString()}
-      />
-    </>
+    <CafeteriaPageClient
+      initialSnapshot={initialSnapshot}
+      initialNowIso={now.toISOString()}
+      nonce={nonce}
+    />
   );
 }

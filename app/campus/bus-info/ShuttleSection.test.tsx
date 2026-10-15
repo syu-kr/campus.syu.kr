@@ -84,11 +84,11 @@ describe("public holiday shuttle display", () => {
     holidaySnapshot = { ...holidaySnapshot!, lastSuccessAt: `${date}T00:00:00+09:00`,
       holidays: [{ date, names: [holiday] }] };
     const cleanup = mount();
-    await screen.findByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", holiday));
+    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", holiday))).toHaveLength(2);
     expect(screen.queryByText(text.pages.busInfo.liveLocation)).not.toBeInTheDocument();
     expect(screen.queryByText(text.publicHolidays.shuttleUnconfirmed)).not.toBeInTheDocument();
     expect(screen.queryByText(new RegExp(text.publicHolidays.updatedAt))).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: text.publicHolidays.source })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: text.publicHolidays.source })).toHaveAttribute("href", PUBLIC_HOLIDAY_SOURCE_URL);
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
     expect(screen.getByText("12:00")).toBeInTheDocument();
@@ -105,7 +105,7 @@ describe("public holiday shuttle display", () => {
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     resolveHolidays({ ...holidaySnapshot!, holidays: [{ date: "2026-10-05", names: ["대체공휴일(개천절)"] }] });
-    await screen.findByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "대체공휴일(개천절)"));
+    expect(await screen.findAllByText(text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "대체공휴일(개천절)"))).toHaveLength(2);
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     cleanup();
   });
@@ -152,11 +152,11 @@ describe("public holiday shuttle display", () => {
     const holidayMessage = text.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", "한글날");
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const view = render(<QueryClientProvider client={client}><ShuttleSection /></QueryClientProvider>);
-    await screen.findByText(isHoliday ? holidayMessage : text.pages.busInfo.upcomingBuses);
+    await screen.findAllByText(isHoliday ? holidayMessage : text.pages.busInfo.upcomingBuses);
     holidayRequestFailure = true;
     await client.refetchQueries({ queryKey: ["public-holidays"] });
     await waitFor(() => expect(client.getQueryState(["public-holidays"])?.status).toBe("error"));
-    expect(await screen.findByText(isHoliday ? holidayMessage : text.publicHolidays.shuttleUnconfirmed)).toBeInTheDocument();
+    expect(await screen.findAllByText(isHoliday ? holidayMessage : text.publicHolidays.shuttleUnconfirmed)).toHaveLength(isHoliday ? 2 : 1);
     expect(screen.queryByText(text.pages.busInfo.upcomingBuses)).not.toBeInTheDocument();
     if (isHoliday) expect(fetchBusLocationStatus).not.toHaveBeenCalled();
     view.unmount();
@@ -181,7 +181,7 @@ describe("public holiday shuttle display", () => {
       sourceUrl: "https://www.syu.ac.kr/school-life/school-bus/", verifiedAt: "2026-10-08" }] };
     const cleanup = mount();
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
-    expect(screen.getByText(text.publicHolidays.shuttleClosed)).toBeInTheDocument();
+    expect(screen.getAllByText(text.publicHolidays.shuttleClosed)).toHaveLength(2);
     expect(screen.queryByText(/^현재$/)).not.toBeInTheDocument();
     expect(screen.queryByText("곧 출발하는 버스")).not.toBeInTheDocument();
     expect(fetchBusLocationStatus).not.toHaveBeenCalled();
@@ -243,7 +243,7 @@ describe("public holiday shuttle display", () => {
     expect(screen.queryByText(text.publicHolidays.shuttleHolidayClosed)).not.toBeInTheDocument();
     expect(screen.queryByText("화랑대역(5번 출구) → 학교")).not.toBeInTheDocument();
     expect(screen.queryByText(text.pages.busInfo.scheduleNotice)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: text.pages.busInfo.verifiedSource }))
+    expect(within(document.getElementById("shuttle-schedules")!).getByRole("link", { name: text.pages.busInfo.verifiedSource }))
       .toHaveAttribute("href", "https://www.syu.ac.kr/school-life/school-bus/");
     fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
     expect(screen.queryByText(/최종 업데이트: 2026-04-29/)).not.toBeInTheDocument();

@@ -8,6 +8,7 @@ import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { Button } from "@/app/components/Button";
+import { AnswerSummarySection } from "@/app/components/AnswerSummarySection";
 import {
   CafeteriaClosedCard,
   CafeteriaInfoCards,
@@ -15,27 +16,40 @@ import {
   TodayMenuCard,
   WeeklyMenuCard,
 } from "@/app/features/cafeteria/CafeteriaMenuCards";
-import { useDictionary } from "@/app/components/LocaleProvider";
-import { fetchCafeteriaMenu } from "@/lib/api";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { fetchCafeteriaSnapshot } from "@/lib/api";
+import { createCafeteriaAnswerSummary } from "@/lib/campus-aeo";
 import {
   isCafeteriaClosedDay,
   isCafeteriaMenuDataStale,
+  type CafeteriaSnapshot,
 } from "@/lib/cafeteria";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
-import type { CafeteriaMenu } from "@/types";
 
 interface CafeteriaPageClientProps {
-  initialMenus: CafeteriaMenu[];
+  initialSnapshot: CafeteriaSnapshot;
   initialNowIso: string;
+  nonce?: string;
 }
 
 export function CafeteriaPageClient({
-  initialMenus,
+  initialSnapshot,
   initialNowIso,
+  nonce,
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
+  const locale = useLocale();
   const text = dictionary.pages.cafeteria;
-  const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
+  const [now, setNow] = useState(() => new Date(initialNowIso));
+
+  const { data: snapshot, isLoading, isError, refetch } = useQuery({
+    queryKey: ["cafeteria-weekly-snapshot"],
+    queryFn: fetchCafeteriaSnapshot,
+    initialData: initialSnapshot,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+  });
+  const menus = snapshot.menus;
 
   useEffect(() => {
     setNow(getKoreaNow());
@@ -44,20 +58,12 @@ export function CafeteriaPageClient({
       setNow(getKoreaNow());
     }, 60 * 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  const { data: menus, isLoading, isError, refetch } = useQuery({
-    queryKey: ["cafeteria-weekly"],
-    queryFn: () => fetchCafeteriaMenu(),
-    initialData: initialMenus,
-    staleTime: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
-  });
+  }, [snapshot]);
 
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
   const hasStaleMenuData = useMemo(
-    () => isCafeteriaMenuDataStale(menus, todayInfo.dateStringDash),
-    [menus, todayInfo.dateStringDash],
+    () => snapshot.stale || isError || isCafeteriaMenuDataStale(menus, todayInfo.dateStringDash),
+    [isError, snapshot.stale, menus, todayInfo.dateStringDash],
   );
   const shouldShowStaleToday =
     hasStaleMenuData && !todayInfo.isWeekend;
@@ -82,6 +88,25 @@ export function CafeteriaPageClient({
       </div>
 
       <CrawlDataStatus fileNames={["cafeteria-menu.json"]} />
+
+      <AnswerSummarySection
+        summary={createCafeteriaAnswerSummary({
+          locale,
+          menus,
+          now,
+          todayInfo,
+          stale: hasStaleMenuData,
+        })}
+        sources={[{
+          name: text.answer.source,
+          url: "https://www.syu.ac.kr/school-life/facility-information/cafeteria/",
+          checkedAt: snapshot.checkedAt,
+        }]}
+        schemaId="cafeteria-answer-schema"
+        path="/campus/cafeteria"
+        basisAt={now.toISOString()}
+        nonce={nonce}
+      />
 
       {isError && (
         <StateCard

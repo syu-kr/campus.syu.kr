@@ -109,6 +109,17 @@ If GSC shows only the English URL, check these in order:
 4. The Korean page has an `x-default` alternate pointing to the Korean URL.
 5. The Korean URL is not blocked by `robots.txt`, middleware, or deployment protection.
 
+## Answer summaries and source timestamps
+
+- Cafeteria, shuttle, and academic schedule pages render the visible answer and FAQ JSON-LD from the same client snapshot, including the server-rendered initial response. Date changes and query refreshes update both together.
+- These pages await initial data before rendering, and the default shuttle tab uses a direct import. This keeps answers and sources visible without JavaScript instead of leaving them in hidden streaming segments; the first response waits for the existing data reads.
+- `Answer as of` is the time used to calculate the answer. It is not evidence that a source was checked at that time.
+- Cafeteria uses the `sourceHealth.lastSuccessAt` attached to the same menu snapshot. The API includes additive `checkedAt` and `stale` fields; existing menu fields and array-returning helpers remain compatible. Missing health metadata or a bundled fallback has no recorded check time. A stale/failed refresh does not present retained meals as a confirmed current menu.
+- Public holidays use their own `lastSuccessAt`. A public-holiday timestamp is never presented as verification of academic dates or the base shuttle timetable.
+- Confirmed school shuttle exceptions use their recorded official `sourceUrl` and `verifiedAt`. The base timetable's `lastUpdated` is only a data reference date; special periods without recorded verification remain unverified.
+- The static academic schedule and base shuttle files currently have no source-check timestamp. They explicitly show `Check time not recorded`. Request time, file modification time, publication time, and Git commit dates are not substituted. Future data collection should record verification separately when it actually happens.
+- Check the Korean and English initial HTML for one page-answer JSON-LD script, matching visible question/answer text, official source links, and separate per-source check times. Retry/failure, stale data, midnight, and shuttle departure boundaries should keep visible answers and JSON-LD consistent.
+
 ## Monitoring
 
 Track these signals weekly after release:

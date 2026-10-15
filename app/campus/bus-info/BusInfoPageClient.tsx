@@ -1,23 +1,15 @@
 "use client";
 
 import clsx from "clsx";
-import dynamic from "next/dynamic";
 import { useState } from "react";
 
 import { Container } from "@/app/components/Container";
 import { useDictionary } from "@/app/components/LocaleProvider";
-import { ShuttleSectionSkeleton } from "@/app/components/PageLoadingSkeletons";
 import PublicTransitSection from "./PublicTransitSection";
+import ShuttleSection from "./ShuttleSection";
+import type { ShuttleInitialData } from "./ShuttleSection";
 
-function ShuttleSectionLoading() {
-  return <ShuttleSectionSkeleton />;
-}
-
-const ShuttleSection = dynamic(() => import("./ShuttleSection"), {
-  loading: () => <ShuttleSectionLoading />,
-});
-
-export default function BusInfoPageClient() {
+export default function BusInfoPageClient({ initialData }: { initialData: ShuttleInitialData }) {
   const dictionary = useDictionary();
   const text = dictionary.pages.busInfo;
   const [activeTab, setActiveTab] = useState<"shuttle" | "public-transit">(
@@ -54,7 +46,7 @@ export default function BusInfoPageClient() {
       </Container>
 
       <div>
-        {activeTab === "shuttle" && <ShuttleSection />}
+        {activeTab === "shuttle" && <ShuttleSection initialData={initialData} />}
         {activeTab === "public-transit" && <PublicTransitSection />}
       </div>
     </>
