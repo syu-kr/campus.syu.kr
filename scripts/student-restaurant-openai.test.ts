@@ -15,7 +15,9 @@ beforeAll(async () => {
   const pixels = Buffer.alloc(40 * 12 * 3);
   for (let y = 0; y < 12; y++) {
     for (let x = 0; x < 40; x++) {
-      pixels.set(x < 19 ? [255, 0, 0] : x > 20 ? [0, 255, 0] : [0, 0, 255], (y * 40 + x) * 3);
+      const color = x >= 19 && x <= 20 || y >= 5 && y <= 6 ? [0, 0, 255]
+        : y < 5 ? x < 19 ? [255, 0, 0] : [0, 255, 0] : x < 19 ? [255, 255, 0] : [255, 0, 255];
+      pixels.set(color, (y * 40 + x) * 3);
     }
   }
   image.bytes = await sharp(pixels, { raw: { width: 40, height: 12, channels: 3 } }).png().toBuffer();
@@ -33,24 +35,30 @@ describe("Manna House OpenAI extraction", () => {
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
   });
-  it("sends the original plus overlapping full-height 2x PNG crops without source metadata", async () => {
+  it("sends the original plus four overlapping 3x PNG quadrants without source metadata", async () => {
     await analyzeStudentRestaurantImage(image, options);
     const content = create.mock.calls[0][0].input[0].content;
     const images = content.filter((part: { type: string }) => part.type === "input_image");
-    expect(images).toHaveLength(3);
-    expect(content[2].text).toContain("왼쪽");
-    expect(content[4].text).toContain("오른쪽");
+    expect(images).toHaveLength(5);
+    for (const [index, label] of ["상단 왼쪽", "상단 오른쪽", "하단 왼쪽", "하단 오른쪽"].entries()) {
+      expect(content[2 + index * 2].text).toContain(label);
+    }
     expect(create.mock.calls[0][0].instructions).toContain("중복 생성하지 않는다");
     expect(create.mock.calls[0][0].instructions).toContain("판독 가능한 메뉴를 null로 처리하지 않는다");
     for (const [index, part] of images.slice(1).entries()) {
       expect(part.image_url).toMatch(/^data:image\/png;base64,/);
       const bytes = Buffer.from(part.image_url.split(",")[1], "base64");
-      expect(await sharp(bytes).metadata()).toMatchObject({ format: "png", width: 42, height: 24 });
+      expect(await sharp(bytes).metadata()).toMatchObject({ format: "png", width: 63, height: 21 });
       const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
-      const firstPixel = [...data.subarray(0, 3)];
-      const lastPixel = [...data.subarray((info.width - 1) * info.channels, (info.width - 1) * info.channels + 3)];
-      expect(firstPixel).toEqual(index === 0 ? [255, 0, 0] : [0, 0, 255]);
-      expect(lastPixel).toEqual(index === 0 ? [0, 0, 255] : [0, 255, 0]);
+      const corners = [0, info.width - 1, (info.height - 1) * info.width, info.width * info.height - 1]
+        .map((pixel) => [...data.subarray(pixel * info.channels, pixel * info.channels + 3)]);
+      const blue = [0, 0, 255];
+      expect(corners).toEqual([
+        [[255, 0, 0], blue, blue, blue],
+        [blue, [0, 255, 0], blue, blue],
+        [blue, blue, [255, 255, 0], blue],
+        [blue, blue, blue, [255, 0, 255]],
+      ][index]);
     }
     expect(JSON.stringify(create.mock.calls[0][0])).not.toContain(image.lastModified);
   });
