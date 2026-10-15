@@ -33,12 +33,9 @@ describe("Manna House OpenAI extraction", () => {
     expect(request).toMatchObject({ model: "configured-model", store: false, text: { format: { type: "json_schema", strict: true } } });
     expect(request.reasoning).toBeUndefined();
     expect(request.input[0].content).toHaveLength(11);
-    expect(create).toHaveBeenCalledTimes(4);
+    expect(create).toHaveBeenCalledTimes(2);
     expect(create.mock.calls[1][0].input).toEqual(request.input);
     expect(create.mock.calls[1][0].text.format.name).toBe("student_restaurant_ingredients");
-    expect(create.mock.calls[2][0].input[0].content).toHaveLength(6);
-    expect(create.mock.calls[2][0].input).toEqual(create.mock.calls[3][0].input);
-    expect(create.mock.calls[2][0].input[0].content[1]).toEqual(request.input[0].content[1]);
     expect(request.input[0].content[1]).toEqual({ type: "input_image", image_url: `data:image/png;base64,${image.bytes.toString("base64")}`, detail: "high" });
     expect(JSON.stringify(request)).not.toMatch(/source\.invalid|uploadFileName|apiUrl/);
     const tiles = request.input[0].content.slice(2);
@@ -56,15 +53,52 @@ describe("Manna House OpenAI extraction", () => {
     const sourceGray = await sharp(image.bytes).greyscale().raw().toBuffer();
     expect(firstPixels).toEqual([0, 2, 6, 20, 22, 26, 40, 42, 46].map((index) => sourceGray[index]));
   });
+  it("separates blue punctuation at source resolution without changing the original image", async () => {
+    const pixels = Buffer.alloc(10 * 8 * 4, 255);
+    const put = (x: number, y: number, rgba: number[]) => pixels.set(rgba, (y * 10 + x) * 4);
+    put(0, 0, [0, 0, 0, 255]);
+    put(1, 0, [110, 110, 110, 255]);
+    put(2, 0, [0, 128, 255, 255]);
+    put(1, 1, [0, 128, 255, 255]);
+    put(0, 2, [254, 254, 255, 255]);
+    put(2, 2, [0, 0, 255, 0]);
+    const bytes = await sharp(pixels, { raw: { width: 10, height: 8, channels: 4 } }).png().toBuffer();
+    const originalBytes = Buffer.from(bytes);
+    await analyzeStudentRestaurantImage({ ...image, bytes }, options);
+    const menu = create.mock.calls[0][0].input[0].content;
+    const ingredients = create.mock.calls[1][0].input[0].content;
+    expect(menu).toHaveLength(11);
+    expect(ingredients).toHaveLength(11);
+    expect(menu[1]).toEqual(ingredients[1]);
+    expect(menu[1].image_url).toBe(`data:image/png;base64,${originalBytes.toString("base64")}`);
+    expect(bytes.equals(originalBytes)).toBe(true);
+    const { data, info } = await sharp(Buffer.from(ingredients[2].image_url.split(",")[1], "base64"))
+      .toColourspace("srgb").removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    expect(info).toMatchObject({ width: 16, height: 16, channels: 3 });
+    const pixel = (x: number, y: number) => [...data.subarray((y * info.width + x) * 3, (y * info.width + x) * 3 + 3)];
+    for (const [x, y] of [[2, 0], [1, 1], [0, 2]]) {
+      expect(pixel(x * 4, y * 4)).toEqual([0, 0, 0]);
+      expect(pixel(x * 4 + 3, y * 4 + 3)).toEqual([0, 0, 0]);
+    }
+    for (const [x, y] of [[0, 0], [1, 0], [2, 2]]) expect(pixel(x * 4, y * 4)).toEqual([255, 255, 255]);
+    const gray = await sharp(Buffer.from(menu[2].image_url.split(",")[1], "base64"))
+      .removeAlpha().raw().toBuffer();
+    expect(gray[0]).toBe(0);
+  });
+  it("uses the unchanged gray tiles when a grayscale palette image has no blue ink", async () => {
+    const bytes = await sharp(Buffer.alloc(4 * 4, 128), { raw: { width: 4, height: 4, channels: 1 } })
+      .png({ palette: true }).toBuffer();
+    await analyzeStudentRestaurantImage({ ...image, bytes }, options);
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls[1][0].input).toEqual(create.mock.calls[0][0].input);
+  });
   it("preserves literal spelling and raw ingredients without normalizing or deduplicating", async () => {
-    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩 / 괄호(가)"] }] };
+    const literal = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문쨩/괄호(가)"] }] };
     const ingredients = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: ["콩,밀/계란", "콩,밀/계란"] }] };
     create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(literal) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredients) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...literal, days: [{ ...literal.days[0], lunch: ["원문쨩/괄호(가)"] }] }) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...ingredients, days: [{ ...ingredients.days[0], lunch: ["콩, 밀 / 계란", "콩, 밀 / 계란"] }] }) });
+      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredients) });
     const result = await analyzeStudentRestaurantImage(image, options);
-    expect(result.days[0].lunch).toEqual(["원문쨩 / 괄호(가)"]);
+    expect(result.days[0].lunch).toEqual(["원문쨩/괄호(가)"]);
     expect(result.days[0].ingredients).toEqual({ ...ingredientMeals, lunch: ["콩,밀/계란", "콩,밀/계란"] });
   });
   it("keeps enlarged tiles within 4096 pixels and preserves a nonzero thin edge", async () => {
@@ -89,26 +123,28 @@ describe("Manna House OpenAI extraction", () => {
     expect(first[0]).toBe(0);
     expect(last.data[(last.info.width - 1) * last.info.channels]).toBe(0);
   });
-  it("starts all four independent transcriptions before a response and waits for all", async () => {
-    const responses: Array<(value: unknown) => void> = [];
+  it("starts both independent transcriptions before either response and waits for both", async () => {
+    let menuResponse!: (value: unknown) => void;
+    let ingredientsResponse!: (value: unknown) => void;
+    let requestsStarted = 0;
     let started!: () => void;
-    const allStarted = new Promise<void>((resolve) => { started = resolve; });
-    create.mockImplementation(() => new Promise((resolve) => {
-      responses.push(resolve);
-      if (responses.length === 4) started();
+    const bothStarted = new Promise<void>((resolve) => { started = resolve; });
+    create.mockImplementation((request) => new Promise((resolve) => {
+      if (request.text.format.name === "student_restaurant_menu") menuResponse = resolve;
+      else ingredientsResponse = resolve;
+      requestsStarted += 1;
+      if (requestsStarted === 2) started();
     }));
     const pending = analyzeStudentRestaurantImage(image, options);
-    await allStarted;
-    expect(create).toHaveBeenCalledTimes(4);
-    for (const call of create.mock.calls) expect(JSON.stringify(call[0].input)).not.toContain("테스트 메뉴");
+    await bothStarted;
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(create.mock.calls[1][0].input)).not.toContain("테스트 메뉴");
     let completed = false;
     void pending.then(() => { completed = true; }, () => { completed = true; });
-    responses[0]({ status: "completed", output: [], output_text: JSON.stringify(extraction) });
-    responses[1]({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
-    responses[2]({ status: "completed", output: [], output_text: JSON.stringify(extraction) });
+    menuResponse({ status: "completed", output: [], output_text: JSON.stringify(extraction) });
     await Promise.resolve();
     expect(completed).toBe(false);
-    responses[3]({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
+    ingredientsResponse({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
     const result = await pending;
     expect(result.updatedAt).toBe(options.now.toISOString());
     expect(result.days[0].ingredients).toEqual(ingredientMeals);
@@ -119,7 +155,7 @@ describe("Manna House OpenAI extraction", () => {
       return { status: "completed", output: [], output_text: JSON.stringify(extraction) };
     });
     await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
-    expect(create).toHaveBeenCalledTimes(4);
+    expect(create).toHaveBeenCalledTimes(2);
   });
   it.each([
     { days: [{ ...extraction.days[0], day: 19 }] },
@@ -130,50 +166,10 @@ describe("Manna House OpenAI extraction", () => {
     await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
   });
   it("allows absent ingredients while preserving closed and unknown menu meals", async () => {
-    const unavailable = { ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], breakfast: null, lunch: null, dinner: null }] };
     create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(unavailable) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(unavailable) });
+      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], breakfast: null, lunch: null, dinner: null }] }) });
     const result = await analyzeStudentRestaurantImage(image, options);
     expect(result.days[0]).toMatchObject({ breakfast: [], dinner: null, ingredients: { breakfast: null, lunch: null, dinner: null } });
-  });
-  it("rejects a comparison view with a different date set", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...extraction, days: [{ ...extraction.days[0], day: 19 }] }) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
-    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
-  });
-  it.each([
-    { comparison: ["원문다", "원문나"] },
-    { comparison: ["원문가,", "원문나"] },
-    { comparison: ["원문가"] },
-    { comparison: ["원문나", "원문가"] },
-  ])("marks only the menu meal unknown when spelling, punctuation, count or order disagrees", async ({ comparison }) => {
-    const primary = { ...extraction, days: [{ ...extraction.days[0], lunch: ["원문가", "원문나"] }] };
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(primary) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...primary, days: [{ ...primary.days[0], lunch: comparison }] }) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
-    const result = await analyzeStudentRestaurantImage(image, options);
-    expect(result.days[0]).toMatchObject({ breakfast: [], lunch: null, dinner: null, ingredients: ingredientMeals });
-  });
-  it("marks ingredient disagreement unknown without hiding an agreed menu", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...ingredientExtraction, days: [{ ...ingredientExtraction.days[0], lunch: ["원문.재료"] }] }) });
-    const result = await analyzeStudentRestaurantImage(image, options);
-    expect(result.days[0].lunch).toEqual(["테스트 메뉴"]);
-    expect(result.days[0].ingredients?.lunch).toBeNull();
-  });
-  it("fails closed if corroboration leaves every menu meal unknown", async () => {
-    create.mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(extraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify({ ...extraction, days: [{ ...extraction.days[0], breakfast: ["원문"], lunch: ["다른 원문"] }] }) })
-      .mockResolvedValueOnce({ status: "completed", output: [], output_text: JSON.stringify(ingredientExtraction) });
-    await expect(analyzeStudentRestaurantImage(image, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
   });
   it.each([Buffer.from("invalid image"), Buffer.alloc(10 * 1024 * 1024 + 1)])("rejects invalid or oversized images before requesting analysis", async (bytes) => {
     await expect(analyzeStudentRestaurantImage({ ...image, bytes }, options)).rejects.toThrow(/^STUDENT_RESTAURANT_ANALYSIS_FAILED$/);
