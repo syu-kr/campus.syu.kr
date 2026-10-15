@@ -64,33 +64,36 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -o pipefail
           mkdir -p .cache/indexnow
-          run_ids="$(gh api --method GET --paginate \
-            "repos/$GITHUB_REPOSITORY/actions/workflows/indexnow.yml/runs" \
-            -f branch=main -f status=completed -f per_page=100 \
-            --jq '.workflow_runs[] | select(.id != (env.GITHUB_RUN_ID | tonumber) and .head_repository.full_name == env.GITHUB_REPOSITORY and .head_branch == "main" and .path == ".github/workflows/indexnow.yml" and (.event == "workflow_run" or .event == "workflow_dispatch")) | .id')"
+          INDEXNOW_WORKFLOW_ID="$(gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/indexnow.yml" --jq '.id')"
+          export INDEXNOW_WORKFLOW_ID
+          # A rerun of an older run may have newer state; order by artifact creation.
+          artifacts="$(gh api --method GET --paginate \
+            "repos/$GITHUB_REPOSITORY/actions/artifacts" \
+            -f name=indexnow-state -f per_page=100 \
+            --jq '.artifacts[] | select(.name == "indexnow-state" and .expired == false and .workflow_run.head_branch == "main" and .workflow_run.head_repository_id == .workflow_run.repository_id) | [.created_at, .id, .workflow_run.id] | @tsv' \
+            | sort -t $'\t' -k1,1r -k2,2nr)"
 
-          # A rerun has the same run ID; prefer its saved partial batches.
-          if [ "${GITHUB_RUN_ATTEMPT:-1}" -gt 1 ]; then
-            run_ids="$GITHUB_RUN_ID $run_ids"
-          fi
-
-          for run_id in $run_ids; do
+          while IFS=$'\t' read -r created_at artifact_id run_id; do
+            [ -n "$artifact_id" ] || continue
+            trusted="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" \
+              --jq '.workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber) and .head_repository.full_name == env.GITHUB_REPOSITORY and .head_branch == "main" and .path == ".github/workflows/indexnow.yml" and (.event == "workflow_run" or .event == "workflow_dispatch") and (.status == "completed" or (.id == (env.GITHUB_RUN_ID | tonumber) and ((env.GITHUB_RUN_ATTEMPT // "1") | tonumber) > 1))')"
+            [ "$trusted" = "true" ] || continue
             artifact_count="$(gh api \
               "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100" \
               --jq '[.artifacts[] | select(.name == "indexnow-state" and .expired == false)] | length')"
-            if [ "$artifact_count" -gt 1 ]; then
-              echo "Ambiguous IndexNow state artifacts in run $run_id."
+            if [ "$artifact_count" -ne 1 ]; then
+              echo "Missing or ambiguous IndexNow state artifacts in run $run_id."
               exit 1
             fi
-            if [ "$artifact_count" -eq 1 ]; then
-              gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
-                --name indexnow-state --dir .cache/indexnow
-              test -s .cache/indexnow/state.json
-              echo "Restored IndexNow state from run $run_id."
-              exit 0
-            fi
-          done
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name indexnow-state --dir .cache/indexnow
+            test -s .cache/indexnow/state.json
+            echo "Restored IndexNow state artifact $artifact_id from run $run_id."
+            exit 0
+          done <<< "$artifacts"
 
           echo "No previous IndexNow state; the CLI will establish a baseline."
 
