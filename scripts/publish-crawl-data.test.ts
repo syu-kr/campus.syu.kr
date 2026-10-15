@@ -331,7 +331,12 @@ describe("standalone student restaurant publication", () => {
     const manifest = await fixtureManifest("unchanged-crawl");
     remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
     remote.set(studentRestaurantFile, Buffer.from(JSON.stringify(studentRestaurantMenu)));
-    const next = Buffer.from(JSON.stringify({ ...studentRestaurantMenu, updatedAt: "2026-10-05T00:00:00.000Z" }));
+    const next = Buffer.from(JSON.stringify({
+      ...studentRestaurantMenu, updatedAt: "2026-10-05T00:00:00.000Z",
+      days: studentRestaurantMenu.days.map((day) => ({
+        ...day, ingredients: { breakfast: [], lunch: ["원문 재료(콩),밀", "원문 재료(콩),밀"], dinner: null },
+      })),
+    }));
     await mkdir(path.join(root, "cafeteria"));
     await writeFile(path.join(root, studentRestaurantFile), next);
 

@@ -7,6 +7,15 @@ on:
     # Monday 00:00 UTC = Monday 09:00 KST; catch later uploads.
     - cron: "0 0 * * 1"
   workflow_dispatch:
+    inputs:
+      reviewed_menu_json:
+        description: "Optional public menu JSON verified against the source image; requires its SHA-256."
+        required: false
+        type: string
+      reviewed_image_sha256:
+        description: "Optional SHA-256 of the exact reviewed source image; requires reviewed menu JSON."
+        required: false
+        type: string
 
 permissions:
   contents: read

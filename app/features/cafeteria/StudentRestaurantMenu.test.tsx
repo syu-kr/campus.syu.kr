@@ -81,6 +81,35 @@ describe("Manna House menu", () => {
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   });
 
+  it("places the extraction notice first and shows unknown operating hours for all three meals", async () => {
+    renderMenu();
+    const today = await screen.findByRole("region", { name: cafeteriaText.todayMenu });
+    const note = screen.getByText(text.extractionNote);
+    expect(note.compareDocumentPosition(today) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getAllByText(text.extractionNote)).toHaveLength(1);
+    expect(screen.getAllByText("알 수 없음")).toHaveLength(3);
+    expect(screen.getByText("아침")).toBeInTheDocument();
+    expect(screen.getByText("점심")).toBeInTheDocument();
+    expect(screen.getByText("저녁")).toBeInTheDocument();
+    expect(screen.queryByText(/08:00/)).not.toBeInTheDocument();
+    expect(screen.getByText(text.allergyMessage)).toBeInTheDocument();
+    expect(within(today).getByRole("heading", { name: cafeteriaText.todayMenu })).toBeInTheDocument();
+  });
+
+  it("shows the original ingredients beside the right meal without labelling them as allergens", async () => {
+    vi.stubGlobal("fetch", mockJson({
+      ...menu,
+      days: [{ ...menu.days[1], ingredients: { breakfast: [], lunch: ["밀", "우유,계란"], dinner: null } }],
+    }));
+    renderMenu();
+    const today = screen.getByRole("region", { name: cafeteriaText.todayMenu });
+    expect(await within(today).findByText("밀, 우유,계란")).toBeInTheDocument();
+    expect(within(today).getAllByText(text.ingredientsTitle)).toHaveLength(3);
+    expect(within(today).getByText(text.ingredientsNotListed)).toBeInTheDocument();
+    expect(within(today).getByText(text.ingredientsUnavailable)).toBeInTheDocument();
+    expect(screen.getByText(text.allergyMessage)).toBeInTheDocument();
+  });
+
   it("shows a loading state until the public JSON arrives", async () => {
     let finish!: (value: unknown) => void;
     vi.stubGlobal("fetch", vi.fn(() => new Promise((resolve) => { finish = resolve; })));

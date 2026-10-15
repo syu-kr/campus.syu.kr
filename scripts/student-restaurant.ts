@@ -6,12 +6,48 @@ import { parseStudentRestaurantMenu, type StudentRestaurantMenu } from "../lib/s
 const MAX_API_BYTES = 1024 * 1024;
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const IMAGE_PATH = /^\/uploadimages\/sikdan\/[a-z0-9_-]+\.(png|jpe?g|webp)$/i;
-const ANALYSIS_VERSION = 3;
+const ANALYSIS_VERSION = 4;
 
 export interface StudentRestaurantImage {
   bytes: Buffer;
   contentType: string;
   lastModified: string | null;
+}
+
+interface StudentRestaurantReview {
+  menu: StudentRestaurantMenu;
+  imageHash: string;
+}
+
+export function parseStudentRestaurantReview(event: unknown): StudentRestaurantReview | undefined {
+  try {
+    if (!event || typeof event !== "object" || Array.isArray(event)) throw new Error();
+    const inputs = (event as Record<string, unknown>).inputs;
+    if (inputs === undefined || inputs === null) return undefined;
+    if (typeof inputs !== "object" || Array.isArray(inputs)) throw new Error();
+    const values = inputs as Record<string, unknown>;
+    const json = values.reviewed_menu_json ?? "";
+    const hash = values.reviewed_image_sha256 ?? "";
+    if (typeof json !== "string" || typeof hash !== "string") throw new Error();
+    if (!json.trim() && !hash.trim()) return undefined;
+    if (!json.trim() || json.length > MAX_API_BYTES || !/^[a-f0-9]{64}$/i.test(hash.trim())) throw new Error();
+    return { menu: parseStudentRestaurantMenu(JSON.parse(json)), imageHash: hash.trim().toLowerCase() };
+  } catch { throw new Error("INVALID_STUDENT_RESTAURANT_REVIEW"); }
+}
+
+export function reviewedStudentRestaurantMenu(
+  review: StudentRestaurantReview,
+  image: StudentRestaurantImage,
+  now = new Date(),
+): StudentRestaurantMenu {
+  if (studentRestaurantHash(image.bytes) !== review.imageHash) throw new Error("STUDENT_RESTAURANT_REVIEW_SOURCE_MISMATCH");
+  const reference = Date.parse(image.lastModified ?? "");
+  const menu = parseStudentRestaurantMenu({ ...review.menu, updatedAt: now.toISOString() });
+  if (!Number.isFinite(reference) || menu.days.some((day) =>
+    Math.abs(Date.parse(`${day.date}T00:00:00Z`) - reference) > 45 * 86_400_000)) {
+    throw new Error("STUDENT_RESTAURANT_REVIEW_DATE_MISMATCH");
+  }
+  return menu;
 }
 
 export function parseStudentRestaurantApiUrl(value: string): URL {
@@ -92,6 +128,7 @@ export async function collectStudentRestaurant(options: {
   statePath: string;
   analyze: (image: StudentRestaurantImage) => Promise<StudentRestaurantMenu>;
   analysisContext?: string;
+  forceAnalysis?: boolean;
   request?: typeof fetch;
 }): Promise<"updated" | "unchanged"> {
   const image = await downloadStudentRestaurantImage(options.apiUrl, options.request);
@@ -99,7 +136,7 @@ export async function collectStudentRestaurant(options: {
   const analysisContextHash = studentRestaurantHash(JSON.stringify([image.lastModified, options.analysisContext ?? ""]));
   const previous = await optionalRead(options.outputPath);
   const state = await optionalRead(options.statePath);
-  if (previous && state) {
+  if (!options.forceAnalysis && previous && state) {
     try {
       parseStudentRestaurantMenu(JSON.parse(previous));
       const checkpoint = JSON.parse(state) as Record<string, unknown>;

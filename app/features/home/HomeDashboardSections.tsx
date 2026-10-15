@@ -10,6 +10,7 @@ import {
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { CafeteriaClosedCard } from "@/app/features/cafeteria/CafeteriaMenuCards";
+import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRestaurantMenu";
 import { ShuttleAdditionalServicesCard } from "@/app/features/shuttle/ShuttleAdditionalServicesCard";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import { formatShuttleAdditionalCountdown, formatShuttleAdditionalService, getCurrentShuttleSummary, isDateInSpecialPeriod } from "@/lib/shuttle-schedule";
@@ -240,6 +241,59 @@ export function TodayMenuSection({
           )}
       </div>
     </div>
+  );
+}
+
+export function TodayStudentRestaurantSection({ todayInfo }: { todayInfo: TodayInfo }) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const text = dictionary.pages.cafeteria.studentRestaurant;
+  const { data, isPending, isError, refetch, isConfigured } = useStudentRestaurantMenu();
+  const todayMenu = data?.days.find((day) => day.date === todayInfo.dateStringDash);
+  const href = localizePath("/campus/cafeteria?restaurant=manna", locale);
+
+  return (
+    <section aria-label={text.title}>
+      <SectionTitle title={text.title} href="/campus/cafeteria?restaurant=manna" />
+      <div className="space-y-3">
+        {!isConfigured && <StateCard type="info" message={text.notConfigured} />}
+        {isConfigured && isPending && (
+          <div role="status" aria-busy="true" aria-label={text.loading}>
+            <Skeleton count={2} />
+            <p className="sr-only">{text.loading}</p>
+          </div>
+        )}
+        {isError && <DashboardLoadError onRetry={() => { void refetch(); }} />}
+        {data && !todayMenu && !isError && (
+          <StateCard
+            type="info"
+            message={dictionary.pages.cafeteria.missingToday}
+            action={<Link href={href} className="text-sm font-medium text-primary-600 hover:text-primary-700">{dictionary.home.dashboard.fullMenu} →</Link>}
+          />
+        )}
+        {todayMenu && (
+          <Link href={href} className="block">
+            <Card className="cursor-pointer border border-neutral-200 hover:shadow-card-hover">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <Badge color="green" size="sm">{dictionary.home.dashboard.todayMenu}</Badge>
+                <time className="text-xs font-medium text-neutral-500" dateTime={todayMenu.date}>{todayMenu.date}</time>
+              </div>
+              <h3 className="mb-2 font-semibold text-neutral-900">{text.title}</h3>
+              <div className="space-y-2">
+                {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
+                  <MealPreview
+                    key={meal}
+                    title={dictionary.home.dashboard[meal]}
+                    items={todayMenu[meal]?.map((name) => ({ name })) ?? null}
+                    count={2}
+                  />
+                ))}
+              </div>
+            </Card>
+          </Link>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -633,10 +687,19 @@ function MealPreview({
   count,
 }: {
   title: string;
-  items: Array<{ name: string }>;
+  items: Array<{ name: string }> | null;
   count: number;
 }) {
   const dictionary = useDictionary();
+
+  if (items === null) {
+    return (
+      <div>
+        <p className="mb-1 text-xs text-neutral-500">{title}</p>
+        <p className="text-sm text-neutral-700">{dictionary.pages.cafeteria.studentRestaurant.unknownMeal}</p>
+      </div>
+    );
+  }
 
   if (isClosedMealItems(items)) {
     return (

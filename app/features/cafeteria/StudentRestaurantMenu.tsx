@@ -1,29 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-
 import { Badge } from "@/app/components/Badge";
 import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { CafeteriaInfoCards, MealItemCard, TodayMenuCardFrame } from "@/app/features/cafeteria/CafeteriaMenuCards";
+import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRestaurantMenu";
 import { getCafeteriaWeekMenus } from "@/lib/cafeteria";
-import { fetchJson } from "@/lib/fetch-json";
-import { parseStudentRestaurantMenu, parseStudentRestaurantPublicUrl, type StudentRestaurantMenu as StudentRestaurantData } from "@/lib/student-restaurant";
-
-async function fetchStudentRestaurantMenu(jsonUrl: string) {
-  const url = parseStudentRestaurantPublicUrl(jsonUrl);
-  const value = await fetchJson<unknown>(url.href, {
-    fallback: null,
-    throwOnError: true,
-    timeoutMs: 12_000,
-    credentials: "omit",
-    redirect: "error",
-    referrerPolicy: "no-referrer",
-  });
-  return parseStudentRestaurantMenu(value);
-}
+import { type StudentRestaurantMenu as StudentRestaurantData } from "@/lib/student-restaurant";
 
 function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][number] }) {
   const text = useDictionary().pages.cafeteria;
@@ -40,8 +26,18 @@ function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][nu
             <p className="text-sm text-neutral-600">{text.closedMeal}</p>
           ) : (
             <ul className="grid grid-cols-2 gap-2 text-sm text-neutral-700 sm:grid-cols-3">
-              {day[meal].map((item, itemIndex) => <li key={`${item}-${itemIndex}`}>{item}</li>)}
+              {day[meal].map((item, itemIndex) => <li key={`${item}-${itemIndex}`}><MealItemCard item={{ name: item }} /></li>)}
             </ul>
+          )}
+          {day.ingredients && (
+            <p className="mt-2 text-xs leading-5 text-neutral-500">
+              <strong className="font-medium">{text.studentRestaurant.ingredientsTitle}</strong>{" "}
+              {day.ingredients[meal] === null
+                ? text.studentRestaurant.ingredientsUnavailable
+                : day.ingredients[meal].length
+                  ? day.ingredients[meal].join(", ")
+                  : text.studentRestaurant.ingredientsNotListed}
+            </p>
           )}
         </div>
       ))}
@@ -54,16 +50,7 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
   const cafeteriaText = dictionary.pages.cafeteria;
   const text = cafeteriaText.studentRestaurant;
   const locale = useLocale();
-  const jsonUrl = process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL?.trim() ?? "";
-  const { data, isPending, isError, refetch, isFetching } = useQuery({
-    queryKey: ["student-restaurant", jsonUrl],
-    queryFn: () => fetchStudentRestaurantMenu(jsonUrl),
-    enabled: Boolean(jsonUrl),
-    staleTime: 30 * 60 * 1000,
-    refetchInterval: 30 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
-    retry: 1,
-  });
+  const { data, isPending, isError, refetch, isFetching, isConfigured } = useStudentRestaurantMenu();
   const weeklyMenus = getCafeteriaWeekMenus(data?.days, today);
   const todayMenu = weeklyMenus.find((day) => day.date === today);
   const hasOtherWeek = Boolean(data?.days.length && weeklyMenus.length === 0);
@@ -75,10 +62,11 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
 
   return (
     <section aria-label={text.title}>
-      <section id="today-menu" className="mb-8 scroll-mt-24 md:scroll-mt-40" aria-labelledby="manna-today-heading">
-        <h2 id="manna-today-heading" className="mb-4 text-xl font-bold text-neutral-900">{cafeteriaText.todayMenu}</h2>
-        {!jsonUrl && <StateCard type="info" message={text.notConfigured} />}
-        {jsonUrl && isPending && (
+      <p className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-6 text-neutral-600">{text.extractionNote}</p>
+      <section id="today-menu" className="scroll-mt-24 md:scroll-mt-40" aria-labelledby="manna-today-heading">
+        {!todayMenu && <h2 id="manna-today-heading" className="mb-4 text-xl font-bold text-neutral-900">{cafeteriaText.todayMenu}</h2>}
+        {!isConfigured && <StateCard type="info" className="mb-8" message={text.notConfigured} />}
+        {isConfigured && isPending && (
           <div role="status" aria-busy="true" aria-label={text.loading}>
             <Skeleton count={1} height="200px" />
             <p className="sr-only">{text.loading}</p>
@@ -87,29 +75,25 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
         {isError && (
           <StateCard
             type="error"
+            className="mb-8"
             title={text.errorTitle}
             message={text.errorMessage}
             action={<Button onClick={() => refetch()} disabled={isFetching}>{dictionary.home.dashboard.retry}</Button>}
           />
         )}
-        {data && !todayMenu && <StateCard type="info" message={cafeteriaText.missingToday} />}
+        {data && !todayMenu && <StateCard type="info" className="mb-8" message={cafeteriaText.missingToday} />}
         {todayMenu && (
-          <Card hover={false} className="border border-neutral-200 shadow-none">
-            <div className="mb-6">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge color="green" size="sm">{cafeteriaText.todayMarker}</Badge>
-                <time className="text-sm font-medium text-neutral-500" dateTime={todayMenu.date}>{todayMenu.date}</time>
-              </div>
-              <p className="text-sm text-neutral-600">{text.title}</p>
-            </div>
+          <TodayMenuCardFrame date={todayMenu.date} location={text.title} headingId="manna-today-heading">
             <StudentRestaurantMeals day={todayMenu} />
-          </Card>
+          </TodayMenuCardFrame>
         )}
       </section>
 
+      <CafeteriaInfoCards restaurant="manna" />
+
       <section className="mb-8" aria-labelledby="manna-weekly-heading">
         <h2 id="manna-weekly-heading" className="mb-4 text-lg font-bold text-neutral-900">{cafeteriaText.weeklyMenu}</h2>
-        {jsonUrl && isPending && <Skeleton count={3} height="200px" />}
+        {isConfigured && isPending && <Skeleton count={3} height="200px" />}
         {hasOtherWeek && (
           <StateCard
             type="warning"
@@ -143,7 +127,6 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
         </div>
       </section>
 
-      <p className="text-sm leading-6 text-neutral-600">{text.extractionNote}</p>
       {data && (
         <p className="mt-2 text-xs text-neutral-500">
           {text.updatedAt}{" "}
