@@ -89,6 +89,40 @@ function productionFetch(overrides: { version?: string; source?: string; key?: s
 }
 
 describe("IndexNow production readiness", () => {
+  it.each([origin, `${origin}/`])("accepts the homepage canonical %s", async (canonical) => {
+    const homepage = `${origin}/`;
+    await expect(verifyIndexNowProduction(sourceSha, manifest, [homepage], { [homepage]: newHash }, "12345678", {
+      fetchImpl: productionFetch({ page: `<link rel="canonical" href="${canonical}" />` }),
+      sleep: vi.fn(), now: () => now, pagesChanged: false,
+    })).resolves.toEqual([homepage]);
+  });
+  it.each([
+    "", "not a URL", "/", "https://other.invalid/", "http://campus.syu.kr/",
+    `${origin}/en`, `${origin}/?search=notice`, `${origin}/#home`, `${origin}/a/..`,
+    "https://campus.syu.kr:443/", "https://@campus.syu.kr/",
+  ])("rejects a missing, invalid, or different homepage canonical: %s", async (canonical) => {
+    const homepage = `${origin}/`;
+    await expect(verifyIndexNowProduction(sourceSha, manifest, [homepage], { [homepage]: newHash }, "12345678", {
+      fetchImpl: productionFetch({ page: canonical ? `<link rel="canonical" href="${canonical}" />` : "<html></html>" }),
+      sleep: vi.fn(), now: () => now, pagesChanged: false,
+    })).rejects.toThrow("expected change");
+  });
+  it("keeps status and noindex guards for a bare-origin homepage canonical", async () => {
+    const homepage = `${origin}/`, canonical = `<link rel="canonical" href="${origin}" />`;
+    for (const overrides of [{ pageStatus: 404, page: canonical }, { pageStatus: 503, page: canonical }, { page: `${canonical}<meta name="robots" content="noindex" />` }]) {
+      await expect(verifyIndexNowProduction(sourceSha, manifest, [homepage], { [homepage]: newHash }, "12345678", {
+        fetchImpl: productionFetch(overrides), sleep: vi.fn(), now: () => now, pagesChanged: false,
+      })).rejects.toThrow("expected change");
+    }
+  });
+  it("reports the failed guards without echoing an unexpected canonical", async () => {
+    const error = await verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", {
+      fetchImpl: productionFetch({ page: `<link rel="canonical" href="${origin}/?token=private-fixture" />` }),
+      sleep: vi.fn(), now: () => now, pagesChanged: false,
+    }).catch((cause: Error) => cause);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("Production page does not reflect the expected change (status=200, canonicalMatches=false, noindex=false)");
+  });
   it("checks deployed SHA, public key, every data version and canonical page before sending", async () => {
     const fetchImpl = productionFetch(), sleep = vi.fn();
     await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl, sleep, now: () => now, pagesChanged: false })).resolves.toEqual([url]);
@@ -106,7 +140,7 @@ describe("IndexNow production readiness", () => {
     }
   });
   it("does not accept a missing current page or a different canonical", async () => {
-    for (const overrides of [{ pageStatus: 404 }, { page: '<link rel="canonical" href="https://campus.syu.kr/en/campus/cafeteria" />' }]) {
+    for (const overrides of [{ pageStatus: 404 }, { page: '<link rel="canonical" href="https://campus.syu.kr/en/campus/cafeteria" />' }, { page: `<link rel="canonical" href="${url}/" />` }]) {
       await expect(verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl: productionFetch(overrides), sleep: vi.fn(), now: () => now })).rejects.toThrow("expected change");
     }
   });
