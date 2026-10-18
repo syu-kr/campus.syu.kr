@@ -35,9 +35,7 @@ Object.assign(process.env, localEnvironment, {
   ROOMMATES_EMAIL_ENABLED: "true",
   ROOMMATES_OWNER_KEY_SECRET: randomBytes(32).toString("hex"),
   RATE_LIMIT_SECRET: randomBytes(32).toString("hex"),
-  ADMIN_EMAILS: "local-admin@syuin.ac.kr",
-  ADMIN_EMAIL: "",
-  admin_email: "",
+  ADMIN_UIDS: "",
 });
 
 // Next's actual @next/env API returns no files before its dotenv loader can read them.

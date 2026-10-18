@@ -40,7 +40,7 @@
 | `ROOMMATES_ENABLED` | 선택 | 기본 `false`. 룸메이트 메뉴, 보호 페이지와 API, 사이트 메일 발송과 세션 발급의 전체 제어. 로그아웃과 admin 사고 대응은 유지 |
 | `ROOMMATES_WRITES_ENABLED` | 선택 | 기본 `false`. 신규 글과 내용 수정만 제어. 본인 삭제, 모집 완료, 신고와 재인증은 유지 |
 | `ROOMMATES_EMAIL_ENABLED` | 선택 | 기본 `false`. 사이트의 새 인증 메일 요청만 제어. 이미 받은 유효 링크의 세션 완료는 유지 |
-| `ADMIN_EMAILS` | 필수 | 쉼표로 구분한 관리자 허용 이메일 목록. 운영 관리자 목록은 Production 전용으로 관리 |
+| `ADMIN_UIDS` | 필수 | 서버 전용. 해당 Firebase 프로젝트에서 소유자를 확인한 관리자 UID를 쉼표로 구분하고 대소문자를 보존. Production·Preview·Development의 프로젝트와 UID를 분리. UID 검사 코드 배포 전에 등록하고 새 배포에 반영해야 하며 미설정 시 관리자 API는 503. 기존 이메일 변수는 권한 판정에 사용하지 않음 |
 | `OPENAI_API_KEY` | AI 분류 사용 시 필수 | `/admin` 문의/제보 분류용 Vercel 전용 OpenAI Project 서비스 계정 키. GitHub Actions용 키와 분리 |
 | `OPENAI_ADMIN_MODEL` | 선택 | 문의/제보 AI 분류 모델. 기본값 `gpt-5.6-luna` |
 | `ADMIN_CLASSIFIER_AI_ENABLED` | 선택 | 문의/제보 AI 분류 중단 스위치. `false`이면 분류 API가 503 반환 |

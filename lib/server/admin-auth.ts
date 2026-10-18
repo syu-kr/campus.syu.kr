@@ -32,16 +32,16 @@ export async function requireAdmin(req: Request): Promise<DecodedIdToken> {
     throw new AdminAuthError("유효한 로그인이 필요합니다", 401);
   }
 
-  const allowedEmails = readAllowedEmails();
+  const allowedUids = readAllowedUids();
 
-  if (allowedEmails.length === 0) {
-    console.error("[Admin API] ADMIN_EMAILS is not configured");
+  if (allowedUids.length === 0) {
+    console.error("[Admin API] ADMIN_UIDS is not configured");
     throw new AdminAuthError("관리자 설정이 완료되지 않았습니다", 503);
   }
 
   const authorizationFailure = getAdminAuthorizationFailure(
     decodedToken,
-    allowedEmails,
+    allowedUids,
   );
   if (authorizationFailure === "not-allowed") {
     throw new AdminAuthError("관리자 권한이 없습니다", 403);
@@ -51,11 +51,10 @@ export async function requireAdmin(req: Request): Promise<DecodedIdToken> {
 }
 
 export function getAdminAuthorizationFailure(
-  decodedToken: Pick<DecodedIdToken, "email">,
-  allowedEmails: string[],
+  decodedToken: Pick<DecodedIdToken, "uid">,
+  allowedUids: string[],
 ): "not-allowed" | null {
-  const normalizedEmail = decodedToken.email?.trim().toLowerCase();
-  return normalizedEmail && allowedEmails.includes(normalizedEmail)
+  return decodedToken.uid && allowedUids.includes(decodedToken.uid)
     ? null
     : "not-allowed";
 }
@@ -87,18 +86,12 @@ function readBearerToken(req: Request) {
   return header.slice(7).trim();
 }
 
-function readAllowedEmails() {
+function readAllowedUids() {
   return Array.from(
     new Set(
-      [
-        process.env.ADMIN_EMAILS,
-        process.env.ADMIN_EMAIL,
-        process.env.admin_email,
-      ]
-        .filter((value): value is string => Boolean(value))
-        .join(",")
+      (process.env.ADMIN_UIDS || "")
         .split(",")
-        .map((email) => email.trim().toLowerCase())
+        .map((uid) => uid.trim())
         .filter(Boolean),
     ),
   );
