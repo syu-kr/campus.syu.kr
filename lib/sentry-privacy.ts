@@ -51,8 +51,13 @@ export function scrubSentryBreadcrumb(breadcrumb: Breadcrumb) {
 }
 
 function scrubUrl(value: string) {
-  return value.split(/[?#]/, 1)[0].replace(
-    /(https:\/\/fcmregistrations\.googleapis\.com\/v1\/projects\/[^/\s]+\/registrations\/)[^/\s]+/gi,
-    "$1[Filtered]",
-  );
+  return value.split(/[?#]/, 1)[0]
+    .replace(
+      /(\/(?:(?:en\/)?more\/meet|api\/meet\/rooms)\/)(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+(?=\/|\s|$)/g,
+      "$1[Filtered]",
+    )
+    .replace(
+      /(https:\/\/fcmregistrations\.googleapis\.com\/v1\/projects\/[^/\s]+\/registrations\/)[^/\s]+/gi,
+      "$1[Filtered]",
+    );
 }

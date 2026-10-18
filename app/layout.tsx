@@ -22,15 +22,29 @@ import "./globals.css";
 
 const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
 const GOOGLE_ANALYTICS_SCRIPT = `
-  if (/^\\/(?:en\\/)?campus\\/roommates(?:\\/|$)/.test(window.location.pathname)) {
+(function initializeGoogleAnalytics() {
+  if (/^\\/(?:en\\/)?(?:campus\\/roommates(?:\\/|$)|more\\/meet\\/[^/]+(?:\\/|$))/.test(window.location.pathname)) {
     window['ga-disable-${GOOGLE_ANALYTICS_ID}'] = true;
   }
+  if (window['ga-disable-${GOOGLE_ANALYTICS_ID}']) return;
+
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', '${GOOGLE_ANALYTICS_ID}', {
+  window.gtag = function(){window.dataLayer.push(arguments);};
+  var pageReferrer = document.referrer.split('?')[0].split('#')[0];
+  if (pageReferrer) {
+    try {
+      var referrerUrl = new URL(pageReferrer);
+      if (/^\\/(?:en\\/)?more\\/meet\\/[^/]+(?:\\/|$)/.test(referrerUrl.pathname)) {
+        pageReferrer = referrerUrl.origin;
+      }
+    } catch {
+      pageReferrer = '';
+    }
+  }
+  window.gtag('js', new Date());
+  window.gtag('config', '${GOOGLE_ANALYTICS_ID}', {
     page_location: window.location.origin + window.location.pathname,
-    page_referrer: document.referrer.split('?')[0].split('#')[0]
+    page_referrer: pageReferrer
   });
 
   (function scheduleGoogleAnalytics() {
@@ -52,6 +66,7 @@ const GOOGLE_ANALYTICS_SCRIPT = `
       window.addEventListener('load', scheduleLoad, { once: true });
     }
   })();
+})();
 `;
 const CSP_NONCE_HEADER_NAME = "x-csp-nonce";
 
@@ -146,7 +161,7 @@ export default async function RootLayout({
   const headerStore = await headers();
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const pathname = await getRequestPathname();
-  const isRoommatePage = /^\/(?:en\/)?campus\/roommates(?:\/|$)/.test(pathname);
+  const isPrivateAnalyticsPage = /^\/(?:en\/)?(?:campus\/roommates(?:\/|$)|more\/meet\/[^/]+(?:\/|$))/.test(pathname);
   const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
@@ -172,7 +187,7 @@ export default async function RootLayout({
           content="black-translucent"
         />
 
-        {!isRoommatePage && <Script
+        {!isPrivateAnalyticsPage && <Script
           id="google-analytics"
           nonce={nonce}
           strategy="afterInteractive"
