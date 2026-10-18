@@ -104,7 +104,11 @@ export async function verifyIndexNowProduction(
     const noindex = /<meta[^>]+name="robots"[^>]+content="[^"]*noindex/.test(html);
     const gone = [301, 302, 307, 308, 404, 410].includes(response.status) || (response.status === 200 && noindex);
     const canonical = html.match(/<link[^>]+rel="canonical"[^>]+href="([^"]+)"/)?.[1];
-    if (removed ? !gone : response.status !== 200 || canonical !== url || noindex) throw new Error(`Production page does not reflect the expected change: ${url}`);
+    // Next metadata renders the homepage canonical without the root slash.
+    const canonicalMatches = canonical === url || (url === `${INDEXNOW_ORIGIN}/` && canonical === INDEXNOW_ORIGIN);
+    if (removed ? !gone : response.status !== 200 || !canonicalMatches || noindex) {
+      throw new Error(`Production page does not reflect the expected change (status=${response.status}, canonicalMatches=${canonicalMatches}, noindex=${noindex})`);
+    }
   }
   await assertIndexNowTarget(sourceSha, manifest.version, fetchImpl);
   return [...probes.values()];
