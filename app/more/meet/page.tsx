@@ -12,7 +12,7 @@ import {
   useLocale,
 } from "@/app/components/LocaleProvider";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
-import { getMeetOwnerTokenKey } from "@/lib/meet";
+import { getMeetOwnerTokenKey, protectMeetLinkPrivacy } from "@/lib/meet";
 
 const MAX_DATE_COUNT = 14;
 
@@ -147,6 +147,7 @@ export default function MeetCreatePage() {
       return;
     }
 
+    protectMeetLinkPrivacy();
     router.push(localizePath(`/more/meet/${roomId}`, locale));
   };
 
@@ -473,6 +474,7 @@ export default function MeetCreatePage() {
                 )}
                 <Link
                   href={localizePath(`/more/meet/${roomId}`, locale)}
+                  onNavigate={protectMeetLinkPrivacy}
                   className="rounded-lg border border-green-300 bg-white px-4 py-2 text-center text-sm font-semibold text-green-800 hover:border-green-500"
                 >
                   {text.goToRoom}
