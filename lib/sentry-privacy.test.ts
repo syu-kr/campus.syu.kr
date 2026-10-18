@@ -70,6 +70,42 @@ describe("Sentry privacy scrubber", () => {
     }
   });
 
+  it.each([
+    "/more/meet/dummy-private-invite",
+    "/en/more/meet/dummy-private-invite/",
+    "https://campus.syu.kr/en/more/meet/dummy-private-invite",
+    "/api/meet/rooms/dummy-private-invite",
+    "/api/meet/rooms/dummy-private-invite/participants",
+    "/more/meet/%64ummy-private-invite",
+    "/api/meet/rooms/%64ummy-private-invite/participants",
+  ])("masks Meet invitation capabilities across event URL fields (%s)", (url) => {
+    const event = scrubSentryEvent({
+      transaction: `GET ${url}?query-secret#fragment-secret`,
+      contexts: { nextjs: { request_path: url, router_path: "/more/meet/[roomId]" } },
+      request: { url },
+      breadcrumbs: [{ data: { url, from: url, to: url } }],
+      spans: [{
+        span_id: "test", trace_id: "test", start_timestamp: 1, timestamp: 2,
+        description: `GET ${url}`,
+        data: { "http.url": url, target: url, location: url },
+      }],
+    });
+    const filtered = url.replace(/(?:dummy|%64ummy)-private-invite/, "[Filtered]");
+    expect(event.transaction).toBe(`GET ${filtered}`);
+    expect(event.contexts.nextjs).toEqual({ request_path: filtered, router_path: "/more/meet/[roomId]" });
+    expect(event.request.url).toBe(filtered);
+    expect(event.breadcrumbs[0].data).toEqual({ url: filtered, from: filtered, to: filtered });
+    expect(event.spans[0].description).toBe(`GET ${filtered}`);
+    expect(event.spans[0].data).toEqual({ "http.url": filtered, target: filtered, location: filtered });
+    expect(JSON.stringify(event)).not.toMatch(/dummy-private-invite|query-secret|fragment-secret/);
+  });
+
+  it.each(["/more/meet", "/en/more/meet", "/more/meeting/public", "/api/meet/rooms", "/more/meet/[roomId]"])(
+    "preserves public Meet paths and route templates (%s)", (url) => {
+      expect(scrubSentryEvent({ request: { url } }).request.url).toBe(url);
+    },
+  );
+
   it.each(["", "?query-secret", "#fragment-secret", "?query-secret#fragment-secret"])(
     "masks FCM registration tokens across event URLs with suffix %s",
     (suffix) => {
