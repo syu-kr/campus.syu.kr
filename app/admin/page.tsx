@@ -56,7 +56,11 @@ const emptyPagination: AdminSubmissionPagination = {
 };
 
 export default function AdminPage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [{ user, generation }, setAuthSession] = useState<{
+    user: User | null;
+    generation: number;
+  }>({ user: null, generation: 0 });
+  const sessionGenerationRef = useRef(0);
   const [authStatus, setAuthStatus] = useState<
     "checking" | "ready" | "error"
   >("checking");
@@ -88,13 +92,39 @@ export default function AdminPage() {
   const [pageError, setPageError] = useState("");
   const [pageNotice, setPageNotice] = useState("");
 
+  const replaceAuthSession = useCallback((nextUser: User | null) => {
+    const nextGeneration = ++sessionGenerationRef.current;
+    setAuthSession({ user: nextUser, generation: nextGeneration });
+    setSubmissions([]);
+    setSelectedKey("");
+    setSelectedKeys(new Set());
+    setCounts(emptyCounts);
+    setPagination(emptyPagination);
+    setPage(1);
+    pageCursorsRef.current = {};
+    setQuery("");
+    setIsLoading(false);
+    setIsSaving(false);
+    setClassifyingKey("");
+    setPageError("");
+    setPageNotice("");
+  }, []);
+
+  const isCurrentSession = useCallback(
+    () => generation === sessionGenerationRef.current,
+    [generation],
+  );
+
   useEffect(() => {
     let settled = false;
+    let disposed = false;
+    replaceAuthSession(null);
     setAuthStatus("checking");
     setAuthError("");
 
     const timeoutId = window.setTimeout(() => {
-      if (settled) return;
+      if (settled || disposed) return;
+      replaceAuthSession(null);
       setAuthStatus("error");
       setAuthError("관리자 세션 확인 시간이 초과되었습니다.");
     }, 10_000);
@@ -102,26 +132,30 @@ export default function AdminPage() {
     const unsubscribe = onAuthStateChanged(
       auth,
       (nextUser) => {
+        if (disposed) return;
         settled = true;
         window.clearTimeout(timeoutId);
-        setUser(nextUser);
+        replaceAuthSession(nextUser);
         setAuthStatus("ready");
       },
       () => {
+        if (disposed) return;
         settled = true;
         window.clearTimeout(timeoutId);
-        setUser(null);
+        replaceAuthSession(null);
         setAuthStatus("error");
         setAuthError("관리자 세션을 확인하지 못했습니다.");
       },
     );
 
     return () => {
+      disposed = true;
       settled = true;
+      sessionGenerationRef.current += 1;
       window.clearTimeout(timeoutId);
       unsubscribe();
     };
-  }, [authCheckAttempt]);
+  }, [authCheckAttempt, replaceAuthSession]);
 
   const filteredSubmissions = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -197,7 +231,7 @@ export default function AdminPage() {
 
   const loadSubmissions = useCallback(
     async (currentUser = user) => {
-      if (!currentUser) return;
+      if (!currentUser || !isCurrentSession()) return;
 
       setIsLoading(true);
       setPageError("");
@@ -205,6 +239,7 @@ export default function AdminPage() {
 
       try {
         const token = await currentUser.getIdToken();
+        if (!isCurrentSession()) return;
         const params = new URLSearchParams({
           kind: kindFilter,
           status: statusFilter,
@@ -225,6 +260,7 @@ export default function AdminPage() {
         const data = await readAdminApiResponse<
           Partial<AdminSubmissionPageResponse> & { error?: string }
         >(response);
+        if (!isCurrentSession()) return;
 
         if (!response.ok) {
           throw new Error(data.error || "목록을 불러오지 못했습니다");
@@ -244,14 +280,15 @@ export default function AdminPage() {
         }
         setSelectedKeys(new Set());
       } catch (error) {
+        if (!isCurrentSession()) return;
         setPageError(
           error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
         );
       } finally {
-        setIsLoading(false);
+        if (isCurrentSession()) setIsLoading(false);
       }
     },
-    [kindFilter, page, statusFilter, user],
+    [isCurrentSession, kindFilter, page, statusFilter, user],
   );
 
   useEffect(() => {
@@ -263,7 +300,7 @@ export default function AdminPage() {
     item: AdminSubmissionItem,
     status: SubmissionStatus,
   ) => {
-    if (!user || item.status === status) return;
+    if (!user || !isCurrentSession() || item.status === status) return;
 
     setIsSaving(true);
     setPageError("");
@@ -271,6 +308,7 @@ export default function AdminPage() {
 
     try {
       const token = await user.getIdToken();
+      if (!isCurrentSession()) return;
       const response = await fetch("/api/admin/submissions", {
         method: "PATCH",
         headers: {
@@ -280,6 +318,7 @@ export default function AdminPage() {
         body: JSON.stringify({ id: item.id, kind: item.kind, status }),
       });
       const data = await readAdminApiResponse<{ error?: string }>(response);
+      if (!isCurrentSession()) return;
 
       if (!response.ok) {
         throw new Error(data.error || "상태를 변경하지 못했습니다");
@@ -323,11 +362,12 @@ export default function AdminPage() {
       });
       setPageNotice("처리 상태를 변경했습니다.");
     } catch (error) {
+      if (!isCurrentSession()) return;
       setPageError(
         error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
       );
     } finally {
-      setIsSaving(false);
+      if (isCurrentSession()) setIsSaving(false);
     }
   };
 
@@ -359,7 +399,7 @@ export default function AdminPage() {
   };
 
   const updateSelectedStatuses = async () => {
-    if (!user || selectedItems.length === 0) return;
+    if (!user || !isCurrentSession() || selectedItems.length === 0) return;
 
     setIsSaving(true);
     setPageError("");
@@ -367,6 +407,7 @@ export default function AdminPage() {
 
     try {
       const token = await user.getIdToken();
+      if (!isCurrentSession()) return;
       const response = await fetch("/api/admin/submissions", {
         method: "PATCH",
         headers: {
@@ -382,6 +423,7 @@ export default function AdminPage() {
         }),
       });
       const data = await readAdminApiResponse<{ error?: string }>(response);
+      if (!isCurrentSession()) return;
 
       if (!response.ok) {
         throw new Error(data.error || "상태를 변경하지 못했습니다");
@@ -389,18 +431,20 @@ export default function AdminPage() {
 
       setSelectedKeys(new Set());
       await loadSubmissions();
+      if (!isCurrentSession()) return;
       setPageNotice(`${selectedItems.length}개 항목의 상태를 변경했습니다.`);
     } catch (error) {
+      if (!isCurrentSession()) return;
       setPageError(
         error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
       );
     } finally {
-      setIsSaving(false);
+      if (isCurrentSession()) setIsSaving(false);
     }
   };
 
   const classifySubmission = async (item: AdminSubmissionItem) => {
-    if (!user) return;
+    if (!user || !isCurrentSession()) return;
 
     const key = `${item.kind}-${item.id}`;
     setClassifyingKey(key);
@@ -409,6 +453,7 @@ export default function AdminPage() {
 
     try {
       const token = await user.getIdToken();
+      if (!isCurrentSession()) return;
       const response = await fetch("/api/admin/submissions/classify", {
         method: "POST",
         headers: {
@@ -422,6 +467,7 @@ export default function AdminPage() {
         classification?: AdminSubmissionAiClassification;
         reused?: boolean;
       }>(response);
+      if (!isCurrentSession()) return;
 
       if (!response.ok || !data.classification) {
         throw new Error(data.error || "AI 분류를 생성하지 못했습니다");
@@ -439,11 +485,12 @@ export default function AdminPage() {
         ),
       );
     } catch (error) {
+      if (!isCurrentSession()) return;
       setPageError(
         error instanceof Error ? error.message : "AI 분류를 생성하지 못했습니다",
       );
     } finally {
-      setClassifyingKey("");
+      if (isCurrentSession()) setClassifyingKey("");
     }
   };
 
@@ -587,7 +634,7 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <RoommateAdmin key={user.uid} user={user} />
+        <RoommateAdmin key={generation} user={user} />
 
         <section className="mb-6 grid gap-3 md:grid-cols-5">
           {statuses.map((status) => (
