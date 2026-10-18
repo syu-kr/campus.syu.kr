@@ -37,7 +37,7 @@
 | `ROOMMATES_ENABLED` | 최초 코드 배포에서는 명시적으로 `false` | 격리 환경 시험 때만 필요한 범위에서 `true` | 정리는 플래그를 읽지 않으므로 등록 불필요 |
 | `ROOMMATES_WRITES_ENABLED` | 최초 코드 배포에서는 명시적으로 `false` | 글 작성 시험 시에만 `true` | 등록 불필요 |
 | `ROOMMATES_EMAIL_ENABLED` | 최초 코드 배포에서는 명시적으로 `false` | 해당 테스트 Firebase의 도메인·제공자·한도 확인 후 `true` | 등록 불필요 |
-| `ADMIN_EMAILS` | 실제 운영 담당자만 허용 | 테스트 담당자만 허용 | 정리 workflow에는 등록 불필요 |
+| `ADMIN_UIDS` | 운영 프로젝트에서 소유자를 확인한 관리자 UID. 대소문자를 보존하고 UID 검사 코드 배포 전 등록 | 별도 테스트 프로젝트의 관리자 UID | 정리 workflow에는 등록 불필요 |
 | 에뮬레이터 설정 | `FIRESTORE_EMULATOR_HOST`, `FIREBASE_AUTH_EMULATOR_HOST`가 없어야 함 | 실제 Preview Firebase 시험에서도 에뮬레이터 호스트 없음 | 운영 정리 workflow에도 에뮬레이터 호스트 없음 |
 
 Vercel 환경 변경은 해당 환경의 새 배포에 반영한다. 플래그는 admin에서 즉시 변경하는 설정이 아니다. 공개 전 Production과 Preview의 환경 선택 범위, Firebase public 값과 Admin 프로젝트의 일치 여부, 배포마다 owner 키가 바뀌지 않는지 확인한다. 현재 `initializeFirebaseAdmin()`은 service account의 프로젝트를 사용하고 인증 검증은 public project ID도 검사하므로 불일치를 두고 진행하지 않는다.

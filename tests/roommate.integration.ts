@@ -118,9 +118,7 @@ beforeAll(async () => {
   process.env.ROOMMATES_EMAIL_ENABLED = "true";
   process.env.ROOMMATES_OWNER_KEY_SECRET = randomBytes(32).toString("hex");
   process.env.RATE_LIMIT_SECRET = randomBytes(32).toString("hex");
-  process.env.ADMIN_EMAILS = "local-admin@syuin.ac.kr";
-  delete process.env.ADMIN_EMAIL;
-  delete process.env.admin_email;
+  process.env.ADMIN_UIDS = "";
   if (getApps().length) throw new Error("Integration tests require a fresh Firebase Admin process.");
   initializeApp({ projectId: PROJECT });
   globalThis.fetch = async (input, init) => {
@@ -147,6 +145,7 @@ beforeEach(async () => {
   process.env.ROOMMATES_ENABLED = "true";
   process.env.ROOMMATES_WRITES_ENABLED = "true";
   process.env.ROOMMATES_EMAIL_ENABLED = "true";
+  process.env.ADMIN_UIDS = "";
   externalAttempts = 0;
 });
 
@@ -323,6 +322,7 @@ describe("roommates using real local Auth and Firestore emulators", () => {
     const author = await signIn("student-a@syuin.ac.kr");
     const reporter = await signIn("student-b@syuin.ac.kr");
     const admin = await signIn("local-admin@syuin.ac.kr");
+    process.env.ADMIN_UIDS = admin.uid;
     const post = await createPost(author.cookie);
     await responseData(await adminPostsRoute.GET(request("/api/admin/roommate-posts")), 401);
     await responseData(await adminPostsRoute.GET(request("/api/admin/roommate-posts", { token: author.token })), 403);

@@ -157,7 +157,7 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `ADMIN_CLASSIFIER_AI_TIMEOUT_MS` | 선택 | `/api/admin/submissions/classify` | OpenAI 요청 timeout(ms), 기본값 `15000` |
 | `ADMIN_CLASSIFIER_AI_MAX_RETRIES` | 선택 | `/api/admin/submissions/classify` | OpenAI SDK 재시도 횟수, 기본값 `2` |
 | `RATE_LIMIT_SECRET` | 운영 필수 | public write APIs | 서버리스 공용 rate limit 문서 ID를 HMAC 처리하는 무작위 비밀 값. Production에서는 미등록 시 public write API가 503으로 실패하며, 로컬 개발에서만 `PUSH_API_KEY` fallback을 허용 |
-| `ADMIN_EMAILS` | 필수 | `/api/admin/submissions` | 쉼표로 구분한 관리자 허용 이메일 목록. 단일 이메일 환경은 `ADMIN_EMAIL`도 지원하며, 둘 다 비어 있으면 관리자 API가 모든 요청을 거부함 |
+| `ADMIN_UIDS` | 필수 | `/api/admin/*` | 서버 전용. 해당 Firebase 프로젝트의 허용 UID를 쉼표로 구분하며 대소문자를 보존. 비어 있으면 503, 미등록 UID는 403. 이메일 목록은 사용하지 않으며 UID 검사 코드 배포 전에 등록 필요 |
 | `API_URL` | Actions 필수, 로컬 선택 | daily notification script | 알림 발송 대상 앱 URL |
 | `TOKEN_CLEANUP_DAYS` | 선택 | cleanup tokens script | 오래된 FCM 토큰 삭제 기준 일수, 기본값 `90` |
 | `ANALYZE` | 선택 | bundle analyzer | `true`일 때 bundle analyzer 활성화 |
