@@ -231,6 +231,41 @@ describe("cafeteria selection and weekly menu", () => {
     expect(screen.queryByText("오늘의 SU 메뉴")).not.toBeInTheDocument();
   });
 
+  it.each(["2026-10-17", "2026-10-18"])("shows next week's published menu on %s without an update warning", (today) => {
+    const now = `${today}T03:00:00Z`;
+    vi.setSystemTime(new Date(now));
+    const { tree } = page({ ...snapshot, menus }, "ko", now);
+    render(tree);
+
+    const weekly = screen.getByRole("region", { name: text.weeklyMenu });
+    expect(within(weekly).getByText("다음 주 월요일 메뉴")).toBeInTheDocument();
+    expect(within(weekly).queryByText("이번 주 월요일 메뉴")).not.toBeInTheDocument();
+    expect(screen.getByText(text.weekendMessage)).toBeInTheDocument();
+    expect(screen.queryByText(text.staleMenuTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.pendingTitle)).not.toBeInTheDocument();
+  });
+
+  it("shows next week's menu even when only that week has been published on Sunday", () => {
+    const now = "2026-10-18T03:00:00Z";
+    vi.setSystemTime(new Date(now));
+    const { tree } = page({ ...snapshot, menus: [menus[4]] }, "ko", now);
+    render(tree);
+
+    expect(screen.getByText("다음 주 월요일 메뉴")).toBeInTheDocument();
+    expect(screen.queryByText(text.staleMenuTitle)).not.toBeInTheDocument();
+  });
+
+  it("keeps this week's menu on Sunday when next week's menu has not arrived", () => {
+    const now = "2026-10-18T03:00:00Z";
+    vi.setSystemTime(new Date(now));
+    const { tree } = page({ ...snapshot, menus: menus.slice(0, 4) }, "ko", now);
+    render(tree);
+
+    expect(screen.getByText("이번 주 월요일 메뉴")).toBeInTheDocument();
+    expect(screen.getByText("이번 주 일요일 메뉴")).toBeInTheDocument();
+    expect(screen.queryByText(text.staleMenuTitle)).not.toBeInTheDocument();
+  });
+
   it("hides current-week menu cards when the source snapshot is stale", () => {
     const { tree } = page({ ...snapshot, menus, stale: true });
     render(tree);

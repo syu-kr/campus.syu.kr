@@ -141,7 +141,7 @@ describe("Manna House menu", () => {
   });
 
   it("hides a future week's stored menus until that week starts", async () => {
-    renderMenu("2026-10-11");
+    renderMenu("2026-10-09");
     expect(await screen.findByText(text.upcomingTitle)).toBeInTheDocument();
     expect(screen.getByText(text.upcomingMessage)).toBeInTheDocument();
     expect(screen.getByText(cafeteriaText.missingToday)).toBeInTheDocument();
@@ -152,14 +152,40 @@ describe("Manna House menu", () => {
 
   it.each([
     ["2026-10-15", "월요일 조식", "다음 주 조식"],
+    ["2026-10-17", "다음 주 조식", "월요일 조식"],
+    ["2026-10-18", "다음 주 조식", "월요일 조식"],
     ["2026-10-19", "다음 주 조식", "월요일 조식"],
-  ])("shows only the current week from the same two-week publication on %s", async (today, visibleMeal, hiddenMeal) => {
+  ])("shows only the display week from the same two-week publication on %s", async (today, visibleMeal, hiddenMeal) => {
     vi.stubGlobal("fetch", mockJson({
       ...menu, days: [...menu.days, { date: "2026-10-19", breakfast: ["다음 주 조식"], lunch: [], dinner: null }],
     }));
     renderMenu(today);
     expect(await screen.findByText(visibleMeal)).toBeInTheDocument();
     expect(screen.queryByText(hiddenMeal)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.upcomingTitle)).not.toBeInTheDocument();
+  });
+
+  it("shows a next-week-only publication on Sunday and uses the weekend notice above it", async () => {
+    vi.stubGlobal("fetch", mockJson({
+      ...menu, weekStart: "2026-10-19", days: [
+        { date: "2026-10-19", breakfast: ["다음 주 조식"], lunch: [], dinner: null },
+      ],
+    }));
+    renderMenu("2026-10-18");
+
+    expect(await screen.findByText("다음 주 조식")).toBeInTheDocument();
+    expect(screen.getByText(cafeteriaText.weekendMessage)).toBeInTheDocument();
+    expect(screen.queryByText(cafeteriaText.missingToday)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.upcomingTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
+  });
+
+  it("keeps this week's menu on Saturday when next week's menu has not arrived", async () => {
+    renderMenu("2026-10-17");
+
+    expect(await screen.findByText("월요일 조식")).toBeInTheDocument();
+    expect(screen.getByText(cafeteriaText.weekendMessage)).toBeInTheDocument();
     expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
   });
 
@@ -176,6 +202,24 @@ describe("Manna House menu", () => {
     expect(within(screen.getByRole("region", { name: cafeteriaText.weeklyMenu })).getByRole("heading", { name: /일요일.*2026-10-18/ })).toBeInTheDocument();
     expect(screen.getByText("월요일 조식")).toBeInTheDocument();
     expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
+  });
+
+  it("retains a published Sunday meal as today while previewing only next week below", async () => {
+    vi.stubGlobal("fetch", mockJson({
+      ...menu,
+      days: [...menu.days,
+        { date: "2026-10-18", breakfast: ["일요일 조식"], lunch: [], dinner: null },
+        { date: "2026-10-19", breakfast: ["다음 주 조식"], lunch: [], dinner: null },
+      ],
+    }));
+    renderMenu("2026-10-18");
+
+    const today = screen.getByRole("region", { name: cafeteriaText.todayMenu });
+    expect(await within(today).findByText("일요일 조식")).toBeInTheDocument();
+    const weekly = screen.getByRole("region", { name: cafeteriaText.weeklyMenu });
+    expect(within(weekly).getByText("다음 주 조식")).toBeInTheDocument();
+    expect(within(weekly).queryByText("일요일 조식")).not.toBeInTheDocument();
+    expect(screen.queryByText("월요일 조식")).not.toBeInTheDocument();
   });
 
   it("distinguishes a published empty menu from a fetch failure", async () => {
