@@ -47,7 +47,6 @@ import {
   HomeNoticesSection,
   TodayShuttleSection,
   TodayMenuSection,
-  TodayStudentRestaurantSection,
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -295,7 +294,6 @@ export function HomePageClient({
         todayMenu={todayMenu ?? null}
         hasStaleMenuData={hasStaleCafeteriaData}
       />
-      <TodayStudentRestaurantSection todayInfo={todayInfo} />
       <TodayShuttleSection
         isLoading={shuttleBusesLoading || shuttleSpecialPeriodsLoading}
         isError={shuttleBusesError || shuttleSpecialPeriodsError}

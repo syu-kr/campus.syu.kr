@@ -27,10 +27,19 @@ export interface CafeteriaSnapshot {
 export function getCafeteriaWeekMenus<T extends { date: string }>(menus: T[] | undefined, today: string): T[] {
   const monday = new Date(`${today}T00:00:00Z`);
   if (!Number.isFinite(monday.getTime())) return [];
-  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
-  const start = monday.toISOString().slice(0, 10);
+  const dayOfWeek = monday.getUTCDay();
+  monday.setUTCDate(monday.getUTCDate() - (dayOfWeek + 6) % 7);
+  let start = monday.toISOString().slice(0, 10);
   monday.setUTCDate(monday.getUTCDate() + 7);
-  const end = monday.toISOString().slice(0, 10);
+  let end = monday.toISOString().slice(0, 10);
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    monday.setUTCDate(monday.getUTCDate() + 7);
+    const nextEnd = monday.toISOString().slice(0, 10);
+    if (menus?.some(({ date }) => date >= end && date < nextEnd)) {
+      start = end;
+      end = nextEnd;
+    }
+  }
   return (menus ?? []).filter(({ date }) => date >= start && date < end)
     .sort((a, b) => a.date.localeCompare(b.date));
 }

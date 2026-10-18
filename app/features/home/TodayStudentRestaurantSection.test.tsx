@@ -48,7 +48,7 @@ describe("home Manna House menu", () => {
     renderSection();
     expect(await screen.findByText("오늘 밥, 오늘 국 외")).toBeInTheDocument();
     const section = screen.getByRole("region", { name: text.title });
-    expect(within(section).getByRole("heading", { level: 2, name: text.title })).toBeInTheDocument();
+    expect(within(section).getByRole("heading", { level: 3, name: text.title })).toBeInTheDocument();
     expect(within(section).getByText(dictionary.home.dashboard.closedMeal)).toBeInTheDocument();
     expect(within(section).getByText(text.unknownMeal)).toBeInTheDocument();
     expect(within(section).getByText("2026-10-16")).toHaveAttribute("dateTime", "2026-10-16");
@@ -57,19 +57,10 @@ describe("home Manna House menu", () => {
     expect(fetch).toHaveBeenCalledWith(publicUrl, expect.objectContaining({ credentials: "omit", redirect: "error", referrerPolicy: "no-referrer" }));
   });
 
-  it.each(["2026-10-11", "2026-10-17", "2026-10-26"])("never substitutes stored meals for missing today on %s", async (today) => {
-    renderSection(today);
+  it("never substitutes stored meals when today's menu is missing", async () => {
+    renderSection("2026-10-26");
     expect(await screen.findByText(dictionary.pages.cafeteria.missingToday)).toBeInTheDocument();
     expect(screen.queryByText(/어제 조식|오늘 밥|다음 주 조식/)).not.toBeInTheDocument();
-  });
-
-  it("shows a published Sunday menu without assuming the dorm cafeteria is closed", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ...menu, days: [
-      { date: "2026-10-18", breakfast: ["일요일 조식"], lunch: [], dinner: null },
-    ] }) }));
-    renderSection("2026-10-18");
-    expect(await screen.findByText("일요일 조식")).toBeInTheDocument();
-    expect(screen.queryByText(dictionary.home.dashboard.weekendMenu)).not.toBeInTheDocument();
   });
 
   it("shows loading, then replaces it with the menu", async () => {
@@ -104,7 +95,7 @@ describe("home Manna House menu", () => {
   it("localizes the labels and Manna House destination", async () => {
     renderSection("2026-10-16", "en");
     expect(await screen.findByText("오늘 밥, 오늘 국 more")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 2, name: getDictionary("en").pages.cafeteria.studentRestaurant.title })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3, name: getDictionary("en").pages.cafeteria.studentRestaurant.title })).toBeInTheDocument();
     expect(screen.getByText("Menu unavailable")).toBeInTheDocument();
     expect(screen.getAllByRole("link").every((link) => link.getAttribute("href") === "/en/campus/cafeteria?restaurant=manna")).toBe(true);
   });

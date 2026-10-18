@@ -179,68 +179,68 @@ export function TodayMenuSection({
   hasStaleMenuData?: boolean;
 }) {
   const dictionary = useDictionary();
-  const showStaleMenu = hasStaleMenuData && !todayInfo.isWeekend;
+  const showStaleMenu = hasStaleMenuData;
 
   return (
-    <div>
+    <section aria-label={dictionary.home.dashboard.cafeteria}>
       <SectionTitle title={dictionary.home.dashboard.cafeteria} />
-      <div className="space-y-3">
-        {isLoading && <Skeleton count={2} />}
-        {isError && <DashboardLoadError onRetry={onRetry} />}
-        {!isLoading && todayInfo.isWeekend && (
-          <StateCard
-            type="info"
-            message={dictionary.home.dashboard.weekendMenu}
-            action={<ViewFullMenuLink />}
-          />
-        )}
-        {!isLoading && showStaleMenu && (
-          <StateCard
-            type="warning"
-            title={dictionary.home.dashboard.staleMenuTitle}
-            message={dictionary.home.dashboard.staleMenuMessage}
-            action={<ViewFullMenuLink />}
-          />
-        )}
-        {!isLoading &&
-          !showStaleMenu &&
-          !todayInfo.isWeekend &&
-          todayMenu &&
-          isCafeteriaClosedDay(todayMenu) && (
-            <CafeteriaClosedCard
-              compact
-              title={dictionary.home.dashboard.closedMenuTitle}
-              message={dictionary.home.dashboard.closedMenuMessage}
-              action={<ViewFullMenuLink />}
-            />
-          )}
-        {!isLoading &&
-          !showStaleMenu &&
-          !todayInfo.isWeekend &&
-          todayMenu &&
-          !isCafeteriaClosedDay(todayMenu) && (
-            <TodayMenuCard todayMenu={todayMenu} />
-          )}
-        {!isLoading &&
-          !showStaleMenu &&
-          !isError &&
-          !todayInfo.isWeekend &&
-          todayInfo.dayOfWeek === 1 &&
-          !todayMenu && <PendingMenuCard />}
-        {!isLoading &&
-          !showStaleMenu &&
-          !isError &&
-          !todayInfo.isWeekend &&
-          todayInfo.dayOfWeek !== 1 &&
-          !todayMenu && (
-            <StateCard
-              type="warning"
-              message={dictionary.home.dashboard.missingMenu}
-              action={<ViewFullMenuLink />}
-            />
-          )}
-      </div>
-    </div>
+      {todayInfo.isWeekend ? (
+        <StateCard
+          type="info"
+          message={dictionary.home.dashboard.weekendMenu}
+          action={<ViewFullMenuLink />}
+        />
+      ) : (
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {isLoading && <Skeleton count={2} />}
+            {isError && <DashboardLoadError onRetry={onRetry} />}
+            {!isLoading && showStaleMenu && (
+              <StateCard
+                type="warning"
+                title={dictionary.home.dashboard.staleMenuTitle}
+                message={dictionary.home.dashboard.staleMenuMessage}
+                action={<ViewFullMenuLink />}
+              />
+            )}
+            {!isLoading &&
+              !showStaleMenu &&
+              todayMenu &&
+              isCafeteriaClosedDay(todayMenu) && (
+                <CafeteriaClosedCard
+                  compact
+                  title={dictionary.home.dashboard.closedMenuTitle}
+                  message={dictionary.home.dashboard.closedMenuMessage}
+                  action={<ViewFullMenuLink />}
+                />
+              )}
+            {!isLoading &&
+              !showStaleMenu &&
+              todayMenu &&
+              !isCafeteriaClosedDay(todayMenu) && (
+                <TodayMenuCard todayMenu={todayMenu} />
+              )}
+            {!isLoading &&
+              !showStaleMenu &&
+              !isError &&
+              todayInfo.dayOfWeek === 1 &&
+              !todayMenu && <PendingMenuCard />}
+            {!isLoading &&
+              !showStaleMenu &&
+              !isError &&
+              todayInfo.dayOfWeek !== 1 &&
+              !todayMenu && (
+                <StateCard
+                  type="warning"
+                  message={dictionary.home.dashboard.missingMenu}
+                  action={<ViewFullMenuLink />}
+                />
+              )}
+          </div>
+          <TodayStudentRestaurantSection todayInfo={todayInfo} />
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -254,7 +254,12 @@ export function TodayStudentRestaurantSection({ todayInfo }: { todayInfo: TodayI
 
   return (
     <section aria-label={text.title}>
-      <SectionTitle title={text.title} href="/campus/cafeteria?restaurant=manna" />
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="font-semibold text-neutral-900">{text.title}</h3>
+        <Link href={href} className="text-xs text-primary-600 hover:text-primary-700">
+          {dictionary.search.viewAll} →
+        </Link>
+      </div>
       <div className="space-y-3">
         {!isConfigured && <StateCard type="info" message={text.notConfigured} />}
         {isConfigured && isPending && (
@@ -278,7 +283,6 @@ export function TodayStudentRestaurantSection({ todayInfo }: { todayInfo: TodayI
                 <Badge color="green" size="sm">{dictionary.home.dashboard.todayMenu}</Badge>
                 <time className="text-xs font-medium text-neutral-500" dateTime={todayMenu.date}>{todayMenu.date}</time>
               </div>
-              <h3 className="mb-2 font-semibold text-neutral-900">{text.title}</h3>
               <div className="space-y-2">
                 {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
                   <MealPreview

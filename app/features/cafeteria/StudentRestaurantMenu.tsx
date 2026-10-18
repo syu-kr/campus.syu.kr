@@ -52,7 +52,9 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
   const locale = useLocale();
   const { data, isPending, isError, refetch, isFetching, isConfigured } = useStudentRestaurantMenu();
   const weeklyMenus = getCafeteriaWeekMenus(data?.days, today);
-  const todayMenu = weeklyMenus.find((day) => day.date === today);
+  const todayMenu = data?.days.find((day) => day.date === today);
+  const dayOfWeek = new Date(`${today}T00:00:00Z`).getUTCDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
   const hasOtherWeek = Boolean(data?.days.length && weeklyMenus.length === 0);
   const latestDate = data?.days.at(-1)?.date;
   const isPreviousWeek = Boolean(latestDate && latestDate < today);
@@ -81,7 +83,7 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
             action={<Button onClick={() => refetch()} disabled={isFetching}>{dictionary.home.dashboard.retry}</Button>}
           />
         )}
-        {data && !todayMenu && <StateCard type="info" className="mb-8" message={cafeteriaText.missingToday} />}
+        {data && !todayMenu && <StateCard type="info" className="mb-8" message={isWeekend ? cafeteriaText.weekendMessage : cafeteriaText.missingToday} />}
         {todayMenu && (
           <TodayMenuCardFrame date={todayMenu.date} location={text.title} headingId="manna-today-heading">
             <StudentRestaurantMeals day={todayMenu} />
