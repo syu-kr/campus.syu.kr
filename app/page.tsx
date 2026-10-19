@@ -5,9 +5,6 @@ import { HomePageClient } from "@/app/features/home/HomePageClient";
 import { getAnnouncementSummary } from "@/lib/server/announcements";
 import {
   getHomeAcademicSchedules,
-  getHomeCafeteriaMenus,
-  getHomeShuttleBuses,
-  getHomeShuttleSpecialPeriods,
   getHomePublicHolidays,
 } from "@/lib/server/home-data";
 import { getKoreaNow } from "@/lib/home";
@@ -15,7 +12,16 @@ import { getAllServiceNotices } from "@/lib/serviceNotices";
 
 export const revalidate = 300;
 
+// This boolean only hints the rendering path; it stores no data or freshness state.
+let hasResolvedHomeData = false;
+
+function markHomeDataResolved() {
+  hasResolvedHomeData = true;
+}
+
 export default function Home() {
+  if (hasResolvedHomeData) return <WarmHomeContent />;
+
   return (
     <Suspense fallback={<HomePageSkeleton />}>
       <HomeContent />
@@ -23,33 +29,53 @@ export default function Home() {
   );
 }
 
+async function WarmHomeContent() {
+  const content = HomeContent();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    // Give warm data 20 ms to avoid a streamed reveal without waiting on cold data.
+    const ready = await Promise.race([
+      content,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), 20);
+      }),
+    ]);
+    if (ready) return ready;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+
+  return (
+    <Suspense fallback={<HomePageSkeleton />}>
+      <DeferredHomeContent content={content} />
+    </Suspense>
+  );
+}
+
+async function DeferredHomeContent({ content }: { content: ReturnType<typeof HomeContent> }) {
+  return content;
+}
+
 async function HomeContent() {
   const [
     initialAnnouncements,
     initialServiceNotices,
-    initialCafeteria,
     initialSchedules,
-    initialShuttleBuses,
-    initialShuttleSpecialPeriods,
     initialPublicHolidays,
   ] = await Promise.all([
       getAnnouncementSummary(12),
       getAllServiceNotices(),
-      getHomeCafeteriaMenus(),
       getHomeAcademicSchedules(),
-      getHomeShuttleBuses(),
-      getHomeShuttleSpecialPeriods(),
       getHomePublicHolidays(),
     ]);
+
+  markHomeDataResolved();
 
   return (
     <HomePageClient
       initialAnnouncements={initialAnnouncements}
       initialServiceNotices={initialServiceNotices}
-      initialCafeteria={initialCafeteria}
       initialSchedules={initialSchedules}
-      initialShuttleBuses={initialShuttleBuses}
-      initialShuttleSpecialPeriods={initialShuttleSpecialPeriods}
       initialPublicHolidays={initialPublicHolidays}
       initialNowIso={getKoreaNow().toISOString()}
     />

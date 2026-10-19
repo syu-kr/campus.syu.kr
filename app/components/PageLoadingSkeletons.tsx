@@ -32,18 +32,27 @@ export function HomePageSkeleton() {
     <LoadingStatus className="mx-auto max-w-4xl space-y-6 px-4 py-5 sm:py-8">
       <Skeleton height="48px" className="rounded-xl" />
 
-      {Array.from({ length: 4 }).map((_, index) => (
+      <section className="space-y-3">
+        <Skeleton variant="text" width="34%" height="24px" />
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} height="96px" />
+          ))}
+        </div>
+      </section>
+
+      {Array.from({ length: 2 }).map((_, index) => (
         <section key={index} className="space-y-3">
           <div className="flex items-center justify-between gap-4">
             <Skeleton variant="text" width="34%" height="24px" />
             <Skeleton variant="text" width="18%" height="18px" />
           </div>
-          <Skeleton height={index === 2 ? "216px" : "132px"} />
+          <Skeleton height={index === 0 ? "216px" : "132px"} />
         </section>
       ))}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, index) => (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {Array.from({ length: 4 }).map((_, index) => (
           <Skeleton key={index} height="96px" />
         ))}
       </div>

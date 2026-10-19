@@ -1,13 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { LocaleProvider } from "@/app/components/LocaleProvider";
-import { TodayShuttleSection } from "@/app/features/home/HomeDashboardSections";
 import { ShuttleAdditionalServicesCard } from "./ShuttleAdditionalServicesCard";
-import buses from "@/public/data/shuttle-bus-schedule.json";
 import periods from "@/public/data/shuttle-special-periods.json";
 import type { ShuttleSpecialPeriods } from "@/types";
 import { getDictionary } from "@/lib/i18n";
-import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
 
 const specialPeriods = periods as ShuttleSpecialPeriods;
 const festival = specialPeriods.specialPeriods.find(
@@ -42,40 +39,6 @@ describe("festival shuttle display", () => {
     expect(screen.queryByText(/운행 중|5대 남/)).not.toBeInTheDocument();
     view.rerender(<ShuttleAdditionalServicesCard period={festival} now={new Date("2026-10-07T00:00:00+09:00")} />);
     expect(screen.queryByText("천보축전 셔틀 운행 안내")).not.toBeInTheDocument();
-  });
-
-  it("keeps the home notice for the entire applicable day", () => {
-    const props = { isLoading: false, isError: false, onRetry: () => {}, buses, specialPeriods,
-      holidays: { schemaVersion: 1 as const, sourceUrl: PUBLIC_HOLIDAY_SOURCE_URL,
-        years: [2026], holidays: [], lastSuccessAt: "2026-10-06T00:00:00+09:00" } };
-    const view = render(
-      <TodayShuttleSection {...props} now={new Date("2026-10-06T22:15:00+09:00")} />,
-    );
-    expect(screen.getByText("천보축전 셔틀 운행 안내")).toBeInTheDocument();
-    expect(screen.queryByText(/오늘 남은 셔틀 운행이 없습니다/)).not.toBeInTheDocument();
-    view.rerender(
-      <TodayShuttleSection {...props} now={new Date("2026-10-06T22:31:00+09:00")} />,
-    );
-    expect(screen.getByText("천보축전 셔틀 운행 안내")).toBeInTheDocument();
-    expect(screen.queryByText(/오늘 남은 셔틀 운행이 없습니다/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "다음 셔틀" })).not.toBeInTheDocument();
-    view.rerender(
-      <TodayShuttleSection {...props} now={new Date("2026-10-07T00:00:00+09:00")} />,
-    );
-    expect(screen.queryByText("천보축전 셔틀 운행 안내")).not.toBeInTheDocument();
-  });
-
-  it.each([
-    { locale: "ko" as const, name: "천보축전 셔틀 운행 안내", href: "/campus/bus-info" },
-    { locale: "en" as const, name: "Cheonbo Festival shuttle service notice", href: "/en/campus/bus-info" },
-  ])("links the $locale home announcement to bus information", ({ locale, name, href }) => {
-    render(
-      <LocaleProvider locale={locale}>
-        <TodayShuttleSection isLoading={false} isError={false} onRetry={() => {}}
-          buses={buses} specialPeriods={specialPeriods} now={new Date("2026-10-06T10:00:00+09:00")} />
-      </LocaleProvider>,
-    );
-    expect(screen.getByRole("link", { name })).toHaveAttribute("href", href);
   });
 
   it("renders the announcement and scheduled countdown in English", () => {

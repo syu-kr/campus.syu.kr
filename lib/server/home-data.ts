@@ -2,7 +2,6 @@ import { readFile } from "fs/promises";
 import path from "path";
 import type {
   AcademicSchedule,
-  CafeteriaMenu,
   PhoneNumber,
   ShuttleBusSchedule,
   ShuttleSpecialPeriods,
@@ -34,10 +33,6 @@ async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
   } catch {
     return fallback;
   }
-}
-
-export async function getHomeCafeteriaMenus(): Promise<CafeteriaMenu[]> {
-  return (await getHomeCafeteriaSnapshot()).menus;
 }
 
 export async function getHomeCafeteriaSnapshot(): Promise<CafeteriaSnapshot> {

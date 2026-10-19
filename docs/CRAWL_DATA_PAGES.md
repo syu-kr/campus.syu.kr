@@ -69,6 +69,18 @@ Pages 활성화와 배포에는 별도 Secret/Variable이 필요하지 않습니
 
 준비나 배포가 실패하면 이전 Pages deployment가 그대로 유지됩니다. 런타임은 Pages 조회, JSON 파싱, 크기 또는 SHA-256 검증이 실패할 때 배포에 포함된 `public/data/*.json`을 사용합니다.
 
+## 앱 런타임 캐시
+
+[lib/server/crawl-data.ts](../lib/server/crawl-data.ts)는 manifest와 버전 JSON을 구분해 캐시합니다.
+
+- `current.json` 요청은 `no-store`이며, 서버 프로세스에서 60초 동안 같은 manifest Promise를 공유합니다. 새 manifest의 버전·파일 크기·SHA-256과 출처 상태를 읽습니다.
+- 버전 JSON은 manifest의 **raw `entry.size`가 1MiB(1,048,576B) 이하이면 `force-cache`, 초과하면 `no-store`**로 요청합니다. manifest 자체의 `no-store`와 별개인 판단입니다.
+- Next의 fetch 응답 캐시는 본문을 Base64로 직렬화하므로, 로그에 표시된 캐시 항목 크기는 원문 JSON 크기나 압축 network 전송량과 다릅니다. 2MiB 캐시 항목 한도에 여유를 두기 위해 raw 본문 기준을 1MiB로 정합니다. 이 경계를 바꿀 때는 본문 외 캐시 메타데이터까지 포함한 크기를 확인합니다.
+- 두 크기 분기 모두 기존 버전별 Promise Map을 사용합니다. 키는 base URL·버전·파일명이며 최대 24개를 보존합니다. 진행 중 요청을 공유하고, 실패한 Promise는 제거해 이후 요청이 다시 시도할 수 있게 합니다.
+- 캐시 선택과 관계없이 응답 바이트 상한·manifest 크기 일치·SHA-256·JSON 구조 검증을 수행합니다. 조회나 검증이 실패하면 기존 번들 fallback을 사용하며 `source`, `version`, `sourceHealth` 계약은 바꾸지 않습니다.
+
+큰 응답을 Next Data Cache에서 제외해도 원문을 줄이거나 다운로드를 생략하는 것은 아닙니다. cold 서버 또는 캐시가 없는 버전은 원본을 계속 내려받습니다. 경고 제거, 프로세스 warm 재사용, cold network 비용을 구분합니다. 고정 데이터의 raw 크기와 직렬화 경고 크기, 동일 조건 전후 수치·검증 결과는 [성능 점검 기록](DESIGN_UX_AUDIT_2026-10-18.md), 측정 절차는 [성능 가이드](../PERFORMANCE.md)를 확인합니다.
+
 ## 출처 상태 확인
 
 `.cache/crawl-data-health.json`과 manifest의 `sourceHealth`는 파일별 `status` (`fresh`/`stale`), `lastAttemptAt`, optional `lastSuccessAt`·`errorCode`를 보존합니다. 오류 코드는 `CRAWLER_FAILED`, `INVALID_DATA`, `INCOMPLETE_SOURCE`입니다. 게시 시각으로 과거 정상 수집 시각을 추정하지 않습니다. 기존 manifest에 상태가 없으면 이전 성공 시각은 알 수 없습니다.
