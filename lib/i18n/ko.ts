@@ -173,7 +173,11 @@ export const koDictionary = {
       pwaTitle: "자주 쓰는 경우 앱처럼 열 수 있습니다",
       pwaDescription:
         "설치는 선택 사항이며, 브라우저에서도 같은 기능을 사용할 수 있습니다.",
-      pwaAction: "앱처럼 쓰는 방법",
+      pwaAction: "앱 설치",
+      pwaInstallHelp: "설치 창이 열리지 않으면 브라우저 메뉴에서 직접 추가해 주세요.",
+      pwaInstallIos: "iPhone·iPad: Safari에서 공유 → 홈 화면에 추가 → 추가를 선택하세요.",
+      pwaInstallBrowser: "다른 기기: 브라우저 메뉴에서 앱 설치 또는 홈 화면에 추가를 선택하세요.",
+      pwaInstallGuide: "자세한 설치 안내",
       dismissPwa: "앱 설치 안내 숨기기",
       menu: {
         cafeteria: "학식",

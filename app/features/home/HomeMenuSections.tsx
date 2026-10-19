@@ -1,17 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Button, buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { localizePath } from "@/lib/i18n";
+import { localizePath } from "@/lib/i18n/routing";
 
 const PWA_INSTALL_DISMISSED_KEY = "syu-campus:pwa-install-dismissed";
 const FREQUENT_MENU_ICON_COLOR = "rgb(37, 99, 235)";
 const FREQUENT_MENU_ICON_SIZE = 32;
 const FREQUENT_MENU_COMPACT_ICON_SIZE = 36;
 const FREQUENT_MENU_ICON_STROKE_WIDTH = 1.85;
+const InstallHelpModal = dynamic(() =>
+  import("@/app/components/Modal").then((module) => module.Modal),
+);
+
+interface InstallPromptEvent extends Event {
+  prompt: () => Promise<unknown>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 export function FrequentMenuGrid() {
   const locale = useLocale();
@@ -26,35 +36,35 @@ export function FrequentMenuGrid() {
     },
     {
       id: "2",
+      iconName: "book-open",
+      label: dictionary.home.menu.library,
+      path: "/campus/library",
+    },
+    {
+      id: "3",
+      iconName: "award",
+      iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
+      label: dictionary.academic.menus.graduationTitle,
+      path: "/academic/graduation",
+    },
+    {
+      id: "4",
       iconName: "bus",
       label: dictionary.home.menu.bus,
       path: "/campus/bus-info",
     },
     {
-      id: "3",
+      id: "5",
       iconName: "lightbulb",
       iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
       label: dictionary.home.menu.campusTips,
       path: "/campus/campus-tips",
     },
     {
-      id: "4",
-      iconName: "award",
-      iconSize: FREQUENT_MENU_COMPACT_ICON_SIZE,
-      label: dictionary.home.menu.scholarship,
-      path: "/academic/scholarship",
-    },
-    {
-      id: "5",
+      id: "6",
       iconName: "map",
       label: dictionary.home.menu.map,
       path: "/campus/map",
-    },
-    {
-      id: "6",
-      iconName: "book-open",
-      label: dictionary.home.menu.library,
-      path: "/campus/library",
     },
   ];
 
@@ -89,12 +99,55 @@ export function FrequentMenuGrid() {
 
 export function PwaInstallCard() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
+  const installPrompt = useRef<InstallPromptEvent | null>(null);
+  const installTrigger = useRef<HTMLButtonElement | null>(null);
   const dictionary = useDictionary();
   const locale = useLocale();
 
   useEffect(() => {
-    setIsVisible(localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) !== "true");
+    const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone;
+    setIsVisible(!isStandalone && localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) !== "true");
+
+    const handleInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      installPrompt.current = event as InstallPromptEvent;
+    };
+    const handleInstalled = () => {
+      installPrompt.current = null;
+      setShowInstallHelp(false);
+      setIsVisible(false);
+    };
+    window.addEventListener("beforeinstallprompt", handleInstallPrompt);
+    window.addEventListener("appinstalled", handleInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
   }, []);
+
+  const handleInstall = async (event: MouseEvent<HTMLButtonElement>) => {
+    installTrigger.current = event.currentTarget;
+    const prompt = installPrompt.current;
+    if (!prompt) {
+      setShowInstallHelp(true);
+      return;
+    }
+    // A browser install event can be prompted only once, including after dismissal.
+    installPrompt.current = null;
+    setIsInstalling(true);
+    try {
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === "accepted") setIsVisible(false);
+    } catch {
+      setShowInstallHelp(true);
+    } finally {
+      setIsInstalling(false);
+    }
+  };
 
   const handleDismiss = () => {
     localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "true");
@@ -104,6 +157,7 @@ export function PwaInstallCard() {
   if (!isVisible) return null;
 
   return (
+    <>
     <Card className="border border-primary-100 bg-primary-50" hover={false}>
       <div className="flex items-start gap-3">
         <Icon
@@ -119,15 +173,15 @@ export function PwaInstallCard() {
           <p className="mt-1 text-xs leading-5 text-neutral-600">
             {dictionary.home.pwaDescription}
           </p>
-          <Link
-            href={localizePath(
-              "/service/notices/005-pwa-installation-guide",
-              locale,
-            )}
-            className="mt-3 inline-flex rounded-lg border border-primary-200 bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:bg-primary-50"
+          <Button
+            variant="secondary"
+            className="mt-3 text-xs"
+            onClick={handleInstall}
+            disabled={isInstalling}
+            aria-busy={isInstalling}
           >
             {dictionary.home.pwaAction}
-          </Link>
+          </Button>
         </div>
         <button
           type="button"
@@ -139,6 +193,30 @@ export function PwaInstallCard() {
         </button>
       </div>
     </Card>
+    {showInstallHelp && (
+      <InstallHelpModal
+        isOpen
+        title={dictionary.home.pwaAction}
+        description={dictionary.home.pwaInstallHelp}
+        onClose={() => {
+          setShowInstallHelp(false);
+          window.requestAnimationFrame(() => installTrigger.current?.focus());
+        }}
+        size="sm"
+      >
+        <ul className="space-y-3 text-sm leading-6 text-neutral-700">
+          <li>{dictionary.home.pwaInstallIos}</li>
+          <li>{dictionary.home.pwaInstallBrowser}</li>
+        </ul>
+        <Link
+          href={localizePath("/service/notices/005-pwa-installation-guide", locale)}
+          className={buttonStyles("secondary", "mt-4")}
+        >
+          {dictionary.home.pwaInstallGuide}
+        </Link>
+      </InstallHelpModal>
+    )}
+    </>
   );
 }
 

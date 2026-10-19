@@ -179,7 +179,11 @@ export const enDictionary = {
       pwaTitle: "Open it like an app if you use it often",
       pwaDescription:
         "Installation is optional. The same features work in the browser.",
-      pwaAction: "How to use it like an app",
+      pwaAction: "Install app",
+      pwaInstallHelp: "If no install dialog appears, add the app from your browser menu.",
+      pwaInstallIos: "iPhone/iPad: In Safari, choose Share → Add to Home Screen → Add.",
+      pwaInstallBrowser: "Other devices: Choose Install app or Add to Home Screen from your browser menu.",
+      pwaInstallGuide: "Detailed installation guide",
       dismissPwa: "Hide app installation guide",
       menu: {
         cafeteria: "Cafeteria",
