@@ -1,5 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TimetableBuilderClient } from "./TimetableBuilderClient";
 
 const responses = vi.hoisted(() => ({
@@ -23,8 +25,39 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
+let viewportWidth = 390;
+const mediaListeners = new Set<() => void>();
+
+function resizeViewport(width: number) {
+  viewportWidth = width;
+  act(() => mediaListeners.forEach((listener) => listener()));
+}
+
+function setManyCourses() {
+  responses.timetable = {
+    success: true,
+    data: {
+      year: "2026", semester: "2",
+      courses: Array.from({ length: 320 }, (_, index) => ({
+        id: `course-${index}`,
+        courseName: `테스트 강의 ${index}`,
+        normalizedName: `테스트 강의 ${index}`,
+        credits: 3,
+        timeSlots: [],
+      })),
+    },
+  };
+}
+
 describe("timetable recovery and mobile editing", () => {
   beforeEach(() => {
+    viewportWidth = 390;
+    mediaListeners.clear();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: viewportWidth >= Number(query.match(/\d+/)![0]),
+      addEventListener: (_event: string, listener: () => void) => mediaListeners.add(listener),
+      removeEventListener: (_event: string, listener: () => void) => mediaListeners.delete(listener),
+    }));
     localStorage.clear();
     responses.search = "";
     responses.share = { success: false };
@@ -35,6 +68,74 @@ describe("timetable recovery and mobile editing", () => {
         courses: [{ id: "same-id", courseName: "테스트 시간 미정 강의", normalizedName: "테스트 시간 미정 강의", credits: 3, timeSlots: [] }],
       },
     };
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each([1023, 1024, 1279, 1280, 1440])("mounts only the usable course picker at %ipx", (width) => {
+    viewportWidth = width;
+    setManyCourses();
+    render(<TimetableBuilderClient />);
+    expect(screen.queryAllByRole("article")).toHaveLength(width < 1024 ? 0 : 300);
+    expect(screen.queryAllByRole("searchbox")).toHaveLength(width < 1024 ? 0 : 1);
+  });
+
+  it("mounts mobile results only while the sheet is open and keeps detailed filters collapsed", () => {
+    setManyCourses();
+    render(<TimetableBuilderClient />);
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+    fireEvent.click(screen.getAllByRole("button", { name: "강의 추가" }).at(-1)!);
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getAllByRole("article")).toHaveLength(300);
+    const filters = dialog.querySelector("details")!;
+    expect(filters).not.toHaveAttribute("open");
+    expect(within(dialog).getByRole("searchbox")).toBeInTheDocument();
+    filters.open = true;
+    fireEvent.click(within(dialog).getByRole("checkbox", { name: "월" }));
+    expect(filters).toHaveAttribute("open");
+    expect(within(dialog).getByRole("checkbox", { name: "월" })).toBeChecked();
+    fireEvent.click(within(dialog).getByRole("button", { name: "모달 닫기" }));
+    expect(screen.queryAllByRole("article")).toHaveLength(0);
+  });
+
+  it("keeps search and selected courses when the picker moves between layouts", () => {
+    viewportWidth = 1024;
+    setManyCourses();
+    render(<TimetableBuilderClient />);
+    fireEvent.change(screen.getByRole("searchbox"), { target: { value: "강의 29" } });
+    const selectedCard = screen.getByRole("heading", { name: "테스트 강의 29" }).closest("article")!;
+    fireEvent.click(within(selectedCard).getByRole("button", { name: "추가" }));
+
+    for (const width of [1280, 390, 1279, 1440]) {
+      resizeViewport(width);
+      if (width < 1024) {
+        expect(screen.queryAllByRole("article")).toHaveLength(0);
+        fireEvent.click(screen.getAllByRole("button", { name: "강의 추가" }).at(-1)!);
+      }
+      expect(screen.getByRole("searchbox")).toHaveValue("강의 29");
+      expect(screen.getAllByRole("article")).toHaveLength(11);
+      const card = screen.getByRole("heading", { name: "테스트 강의 29" }).closest("article")!;
+      expect(within(card).getByRole("button", { name: "삭제" })).toBeInTheDocument();
+      if (width >= 1024) expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    }
+    expect(document.body.style.overflow).not.toBe("hidden");
+  });
+
+  it("hydrates the server layout before mounting the desktop picker", async () => {
+    viewportWidth = 1440;
+    const container = document.createElement("div");
+    container.innerHTML = renderToString(<TimetableBuilderClient />);
+    document.body.append(container);
+    expect(container.querySelector('input[type="search"]')).toBeNull();
+    const onRecoverableError = vi.fn();
+    let root: ReturnType<typeof hydrateRoot>;
+    await act(async () => {
+      root = hydrateRoot(container, <TimetableBuilderClient />, { onRecoverableError });
+    });
+    expect(container.querySelectorAll('input[type="search"]')).toHaveLength(1);
+    expect(onRecoverableError).not.toHaveBeenCalled();
+    act(() => root.unmount());
+    container.remove();
   });
 
   it("keeps the search input focused while typing multiple characters", () => {
