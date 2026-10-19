@@ -3,9 +3,9 @@
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
-import { getDictionary } from "@/lib/i18n";
+import { koDictionary } from "@/lib/i18n/ko";
 
-const text = getDictionary("ko").errorBoundary;
+const text = koDictionary.errorBoundary;
 
 export default function GlobalError({
   error,

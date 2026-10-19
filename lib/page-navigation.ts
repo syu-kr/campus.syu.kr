@@ -1,4 +1,4 @@
-import { stripLocalePrefix } from "./i18n";
+import { stripLocalePrefix } from "./i18n/routing";
 
 /** Use a known parent page even when the current page was opened directly. */
 export function getParentPageHref(pathname: string | null): string | null {

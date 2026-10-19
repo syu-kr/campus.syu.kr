@@ -6,7 +6,7 @@ import clsx from "clsx";
 import { Icon } from "./Icon";
 import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
 import { useDictionary, useLocale } from "./LocaleProvider";
-import { localizePath } from "@/lib/i18n";
+import { localizePath } from "@/lib/i18n/routing";
 
 interface NavItem {
   iconName: string;

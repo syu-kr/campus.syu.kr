@@ -38,7 +38,7 @@ describe("Header weather query", () => {
     await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 20°C/ })).toHaveLength(2));
     expect(fetchMock).toHaveBeenCalledOnce();
     fireEvent.click(screen.getAllByRole("button", { name: /날씨: 20°C/ })[0]);
-    expect(within(screen.getByRole("dialog", { name: text.weather.label })).getByText("20°C")).toBeInTheDocument();
+    expect(within(await screen.findByRole("dialog", { name: text.weather.label })).getByText("20°C")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledOnce();
 
     fetchMock.mockResolvedValueOnce({ ...weather, temperature: 23 });
