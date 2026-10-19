@@ -52,6 +52,7 @@ export const ROOM_SEAT_MAP_URLS = [
   "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=10&searchGB=S",
   "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=11&searchGB=S",
   "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=12&searchGB=S",
+  "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=13&searchGB=S",
 ];
 
 export const LIBRARY_OPERATING_HOURS: Record<
