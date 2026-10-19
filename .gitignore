@@ -33,10 +33,11 @@ tsconfig.tsbuildinfo
 Thumbs.db
 
 # Temporary/Testing files
+/.playwright-mcp/
+/output/
 parse_schedule.py
 schedule-page.html
 test-schedule.js
-.DS_Store
 .next
 
 # Android / Trusted Web Activity

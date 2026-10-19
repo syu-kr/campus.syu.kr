@@ -12,9 +12,9 @@
 ## 주요 기능
 
 - 통합 검색: 공지사항, 학사 일정, 장학금, 연락처, 캠퍼스 생활 자료 검색
-- 학사 정보: 학사 공지, 학사 일정, 졸업 요건, 시간표
-- 캠퍼스 생활: 학식, 셔틀버스, 대중교통, 도서관, 지도, 체육관, 보건소
-- 더보기: 장학금, 전화번호, 캠퍼스 꿀팁, 일정 잡기, 서비스 공지
+- 학사 정보: 학사·장학 공지, 학사 일정, 졸업 요건, 시간표
+- 캠퍼스 생활: 학식, 셔틀버스, 대중교통, 도서관, 지도, 연락처, 체육관, 보건소, 꿀팁, 룸메이트
+- 더보기: 일정 잡기, 서비스 공지, 알림·개인정보 설정
 - PWA 및 푸시 알림: 앱 설치, 서비스 워커, Firebase Cloud Messaging
 - 반응형 UI: 모바일과 데스크톱 모두 지원
 
@@ -23,7 +23,7 @@
 ### 요구사항
 
 - Node.js 22.22.2 이상
-- npm
+- npm 10.9.4 (`package.json`의 `packageManager`, CI 고정 버전)
 - Python 3.11 이상: 크롤러 검사 및 실행 시 필요
 
 ### 설치 및 실행
@@ -46,6 +46,7 @@ npm run check
 
 ## 문서
 
+- [문서 색인](./docs/README.md): 기능별 개발·운영 문서와 측정 기록
 - [DEVELOPMENT.md](./DEVELOPMENT.md): 개발 환경, 구조, API, 배포 가이드
 - [CONTRIBUTING.md](./CONTRIBUTING.md): 기여 방법과 변경 전 확인사항
 - [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md): 커뮤니티 행동강령
@@ -58,7 +59,7 @@ npm run check
 - [docs/CRAWL_DATA_PAGES.md](./docs/CRAWL_DATA_PAGES.md): 무료 GitHub Pages 일일 데이터·롤백 운영
 - [docs/STUDENT_RESTAURANT.md](./docs/STUDENT_RESTAURANT.md): 만나의집(기숙사 식당) 이미지 식단 자동화·Secrets·Pages 설정
 - [docs/BUS_API_GUIDE.md](./docs/BUS_API_GUIDE.md): 공공데이터 버스 API 참고
-- [docs/SITE_AUDIT_2026-10-04.md](./docs/SITE_AUDIT_2026-10-04.md): 사이트·Actions 수정 결과, 검증 범위와 남은 확인
+- [docs/ROOMMATES.md](./docs/ROOMMATES.md): 룸메이트 기능, 인증·정책·운영 점검
 
 ## 기술 스택
 
@@ -112,13 +113,13 @@ python scripts/crawl_phone.py
 
 ### 만나의집(기숙사 식당)
 
-기존 SU Lounge와 별도로, 만나의집은 이미지가 변경될 때만 OpenAI로 날짜별 조식·중식·석식을 추출합니다. 저장소 Actions Secrets에 `HAKSIK_API_URL`과 `OPENAI_API_KEY`를 직접 등록하고 Pages Source를 `GitHub Actions`로 설정한 다음, `Weekly Crawl - 만나의집 (기숙사 식당)`을 `main`에서 수동 실행합니다. 이후 매주 월요일 07:00 KST에 갱신합니다. 원본 주소는 공개 파일이나 Vercel 환경변수에 넣지 않습니다.
-
-공개 결과는 [Pages 식단 JSON](https://syu-kr.github.io/campus.syu.kr/cafeteria/student-restaurant-1.json)이며, 분석이나 배포 실패 시 마지막 정상본을 유지합니다. 첫 정상 게시 후 Vercel의 `NEXT_PUBLIC_CAFETERIA_JSON_URL`에 이 공개 주소를 등록하고 앱을 재배포하면 `/campus/cafeteria`의 `만나의 집` 버튼에서 오늘의 메뉴와 이번 주 메뉴를 확인할 수 있습니다. 기본 선택은 `SU-Lounge`이며 다른 주의 식단은 표시하지 않습니다. Mock 테스트, 스케줄 변경, 재실행, HTTP 통신의 보안 한계는 [설정·운영 문서](./docs/STUDENT_RESTAURANT.md)를 확인하세요.
+SU Lounge와 별도로, 만나의집은 이미지가 변경될 때 OpenAI로 날짜별 조식·중식·석식을 추출해 Pages JSON으로 게시합니다. 분석·배포 실패 시 마지막 정상본을 유지하며, 앱은 이번 주 메뉴만 표시합니다. 원본 주소는 공개 파일이나 Vercel 환경변수에 넣지 않습니다. Actions Secrets, 최초 게시, 앱 연결, 주간 일정과 재실행 절차는 [설정·운영 문서](./docs/STUDENT_RESTAURANT.md)를 따릅니다.
 
 ## 배포
 
 개발과 협업은 Organization 레포 `syu-kr/campus.syu.kr`에서 진행합니다. `main` 브랜치의 CI가 성공하면 GitHub Actions가 Vercel에 연결된 개인 레포 `singhic/syu-campus`로 소스 파일을 동기화하고, Vercel은 그 개인 레포의 변경을 감지해 배포합니다.
+
+이는 워크플로에 정의된 흐름입니다. 실제 반영은 해당 커밋의 동기화·Vercel 배포 상태와 운영 화면을 별도로 확인합니다. 로컬 검사나 CI 성공만으로 운영 반영을 판정하지 않습니다.
 
 ## 라이선스와 데이터
 

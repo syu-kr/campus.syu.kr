@@ -16,5 +16,8 @@ export default defineConfig([
   globalIgnores([
     ".next/**",
     "node_modules/**",
+    ".cache/**",
+    "output/**",
+    ".playwright-mcp/**",
   ]),
 ]);

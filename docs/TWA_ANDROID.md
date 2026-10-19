@@ -29,9 +29,9 @@
 ## Digital Asset Links
 
 웹사이트는 `/.well-known/assetlinks.json`에서 Android 앱과 도메인의 관계를 선언합니다.
-현재 `public/.well-known/assetlinks.json`에는 Play Console에서 확인한 앱 서명 키 인증서의
-SHA-256 지문이 등록되어 있습니다. 인증서 지문은 공개 식별 정보이며 비공개 키나 업로드 키
-비밀번호를 포함하지 않습니다.
+`public/.well-known/assetlinks.json`에는 앱 서명 키 인증서의 SHA-256 지문이 등록되어 있습니다.
+현재 Play Console 설정과 설치된 앱의 인증서가 이 파일과 일치하는지는 배포 때 따로 확인합니다.
+인증서 지문은 공개 식별 정보이며 비공개 키나 업로드 키 비밀번호를 포함하지 않습니다.
 
 Play Console에서 Play App Signing을 활성화한 뒤에는 다음 위치에서 앱 서명 키 인증서의 SHA-256 지문을 확인합니다.
 
@@ -89,7 +89,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 1. Bubblewrap 전용 JDK 17과 Android SDK를 준비한다.
 2. Play Console에서 `kr.syukr.campus` 앱 레코드를 생성해 패키지를 먼저 등록한다.
-3. `twa-android/`에 Android 프로젝트를 생성한다.
+3. 기존 `twa-android/` 프로젝트와 생성 설정을 확인한다. 재생성이 필요하면 기존 변경을 먼저 대조한다.
 4. application ID를 `kr.syukr.campus`로 설정한다.
 5. target SDK 36과 현재 앱 버전을 확인한다.
 6. 디버그 APK와 미서명 릴리스 AAB가 컴파일되는지 확인한다.
@@ -98,20 +98,19 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 9. Play의 앱 서명 키 SHA-256과 `assetlinks.json`의 지문이 일치하는지 확인하고, 다르면 교체한다.
 10. PR 검사 통과 후 머지하고 운영 도메인의 Digital Asset Links 응답을 확인한다.
 11. 내부 테스트 트랙에서 설치하고 주소 표시줄 없이 TWA로 열리는지 검증한다.
-12. 대상 계정이라면 12명이 14일 연속 참여하는 비공개 테스트를 완료한다.
+12. 대상 계정에 적용되는 비공개 테스트와 프로덕션 액세스 신청 조건을 Play Console에서 확인하고 완료한다.
 
-현재 Play Console 개인 개발자 계정은 2023년 11월 13일 이후 생성되었으므로 프로덕션 액세스 신청 전에
-비공개 테스트가 필요합니다. 최소 12명의 테스터가 14일 동안 중단 없이 참여 상태를 유지해야 하며,
-내부 테스트 참여 기간은 이 요건에 포함되지 않습니다. 요건을 채운 뒤 Play Console 대시보드에서
-프로덕션 액세스를 신청합니다.
+개발자 계정 종류·생성일과 현재 배포 상태는 저장소 파일만으로 확인할 수 없습니다. 필요한 테스트
+트랙, 참여자 수와 연속 참여 기간은 해당 계정의 Play Console 안내를 확인합니다. 로컬 빌드나
+CI 성공으로 이 조건을 완료한 것으로 판단하지 않습니다.
 
 이 단계의 역할은 다음과 같이 나눕니다.
 
 - 운영자: Android Studio에서 저장소 밖의 업로드 키를 생성·보관하고 서명된 AAB를 업로드한 뒤,
   Play Console의 **앱 서명 키 인증서 SHA-256**만 개발 작업에 전달합니다. 이후 비공개 테스트 트랙과
-  테스터 12명 이상의 14일 연속 참여를 관리합니다.
+  해당 계정에 필요한 테스트 참여 조건을 관리합니다.
 - 저장소 작업: 전달받은 SHA-256으로 `assetlinks.json`을 교체하고 출시 검사를 통과시킨 뒤,
-  같은 Draft PR에 커밋을 추가하고 배포 후 운영 도메인의 Digital Asset Links를 검증합니다.
+  변경 PR에 반영하고 배포 후 운영 도메인의 Digital Asset Links를 검증합니다.
 
 운영 업로드 키와 서명된 AAB는 Android Studio에서 생성합니다.
 

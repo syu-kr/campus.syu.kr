@@ -63,7 +63,10 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".cache",
+    "output",
+    ".playwright-mcp"
   ],
   "ts-node": {
     "compilerOptions": {

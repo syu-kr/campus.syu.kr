@@ -2,6 +2,8 @@
 
 이 문서는 외부 호출 URL과 민감 값을 코드에서 빼고 어디에 등록해야 하는지 정리합니다. 실제 URL 값은 이 문서에 적지 않습니다.
 
+2026-10-18 기준 `.env.example`, 설정을 읽는 코드와 `.github/workflows/`를 대조했습니다. 이 문서는 등록 계약이며 실제 Vercel·GitHub·Firebase 설정, 계정·요금제와 운영 배포의 확인 기록은 아닙니다. 민감 값이나 실제 `.env.local` 내용은 공개 문서에 넣지 않습니다.
+
 ## Vercel Project Environment Variables
 
 등록 위치:
@@ -46,7 +48,6 @@
 | `ADMIN_CLASSIFIER_AI_ENABLED` | 선택 | 문의/제보 AI 분류 중단 스위치. `false`이면 분류 API가 503 반환 |
 | `ADMIN_CLASSIFIER_AI_TIMEOUT_MS` | 선택 | 문의/제보 AI 분류 timeout. 기본값 `15000` |
 | `ADMIN_CLASSIFIER_AI_MAX_RETRIES` | 선택 | OpenAI SDK 재시도 횟수. 기본값 `2` |
-| `TOKEN_CLEANUP_DAYS` | 선택 | 오래된 FCM 토큰 삭제 기준 일수. 기본값 `90` |
 
 네이버·Bing 인증값 발급, 초기 HTML 확인과 사이트맵 제출은 [SEARCH_INDEXING_GUIDE.md](./SEARCH_INDEXING_GUIDE.md)를 따릅니다.
 
@@ -68,9 +69,11 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ## 룸메이트 게시판 준비와 중지
 
+인증 계약, 중지 범위와 배포 확인 절차는 [ROOMMATES.md](./ROOMMATES.md)를 기준으로 합니다.
+
 - 처음에는 세 플래그를 모두 `false`로 둡니다. 내부 검증 환경에서 필요한 제어만 명시적으로 켭니다.
 - `ROOMMATES_OWNER_KEY_SECRET`은 `RATE_LIMIT_SECRET`과 같은 생성 명령으로 독립적으로 생성하며 다른 키나 운영 값을 재사용하지 않습니다. 교체하면 작성자 연결이 달라지므로 기존 자료 이전이나 만료와 연결해 계획합니다.
-- Firebase Console에서 Email/Password 제공자의 Email link 로그인, 운영 및 테스트 허용 도메인, 한국어·영어 템플릿을 확인합니다. 실제 프로젝트 요금제와 발송 한도는 콘솔에서 확인하며 Spark 기본 로그인 메일은 하루 5통입니다. 실제 학교 메일 수신과 재전송 검증 전 운영 기능을 켜지 않습니다.
+- Firebase Console에서 Email/Password 제공자의 Email link 로그인, 운영 및 테스트 허용 도메인, 한국어·영어 템플릿을 확인합니다. 적용된 요금제와 발송 한도는 대상 프로젝트 콘솔에서 확인합니다. 실제 학교 메일 수신과 재전송 검증 전 운영 기능을 켜지 않습니다.
 - 별도 SMTP, Resend, 숫자 OTP 설정은 필요하지 않습니다. 학생 허용 도메인은 정확히 `syuin.ac.kr`입니다.
 - 위 플래그 변경은 Vercel 환경 변수 수정 후 재배포로 적용합니다. admin에서 환경값을 바꾸는 버튼은 제공하지 않습니다. 긴급 노출 대응은 admin 글 숨김·삭제와 작성 보류를 먼저 사용할 수 있습니다.
 - 전체 중지 후에도 admin의 글·신고 처리와 작성 보류 해제는 가능합니다. 기능 중지나 발송 중지가 Firebase 공개 인증 API 직접 호출까지 전역 차단하지는 않습니다.
@@ -78,9 +81,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ## Vercel Runtime
 
-Vercel Project의 Node.js 런타임은 `package.json`의 `engines.node`와 같은 Node.js 22.22.2 이상으로 맞춥니다. 운영에서는 Vercel의 Node.js 24.x 런타임 사용을 권장합니다.
+Node.js 요구 조건은 `package.json`의 `engines.node`(`>=22.22.2`)를 따릅니다. 저장소 Actions는 `22.22.2`를 사용합니다. Vercel 프로젝트에서 선택한 실제 런타임과 일치 여부는 배포 설정·로그에서 확인합니다.
 
-Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합니다. Vercel 함수 번들에서 `firebase-admin@14`의 `jwks-rsa@4` -> `jose@6` 조합이 CommonJS/ESM 로딩 오류를 일으킬 수 있으므로, 이 프로젝트는 Firebase Admin SDK를 13.x 안정 조합으로 고정합니다.
+Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합니다. 현재 의존성 범위는 `firebase-admin: ^13.10.0`이며 실제 설치 버전은 `package-lock.json`을 따릅니다. 상위 메이저로 바꿀 때에는 함수 번들의 모듈 로딩과 ID token 검증을 다시 확인합니다.
 
 ## Vercel Public Variables
 
@@ -100,6 +103,14 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | 필수 | Firebase messaging sender id |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase app id |
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | Web Push VAPID public key |
+| `NEXT_PUBLIC_SENTRY_DSN` | 오류 수집 시 필수 | 브라우저·Node·Edge Sentry 초기화 DSN. 공개 값이며 미설정하면 이벤트 전송을 구성할 수 없음 |
+| `NEXT_PUBLIC_CAFETERIA_JSON_URL` | 만나의집 사용 시 필수 | 공개 Pages의 만나의집 JSON URL. 공백이면 해당 식단을 앱에 연결하지 않음. 비공개 수집 endpoint를 넣지 않음 |
+
+### Sentry 빌드 설정
+
+`NEXT_PUBLIC_SENTRY_DSN` 변경 후에는 앱을 다시 빌드·배포합니다. `SENTRY_AUTH_TOKEN`은 소스맵 업로드용 빌드 전용 비밀값으로 Vercel/CI에만 등록하고 `NEXT_PUBLIC_` 접두사를 붙이지 않습니다. 이 키를 런타임 오류 전송이나 이슈 조회 키로 재사용하지 않습니다.
+
+`SENTRY_ORG`, `SENTRY_PROJECT`는 `next.config.js`가 읽는 업로드 대상 설정입니다. 기본값은 `.env.example`과 `next.config.js`를 따르며, 다른 Sentry 프로젝트로 업로드할 때 명시합니다. DSN이 있다고 소스맵 업로드나 운영 이벤트 수집 성공이 확인된 것은 아닙니다. 배포 후 테스트 이벤트의 수신과 민감 정보 제거를 별도로 확인합니다.
 
 ### Kakao Maps SDK 도메인
 
@@ -122,13 +133,13 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
 | `PUBLIC_DATA_SERVICE_KEY` | 공휴일 수집 시 필수 | `crawl-daily.yml` | 기존 시내버스와 같은 공공데이터포털 서비스 키. 특일 정보 활용신청 완료 후 동일 값을 Actions Secret에도 등록. 클라이언트에 공개하지 않음 |
-| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml` | Actions 전용 OpenAI Project 서비스 계정 키. Vercel용 키와 분리 |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml`, `student-restaurant.yml` | Actions 전용 OpenAI Project 서비스 계정 키. Vercel용 키와 분리 |
+| `HAKSIK_API_URL` | 만나의집 수집 시 필수 | `student-restaurant.yml` | 비공개 식단 이미지 수집 endpoint. Vercel·브라우저·공개 Pages에 등록하지 않음 |
 | `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL. GitHub Actions에서는 운영 HTTPS URL만 사용하고 localhost를 쓰지 않음 |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin 초기화용 project id |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포에 push 가능한 GitHub token |
-| `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
 
 ### 월간 크롤러 권한
 
@@ -180,6 +191,14 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `CRAWL_SCHOLARSHIP_NOTICES_URL` | 필수 | `crawl-daily.yml` | 장학공지 목록 page base URL |
 | `CRAWL_CAMPUS_NOTICES_URL` | 필수 | `crawl-daily.yml` | 캠퍼스 생활공지 목록 page base URL |
 | `CRAWL_SWUNIV_NOTICES_URL` | 필수 | `crawl-daily.yml` | SW중심대학 공지 목록 page base URL |
+| `CRAWL_EVENT_NOTICES_URL` | 행사 수집 시 필수 | `crawl-daily.yml` | 행사·모집 공지 목록 page base URL |
+| `CRAWL_DEPARTMENT_COURSE_GUIDE_URL` | 학과 안내 수집 시 필수 | `crawl-daily.yml` | 단과대·학과 안내 원본 URL |
+| `CRAWL_DEPARTMENT_COLLEGE_EXCLUDE_URLS` | 선택 | `crawl-daily.yml` | 학과 수집에서 제외할 단과대 URL 목록 |
+| `CRAWL_DEPARTMENT_NOTICE_QUERY_URLS` | 선택 | `crawl-daily.yml` | 학과 공지 중 query 기반 게시판 URL 목록 |
+| `CRAWL_DEPARTMENT_NOTICE_MAX_PAGES` | 선택 | `crawl-daily.yml` | 학과별 공지 수집 최대 페이지. `.env.example` 기본값 `3` |
+| `CRAWL_DEPARTMENT_NOTICE_SEARCH_TERMS` | 선택 | `crawl-daily.yml` | 학과 공지 검색어 목록. `.env.example` 참조 |
+| `CRAWL_DEPARTMENT_NOTICE_SEARCH_MAX_PAGES` | 선택 | `crawl-daily.yml` | 검색어별 수집 최대 페이지. `.env.example` 기본값 `2` |
+| `CRAWL_DEPARTMENT_NOTICE_DELAY_SECONDS` | 선택 | `crawl-daily.yml` | 학과 공지 요청 간 지연. `.env.example` 기본값 `0.25`초 |
 | `CRAWL_CAFETERIA_URL` | 필수 | `crawl-daily.yml` | 학식 메뉴 URL |
 | `CRAWL_PHONE_DIRECTORY_URL` | 필수 | `crawl-monthly.yml` | 전화번호 안내 URL |
 | `CRAWL_ACADEMIC_SCHEDULE_URL` | 필수 | `crawl-monthly.yml` | 학사일정 URL |
@@ -188,13 +207,21 @@ URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variabl
 | `ANNOUNCEMENT_AI_LIMIT` | 선택 | `crawl-daily.yml` | 예약 실행의 공지 요약 최대 처리 건수. 기본 운영값 `25` |
 | `ANNOUNCEMENT_AI_DELAY_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 간 대기 시간(ms). 기본값 `2200` |
 | `ANNOUNCEMENT_AI_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | 공지 요약 요청 timeout(ms). 기본값 `30000` |
+| `ANNOUNCEMENT_AI_CHECKPOINT_EVERY` | 선택 | `crawl-daily.yml` | 공지 요약 중간 저장 간격. 기본값 `5` |
 | `ANNOUNCEMENT_AI_MAX_RETRIES` | 선택 | `crawl-daily.yml` | OpenAI SDK 재시도 횟수. 기본값 `3` |
+| `ANNOUNCEMENT_DETAIL_FETCH_ENABLED` | 선택 | `crawl-daily.yml` | 공지 본문 조회. `false`이면 비활성화 |
+| `ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS` | 선택 | `crawl-daily.yml` | 공지 본문 조회 timeout(ms). 기본값 `12000` |
+| `ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED` | 선택 | `crawl-daily.yml` | 기존 공지 본문 변경 확인. `false`이면 비활성화 |
+| `ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT` | 선택 | `crawl-daily.yml` | 실행당 기존 본문 변경 확인 최대 건수. 미설정 시 해당 실행의 `ANNOUNCEMENT_AI_LIMIT`을 사용 |
+| `OPENAI_MODEL` | 선택 | `student-restaurant.yml` | 만나의집 이미지 분석 모델. 기본값 `gpt-5.4` |
 | `OPENAI_PUSH_MODEL` | 선택 | `daily-announcement-notification.yml` | 일일 푸시 문구 모델. 기본값 `gpt-5.6-luna` |
 | `PUSH_COPY_AI_ENABLED` | 선택 | `daily-announcement-notification.yml` | AI 푸시 중단 스위치. `false`이면 결정론적 기본 문구 사용 |
 | `PUSH_COPY_AI_TIMEOUT_MS` | 선택 | `daily-announcement-notification.yml` | 일일 푸시 문구 요청 timeout. 기본값 `12000` |
 | `PUSH_COPY_AI_MAX_RETRIES` | 선택 | `daily-announcement-notification.yml` | OpenAI SDK 재시도 횟수. 기본값 `2` |
 | `TOKEN_CLEANUP_DAYS` | 선택 | `cleanup-expired-firestore.yml` | 마지막 갱신 후 FCM 토큰을 삭제할 기준 일수. 기본값 `90`, 허용 범위 `7~3650` |
 | `VERCEL_DESTINATION_REPO` | 필수 | `sync-to-vercel-repo.yml` | 동기화 대상 개인 배포 레포. `owner/name` 형식 |
+
+공지 요약의 `ANNOUNCEMENT_AI_REFRESH_GENERATION`, `ANNOUNCEMENT_AI_REFRESH_SINCE`는 현재 `crawl-daily.yml`의 수동 실행 입력(`ai_refresh_generation`, `ai_refresh_since`)에서 전달합니다. 저장소 Variable을 등록해도 이 워크플로에서 자동으로 읽지 않습니다. 로컬에서는 `.env.example`의 같은 이름을 사용합니다. `OFFICIAL_ACCOUNT_EMAIL`은 현재 동기화 워크플로에서 읽지 않습니다.
 
 ## Firebase Console Configuration
 
@@ -217,6 +244,8 @@ Next.js 로컬 서버는 `.env.local`을 읽습니다. Vercel Project Environmen
 Python 크롤러는 `.env.local`을 자동으로 읽지 않습니다. 로컬에서 크롤러를 직접 실행할 때는 PowerShell에서 필요한 값을 먼저 설정하세요.
 
 Node 스크립트도 GitHub Actions와 같은 환경 변수를 사용합니다. 로컬에서 일일 공지 푸시 문구 AI를 확인하려면 `.env.local` 또는 현재 PowerShell 세션에 `OPENAI_API_KEY`를 등록하세요. `DRY_RUN=true`이면 공지 조회와 문구 생성까지만 수행하고 FCM 호출, dedupe 소비, Firestore 기록을 하지 않습니다. `/admin` 문의 분류는 Next.js 서버 런타임에서 실행되므로 `.env.local` 또는 Vercel Project Environment Variables에 Vercel 전용 `OPENAI_API_KEY`를 등록합니다.
+
+`TOKEN_CLEANUP_DAYS`는 `cleanup-tokens` 스크립트의 설정이며 Vercel 페이지 설정이 아닙니다. `ANALYZE=true`는 번들 분석 빌드에만 사용합니다. 보통은 `npm run build:analyze`를 사용하고 운영 런타임 변수로 등록하지 않습니다.
 
 ```powershell
 $env:CRAWL_ACADEMIC_NOTICES_URL="..."
