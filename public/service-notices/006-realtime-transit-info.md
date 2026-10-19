@@ -64,4 +64,4 @@ author: "SYU CAMPUS Team"
 
 더 편리한 캠퍼스 생활을 위해 계속 개선하겠습니다! 😊
 
-문의사항이 있으신 경우 **singhic_dev@syu.kr**로 연락해주세요.
+문의사항이 있으신 경우 **singhic@outlook.kr**로 연락해주세요.

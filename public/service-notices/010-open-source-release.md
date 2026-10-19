@@ -56,7 +56,7 @@ SYU CAMPUS의 소스 코드를 GitHub에 공개했습니다. 서비스가 어떻
 
 일반적인 버그와 개선 의견은 GitHub Issue 또는 사이트 문의를 통해 알려주세요. 재현 절차, 발생 환경, 예상 동작과 실제 동작을 함께 작성하면 더 빠르게 확인할 수 있습니다.
 
-보안 취약점은 공개 Issue에 상세 내용, 비밀 값, 개인정보를 올리지 마세요. 저장소의 **Security > Report a vulnerability** 기능을 이용해 비공개로 제보해야 합니다. 해당 메뉴를 사용할 수 없다면 세부 정보를 공개하지 않은 상태로 `singhic_dev@syu.kr`에 먼저 연락해 주세요.
+보안 취약점은 공개 Issue에 상세 내용, 비밀 값, 개인정보를 올리지 마세요. 저장소의 **Security > Report a vulnerability** 기능을 이용해 비공개로 제보해야 합니다. 해당 메뉴를 사용할 수 없다면 세부 정보를 공개하지 않은 상태로 `singhic@outlook.kr`에 먼저 연락해 주세요.
 
 자세한 내용은 저장소의 [`SECURITY.md`](https://github.com/syu-kr/campus.syu.kr/blob/main/SECURITY.md)를 확인해 주세요.
 
