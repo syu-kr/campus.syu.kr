@@ -11,6 +11,9 @@ import {
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  // The app uses error events and breadcrumbs, without structured logs or metrics.
+  enableLogs: false,
+  enableMetrics: false,
 
   dataCollection: {
     userInfo: false,
