@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ContactModal } from "@/app/components/ContactModal";
+import dynamic from "next/dynamic";
 import { useDictionary } from "@/app/components/LocaleProvider";
 
+const ContactModal = dynamic(() =>
+  import("./ContactModal").then((module) => module.ContactModal),
+);
+
 export function FooterContactButton() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean | null>(null);
   const dictionary = useDictionary();
 
   return (
@@ -17,7 +21,9 @@ export function FooterContactButton() {
       >
         {dictionary.footer.contact}
       </button>
-      <ContactModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      {isOpen !== null && (
+        <ContactModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+      )}
     </>
   );
 }

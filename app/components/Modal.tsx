@@ -1,8 +1,12 @@
 "use client";
 
-import { ReactNode, useEffect, useId, useRef } from "react";
+import { createContext, ReactNode, useContext, useEffect, useId, useRef, useState } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { buttonStyles } from "./Button";
+
+const ModalVisibilityContext = createContext(true);
+let scrollLockCount = 0;
+let originalBodyOverflow = "";
 
 interface ModalProps {
   isOpen: boolean;
@@ -17,6 +21,7 @@ interface ModalProps {
   headerClassName?: string;
   bodyClassName?: string;
   hideHeader?: boolean;
+  keepMounted?: boolean;
 }
 
 export function Modal({
@@ -32,7 +37,12 @@ export function Modal({
   headerClassName = "",
   bodyClassName = "",
   hideHeader = false,
+  keepMounted = false,
 }: ModalProps) {
+  const parentVisible = useContext(ModalVisibilityContext);
+  const visible = isOpen && parentVisible;
+  const [hasOpened, setHasOpened] = useState(isOpen);
+  if (isOpen && !hasOpened) setHasOpened(true);
   const dictionary = useDictionary();
   const closeLabel = dictionary.labels.closeModal;
   const titleId = useId();
@@ -40,19 +50,27 @@ export function Modal({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!visible) return;
 
     const previousActiveElement = document.activeElement;
-    const originalOverflow = document.body.style.overflow;
+    if (previousActiveElement instanceof HTMLElement &&
+        !dialogRef.current?.contains(previousActiveElement)) {
+      returnFocusRef.current = previousActiveElement;
+    }
+    const returnFocusElement = returnFocusRef.current;
+    if (scrollLockCount === 0) originalBodyOverflow = document.body.style.overflow;
+    scrollLockCount += 1;
     document.body.style.overflow = "hidden";
 
-    if (initialFocus === "close") {
+    if (initialFocus === "close" &&
+        !dialogRef.current?.querySelector('[role="dialog"][aria-modal="true"]')) {
       closeButtonRef.current?.focus();
     }
 
@@ -104,14 +122,18 @@ export function Modal({
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = originalOverflow;
-      if (previousActiveElement instanceof HTMLElement) {
-        previousActiveElement.focus();
+      scrollLockCount -= 1;
+      if (scrollLockCount === 0) document.body.style.overflow = originalBodyOverflow;
+      if (returnFocusElement?.isConnected && !returnFocusElement.closest("[hidden]")) {
+        returnFocusElement.focus();
+      } else {
+        const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+        dialogs[dialogs.length - 1]?.querySelector<HTMLElement>('[tabindex="-1"]')?.focus();
       }
     };
-  }, [initialFocus, isOpen]);
+  }, [initialFocus, visible]);
 
-  if (!isOpen) return null;
+  if (!visible && !(keepMounted && hasOpened)) return null;
 
   const sizeClass = {
     sm: "max-w-md",
@@ -120,10 +142,13 @@ export function Modal({
   }[size];
 
   return (
+    <ModalVisibilityContext.Provider value={visible}>
     <div
-      className={`fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-4 pt-16 sm:items-center sm:p-6 ${overlayClassName}`}
-      role="dialog"
-      aria-modal="true"
+      className={`fixed inset-0 z-50 ${visible ? "flex" : "hidden"} items-end justify-center bg-black/40 px-4 pb-4 pt-16 sm:items-center sm:p-6 ${overlayClassName}`}
+      hidden={!visible}
+      role={visible ? "dialog" : undefined}
+      aria-hidden={!visible || undefined}
+      aria-modal={visible || undefined}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onClick={onClose}
@@ -184,5 +209,6 @@ export function Modal({
         </div>
       </div>
     </div>
+    </ModalVisibilityContext.Provider>
   );
 }

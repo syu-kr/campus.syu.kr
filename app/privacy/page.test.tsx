@@ -74,7 +74,7 @@ describe.each(["ko", "en"])("privacy policy (%s)", (locale) => {
     expect(screen.getByRole("heading", { name: "Vercel Inc. (privacy@vercel.com)", level: 4 })).toBeInTheDocument();
     expect(container).toHaveTextContent("asia-northeast3");
     expect(container).toHaveTextContent("iad1");
-    expect(container).toHaveTextContent("singhic_dev@syu.kr");
+    expect(container).toHaveTextContent("singhic@outlook.kr");
     expect(container).toHaveTextContent(locale === "en" ? "October 4, 2026" : "2026년 10월 4일");
   });
 });

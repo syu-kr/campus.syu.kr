@@ -9,10 +9,7 @@ import { SearchBar } from "@/app/components/SearchBar";
 import {
   fetchAnnouncementSummary,
   fetchAnnouncements,
-  fetchCafeteriaMenu,
   fetchAcademicSchedules,
-  fetchShuttleBuses,
-  fetchShuttleSpecialPeriods,
   fetchPublicHolidays,
   searchAll,
 } from "@/lib/api";
@@ -26,15 +23,11 @@ import {
   isFestivalPromotionVisible,
   isScheduleOnDate,
 } from "@/lib/home";
-import { isCafeteriaMenuDataStale } from "@/lib/cafeteria";
 import type {
   AcademicSchedule,
   Announcement,
-  CafeteriaMenu,
   HomeNoticeCategory,
   ServiceNotice,
-  ShuttleBusSchedule,
-  ShuttleSpecialPeriods,
   PublicHolidaySnapshot,
 } from "@/types";
 import { SearchResultsView } from "@/app/features/home/SearchResultsView";
@@ -45,8 +38,6 @@ import {
 } from "@/app/features/home/HomeMenuSections";
 import {
   HomeNoticesSection,
-  TodayShuttleSection,
-  TodayMenuSection,
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -60,10 +51,7 @@ const ONE_HOUR = 60 * ONE_MINUTE;
 interface HomePageClientProps {
   initialAnnouncements: Announcement[];
   initialServiceNotices: ServiceNotice[];
-  initialCafeteria: CafeteriaMenu[];
   initialSchedules: AcademicSchedule[];
-  initialShuttleBuses: ShuttleBusSchedule[];
-  initialShuttleSpecialPeriods: ShuttleSpecialPeriods;
   initialPublicHolidays?: PublicHolidaySnapshot;
   initialNowIso: string;
 }
@@ -71,10 +59,7 @@ interface HomePageClientProps {
 export function HomePageClient({
   initialAnnouncements,
   initialServiceNotices,
-  initialCafeteria,
   initialSchedules,
-  initialShuttleBuses,
-  initialShuttleSpecialPeriods,
   initialPublicHolidays,
   initialNowIso,
 }: HomePageClientProps) {
@@ -134,19 +119,6 @@ export function HomePageClient({
   });
 
   const {
-    data: cafeteria,
-    isLoading: cafeteriaLoading,
-    isError: cafeteriaError,
-    refetch: refetchCafeteria,
-  } = useQuery({
-    queryKey: ["cafeteria"],
-    queryFn: () => fetchCafeteriaMenu(),
-    initialData: initialCafeteria,
-    staleTime: FIVE_MINUTES,
-    gcTime: TEN_MINUTES,
-  });
-
-  const {
     data: schedules,
     isLoading: schedulesLoading,
     isError: schedulesError,
@@ -167,32 +139,6 @@ export function HomePageClient({
   const effectiveHolidays = useMemo(() => publicHolidays && {
     ...publicHolidays, stale: publicHolidays.stale || holidaysError,
   }, [publicHolidays, holidaysError]);
-
-  const {
-    data: shuttleBuses,
-    isLoading: shuttleBusesLoading,
-    isError: shuttleBusesError,
-    refetch: refetchShuttleBuses,
-  } = useQuery({
-    queryKey: ["shuttle-buses"],
-    queryFn: () => fetchShuttleBuses(),
-    initialData: initialShuttleBuses,
-    staleTime: FIVE_MINUTES,
-    gcTime: THIRTY_MINUTES,
-  });
-
-  const {
-    data: shuttleSpecialPeriods,
-    isLoading: shuttleSpecialPeriodsLoading,
-    isError: shuttleSpecialPeriodsError,
-    refetch: refetchShuttleSpecialPeriods,
-  } = useQuery({
-    queryKey: ["shuttle-special-periods"],
-    queryFn: () => fetchShuttleSpecialPeriods(),
-    initialData: initialShuttleSpecialPeriods,
-    staleTime: FIVE_MINUTES,
-    gcTime: THIRTY_MINUTES,
-  });
 
   const {
     data: searchData,
@@ -221,16 +167,6 @@ export function HomePageClient({
   }, [handleSearch]);
 
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
-  const hasStaleCafeteriaData = useMemo(
-    () => isCafeteriaMenuDataStale(cafeteria, todayInfo.dateStringDash),
-    [cafeteria, todayInfo.dateStringDash],
-  );
-
-  const todayMenu = useMemo(() => {
-    if (!cafeteria || hasStaleCafeteriaData) return null;
-    return cafeteria.find((menu) => menu.date === todayInfo.dateStringDash);
-  }, [cafeteria, hasStaleCafeteriaData, todayInfo.dateStringDash]);
-
   const todaySchedules = useMemo(() => {
     return mergePublicHolidays(schedules ?? [], effectiveHolidays).filter((schedule) =>
       isScheduleOnDate(schedule, todayInfo.dateStringDot),
@@ -269,6 +205,7 @@ export function HomePageClient({
     <Container className="py-5 sm:py-8 space-y-6">
       <h1 className="sr-only">SYU CAMPUS</h1>
       <SearchBar onSearch={handleSearch} className="mt-2" />
+      <FrequentMenuGrid />
 
       {isFestivalPromotionVisible(todayInfo.dateStringDash) && (
         <a
@@ -286,27 +223,6 @@ export function HomePageClient({
         </a>
       )}
 
-      <TodayMenuSection
-        isLoading={cafeteriaLoading}
-        isError={cafeteriaError}
-        onRetry={() => refetchCafeteria()}
-        todayInfo={todayInfo}
-        todayMenu={todayMenu ?? null}
-        hasStaleMenuData={hasStaleCafeteriaData}
-      />
-      <TodayShuttleSection
-        isLoading={shuttleBusesLoading || shuttleSpecialPeriodsLoading}
-        isError={shuttleBusesError || shuttleSpecialPeriodsError}
-        onRetry={() => {
-          void refetchShuttleBuses();
-          void refetchShuttleSpecialPeriods();
-          void refetchHolidays();
-        }}
-        buses={shuttleBuses}
-        specialPeriods={shuttleSpecialPeriods}
-        holidays={effectiveHolidays}
-        now={now}
-      />
       <HomeNoticesSection
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
@@ -335,7 +251,6 @@ export function HomePageClient({
         schedules={todaySchedules}
       />
 
-      <FrequentMenuGrid />
       <RelatedLinksSection />
       <PwaInstallCard />
     </Container>

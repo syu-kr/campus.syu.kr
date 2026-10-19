@@ -8,7 +8,7 @@ import {
   localeLabels,
   localizePath,
   type Locale,
-} from "@/lib/i18n";
+} from "@/lib/i18n/routing";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;

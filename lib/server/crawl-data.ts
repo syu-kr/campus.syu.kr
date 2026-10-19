@@ -18,6 +18,8 @@ const MANIFEST_CACHE_TTL_MS = 60 * 1000;
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const MAX_REMOTE_DATA_CACHE_ENTRIES = 24;
+// Next serializes fetch bodies as Base64; a 1 MiB body budget leaves room below its 2 MiB entry limit.
+const MAX_NEXT_DATA_CACHE_BODY_BYTES = 1024 * 1024;
 
 interface ManifestCacheEntry {
   expiresAt: number;
@@ -143,7 +145,9 @@ function getCrawlDataBaseUrl(): string {
 
 async function fetchBuffer(url: string, maxBytes: number): Promise<Buffer> {
   const response = await fetch(url, {
-    cache: url.includes("current.json") ? "no-store" : "force-cache",
+    cache: url.includes("current.json") || maxBytes > MAX_NEXT_DATA_CACHE_BODY_BYTES
+      ? "no-store"
+      : "force-cache",
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   if (!response.ok) {

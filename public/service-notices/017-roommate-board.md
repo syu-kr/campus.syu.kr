@@ -36,7 +36,7 @@ description: "학교 이메일 인증 후 기숙사 룸메이트를 찾아보세
 
 모집글 작성·수정 전에 **제공받는 이용자, 목적, 항목, 기간, 거부와 철회 방법**을 확인하고 개인정보 제공에 명시적으로 동의합니다. 선택 생활습관과 소개는 모두 비워도 됩니다. 동의를 거부해도 인증과 모집글 열람은 이용할 수 있습니다. 동의 시각과 고지 버전은 증빙으로 보관하며 다른 학생에게 제공하지 않습니다.
 
-[개인정보처리방침](/privacy)에는 인증·모집글·신고의 처리 항목과 목적, 보유·삭제, 이용자 간 공개, 처리위탁·국외 처리와 삭제 요청 방법을 정리했습니다. **로그아웃이나 글 삭제가 Firebase 인증 사용자 삭제를 뜻하지 않습니다.** 개인정보 삭제는 화면 하단 사이트 문의 또는 [운영자 이메일](mailto:singhic_dev@syu.kr)로 요청할 수 있습니다.
+[개인정보처리방침](/privacy)에는 인증·모집글·신고의 처리 항목과 목적, 보유·삭제, 이용자 간 공개, 처리위탁·국외 처리와 삭제 요청 방법을 정리했습니다. **로그아웃이나 글 삭제가 Firebase 인증 사용자 삭제를 뜻하지 않습니다.** 개인정보 삭제는 화면 하단 사이트 문의 또는 [운영자 이메일](mailto:singhic@outlook.kr)로 요청할 수 있습니다.
 
 개인정보 고지와 제공 동의 보완은 이번 기능에 적용합니다. 아래 시행 예정 약관에 미리 동의한 것으로 간주하지 않으며, 법령상 이용자의 권리와 운영자의 책임은 개정약관 시행 여부와 관계없이 적용됩니다.
 
@@ -49,13 +49,13 @@ description: "학교 이메일 인증 후 기숙사 룸메이트를 찾아보세
 
 개정안은 조항 순서를 정리하고, 기숙사 룸메이트 게시판의 이용 범위·신고와 관리 조치·이의제기를 상세히 안내합니다. 실제 운영자와 개인정보처리방침의 역할을 명확히 하고, 일률적인 책임 면제나 응답이 없다는 이유만으로 법령상 필요한 동의를 대신하는 문구를 정비합니다. 최소 30일 이상 사전 공지하기 위해 적용을 11월 4일까지 유예합니다.
 
-개정 약관에 동의하지 않는 경우 이용을 중단하고 개인정보 삭제를 요청할 수 있습니다. 의견과 개인정보 열람·정정·삭제·처리정지 요청은 화면 하단 사이트 문의 또는 [운영자 이메일](mailto:singhic_dev@syu.kr)로 접수할 수 있습니다. 법령상 별도 동의가 필요한 사항은 해당 화면에서 따로 안내합니다.
+개정 약관에 동의하지 않는 경우 이용을 중단하고 개인정보 삭제를 요청할 수 있습니다. 의견과 개인정보 열람·정정·삭제·처리정지 요청은 화면 하단 사이트 문의 또는 [운영자 이메일](mailto:singhic@outlook.kr)로 접수할 수 있습니다. 법령상 별도 동의가 필요한 사항은 해당 화면에서 따로 안내합니다.
 
 ## Current English notice
 
 This release improves roommate-board entry, removes the unnecessary Cancel action on the initial email screen, adds a home icon, and requires an explicit sharing choice when creating or editing a listing. The Privacy Policy now explains the actual authentication, retention/deletion, processors, and overseas processing. These privacy and consent improvements apply with this release; they do not treat a user as having accepted the upcoming Terms early. Statutory user rights and the operator's duties continue to apply regardless of the Terms revision.
 
-The amended [Terms of Use](/en/terms) are announced on October 4, 2026 and are scheduled to take effect at **00:00 Korean time on November 4, 2026**. The current Terms remain applicable until then and are preserved below. The amendment explains the roommate-board rules and review/appeal process, corrects the section order, identifies the operator, and clarifies responsibility and consent. You may stop using the service and request deletion if you do not agree. Questions and privacy requests can be sent through Contact or [the operator's email](mailto:singhic_dev@syu.kr).
+The amended [Terms of Use](/en/terms) are announced on October 4, 2026 and are scheduled to take effect at **00:00 Korean time on November 4, 2026**. The current Terms remain applicable until then and are preserved below. The amendment explains the roommate-board rules and review/appeal process, corrects the section order, identifies the operator, and clarifies responsibility and consent. You may stop using the service and request deletion if you do not agree. Questions and privacy requests can be sent through Contact or [the operator's email](mailto:singhic@outlook.kr).
 
 ## 현행 이용약관 전문 보존본 (한국어)
 

@@ -34,7 +34,7 @@ export async function GET() {
         },
         {
           headers: {
-            "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=3600",
+            "Cache-Control": "public, max-age=60, s-maxage=21600, stale-while-revalidate=3600",
           },
         },
       );
@@ -60,7 +60,7 @@ export async function GET() {
       },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=21600, stale-while-revalidate=3600",
+          "Cache-Control": "public, max-age=60, s-maxage=21600, stale-while-revalidate=3600",
         },
       },
     );
@@ -77,7 +77,7 @@ export async function GET() {
         },
         {
           headers: {
-            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+            "Cache-Control": "public, max-age=0, s-maxage=300, stale-while-revalidate=3600",
           },
         },
       );

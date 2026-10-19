@@ -34,11 +34,11 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
   return (
     <div className="relative">
       <div className={`relative mb-3 ${isOpen && results.length > 0 ? "z-50" : ""}`}>
-        <div className="flex items-center gap-2 bg-white border border-neutral-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
+        <div className="flex h-14 items-center gap-2 bg-white border border-neutral-300 rounded-lg px-3 py-1 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-transparent">
           <Icon
             name="search"
             size={18}
-            color="rgb(156, 163, 175)"
+            className="shrink-0 text-neutral-500"
           />
           <label htmlFor={inputId} className="sr-only">
             {text.searchPlaceholder}
@@ -56,7 +56,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
             onKeyDown={(event) => {
               if (event.key === "Escape") setIsOpen(false);
             }}
-            className="flex-1 outline-none text-sm text-neutral-900 placeholder-neutral-500"
+            className="min-w-0 flex-1 outline-none text-sm text-neutral-900 placeholder-neutral-500"
           />
           {query && (
             <button
@@ -65,13 +65,12 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                 setQuery("");
                 setIsOpen(false);
               }}
-              className="rounded p-1 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               aria-label={text.clearSearch}
             >
               <Icon
                 name="x"
                 size={16}
-                color="rgb(156, 163, 175)"
               />
             </button>
           )}

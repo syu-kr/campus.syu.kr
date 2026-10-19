@@ -1,30 +1,10 @@
-"use client";
+import type { ReactNode } from "react";
 
-import {
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from "react";
+import { enDictionary } from "@/lib/i18n/en";
+import { normalizeLocale, type Locale } from "@/lib/i18n/routing";
+import { ClientLocaleProvider } from "./LocaleContext";
 
-import {
-  DEFAULT_LOCALE,
-  dictionaries,
-  getDictionary,
-  normalizeLocale,
-  type Dictionary,
-  type Locale,
-} from "@/lib/i18n";
-
-interface LocaleContextValue {
-  locale: Locale;
-  dictionary: Dictionary;
-}
-
-const LocaleContext = createContext<LocaleContextValue>({
-  locale: DEFAULT_LOCALE,
-  dictionary: dictionaries[DEFAULT_LOCALE],
-});
+export { useDictionary, useLocale } from "./LocaleContext";
 
 export function LocaleProvider({
   children,
@@ -33,24 +13,14 @@ export function LocaleProvider({
   children: ReactNode;
   locale: Locale;
 }) {
-  const value = useMemo(() => {
-    const normalizedLocale = normalizeLocale(locale);
-
-    return {
-      locale: normalizedLocale,
-      dictionary: getDictionary(normalizedLocale),
-    };
-  }, [locale]);
+  const normalizedLocale = normalizeLocale(locale);
 
   return (
-    <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+    <ClientLocaleProvider
+      locale={normalizedLocale}
+      dictionary={normalizedLocale === "en" ? enDictionary : undefined}
+    >
+      {children}
+    </ClientLocaleProvider>
   );
-}
-
-export function useLocale(): Locale {
-  return useContext(LocaleContext).locale;
-}
-
-export function useDictionary(): Dictionary {
-  return useContext(LocaleContext).dictionary;
 }

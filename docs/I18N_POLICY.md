@@ -49,12 +49,17 @@ Do not machine-translate official notices, menus, course names, or legal source 
 
 ## Development rules
 
-- Add new reusable UI copy to `lib/i18n.ts`.
-- Read locale through `LocaleProvider` in client components.
+- Keep reusable Korean and English UI copy in `lib/i18n/ko.ts` and `lib/i18n/en.ts`, with matching keys. Feature dictionaries such as `lib/i18n/meet.ts` and `roommates.ts` remain feature-scoped.
+- Use `lib/i18n/routing.ts` for locale constants, the `Locale` type, `localizePath`, and other path helpers. This module has no dictionary dependency.
+- In client components, read `useLocale` and `useDictionary` from `app/components/LocaleContext.tsx`. Use a type-only import when a component needs `Dictionary` from `lib/i18n.ts`; importing the whole dictionary module as a value adds both languages to client JS.
+- `app/components/LocaleProvider.tsx` is a server wrapper. Its client boundary uses the Korean dictionary by default and receives the English dictionary only for English requests. Do not turn the server wrapper into a client component or import it as a value from client code.
+- `lib/i18n.ts` keeps `getDictionary`, `dictionaries`, and compatibility exports for server callers. Avoid duplicating dictionaries in individual pages.
 - Read locale from `LOCALE_HEADER_NAME` in server components and metadata functions.
 - Use `localizePath` for internal links that should preserve the current locale.
 - Keep API and parser logic free to use Korean source keys when those keys are part of the upstream data contract.
-- If a Korean string must remain outside `lib/i18n.ts`, document why in `scripts/check_i18n_strings.mjs`.
+- If a Korean UI string must remain outside a dictionary, document its specific exception in `scripts/check_i18n_strings.mjs`.
+
+The server wrapper changes where English copy is transferred, not whether it is transferred. Measure HTML/RSC and JS together before claiming a total download reduction. Preserve direct `/en` visits, client navigation, a saved language preference, and a reload in both languages. See [the performance guide](../PERFORMANCE.md) for measurement conditions.
 
 ## Audit
 
@@ -66,10 +71,14 @@ npm run check:i18n
 
 The audit scans public `app/**/*.tsx` files and fails when it finds Korean text that is likely to be hardcoded UI copy. It intentionally ignores:
 
-- `lib/i18n.ts`
+- Dictionary modules under `lib/i18n` (the scan is limited to `app/**/*.tsx`)
 - Admin and API routes
 - Test and spec files, whose fixtures and assertions are not shipped UI copy
 - Korean legal originals in `app/terms/page.tsx` and `app/privacy/page.tsx`
 - Known source-data keys and error-message mapping tables
 
 The audit is also included in `npm run check`.
+
+It detects likely hardcoded Korean strings; it does not prove that every English label is correct or every source-data value should be translated. Run relevant locale, provider, navigation, and feature tests, then check both languages in the browser. Changes to the mobile timetable copy also require the [font character coverage check](../app/fonts/syu-timetable-ui/README.md).
+
+Last reviewed against repository code: 2026-10-18. This is an implementation policy, not a record of a successful production rollout.

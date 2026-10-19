@@ -37,6 +37,15 @@
     text-decoration: none;
   }
 
+  button:enabled:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  button[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   a:focus-visible,
   button:focus-visible,
   input:focus-visible,

@@ -2,19 +2,23 @@
 
 import { memo, useState } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useQuery } from "@tanstack/react-query";
 import { WeatherWidget } from "./WeatherWidget";
-import { WeatherModal } from "./WeatherModal";
 import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
 import { fetchWeather, WEATHER_REFRESH_INTERVAL_MS } from "@/lib/weather";
-import { localizePath } from "@/lib/i18n";
+import { localizePath } from "@/lib/i18n/routing";
 import { getParentPageHref } from "@/lib/page-navigation";
-import { getRoommateText } from "@/lib/i18n/roommates";
+import { getRoommateNavigationText } from "@/lib/i18n/roommate-navigation";
 import { useDictionary, useLocale } from "./LocaleProvider";
 import { buttonStyles } from "./Button";
+
+const WeatherModal = dynamic(() =>
+  import("./WeatherModal").then((module) => module.WeatherModal),
+);
 
 function HeaderComponent() {
   const pathname = usePathname();
@@ -30,8 +34,8 @@ function HeaderComponent() {
     "/service/notices": dictionary.pages.serviceNotices.title,
     "/more/meet": dictionary.pages.meet.title,
     "/campus/campus-tips": dictionary.pages.campusTips.title,
-    "/campus/roommates": getRoommateText(locale).title,
-    "/campus/roommates/verify": getRoommateText(locale).verifyTitle,
+    "/campus/roommates": getRoommateNavigationText(locale).title,
+    "/campus/roommates/verify": getRoommateNavigationText(locale).verifyTitle,
   };
   const [weatherModalOpen, setWeatherModalOpen] = useState(false);
   const { data: weather, isPending, isError, refetch } = useQuery({
@@ -183,12 +187,14 @@ function HeaderComponent() {
         </div>
       </header>
 
-      <WeatherModal
-        isOpen={weatherModalOpen}
-        weather={weatherData}
-        onClose={() => setWeatherModalOpen(false)}
-        onRetry={retryWeather}
-      />
+      {weatherModalOpen && (
+        <WeatherModal
+          isOpen={weatherModalOpen}
+          weather={weatherData}
+          onClose={() => setWeatherModalOpen(false)}
+          onRetry={retryWeather}
+        />
+      )}
     </>
   );
 }

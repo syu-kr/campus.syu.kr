@@ -6,8 +6,8 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ### 요구사항
 
-- Node.js 22.13.0 이상
-- npm
+- Node.js 22.22.2 이상 (`package.json`의 `engines`, CI는 22.22.2 사용)
+- npm 10.9.4 (`package.json`의 `packageManager`, CI 고정 버전)
 - Python 3.11 이상: 크롤러 실행 시 필요
 
 ### 설치
@@ -27,11 +27,15 @@ npm run dev                       # 개발 서버
 npm run lint                      # ESLint
 npm run type-check                # TypeScript 검사
 npm run check:i18n                # 공개 UI 한국어 하드코딩 검사
+npm run check:twa                 # Android TWA 공개 설정 검사
 npm run check:unused              # 미사용 파일, export, 의존성 검사
-npm run check:python              # Python 크롤러 문법 검사
-npm run check:crawl-data         # 일일 JSON과 manifest 계약 dry-run
+npm run check:python              # Python 문법, 크롤러 유틸·월간 데이터·공휴일 검사
+npm run check:graduation          # 졸업요건 데이터 계약 검사
+npm run check:curriculum          # 교육과정 데이터 계약 검사
+npm run check:crawl-data          # 일일 JSON과 manifest 계약 dry-run
+npm run test:unit                 # Vitest 단위 테스트
 npm run build                     # 프로덕션 빌드
-npm run check                     # lint, type-check, i18n, unused, data, build 전체 검사
+npm run check                     # 아래에 설명한 전체 로컬 검사
 npm run generate:announcement-ai  # 공지 AI 요약 메타데이터 생성
 npm run pull:crawl-data           # 현재 Pages 일일 데이터 스냅샷 복원
 npm run prepare:crawl-data-pages -- OUTPUT_DIR # 새 Pages 배포 아티팩트 준비
@@ -44,6 +48,8 @@ npm run cleanup-expired-firestore # 만료된 Firestore 문서 정리
 npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at 일회성 보정
 npm run notification-lock -- <dedupeKey> # 알림 dedupe lock 조회/복구
 ```
+
+`npm run check`는 lint → type-check → i18n → TWA → unused → Python → graduation → curriculum → crawl-data → unit test → build 순서로 실행하며 앞 단계가 실패하면 중단합니다. `npm audit`, Python 의존성 감사, 룸메이트 Emulator 통합·브라우저 테스트, TWA release 검사는 별도입니다. CI의 설정과 필수 검사는 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml), 기능별 추가 검증은 [문서 색인](./docs/README.md)을 확인합니다. 검사 통과 기록에는 실행한 커밋·도구 버전·명령과 생략한 외부 연동을 함께 남깁니다.
 
 ## 프로젝트 구조
 
@@ -93,6 +99,8 @@ campus.syu.kr/
 - 외부 API 키가 필요한 요청은 API Route에서 프록시/정규화합니다.
 - Firebase Admin은 서버 전용 코드에서만 사용합니다.
 - FCM 클라이언트 초기화와 포그라운드 알림은 브라우저에서만 실행합니다.
+- 다국어 경로·로케일 함수는 `lib/i18n/routing.ts`, 공통 문구는 `lib/i18n/ko.ts`·`en.ts`에서 관리합니다. 서버 `LocaleProvider`가 영어 사전을 전달하고 클라이언트는 `LocaleContext`의 훅을 사용합니다. [다국어 정책](./docs/I18N_POLICY.md)을 따릅니다.
+- 시간표의 공개 데이터 preload·캐시, 모바일 전용 폰트, Sentry 초기화 비용은 [성능 가이드](./PERFORMANCE.md)를 기준으로 점검합니다.
 
 ```text
 Client UI
@@ -162,6 +170,8 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `TOKEN_CLEANUP_DAYS` | 선택 | cleanup tokens script | 오래된 FCM 토큰 삭제 기준 일수, 기본값 `90` |
 | `ANALYZE` | 선택 | bundle analyzer | `true`일 때 bundle analyzer 활성화 |
 
+검색 소유권 확인용 `NAVER_SITE_VERIFICATION`·`BING_SITE_VERIFICATION`은 값이 있을 때만 초기 HTML head에 태그를 추가합니다. 등록·검증 절차는 [검색 색인 가이드](./docs/SEARCH_INDEXING_GUIDE.md)를 따릅니다. Sentry는 `NEXT_PUBLIC_SENTRY_DSN`으로 오류 수집 대상을 구성하며, `SENTRY_ORG`·`SENTRY_PROJECT`·`SENTRY_AUTH_TOKEN`은 빌드 업로드 설정입니다. 토큰은 서버/CI secret으로만 관리합니다. 룸메이트의 별도 인증·메일·운영 설정은 [룸메이트 운영 문서](./docs/ROOMMATES.md)를 확인합니다.
+
 ### GitHub Actions Secrets
 
 Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables -> Actions`에 등록할 값입니다. `GITHUB_TOKEN`은 GitHub가 자동 제공하므로 직접 만들지 않습니다.
@@ -169,12 +179,11 @@ Organization 레포 `syu-kr/campus.syu.kr`의 `Settings -> Secrets and variables
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포 `singhic/syu-campus`에 push 가능한 GitHub fine-grained token. 권한은 해당 repo `Contents: Read and write` |
-| `OFFICIAL_ACCOUNT_EMAIL` | 필수 | `sync-to-vercel-repo.yml` | 동기화 커밋 작성자 이메일 |
 | `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 URL. 운영 HTTPS 도메인 또는 Vercel production URL이며 GitHub Actions에서 localhost 사용 금지 |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml` | Firebase Admin 초기화용 project id |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin 초기화용 project id |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml` | Actions 전용 OpenAI Project 서비스 계정 키. 공지 요약은 누락 시 degraded, 푸시는 결정론적 기본 문구로 fallback |
+| `OPENAI_API_KEY` | AI 사용 시 필수 | `crawl-daily.yml`, `daily-announcement-notification.yml`, `student-restaurant.yml` | Actions 전용 OpenAI Project 서비스 계정 키. 공지 요약은 누락 시 degraded, 푸시는 결정론적 기본 문구로 fallback. 만나의집 설정은 [환경 등록 안내](./docs/ENVIRONMENT_REGISTRATION.md)를 따름 |
 
 ### GitHub Actions Variables
 
@@ -268,18 +277,7 @@ Pages 활성화, 최초 게시, 보존·롤백 검증 절차는 [docs/CRAWL_DATA
 
 클라이언트에서 Firestore를 직접 읽거나 쓰지 않습니다. API Route와 Firebase Admin SDK를 통해 접근하며, 보안 규칙은 [docs/FIRESTORE_RULES.md](./docs/FIRESTORE_RULES.md)를 기준으로 유지합니다.
 
-사용 컬렉션:
-
-- `meet_rooms`
-- `meet_rooms/{roomId}/participants`
-- `campus_tip_suggestions`
-- `site_inquiries`
-- `user_devices`
-- `notifications_sent`
-- `notifications_scheduled`
-- `notification_send_locks`
-- `timetable_shares`
-- `api_rate_limits`
+일정·문의·푸시·시간표 공유·룸메이트·rate limit에 사용하는 컬렉션과 만료 정책은 [Firestore 운영 문서](./docs/FIRESTORE_RULES.md)에서 관리합니다. 룸메이트 인증·메일·관리자 접근 계약은 [룸메이트 문서](./docs/ROOMMATES.md)를 함께 따릅니다.
 
 Firestore rules는 저장소 루트의 `firestore.rules`가 기준입니다. 복합 인덱스는 `firestore.indexes.json`에서 관리합니다. 운영 반영 시 rules와 indexes를 함께 배포합니다.
 
@@ -305,7 +303,9 @@ PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실�
 일일 크롤러는 GitHub Pages 데이터 아티팩트만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. 월간 크롤러의 저빈도 정적 데이터 변경은 자동 PR로 제안하고 검토·CI 후 병합합니다.
 `sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 dependency audit과 `npm run check`를 통과해야 개인 Vercel 레포에 push합니다.
 
-`main` 브랜치 Ruleset은 직접 push와 force push를 막습니다. 일일·월간 크롤러 모두 Ruleset bypass가 필요하지 않습니다.
+일일·월간 크롤러는 `main` 직접 push나 Ruleset bypass가 필요하지 않도록 구성합니다. GitHub의 실제 Ruleset, Secrets, Pages·Vercel 연결은 저장소 파일 밖의 설정이므로 변경 시 운영자가 별도로 확인합니다.
+
+이 흐름은 워크플로 정의를 설명합니다. 배포 완료 판단에는 동일 커밋의 CI·동기화·Vercel 배포 기록과 운영 기능 점검이 필요합니다. 로컬 빌드, CI 또는 동기화 성공이 운영 배포 성공을 대신하지 않습니다.
 
 배포 전 확인:
 
@@ -361,4 +361,4 @@ npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-failed
 
 ## 최종 업데이트
 
-2026-06-16
+2026-10-18 — 저장소 코드·package.json·워크플로 기준. 외부 서비스의 현재 설정이나 배포 상태를 검증한 기록은 아닙니다.

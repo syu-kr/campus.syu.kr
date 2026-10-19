@@ -4,6 +4,8 @@ SYU CAMPUS는 클라이언트에서 Firestore를 직접 읽거나 쓰지 않습�
 
 Firestore Rules의 소스 오브 트루스는 저장소 루트의 `firestore.rules`입니다. 복합 인덱스의 소스 오브 트루스는 `firestore.indexes.json`입니다. Firebase CLI 배포를 권장하지만, 운영자가 Firebase 콘솔에서 직접 반영해도 됩니다. 단, 콘솔 설정은 반드시 repo 파일과 같은 상태로 유지해야 합니다.
 
+이 문서는 2026-10-18 저장소의 규칙·인덱스·정리 코드와 대조했습니다. 운영 프로젝트의 배포 여부, 인덱스 `READY`, TTL 활성화와 요금제는 여기서 확인하지 않았습니다. 룸메이트 인증·운영 절차는 [ROOMMATES.md](./ROOMMATES.md)를 참고합니다.
+
 Firebase CLI를 쓰는 경우 rules와 indexes를 함께 배포합니다.
 
 ```powershell
@@ -124,7 +126,10 @@ service cloud.firestore {
 | `roommate_posts` | `status` ASC, `created_at` DESC (학생 목록과 admin 상태 필터) |
 | `roommate_posts` | `status` ASC, `recruit_until` ASC (현재 모집 수) |
 | `roommate_reports` | `status` ASC, `expires_at` ASC (미처리 신고와 근거 정리 예정 순서) |
-| `api_rate_limits` | `metric` ASC, `window_start` ASC (사이트 인증 메일 요청 수) |
+| `api_rate_limits` | `metric` ASC, `window_start` ASC (인증 메일 요청 구간 조회) |
+| `api_rate_limits` | `metric` ASC, `window_start` ASC, `count` ASC (관리자 인증 메일 요청 수 `AggregateField.sum("count")`) |
+
+인증 메일 요청 수는 UTC 날짜의 `roommate_mail_requests` 카운터 합계이며 실제 발송·수신 성공 수가 아닙니다. 인덱스 정의 파일이 있다는 사실만으로 운영 인덱스 생성 완료를 판단하지 않습니다. 반영 후 대상 프로젝트의 인덱스 상태와 관리자 조회를 별도로 확인합니다.
 
 ## TTL 설정값
 
@@ -137,7 +142,7 @@ Firestore TTL은 보존 기간을 정책에 입력하는 방식이 아닙니다.
 | `meet_rooms` | `expires_at` | 방 생성 시점부터 90일 후 |
 | `participants` | `expires_at` | 부모 `meet_rooms` 문서와 같은 만료 시각 |
 | `timetable_shares` | `expires_at` | 공유 링크 생성 시점부터 90일 후 |
-| `api_rate_limits` | `expires_at` | 해당 요청 제한 구간이 끝나는 시각. 현재 API는 1시간 구간을 사용 |
+| `api_rate_limits` | `expires_at` | 해당 요청 제한 구간이 끝나는 시각. 호출별 60초·1시간·일 단위 구간 등을 사용 |
 | `notification_send_locks` | `expires_at` | 알림 발송 중복 방지 키 생성 시점부터 14일 후 |
 | `notifications_sent` | `expires_at` | 발송 시점부터 90일 후 |
 | `notifications_scheduled` | `expires_at` | 실행 시점부터 90일 후 |
@@ -212,4 +217,4 @@ npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-stale-sending
 
 ## 최종 업데이트
 
-2026-10-04
+2026-10-18 (저장소 대조. 운영 콘솔 미확인)

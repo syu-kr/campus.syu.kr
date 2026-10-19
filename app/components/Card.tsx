@@ -10,8 +10,8 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Card({
   children,
-  hover = true,
   clickable = false,
+  hover = clickable,
   as: Component = "div",
   className,
   ...props

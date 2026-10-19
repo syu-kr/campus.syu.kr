@@ -394,7 +394,10 @@ describe("shuttle page festival announcement", () => {
     fireEvent.click(timetable);
     expect(within(timetable.parentElement!).getByText("18:40")).toBeInTheDocument();
     expect(within(timetable.parentElement!).getByText("19:00")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "학기(금)" }));
+    const friday = screen.getByRole("button", { name: "학기(금)" });
+    expect(friday).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(friday);
+    expect(friday).toHaveAttribute("aria-pressed", "true");
     expect(screen.queryByRole("region", { name: "곧 출발하는 버스" })).not.toBeInTheDocument();
     view.unmount();
     client.clear();

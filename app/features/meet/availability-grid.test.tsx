@@ -24,7 +24,13 @@ function renderTimeRow(overrides: { selected?: boolean } = {}) {
     />,
   );
 
-  return { onPointerDown, onToggle };
+  return { onPointerDown, onPointerEnter, onToggle };
+}
+
+function touchPointerEvent(type: string) {
+  const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "pointerType", { value: "touch" });
+  return event;
 }
 
 describe("TimeRow", () => {
@@ -56,5 +62,18 @@ describe("TimeRow", () => {
 
     expect(onPointerDown).toHaveBeenCalledOnce();
     expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it("toggles once from a touch tap even when the click has no pointerType", () => {
+    const { onPointerEnter, onToggle } = renderTimeRow();
+    const button = screen.getByRole("button");
+
+    fireEvent(button, touchPointerEvent("pointerdown"));
+    fireEvent(button, touchPointerEvent("pointerover"));
+    fireEvent(button, touchPointerEvent("pointerup"));
+    fireEvent.click(button, { detail: 1 });
+
+    expect(onPointerEnter).not.toHaveBeenCalled();
+    expect(onToggle).toHaveBeenCalledExactlyOnceWith(slot);
   });
 });

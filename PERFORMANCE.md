@@ -1,52 +1,100 @@
 # 성능 점검 가이드
 
-Next.js 빌드 결과와 운영 중 확인해야 할 성능 항목을 정리합니다.
+2026-10-19 저장소 코드 기준의 개발·운영 가이드입니다. 측정 결과와 남은 문제는 [디자인·사용성·성능 점검](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에 기록합니다. 로컬 측정은 운영 CDN·서버 cold start·실제 기기의 성능을 보장하지 않습니다.
 
-## 확인 방법
+## 빌드와 분석
 
 ```bash
+npm run type-check
+npm run test:unit
 npm run build
 npm run build:analyze
 ```
 
-`npm run build`에서는 정적/동적 라우트와 타입 검사 결과를 확인합니다. `npm run build:analyze`는 번들 구성과 큰 의존성을 확인할 때 사용합니다.
+`build`는 저장소의 기본 Next.js 빌드를 실행합니다. `build:analyze`는 `scripts/build-analyze.mjs`에서 `--webpack`과 `ANALYZE=true`를 지정하므로 기본 Turbopack 빌드와 결과가 다를 수 있습니다. 분석용 번들 크기를 기본 빌드의 실제 전송량으로 대신하지 않습니다. 변경 시 빌드 조건과 브라우저가 실제로 요청한 HTML·RSC·JS·CSS·폰트를 함께 확인합니다.
 
-## 적용 중인 최적화
+## 현재 적용된 경계
 
-- Next.js App Router의 자동 code splitting
-- `next/image` 기반 이미지 최적화
-- `@fontsource/pretendard` 사용
-- TanStack Query의 기능별 캐시 정책
-- 크롤러가 갱신하는 정적 JSON은 `no-store`로 제공해 최신 데이터 반영
-- `@tanstack/react-query` package import 최적화
-- Service Worker는 Firebase Messaging 중심으로 유지하고 앱 데이터 캐싱은 제한
+### 공통 JS와 다국어
 
-## 점검 항목
+- 페이지·기능별 코드 분할을 유지합니다. Firebase 클라이언트와 이미지 저장 등 상호작용 시 필요한 기능은 기존 지연 로딩 경로를 확인한 뒤 수정합니다.
+- `lib/i18n/routing.ts`는 사전 없이 경로·로케일 함수만 제공합니다. 경로 처리 때문에 `lib/i18n.ts` 전체를 클라이언트에 값으로 import하지 않습니다.
+- 공통 사전은 `lib/i18n/ko.ts`·`en.ts`로 나눕니다. `LocaleContext`는 한국어 기본 사전을 사용하고, 서버 `LocaleProvider`는 영어 요청에 영어 사전을 전달합니다. 서버의 `getDictionary`와 기존 API는 `lib/i18n.ts`에 유지합니다.
+- 영어 사전의 JS 포함량 감소가 전체 전송량 감소를 뜻하지는 않습니다. 영어 경로는 직렬화된 사전이 HTML/RSC에 포함될 수 있으므로 두 언어를 각각 측정합니다. 번역과 새로고침·언어 전환 회귀 기준은 [다국어 정책](./docs/I18N_POLICY.md)을 따릅니다.
 
-- [x] lint 통과
-- [x] type-check 통과
-- [x] production build 통과
-- [x] 정적/동적 라우트 생성 결과 확인
-- [ ] 배포 환경 Lighthouse 확인
-- [ ] Core Web Vitals 모니터링
-- [ ] 번들 분석 결과에서 큰 의존성 주기적 확인
+### 홈의 메뉴와 서버 데이터
 
-## 개선 후보
+- [홈](./app/page.tsx)과 [HomePageClient](./app/features/home/HomePageClient.tsx)는 두 언어 모두 4개 데이터(공지 요약·서비스 공지·학사일정·공휴일)가 완료된 뒤 검색과 6개 메뉴를 표시합니다. 한국어만 먼저 표시하는 UI 시안도 JS 준비 회귀가 관측돼 원복했습니다. 이전에 정한 메뉴 구성·순서는 유지합니다. 비어 있지 않은 `?search`는 두 언어 모두 기존 검색 결과 화면의 입력을 사용하며, 언어 경로와 다른 query parameter를 유지합니다.
+- 자주 사용하는 메뉴 다음에는 공지사항을 표시합니다. 별도 학식·다음 셔틀 요약을 제거하면서 해당 서버 읽기·초기 props·클라이언트 query와 요약 계산도 제거했습니다. 서버의 최상위 조회 함수와 홈의 활성 background query 종류는 각각 7개에서 4개로 줄었습니다. 이는 원본 파일 다운로드 횟수나 실제 로딩 시간이 3/7 감소한다는 뜻은 아닙니다. 학식·버스 상세 링크와 상세 페이지의 조회·오류 처리는 유지하며 공휴일은 오늘의 일정에 계속 사용합니다. 기간 한정 행사 배너의 기존 노출 조건도 유지합니다.
+- 서버 프로세스에서 홈 데이터 조회가 한 번도 완료되지 않았으면 동기 `Home`이 기존 `Suspense`와 스켈레톤을 바로 반환합니다. 이 경로에는 별도의 20ms 대기를 추가하지 않습니다. 4개 조회가 모두 완료된 뒤에만 모듈의 `hasResolvedHomeData`를 설정합니다. 이 boolean은 렌더링 경로 선택용이며 데이터·버전·만료·로케일을 저장하는 캐시가 아닙니다.
+- 이후 요청의 `WarmHomeContent`도 동일한 4개 조회를 시작합니다. 조회 완료와 20ms 타이머를 `Promise.race`로 비교해 데이터가 먼저 준비되면 `HomePageClient` 요소를 직접 반환하고, 타이머가 먼저 끝나면 기존 스켈레톤과 `DeferredHomeContent`에 같은 Promise를 전달해 스트리밍합니다. 설치된 React 서버 구현의 fallback 교체 대기를 피할 수 있는 경로이며, 추가 로딩 island나 청크를 만들지 않습니다. OS 파일 I/O 등으로 예열된 데이터 조회도 20ms를 넘으면 기존 스트리밍 경로를 사용합니다.
+- 조회의 버전·만료·갱신 정책과 오류 전파는 유지합니다. 타이머는 `finally`에서 정리하며, 조회 오류를 성공이나 빈 데이터로 바꾸지 않습니다. 이 경로 선택이 브라우저 hydration이나 검색·메뉴 조작 준비의 단축을 보장하지는 않습니다. 초기 오류와 라우터 전환의 Sentry 수집도 유지합니다.
+- [SearchBar](./app/components/SearchBar.tsx)는 서버 HTML 표시 후 hydration 전에 입력한 DOM 값을 초기 effect에서 state에 채택합니다. React에 이미 입력 state 갱신이 큐되어 있으면 그 값을 우선해 첫 입력을 덮어쓰지 않습니다. 초기 DOM 값이 기본값과 같으면 setState 호출 자체를 생략하며 실제 `defaultValue` prop 변경은 계속 동기화합니다. 입력 문구뿐 아니라 검색 버튼 활성화·제출 값·초기화 동작과 포커스도 함께 확인합니다.
+- [홈 공지 요약](./lib/server/announcements.ts)은 기존처럼 공지 4종을 읽은 뒤 AI metadata를 읽습니다. AI metadata의 기존 60초 Promise 캐시를 재사용하고, 전체 원문으로 source hash를 검증한 뒤 요약을 붙이고 본문을 240자로 제한합니다. 이 직렬 경로와 읽기 양을 줄였다고 주장하지 않습니다. 공지 요약 수·순서, 검색·상세 원문, 날짜·공휴일과 다국어 계약은 유지합니다.
+- 버전 JSON은 manifest의 raw `entry.size`가 **1MiB를 초과할 때만** Next Data Cache를 사용하지 않습니다. Next의 fetch 응답 캐시가 본문을 Base64로 직렬화하므로 원문이 2MiB보다 작아도 2MiB 캐시 항목 한도를 넘을 수 있습니다. 1MiB 이하 파일의 `force-cache`, manifest의 60초 캐시, 버전별 최대 24개 Promise 캐시·동시 요청 공유·무결성 검증·번들 fallback은 유지합니다. [Pages 런타임 캐시 정책](./docs/CRAWL_DATA_PAGES.md#앱-런타임-캐시)을 함께 확인합니다.
+- 이 변경은 원본 JSON의 network 총량을 줄이지 않습니다. 새 서버 인스턴스나 해당 버전의 프로세스 캐시가 비어 있으면 큰 JSON을 계속 다운로드·검증·파싱합니다. 홈의 메뉴 준비, 본문 완료, 서버 cold/warm 시간과 전송량을 구분해 측정하며 결과와 실제 검사 범위는 [점검 보고서](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에 남깁니다.
+- 대용량 응답 캐시 정책·입력 버그 수정만 비교한 이전 배치에서는 네 조건 모두 메뉴·JS 준비·공지 본문 중앙값이 줄지 않았으며 악화가 관측됐습니다. 경고 제거를 로딩 단축으로 설명하지 않습니다. 공통 JS·폰트, React hydration·CPU 스케줄링과 호스트·브라우저 JIT 상태의 기여를 분리하지 않았으므로 환경 탓으로 단정하지 않습니다. 기존 전체 회차와 원복한 UI 시안은 보존하고, 이후 홈 렌더링 경로의 PSI 후속 비교는 [점검 보고서](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에서 별도 조건으로 기록합니다.
 
-- Firebase 클라이언트 import가 브라우저 번들에 필요한 범위만 포함되는지 확인
-- 지도/버스/알림처럼 무거운 기능은 필요한 화면에서만 초기화
-- 반복 렌더링이 많은 목록은 memoization 필요성을 실제 측정 후 적용
-- 이미지가 추가될 때 `next/image` 사용과 적절한 크기 지정 확인
+### 홈 요약 제거 검증 (2026-10-19)
 
-## 참고 링크
+| 항목 | 변경 전 | 변경 후 |
+| --- | --- | --- |
+| 홈 서버 최상위 조회 함수 | 7개 | 4개 |
+| 검색 제외 활성 클라이언트 query 종류 | 7개 | 4개 |
+| 별도 학식·다음 셔틀 요약 | 표시 | 제거 |
+| 자주 사용하는 메뉴 | 기존 6개 | 구성·순서·상세 링크 유지 |
 
-- Next.js Performance: https://nextjs.org/docs/app/building-your-application/optimizing
-- Bundle Analyzer: https://www.npmjs.com/package/@next/bundle-analyzer
-- TanStack Query: https://tanstack.com/query/latest
-- Firebase Web SDK: https://firebase.google.com/docs/web/setup
+- 관련 13개 테스트 파일의 127개 테스트가 통과했습니다. 홈의 cold/warm·20ms 경계·오류 전파, 두 언어의 메뉴·공지 순서·필터·검색·초기화·공휴일, 남은 홈 영역의 오류·재시도, 기존 학식·셔틀 상세와 특별운행 안내를 검사했습니다. 홈 query를 강제 갱신해도 제거한 세 조회가 실행되지 않음을 확인했습니다. 삭제한 홈 셔틀 UI의 테스트는 남은 홈 공지·일정 오류/재시도 검사로 바꾸고 상세 페이지의 운행 검증은 유지했습니다.
+- `npm run type-check`, 변경한 TS/TSX 파일의 ESLint, `npm run check:unused`, 관련 파일의 `git diff --check`가 통과했습니다. 의존성을 추가하지 않았습니다. 테스트 첫 실행은 Windows 임시 폴더 rename의 `EPERM`으로 테스트 수집 전에 중단되어, 작업 폴더의 `.cache/side-home-layout-temp`를 `TEMP`·`TMP`로 지정해 재실행했습니다.
+- 실제 로딩 시간·전송 바이트·LCP의 동일 조건 전후 측정, 새 production build·브라우저 화면 확인과 운영 배포는 이번 홈 구성 변경에서 수행하지 않았습니다. 공유 빌드·기존 측정 서버를 교체하지 않았으며, 앞선 PSI 후속 측정 결과를 이 변경의 개선 폭으로 사용하지 않습니다. 공지 요약 등의 남은 네 조회를 기다리는 경계도 유지됩니다.
 
-수치 기준은 프레임워크와 기능 변경에 따라 빠르게 오래되므로 문서에 고정하지 않습니다. PR에서 번들 크기가 크게 변하면 `npm run build` 결과와 원인을 PR 본문에 기록합니다.
+### 시간표 데이터와 폰트
 
-## 최종 업데이트
+- `TimetableBuilderClient`는 공개 `/api/lecture/timetable`을 `react-dom`의 `preload`로 요청합니다. 동일 URL·요청 속성으로 실제 query 요청이 재사용되는지 확인합니다. `fetchJson`의 `noStore: false` 예외는 이 공개 데이터 경로에 적용하며 인증·공유 API로 넓히지 않습니다.
+- 정상 시간표 API 응답은 브라우저 60초, 공유 캐시 6시간, `stale-while-revalidate` 1시간을 선언합니다. 서버 프로세스 메모리 캐시와 진행 중 요청 공유도 사용합니다. 업스트림 실패 시 기존 메모리 데이터가 있으면 `stale: true`와 브라우저 0초·공유 캐시 5분을 반환합니다. CDN의 실제 캐시 적용 여부는 배포 응답으로 별도 확인합니다.
+- 업스트림 요청의 20초 제한·8MiB 응답 제한·정규화 검증을 유지합니다. 메모리 캐시는 서버 인스턴스별이므로 cold start 시 원본 응답 지연은 남을 수 있습니다.
+- 기본 폰트는 `app/fonts/pretendard-v1.3.9`의 자체 호스팅 variable subset이며 92개 face의 `font-display: swap`을 유지합니다. 홈 렌더링 변경은 폰트 파일·경로·family·범위·굵기·stylesheet 수와 공통 JS·다국어·Sentry 소스를 바꾸지 않습니다. `@fontsource/pretendard`나 외부 폰트 CDN을 사용하지 않습니다.
+- 1023px 이하 시간표 화면에는 245자 `SYU Timetable UI` 파생 폰트를 우선 적용합니다. 목록의 다른 문자와 PC·다른 경로는 기존 Pretendard를 사용합니다. 모든 subset을 preload하지 않습니다. 문구 변경 시 [폰트 재생성·라이선스 안내](./app/fonts/syu-timetable-ui/README.md)를 따라 문자 목록과 생성물을 함께 검사합니다.
 
-2026-06-13
+### 오류 수집과 데이터 캐시
+
+- `instrumentation-client.ts`의 `Sentry.init`은 동기로 실행합니다. 초기 오류·라우터 전환 수집을 유지하며 초기화를 idle·첫 클릭 이후로 미루지 않습니다.
+- 브라우저에서 사용하지 않는 structured logs·metrics만 `enableLogs: false`·`enableMetrics: false`로 명시합니다. `next.config.js`는 Turbopack용 `__SENTRY_DEBUG__: false`와 webpack의 debug logging 제거 설정을 사용합니다. 오류 이벤트, breadcrumbs, 개인정보 제거 훅은 유지합니다.
+- Sentry 변경 시 [초기화 테스트](./instrumentation-client.test.ts)와 [개인정보 제거 테스트](./lib/sentry-privacy.test.ts)를 실행합니다. 테스트의 가짜 전송처 수신이나 DSN 없는 빌드는 실제 운영 Sentry 수신 검증이 아닙니다.
+- TanStack Query 캐시 정책은 기능별로 유지합니다. 갱신이 필요한 정적 `/data/*.json`, 민감 API와 서비스 워커의 `no-store` 경계를 공개 시간표 캐시와 혼동하지 않습니다. 서비스 워커는 Firebase Messaging 중심으로 유지합니다.
+
+## 동일 조건 전후 측정
+
+개발 서버가 아닌 각각의 production build로 측정합니다. 서버를 구동하고, 빌드·테스트 등 경쟁 작업을 끝낸 뒤 실행합니다. 서버 프로세스 기동과 데이터 예열은 구분하며, cold 조건을 측정하기 전에 페이지나 API를 미리 호출하지 않습니다.
+
+1. 같은 브라우저 버전·viewport·언어·CPU 제한·대역폭·압축 프록시를 사용합니다. 시간표와 이전 홈 cache-only 비교의 기존 기준은 390×844, CPU 4배 지연, 다운로드 200,000B/s, 업로드 93,750B/s, 추가 지연 0ms입니다.
+2. 기존 비교는 빈 HTTP 캐시의 새 context에서 시작하되 캐시를 활성화하고 서비스 워커를 차단했습니다. 아래 PSI 후속 비교의 HTTP 캐시 비활성 조건과 혼합하지 않습니다. 같은 API 데이터 버전·건수·해시를 확인하고 API 캐시 warm 여부를 기록합니다. 데이터 cold와 warm 비교를 섞지 않습니다.
+3. 한국어·영어 각각 전후 5회 이상 측정하고 모든 회차·중앙값·최소/최대값을 남깁니다. 일부 느린 회차만 버리지 않습니다.
+4. 화면 표시, 버튼 handler 준비, 실제 클릭부터 결과 표시까지를 구분합니다. 시간표는 `강의 추가`/영어 대응 버튼을 실제 클릭하고 강의 결과가 그려지는 프레임까지 확인합니다. 글자나 버튼이 보이는 시점만 조작 준비로 판단하지 않습니다.
+5. 초기 HTML/RSC·JS·CSS·폰트의 전송량과 long task를 확인합니다. 총량 감소와 실행 시간 개선을 구분하고, 시간 범위가 겹치면 안정적인 개선으로 단정하지 않습니다.
+
+클릭 후 필터·선택·키보드·초안 복원·공유 읽기·이미지 저장, 모바일 폰트 fallback, 데스크톱 및 경로 이동도 관련 변경에 맞게 회귀 점검합니다. 인증·개인정보·오류 수집을 생략해 얻은 속도는 개선 결과로 취급하지 않습니다.
+
+### PSI 후속 홈 비교의 별도 조건
+
+PageSpeed Insights 캡처 이후 홈 렌더링 조사는 Chrome 155에서 다음 조건으로 비교합니다. 캡처의 Lighthouse 실행이나 이전 cache-only 측정과 동일한 실험으로 취급하지 않습니다.
+
+| 항목 | 모바일 | 데스크톱 |
+| --- | --- | --- |
+| viewport | 390×844 | 1440×900 |
+| CPU slowdown | 4 | 1 |
+| 다운로드 | 200,000B/s | 1,250,000B/s |
+| 업로드 | 93,750B/s | 500,000B/s |
+| 추가 지연 | 150ms | 40ms |
+| HTTP 캐시 | 비활성화 (`cacheDisabled: true`) | 동일 |
+| 서비스 워커 | 차단 | 차단 |
+
+서버 프로세스와 Next의 디스크 fetch 캐시를 비운 첫 방문을 server cold로 기록합니다. 같은 프로세스의 이후 방문은 server warm으로 구분하되 새 브라우저 context와 HTTP 캐시 비활성 조건을 유지합니다. 프로세스의 경로 선택 boolean이 설정됐다는 사실만으로 모든 데이터 조회가 20ms 이내에 끝난다고 가정하지 않습니다.
+
+날짜별 화면은 일요일 22:54:14 KST로 고정하되 무인자 `new Date()` 출력에만 적용하고 `Date.now()`는 실제 시간을 유지해 캐시 만료와 SDK 경과 시간 계산을 보존합니다. Sentry는 실제 SDK와 가짜 DSN을 사용해 전송을 가로채고, GA 수집은 로컬 204 응답으로 처리하되 외부 gtag 로드는 유지합니다. 운영 수신 검증과는 구분합니다.
+
+10초 무조작 관찰의 LCP, 검색 handler 준비 대리지표, 0–10초 구간의 긴 작업 차단 시간을 각각 기록합니다. 검색 handler 연결은 공식 TTI·INP나 메뉴를 포함한 모든 조작의 준비 시간이 아니며, 별도 구간의 차단 시간도 공식 Lighthouse TBT로 표기하지 않습니다. 동일 조건의 전체 회차·중앙값·최소/최대값과 회귀 검증은 [PSI 후속 조사와 전후 측정](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에 남깁니다.
+
+## 배포 후 확인
+
+배포한 커밋과 연결된 URL에서 실제 압축·캐시 헤더·폰트 요청·오류 수집을 확인합니다. Lighthouse 및 Core Web Vitals는 로컬 실험과 구분해 기록하고, 실제 모바일 기기와 서비스 워커가 있는 재방문도 점검합니다. 로컬 검사 통과 여부를 이 문서의 고정 체크 표시로 유지하지 않습니다.

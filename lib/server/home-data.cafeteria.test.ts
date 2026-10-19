@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchCafeteriaMenu, fetchCafeteriaSnapshot } from "../api";
-import { getHomeCafeteriaMenus, getHomeCafeteriaSnapshot } from "./home-data";
+import { getHomeCafeteriaSnapshot } from "./home-data";
 import { readDailyCrawlDataSnapshot } from "./crawl-data";
 
 vi.mock("./crawl-data", () => ({ readDailyCrawlDataSnapshot: vi.fn() }));
@@ -16,7 +16,7 @@ describe("shared cafeteria conversion", () => {
   it.each([source, [source]])("preserves both source shapes, meal corners, IDs, and the client date filter", async (data) => {
     vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({ data, source: "github-pages", version: "v1" });
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(data)));
-    const menus = await getHomeCafeteriaMenus();
+    const { menus } = await getHomeCafeteriaSnapshot();
     expect(await fetchCafeteriaMenu()).toEqual(menus);
     expect(menus).toEqual([
       { id: "cafeteria-2026-10-05-0", date: "2026-10-05", dayOfWeek: "월", breakfast: [{ name: "죽" }], lunch: { a: [{ name: "밥" }] }, dinner: [{ name: "국" }], location: "SU-Lounge" },
@@ -29,7 +29,7 @@ describe("shared cafeteria conversion", () => {
   it("keeps the server empty-list fallback and the client malformed-source error", async () => {
     vi.mocked(readDailyCrawlDataSnapshot).mockResolvedValue({ data: {}, source: "github-pages", version: "v1" });
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({})));
-    await expect(getHomeCafeteriaMenus()).resolves.toEqual([]);
+    await expect(getHomeCafeteriaSnapshot()).resolves.toMatchObject({ menus: [] });
     await expect(fetchCafeteriaMenu()).rejects.toThrow("Invalid cafeteria data structure");
   });
 

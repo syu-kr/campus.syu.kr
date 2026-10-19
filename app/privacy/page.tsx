@@ -465,7 +465,7 @@ function EnglishPrivacyPage() {
               <p className="text-sm text-neutral-600">Operator and privacy officer: Sanghyeok Seo (individual)</p>
               <p className="text-sm text-neutral-600">Service operating name: SYU KR</p>
               <p className="text-sm text-neutral-600">
-                Email: singhic_dev@syu.kr
+                Email: singhic@outlook.kr
               </p>
             </div>
           </div>
@@ -1265,7 +1265,7 @@ export default async function PrivacyPage() {
               <p className="text-sm text-neutral-600">운영자 및 개인정보 보호책임자: 서상혁(개인)</p>
               <p className="text-sm text-neutral-600">서비스 운영 명칭: SYU KR</p>
               <p className="text-sm text-neutral-600">
-                연락처: singhic_dev@syu.kr
+                연락처: singhic@outlook.kr
               </p>
             </div>
             <p className="text-sm text-neutral-600">

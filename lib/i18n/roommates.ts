@@ -1,7 +1,9 @@
 import type { Locale } from "@/lib/i18n";
+import { getRoommateNavigationText } from "./roommate-navigation";
 
 const ko = {
-  title: "룸메이트 구하기", description: "삼육대 기숙사에서 함께 지낼 룸메이트를 찾아보세요.",
+  ...getRoommateNavigationText("ko"),
+  description: "삼육대 기숙사에서 함께 지낼 룸메이트를 찾아보세요.",
   campus: "캠퍼스", list: "모집 목록", mine: "내 글 관리", create: "모집글 작성", logout: "로그아웃",
   loading: "불러오는 중…", retry: "다시 시도", cancel: "취소", save: "저장", submitting: "처리 중…",
   unavailable: "지금은 룸메이트 게시판을 이용할 수 없습니다. 잠시 후 다시 확인해주세요.",
@@ -44,7 +46,7 @@ const ko = {
   deleteHelp: "삭제하면 연락처가 공개되지 않고 글을 다시 복구할 수 없습니다.", completeHelp: "모집을 완료하면 다른 이용자가 글과 연락처를 열 수 없습니다. 완료한 글은 다시 모집 중으로 바꿀 수 없습니다.",
   noMine: "아직 작성한 모집글이 없습니다.", hold: "작성 보류 중", holdUntil: "보류 종료", holdHelp: "보류 중에는 새 글 등록과 내용 수정이 제한됩니다. 본인 글의 완료와 삭제는 가능합니다.",
   inquiry: "운영 문의", editDeadline: "내용을 수정해도 모집 마감일과 최초 등록일은 연장되지 않습니다.",
-  verifyTitle: "학교 이메일로 시작하기", verifyHelp: "회원가입 화면이나 비밀번호 없이 이메일의 로그인 링크로 인증합니다.",
+  verifyHelp: "회원가입 화면이나 비밀번호 없이 이메일의 로그인 링크로 인증합니다.",
   email: "학교 이메일", emailHint: "@syuin.ac.kr 주소를 입력해주세요.", emailInvalid: "올바른 @syuin.ac.kr 학교 이메일을 입력해주세요.",
   remember: "이 브라우저에서 30일 유지", rememberHelp: "공용 기기에서는 해제해주세요. 해제하면 최대 12시간 유지됩니다.",
   send: "인증 메일 받기", resend: "인증 메일 다시 받기", sent: "인증 메일을 보냈습니다. 메일의 로그인 링크를 눌러주세요.",
@@ -68,7 +70,8 @@ const ko = {
   validation: { nickname: "닉네임은 2자부터 12자까지 입력해주세요.", dorm: "기숙사를 선택해주세요.", roomSize: "기숙사에서 제공하는 인실을 선택해주세요.", roommatesNeeded: "모집 인원은 인실 정원보다 적어야 합니다.", stayStart: "실제 거주 시작일을 입력해주세요.", stayEnd: "거주 종료일은 시작일과 오늘보다 빠를 수 없습니다.", recruitUntil: "모집 마감일은 등록일 포함 30일과 거주 종료일 안에서 선택해주세요. 수정 시 연장할 수 없습니다.", habits: "생활습관 선택을 확인해주세요.", description: "소개는 최대 300자입니다.", openChatUrl: "https://open.kakao.com/o/로 시작하는 영문·숫자 코드의 오픈채팅 링크를 입력해주세요.", disclosureConsent: "글 등록·수정에 필요한 개인정보 제공 동의를 확인해주세요." },
 };
 const en: typeof ko = {
-  title: "Find a roommate", description: "Find someone to share a Sahmyook University dorm room with.",
+  ...getRoommateNavigationText("en"),
+  description: "Find someone to share a Sahmyook University dorm room with.",
   campus: "Campus", list: "Listings", mine: "My listing", create: "Create a listing", logout: "Sign out",
   loading: "Loading…", retry: "Try again", cancel: "Cancel", save: "Save", submitting: "Processing…",
   unavailable: "The roommate board is currently unavailable. Please check again later.",
@@ -110,7 +113,7 @@ const en: typeof ko = {
   deleteHelp: "The contact link will be hidden and the listing cannot be restored.", completeHelp: "Other users will no longer see this listing or contact link. Completed listings cannot return to recruiting.",
   noMine: "You have not created a listing yet.", hold: "Posting is on hold", holdUntil: "Hold ends", holdHelp: "New listings and edits are restricted during the hold. You can still complete or delete your own listing.",
   inquiry: "Contact support", editDeadline: "Editing does not extend the recruiting deadline or change the original creation date.",
-  verifyTitle: "Start with your school email", verifyHelp: "Verify through an email sign-in link without a registration form or password.",
+  verifyHelp: "Verify through an email sign-in link without a registration form or password.",
   email: "School email", emailHint: "Enter your @syuin.ac.kr address.", emailInvalid: "Enter a valid @syuin.ac.kr school email.",
   remember: "Keep me signed in for 30 days", rememberHelp: "Uncheck on a shared device. Unchecked sessions last up to 12 hours.",
   send: "Send verification email", resend: "Send another email", sent: "Email sent. Open the sign-in link in your mailbox.",

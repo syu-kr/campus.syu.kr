@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FooterContactButton } from "@/app/components/FooterContactButton";
 import { Container } from "@/app/components/Container";
 import { LanguageSelector } from "@/app/components/LanguageSelector";
@@ -24,28 +25,28 @@ export function Footer({ locale }: { locale: Locale }) {
             </h2>
             <ul className="space-y-2 text-sm">
               <li>
-                <a
+                <Link
                   href={localizePath("/academic", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
                   {dictionary.footer.academicInfo}
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href={localizePath("/campus", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
                   {dictionary.footer.campusInfo}
-                </a>
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href={localizePath("/more", locale)}
                   className="text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
                   {dictionary.footer.more}
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -60,7 +61,7 @@ export function Footer({ locale }: { locale: Locale }) {
               </li>
               <li>
                 <a
-                  href="mailto:singhic_dev@syu.kr"
+                  href="mailto:singhic@outlook.kr"
                   className="text-neutral-500 hover:text-neutral-700 transition-colors"
                 >
                   {dictionary.footer.emailContact}
@@ -79,24 +80,24 @@ export function Footer({ locale }: { locale: Locale }) {
               © {currentYear} SYU KR(Seo Sang Hyeok). All rights reserved.
             </p>
             <div className="flex gap-4 text-xs sm:text-sm">
-              <a
+              <Link
                 href={localizePath("/terms", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 {dictionary.footer.terms}
-              </a>
-              <a
+              </Link>
+              <Link
                 href={localizePath("/privacy", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 {dictionary.footer.privacy}
-              </a>
-              <a
+              </Link>
+              <Link
                 href={localizePath("/more/privacy", locale)}
                 className="text-neutral-600 hover:text-neutral-900 transition-colors"
               >
                 {dictionary.footer.notificationPrivacy}
-              </a>
+              </Link>
               <a
                 href="https://github.com/syu-kr/campus.syu.kr"
                 target="_blank"

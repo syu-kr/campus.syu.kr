@@ -25,6 +25,12 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Turbopack does not use Sentry's webpack tree-shaking settings.
+  compiler: {
+    define: {
+      __SENTRY_DEBUG__: false,
+    },
+  },
   // 이미지 최적화
   images: {
     formats: ["image/avif", "image/webp"],

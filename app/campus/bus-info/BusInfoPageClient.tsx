@@ -21,9 +21,11 @@ export default function BusInfoPageClient({ initialData }: { initialData: Shuttl
       <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setActiveTab("shuttle")}
+            aria-pressed={activeTab === "shuttle"}
             className={clsx(
-              "flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
+              "min-h-11 flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
               activeTab === "shuttle"
                 ? "bg-blue-600 text-white shadow-md"
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
@@ -32,9 +34,11 @@ export default function BusInfoPageClient({ initialData }: { initialData: Shuttl
             {text.shuttleTab}
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab("public-transit")}
+            aria-pressed={activeTab === "public-transit"}
             className={clsx(
-              "flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
+              "min-h-11 flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
               activeTab === "public-transit"
                 ? "bg-blue-600 text-white shadow-md"
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",

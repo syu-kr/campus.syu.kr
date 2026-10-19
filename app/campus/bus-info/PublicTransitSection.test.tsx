@@ -53,6 +53,18 @@ async function openBusDetail() {
 }
 
 describe("public transit details", () => {
+  it("announces the selected stop and updates its state independently of bus details", async () => {
+    vi.mocked(fetchJson).mockResolvedValue(transitPayload(10));
+    render(<QueryClientProvider client={client}><PublicTransitSection /></QueryClientProvider>);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+    const selected = screen.getByRole("button", { pressed: true });
+    const next = screen.getAllByRole("button", { pressed: false })[0];
+    fireEvent.click(next);
+    expect(selected).toHaveAttribute("aria-pressed", "false");
+    expect(next).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
   it("updates the open detail after polling without moving focus", async () => {
     vi.mocked(fetchJson)
       .mockResolvedValueOnce(transitPayload(10))

@@ -2,7 +2,7 @@
 
 ## Reporting A Vulnerability
 
-공개 Issue에 취약점 세부 정보, 비밀 값, 개인 정보를 올리지 마세요. GitHub 저장소의 **Security > Report a vulnerability**를 사용해 비공개로 제보해 주세요. 해당 메뉴가 보이지 않으면 세부 정보 없이 `singhic_dev@syu.kr`로 먼저 연락해 주세요.
+공개 Issue에 취약점 세부 정보, 비밀 값, 개인 정보를 올리지 마세요. GitHub 저장소의 **Security > Report a vulnerability**를 사용해 비공개로 제보해 주세요. 해당 메뉴가 보이지 않으면 세부 정보 없이 `singhic@outlook.kr`로 먼저 연락해 주세요.
 
 제보에는 영향 범위, 재현 절차, 관련 경로와 가능한 완화 방법을 포함해 주세요. 관리자는 제보를 확인한 뒤 진행 상황을 회신합니다.
 

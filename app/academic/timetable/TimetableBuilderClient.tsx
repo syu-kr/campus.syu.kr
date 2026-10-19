@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +16,8 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
-import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
+import type { Dictionary } from "@/lib/i18n";
+import { localizePath, type Locale } from "@/lib/i18n/routing";
 import {
   FILTERABLE_LECTURE_DAYS,
   filterLectureTimetableCourses,
@@ -150,6 +152,26 @@ interface TimetableConflictPair {
 
 type DraftPersistenceMode = "pending" | "local" | "shared" | "paused";
 type DesktopSidebarView = "courses" | "selected";
+type PickerLayout = "mobile" | "desktop" | "sidebar";
+
+function getPickerLayout(): PickerLayout {
+  if (window.matchMedia("(min-width: 1280px)").matches) return "sidebar";
+  return window.matchMedia("(min-width: 1024px)").matches ? "desktop" : "mobile";
+}
+
+function subscribeToPickerLayout(onChange: () => void) {
+  const queries = [1024, 1280].map((width) =>
+    window.matchMedia(`(min-width: ${width}px)`),
+  );
+  queries.forEach((query) => query.addEventListener("change", onChange));
+  return () => {
+    queries.forEach((query) => query.removeEventListener("change", onChange));
+  };
+}
+
+function getServerPickerLayout(): PickerLayout {
+  return "mobile";
+}
 
 const emptyTimetableResponse: TimetableApiResponse = {
   success: false,
@@ -161,6 +183,11 @@ const emptyShareResponse: TimetableShareResponse = {
 };
 
 export function TimetableBuilderClient() {
+  preload("/api/lecture/timetable", {
+    as: "fetch",
+    crossOrigin: "anonymous",
+    fetchPriority: "low",
+  });
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -168,6 +195,11 @@ export function TimetableBuilderClient() {
   const locale = useLocale();
   const text = dictionary.pages.timetable;
   const shareId = searchParams.get("share")?.trim() ?? "";
+  const pickerLayout = useSyncExternalStore(
+    subscribeToPickerLayout,
+    getPickerLayout,
+    getServerPickerLayout,
+  );
 
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [gradeFilter, setGradeFilter] = useState("");
@@ -213,6 +245,7 @@ export function TimetableBuilderClient() {
     queryFn: () =>
       fetchJson<TimetableApiResponse>("/api/lecture/timetable", {
         fallback: emptyTimetableResponse,
+        noStore: false,
         timeoutMs: 20_000,
       }),
     staleTime: 60 * 60 * 1000,
@@ -836,7 +869,7 @@ export function TimetableBuilderClient() {
   return (
     <Container
       size="full"
-      className="min-w-0 max-w-[88rem] overflow-x-hidden py-6 sm:py-8 2xl:max-w-[112rem]"
+      className="timetable-page min-w-0 max-w-[88rem] overflow-x-clip py-6 sm:py-8 2xl:max-w-[112rem]"
     >
       <div className="mb-6">
         <Link
@@ -904,7 +937,7 @@ export function TimetableBuilderClient() {
         </div>
       )}
 
-      <section className="sticky top-[73px] z-20 mb-5 rounded-card border border-neutral-200 bg-white/95 p-3 shadow-card backdrop-blur sm:p-4">
+      <section className="mb-5 rounded-card border border-neutral-200 bg-white p-3 shadow-card sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <SummaryMetric
             label={text.totalCredits}
@@ -1163,101 +1196,107 @@ export function TimetableBuilderClient() {
               )}
             </div>
 
-            <div className="hidden xl:block">
-              <DesktopWorkspaceSidebar
-                activeView={desktopSidebarView}
-                onViewChange={setDesktopSidebarView}
-              >
-                {desktopSidebarView === "courses" ? (
-                  <CoursePicker
-                    completionTypeFilter={completionTypeFilter}
-                    departments={departments}
-                    departmentFilter={departmentFilter}
-                    dayFilters={dayFilters}
-                    endPeriodFilter={endPeriodFilter}
-                    filteredCoursesCount={filteredCourses.length}
-                    grades={grades}
-                    gradeFilter={gradeFilter}
-                    completionTypes={completionTypes}
-                    onCompletionTypeFilterChange={setCompletionTypeFilter}
-                    onDayFilterToggle={toggleDayFilter}
-                    onDepartmentFilterChange={setDepartmentFilter}
-                    onEndPeriodFilterChange={setEndPeriodFilter}
-                    onGradeFilterChange={setGradeFilter}
-                    onResetFilters={resetFilters}
-                    onSearchQueryChange={setSearchQuery}
-                    onStartPeriodFilterChange={setStartPeriodFilter}
-                    onToggleCourse={toggleCourse}
-                    onToggleCourseForTimetable={toggleCourseForTimetable}
-                    searchQuery={searchQuery}
-                    selectedIdSet={selectedIdSet}
-                    startPeriodFilter={startPeriodFilter}
-                    timetableMemberships={
-                      timetableWorkspace.isCompareMode
-                        ? timetableWorkspace.timetables
-                        : undefined
-                    }
-                    activeTimetableId={timetableWorkspace.activeTimetableId}
-                    visibleCourses={visibleCourses}
-                    conflictCourseIds={conflictSummary.courseIds}
-                    idPrefix="desktop-sidebar"
-                    listKey={courseListKey}
-                    compact
-                  />
-                ) : (
-                  <SelectedCoursesPanel
-                    selectedCourses={selectedCourses}
-                    conflictCourseIds={conflictSummary.courseIds}
-                    completionStats={visibleCompletionStats}
-                    totalCredits={totalCredits}
-                    onClear={() => replaceSelectedCourses([])}
-                    onRemove={toggleCourse}
-                  />
-                )}
-              </DesktopWorkspaceSidebar>
-            </div>
+            {pickerLayout === "sidebar" && (
+              <div className="hidden xl:block">
+                <DesktopWorkspaceSidebar
+                  activeView={desktopSidebarView}
+                  onViewChange={setDesktopSidebarView}
+                >
+                  {desktopSidebarView === "courses" ? (
+                    <CoursePicker
+                      completionTypeFilter={completionTypeFilter}
+                      departments={departments}
+                      departmentFilter={departmentFilter}
+                      dayFilters={dayFilters}
+                      endPeriodFilter={endPeriodFilter}
+                      filteredCoursesCount={filteredCourses.length}
+                      grades={grades}
+                      gradeFilter={gradeFilter}
+                      completionTypes={completionTypes}
+                      onCompletionTypeFilterChange={setCompletionTypeFilter}
+                      onDayFilterToggle={toggleDayFilter}
+                      onDepartmentFilterChange={setDepartmentFilter}
+                      onEndPeriodFilterChange={setEndPeriodFilter}
+                      onGradeFilterChange={setGradeFilter}
+                      onResetFilters={resetFilters}
+                      onSearchQueryChange={setSearchQuery}
+                      onStartPeriodFilterChange={setStartPeriodFilter}
+                      onToggleCourse={toggleCourse}
+                      onToggleCourseForTimetable={toggleCourseForTimetable}
+                      searchQuery={searchQuery}
+                      selectedIdSet={selectedIdSet}
+                      startPeriodFilter={startPeriodFilter}
+                      timetableMemberships={
+                        timetableWorkspace.isCompareMode
+                          ? timetableWorkspace.timetables
+                          : undefined
+                      }
+                      activeTimetableId={timetableWorkspace.activeTimetableId}
+                      visibleCourses={visibleCourses}
+                      conflictCourseIds={conflictSummary.courseIds}
+                      idPrefix="desktop-sidebar"
+                      listKey={courseListKey}
+                      compact
+                    />
+                  ) : (
+                    <SelectedCoursesPanel
+                      selectedCourses={selectedCourses}
+                      conflictCourseIds={conflictSummary.courseIds}
+                      completionStats={visibleCompletionStats}
+                      totalCredits={totalCredits}
+                      onClear={() => replaceSelectedCourses([])}
+                      onRemove={toggleCourse}
+                    />
+                  )}
+                </DesktopWorkspaceSidebar>
+              </div>
+            )}
 
-            <div className="xl:hidden">
-              <SelectedCoursesPanel
-                selectedCourses={selectedCourses}
-                conflictCourseIds={conflictSummary.courseIds}
-                completionStats={visibleCompletionStats}
-                totalCredits={totalCredits}
-                onClear={() => replaceSelectedCourses([])}
-                onRemove={toggleCourse}
-              />
-            </div>
+            {pickerLayout !== "sidebar" && (
+              <div className="xl:hidden">
+                <SelectedCoursesPanel
+                  selectedCourses={selectedCourses}
+                  conflictCourseIds={conflictSummary.courseIds}
+                  completionStats={visibleCompletionStats}
+                  totalCredits={totalCredits}
+                  onClear={() => replaceSelectedCourses([])}
+                  onRemove={toggleCourse}
+                />
+              </div>
+            )}
           </section>
 
-          <div className="hidden lg:block xl:hidden">
-            <CoursePicker
-              completionTypeFilter={completionTypeFilter}
-              departments={departments}
-              departmentFilter={departmentFilter}
-              dayFilters={dayFilters}
-              endPeriodFilter={endPeriodFilter}
-              filteredCoursesCount={filteredCourses.length}
-              grades={grades}
-              gradeFilter={gradeFilter}
-              completionTypes={completionTypes}
-              onCompletionTypeFilterChange={setCompletionTypeFilter}
-              onDayFilterToggle={toggleDayFilter}
-              onDepartmentFilterChange={setDepartmentFilter}
-              onEndPeriodFilterChange={setEndPeriodFilter}
-              onGradeFilterChange={setGradeFilter}
-              onResetFilters={resetFilters}
-              onSearchQueryChange={setSearchQuery}
-              onStartPeriodFilterChange={setStartPeriodFilter}
-              onToggleCourse={toggleCourse}
-              searchQuery={searchQuery}
-              selectedIdSet={selectedIdSet}
-              startPeriodFilter={startPeriodFilter}
-              visibleCourses={visibleCourses}
-              conflictCourseIds={conflictSummary.courseIds}
-              idPrefix="desktop"
-              listKey={courseListKey}
-            />
-          </div>
+          {pickerLayout === "desktop" && (
+            <div className="hidden lg:block xl:hidden">
+              <CoursePicker
+                completionTypeFilter={completionTypeFilter}
+                departments={departments}
+                departmentFilter={departmentFilter}
+                dayFilters={dayFilters}
+                endPeriodFilter={endPeriodFilter}
+                filteredCoursesCount={filteredCourses.length}
+                grades={grades}
+                gradeFilter={gradeFilter}
+                completionTypes={completionTypes}
+                onCompletionTypeFilterChange={setCompletionTypeFilter}
+                onDayFilterToggle={toggleDayFilter}
+                onDepartmentFilterChange={setDepartmentFilter}
+                onEndPeriodFilterChange={setEndPeriodFilter}
+                onGradeFilterChange={setGradeFilter}
+                onResetFilters={resetFilters}
+                onSearchQueryChange={setSearchQuery}
+                onStartPeriodFilterChange={setStartPeriodFilter}
+                onToggleCourse={toggleCourse}
+                searchQuery={searchQuery}
+                selectedIdSet={selectedIdSet}
+                startPeriodFilter={startPeriodFilter}
+                visibleCourses={visibleCourses}
+                conflictCourseIds={conflictSummary.courseIds}
+                idPrefix="desktop"
+                listKey={courseListKey}
+              />
+            </div>
+          )}
 
           <button
             type="button"
@@ -1267,7 +1306,7 @@ export function TimetableBuilderClient() {
             {text.addCourse}
           </button>
 
-          {isPickerOpen && (
+          {pickerLayout === "mobile" && isPickerOpen && (
             <MobileCoursePickerSheet onClose={() => setIsPickerOpen(false)}>
               <CoursePicker
                 completionTypeFilter={completionTypeFilter}
@@ -1295,6 +1334,7 @@ export function TimetableBuilderClient() {
                 conflictCourseIds={conflictSummary.courseIds}
                 idPrefix="mobile"
                 listKey={courseListKey}
+                collapseFilters
               />
             </MobileCoursePickerSheet>
           )}
@@ -1601,6 +1641,7 @@ function DesktopWorkspaceSidebar({
 function CoursePicker({
   activeTimetableId,
   compact = false,
+  collapseFilters = false,
   completionTypeFilter,
   completionTypes,
   dayFilters,
@@ -1631,6 +1672,7 @@ function CoursePicker({
 }: {
   activeTimetableId?: string;
   compact?: boolean;
+  collapseFilters?: boolean;
   completionTypeFilter: string;
   completionTypes: string[];
   dayFilters: LectureDay[];
@@ -1688,103 +1730,118 @@ function CoursePicker({
           />
         </div>
 
-        <fieldset aria-describedby={dayFilterHelpId}>
-          <legend className="text-sm font-semibold text-neutral-800">
-            {text.classDay}
-          </legend>
-          <p id={dayFilterHelpId} className="mt-1 text-xs text-neutral-500">
-            {text.classDayDescription}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {FILTERABLE_LECTURE_DAYS.map((day) => {
-              const isChecked = dayFilters.includes(day);
-              return (
-                <label
-                  key={day}
-                  className={clsx(
-                    "cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary-600",
-                    isChecked
-                      ? "border-primary-600 bg-primary-50 text-primary-800"
-                      : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => onDayFilterToggle(day)}
-                    className="sr-only"
-                  />
-                  {getDayLabel(day, text)}
-                </label>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div>
-          <p className="mb-1 text-sm font-semibold text-neutral-800">
-            {text.classPeriod}
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <FilterSelect
-              id={`${idPrefix}-start-period-filter`}
-              label={text.startPeriod}
-              value={startPeriodFilter}
-              onChange={onStartPeriodFilterChange}
-              options={PERIOD_OPTIONS}
-              allLabel={text.anyPeriod}
-              getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
+        <details open={!collapseFilters || undefined} className="group/filters">
+          <summary className={clsx(
+            "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-neutral-800 [&::-webkit-details-marker]:hidden",
+            !collapseFilters && "hidden",
+          )}>
+            {text.advancedFilters}
+            <Icon
+              name="chevron-down"
+              size={16}
+              className="transition-transform group-open/filters:rotate-180"
             />
-            <FilterSelect
-              id={`${idPrefix}-end-period-filter`}
-              label={text.endPeriod}
-              value={endPeriodFilter}
-              onChange={onEndPeriodFilterChange}
-              options={PERIOD_OPTIONS}
-              allLabel={text.anyPeriod}
-              getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
-            />
-          </div>
-          {(dayFilters.length > 0 || startPeriodFilter || endPeriodFilter) && (
-            <p className="mt-2 text-xs text-neutral-500" role="status">
-              {text.timeFilterDescription}
-            </p>
-          )}
-        </div>
+          </summary>
+          <div className="space-y-4">
+            <fieldset aria-describedby={dayFilterHelpId}>
+              <legend className="text-sm font-semibold text-neutral-800">
+                {text.classDay}
+              </legend>
+              <p id={dayFilterHelpId} className="mt-1 text-xs text-neutral-500">
+                {text.classDayDescription}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {FILTERABLE_LECTURE_DAYS.map((day) => {
+                  const isChecked = dayFilters.includes(day);
+                  return (
+                    <label
+                      key={day}
+                      className={clsx(
+                        "cursor-pointer rounded-lg border px-3 py-1.5 text-sm font-semibold transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary-600",
+                        isChecked
+                          ? "border-primary-600 bg-primary-50 text-primary-800"
+                          : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => onDayFilterToggle(day)}
+                        className="sr-only"
+                      />
+                      {getDayLabel(day, text)}
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
-        <div
-          className={clsx(
-            "grid gap-3",
-            compact ? "grid-cols-1 2xl:grid-cols-3" : "sm:grid-cols-3",
-          )}
-        >
-          <FilterSelect
-            id={`${idPrefix}-department-filter`}
-            label={text.department}
-            value={departmentFilter}
-            onChange={onDepartmentFilterChange}
-            options={departments}
-            allLabel={text.allDepartments}
-          />
-          <FilterSelect
-            id={`${idPrefix}-grade-filter`}
-            label={text.grade}
-            value={gradeFilter}
-            onChange={onGradeFilterChange}
-            options={grades}
-            allLabel={text.allGrades}
-            getOptionLabel={(option) => formatGrade(option, text, locale)}
-          />
-          <FilterSelect
-            id={`${idPrefix}-completion-filter`}
-            label={text.completionType}
-            value={completionTypeFilter}
-            onChange={onCompletionTypeFilterChange}
-            options={completionTypes}
-            allLabel={text.allCompletionTypes}
-            getOptionLabel={(option) => formatCompletionType(option, text)}
-          />
-        </div>
+            <div>
+              <p className="mb-1 text-sm font-semibold text-neutral-800">
+                {text.classPeriod}
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <FilterSelect
+                  id={`${idPrefix}-start-period-filter`}
+                  label={text.startPeriod}
+                  value={startPeriodFilter}
+                  onChange={onStartPeriodFilterChange}
+                  options={PERIOD_OPTIONS}
+                  allLabel={text.anyPeriod}
+                  getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
+                />
+                <FilterSelect
+                  id={`${idPrefix}-end-period-filter`}
+                  label={text.endPeriod}
+                  value={endPeriodFilter}
+                  onChange={onEndPeriodFilterChange}
+                  options={PERIOD_OPTIONS}
+                  allLabel={text.anyPeriod}
+                  getOptionLabel={(option) => formatPeriodLabel(Number(option), text)}
+                />
+              </div>
+              {(dayFilters.length > 0 || startPeriodFilter || endPeriodFilter) && (
+                <p className="mt-2 text-xs text-neutral-500" role="status">
+                  {text.timeFilterDescription}
+                </p>
+              )}
+            </div>
+
+            <div
+              className={clsx(
+                "grid gap-3",
+                compact ? "grid-cols-1 2xl:grid-cols-3" : "sm:grid-cols-3",
+              )}
+            >
+              <FilterSelect
+                id={`${idPrefix}-department-filter`}
+                label={text.department}
+                value={departmentFilter}
+                onChange={onDepartmentFilterChange}
+                options={departments}
+                allLabel={text.allDepartments}
+              />
+              <FilterSelect
+                id={`${idPrefix}-grade-filter`}
+                label={text.grade}
+                value={gradeFilter}
+                onChange={onGradeFilterChange}
+                options={grades}
+                allLabel={text.allGrades}
+                getOptionLabel={(option) => formatGrade(option, text, locale)}
+              />
+              <FilterSelect
+                id={`${idPrefix}-completion-filter`}
+                label={text.completionType}
+                value={completionTypeFilter}
+                onChange={onCompletionTypeFilterChange}
+                options={completionTypes}
+                allLabel={text.allCompletionTypes}
+                getOptionLabel={(option) => formatCompletionType(option, text)}
+              />
+            </div>
+          </div>
+        </details>
 
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-medium text-neutral-600">
@@ -1961,7 +2018,7 @@ function CourseResultCard({
   return (
     <article
       className={clsx(
-        "rounded-card border bg-white p-4 shadow-card",
+        "rounded-card border bg-white p-4 shadow-card [content-visibility:auto] [contain-intrinsic-size:auto_240px]",
         hasConflict
           ? "border-red-300"
           : isSelected
@@ -2092,7 +2149,7 @@ function TimetableGrid({
   const text = useDictionary().pages.timetable;
   const visibleDays = getVisibleTimetableDays(selectedCourses);
   const visiblePeriods = getVisibleTimetablePeriods(selectedCourses);
-  const gridTemplateColumns = `clamp(38px, 4vw, 56px) repeat(${visibleDays.length}, minmax(0, 1fr))`;
+  const gridTemplateColumns = `56px repeat(${visibleDays.length}, minmax(0, 1fr))`;
   const minimumGridWidth = 56 + visibleDays.length * 68;
 
   return (
@@ -2161,7 +2218,7 @@ function TimetableGrid({
               <span className="text-[11px] leading-4 sm:text-sm">
                 {formatPeriodLabel(period, text)}
               </span>
-              <span className="text-[8px] leading-3 text-neutral-500 sm:text-[10px]">
+              <span className="text-[10px] leading-4 text-neutral-500">
                 {getPeriodTimeLabel(period)}
               </span>
             </div>
@@ -2189,16 +2246,16 @@ function TimetableGrid({
                       <div
                         key={course.id}
                         className={clsx(
-                          "rounded border px-1 py-1 text-[9px] leading-3 sm:px-2 sm:py-1.5 sm:text-[11px] sm:leading-4",
+                          "min-w-0 rounded border px-1 py-1 text-[11px] leading-4 sm:px-2 sm:py-1.5",
                           conflictCourseIds.has(course.id)
                             ? "border-red-300 bg-red-50 text-red-900"
                             : "border-primary-200 bg-primary-50 text-primary-900",
                         )}
                       >
-                        <p className="line-clamp-2 font-bold sm:text-xs">
+                        <p className="line-clamp-2 break-words font-bold sm:text-xs">
                           {course.courseName}
                         </p>
-                        <p className="mt-0.5 text-[9px] text-neutral-700 sm:text-[11px]">
+                        <p className="mt-0.5 break-words text-[10px] text-neutral-700 sm:text-[11px]">
                           {course.classTime || text.timeMissing}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-neutral-600 sm:line-clamp-2 sm:block">

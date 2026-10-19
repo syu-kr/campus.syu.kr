@@ -27,30 +27,34 @@ GYEONGGI_BUS_ARRIVAL_URL=your_gyeonggi_bus_arrival_endpoint
 - 도착 정보: 환경변수에 완성된 endpoint를 등록
 - 응답 형식: XML
 
-주요 필드:
+현재 앱이 읽는 주요 원본 필드:
 
 | 필드 | 의미 |
 | --- | --- |
 | `rtNm` | 노선 번호 |
 | `arrmsg1`, `arrmsg2` | 첫번째/두번째 도착 메시지 |
-| `vehId1`, `vehId2` | 차량 ID |
-| `isLow1`, `isLow2` | 저상버스 여부 |
-| `stationNm` | 정류소명 |
+| `busRouteId` | 노선 ID |
+| `arsId`, `stNm` | 정류소 번호·이름 검증 |
+| `nxtStn` | 다음 정류소. 노선 행선지로 사용하지 않음 |
+
+서울 도착 정보의 저상 여부는 현재 정규화 코드에서 `false`로 설정합니다. 차량 ID나 저상 필드를 읽어 표시하는 구현은 아닙니다.
 
 ## 경기도 버스 API
 
 - 도착 정보: `GYEONGGI_BUS_ARRIVAL_URL`
-- 응답 형식: JSON 또는 XML
+- 앱 요청·파싱 형식: JSON (`format=json`). XML 응답을 파싱하는 경로는 없음
 
-주요 필드:
+현재 앱이 읽는 주요 원본 필드:
 
 | 필드 | 의미 |
 | --- | --- |
 | `routeName` | 노선 번호 |
-| `predictTime1`, `predictTime2` | 도착 예정 시간 |
-| `predictMsg1`, `predictMsg2` | 도착 메시지 |
-| `lowFloor1`, `lowFloor2` | 저상버스 여부 |
-| `remainSeat1`, `remainSeat2` | 잔여 좌석 |
+| `routeId`, `stationId` | 노선·정류소 ID |
+| `predictTime1`, `predictTime2` | 도착 예정 시간(분). 앱에서 도착 메시지 생성 |
+| `lowPlate1`, `lowPlate2` | 저상버스 여부 (`1`이면 저상) |
+| `locationNo1`, `locationNo2` | 남은 정류소 수 |
+| `stationNm1`, `stationNm2` | 다음 정류소 |
+| `crowded1`, `crowded2` | 혼잡도 코드 |
 
 ## 앱 내부 흐름
 
@@ -112,8 +116,11 @@ PublicTransitSection
 
 | 데이터 | staleTime | gcTime | refetchInterval |
 | --- | --- | --- | --- |
-| 도착 정보 | 0초 | 0초 | 10초 |
-| 차량 위치 | 30초 | 10분 | 30~35초 |
+| 대중교통 도착 정보 | 10초 | 1분 | 10초 (배경 탭 정기 조회 중지) |
+
+`PublicTransitSection`의 위 값은 브라우저 query 캐시 설정입니다. `/api/bus/public-transit`는 서버 메모리에 10초 보관하고 `s-maxage=10, stale-while-revalidate=20` 응답을 사용합니다. 원본 장애·노선 누락 시 마지막 자료를 최대 2분 보존하며 `stale`로 구분합니다.
+
+셔틀 차량 위치는 query 캐시를 사용하지 않습니다. `ShuttleSection`에서 표시 가능한 운행 시간에 즉시 요청하고 이후 30~35초 간격으로 조회합니다. `/api/bus/shuttle`는 정상 자료를 30초 캐시하고 원본 장애 시 마지막 자료를 최대 10분 보존하며 지연 상태를 표시합니다.
 
 Next.js fetch 옵션에서 `cache: "no-store"`와 `next.revalidate`를 동시에 지정하지 않습니다.
 
@@ -125,4 +132,4 @@ Next.js fetch 옵션에서 `cache: "no-store"`와 `next.revalidate`를 동시에
 
 ## 최종 업데이트
 
-2026-07-20
+2026-10-18: 캐시·재조회 설정을 현재 코드와 대조했습니다. 위 노선 행선지의 마지막 원본 검증일은 2026-07-20이며 이번 문서 갱신에서 운영 API·행선지를 다시 조회하지 않았습니다.

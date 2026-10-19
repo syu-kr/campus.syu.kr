@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getDictionary } from "@/lib/i18n";
+import { getRoommateText } from "@/lib/i18n/roommates";
 import { Header } from "./Header";
 import { LocaleProvider } from "./LocaleProvider";
 
@@ -49,6 +50,21 @@ describe("Header navigation", () => {
     render(<Header />);
 
     expect(screen.getByRole("link", { name: "뒤로가기: 캠퍼스" })).toHaveAttribute("href", "/campus");
+  });
+
+  it.each([
+    { locale: "ko", path: "/campus/roommates/new", parent: "/campus/roommates", labelKey: "title", label: "룸메이트 구하기" },
+    { locale: "ko", path: "/campus/roommates/verify/finish", parent: "/campus/roommates/verify", labelKey: "verifyTitle", label: "학교 이메일로 시작하기" },
+    { locale: "en", path: "/en/campus/roommates/new", parent: "/en/campus/roommates", labelKey: "title", label: "Find a roommate" },
+    { locale: "en", path: "/en/campus/roommates/verify/finish", parent: "/en/campus/roommates/verify", labelKey: "verifyTitle", label: "Start with your school email" },
+  ] as const)("preserves the $locale roommate $labelKey parent label", ({ locale, path, parent, labelKey, label }) => {
+    mockedUsePathname.mockReturnValue(path);
+    render(<LocaleProvider locale={locale}><Header /></LocaleProvider>);
+
+    expect(getRoommateText(locale)[labelKey]).toBe(label);
+    expect(screen.getByRole("link", {
+      name: `${getDictionary(locale).navigation.back}: ${label}`,
+    })).toHaveAttribute("href", parent);
   });
 
   it("keeps the language and accessible destination for a shared invitation", () => {

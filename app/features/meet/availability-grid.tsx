@@ -1,4 +1,4 @@
-import type { PointerEvent } from "react";
+import { useRef, type PointerEvent } from "react";
 import type { MeetParticipant } from "@/types/meet";
 import type { Locale } from "@/lib/i18n";
 
@@ -36,6 +36,9 @@ export function TimeRow({
   onPointerEnter,
   onToggle,
 }: TimeRowProps) {
+  // Touch browsers can emit MouseEvent clicks without a pointerType.
+  const touchInteraction = useRef(false);
+
   return (
     <>
       <div className="sticky left-0 z-10 border-b border-r border-neutral-200 bg-white p-2 text-xs font-semibold text-neutral-600">
@@ -59,13 +62,16 @@ export function TimeRow({
             data-slot={slot}
             disabled={readOnly}
             onPointerDown={(event) => {
+              touchInteraction.current = event.pointerType === "touch";
               if (!readOnly) onPointerDown(event, slot);
             }}
-            onPointerEnter={() => {
-              if (!readOnly) onPointerEnter(slot);
+            onPointerEnter={(event) => {
+              if (!readOnly && event.pointerType !== "touch") onPointerEnter(slot);
             }}
             onClick={(event) => {
-              if (!readOnly && event.detail === 0) onToggle(slot);
+              if (!readOnly && (event.detail === 0 || touchInteraction.current)) {
+                onToggle(slot);
+              }
             }}
             aria-pressed={selected}
             aria-label={`${dateLabel} ${time}, ${stateLabel}${participantLabel}`}
