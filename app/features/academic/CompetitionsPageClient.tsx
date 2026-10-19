@@ -206,7 +206,8 @@ function FilterRow<T extends string>({
             key={filter}
             type="button"
             onClick={() => onChange(filter)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+            aria-pressed={selected === filter}
+            className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
               selected === filter
                 ? secondary
                   ? "bg-primary-600 text-white"

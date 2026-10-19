@@ -221,9 +221,10 @@ export default function PublicTransitSection() {
               <button
                 key={stop.id}
                 type="button"
+                aria-pressed={selectedStopId === stop.id}
                 onClick={() => setSelectedStopId(stop.id)}
                 className={clsx(
-                  "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
+                  "min-h-11 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all",
                   selectedStopId === stop.id
                     ? "bg-primary-600 text-white shadow-sm"
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
@@ -348,7 +349,7 @@ export default function PublicTransitSection() {
                       <p
                         className={clsx(
                           "text-xs sm:text-sm mb-2 truncate",
-                          isNoInfo ? "text-neutral-400" : "text-neutral-600",
+                          isNoInfo ? "text-neutral-500" : "text-neutral-600",
                         )}
                       >
                         {destination}

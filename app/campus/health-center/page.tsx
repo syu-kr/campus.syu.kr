@@ -76,7 +76,6 @@ export default function HealthCenterPage() {
           {text.services.map((service) => (
             <Card
               key={service.title}
-              className="hover:shadow-card-hover transition-shadow"
             >
               <div className="text-center">
                 <h3 className="font-semibold text-neutral-900 text-sm mb-1">
@@ -95,7 +94,7 @@ export default function HealthCenterPage() {
         <h2 className="text-lg font-bold text-neutral-900 mb-4">
           {text.processTitle}
         </h2>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {text.processSteps.map((step) => (
             <div key={step.num} className="text-center">
               <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary-600 text-lg font-bold text-white">

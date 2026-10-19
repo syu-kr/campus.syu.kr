@@ -270,6 +270,7 @@ export default function MeetRoomPage({ params }: PageProps) {
     event: PointerEvent<HTMLButtonElement>,
     slot: string,
   ) => {
+    if (event.pointerType === "touch") return;
     event.preventDefault();
     const nextMode = !availability.has(slot);
     setDragMode(nextMode);
@@ -290,7 +291,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   };
 
   const handleGridPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragMode === null) return;
+    if (event.pointerType === "touch" || dragMode === null) return;
 
     const target = document.elementFromPoint(event.clientX, event.clientY);
     const slot = target
@@ -521,7 +522,7 @@ export default function MeetRoomPage({ params }: PageProps) {
               onPointerLeave={handlePointerEnd}
             >
               <div
-                className="grid min-w-[640px] touch-none select-none"
+                className="grid min-w-[640px] touch-auto select-none"
                 style={{
                   gridTemplateColumns: `72px repeat(${dates.length}, minmax(76px, 1fr))`,
                 }}
@@ -592,7 +593,7 @@ export default function MeetRoomPage({ params }: PageProps) {
               </div>
 
               <div
-                className="grid touch-none select-none"
+                className="grid touch-pan-y select-none"
                 style={{
                   gridTemplateColumns: "72px minmax(0, 1fr)",
                 }}

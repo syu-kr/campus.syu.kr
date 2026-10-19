@@ -54,7 +54,8 @@ describe("NotificationPermissionPrompt", () => {
     expect(screen.getByRole("heading")).toBeInTheDocument();
   });
 
-  it.each(["ko", "en"] as const)("waits for the completed %s footer click before inserting an inline prompt", (locale) => {
+  it.each(["ko", "en"] as const)("waits for the completed %s footer click before inserting an inline prompt", async (locale) => {
+    vi.useRealTimers();
     const dictionary = dictionaries[locale];
     render(<LocaleProvider locale={locale}>
       <NotificationPermissionPrompt />
@@ -66,7 +67,7 @@ describe("NotificationPermissionPrompt", () => {
     fireEvent.pointerUp(contact);
     expect(screen.queryByRole("heading", { name: dictionary.notificationPrompt.title })).not.toBeInTheDocument();
     fireEvent.click(contact);
-    expect(screen.getByRole("dialog", { name: dictionary.footer.contact })).toBeInTheDocument();
+    expect(await screen.findByRole("dialog", { name: dictionary.footer.contact })).toBeInTheDocument();
     const prompt = screen.getByRole("region", { name: dictionary.notificationPrompt.title });
     expect(prompt.className).not.toMatch(/(?:^|\s)(?:\w+:)?fixed(?:\s|$)/);
     expect(enablePushNotifications).not.toHaveBeenCalled();

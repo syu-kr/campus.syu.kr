@@ -58,3 +58,96 @@ describe("Meet response editing when browser storage fails", () => {
     expect(JSON.parse(String(writes[1][1]?.body)).editToken).toBe("session-edit-token");
   });
 });
+
+const secondSlot = "2026-10-05T10:00:00+09:00";
+const thirdSlot = "2026-10-05T11:00:00+09:00";
+
+async function renderSelectableRoom() {
+  const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) =>
+    Response.json(init?.method === "PUT"
+      ? { editToken: "test-edit-token" }
+      : { ...room, room: { ...room.room, timeEnd: "12:00" }, slots: [slot, secondSlot, thirdSlot] }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  await act(async () => {
+    render(
+      <Suspense fallback={null}>
+        <MeetRoomPage params={Promise.resolve({ roomId: "test-room" })} />
+      </Suspense>,
+    );
+  });
+  await screen.findByLabelText("닉네임");
+  const slotButtons = (value: string) =>
+    document.querySelectorAll<HTMLButtonElement>(`button[data-slot="${value}"]`);
+  return { fetchMock, slotButtons };
+}
+
+function pointerEvent(type: string, pointerType: "touch" | "mouse") {
+  const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+  Object.defineProperty(event, "pointerType", { value: pointerType });
+  return event;
+}
+
+describe("Meet availability selection", () => {
+  it("allows touch panning without selecting and saves a subsequent tap once", async () => {
+    const { fetchMock, slotButtons } = await renderSelectableRoom();
+    const button = slotButtons(slot)[1];
+    const nextButton = slotButtons(secondSlot)[1];
+    const grid = button.parentElement!;
+    expect(grid).toHaveClass("touch-pan-y");
+    expect(grid).not.toHaveClass("touch-none");
+
+    const down = pointerEvent("pointerdown", "touch");
+    fireEvent(button, down);
+    fireEvent(nextButton, pointerEvent("pointerover", "touch"));
+    fireEvent(grid, pointerEvent("pointermove", "touch"));
+    fireEvent(button, pointerEvent("pointercancel", "touch"));
+    expect(down.defaultPrevented).toBe(false);
+    expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(nextButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent(button, pointerEvent("pointerdown", "touch"));
+    fireEvent(button, pointerEvent("pointerup", "touch"));
+    fireEvent.click(button, { detail: 1 });
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    fireEvent.change(screen.getByLabelText("닉네임"), { target: { value: "터치 학생" } });
+    fireEvent.click(screen.getByRole("button", { name: "내 가능 시간 저장" }));
+    await screen.findByText("가능한 시간이 저장되었습니다.");
+    const writes = fetchMock.mock.calls.filter(([, init]) => init?.method === "PUT");
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(String(writes[0][1]?.body))).toMatchObject({
+      nickname: "터치 학생", availability: [slot],
+    });
+  });
+
+  it("keeps mouse drag selection, ignores its click, and ends on release or cancel", async () => {
+    const { slotButtons } = await renderSelectableRoom();
+    const button = slotButtons(slot)[0];
+    const nextButton = slotButtons(secondSlot)[0];
+    const lastButton = slotButtons(thirdSlot)[0];
+
+    fireEvent(button, pointerEvent("pointerdown", "mouse"));
+    fireEvent(nextButton, pointerEvent("pointerover", "mouse"));
+    fireEvent(window, pointerEvent("pointerup", "mouse"));
+    fireEvent.click(button, { detail: 1 });
+    fireEvent(lastButton, pointerEvent("pointerover", "mouse"));
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(nextButton).toHaveAttribute("aria-pressed", "true");
+    expect(lastButton).toHaveAttribute("aria-pressed", "false");
+
+    fireEvent(button, pointerEvent("pointerdown", "mouse"));
+    fireEvent(window, pointerEvent("pointercancel", "mouse"));
+    fireEvent(nextButton, pointerEvent("pointerover", "mouse"));
+    expect(button).toHaveAttribute("aria-pressed", "false");
+    expect(nextButton).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("keeps keyboard click selection and deselection", async () => {
+    const { slotButtons } = await renderSelectableRoom();
+    const button = slotButtons(slot)[0];
+    fireEvent.click(button, { detail: 0 });
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(button, { detail: 0 });
+    expect(button).toHaveAttribute("aria-pressed", "false");
+  });
+});

@@ -20,6 +20,7 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
       title={dictionary.footer.contact}
       description={dictionary.footer.contactDescription}
       onClose={onClose}
+      keepMounted
     >
       <ContactForm defaultPageUrl={currentUrl} onSuccessConfirm={onClose} />
     </Modal>

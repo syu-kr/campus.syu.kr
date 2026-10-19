@@ -192,7 +192,8 @@ export default function CampusTipsPage() {
               key={view}
               type="button"
               onClick={() => handleViewChange(view)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+              aria-pressed={selectedView === view}
+              className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 selectedView === view
                   ? "bg-neutral-900 text-white"
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
@@ -211,7 +212,8 @@ export default function CampusTipsPage() {
               key={category}
               type="button"
               onClick={() => handleCategoryChange(category)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              aria-pressed={selectedCategory === category}
+              className={`min-h-11 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 selectedCategory === category
                   ? "bg-primary-600 text-white"
                   : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
@@ -347,6 +349,7 @@ export default function CampusTipsPage() {
         description={suggestText.description}
         onClose={() => setIsSuggestionModalOpen(false)}
         size="lg"
+        keepMounted
       >
         <CampusTipSuggestionForm
           idPrefix="tip-modal"

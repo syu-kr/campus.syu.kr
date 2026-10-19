@@ -881,11 +881,12 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
           <button
             key={btn.type}
             type="button"
+            aria-pressed={selectedType === btn.type && !useSpecialSchedule}
             onClick={() => {
               setSelectedType(btn.type);
               setUseSpecialSchedule(false);
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            className={`min-h-11 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
               selectedType === btn.type && !useSpecialSchedule
                 ? "bg-primary-600 text-white"
                 : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
@@ -902,11 +903,12 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         {hasReplacementSpecialSchedule && (
           <button
             type="button"
+            aria-pressed={useSpecialSchedule}
             onClick={() => {
               setSelectedType(defaultType);
               setUseSpecialSchedule(true);
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
+            className={`min-h-11 px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
               useSpecialSchedule
                 ? "bg-purple-600 text-white"
                 : "bg-purple-50 text-purple-800 hover:bg-purple-100"
