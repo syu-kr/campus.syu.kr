@@ -3,11 +3,14 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { initializePwaInstallPromptCapture } from "@/lib/pwa-install";
 import {
   scrubSentryBreadcrumb,
   scrubSentryEvent,
   isPrivateRoommateAuthEvent,
 } from "@/lib/sentry-privacy";
+
+initializePwaInstallPromptCapture();
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,

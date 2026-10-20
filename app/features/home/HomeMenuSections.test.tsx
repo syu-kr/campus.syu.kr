@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientLocaleProvider } from "@/app/components/LocaleContext";
 import { getDictionary } from "@/lib/i18n";
+import { initializePwaInstallPromptCapture } from "@/lib/pwa-install";
 import { FrequentMenuGrid, PwaInstallCard } from "./HomeMenuSections";
 
 describe("frequently used home menus", () => {
@@ -29,11 +30,14 @@ describe("frequently used home menus", () => {
 });
 
 describe("home app installation", () => {
+  let stopCapture: () => void;
   beforeEach(() => {
     localStorage.clear();
     vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
+    stopCapture = initializePwaInstallPromptCapture();
   });
   afterEach(() => {
+    stopCapture();
     localStorage.clear();
     vi.unstubAllGlobals();
   });
@@ -89,6 +93,16 @@ describe("home app installation", () => {
     expect(screen.queryByRole("button", { name: "앱 설치" })).not.toBeInTheDocument();
   });
 
+  it("uses the browser install event captured before the deferred card mounts", async () => {
+    const { event, prompt } = offerInstall("accepted");
+    expect(event.defaultPrevented).toBe(true);
+    renderCard();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "앱 설치" })); });
+    expect(prompt).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "앱 설치" })).not.toBeInTheDocument();
+  });
+
   it("restores the install trigger when the lazy dialog opened without a focused button", async () => {
     renderCard();
     const button = screen.getByRole("button", { name: "앱 설치" });
@@ -141,9 +155,17 @@ describe("home app installation", () => {
     expect(screen.queryByRole("button", { name: "앱 설치" })).not.toBeInTheDocument();
   });
 
-  it("removes install listeners on unmount", () => {
+  it("keeps the app's early capture after the card unmounts and removes the card listener", async () => {
+    const removeListener = vi.spyOn(window, "removeEventListener");
     const { unmount } = renderCard();
     unmount();
-    expect(offerInstall().event.defaultPrevented).toBe(false);
+    expect(removeListener).toHaveBeenCalledWith("appinstalled", expect.any(Function));
+    expect(removeListener.mock.calls.some(([name]) => name === "beforeinstallprompt")).toBe(false);
+    const { event, prompt } = offerInstall("accepted");
+    expect(event.defaultPrevented).toBe(true);
+    renderCard();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "앱 설치" })); });
+    expect(prompt).toHaveBeenCalledOnce();
+    removeListener.mockRestore();
   });
 });
