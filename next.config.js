@@ -29,6 +29,7 @@ const nextConfig = {
   compiler: {
     define: {
       __SENTRY_DEBUG__: false,
+      __SENTRY_TRACING__: false,
     },
   },
   // 이미지 최적화
@@ -245,6 +246,7 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   webpack: {
     treeshake: {
       removeDebugLogging: true,
+      removeTracing: true,
     },
   },
 });
