@@ -3,6 +3,18 @@ import { expect, it } from "vitest";
 import { getDictionary } from "@/lib/i18n";
 import { SearchResultCard } from "./SearchResultCard";
 import { LocaleProvider } from "./LocaleProvider";
+import { ClientLocaleProvider } from "./LocaleContext";
+
+it("uses the provider's category label for a schedule result", () => {
+  const dictionary = getDictionary("en");
+  render(
+    <ClientLocaleProvider locale="ko" dictionary={dictionary}>
+      <SearchResultCard item={{ id: "exam", title: "Sample exam", startDate: "2026.10.20", endDate: "2026.10.20", category: "exam" }} />
+    </ClientLocaleProvider>,
+  );
+  expect(screen.getByText(dictionary.categories.exam)).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Sample exam" })).toHaveAttribute("href", "/academic/schedule");
+});
 
 it("displays both phone numbers with a comma and offers separate call links", () => {
   const dictionary = getDictionary("ko");

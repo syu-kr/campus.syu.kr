@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Announcement } from "@/types";
 
-const mocks = vi.hoisted(() => ({ read: vi.fn(), attach: vi.fn(async (items: unknown[]) => items) }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), attach: vi.fn(async (items: unknown[]) => items), preload: vi.fn() }));
 vi.mock("./crawl-data", () => ({ readDailyCrawlDataSnapshot: mocks.read }));
-vi.mock("./announcement-ai", () => ({ attachAnnouncementAiSummaries: mocks.attach }));
+vi.mock("./announcement-ai", () => ({ attachAnnouncementAiSummaries: mocks.attach, preloadAnnouncementAiMetadata: mocks.preload }));
 
 function notice(id: string, date: string, fields: Partial<Announcement> = {}): Announcement {
   return { id, title: id, author: "학생처", date, category: "academic", content: "본문", views: 0, isImportant: false, ...fields };
@@ -11,7 +11,7 @@ function notice(id: string, date: string, fields: Partial<Announcement> = {}): A
 
 beforeEach(() => {
   vi.resetModules(); vi.useFakeTimers(); vi.setSystemTime(new Date("2026-10-05T00:00:00Z"));
-  mocks.read.mockReset(); mocks.attach.mockClear();
+  mocks.read.mockReset(); mocks.attach.mockClear(); mocks.preload.mockClear();
   mocks.read.mockResolvedValue({ source: "bundled-fallback", data: [notice("notice-1", "2026.09.21")] });
 });
 afterEach(() => { vi.useRealTimers(); });

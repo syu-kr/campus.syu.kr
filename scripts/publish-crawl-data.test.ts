@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -40,6 +41,20 @@ const stale: CrawlSourceHealth = {
   lastAttemptAt: "2026-10-04T00:00:00.000Z",
   lastSuccessAt: "2026-10-03T00:00:00.000Z",
   errorCode: "INCOMPLETE_SOURCE",
+};
+const aiMetadata = {
+  version: 1,
+  generatedAt: "2026-10-04T00:00:00.000Z",
+  items: {
+    "academic:fixture": {
+      summary: "공지 줄바꿈\n안내", target: "재학생  전체", deadline: "원문 확인",
+      requiredAction: "공지 확인", keywords: ["학사", "안내"], importance: "normal", confidence: "high",
+      generatedAt: "2026-10-03T00:00:00.000Z", sourceHash: "0123456789abcdef",
+      inputHash: "fedcba9876543210", contentSource: "detail", detailContentHash: "1123456789abcdef",
+      provider: "supilot", model: "fixture-model", promptVersion: "fixture-prompt",
+      schemaVersion: 1, generationFingerprint: "2123456789abcdef",
+    },
+  },
 };
 
 beforeEach(async () => {
@@ -102,6 +117,101 @@ async function fixtureManifest(version: string, sourceHealth?: CrawlDataManifest
   }
   return manifest;
 }
+
+describe("AI metadata publication bytes", () => {
+  it("compacts only AI publication bytes while preserving all fields and local source files", async () => {
+    const metadataPath = path.join(dataDir, "announcement-ai-metadata.json");
+    const original = Buffer.from(`${JSON.stringify(aiMetadata, null, 2)}\n`);
+    await writeFile(metadataPath, original);
+    await writeFile(path.join(dataDir, "announcements-academic.json"), "[\n]\n");
+
+    const snapshot = await buildLocalSnapshot(dataDir, healthPath);
+    const published = snapshot.payloads.get("announcement-ai-metadata.json")!;
+
+    expect(published.byteLength).toBeLessThan(original.byteLength);
+    expect(JSON.parse(published.toString("utf8"))).toEqual(aiMetadata);
+    expect(snapshot.manifest.files["announcement-ai-metadata.json"]).toMatchObject({
+      size: published.byteLength,
+      sha256: createHash("sha256").update(published).digest("hex"),
+    });
+    expect(await readFile(metadataPath)).toEqual(original);
+    for (const fileName of DAILY_CRAWL_DATA_FILES.filter((name) => name !== "announcement-ai-metadata.json")) {
+      expect(snapshot.payloads.get(fileName)).toEqual(await readFile(path.join(dataDir, fileName)));
+    }
+  });
+
+  it("skips publication when only AI source formatting differs from the compact current version", async () => {
+    const metadataPath = path.join(dataDir, "announcement-ai-metadata.json");
+    await writeFile(metadataPath, JSON.stringify(aiMetadata, null, 2));
+    const manifest = await fixtureManifest("compact-current");
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    const reformatted = `${JSON.stringify(aiMetadata, null, "\t")}\n`;
+    await writeFile(metadataPath, reformatted);
+
+    await preparePagesArtifact(path.join(root, "unused-compact-artifact"), dataDir, healthPath);
+
+    expect(await readFile(path.join(root, "github-output"), "utf8")).toContain("changed=false");
+    expect(await readFile(metadataPath, "utf8")).toBe(reformatted);
+  });
+
+  it("publishes the compact transition while retaining and rolling back exact legacy AI bytes", async () => {
+    const fileName = "announcement-ai-metadata.json";
+    const original = Buffer.from(`${JSON.stringify(aiMetadata, null, 2)}\n`);
+    await writeFile(path.join(dataDir, fileName), original);
+    const legacyVersion = "legacy-pretty-ai";
+    const files: CrawlDataManifest["files"] = {};
+    for (const name of DAILY_CRAWL_DATA_FILES) {
+      const payload = await readFile(path.join(dataDir, name));
+      const remotePath = `versions/${legacyVersion}/${name}`;
+      files[name] = { path: remotePath, size: payload.byteLength, sha256: createHash("sha256").update(payload).digest("hex") };
+      remote.set(remotePath, payload);
+    }
+    const legacy = parseCrawlDataManifest({
+      schemaVersion: 1, version: legacyVersion, publishedAt: "2026-10-03T00:00:00.000Z",
+      files, retainedVersions: [legacyVersion],
+    });
+    remote.set(`versions/${legacyVersion}/manifest.json`, Buffer.from(JSON.stringify(legacy)));
+    remote.set("current.json", Buffer.from(JSON.stringify(legacy)));
+    const outputDir = path.join(root, "compact-transition");
+
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+
+    const crawlDir = path.join(outputDir, "crawl-data");
+    const currentBytes = await readFile(path.join(crawlDir, "current.json"));
+    const current = parseCrawlDataManifest(JSON.parse(currentBytes.toString("utf8")));
+    const compact = await readFile(path.join(crawlDir, "versions", current.version, fileName));
+    expect(current.version).not.toBe(legacyVersion);
+    expect(current.retainedVersions).toContain(legacyVersion);
+    expect(compact.byteLength).toBeLessThan(original.byteLength);
+    expect(JSON.parse(compact.toString("utf8"))).toEqual(aiMetadata);
+    expect(await readFile(path.join(crawlDir, "versions", legacyVersion, fileName))).toEqual(original);
+    expect(await readFile(path.join(dataDir, fileName))).toEqual(original);
+    expect(await readFile(path.join(root, "github-output"), "utf8")).toContain("changed=true");
+
+    remote.set("current.json", currentBytes);
+    remote.set(`versions/${current.version}/manifest.json`, await readFile(path.join(crawlDir, "versions", current.version, "manifest.json")));
+    for (const name of DAILY_CRAWL_DATA_FILES) {
+      remote.set(`versions/${current.version}/${name}`, await readFile(path.join(crawlDir, "versions", current.version, name)));
+    }
+    const rollbackDir = path.join(root, "legacy-ai-rollback");
+    await prepareRollbackArtifact(legacyVersion, rollbackDir);
+
+    const rolledBack = parseCrawlDataManifest(JSON.parse(await readFile(path.join(rollbackDir, "crawl-data", "current.json"), "utf8")));
+    expect(rolledBack.version).toBe(legacyVersion);
+    expect(rolledBack.files[fileName]).toEqual(legacy.files[fileName]);
+    expect(await readFile(path.join(rollbackDir, "crawl-data", "versions", legacyVersion, fileName))).toEqual(original);
+    expect(await readFile(path.join(rollbackDir, "crawl-data", "versions", current.version, fileName))).toEqual(compact);
+  });
+
+  it("rejects invalid AI metadata before producing compact publication bytes", async () => {
+    const original = Buffer.from(JSON.stringify({ ...aiMetadata, version: 2 }, null, 2));
+    const metadataPath = path.join(dataDir, "announcement-ai-metadata.json");
+    await writeFile(metadataPath, original);
+
+    await expect(buildLocalSnapshot(dataDir, healthPath)).rejects.toThrow("올바른 JSON이 아닙니다");
+    expect(await readFile(metadataPath)).toEqual(original);
+  });
+});
 
 describe("crawler health publication", () => {
   it("retries a transient Pages 503 on the same immutable AI file", async () => {

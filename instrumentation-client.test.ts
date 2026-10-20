@@ -15,7 +15,9 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://public@sentry.invalid/1");
 });
 
-afterEach(() => {
+afterEach(async () => {
+  const { initializePwaInstallPromptCapture } = await import("@/lib/pwa-install");
+  initializePwaInstallPromptCapture()();
   vi.useRealTimers();
   vi.unstubAllEnvs();
 });
@@ -27,6 +29,21 @@ async function loadOptions() {
 }
 
 describe("client error monitoring startup", () => {
+  it("captures browser installation before the deferred home card mounts", async () => {
+    await import("./instrumentation-client");
+    const event = Object.assign(new Event("beforeinstallprompt", { cancelable: true }), {
+      prompt: vi.fn(),
+      userChoice: Promise.resolve({ outcome: "accepted" as const }),
+    });
+    window.dispatchEvent(event);
+    const { takePwaInstallPrompt } = await import("@/lib/pwa-install");
+    expect(event.defaultPrevented).toBe(true);
+    expect(takePwaInstallPrompt()).toBe(event);
+    expect(takePwaInstallPrompt()).toBeNull();
+    expect(event.prompt).not.toHaveBeenCalled();
+    expect(sentry.init).toHaveBeenCalledOnce();
+  });
+
   it("initializes during module loading without waiting for a timer or interaction", async () => {
     vi.useFakeTimers();
     const options = await loadOptions();

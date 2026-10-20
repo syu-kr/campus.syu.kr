@@ -17,6 +17,10 @@ let metadataCache:
     }
   | undefined;
 
+export function preloadAnnouncementAiMetadata(): void {
+  void readAnnouncementAiMetadata();
+}
+
 export async function attachAnnouncementAiSummaries(
   announcements: Announcement[],
 ): Promise<Announcement[]> {

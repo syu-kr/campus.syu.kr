@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n";
 import { AnnouncementCard } from "./AnnouncementCard";
 import { HomeNoticeCard } from "./HomeNoticeCard";
 import { LocaleProvider } from "./LocaleProvider";
+import { ClientLocaleProvider } from "./LocaleContext";
 
 const announcement: Announcement = {
   id: "notice/123",
@@ -32,6 +33,16 @@ const summarizedAnnouncement: Announcement = {
     sourceHash: "test",
   },
 };
+
+it("uses the category label from the current provider", () => {
+  const dictionary = getDictionary("en");
+  render(
+    <ClientLocaleProvider locale="ko" dictionary={dictionary}>
+      <AnnouncementCard announcement={announcement} />
+    </ClientLocaleProvider>,
+  );
+  expect(screen.getByText(dictionary.categories.academic)).toBeInTheDocument();
+});
 
 it("keeps the original notice as the only link when no AI summary is available", () => {
   const dictionary = getDictionary("ko");

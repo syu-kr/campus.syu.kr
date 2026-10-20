@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { useDictionary } from "./LocaleProvider";
 import { Skeleton } from "./Skeleton";
 
-function LoadingStatus({
+export function LoadingStatus({
   children,
   className,
 }: {
@@ -29,9 +29,7 @@ function LoadingStatus({
 
 export function HomePageSkeleton() {
   return (
-    <LoadingStatus className="mx-auto max-w-4xl space-y-6 px-4 py-5 sm:py-8">
-      <Skeleton height="48px" className="rounded-xl" />
-
+    <LoadingStatus className="mx-auto max-w-4xl space-y-6 px-4 pb-5 pt-6 sm:pb-8">
       <section className="space-y-3">
         <Skeleton variant="text" width="34%" height="24px" />
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">

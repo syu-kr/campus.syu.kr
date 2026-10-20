@@ -8,6 +8,7 @@ import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { localizePath } from "@/lib/i18n/routing";
+import { takePwaInstallPrompt } from "@/lib/pwa-install";
 
 const PWA_INSTALL_DISMISSED_KEY = "syu-campus:pwa-install-dismissed";
 const FREQUENT_MENU_ICON_COLOR = "rgb(37, 99, 235)";
@@ -17,11 +18,6 @@ const FREQUENT_MENU_ICON_STROKE_WIDTH = 1.85;
 const InstallHelpModal = dynamic(() =>
   import("@/app/components/Modal").then((module) => module.Modal),
 );
-
-interface InstallPromptEvent extends Event {
-  prompt: () => Promise<unknown>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
 
 export function FrequentMenuGrid() {
   const locale = useLocale();
@@ -101,7 +97,6 @@ export function PwaInstallCard() {
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
   const [showInstallHelp, setShowInstallHelp] = useState(false);
-  const installPrompt = useRef<InstallPromptEvent | null>(null);
   const installTrigger = useRef<HTMLButtonElement | null>(null);
   const dictionary = useDictionary();
   const locale = useLocale();
@@ -111,32 +106,24 @@ export function PwaInstallCard() {
       (navigator as Navigator & { standalone?: boolean }).standalone;
     setIsVisible(!isStandalone && localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) !== "true");
 
-    const handleInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      installPrompt.current = event as InstallPromptEvent;
-    };
     const handleInstalled = () => {
-      installPrompt.current = null;
       setShowInstallHelp(false);
       setIsVisible(false);
     };
-    window.addEventListener("beforeinstallprompt", handleInstallPrompt);
     window.addEventListener("appinstalled", handleInstalled);
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
       window.removeEventListener("appinstalled", handleInstalled);
     };
   }, []);
 
   const handleInstall = async (event: MouseEvent<HTMLButtonElement>) => {
     installTrigger.current = event.currentTarget;
-    const prompt = installPrompt.current;
+    // The app captures this event before the deferred dashboard mounts; consume it once.
+    const prompt = takePwaInstallPrompt();
     if (!prompt) {
       setShowInstallHelp(true);
       return;
     }
-    // A browser install event can be prompted only once, including after dismissal.
-    installPrompt.current = null;
     setIsInstalling(true);
     try {
       await prompt.prompt();

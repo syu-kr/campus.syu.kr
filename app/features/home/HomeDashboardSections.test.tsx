@@ -5,6 +5,17 @@ import { getDictionary } from "@/lib/i18n";
 import { HomeNoticesSection, TodaySchedulesSection } from "./HomeDashboardSections";
 
 describe.each(["ko", "en"] as const)("remaining home sections for %s", (locale) => {
+  it("uses the supplied schedule category label", () => {
+    const dictionary = getDictionary(locale === "ko" ? "en" : "ko");
+    render(
+      <ClientLocaleProvider locale={locale} dictionary={dictionary}>
+        <TodaySchedulesSection isLoading={false} isError={false} onRetry={vi.fn()}
+          schedules={[{ id: "event", title: "Sample event", startDate: "2026.10.20", endDate: "2026.10.20", category: "event" }]} />
+      </ClientLocaleProvider>,
+    );
+    expect(screen.getByText(dictionary.categories.event)).toBeInTheDocument();
+  });
+
   it.each(["notices", "schedules"] as const)("retains the localized error and retry for %s", (section) => {
     const dictionary = getDictionary(locale);
     const onRetry = vi.fn();

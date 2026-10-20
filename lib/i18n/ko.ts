@@ -458,6 +458,7 @@ export const koDictionary = {
         description: "2026학년도 학사일정을 확인하세요",
         previousMonth: "이전 달",
         nextMonth: "다음 달",
+        currentMonthSchedules: "이번 달 일정으로 이동",
         weekDays: ["일", "월", "화", "수", "목", "금", "토"],
         exam: "시험",
         schedule: "일정",

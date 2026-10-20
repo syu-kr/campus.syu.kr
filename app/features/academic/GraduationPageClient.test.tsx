@@ -1,5 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ClientLocaleProvider } from "@/app/components/LocaleContext";
+import { getDictionary } from "@/lib/i18n";
 import GraduationPageClient from "./GraduationPageClient";
 import {
   createGraduationSavedState,
@@ -35,6 +37,8 @@ function renderSavedProgress(initialState = savedState) {
 }
 
 describe("graduation selection preserves progress", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   beforeEach(() => {
     window.history.replaceState(null, "", "/academic/graduation");
     window.localStorage.clear();
@@ -75,6 +79,30 @@ describe("graduation selection preserves progress", () => {
     expect(plan).toHaveAccessibleName(
       /.+:\s*확인 방법이나 이수 계획을 메모하세요/,
     );
+  });
+
+  it.each(["ko", "en"] as const)("labels and selects the fallback share link after clipboard failure in %s", async (locale) => {
+    const writeText = vi.fn().mockRejectedValue(new Error("Clipboard denied"));
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+    const dictionary = getDictionary(locale);
+    window.history.replaceState(null, "", `${locale === "en" ? "/en" : ""}/academic/graduation`);
+    window.localStorage.setItem(GRADUATION_STORAGE_KEY, JSON.stringify(savedState));
+    render(
+      <ClientLocaleProvider locale={locale} dictionary={dictionary}>
+        <GraduationPageClient />
+      </ClientLocaleProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: dictionary.pages.graduation.sidebar.shareProgress }));
+    const input = await screen.findByRole("textbox", { name: dictionary.pages.graduation.sidebar.shareProgress }) as HTMLInputElement;
+    expect(input).toHaveAttribute("readonly");
+    expect(input.value).toBe(writeText.mock.calls[0][0]);
+    expect(input.value).toContain("#graduation-progress=");
+    input.focus();
+    expect(input).toHaveFocus();
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe(input.value.length);
+    expect(readSavedState()).toEqual(savedState);
   });
 
   it("restores the previous year and all records when its change is canceled", () => {

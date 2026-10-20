@@ -1,6 +1,9 @@
 import type { Announcement, AnnouncementCategory } from "@/types";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
-import { attachAnnouncementAiSummaries } from "./announcement-ai";
+import {
+  attachAnnouncementAiSummaries,
+  preloadAnnouncementAiMetadata,
+} from "./announcement-ai";
 import { readDailyCrawlDataSnapshot } from "./crawl-data";
 
 export interface AnnouncementQuery {
@@ -99,7 +102,13 @@ export async function getAnnouncementPage({
 
 export async function getAnnouncementSummary(limit = 12) {
   const sourceItems = await Promise.all(
-    CATEGORY_ORDER.map((sourceCategory) => readAnnouncements(sourceCategory)),
+    CATEGORY_ORDER.map(async (sourceCategory) => {
+      const source = await readAnnouncements(sourceCategory);
+      if (limit >= 1 && source.items.length > 0) {
+        preloadAnnouncementAiMetadata();
+      }
+      return source;
+    }),
   );
 
   const items = await attachAnnouncementAiSummaries(

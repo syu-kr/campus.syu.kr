@@ -155,7 +155,7 @@ async function AnnouncementDetailContent({
             <article>
               <div className="mb-4 flex flex-wrap items-center gap-2">
                 <Badge color={getCategoryColor(announcement.category)} size="sm">
-                  {getCategoryLabel(announcement.category, locale)}
+                  {getCategoryLabel(announcement.category, dictionary.categories)}
                 </Badge>
                 {announcement.isPinned && (
                   <Badge color="red" size="sm">

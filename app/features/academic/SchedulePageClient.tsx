@@ -1,7 +1,7 @@
 "use client";
 
 import { Container } from "@/app/components/Container";
-import { Button } from "@/app/components/Button";
+import { Button, buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -71,6 +71,7 @@ export default function SchedulePageClient({
     [academicSchedules, publicHolidays],
   );
   const todayInfo = getTodayInfo(now);
+  const thisMonthKey = todayInfo.dateStringDot.slice(0, 7);
   const holidayInfo = getPublicHoliday(todayInfo.dateStringDash, publicHolidays, now);
   const holidayCovered = publicHolidays.years.includes(Number(todayInfo.dateStringDash.slice(0, 4)));
   const sources: AnswerSource[] = [
@@ -326,6 +327,7 @@ export default function SchedulePageClient({
           <Card className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <button
+                type="button"
                 aria-label={text.previousMonth}
                 onClick={() =>
                   setCurrentMonth(
@@ -335,7 +337,7 @@ export default function SchedulePageClient({
                     ),
                   )
                 }
-                className="px-3 py-1 rounded-lg bg-neutral-200 hover:bg-neutral-300 text-sm"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-200 text-sm hover:bg-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               >
                 ←
               </button>
@@ -343,6 +345,7 @@ export default function SchedulePageClient({
                 {currentMonthLabel}
               </h2>
               <button
+                type="button"
                 aria-label={text.nextMonth}
                 onClick={() =>
                   setCurrentMonth(
@@ -352,7 +355,7 @@ export default function SchedulePageClient({
                     ),
                   )
                 }
-                className="px-3 py-1 rounded-lg bg-neutral-200 hover:bg-neutral-300 text-sm"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-200 text-sm hover:bg-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
               >
                 →
               </button>
@@ -449,6 +452,15 @@ export default function SchedulePageClient({
               )}
             </div>
 
+            {!searchQuery.trim() && Boolean(groupedByMonth[thisMonthKey]?.length) && (
+              <a
+                href={`#schedule-month-${thisMonthKey.replace(".", "-")}`}
+                className={buttonStyles("secondary", "mt-2")}
+              >
+                {text.currentMonthSchedules}
+              </a>
+            )}
+
             {searchQuery.trim().length > 0 && (
               <div className="space-y-6 mt-4">
                 {(() => {
@@ -533,7 +545,11 @@ export default function SchedulePageClient({
               .map(([month, items]) => (
                 <div key={month}>
                   <div className="flex items-center gap-3 mb-4 pb-3 border-b border-neutral-300">
-                    <h2 className="text-lg font-semibold text-neutral-900">
+                    <h2
+                      id={`schedule-month-${month.replace(".", "-")}`}
+                      tabIndex={-1}
+                      className="scroll-mt-24 text-lg font-semibold text-neutral-900"
+                    >
                       {month}
                     </h2>
                     <span className="text-sm text-neutral-600">

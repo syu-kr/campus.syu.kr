@@ -957,6 +957,7 @@ export default function GraduationPageClient() {
                 type="text"
                 readOnly
                 value={shareFallbackUrl}
+                aria-label={text.sidebar.shareProgress}
                 onFocus={(event) => event.target.select()}
                 className="mt-2 w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs text-neutral-700"
               />

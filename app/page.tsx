@@ -1,7 +1,8 @@
-import { Suspense } from "react";
+import { Activity, Suspense } from "react";
 
 import { HomePageSkeleton } from "@/app/components/PageLoadingSkeletons";
-import { HomePageClient } from "@/app/features/home/HomePageClient";
+import { HomeDashboardClient } from "@/app/features/home/HomeDashboardClient";
+import { HomeSearchBar } from "@/app/features/home/HomeSearchBar";
 import { getAnnouncementSummary } from "@/lib/server/announcements";
 import {
   getHomeAcademicSchedules,
@@ -20,12 +21,15 @@ function markHomeDataResolved() {
 }
 
 export default function Home() {
-  if (hasResolvedHomeData) return <WarmHomeContent />;
-
   return (
-    <Suspense fallback={<HomePageSkeleton />}>
-      <HomeContent />
-    </Suspense>
+    <>
+      <HomeSearchBar />
+      {hasResolvedHomeData ? <WarmHomeContent /> : (
+        <Suspense fallback={<HomePageSkeleton />}>
+          <HomeContent />
+        </Suspense>
+      )}
+    </>
   );
 }
 
@@ -71,13 +75,16 @@ async function HomeContent() {
 
   markHomeDataResolved();
 
+  // Keep ready HTML visible while hydrating the dashboard independently from search.
   return (
-    <HomePageClient
-      initialAnnouncements={initialAnnouncements}
-      initialServiceNotices={initialServiceNotices}
-      initialSchedules={initialSchedules}
-      initialPublicHolidays={initialPublicHolidays}
-      initialNowIso={getKoreaNow().toISOString()}
-    />
+    <Activity mode="visible">
+      <HomeDashboardClient
+        initialAnnouncements={initialAnnouncements}
+        initialServiceNotices={initialServiceNotices}
+        initialSchedules={initialSchedules}
+        initialPublicHolidays={initialPublicHolidays}
+        initialNowIso={getKoreaNow().toISOString()}
+      />
+    </Activity>
   );
 }

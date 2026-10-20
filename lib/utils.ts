@@ -1,10 +1,10 @@
 import type { AcademicSchedule, AnnouncementCategory } from "@/types";
 import {
   DEFAULT_LOCALE,
-  getDictionary,
   normalizeLocale,
   type Locale,
-} from "@/lib/i18n";
+} from "@/lib/i18n/routing";
+import type { Dictionary } from "@/lib/i18n";
 
 type CategoryLabel = AnnouncementCategory | AcademicSchedule["category"];
 
@@ -127,10 +127,9 @@ function formatShortDateLocalized(dateString: string, locale: Locale): string {
  */
 export function getCategoryLabel(
   category: CategoryLabel,
-  locale: Locale = DEFAULT_LOCALE,
+  categories: Dictionary["categories"],
 ): string {
-  const dictionary = getDictionary(normalizeLocale(locale));
-  return dictionary.categories[category];
+  return categories[category];
 }
 
 /**

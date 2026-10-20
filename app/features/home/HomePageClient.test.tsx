@@ -5,6 +5,7 @@ import { ClientLocaleProvider } from "@/app/components/LocaleContext";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import type { PublicHolidaySnapshot } from "@/types";
 import { HomePageClient } from "./HomePageClient";
+import { HomeSearchBar } from "./HomeSearchBar";
 
 const api = vi.hoisted(() => ({
   fetchAnnouncementSummary: vi.fn(),
@@ -61,6 +62,7 @@ function renderHome(locale: Locale) {
   render(
     <ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}>
       <QueryClientProvider client={client}>
+        <HomeSearchBar />
         <HomePageClient initialAnnouncements={[]} initialServiceNotices={[]}
           initialSchedules={[]} initialPublicHolidays={holidays}
           initialNowIso="2026-10-19T00:00:00.000Z" />
@@ -114,5 +116,24 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
     expect(navigation.push).toHaveBeenLastCalledWith(`${navigation.pathname}?search=bus&from=shortcut`);
     fireEvent.click(screen.getByRole("button", { name: dictionary.search.resetToHome }));
     expect(navigation.push).toHaveBeenLastCalledWith(`${navigation.pathname}?from=shortcut`);
+  });
+
+  it("announces search loading without disabling clearing and removes busy status after completion", async () => {
+    let finishSearch!: (result: { items: never[]; failedSources: never[] }) => void;
+    api.searchAll.mockReturnValue(new Promise((resolve) => { finishSearch = resolve; }));
+    navigation.params = new URLSearchParams("search=library");
+    renderHome(locale);
+    const dictionary = getDictionary(locale);
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(status).toHaveAttribute("aria-busy", "true");
+    expect(status).toHaveTextContent(dictionary.errorBoundary.loading);
+    expect(screen.getByRole("button", { name: dictionary.search.clear })).toBeEnabled();
+
+    await act(async () => { finishSearch({ items: [], failedSources: [] }); });
+    expect(await screen.findByRole("heading", { name: dictionary.search.noResultsTitle })).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: dictionary.search.label })).toHaveValue("library");
   });
 });

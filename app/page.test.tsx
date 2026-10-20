@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Activity, Suspense } from "react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 const readers = vi.hoisted(() => ({
@@ -20,11 +20,13 @@ vi.mock("@/lib/server/home-data", () => ({ ...readers, ...removedReaders }));
 vi.mock("@/lib/home", () => ({
   getKoreaNow: () => new Date("2026-10-19T00:00:00.000Z"),
 }));
-vi.mock("@/app/features/home/HomePageClient", () => ({ HomePageClient: () => null }));
+vi.mock("@/app/features/home/HomeDashboardClient", () => ({ HomeDashboardClient: () => null }));
+vi.mock("@/app/features/home/HomeSearchBar", () => ({ HomeSearchBar: () => null }));
 vi.mock("@/app/components/PageLoadingSkeletons", () => ({ HomePageSkeleton: () => null }));
 
 import { HomePageSkeleton } from "@/app/components/PageLoadingSkeletons";
-import { HomePageClient } from "@/app/features/home/HomePageClient";
+import { HomeDashboardClient } from "@/app/features/home/HomeDashboardClient";
+import { HomeSearchBar } from "@/app/features/home/HomeSearchBar";
 
 let Home: typeof import("./page").default;
 let revalidate: number;
@@ -44,10 +46,10 @@ function deferred() {
 }
 
 async function prepareWarmHome() {
-  const child = Home().props.children;
+  const child = Home().props.children[1].props.children;
   await child.type(child.props);
   Object.values(readers).forEach((reader) => reader.mockClear());
-  return Home();
+  return Home().props.children[1];
 }
 
 beforeEach(async () => {
@@ -67,28 +69,37 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
+it("renders search before and outside the cold data boundary without starting data reads", () => {
+  const [search, data] = Home().props.children;
+  expect(search.type).toBe(HomeSearchBar);
+  expect(data.type).toBe(Suspense);
+  expect(Object.values(readers).every((reader) => reader.mock.calls.length === 0)).toBe(true);
+});
+
 it("keeps the synchronous cold boundary until four required reads succeed without meal or shuttle reads", async () => {
   const pendingReads = Object.values(readers).map((reader) => {
     const read = deferred();
     reader.mockReturnValue(read.promise);
     return read;
   });
-  const page = Home();
+  const page = Home().props.children[1];
   expect(page.type).toBe(Suspense);
   expect(page.props.fallback.type).toBe(HomePageSkeleton);
   const child = page.props.children;
   const pendingContent = child.type(child.props);
   expect(Object.values(readers).map((reader) => reader.mock.calls.length)).toEqual(Array(4).fill(1));
-  expect(Home().type).toBe(Suspense);
+  expect(Home().props.children[1].type).toBe(Suspense);
   pendingReads.slice(0, -1).forEach((read, index) => read.resolve(Object.values(initialProps)[index]));
   await Promise.resolve();
-  expect(Home().type).toBe(Suspense);
+  expect(Home().props.children[1].type).toBe(Suspense);
   pendingReads.at(-1)!.resolve(initialProps.initialPublicHolidays);
   const content = await pendingContent;
 
-  expect(content.type).toBe(HomePageClient);
-  expect(content.props).toEqual(expectedProps);
-  expect(Home().type).not.toBe(Suspense);
+  expect(content.type).toBe(Activity);
+  expect(content.props.mode).toBe("visible");
+  expect(content.props.children.type).toBe(HomeDashboardClient);
+  expect(content.props.children.props).toEqual(expectedProps);
+  expect(Home().props.children[1].type).not.toBe(Suspense);
   expect(vi.getTimerCount()).toBe(0);
   expect(clearTimeout).not.toHaveBeenCalled();
 });
@@ -96,10 +107,10 @@ it("keeps the synchronous cold boundary until four required reads succeed withou
 it("keeps the cold path after an initial data failure", async () => {
   const error = new Error("initial data failure");
   readers.getAnnouncementSummary.mockRejectedValue(error);
-  const child = Home().props.children;
+  const child = Home().props.children[1].props.children;
 
   await expect(child.type(child.props)).rejects.toBe(error);
-  expect(Home().type).toBe(Suspense);
+  expect(Home().props.children[1].type).toBe(Suspense);
   expect(vi.getTimerCount()).toBe(0);
   expect(clearTimeout).not.toHaveBeenCalled();
 });
@@ -108,8 +119,10 @@ it("returns warm ready data directly with unchanged props and clears the timeout
   const warm = await prepareWarmHome();
   const page = await warm.type(warm.props);
 
-  expect(page.type).toBe(HomePageClient);
-  expect(page.props).toEqual(expectedProps);
+  expect(page.type).toBe(Activity);
+  expect(page.props.mode).toBe("visible");
+  expect(page.props.children.type).toBe(HomeDashboardClient);
+  expect(page.props.children.props).toEqual(expectedProps);
   expect(Object.values(readers).map((reader) => reader.mock.calls.length)).toEqual(Array(4).fill(1));
   expect(readers.getAnnouncementSummary).toHaveBeenCalledWith(12);
   expect(revalidate).toBe(300);
@@ -137,8 +150,10 @@ it("streams warm pending data at 20 ms and passes all late results through the s
   pendingReads.forEach((read, index) => read.resolve(Object.values(initialProps)[index]));
   const content = await pendingContent;
 
-  expect(content.type).toBe(HomePageClient);
-  expect(content.props).toEqual(expectedProps);
+  expect(content.type).toBe(Activity);
+  expect(content.props.mode).toBe("visible");
+  expect(content.props.children.type).toBe(HomeDashboardClient);
+  expect(content.props.children.props).toEqual(expectedProps);
   expect(Object.values(readers).map((reader) => reader.mock.calls.length)).toEqual(Array(4).fill(1));
   expect(clearTimeout).toHaveBeenCalledOnce();
   expect(vi.getTimerCount()).toBe(0);
