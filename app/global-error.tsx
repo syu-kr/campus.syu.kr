@@ -9,10 +9,10 @@ const text = koDictionary.errorBoundary;
 
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     Sentry.captureException(error);
@@ -24,7 +24,7 @@ export default function GlobalError({
         <main style={{ margin: "0 auto", maxWidth: 640, padding: "80px 24px", textAlign: "center" }}>
           <h1>{text.globalTitle}</h1>
           <p>{text.globalMessage}</p>
-          <button type="button" onClick={reset}>
+          <button type="button" onClick={() => error?.name === "ChunkLoadError" ? window.location.reload() : retry()}>
             {text.retry}
           </button>
         </main>

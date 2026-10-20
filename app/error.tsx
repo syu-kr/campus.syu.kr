@@ -8,10 +8,10 @@ import { Button } from "@/app/components/Button";
 
 export default function ErrorPage({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   const text = useDictionary().errorBoundary;
 
@@ -29,7 +29,7 @@ export default function ErrorPage({
       </p>
       <Button
         type="button"
-        onClick={reset}
+        onClick={() => error?.name === "ChunkLoadError" ? window.location.reload() : retry()}
         className="mt-6"
       >
         {text.retry}
