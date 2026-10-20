@@ -47,6 +47,23 @@ describe.each(["development", "production"] as const)("Kakao Maps CSP script per
   );
 });
 
+describe("Google Analytics CSP permissions", () => {
+  it.each(["/", "/en"])("allows the public tag and GA collection without broadening tag connections (%s)", (pathname) => {
+    const response = proxy(new NextRequest(`https://campus.syu.kr${pathname}`));
+    const csp = response.headers.get("Content-Security-Policy") ?? "";
+    const scriptSrc = csp.split("; ").find((part) => part.startsWith("script-src"))?.split(" ");
+    const connectSrc = csp.split("; ").find((part) => part.startsWith("connect-src"))?.split(" ");
+    const tagOrigin = new URL("https://www.googletagmanager.com/gtag/js?id=fixture").origin;
+
+    expect(scriptSrc).toContain(tagOrigin);
+    expect(connectSrc).toContain(new URL("https://www.google-analytics.com/g/collect").origin);
+    expect(connectSrc).toContain(new URL("https://region1.google-analytics.com/g/collect").origin);
+    for (const source of ["*", "https:", "https://*", tagOrigin, "https://*.googletagmanager.com"]) {
+      expect(connectSrc).not.toContain(source);
+    }
+  });
+});
+
 describe("Sentry CSP connection permission", () => {
   it.each(["/campus/cafeteria", "/en/campus/cafeteria"])("allows only the configured public menu origin for %s", (pathname) => {
     vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "https://fixture.github.io/project/cafeteria/student-restaurant-1.json");

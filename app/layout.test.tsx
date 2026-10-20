@@ -28,7 +28,13 @@ async function renderDocument() {
 
 const ANALYTICS_DISABLE_KEY = "ga-disable-G-SD8QFQWFVQ";
 
-function runAnalyticsBootstrap(script: string, href: string, referrer = "", disabled = false) {
+function runAnalyticsBootstrap(
+  script: string,
+  href: string,
+  referrer = "",
+  disabled = false,
+  readyState: DocumentReadyState = "complete",
+) {
   const analyticsWindow = {
     location: new URL(href),
     dataLayer: undefined as IArguments[] | undefined,
@@ -39,7 +45,7 @@ function runAnalyticsBootstrap(script: string, href: string, referrer = "", disa
   };
   const analyticsDocument = {
     referrer,
-    readyState: "complete",
+    readyState,
     head: { appendChild: vi.fn() },
     createElement: vi.fn(() => ({})),
   };
@@ -101,8 +107,10 @@ describe("Meet invitation analytics privacy", () => {
   it.each([
     "/more/meet/dummy-private-invite",
     "/en/more/meet/dummy-private-invite/",
+    "/campus/roommates",
     "/campus/roommates/verify/finish",
     "/en/campus/roommates",
+    "/en/campus/roommates/verify/finish",
   ])("omits the analytics script from private initial HTML (%s)", async (pathname) => {
     request.pathname = pathname;
     expect((await renderDocument()).querySelector("#google-analytics")).toBeNull();
@@ -118,7 +126,10 @@ describe("Meet invitation analytics privacy", () => {
   it.each([
     "/more/meet/dummy-private-invite",
     "/en/more/meet/dummy-private-invite",
+    "/campus/roommates",
     "/campus/roommates/verify/finish",
+    "/en/campus/roommates",
+    "/en/campus/roommates/verify/finish",
   ])("stops a delayed bootstrap before any private config is queued (%s)", async (pathname) => {
     const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
       await getAnalyticsScript(), `https://campus.test${pathname}?private=query#fragment`,
@@ -136,6 +147,38 @@ describe("Meet invitation analytics privacy", () => {
     );
     expect(analyticsWindow.dataLayer).toBeUndefined();
     expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
+  });
+
+  it.each(["/", "/en"])("waits for window load and the delay before loading the public tag (%s)", async (pathname) => {
+    const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
+      await getAnalyticsScript(), `https://campus.test${pathname}`, "", false, "loading",
+    );
+    expect(analyticsWindow.gtag).toEqual(expect.any(Function));
+    expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
+    expect(analyticsDocument.head.appendChild).not.toHaveBeenCalled();
+    expect(analyticsWindow.addEventListener).toHaveBeenCalledWith("load", expect.any(Function), { once: true });
+
+    const scheduleLoad = analyticsWindow.addEventListener.mock.calls[0][1];
+    scheduleLoad();
+    expect(analyticsWindow.setTimeout).toHaveBeenCalledExactlyOnceWith(expect.any(Function), 4000);
+    expect(analyticsDocument.head.appendChild).not.toHaveBeenCalled();
+
+    analyticsWindow.setTimeout.mock.calls[0][0]();
+    expect(analyticsDocument.head.appendChild).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      async: true,
+      src: "https://www.googletagmanager.com/gtag/js?id=G-SD8QFQWFVQ",
+    }));
+  });
+
+  it("honors a privacy lock enabled while waiting for window load", async () => {
+    const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
+      await getAnalyticsScript(), "https://campus.test/more", "", false, "loading",
+    );
+    analyticsWindow[ANALYTICS_DISABLE_KEY] = true;
+    analyticsWindow.addEventListener.mock.calls[0][1]();
+    analyticsWindow.setTimeout.mock.calls[0][0]();
+
+    expect(analyticsDocument.head.appendChild).not.toHaveBeenCalled();
   });
 
   it.each(["/more/meet/dummy-private-invite", "/en/more/meet/dummy-private-invite/"])(
