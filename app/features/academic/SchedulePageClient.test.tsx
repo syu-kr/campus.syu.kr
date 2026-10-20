@@ -168,9 +168,56 @@ describe("academic schedule content and sources", () => {
     const source = screen.getByRole("link", { name: "학사일정" }).closest("li")!;
     expect(source).toHaveTextContent(dictionary.home.dashboard.loadFailedMessage);
     expect(source).not.toHaveTextContent(dictionary.answerSummary.unknownCheckedAt);
-    expect(screen.getAllByRole("link")).toHaveLength(2);
+    expect(screen.getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("https://"))).toHaveLength(2);
     if (schedules.length) {
       expect(screen.getByRole("heading", { name: "변경 전 시험" })).toBeInTheDocument();
     }
+  });
+});
+
+describe.each(["ko", "en"] as const)("current month schedule access in %s", (locale) => {
+  it("links to the actual current month without changing chronological history or search results", () => {
+    const dictionary = getDictionary(locale);
+    const text = dictionary.pages.academicSchedule;
+    render(
+      <LocaleProvider locale={locale}>
+        <SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
+          initialPublicHolidays={holidaySnapshot({ holidays: [] })} initialSchedules={[
+            { id: "past", title: "지난 일정", startDate: "2026.01.05", endDate: "2026.01.05", category: "event" },
+            { id: "current", title: "이번 달 일정", startDate: "2026.10.20", endDate: "2026.10.20", category: "event" },
+            { id: "future", title: "다가오는 일정", startDate: "2026.12.20", endDate: "2026.12.20", category: "event" },
+          ]} />
+      </LocaleProvider>,
+    );
+
+    const link = screen.getByRole("link", { name: text.currentMonthSchedules });
+    expect(link).toHaveAttribute("href", "#schedule-month-2026-10");
+    const target = screen.getByRole("heading", { level: 2, name: "2026.10" });
+    expect(target.id).toBe(link.getAttribute("href")!.slice(1));
+    expect(target).toHaveAttribute("tabindex", "-1");
+    expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent).filter((label) => /^\d{4}\.\d{2}$/.test(label ?? "")))
+      .toEqual(["2026.01", "2026.10", "2026.12"]);
+    fireEvent.click(screen.getByRole("button", { name: text.nextMonth }));
+    expect(link).toHaveAttribute("href", "#schedule-month-2026-10");
+
+    fireEvent.change(screen.getByRole("textbox", { name: text.searchPlaceholder }), { target: { value: "다가오는" } });
+    expect(screen.queryByRole("link", { name: text.currentMonthSchedules })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "다가오는 일정" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: text.resetSearch }));
+    expect(screen.getByRole("link", { name: text.currentMonthSchedules })).toHaveAttribute("href", "#schedule-month-2026-10");
+  });
+
+  it("does not offer a jump when the current month has no schedule group", () => {
+    const dictionary = getDictionary(locale);
+    render(
+      <LocaleProvider locale={locale}>
+        <SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z"
+          initialPublicHolidays={holidaySnapshot({ holidays: [] })} initialSchedules={[
+            { id: "past", title: "지난 일정", startDate: "2026.01.05", endDate: "2026.01.05", category: "event" },
+          ]} />
+      </LocaleProvider>,
+    );
+    expect(screen.queryByRole("link", { name: dictionary.pages.academicSchedule.currentMonthSchedules })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "지난 일정" })).toBeInTheDocument();
   });
 });

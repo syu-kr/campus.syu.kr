@@ -465,6 +465,7 @@ export const enDictionary = {
         description: "Check the 2026 academic schedule",
         previousMonth: "Previous month",
         nextMonth: "Next month",
+        currentMonthSchedules: "Go to this month's schedules",
         weekDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
         exam: "Exam",
         schedule: "Schedule",

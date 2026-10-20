@@ -128,7 +128,7 @@ function SearchBarComponent({
         )}
         {isLoading && (
           <div className="absolute right-13 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center">
-            <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-primary-300 border-t-primary-600 rounded-full motion-safe:animate-spin" />
           </div>
         )}
         <button

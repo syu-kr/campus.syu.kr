@@ -19,7 +19,7 @@ function WeatherWidgetComponent({ weather, loading, failed, onClick, onRetry }: 
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-100 animate-pulse">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-neutral-100 motion-safe:animate-pulse">
         <div className="w-5 h-5 bg-neutral-300 rounded" />
         <span className="text-sm text-neutral-400">--°C</span>
       </div>
