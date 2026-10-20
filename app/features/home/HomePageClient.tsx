@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Container } from "@/app/components/Container";
-import { SearchBar } from "@/app/components/SearchBar";
+import { useHomeSearch } from "./HomeSearchBar";
 import {
   fetchAnnouncementSummary,
   fetchAnnouncements,
@@ -65,13 +64,10 @@ export function HomePageClient({
 }: HomePageClientProps) {
   const locale = useLocale();
   const dictionary = useDictionary();
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { searchQuery, handleSearch, handleSearchClear } = useHomeSearch();
   const [selectedCategory, setSelectedCategory] = useState<
     HomeNoticeCategory | undefined
   >(undefined);
-  const searchQuery = searchParams.get("search")?.trim() ?? "";
   const showSearchResults = Boolean(searchQuery);
   const [now, setNow] = useState<Date | null>(() => new Date(initialNowIso));
 
@@ -154,18 +150,6 @@ export function HomePageClient({
   });
   const searchResults = searchData?.items;
 
-  const handleSearch = useCallback((query: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const normalized = query.trim();
-    if (normalized) params.set("search", normalized);
-    else params.delete("search");
-    router.push(`${pathname}${params.size ? `?${params}` : ""}`);
-  }, [pathname, router, searchParams]);
-
-  const handleSearchClear = useCallback(() => {
-    handleSearch("");
-  }, [handleSearch]);
-
   const todayInfo = useMemo(() => getTodayInfo(now), [now]);
   const todaySchedules = useMemo(() => {
     return mergePublicHolidays(schedules ?? [], effectiveHolidays).filter((schedule) =>
@@ -176,9 +160,10 @@ export function HomePageClient({
   const categorizedResults = useMemo(() => {
     return categorizeSearchResults(
       showSearchResults ? searchResults : undefined,
+      dictionary.categories,
       locale,
     );
-  }, [locale, showSearchResults, searchResults]);
+  }, [dictionary.categories, locale, showSearchResults, searchResults]);
 
   const homeNotices = useMemo(
     () => getHomeNotices(announcements, serviceNotices, selectedCategory),
@@ -202,9 +187,7 @@ export function HomePageClient({
   }
 
   return (
-    <Container className="py-5 sm:py-8 space-y-6">
-      <h1 className="sr-only">SYU CAMPUS</h1>
-      <SearchBar onSearch={handleSearch} className="mt-2" />
+    <Container className="space-y-6 pb-5 pt-6 sm:pb-8">
       <FrequentMenuGrid />
 
       {isFestivalPromotionVisible(todayInfo.dateStringDash) && (

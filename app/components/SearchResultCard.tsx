@@ -54,7 +54,7 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
               )}
             </div>
             <Badge color="gray" size="sm">
-              {getCategoryLabel(item.category, locale)}
+              {getCategoryLabel(item.category, dictionary.categories)}
             </Badge>
           </div>
         </Card>

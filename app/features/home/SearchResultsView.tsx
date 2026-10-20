@@ -2,6 +2,7 @@ import { Container } from "@/app/components/Container";
 import { SearchBar } from "@/app/components/SearchBar";
 import { SearchResultSection } from "@/app/components/SearchResultSection";
 import { Skeleton } from "@/app/components/Skeleton";
+import { LoadingStatus } from "@/app/components/PageLoadingSkeletons";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Button } from "@/app/components/Button";
@@ -34,7 +35,7 @@ export function SearchResultsView({
   const dictionary = useDictionary();
 
   return (
-    <Container className="py-6 sm:py-8">
+    <Container className="min-h-svh py-6 sm:py-8">
       <div className="mb-6 space-y-3">
         <SearchBar
           onSearch={onSearch}
@@ -79,9 +80,9 @@ export function SearchResultsView({
       )}
 
       {isLoading && (
-        <div>
+        <LoadingStatus className="">
           <Skeleton count={3} />
-        </div>
+        </LoadingStatus>
       )}
 
       {!isLoading && isError && (

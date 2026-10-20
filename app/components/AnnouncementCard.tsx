@@ -10,7 +10,7 @@ import {
   getCategoryColor,
   formatDateWithYear,
 } from "@/lib/utils";
-import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 
 interface AnnouncementCardProps {
@@ -28,7 +28,6 @@ function AnnouncementCardComponent({
   clickable = true,
   external = false,
 }: AnnouncementCardProps) {
-  const locale = useLocale();
   const dictionary = useDictionary();
   const overlayLabel = `${announcement.title} ${dictionary.labels.notice}`;
   const overlayClassName =
@@ -69,7 +68,7 @@ function AnnouncementCardComponent({
       >
         <div className="flex items-center gap-2 flex-wrap">
           <Badge color={getCategoryColor(announcement.category)} size="sm">
-            {getCategoryLabel(announcement.category, locale)}
+            {getCategoryLabel(announcement.category, dictionary.categories)}
           </Badge>
           {announcement.isPinned && (
             <Badge color="red" size="sm">

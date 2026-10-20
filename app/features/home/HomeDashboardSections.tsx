@@ -194,7 +194,7 @@ export function TodaySchedulesSection({
                           color={schedule.category === "exam" || schedule.id.startsWith("public-holiday-") ? "red" : "blue"}
                           size="sm"
                         >
-                          {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, locale)}
+                          {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, dictionary.categories)}
                         </Badge>
                         <h3 className="mt-2 font-semibold text-neutral-900">
                           {schedule.title}

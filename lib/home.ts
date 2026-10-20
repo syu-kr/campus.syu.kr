@@ -7,11 +7,11 @@ import type {
 } from "@/types";
 import {
   DEFAULT_LOCALE,
-  getDictionary,
   localizePath,
   normalizeLocale,
   type Locale,
-} from "@/lib/i18n";
+} from "@/lib/i18n/routing";
+import type { Dictionary } from "@/lib/i18n";
 import { getKoreaDateTimeParts } from "@/lib/korea-time";
 
 export type TodayInfo = {
@@ -79,38 +79,37 @@ export function getTodayInfo(now: Date | null): TodayInfo {
 }
 
 function createEmptySearchCategories(
-  locale: Locale = DEFAULT_LOCALE,
+  categories: Dictionary["categories"],
+  locale: Locale,
 ): CategorizedSearchResults {
-  const dictionary = getDictionary(locale);
-
   return {
     academicSchedule: {
-      label: dictionary.categories.academicSchedule,
+      label: categories.academicSchedule,
       items: [],
       linkPath: localizePath("/academic/schedule", locale),
     },
     academicAnnouncement: {
-      label: dictionary.categories.academicAnnouncement,
+      label: categories.academicAnnouncement,
       items: [],
       linkPath: localizePath("/academic/announcements", locale),
     },
     campusAnnouncement: {
-      label: dictionary.categories.campusAnnouncement,
+      label: categories.campusAnnouncement,
       items: [],
       linkPath: localizePath("/campus/announcements", locale),
     },
     swAnnouncement: {
-      label: dictionary.categories.swAnnouncement,
+      label: categories.swAnnouncement,
       items: [],
       linkPath: localizePath("/academic/sw-notices", locale),
     },
     scholarship: {
-      label: dictionary.categories.scholarship,
+      label: categories.scholarship,
       items: [],
       linkPath: localizePath("/academic/scholarship", locale),
     },
     phoneNumbers: {
-      label: dictionary.categories.phoneNumbers,
+      label: categories.phoneNumbers,
       items: [],
       linkPath: localizePath("/campus/phone", locale),
     },
@@ -118,10 +117,11 @@ function createEmptySearchCategories(
 }
 
 export function categorizeSearchResults(
-  searchResults?: HomeSearchResult[],
+  searchResults: HomeSearchResult[] | undefined,
+  categoryLabels: Dictionary["categories"],
   locale: Locale = DEFAULT_LOCALE,
 ): CategorizedSearchResults {
-  const categories = createEmptySearchCategories(normalizeLocale(locale));
+  const categories = createEmptySearchCategories(categoryLabels, normalizeLocale(locale));
 
   if (!searchResults) {
     return categories;
