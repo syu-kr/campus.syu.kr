@@ -440,6 +440,7 @@ async function readValidatedJson(
   try {
     const value = JSON.parse(payload.toString("utf8")) as unknown;
     validateDailyCrawlData(fileName, value);
+    if (fileName === "announcement-ai-metadata.json") return Buffer.from(JSON.stringify(value));
   } catch (error) {
     throw new Error(`${fileName}이 올바른 JSON이 아닙니다.`, { cause: error });
   }
