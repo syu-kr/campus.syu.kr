@@ -11,6 +11,8 @@ import {
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  enabled: process.env.NODE_ENV === "production" &&
+    ["production", "preview"].includes(process.env.VERCEL_ENV ?? ""),
   // 외부 API가 Sentry 추적 헤더를 거부해도 요청 자체는 정상 동작해야 한다.
   tracePropagationTargets: [],
 

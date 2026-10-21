@@ -12,6 +12,8 @@ import {
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  enabled: process.env.NODE_ENV === "production" &&
+    ["production", "preview"].includes(process.env.VERCEL_ENV ?? ""),
 
   dataCollection: {
     userInfo: false,

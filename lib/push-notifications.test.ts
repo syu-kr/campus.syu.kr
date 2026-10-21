@@ -621,6 +621,89 @@ describe("push notifications", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
+  it.each([
+    ["default", "denied", "브라우저에서 알림 권한이 차단되었습니다."],
+    ["denied", "denied", "브라우저에서 알림 권한이 차단되었습니다."],
+    ["default", "default", "브라우저 알림 권한이 허용되지 않았습니다."],
+  ] as const)("does not report a normal %s to %s permission result", async (initialPermission, result, message) => {
+    localStorage.clear();
+    const notification = {
+      permission: initialPermission as NotificationPermission,
+      requestPermission: vi.fn(),
+    };
+    notification.requestPermission.mockImplementation(async () => {
+      notification.permission = result;
+      return result;
+    });
+    vi.stubGlobal("Notification", notification);
+    const onStatus = vi.fn();
+
+    await expect(push.enablePushNotifications({ onStatus })).rejects.toThrow(message);
+
+    expect(push.getNotificationPreference()).toBe("disabled");
+    expect(onStatus.mock.calls).toEqual([["requesting-permission"]]);
+    expect(captureException).not.toHaveBeenCalled();
+    expect(navigator.serviceWorker.register).not.toHaveBeenCalled();
+    expect(getToken).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["throw", "reject"] as const)("reports a permission API %s even with the normal denial message and denied state", async (failure) => {
+    const error = new Error("브라우저에서 알림 권한이 차단되었습니다.");
+    const notification = { permission: "default", requestPermission: vi.fn() };
+    notification.requestPermission.mockImplementation(() => {
+      notification.permission = "denied";
+      if (failure === "throw") throw error;
+      return Promise.reject(error);
+    });
+    vi.stubGlobal("Notification", notification);
+
+    await expect(push.enablePushNotifications()).rejects.toBe(error);
+
+    expect(captureException).toHaveBeenCalledExactlyOnceWith(error, {
+      tags: {
+        feature: "push-notifications",
+        step: "requesting-permission",
+        permission: "denied",
+        trigger: "manual",
+      },
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("reports a permission request timeout and keeps its user message", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("Notification", {
+      permission: "default",
+      requestPermission: vi.fn(() => new Promise<NotificationPermission>(() => {})),
+    });
+    const message = "브라우저가 알림 권한 요청창을 표시하지 않았습니다. 브라우저 설정에서 알림을 허용한 뒤 다시 시도해주세요.";
+    const enabling = push.enablePushNotifications();
+    const rejection = expect(enabling).rejects.toThrow(message);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+    await rejection;
+
+    expect(captureException).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ message }),
+      { tags: { feature: "push-notifications", step: "requesting-permission", permission: "default", trigger: "manual" } },
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("reports storage failures while saving a normal denial", async () => {
+    vi.stubGlobal("Notification", { permission: "denied", requestPermission: vi.fn() });
+    const error = new Error("storage unavailable");
+    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => { throw error; });
+
+    await expect(push.enablePushNotifications()).rejects.toBe(error);
+
+    expect(captureException).toHaveBeenCalledExactlyOnceWith(error, {
+      tags: { feature: "push-notifications", step: "requesting-permission", permission: "denied", trigger: "manual" },
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("does not ask for permission during automatic initialization", async () => {
     const requestPermission = vi.fn();
     vi.stubGlobal("Notification", {
@@ -830,6 +913,10 @@ describe("push notifications", () => {
     await rejection;
     await disabling;
 
+    expect(captureException).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ message: "알림 서버 응답 시간이 초과되었습니다." }),
+      { tags: { feature: "push-notifications", step: "saving-fcm-token", permission: "granted", trigger: "manual" } },
+    );
     expect(signal.aborted).toBe(true);
     const deletes = fetchMock.mock.calls.slice(1);
     expect(deletes.map((call) => JSON.parse(call[1]?.body as string).fcm_token).sort())

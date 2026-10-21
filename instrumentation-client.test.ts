@@ -49,11 +49,12 @@ describe("client error monitoring startup", () => {
     const options = await loadOptions();
     expect(options).toMatchObject({
       dsn: "https://public@sentry.invalid/1",
+      enabled: false,
       enableLogs: false,
       enableMetrics: false,
       dataCollection: { userInfo: false, httpBodies: [] },
     });
-    for (const option of ["enabled", "defaultIntegrations", "integrations", "tracesSampleRate", "tracesSampler"]) {
+    for (const option of ["defaultIntegrations", "integrations", "tracesSampleRate", "tracesSampler"]) {
       expect(options).not.toHaveProperty(option);
     }
   });
