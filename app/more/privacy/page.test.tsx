@@ -43,6 +43,41 @@ describe("NotificationPrivacyPage", () => {
     vi.useRealTimers();
   });
 
+  it.each(["ko", "en"] as const)("shows simple %s registration labels and progress", async (locale) => {
+    const text = dictionaries[locale].pages.notificationPrivacy;
+    vi.mocked(enablePushNotifications).mockImplementation((options) => {
+      options?.onStatus?.("requesting-fcm-token");
+      return new Promise(() => {});
+    });
+    renderPage(locale);
+    expect(screen.getByRole("heading", { name: text.statusTitle })).toBeInTheDocument();
+    expect(screen.getByText(text.tokenMissing)).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: text.enableAction }));
+    });
+
+    expect(screen.getByText(text.statusMessages.requestingFcmToken)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/FCM|Firebase|VAPID|토큰|서비스 워커|service worker/i);
+  });
+
+  it.each([
+    "브라우저에서 알림 권한이 차단되었습니다.",
+    "브라우저 알림 권한이 허용되지 않았습니다.",
+  ])("keeps the %s permission message in notification settings", async (message) => {
+    const text = dictionaries.ko.pages.notificationPrivacy;
+    vi.mocked(enablePushNotifications).mockRejectedValue(new Error(message));
+    renderPage();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: text.enableAction }));
+    });
+
+    expect(screen.getByText(message)).toBeInTheDocument();
+    expect(screen.getByText(text.tokenMissing)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: text.enableAction })).toBeEnabled();
+  });
+
   it.each(["ko", "en"] as const)(
     "shows a %s retry deadline and keeps a failed new subscription inactive",
     async (locale) => {

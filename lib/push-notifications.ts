@@ -134,6 +134,7 @@ async function registerPushNotifications(
   if (cancelled()) return null;
 
   let currentStatus: PushNotificationStatus = "requesting-permission";
+  let permissionDeclined = false;
   const updateStatus = (status: PushNotificationStatus) => {
     currentStatus = status;
     options.onStatus?.(status);
@@ -149,6 +150,7 @@ async function registerPushNotifications(
     if (cancelled()) return null;
     if (permission !== "granted") {
       setNotificationPreference("disabled");
+      permissionDeclined = true;
       throw new Error(
         permission === "denied"
           ? "브라우저에서 알림 권한이 차단되었습니다."
@@ -294,7 +296,7 @@ async function registerPushNotifications(
     updateStatus("enabled");
     return token;
   } catch (error) {
-    if (!(error instanceof PushSubscriptionError && error.fromCooldown)) {
+    if (!permissionDeclined && !(error instanceof PushSubscriptionError && error.fromCooldown)) {
       const errorCode = readErrorCode(error);
       Sentry.captureException(error, {
         tags: {

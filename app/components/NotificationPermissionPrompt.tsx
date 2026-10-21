@@ -9,6 +9,7 @@ import {
   getNotificationPreference,
   setNotificationPreference,
 } from "@/lib/push-notifications";
+import { getPushErrorMessage } from "@/lib/push-notification-messages";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Button } from "./Button";
 
@@ -88,9 +89,12 @@ export function NotificationPermissionPrompt() {
         );
       } else {
         setMessage(
-          error instanceof Error
-            ? error.message
-            : dictionary.notificationPrompt.errorFallback,
+          getPushErrorMessage(
+            error,
+            dictionary.pages.notificationPrivacy,
+            dictionary.notificationPrompt.errorFallback,
+            locale,
+          ),
         );
       }
     } finally {

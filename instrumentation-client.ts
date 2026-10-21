@@ -14,6 +14,9 @@ initializePwaInstallPromptCapture();
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  // Local next start also uses production mode, so require a deployed environment.
+  enabled: process.env.NODE_ENV === "production" &&
+    ["production", "preview"].includes(process.env.NEXT_PUBLIC_VERCEL_ENV ?? ""),
   // The app uses error events and breadcrumbs, without structured logs or metrics.
   enableLogs: false,
   enableMetrics: false,
