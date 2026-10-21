@@ -82,6 +82,50 @@ describe("NotificationPermissionPrompt", () => {
     expect(enablePushNotifications).not.toHaveBeenCalled();
   });
 
+  it.each(["ko", "en"] as const)("shows simple %s setup progress and errors", async (locale) => {
+    const dictionary = dictionaries[locale];
+    const text = dictionary.notificationPrompt;
+    vi.mocked(enablePushNotifications).mockImplementation((options) => {
+      options?.onStatus?.("requesting-fcm-token");
+      return new Promise(() => {});
+    });
+    const view = renderPrompt(locale);
+    fireEvent.scroll(window);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: text.enable }));
+    });
+    expect(screen.getByText(text.statusMessages["requesting-fcm-token"])).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/FCM|Firebase|VAPID|토큰|서비스 워커|service worker/i);
+
+    view.unmount();
+    vi.mocked(enablePushNotifications).mockRejectedValue(new Error("알림 토큰을 발급하지 못했습니다."));
+    renderPrompt(locale);
+    fireEvent.scroll(window);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: text.enable }));
+    });
+    expect(screen.getByText(dictionary.pages.notificationPrivacy.errors.tokenFailed)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/FCM|Firebase|VAPID|토큰/);
+  });
+
+  it.each([
+    "브라우저에서 알림 권한이 차단되었습니다.",
+    "브라우저 알림 권한이 허용되지 않았습니다.",
+  ])("keeps the permission prompt and its %s message after rejection", async (message) => {
+    const text = dictionaries.ko.notificationPrompt;
+    vi.mocked(enablePushNotifications).mockRejectedValue(new Error(message));
+    renderPrompt();
+    fireEvent.scroll(window);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: text.enable }));
+    });
+
+    expect(screen.getByText(message)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: text.title })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: text.dismiss })).toBeEnabled();
+  });
+
   it.each(["ko", "en"] as const)(
     "shows a %s retry time and enables retry at the deadline without another request",
     async (locale) => {

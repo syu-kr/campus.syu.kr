@@ -75,6 +75,14 @@ export const enDictionary = {
       githubRepo: "SYU CAMPUS GitHub repository",
       githubTitle: "GitHub repository",
       countrySetting: "Country / Language",
+      share: "Share with a friend",
+      shareDescription: "Introduce SYU CAMPUS to a friend.",
+      shareCopyAction: "Copy link",
+      shareDeviceAction: "Share from this device",
+      shareCompleted: "Shared.",
+      shareCopied: "Link copied. Send it to a friend.",
+      shareCopyManually: "Could not copy automatically. Copy the address above and send it to a friend.",
+      shareLinkLabel: "Site link to share",
     },
     answerSummary: {
       sourceLabel: "Official sources",
@@ -397,15 +405,15 @@ export const enDictionary = {
     notificationPrompt: {
       statusMessages: {
         "requesting-permission":
-          "Checking browser notification permission. If no prompt appears, check your browser settings.",
+          "Checking whether notifications are allowed. If no prompt appears, check your browser settings.",
         "registering-service-worker":
-          "Registering the notification service worker.",
-        "initializing-firebase": "Initializing Firebase notifications.",
-        "requesting-fcm-token": "Requesting an FCM token.",
-        "saving-fcm-token": "Saving the issued FCM token on the server.",
+          "Preparing notifications in this browser.",
+        "initializing-firebase": "Connecting to the notification service.",
+        "requesting-fcm-token": "Preparing to receive notifications.",
+        "saving-fcm-token": "Saving notification settings.",
         enabled: "Notification setup is complete.",
       },
-      errorFallback: "An error occurred while setting up notifications.",
+      errorFallback: "Could not set up notifications. Please try again shortly.",
       rateLimited: "Too many requests. Please try again after {time}.",
       title: "Would you like to receive updates?",
       description:
@@ -1645,9 +1653,9 @@ export const enDictionary = {
         metaDescription:
           "Information about SYU CAMPUS browser notification permissions and analytics tools.",
         backToMore: "More",
-        statusTitle: "Browser Notification and FCM Subscription Status",
+        statusTitle: "Notification settings",
         permissionLabel: "Browser notification permission",
-        tokenLabel: "FCM token",
+        tokenLabel: "Notification registration in this browser",
         checking: "Checking",
         permissionStates: {
           granted: "Notifications allowed",
@@ -1657,37 +1665,37 @@ export const enDictionary = {
         },
         statusMessages: {
           requestingPermission:
-            "Checking browser notification permission. If no prompt appears, check your browser settings.",
+            "Checking whether notifications are allowed. If no prompt appears, check your browser settings.",
           registeringServiceWorker:
-            "Registering the notification service worker.",
-          initializingFirebase: "Initializing Firebase notifications.",
-          requestingFcmToken: "Requesting an FCM token.",
-          savingFcmToken: "Saving the issued FCM token on the server.",
-          enabled: "Notification settings and FCM subscription are complete.",
+            "Preparing notifications in this browser.",
+          initializingFirebase: "Connecting to the notification service.",
+          requestingFcmToken: "Preparing to receive notifications.",
+          savingFcmToken: "Saving notification settings.",
+          enabled: "Notification setup is complete.",
         },
-        tokenSubscribed: "Issued and subscribed",
-        tokenMissing: "Not issued",
+        tokenSubscribed: "Registered",
+        tokenMissing: "Not registered",
         enableProcessing: "Setting up...",
-        enableAction: "Enable notifications and issue FCM token",
+        enableAction: "Enable notifications",
         disableProcessing: "Disabling...",
-        disableAction: "Disable FCM subscription",
+        disableAction: "Disable notifications",
         deniedHelp:
-          "Notifications are blocked in your browser. Allow notifications in browser settings, then issue an FCM token.",
+          "Notifications are blocked in your browser. Allow notifications in browser settings, then select Enable notifications.",
         missingTokenHelp:
-          "Browser permission is allowed, but notifications cannot be sent because there is no FCM token.",
+          "Notifications are allowed in your browser. Select Enable notifications to finish setup.",
         analyticsTitle: "Analytics Tools",
         analyticsDescription:
           "Google Analytics is used to improve service quality and identify errors. Analytics data is handled within the purposes and scope of the Privacy Policy.",
         privacyPolicyLink: "View Privacy Policy",
         permissionPrincipleTitle: "Permission Request Principle",
         permissionPrincipleDescription:
-          "SYU CAMPUS cannot send push notifications without explicit browser permission. Only after notifications are allowed can a token be registered to receive service notices.",
-        enableError: "An error occurred while setting up notifications.",
+          "Notifications are sent only with your browser permission. Select Enable notifications to set up service notices in this browser.",
+        enableError: "Could not set up notifications. Please try again shortly.",
         rateLimited: "Too many requests. Please try again after {time}.",
         disableSuccess:
-          "FCM notification subscription has been disabled. Browser notification permission is unchanged.",
+          "Service notifications have been disabled. Browser notification permission is unchanged.",
         disableError:
-          "An error occurred while disabling the notification subscription.",
+          "Could not disable notifications. Please try again shortly.",
         errors: {
           unsupported: "This browser does not support notifications.",
           denied: "Notification permission is blocked in the browser.",
@@ -1695,14 +1703,15 @@ export const enDictionary = {
           permissionTimeout:
             "The browser did not show a notification permission prompt. Allow notifications in browser settings, then try again.",
           firebaseUnsupported:
-            "This browser does not support Firebase notifications.",
-          initFailed: "Could not initialize the notification service.",
-          vapidMissing: "Firebase VAPID key is not configured.",
-          tokenFailed: "Could not issue a notification token.",
-          saveFailed: "Could not save the notification token.",
-          deleteFailed: "Could not remove the server notification token.",
+            "This browser does not support notifications. Please try another browser.",
+          initFailed: "Could not prepare the notification service. Please try again shortly.",
+          vapidMissing: "Notifications are currently unavailable. Please try again shortly.",
+          tokenFailed: "Could not prepare notifications. Please try again.",
+          saveFailed: "Could not save notification settings. Please try again.",
+          deleteFailed: "Could not disable notifications. Please try again.",
           workerTimeout:
-            "Timed out while waiting for the notification service worker. Refresh the page and try again.",
+            "Preparing notifications took too long. Refresh the page and try again.",
+          serverTimeout: "Could not confirm your notification settings. Please try again shortly.",
         },
       },
       scholarship: {
