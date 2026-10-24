@@ -6,7 +6,7 @@ SYU CAMPUS 개발, 운영, 배포에 필요한 핵심 정보를 정리한 문서
 
 ### 요구사항
 
-- Node.js 22.22.2 이상 (`package.json`의 `engines`, CI는 22.22.2 사용)
+- Node.js 24.22.1 이상, 25 미만 (`package.json`의 `engines`, CI는 24.22.1 사용)
 - npm 10.9.4 (`package.json`의 `packageManager`, CI 고정 버전)
 - Python 3.11 이상: 크롤러 실행 시 필요
 
