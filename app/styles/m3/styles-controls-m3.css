@@ -105,7 +105,7 @@
 .m3-pagination-pages{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:100%}
 .m3-pagination-status{min-width:64px;text-align:center;font-size:13px;color:var(--sys-on-surface-variant)}
 .m3-pagination-jump{display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;color:var(--sys-on-surface-variant)}
-.m3-root .m3-pagination-jump select{min-width:90px;width:auto}
+.m3-root .m3-pagination-jump .m3-select-trigger{min-width:144px;width:144px}
 
 /* Explicit action roles share targets; dense calendar/time cells keep their grid. */
 .m3-root .m3-site :is(.m3-content,[role=dialog]) .ui-button{min-height:var(--target-min);min-width:var(--target-min)}

@@ -5,46 +5,6 @@
   min-width: 0;
 }
 
-/* The footer uses a tonal language action, distinct from form fields. */
-.m3-footer .m3-locale-selector .m3-select-trigger {
-  min-height: 48px;
-  padding: 10px 16px;
-  border: 1px solid transparent;
-  border-radius: var(--shape-full);
-  background: var(--sys-secondary-container);
-  color: var(--sys-on-secondary-container);
-  font-size: var(--type-label-size);
-  font-weight: 600;
-}
-
-.m3-footer .m3-locale-selector .m3-select-trigger:hover {
-  background: color-mix(in srgb, var(--sys-secondary-container) 92%, var(--sys-primary));
-}
-
-.m3-footer .m3-locale-selector .m3-select-trigger:focus {
-  border-color: transparent;
-}
-
-.m3-footer .m3-locale-selector .m3-select-trigger:is(:active, [data-popup-open]) {
-  background: color-mix(in srgb, var(--sys-secondary-container) 88%, var(--sys-primary));
-}
-
 .m3-locale-selector > label {
   padding-inline: 4px;
-}
-
-.m3-locale-selector :is(.m3-select-leading, .m3-select-icon) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
-  color: inherit;
-}
-
-@media (max-width: 899px) {
-  .m3-footer .m3-locale-selector .m3-select-trigger {
-    font-size: 16px;
-  }
 }

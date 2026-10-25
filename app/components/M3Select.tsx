@@ -5,7 +5,7 @@ import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from './ui/se
 
 
 type Option={value:string;label:string;disabled?:boolean};
-export function M3Select({id,value,onValueChange,options,leadingIcon}:{id:string;value:string;onValueChange:(value:string)=>void;options:Option[];leadingIcon?:ReactNode}) {
+export function M3Select({id,value,onValueChange,options,leadingIcon,variant="field"}:{id:string;value:string;onValueChange:(value:string)=>void;options:Option[];leadingIcon?:ReactNode;variant?:"field"|"tonal"}) {
   const trigger=useRef<HTMLButtonElement>(null);
   const [portal,setPortal]=useState<HTMLElement|null>(null);
   const [open,setOpen]=useState(false);
@@ -19,7 +19,7 @@ export function M3Select({id,value,onValueChange,options,leadingIcon}:{id:string
     if(details.reason==='outside-press'){details.cancel();return;}
     setContainer(next);setOpen(next);
   }} onValueChange={next=>{if(next!==null)onValueChange(next);}}>
-    <SelectTrigger id={id} ref={trigger} aria-labelledby={id+'-label'} data-value={value}>
+    <SelectTrigger id={id} ref={trigger} aria-labelledby={id+'-label'} data-value={value} data-variant={variant}>
       {leadingIcon && <span className="m3-select-leading" aria-hidden="true">{leadingIcon}</span>}
       <SelectValue data-slot="select-value"/>
     </SelectTrigger>

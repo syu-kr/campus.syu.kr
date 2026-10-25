@@ -15,6 +15,7 @@ import {
 import { Modal } from "@/app/components/Modal";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchCampusTips } from "@/lib/api";
@@ -186,13 +187,15 @@ export default function CampusTipsPage() {
       />
 
       <div className="mb-3 -mx-4 overflow-x-auto px-4">
-        <div className="flex min-w-max gap-2 pb-1">
+        <div className="m3-selection-track flex min-w-max gap-2 pb-1" data-selection-tone="primary">
+          <SlidingIndicator value={selectedView} />
           {viewFilters.map((view) => (
             <button
               key={view}
               type="button"
               onClick={() => handleViewChange(view)}
               aria-pressed={selectedView === view}
+              data-selection-value={view}
               className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 selectedView === view
                   ? "bg-neutral-900 text-white"
@@ -206,13 +209,15 @@ export default function CampusTipsPage() {
       </div>
 
       <div className="mb-5 -mx-4 overflow-x-auto px-4">
-        <div className="flex min-w-max gap-2 pb-1">
+        <div className="m3-selection-track flex min-w-max gap-2 pb-1" data-selection-tone="tonal">
+          <SlidingIndicator value={selectedCategory} />
           {availableCategoryFilters.map((category) => (
             <button
               key={category}
               type="button"
               onClick={() => handleCategoryChange(category)}
               aria-pressed={selectedCategory === category}
+              data-selection-value={category}
               className={`min-h-11 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 selectedCategory === category
                   ? "bg-primary-600 text-white"

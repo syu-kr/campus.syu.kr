@@ -1,9 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Button, buttonStyles } from "./Button";
 import { SlidingIndicator } from "./SlidingIndicator";
+import { M3Select } from "./M3Select";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -21,6 +22,7 @@ export function PaginationControls({
   getPageHref,
 }: PaginationControlsProps) {
   const dictionary = useDictionary();
+  const selectId = useId();
 
   if (totalPages <= 1) return null;
 
@@ -74,23 +76,26 @@ export function PaginationControls({
       </div>
 
       {endPage < totalPages && (
-        <label className="m3-pagination-jump">
-        <span>{dictionary.pagination.pageSelect}</span>
-        <select
-          aria-label={dictionary.pagination.pageSelect}
-          value={currentPage}
-          onChange={(event) => onPageChange(Number(event.target.value))}
-        >
-          <option value={currentPage}>{currentPage}</option>
-          {Array.from({ length: totalPages }, (_, index) => index + 1)
+        <div className="m3-pagination-jump">
+        <label id={`${selectId}-label`} htmlFor={selectId}>{dictionary.pagination.pageSelect}</label>
+        <M3Select
+          id={selectId}
+          variant="tonal"
+          leadingIcon={
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+              <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5" />
+            </svg>
+          }
+          value={String(currentPage)}
+          onValueChange={(value) => onPageChange(Number(value))}
+          options={[
+            { value: String(currentPage), label: String(currentPage) },
+            ...Array.from({ length: totalPages }, (_, index) => index + 1)
             .slice(endPage)
-            .map((page) => (
-              <option key={page} value={page}>
-                {page}
-              </option>
-            ))}
-        </select>
-        </label>
+            .map((page) => ({ value: String(page), label: String(page) })),
+          ]}
+        />
+        </div>
       )}
     </nav>
   );
