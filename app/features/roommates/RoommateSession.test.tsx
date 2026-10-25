@@ -39,7 +39,7 @@ describe("roommate private page boundary", () => {
     expect(fetch).toHaveBeenCalledTimes(3);
     expect(fetch.mock.calls[2][0]).toBe("/api/roommates/auth/logout");
   });
-  it("disables private navigation during logout and after a failed logout while keeping the campus exit and retry", async () => {
+  it("disables private navigation during logout and after a failed logout while keeping the retry", async () => {
     const expiresAt = new Date(Date.now() + 3600000).toISOString();
     let resolve!: (response: Response) => void;
     vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(Response.json({ expiresAt, sessionTag: "same" }))
@@ -49,11 +49,11 @@ describe("roommate private page boundary", () => {
     expect(screen.getByRole("link", { name: "모집 목록" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
     for (const name of ["모집 목록", "내 글 관리", "모집글 작성"]) expect(screen.queryByRole("link", { name })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "캠퍼스" })).toHaveAttribute("href", "/campus");
+    expect(screen.queryByRole("link", { name: "캠퍼스" })).not.toBeInTheDocument();
     await act(async () => resolve(Response.json({ code: "AUTH_UNAVAILABLE" }, { status: 503 })));
     expect(await screen.findByRole("alert")).toHaveTextContent("요청을 처리하지 못했습니다");
     for (const name of ["모집 목록", "내 글 관리", "모집글 작성"]) expect(screen.queryByRole("link", { name })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "캠퍼스" })).toBeVisible(); expect(screen.getByRole("button", { name: "로그아웃" })).toBeEnabled();
+    expect(screen.queryByRole("link", { name: "캠퍼스" })).not.toBeInTheDocument(); expect(screen.getByRole("button", { name: "로그아웃" })).toBeEnabled();
   });
   it("waits for fresh authentication without an initial expiry and coalesces pending focus events", async () => {
     const now = Date.now(); const clock = vi.spyOn(Date, "now").mockReturnValue(now);

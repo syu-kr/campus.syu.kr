@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import { Icon } from "@/app/components/Icon";
 import "@/app/components/page-motion.css";
 import {
   useDictionary,
@@ -426,13 +425,6 @@ export default function MeetRoomPage({ params }: PageProps) {
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-6">
-        <Link
-          href={localizePath("/more/meet", locale)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToMeet}
-        </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {data.room.title}
         </h1>

@@ -472,9 +472,6 @@ export const koDictionary = {
         "계속 문제가 생기면 사이트 문의하기로 알려주세요.",
       ],
     },
-    legal: {
-      home: "홈으로",
-    },
     pages: {
       serviceNotices: {
         metaTitle: "공지사항",
@@ -841,7 +838,6 @@ export const koDictionary = {
         },
       },
       timetable: {
-        backToAcademic: "학사 정보",
         title: "시간표 짜기",
         desktopHint: "큰 화면에서 더 편해요",
         presentation: {
@@ -1631,7 +1627,6 @@ export const koDictionary = {
           "학교생활에 도움이 되는 정보나 링크를 알려주세요. 검토 후 서비스에 반영될 수 있습니다.",
         metaDescription:
           "캠퍼스 꿀팁 자료에 추가할 링크와 내용을 제보하는 페이지입니다.",
-        backToTips: "캠퍼스 꿀팁",
         validationTitle: "입력 내용을 확인해주세요",
         validationMessage: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
         submitFailed: "제보를 접수하지 못했습니다",
@@ -1672,7 +1667,6 @@ export const koDictionary = {
         description: "알림 권한, 분석 도구, 개인정보 안내를 한곳에서 확인하세요.",
         metaDescription:
           "SYU CAMPUS의 브라우저 알림 권한과 분석 도구 사용 안내입니다.",
-        backToMore: "더보기",
         statusTitle: "알림 설정 상태",
         permissionLabel: "브라우저 알림 권한",
         tokenLabel: "이 브라우저의 알림 등록",

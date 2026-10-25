@@ -4,7 +4,7 @@ import { getRoommateNavigationText } from "./roommate-navigation";
 const ko = {
   ...getRoommateNavigationText("ko"),
   description: "삼육대 기숙사에서 함께 지낼 룸메이트를 찾아보세요.",
-  campus: "캠퍼스", list: "모집 목록", mine: "내 글 관리", create: "모집글 작성", logout: "로그아웃",
+  list: "모집 목록", mine: "내 글 관리", create: "모집글 작성", logout: "로그아웃",
   loading: "불러오는 중…", retry: "다시 시도", cancel: "취소", save: "저장", submitting: "처리 중…",
   unavailable: "지금은 룸메이트 게시판을 이용할 수 없습니다. 잠시 후 다시 확인해주세요.",
   failed: "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.", forbidden: "이 작업을 진행할 수 없습니다.",
@@ -72,7 +72,7 @@ const ko = {
 const en: typeof ko = {
   ...getRoommateNavigationText("en"),
   description: "Find someone to share a Sahmyook University dorm room with.",
-  campus: "Campus", list: "Listings", mine: "My listing", create: "Create a listing", logout: "Sign out",
+  list: "Listings", mine: "My listing", create: "Create a listing", logout: "Sign out",
   loading: "Loading…", retry: "Try again", cancel: "Cancel", save: "Save", submitting: "Processing…",
   unavailable: "The roommate board is currently unavailable. Please check again later.",
   failed: "We could not complete the request. Please try again later.", forbidden: "You cannot perform this action.",

@@ -4,7 +4,6 @@ export const koMeetPages = {
         description:
           "받은 링크로 참여하거나, 새 모임을 만들어 24시간 동안 의견을 받아보세요.",
         metaDescription: "초대 링크로 함께 가능한 시간을 찾는 일정 잡기",
-        backToMore: "더보기",
         joinMode: "초대 코드로 참여",
         createMode: "새 방 만들기",
         joinCodeLabel: "초대 링크 또는 코드",
@@ -76,7 +75,6 @@ export const koMeetPages = {
         loadFailed: "일정 방을 불러오지 못했습니다",
         notFound: "일정 방을 찾을 수 없습니다.",
         createRoom: "새 방 만들기",
-        backToMeet: "일정 잡기",
         responseOpenPrefix: "응답 가능:",
         responseOpenSuffix: "까지",
         responseClosed: "응답 시간이 마감되어 결과만 볼 수 있습니다.",
@@ -153,7 +151,6 @@ export const enMeetPages = {
         description:
           "Join with an invite link or create a room to collect availability for 24 hours.",
         metaDescription: "Find shared available times with an invite link",
-        backToMore: "More",
         joinMode: "Join with Invite Code",
         createMode: "Create New Room",
         joinCodeLabel: "Invite link or code",
@@ -227,7 +224,6 @@ export const enMeetPages = {
         loadFailed: "Could not load the schedule room",
         notFound: "Schedule room not found.",
         createRoom: "Create New Room",
-        backToMeet: "Schedule Poll",
         responseOpenPrefix: "Responses open until",
         responseOpenSuffix: "",
         responseClosed: "Responses are closed. You can only view results.",

@@ -3,8 +3,6 @@ import { Card } from "@/app/components/Card";
 import { LegalPageHeader } from "@/app/features/legal/LegalPageLayout";
 import {
   LOCALE_HEADER_NAME,
-  getDictionary,
-  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
@@ -193,15 +191,11 @@ function RoommateOverseasProcessing({ english = false }: { english?: boolean }) 
 }
 
 function EnglishPrivacyPage() {
-  const legal = getDictionary("en").legal;
-
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="Privacy Policy"
         description="Privacy policy for the SYU CAMPUS service."
-        homeHref={localizePath("/", "en")}
-        homeLabel={legal.home}
         noticeTitle="Effective Date"
         notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated October 4, 2026."
       />
@@ -508,7 +502,6 @@ function EnglishPrivacyPage() {
 
 export default async function PrivacyPage() {
   const locale = await getRequestLocale();
-  const legal = getDictionary(locale).legal;
 
   if (locale === "en") {
     return <EnglishPrivacyPage />;
@@ -519,8 +512,6 @@ export default async function PrivacyPage() {
       <LegalPageHeader
         title="개인정보처리방침"
         description="SYU CAMPUS 서비스 개인정보처리방침입니다."
-        homeHref={localizePath("/", locale)}
-        homeLabel={legal.home}
         noticeTitle="시행일"
         notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 10월 4일 최종 개정되었습니다."
       />

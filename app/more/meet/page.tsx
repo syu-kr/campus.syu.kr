@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import { Icon } from "@/app/components/Icon";
 import {
   useDictionary,
   useLocale,
@@ -168,13 +167,6 @@ export default function MeetCreatePage() {
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
-        <Link
-          href={localizePath("/more", locale)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToMore}
-        </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {text.title}
         </h1>

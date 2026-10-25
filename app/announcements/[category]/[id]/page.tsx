@@ -142,15 +142,6 @@ async function AnnouncementDetailContent({
       />
       <Container>
         <div className="py-6 md:py-8">
-          <Link
-            href={localizePath("/announcements", locale)}
-            prefetch={false}
-            className="mb-6 inline-flex items-center gap-2 font-medium text-primary-600 transition-colors hover:text-primary-700"
-          >
-            <span aria-hidden="true">←</span>
-            {text.backToList}
-          </Link>
-
           <Card className="mb-6 md:mb-8" hover={false}>
             <article>
               <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -282,6 +273,14 @@ async function AnnouncementDetailContent({
               )}
             </article>
           </Card>
+          <Link
+            href={localizePath("/announcements", locale)}
+            prefetch={false}
+            className="mb-6 inline-flex items-center gap-2 font-medium text-primary-600 transition-colors hover:text-primary-700"
+          >
+            <span aria-hidden="true">←</span>
+            {text.backToList}
+          </Link>
         </div>
       </Container>
     </>

@@ -24,7 +24,6 @@ export function RoommateHeading({ children, navigationEnabled = true }: { childr
     { href: "/campus/roommates/new", label: text.create },
   ];
   return <header className="mb-6">
-    <Link href={localizePath("/campus", locale)} className={buttonStyles("ghost")}><span aria-hidden="true">‹</span>{text.campus}</Link>
     <h1 className="mt-2 text-2xl font-bold text-neutral-900 sm:text-3xl">{title}</h1>
     <p className="mt-2 text-neutral-600">{text.description}</p>
     <div className="mt-4 flex items-start justify-between gap-3">

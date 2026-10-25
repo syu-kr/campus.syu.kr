@@ -479,9 +479,6 @@ export const enDictionary = {
         "If the problem continues, please let us know through Contact Us.",
       ],
     },
-    legal: {
-      home: "Home",
-    },
     pages: {
       serviceNotices: {
         metaTitle: "Service Notices",
@@ -853,7 +850,6 @@ export const enDictionary = {
         },
       },
       timetable: {
-        backToAcademic: "Academic Info",
         title: "Timetable Builder",
         desktopHint: "Best on a larger screen",
         presentation: {
@@ -1669,7 +1665,6 @@ export const enDictionary = {
           "Share useful information or links for campus life. After review, it may be added to the service.",
         metaDescription:
           "Suggest a link or note to add to the Campus Tips collection.",
-        backToTips: "Campus Tips",
         validationTitle: "Please check your input",
         validationMessage: "Fix the highlighted fields and submit again.",
         submitFailed: "Could not submit your tip",
@@ -1712,7 +1707,6 @@ export const enDictionary = {
           "Review notification permissions, analytics, and privacy information in one place.",
         metaDescription:
           "Information about SYU CAMPUS browser notification permissions and analytics tools.",
-        backToMore: "More",
         statusTitle: "Notification settings",
         permissionLabel: "Browser notification permission",
         tokenLabel: "Notification registration in this browser",

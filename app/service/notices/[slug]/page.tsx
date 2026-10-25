@@ -79,29 +79,6 @@ export default async function ServiceNoticeDetailPage({
   return (
     <Container>
       <div className="py-6 md:py-8">
-        <Link
-          href={localizePath("/service/notices", locale)}
-          prefetch={false}
-          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          {text.backToList}
-        </Link>
-
         <Card className="mb-6 md:mb-8">
           <article className="prose prose-sm md:prose max-w-none">
             <h1 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">
@@ -181,6 +158,16 @@ export default async function ServiceNoticeDetailPage({
             </div>
           </article>
         </Card>
+        <Link
+          href={localizePath("/service/notices", locale)}
+          prefetch={false}
+          className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-6 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          {text.backToList}
+        </Link>
       </div>
     </Container>
   );

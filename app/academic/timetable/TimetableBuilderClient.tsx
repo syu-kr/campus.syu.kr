@@ -3,7 +3,6 @@ import { AcademicTimetablePresentation, AcademicTimetableCell } from "@/app/feat
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync, preload } from "react-dom";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -19,7 +18,7 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import type { Dictionary } from "@/lib/i18n";
-import { localizePath, type Locale } from "@/lib/i18n/routing";
+import type { Locale } from "@/lib/i18n/routing";
 import {
   FILTERABLE_LECTURE_DAYS,
   filterLectureTimetableCourses,
@@ -871,13 +870,6 @@ export function TimetableBuilderClient() {
       className="timetable-page min-w-0 max-w-[88rem] overflow-x-clip py-6 sm:py-8 2xl:max-w-[112rem]"
     >
       <div className="mb-6">
-        <Link
-          href={localizePath("/academic", locale)}
-          className={buttonStyles("ghost", "mb-4")}
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToAcademic}
-        </Link>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <span className="m3-timetable-desktop-hint mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
