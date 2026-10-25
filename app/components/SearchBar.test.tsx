@@ -8,6 +8,18 @@ import { SearchBar } from "./SearchBar";
 
 const text = getDictionary("ko").search;
 
+it("reports each draft change without submitting a search", () => {
+  const onSearch = vi.fn(), onQueryChange = vi.fn();
+  render(<SearchBar onSearch={onSearch} onQueryChange={onQueryChange} />);
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "시" } });
+  expect(onQueryChange).toHaveBeenLastCalledWith("시");
+  expect(onSearch).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByRole("textbox"), { target: { value: "시간표" } });
+  expect(onQueryChange).toHaveBeenLastCalledWith("시간표");
+  fireEvent.submit(screen.getByRole("search"));
+  expect(onSearch).toHaveBeenCalledExactlyOnceWith("시간표");
+});
+
 it.each(["", "Library"])("adopts typing before hydration with the server default '%s'", async (defaultValue) => {
   const onSearch = vi.fn();
   const element = <SearchBar defaultValue={defaultValue} onSearch={onSearch} />;

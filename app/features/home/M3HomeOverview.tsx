@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -15,6 +15,7 @@ import { readSessionValue, writeSessionValue } from "@/lib/browser-storage";
 import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRestaurantMenu";
 import type { AcademicSchedule, BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import type { LiveDataResponse } from "@/types/live-data";
+import { HomeWeatherLine } from "./HomeWeatherLine";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -137,13 +138,28 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
   const summary = getCurrentShuttleSummary({
     buses: buses.data ?? [], specialPeriods: special.data,
     holidays: holidays.data && { ...holidays.data, stale: holidays.data.stale || holidays.isError },
-    now, limit: 2,
+    now, limit: buses.data?.length || 2,
   });
   const departure = summary.departures[0];
+  const showRouteList = summary.operationStatus === "regular" && summary.isOperatingPeriod &&
+    summary.additionalServicePeriods.length === 0 && Boolean(buses.data?.length);
   return <>
     {loading ? <p className="m3-home-empty">{text.status.loading}</p> :
       error ? <p className="m3-home-empty">{text.serviceError}</p> :
-        departure ? <>
+        showRouteList ? <ul className="m3-home-shuttle-list" aria-label={text.shuttleDepartures}>
+          {buses.data?.map((bus) => {
+            const next = summary.departures.find((item) => item.routeName === bus.routeName);
+            return <li key={bus.id} className="m3-home-shuttle-row">
+              <div>
+                <strong className="m3-home-shuttle-name">{bus.routeName}</strong>
+                <p className="m3-home-shuttle-support">{next
+                  ? text.shuttleDepartureAt.replace("{time}", next.time)
+                  : text.shuttleNextNone}</p>
+              </div>
+              {next && <span className="m3-home-shuttle-time"><strong>{next.minutesUntil}</strong><span>{text.shuttleMinutes}</span></span>}
+            </li>;
+          })}
+        </ul> : departure ? <>
           <p className="m3-home-context">{departure.routeName}</p>
           <div className="m3-home-countdown"><strong>{departure.minutesUntil}</strong><span>{text.minutesUntilDeparture}</span></div>
           <p className="m3-home-sides">{departure.time} {text.departure}</p>
@@ -201,6 +217,9 @@ export function M3HomeOverview({ now, schedules, initial, children }: {
   children: ReactNode;
 }) {
   const locale = useLocale(), dictionary = useDictionary(), text = dictionary.home.overview, today = getTodayInfo(now);
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
+    year: "numeric", month: "long", day: "numeric", weekday: "long", timeZone: "Asia/Seoul",
+  }), [locale]);
   const [restaurant, setRestaurant] = useHomeChoice("campus-m3-home-restaurant", "su-lounge", RESTAURANTS);
   const [busMode, setBusMode] = useHomeChoice("campus-m3-home-transport", "shuttle", TRANSPORTS);
   const [stop, setStop] = useHomeChoice("campus-m3-home-stop", "jungmun-up", STOP_IDS);
@@ -208,7 +227,8 @@ export function M3HomeOverview({ now, schedules, initial, children }: {
   const link = (path: string) => localizePath(path, locale);
   return <div className="m3-home-overview">
     <header className="m3-home-intro"><div>
-      <p>{now ? new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", { month: "long", day: "numeric", weekday: "long", timeZone: "Asia/Seoul" }).format(now) : ""}</p>
+      <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
+      <HomeWeatherLine />
       <h1>{exam ? text.examGreeting : text.greeting}</h1>
     </div><span>{text.hint}</span></header>
     <div className="m3-home-essentials">
@@ -216,7 +236,7 @@ export function M3HomeOverview({ now, schedules, initial, children }: {
         <header><h2><Icon name="utensils" />{text.mealTitle}</h2>
           <Link href={link("/campus/cafeteria") + (restaurant === "manna" ? "?restaurant=manna" : "")}>{text.fullMenu} <span aria-hidden="true">→</span></Link>
         </header>
-        <div className="m3-home-picker" role="group" aria-label={text.restaurant}>
+        <div className="m3-home-picker m3-segmented" data-selected-index={restaurant === "manna" ? 1 : 0} role="group" aria-label={text.restaurant}>
           {RESTAURANTS.map((value) => <button type="button" key={value} aria-pressed={restaurant === value} onClick={() => setRestaurant(value)}>
             {value === "su-lounge" ? dictionary.pages.cafeteria.suLoungeTitle : dictionary.pages.cafeteria.mannaTab}
           </button>)}
@@ -228,7 +248,7 @@ export function M3HomeOverview({ now, schedules, initial, children }: {
         <header><h2><Icon name="bus" />{text.busTitle}</h2>
           <Link href={link("/campus/bus-info") + (busMode === "transit" ? "?tab=public-transit&stop=" + encodeURIComponent(stop) : "")}>{text.busInfo} <span aria-hidden="true">→</span></Link>
         </header>
-        <div className="m3-home-picker" role="group" aria-label={text.transport}>
+        <div className="m3-home-picker m3-segmented" data-selected-index={busMode === "transit" ? 1 : 0} role="group" aria-label={text.transport}>
           {TRANSPORTS.map((value) => <button type="button" key={value} aria-pressed={busMode === value} onClick={() => setBusMode(value)}>
             {value === "shuttle" ? text.shuttle : text.publicTransit}
           </button>)}

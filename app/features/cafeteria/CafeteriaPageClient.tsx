@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -81,7 +80,7 @@ export function CafeteriaPageClient({
   return (
     <>
       <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
-        <div className="flex gap-2" role="group" aria-label={text.restaurantPicker}>
+        <div className="m3-segmented" data-selected-index={activeRestaurant === "manna" ? 1 : 0} role="group" aria-label={text.restaurantPicker}>
           {([
             ["su-lounge", text.suLoungeTitle],
             ["manna", text.mannaTab],
@@ -92,12 +91,7 @@ export function CafeteriaPageClient({
               aria-pressed={activeRestaurant === restaurant}
               aria-controls="cafeteria-panel"
               onClick={() => setActiveRestaurant(restaurant)}
-              className={clsx(
-                "flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
-                activeRestaurant === restaurant
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
-              )}
+              className="m3-segmented-option"
             >
               {label}
             </button>

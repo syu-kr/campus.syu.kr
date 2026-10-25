@@ -64,6 +64,56 @@ describe("M3 Header and BottomNav", () => {
     expect(academic).toHaveAttribute("href", "/academic");
   });
 
+  it("shows decorative destination icons without changing submenu links or accessible names", () => {
+    const dictionary = getDictionary("ko");
+    const { container } = render(<Header />);
+    for (const [label, destinations] of [
+      [dictionary.navigation.academic, ["/academic/announcements", "/academic/schedule", "/academic/sw-notices", "/academic/competitions", "/academic/scholarship", "/academic/graduation", "/academic/timetable", "https://sugang.syu.kr/testLogin", "https://sugang.syu.kr/basket"]],
+      [dictionary.navigation.campus, ["/campus/announcements", "/campus/cafeteria", "/campus/bus-info", "/campus/library", "/campus/map", "/campus/phone", "/campus/campus-tips", "/campus/gym", "/campus/health-center"]],
+      [dictionary.navigation.more, ["/service/notices", "/more/meet", "/more/privacy"]],
+    ] as const) {
+      fireEvent.mouseEnter(screen.getByRole("link", { name: label }).closest(".m3-nav-group")!);
+      const links = within(container.querySelector<HTMLElement>(".m3-menu")!).getAllByRole("link");
+      expect(links.map(link => link.getAttribute("href"))).toEqual(destinations);
+      for (const link of links) {
+        expect(link.querySelector(".m3-menu-icon svg")).not.toBeNull();
+        expect(link.querySelector(".m3-menu-icon")).toHaveAttribute("aria-hidden", "true");
+        expect(link).toHaveAccessibleName();
+      }
+    }
+  });
+
+  it("moves the same indicator between variable-width destinations and remeasures resizing", () => {
+    const dictionary = getDictionary("ko");
+    let campusOffset = 0;
+    const linkRects: Record<string, [number, number]> = { "/": [100, 48], "/academic": [154, 76], "/campus": [236, 80], "/more": [322, 72] };
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains("m3-desktop-navigation")) return new DOMRect(100, 20, 400, 48);
+      if (this.matches("a[data-primary-destination]")) {
+        const href = this.getAttribute("href")!;
+        const [left, width] = linkRects[href] ?? [0, 0];
+        return new DOMRect(left + (href === "/campus" ? campusOffset : 0), 20, width, 48);
+      }
+      return new DOMRect();
+    });
+    const { container } = render(<Header />);
+    const navigation = container.querySelector(".m3-desktop-navigation")!;
+    const indicator = navigation.querySelector<HTMLElement>(".m3-header-active-indicator")!;
+    expect(navigation).toHaveAttribute("data-indicator-ready", "true");
+    expect(indicator.style.transform).toBe("translate(0px, 0px)");
+    expect(indicator.style.width).toBe("48px");
+    expect(indicator).toHaveAttribute("data-animate", "false");
+    mockedUsePathname.mockReturnValue("/campus/cafeteria");
+    fireEvent.mouseEnter(screen.getByRole("link", { name: dictionary.navigation.campus }).closest(".m3-nav-group")!);
+    expect(navigation.querySelector(".m3-header-active-indicator")).toBe(indicator);
+    expect(indicator.style.transform).toBe("translate(136px, 0px)");
+    expect(indicator.style.width).toBe("80px");
+    expect(indicator).toHaveAttribute("data-animate", "true");
+    campusOffset = 30;
+    fireEvent(window, new Event("resize"));
+    expect(indicator.style.transform).toBe("translate(166px, 0px)");
+  });
+
   it("supports ArrowDown entry, Escape recovery and localized submenu destinations", async () => {
     mockedUsePathname.mockReturnValue("/en/campus/cafeteria");
     const dictionary = getDictionary("en");

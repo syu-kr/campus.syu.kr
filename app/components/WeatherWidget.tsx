@@ -75,7 +75,7 @@ function WeatherWidgetComponent({ weather, loading, failed, onClick, onRetry }: 
   );
 }
 
-function getWeatherDescription(
+export function getWeatherDescription(
   weather: WeatherData,
   dictionary: ReturnType<typeof useDictionary>["weather"],
 ) {

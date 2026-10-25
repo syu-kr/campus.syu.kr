@@ -55,6 +55,17 @@ export const ROOM_SEAT_MAP_URLS = [
   "https://libmo.syu.ac.kr/mobile/PA/seatMap.php?roomNo=13&searchGB=S",
 ];
 
+export function isLibraryRoomVisible(name: string) {
+  return !name.normalize("NFKC").replace(/\s+/g, "").includes("채움실");
+}
+
+export function getVisibleReadingRooms(rooms: readonly ReadingRoom[]) {
+  // Seat-map URLs follow the upstream order. Keep that association before hiding a room.
+  return rooms
+    .map((room, sourceIndex) => ({ room, sourceIndex, seatMapUrl: ROOM_SEAT_MAP_URLS[sourceIndex] }))
+    .filter(({ room }) => isLibraryRoomVisible(room.strRoomNm));
+}
+
 export const LIBRARY_OPERATING_HOURS: Record<
   LibrarySeason,
   LibrarySeasonHours

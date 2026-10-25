@@ -21,6 +21,15 @@ beforeEach(() => {
 });
 
 describe.each(["ko", "en"] as const)("independent home search for %s", (locale) => {
+  it("shows matching service links before submitting a notice search", () => {
+    navigation.pathname = locale === "en" ? "/en" : "/";
+    render(<ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}><HomeSearchBar /></ClientLocaleProvider>);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "시간표" } });
+    expect(screen.getByRole("link", { name: /시간표|Timetable/ })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/academic/timetable`);
+    expect(navigation.push).not.toHaveBeenCalled();
+    fireEvent.submit(screen.getByRole("search"));
+    expect(navigation.push).toHaveBeenCalledOnce();
+  });
   it("renders and submits while the dashboard is still loading without a query provider", () => {
     navigation.pathname = locale === "en" ? "/en" : "/";
     navigation.params = new URLSearchParams("mode=preview&tag=a&tag=b");

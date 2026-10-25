@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { Container } from "@/app/components/Container";
@@ -24,18 +23,13 @@ export default function BusInfoPageClient({ initialData }: { initialData: Shuttl
   return (
     <>
       <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
-        <div className="m3-bus-tabs flex gap-2" role="group" aria-label={dictionary.campus.menus.busTitle}>
+        <div className="m3-bus-tabs m3-segmented" data-selected-index={activeTab === "public-transit" ? 1 : 0} role="group" aria-label={dictionary.campus.menus.busTitle}>
           <button
             type="button"
             onClick={() => setActiveTab("shuttle")}
             aria-pressed={activeTab === "shuttle"}
             aria-controls="m3-bus-panel"
-            className={clsx(
-              "min-h-11 flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
-              activeTab === "shuttle"
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
-            )}
+            className="m3-segmented-option"
           >
             {text.shuttleTab}
           </button>
@@ -44,12 +38,7 @@ export default function BusInfoPageClient({ initialData }: { initialData: Shuttl
             onClick={() => setActiveTab("public-transit")}
             aria-pressed={activeTab === "public-transit"}
             aria-controls="m3-bus-panel"
-            className={clsx(
-              "min-h-11 flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all",
-              activeTab === "public-transit"
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
-            )}
+            className="m3-segmented-option"
           >
             {text.publicTransitTab}
           </button>

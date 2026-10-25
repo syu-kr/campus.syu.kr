@@ -7,6 +7,14 @@ import type { PublicHolidaySnapshot } from "@/types";
 import { HomePageClient } from "./HomePageClient";
 import { HomeSearchBar } from "./HomeSearchBar";
 
+const weatherApi = vi.hoisted(() => ({ fetchWeather: vi.fn() }));
+vi.mock("@/lib/weather", () => ({ fetchWeather: weatherApi.fetchWeather, WEATHER_REFRESH_INTERVAL_MS: 300_000 }));
+const cachedWeather = {
+  temperature: 14, skyCondition: 4, precipitation: 0, windSpeed: 1,
+  time: "2026-10-19 09:00", latitude: 37.64, longitude: 127.11, gridX: 61, gridY: 128,
+  source: "KMA", timestamp: "2026-10-19T09:00:00+09:00", stale: false, sourceStatus: "fresh",
+};
+
 const api = vi.hoisted(() => ({
   fetchAnnouncementSummary: vi.fn(),
   fetchAnnouncements: vi.fn(),
@@ -43,7 +51,9 @@ let client: QueryClient;
 beforeEach(() => {
   vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-19T00:00:00.000Z"));
   sessionStorage.clear();
+  weatherApi.fetchWeather.mockReset().mockResolvedValue(cachedWeather);
   client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  client.setQueryData(["weather"], cachedWeather);
   Object.values(api).forEach((reader) => reader.mockReset().mockResolvedValue([]));
   api.fetchPublicHolidays.mockResolvedValue(holidays);
   api.fetchCafeteriaSnapshot.mockResolvedValue({ menus: [], checkedAt: null, stale: true });
@@ -90,10 +100,12 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
     screen.getAllByRole("link", { name: dictionary.home.menu.bus }).forEach((link) => expect(link).toHaveAttribute("href", `${prefix}/campus/bus-info`));
     expect(screen.getByRole("heading", { name: "검증 공휴일" })).toBeInTheDocument();
     expect(client.getQueryCache().findAll({ type: "active" }).map((query) => query.queryKey[0]).sort()).toEqual([
-      "announcements", "cafeteria-weekly-snapshot", "public-holidays", "schedules", "serviceNotices", "shuttle-buses", "shuttle-special-periods",
+      "announcements", "cafeteria-weekly-snapshot", "public-holidays", "schedules", "serviceNotices", "shuttle-buses", "shuttle-special-periods", "weather",
     ]);
 
+    expect(weatherApi.fetchWeather).not.toHaveBeenCalled();
     await act(async () => { await client.invalidateQueries(); });
+    expect(weatherApi.fetchWeather).toHaveBeenCalledOnce();
     expect(api.fetchAnnouncementSummary).toHaveBeenCalledOnce();
     expect(fetchServiceNotices).toHaveBeenCalledOnce();
     expect(api.fetchAcademicSchedules).toHaveBeenCalledOnce();

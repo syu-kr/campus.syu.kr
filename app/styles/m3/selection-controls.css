@@ -1,0 +1,59 @@
+.m3-root .m3-site .m3-segmented {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  width: 320px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--shape-full);
+  background: var(--sys-surface-high);
+}
+.m3-segmented::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 4px auto 4px 4px;
+  width: calc((100% - 8px) / 2);
+  border-radius: var(--shape-full);
+  background: var(--sys-surface-lowest);
+  box-shadow: 0 1px 4px #182e5614;
+  transform: translateX(0);
+  transition: transform 200ms cubic-bezier(.2, 0, 0, 1);
+}
+.m3-segmented[data-selected-index="1"]::before { transform: translateX(100%); }
+.m3-root .m3-site .m3-segmented > button {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: var(--shape-full);
+  color: var(--sys-on-surface-variant);
+  background: transparent;
+  box-shadow: none;
+  font-size: var(--type-label-size);
+  line-height: 1.5;
+}
+.m3-root .m3-site .m3-segmented > button[aria-pressed="true"] {
+  background: transparent;
+  color: var(--sys-on-surface);
+  box-shadow: none;
+  font-weight: 650;
+}
+.m3-home-intro .m3-home-weather { margin: 6px 0 0; color: var(--sys-on-surface-variant); }
+.m3-home-weather[data-weather-state="error"],.m3-home-weather[data-weather-state="stale"] { color: var(--sys-error); }
+.m3-home-shuttle-list { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
+.m3-home-shuttle-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 62px; padding: 10px 0; }
+.m3-home-shuttle-row + .m3-home-shuttle-row { border-top: 1px solid var(--sys-outline-variant); }
+.m3-home-shuttle-row > div { min-width: 0; }
+.m3-home-shuttle-row strong { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.m3-home-shuttle-row p { margin: 3px 0 0; font-size: 12px; color: var(--sys-on-surface-variant); }
+.m3-home-shuttle-row > span { flex-shrink: 0; color: var(--sys-primary); font-size: 18px; font-weight: 650; }
+.m3-home-shuttle-time { display: inline-flex; align-items: baseline; gap: 3px; }
+.m3-home-shuttle-time > strong { font-size: 22px; }
+.m3-home-shuttle-time > span { font-size: 12px; }
+.m3-search-dialog .m3-service-results { margin: 20px 0 0; }
+@media (prefers-reduced-motion: reduce) { .m3-segmented::before { transition: none; } }

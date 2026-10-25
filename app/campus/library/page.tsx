@@ -12,8 +12,9 @@ import { StateCard } from "@/app/components/StateCard";
 import { fetchJson } from "@/lib/fetch-json";
 import {
   getLibrarySeason,
+  getVisibleReadingRooms,
+  isLibraryRoomVisible,
   LIBRARY_OPERATING_HOURS,
-  ROOM_SEAT_MAP_URLS,
   type LibrarySeason,
   type ReadingRoom,
 } from "@/lib/library";
@@ -112,7 +113,7 @@ export default function LibraryPage() {
     gcTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });
-  const rooms = readingRoomStatus.data;
+  const rooms = getVisibleReadingRooms(readingRoomStatus.data);
 
   const defaultSeason = useMemo<LibrarySeason | null>(() => {
     if (!now) return null;
@@ -190,7 +191,7 @@ export default function LibraryPage() {
           />
         ) : (
           <div className="space-y-4">
-            {rooms.map((room, idx) => {
+            {rooms.map(({ room, sourceIndex, seatMapUrl: roomSeatMapUrl }) => {
               const hasValidSeatTotal = room.strTotalSeat > 0;
               const usagePercent = hasValidSeatTotal
                 ? Math.min(
@@ -201,9 +202,8 @@ export default function LibraryPage() {
                     ),
                   )
                 : 0;
-              const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (
-                <div key={idx}>
+                <div key={sourceIndex}>
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <strong className="text-neutral-900">
@@ -292,7 +292,7 @@ export default function LibraryPage() {
                 {floor.name}
               </h3>
               <div className="space-y-3">
-                {floor.rooms.map((room, roomIdx) => (
+                {floor.rooms.filter((room) => isLibraryRoomVisible(room.name)).map((room, roomIdx) => (
                   <div
                     key={roomIdx}
                     className="border-t border-neutral-200 pt-3 first:border-t-0 first:pt-0"

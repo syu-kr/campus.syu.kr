@@ -1,0 +1,47 @@
+.m3-header .m3-desktop-navigation {
+  position: relative;
+  isolation: isolate;
+}
+
+.m3-header-active-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--shape-full, 999px);
+  background: var(--sys-secondary-container);
+}
+
+.m3-header-active-indicator[data-animate="true"] {
+  transition: transform 200ms cubic-bezier(.2, 0, 0, 1), width 200ms cubic-bezier(.2, 0, 0, 1), height 200ms cubic-bezier(.2, 0, 0, 1);
+}
+
+.m3-header .m3-desktop-navigation > a,
+.m3-header .m3-desktop-navigation > .m3-nav-group {
+  position: relative;
+  z-index: 1;
+}
+
+.m3-header .m3-desktop-navigation[data-indicator-ready="true"] > a[aria-current="page"],
+.m3-header .m3-desktop-navigation[data-indicator-ready="true"] .m3-nav-group > a:is([aria-current="page"], [aria-expanded="true"]) {
+  background-color: transparent;
+}
+
+.m3-header .m3-menu-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.m3-header .m3-menu-icon {
+  flex: 0 0 20px;
+  color: var(--sys-on-surface-variant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m3-header-active-indicator[data-animate="true"] {
+    transition: none;
+  }
+}

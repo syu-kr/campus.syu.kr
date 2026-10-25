@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
+import { memo, useEffect, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,8 +13,9 @@ import { fetchWeather, WEATHER_REFRESH_INTERVAL_MS } from "@/lib/weather";
 import { localizePath, stripLocalePrefix } from "@/lib/i18n/routing";
 import { useRoommatesEnabled } from "./RoommatesAvailability";
 import { getSiteSection } from "@/lib/site-presentation";
-import { getPrimaryNavigation } from "./site-navigation";
+import { getDesktopNavigationGroups, getPrimaryNavigation } from "./site-navigation";
 import { useDictionary, useLocale } from "./LocaleProvider";
+import "./sliding-indicator.css";
 
 const WeatherModal = dynamic(() => import("./WeatherModal").then((module) => module.WeatherModal));
 const SearchDialog = dynamic(() => import("./SearchDialog"));
@@ -99,27 +100,42 @@ function DesktopNavigation() {
   const clean = stripLocalePrefix(pathname ?? "/");
   const section = getSiteSection(pathname ?? "/");
   const [open, setOpen] = useState<string | null>(null);
-  const academic = dictionary.academic.menus, campus = dictionary.campus.menus, more = dictionary.more.menus;
-  const [home, academicNav, campusNav, moreNav] = getPrimaryNavigation(dictionary);
-  const groups = [
-    { ...academicNav, items: [
-      ["/academic/announcements", academic.announcementsTitle], ["/academic/schedule", academic.scheduleTitle],
-      ["/academic/sw-notices", academic.swNoticesTitle], ["/academic/competitions", academic.competitionsTitle],
-      ["/academic/scholarship", academic.scholarshipTitle], ["/academic/graduation", academic.graduationTitle],
-      ["/academic/timetable", academic.timetableTitle], ["https://sugang.syu.kr/testLogin", academic.mockSugangTitle],
-      ["https://sugang.syu.kr/basket", academic.basketCompetitionTitle],
-    ] },
-    { ...campusNav, items: [
-      ...(roommatesEnabled ? [["/campus/roommates", campus.roommatesTitle]] : []),
-      ["/campus/announcements", campus.announcementsTitle], ["/campus/cafeteria", campus.cafeteriaTitle],
-      ["/campus/bus-info", campus.busTitle], ["/campus/library", campus.libraryTitle], ["/campus/map", campus.mapTitle],
-      ["/campus/phone", campus.phoneTitle], ["/campus/campus-tips", campus.campusTipsTitle],
-      ["/campus/gym", campus.gymTitle], ["/campus/health-center", campus.healthCenterTitle],
-    ] },
-    { ...moreNav, items: [
-      ["/service/notices", more.serviceTitle], ["/more/meet", more.meetTitle], ["/more/privacy", more.privacyTitle],
-    ] },
-  ];
+  const navigationRef = useRef<HTMLElement>(null);
+  const hasMeasuredIndicator = useRef(false);
+  const [indicator, setIndicator] = useState<{ left: number; top: number; width: number; height: number; animate: boolean } | null>(null);
+  const [home] = getPrimaryNavigation(dictionary);
+  const groups = getDesktopNavigationGroups(dictionary, roommatesEnabled);
+
+  useLayoutEffect(() => {
+    const navigation = navigationRef.current;
+    if (!navigation) return;
+    let disposed = false;
+    const measure = () => {
+      if (disposed) return;
+      const active = navigation.querySelector<HTMLAnchorElement>('a[data-primary-destination][aria-current="page"]');
+      const bounds = navigation.getBoundingClientRect();
+      const target = active?.getBoundingClientRect();
+      if (!target || target.width === 0 || bounds.width === 0) {
+        hasMeasuredIndicator.current = false;
+        setIndicator(null);
+        return;
+      }
+      const next = {
+        left: target.left - bounds.left + navigation.scrollLeft - navigation.clientLeft,
+        top: target.top - bounds.top + navigation.scrollTop - navigation.clientTop,
+        width: target.width, height: target.height, animate: hasMeasuredIndicator.current,
+      };
+      setIndicator(current => current && current.left === next.left && current.top === next.top && current.width === next.width && current.height === next.height ? current : next);
+      hasMeasuredIndicator.current = true;
+    };
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(navigation);
+    navigation.querySelectorAll<HTMLAnchorElement>('a[data-primary-destination]').forEach(link => observer?.observe(link));
+    window.addEventListener("resize", measure);
+    void document.fonts?.ready.then(measure);
+    return () => { disposed = true; observer?.disconnect(); window.removeEventListener("resize", measure); };
+  }, [section, locale]);
   useEffect(() => { setOpen(null); }, [pathname]);
   useEffect(() => {
     const media = window.matchMedia?.("(max-width:899px)");
@@ -145,7 +161,10 @@ function DesktopNavigation() {
       window.requestAnimationFrame(() => group.querySelector<HTMLAnchorElement>(".m3-menu a")?.focus());
     }
   };
-  return <nav className="m3-desktop-navigation" aria-label={dictionary.navigation.mainNavigation}>
+  return <nav ref={navigationRef} className="m3-desktop-navigation" aria-label={dictionary.navigation.mainNavigation}
+    data-indicator-ready={indicator ? "true" : undefined}>
+    <span className="m3-header-active-indicator" aria-hidden="true" data-animate={indicator?.animate ? "true" : "false"}
+      style={indicator ? { width: indicator.width, height: indicator.height, opacity: 1, transform: `translate(${indicator.left}px, ${indicator.top}px)` } : { opacity: 0 }} />
     <Link href={localizePath("/", locale)} data-primary-destination aria-current={section === "/" ? "page" : undefined}>
       {home.label}
     </Link>
@@ -159,12 +178,14 @@ function DesktopNavigation() {
         {group.label}
       </Link>
       {open === group.path && <div className="m3-menu" id={"m3-menu-" + group.path.slice(1)} aria-label={group.label}>
-        {group.items.map(([path, label]) => path.startsWith("https:") ?
+        {group.items.map(({ path, label, icon }) => path.startsWith("https:") ?
           <a key={path} href={path} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(null)}>
-            {label}<span aria-hidden="true">↗</span>
+            <span className="m3-menu-label"><Icon name={icon} size={20} className="m3-menu-icon" /><span>{label}</span></span><span aria-hidden="true">↗</span>
           </a> :
           <Link key={path} href={localizePath(path, locale)} prefetch={false}
-            aria-current={clean === path ? "page" : undefined} onClick={() => setOpen(null)}>{label}</Link>)}
+            aria-current={clean === path ? "page" : undefined} onClick={() => setOpen(null)}>
+            <span className="m3-menu-label"><Icon name={icon} size={20} className="m3-menu-icon" /><span>{label}</span></span>
+          </Link>)}
       </div>}
     </div>)}
   </nav>;
