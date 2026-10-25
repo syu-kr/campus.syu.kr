@@ -1,7 +1,8 @@
 "use client";
+import { AcademicTimetablePresentation, AcademicTimetableCell } from "@/app/features/academic/AcademicTimetablePresentation";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { preload } from "react-dom";
+import { flushSync, preload } from "react-dom";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ import { buttonStyles } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 import { Modal } from "@/app/components/Modal";
+import { M3Select } from "@/app/components/M3Select";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -807,16 +809,13 @@ export function TimetableBuilderClient() {
   async function downloadTimetableImage() {
     if (!hasShareableCourses || isDownloadingImage) return;
 
-    const exportSurface = timetableExportRef.current;
-    if (!exportSurface) {
-      setImageDownloadMessage(text.imageDownloadFailed);
-      return;
-    }
-
-    setIsDownloadingImage(true);
+    // Mount the export-only grid for this action instead of retaining a second offscreen timetable.
+    flushSync(() => setIsDownloadingImage(true));
     setImageDownloadMessage("");
 
     try {
+      const exportSurface = timetableExportRef.current;
+      if (!exportSurface) throw new Error("Timetable export surface unavailable");
       await document.fonts?.ready;
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(exportSurface, {
@@ -881,7 +880,7 @@ export function TimetableBuilderClient() {
         </Link>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <span className="mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
+            <span className="m3-timetable-desktop-hint mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
               {text.desktopHint}
             </span>
             <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
@@ -900,7 +899,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={toggleCompareMode}
             aria-pressed={timetableWorkspace.isCompareMode}
-            className={buttonStyles("secondary", "hidden shrink-0 xl:inline-flex")}
+            className={buttonStyles("secondary", "m3-timetable-compare-toggle shrink-0")}
           >
             {timetableWorkspace.isCompareMode
               ? text.leaveCompareMode
@@ -937,7 +936,7 @@ export function TimetableBuilderClient() {
         </div>
       )}
 
-      <section className="mb-5 rounded-card border border-neutral-200 bg-white p-3 shadow-card sm:p-4">
+      <section data-empty={selectedCourses.length === 0} className="m3-timetable-summary mb-5 rounded-card border border-neutral-200 bg-white p-3 shadow-card sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <SummaryMetric
             label={text.totalCredits}
@@ -1109,18 +1108,18 @@ export function TimetableBuilderClient() {
         />
       ) : (
         <div className="space-y-6">
-          <section className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
+          <section className="m3-timetable-workspace grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="min-w-0">
               {timetableWorkspace.isCompareMode ? (
                 <>
-                  <div className="hidden xl:block">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="m3-timetable-comparison">
+                    <div className="m3-timetable-comparison-header mb-4 flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h2 className="text-lg font-bold text-neutral-900">
                           {text.compareTimetables}
                         </h2>
                         <p className="text-sm text-neutral-500">
-                          {text.compareTimetablesDescription}
+                          {text.presentation.compareDescription}
                         </p>
                       </div>
                       <button
@@ -1134,12 +1133,13 @@ export function TimetableBuilderClient() {
                         {text.addTimetable}
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-2 gap-4">
+                    <div className="m3-timetable-comparison-grid">
                       {timetableWorkspace.timetables.map(
                         (timetable, timetableIndex) => (
                           <ComparisonTimetableCard
                             key={timetable.id}
                             timetableIndex={timetableIndex}
+                            referenceCourses={timetableWorkspace.timetables.flatMap((item) => getCoursesForTimetable(item, courseById))}
                             courses={getCoursesForTimetable(
                               timetable,
                               courseById,
@@ -1179,13 +1179,7 @@ export function TimetableBuilderClient() {
                       )}
                     </div>
                   </div>
-                  <div className="space-y-4 xl:hidden">
-                    <StateCard type="info" message={text.compareDesktopOnly} />
-                    <TimetableOverviewCard
-                      selectedCourses={selectedCourses}
-                      conflictCourseIds={conflictSummary.courseIds}
-                    />
-                  </div>
+
                 </>
               ) : (
                 <TimetableOverviewCard
@@ -1267,7 +1261,7 @@ export function TimetableBuilderClient() {
           </section>
 
           {pickerLayout === "desktop" && (
-            <div className="hidden lg:block xl:hidden">
+            <div className="m3-timetable-inline-picker hidden lg:block xl:hidden">
               <CoursePicker
                 completionTypeFilter={completionTypeFilter}
                 departments={departments}
@@ -1340,12 +1334,12 @@ export function TimetableBuilderClient() {
           )}
         </div>
       )}
-      <TimetableExportSurface
+      {isDownloadingImage && <TimetableExportSurface
         containerRef={timetableExportRef}
         courseById={courseById}
         semesterBaseLabel={semesterBaseLabel}
         workspace={timetableWorkspace}
-      />
+      />}
     </Container>
   );
 }
@@ -1402,11 +1396,22 @@ function TimetableOverviewCard({
           {text.weeklyTimetableDescription}
         </p>
       </div>
-      <TimetableGrid
-        ariaLabel={text.weeklyTimetable}
+      <AcademicTimetablePresentation
         selectedCourses={selectedCourses}
         conflictCourseIds={conflictCourseIds}
-        fillAvailableHeight={matchDesktopSidebar}
+        dayLabel={(day) => getDayLabel(day, text)}
+        periodLabel={(period) => formatPeriodLabel(period, text)}
+        periodTimeLabel={getPeriodTimeLabel}
+        completionLabel={(value) => formatCompletionType(value, text)}
+        renderWeek={(onOpenCourse) => (
+          <TimetableGrid
+            ariaLabel={text.weeklyTimetable}
+            selectedCourses={selectedCourses}
+            conflictCourseIds={conflictCourseIds}
+            fillAvailableHeight={matchDesktopSidebar}
+            onOpenCourse={onOpenCourse}
+          />
+        )}
       />
     </Card>
   );
@@ -1414,6 +1419,7 @@ function TimetableOverviewCard({
 
 function ComparisonTimetableCard({
   timetableIndex,
+  referenceCourses,
   courses,
   isActive,
   canDuplicate,
@@ -1425,6 +1431,7 @@ function ComparisonTimetableCard({
   onScroll,
 }: {
   timetableIndex: number;
+  referenceCourses: LectureTimetableCourse[];
   courses: LectureTimetableCourse[];
   isActive: boolean;
   canDuplicate: boolean;
@@ -1446,8 +1453,12 @@ function ComparisonTimetableCard({
   return (
     <Card
       hover={false}
+      as="section"
+      aria-label={timetableLabel}
+      data-timetable-index={timetableIndex}
+      data-timetable-active={isActive}
       className={clsx(
-        "min-w-0 overflow-hidden border",
+        "m3-timetable-comparison-card min-w-0 overflow-hidden border",
         isActive
           ? "border-primary-400 ring-2 ring-primary-100"
           : "border-neutral-200",
@@ -1498,13 +1509,27 @@ function ComparisonTimetableCard({
           )}
         </div>
       </div>
-      <TimetableGrid
-        ariaLabel={timetableLabel}
+      <AcademicTimetablePresentation
+        contextLabel={timetableLabel}
+        referenceCourses={referenceCourses}
         selectedCourses={courses}
         conflictCourseIds={conflictSummary.courseIds}
-        compact
-        scrollContainerRef={scrollContainerRef}
-        onScroll={onScroll}
+        dayLabel={(day) => getDayLabel(day, text)}
+        periodLabel={(period) => formatPeriodLabel(period, text)}
+        periodTimeLabel={getPeriodTimeLabel}
+        completionLabel={(value) => formatCompletionType(value, text)}
+        renderWeek={(onOpenCourse) => (
+          <TimetableGrid
+            ariaLabel={timetableLabel}
+            selectedCourses={courses}
+            conflictCourseIds={conflictSummary.courseIds}
+            compact
+            referenceCourses={referenceCourses}
+            onOpenCourse={onOpenCourse}
+            scrollContainerRef={scrollContainerRef}
+            onScroll={onScroll}
+          />
+        )}
       />
     </Card>
   );
@@ -1603,7 +1628,7 @@ function DesktopWorkspaceSidebar({
   return (
     <aside className="sticky top-[96px] h-[calc(100vh-7rem)] self-start overflow-y-auto pr-1">
       <div
-        className="sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm"
+        className="m3-timetable-view-switch sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm" role="group"
         aria-label={text.desktopPanelLabel}
       >
         <button
@@ -1936,9 +1961,14 @@ function MobileCoursePickerSheet({
       size="lg"
       overlayClassName="lg:hidden"
       className="rounded-t-2xl sm:rounded-xl"
-      bodyClassName="max-h-[calc(88vh-64px)] pb-2"
+      bodyClassName="m3-academic-picker-body max-h-[calc(88vh-64px)] pb-2"
     >
-      {children}
+      <div className="m3-academic-picker-contents">{children}</div>
+      <div className="m3-academic-picker-done">
+        <button type="button" onClick={onClose} className={buttonStyles("primary", "w-full")}>
+          {text.presentation.viewTimetable}
+        </button>
+      </div>
     </Modal>
   );
 }
@@ -1963,12 +1993,26 @@ function FilterSelect({
   return (
     <div>
       <label
+        id={`${id}-label`}
         htmlFor={id}
         className="mb-1 block text-sm font-semibold text-neutral-800"
       >
         {label}
       </label>
-      <select
+      {id.endsWith("-department-filter") ? (
+        <M3Select
+          id={id}
+          value={value}
+          onValueChange={onChange}
+          options={[
+            { value: "", label: allLabel },
+            ...options.map((option) => ({
+              value: option,
+              label: getOptionLabel ? getOptionLabel(option) : option,
+            })),
+          ]}
+        />
+      ) : <select
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -1980,7 +2024,7 @@ function FilterSelect({
             {getOptionLabel ? getOptionLabel(option) : option}
           </option>
         ))}
-      </select>
+      </select>}
     </div>
   );
 }
@@ -2134,6 +2178,8 @@ function TimetableGrid({
   compact = false,
   exportMode = false,
   fillAvailableHeight = false,
+  referenceCourses,
+  onOpenCourse,
   onScroll,
   scrollContainerRef,
 }: {
@@ -2143,12 +2189,14 @@ function TimetableGrid({
   compact?: boolean;
   exportMode?: boolean;
   fillAvailableHeight?: boolean;
+  referenceCourses?: LectureTimetableCourse[];
+  onOpenCourse?: (course: LectureTimetableCourse) => void;
   onScroll?: (scrollTop: number) => void;
   scrollContainerRef?: (container: HTMLDivElement | null) => void;
 }) {
   const text = useDictionary().pages.timetable;
-  const visibleDays = getVisibleTimetableDays(selectedCourses);
-  const visiblePeriods = getVisibleTimetablePeriods(selectedCourses);
+  const visibleDays = getVisibleTimetableDays(referenceCourses ?? selectedCourses);
+  const visiblePeriods = getVisibleTimetablePeriods(referenceCourses ?? selectedCourses);
   const gridTemplateColumns = `56px repeat(${visibleDays.length}, minmax(0, 1fr))`;
   const minimumGridWidth = 56 + visibleDays.length * 68;
 
@@ -2161,6 +2209,7 @@ function TimetableGrid({
       tabIndex={exportMode ? undefined : 0}
       className={clsx(
         "w-full max-w-full rounded-lg border border-neutral-200",
+        referenceCourses && "m3-timetable-compare-week",
         exportMode
           ? "overflow-visible"
           : "overflow-x-auto overflow-y-auto",
@@ -2204,8 +2253,9 @@ function TimetableGrid({
         {visiblePeriods.map((period) => (
           <div
             key={period}
+            data-timetable-period={period}
             className={clsx(
-              "grid border-b border-neutral-200 last:border-b-0",
+              "m3-timetable-period-row grid border-b border-neutral-200 last:border-b-0",
               compact
                 ? exportMode
                   ? "min-h-[52px]"
@@ -2243,7 +2293,9 @@ function TimetableGrid({
                 >
                   <div className="space-y-1">
                     {cellCourses.map((course) => (
-                      <div
+                      <AcademicTimetableCell
+                        course={course}
+                        onOpenCourse={onOpenCourse}
                         key={course.id}
                         className={clsx(
                           "min-w-0 rounded border px-1 py-1 text-[11px] leading-4 sm:px-2 sm:py-1.5",
@@ -2261,7 +2313,7 @@ function TimetableGrid({
                         <p className="mt-0.5 hidden text-[10px] text-neutral-600 sm:line-clamp-2 sm:block">
                           {joinParts([course.professor, course.place])}
                         </p>
-                      </div>
+                      </AcademicTimetableCell>
                     ))}
                   </div>
                 </div>

@@ -12,9 +12,9 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  type Auth,
   type User,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { RoommateAdmin } from "./RoommateAdmin";
 import type {
   AdminSubmissionAiClassification,
@@ -56,6 +56,7 @@ const emptyPagination: AdminSubmissionPagination = {
 };
 
 export default function AdminPage() {
+  const authRef = useRef<Auth | null>(null);
   const [{ user, generation }, setAuthSession] = useState<{
     user: User | null;
     generation: number;
@@ -118,6 +119,8 @@ export default function AdminPage() {
   useEffect(() => {
     let settled = false;
     let disposed = false;
+    let unsubscribe: (() => void) | undefined;
+    authRef.current = null;
     replaceAuthSession(null);
     setAuthStatus("checking");
     setAuthError("");
@@ -129,31 +132,44 @@ export default function AdminPage() {
       setAuthError("관리자 세션 확인 시간이 초과되었습니다.");
     }, 10_000);
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (nextUser) => {
+    void import("@/lib/firebase")
+      .then(({ auth }) => {
         if (disposed) return;
-        settled = true;
-        window.clearTimeout(timeoutId);
-        replaceAuthSession(nextUser);
-        setAuthStatus("ready");
-      },
-      () => {
+        authRef.current = auth;
+        unsubscribe = onAuthStateChanged(
+          auth,
+          (nextUser) => {
+            if (disposed) return;
+            settled = true;
+            window.clearTimeout(timeoutId);
+            replaceAuthSession(nextUser);
+            setAuthStatus("ready");
+          },
+          () => {
+            if (disposed) return;
+            settled = true;
+            window.clearTimeout(timeoutId);
+            replaceAuthSession(null);
+            setAuthStatus("error");
+            setAuthError("관리자 세션을 확인하지 못했습니다.");
+          },
+        );
+      })
+      .catch(() => {
         if (disposed) return;
         settled = true;
         window.clearTimeout(timeoutId);
         replaceAuthSession(null);
         setAuthStatus("error");
-        setAuthError("관리자 세션을 확인하지 못했습니다.");
-      },
-    );
+        setAuthError("관리자 인증을 시작하지 못했습니다. 잠시 후 다시 시도해주세요.");
+      });
 
     return () => {
       disposed = true;
       settled = true;
       sessionGenerationRef.current += 1;
       window.clearTimeout(timeoutId);
-      unsubscribe();
+      unsubscribe?.();
     };
   }, [authCheckAttempt, replaceAuthSession]);
 
@@ -220,6 +236,11 @@ export default function AdminPage() {
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoginError("");
+    const auth = authRef.current;
+    if (!auth) {
+      setLoginError("관리자 인증을 시작하지 못했습니다. 다시 시도해주세요.");
+      return;
+    }
 
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
@@ -522,7 +543,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => setAuthCheckAttempt((attempt) => attempt + 1)}
-            className="mt-6 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            className="ui-button ui-button-primary mt-6 w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             다시 시도
           </button>
@@ -591,7 +612,7 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
+              className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
             >
               로그인
             </button>
@@ -626,7 +647,7 @@ export default function AdminPage() {
             </button>
             <button
               type="button"
-              onClick={() => void signOut(auth)}
+              onClick={() => { if (authRef.current) void signOut(authRef.current); }}
               className="rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
             >
               로그아웃
@@ -719,14 +740,14 @@ export default function AdminPage() {
                 type="button"
                 disabled={isSaving}
                 onClick={() => void updateSelectedStatuses()}
-                className="rounded-md bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="ui-button ui-button-primary rounded-md bg-primary-700 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 일괄 상태 변경
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedKeys(new Set())}
-                className="rounded-md border border-primary-200 bg-white px-3 py-2 text-sm font-semibold text-primary-800 hover:bg-primary-100"
+                className="ui-button ui-button-secondary rounded-md border border-primary-200 bg-white px-3 py-2 text-sm font-semibold text-primary-800 hover:bg-primary-100"
               >
                 선택 해제
               </button>
@@ -842,7 +863,7 @@ export default function AdminPage() {
                 type="button"
                 disabled={page <= 1 || isLoading}
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
-                className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="ui-button ui-button-secondary rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 이전
               </button>
@@ -857,7 +878,7 @@ export default function AdminPage() {
                     Math.min(pagination.totalPages, current + 1),
                   )
                 }
-                className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="ui-button ui-button-secondary rounded-md border border-neutral-300 bg-white px-3 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 다음
               </button>

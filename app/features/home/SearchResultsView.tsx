@@ -5,7 +5,10 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { LoadingStatus } from "@/app/components/PageLoadingSkeletons";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
+import { useRoommatesEnabled } from "@/app/components/RoommatesAvailability";
 import { Button } from "@/app/components/Button";
+import { ServiceSearchLinks } from "@/app/components/ServiceSearchLinks";
+import { hasServiceMatches } from "@/lib/service-search";
 import type { SearchSource } from "@/lib/api";
 import type { CategorizedSearchResults, HomeSearchResult } from "@/lib/home";
 
@@ -33,6 +36,7 @@ export function SearchResultsView({
   onRetry,
 }: SearchResultsViewProps) {
   const dictionary = useDictionary();
+  const hasServices = hasServiceMatches(searchQuery, useRoommatesEnabled());
 
   return (
     <Container className="min-h-svh py-6 sm:py-8">
@@ -60,13 +64,15 @@ export function SearchResultsView({
         </div>
       </div>
 
+      <ServiceSearchLinks query={searchQuery} />
+
       {!isLoading && !isError && failedSources.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" role="status">
           <p>
             {dictionary.search.partialFailure}{" "}
             {failedSources.map((source) => dictionary.search.searchSources[source]).join(", ")}
           </p>
-          {(!searchResults || searchResults.length === 0) && (
+          {!hasServices && (!searchResults || searchResults.length === 0) && (
             <p className="mt-1">{dictionary.search.partialNoResults}</p>
           )}
           <Button variant="secondary" onClick={onRetry} className="mt-2">
@@ -101,7 +107,7 @@ export function SearchResultsView({
         />
       )}
 
-      {!isLoading && !isError && failedSources.length === 0 && (!searchResults || searchResults.length === 0) && (
+      {!isLoading && !isError && !hasServices && failedSources.length === 0 && (!searchResults || searchResults.length === 0) && (
         <StateCard
           type="info"
           title={dictionary.search.noResultsTitle}

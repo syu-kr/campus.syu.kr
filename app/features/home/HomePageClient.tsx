@@ -40,6 +40,7 @@ import {
   TodaySchedulesSection,
 } from "@/app/features/home/HomeDashboardSections";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { M3HomeOverview, type HomeOverviewData } from "./M3HomeOverview";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -53,6 +54,7 @@ interface HomePageClientProps {
   initialSchedules: AcademicSchedule[];
   initialPublicHolidays?: PublicHolidaySnapshot;
   initialNowIso: string;
+  initialOverviewData?: Omit<HomeOverviewData, "updatedAt" | "holidays">;
 }
 
 export function HomePageClient({
@@ -61,6 +63,7 @@ export function HomePageClient({
   initialSchedules,
   initialPublicHolidays,
   initialNowIso,
+  initialOverviewData,
 }: HomePageClientProps) {
   const locale = useLocale();
   const dictionary = useDictionary();
@@ -187,7 +190,12 @@ export function HomePageClient({
   }
 
   return (
-    <Container className="space-y-6 pb-5 pt-6 sm:pb-8">
+    <Container className="m3-home-content space-y-6 pb-5 pt-6 sm:pb-8">
+      <M3HomeOverview now={now} schedules={todaySchedules}
+        initial={{ ...initialOverviewData, holidays: initialPublicHolidays, updatedAt: Date.parse(initialNowIso) }}>
+        <TodaySchedulesSection isLoading={schedulesLoading} isError={schedulesError}
+          onRetry={() => { void refetchSchedules(); void refetchHolidays(); }} schedules={todaySchedules} />
+      </M3HomeOverview>
       <FrequentMenuGrid />
 
       {isFestivalPromotionVisible(todayInfo.dateStringDash) && (
@@ -226,12 +234,6 @@ export function HomePageClient({
           void refetchServiceNotices();
         }}
         homeNotices={homeNotices}
-      />
-      <TodaySchedulesSection
-        isLoading={schedulesLoading}
-        isError={schedulesError}
-        onRetry={() => { void refetchSchedules(); void refetchHolidays(); }}
-        schedules={todaySchedules}
       />
 
       <RelatedLinksSection />

@@ -241,7 +241,7 @@ export default function MeetCreatePage() {
               )}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
+                className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
               >
                 {text.joinAction}
               </button>
@@ -430,7 +430,7 @@ export default function MeetCreatePage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
               >
                 {isSubmitting ? text.submitting : text.createInvite}
               </button>

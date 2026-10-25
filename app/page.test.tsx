@@ -8,15 +8,15 @@ const readers = vi.hoisted(() => ({
   getHomePublicHolidays: vi.fn(),
 }));
 
-const removedReaders = vi.hoisted(() => ({
-  getHomeCafeteriaMenus: vi.fn(),
+const overviewReaders = vi.hoisted(() => ({
+  getHomeCafeteriaSnapshot: vi.fn(),
   getHomeShuttleBuses: vi.fn(),
   getHomeShuttleSpecialPeriods: vi.fn(),
 }));
 
 vi.mock("@/lib/server/announcements", () => readers);
 vi.mock("@/lib/serviceNotices", () => readers);
-vi.mock("@/lib/server/home-data", () => ({ ...readers, ...removedReaders }));
+vi.mock("@/lib/server/home-data", () => ({ ...readers, ...overviewReaders }));
 vi.mock("@/lib/home", () => ({
   getKoreaNow: () => new Date("2026-10-19T00:00:00.000Z"),
 }));
@@ -30,13 +30,15 @@ import { HomeSearchBar } from "@/app/features/home/HomeSearchBar";
 
 let Home: typeof import("./page").default;
 let revalidate: number;
+let generateMetadata: typeof import("./page").generateMetadata;
 const initialProps = {
   initialAnnouncements: [{ id: "announcement" }],
   initialServiceNotices: [{ id: "service" }],
   initialSchedules: [{ id: "schedule" }],
   initialPublicHolidays: { holidays: [] },
 };
-const expectedProps = { ...initialProps, initialNowIso: "2026-10-19T00:00:00.000Z" };
+const initialOverviewData = { cafeteria: { menus: [], checkedAt: null, stale: false }, shuttles: [], specialPeriods: { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] } };
+const expectedProps = { ...initialProps, initialOverviewData, initialNowIso: "2026-10-19T00:00:00.000Z" };
 
 function deferred() {
   let resolve!: (value: unknown) => void;
@@ -59,14 +61,19 @@ beforeEach(async () => {
   Object.values(readers).forEach((reader, index) => {
     reader.mockReset().mockResolvedValue(Object.values(initialProps)[index]);
   });
-  Object.values(removedReaders).forEach((reader) => reader.mockReset());
-  ({ default: Home, revalidate } = await import("./page"));
+  Object.values(overviewReaders).forEach((reader, index) => reader.mockReset().mockResolvedValue(Object.values(initialOverviewData)[index]));
+  ({ default: Home, revalidate, generateMetadata } = await import("./page"));
 });
 
 afterEach(() => {
-  Object.values(removedReaders).forEach((reader) => expect(reader).not.toHaveBeenCalled());
   vi.restoreAllMocks();
   vi.useRealTimers();
+});
+
+it("keeps public home indexing and excludes nonempty search result URLs", async () => {
+  expect(await generateMetadata({ searchParams: Promise.resolve({}) })).toEqual({});
+  expect(await generateMetadata({ searchParams: Promise.resolve({ search: " " }) })).toEqual({});
+  expect(await generateMetadata({ searchParams: Promise.resolve({ search: ["시간표"] }) })).toEqual({ robots: { index: false, follow: true } });
 });
 
 it("renders search before and outside the cold data boundary without starting data reads", () => {
@@ -74,9 +81,10 @@ it("renders search before and outside the cold data boundary without starting da
   expect(search.type).toBe(HomeSearchBar);
   expect(data.type).toBe(Suspense);
   expect(Object.values(readers).every((reader) => reader.mock.calls.length === 0)).toBe(true);
+  expect(Object.values(overviewReaders).every((reader) => reader.mock.calls.length === 0)).toBe(true);
 });
 
-it("keeps the synchronous cold boundary until four required reads succeed without meal or shuttle reads", async () => {
+it("keeps search independent while resolving required and overview server reads", async () => {
   const pendingReads = Object.values(readers).map((reader) => {
     const read = deferred();
     reader.mockReturnValue(read.promise);
@@ -184,4 +192,14 @@ it("propagates a late warm failure through the deferred component", async () => 
   await failure;
   expect(clearTimeout).toHaveBeenCalledOnce();
   expect(vi.getTimerCount()).toBe(0);
+});
+
+it("keeps the ready home usable if the optional cafeteria source fails", async () => {
+  overviewReaders.getHomeCafeteriaSnapshot.mockRejectedValue(new Error("cafeteria unavailable"));
+  const child = Home().props.children[1].props.children;
+  const content = await child.type(child.props);
+  expect(content.props.children.props.initialOverviewData).toEqual({
+    ...initialOverviewData, cafeteria: undefined,
+  });
+  expect(content.props.children.props.initialAnnouncements).toEqual(initialProps.initialAnnouncements);
 });

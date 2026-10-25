@@ -600,6 +600,8 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     text.locationError,
   ]);
 
+  const regularScheduleUpdateDates = Array.from(new Set((buses ?? []).map(bus => bus.lastUpdated.trim())));
+
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
@@ -646,7 +648,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                 void refetchBuses();
                 void refetchSpecialPeriods();
               }}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
+              className="ui-button ui-button-primary rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
               {dictionary.home.dashboard.retry}
             </button>
@@ -924,18 +926,12 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         )}
       </div>
 
+      {(hasDaytimeIntervals || !canPredictDepartures) && (
       <Card
-        id="shuttle-schedules"
         role="status"
         className="mb-4 border border-neutral-200 bg-neutral-50"
         hover={false}
       >
-        <p className="text-sm font-semibold text-neutral-900">
-          {canPredictDepartures && !hasDaytimeIntervals ? text.scheduleBase : text.selectedSchedule}: {selectedScheduleLabel}
-        </p>
-        {!(isException && useSpecialSchedule) && (
-          <p className="mt-1 text-xs leading-5 text-neutral-600">{text.scheduleNotice}</p>
-        )}
         {hasDaytimeIntervals && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
             {text.festivalShuttle.referenceSchedule}
@@ -949,6 +945,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
           </p>
         )}
       </Card>
+      )}
 
       {timetableSpecialPeriods.length > 0 && (
         <Card
@@ -976,7 +973,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         </Card>
       )}
 
-      <div className="space-y-4">
+      <div id="shuttle-schedules" className="space-y-4" role="region" aria-label={`${text.scheduleToggleLabel}: ${selectedScheduleLabel}`}>
         {isLoading && <Skeleton count={3} height="150px" />}
 
         {!isLoading &&
@@ -1149,17 +1146,25 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                       </div>
                     )}
 
-                    {!bus.additionalService && !(isException && useSpecialSchedule) && (
-                      <p className="text-xs text-neutral-500 mt-3">
-                        {text.lastUpdated}: {bus.lastUpdated}
-                      </p>
-                    )}
+
                   </div>
                 )}
               </Card>
             );
           })}
       </div>
+      {regularScheduleUpdateDates.length > 0 && (
+        <div className="m3-shuttle-updated" data-update-source="shuttle-bus-schedule.lastUpdated">
+          {regularScheduleUpdateDates.length === 1 ? (
+            <p>{text.updateDateLabel}: {regularScheduleUpdateDates[0] || text.unknown} ({text.regularTimetable})</p>
+          ) : (
+            <>
+              <p>{text.updateDateLabel} ({text.regularTimetable})</p>
+              {(buses ?? []).map(bus => <p key={bus.id}>{bus.routeName}: {bus.lastUpdated.trim() || text.unknown}</p>)}
+            </>
+          )}
+        </div>
+      )}
       <SourceAttribution sources={sources} />
     </Container>
   );

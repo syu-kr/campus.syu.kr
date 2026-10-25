@@ -51,6 +51,11 @@ function readSynced() {
 }
 
 describe("push notifications", () => {
+  it("treats an unreadable preference as unavailable", async () => {
+    const notifications = await import("./push-notifications");
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new DOMException("Denied", "SecurityError"); });
+    expect(notifications.getNotificationPreference()).toBeNull();
+  });
   beforeEach(async () => {
     vi.resetModules();
     localStorage.clear();

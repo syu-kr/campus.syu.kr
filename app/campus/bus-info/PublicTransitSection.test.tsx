@@ -5,6 +5,10 @@ import { fetchJson } from "@/lib/fetch-json";
 import PublicTransitSection from "./PublicTransitSection";
 
 vi.mock("@/lib/fetch-json", () => ({ fetchJson: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/campus/bus-info",
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 
 function transitPayload(minutes: number | null) {
   return {
@@ -32,6 +36,7 @@ function transitPayload(minutes: number | null) {
 let client: QueryClient;
 
 beforeEach(() => {
+  window.history.replaceState(null, "", "/campus/bus-info?tab=public-transit&lang=en");
   vi.useFakeTimers();
   vi.mocked(fetchJson).mockReset();
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -55,11 +60,14 @@ async function openBusDetail() {
 describe("public transit details", () => {
   it("announces the selected stop and updates its state independently of bus details", async () => {
     vi.mocked(fetchJson).mockResolvedValue(transitPayload(10));
-    render(<QueryClientProvider client={client}><PublicTransitSection /></QueryClientProvider>);
+    const { rerender } = render(<QueryClientProvider client={client}><PublicTransitSection /></QueryClientProvider>);
     await act(async () => { await vi.advanceTimersByTimeAsync(1); });
     const selected = screen.getByRole("button", { pressed: true });
     const next = screen.getAllByRole("button", { pressed: false })[0];
     fireEvent.click(next);
+    rerender(<QueryClientProvider client={client}><PublicTransitSection /></QueryClientProvider>);
+    expect(window.location.search).toContain("stop=jungmun-down");
+    expect(window.location.search).toContain("tab=public-transit");
     expect(selected).toHaveAttribute("aria-pressed", "false");
     expect(next).toHaveAttribute("aria-pressed", "true");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();

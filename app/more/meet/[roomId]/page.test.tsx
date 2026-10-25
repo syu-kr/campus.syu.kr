@@ -1,8 +1,9 @@
 import { Suspense } from "react";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { MeetRoomResponse } from "@/types/meet";
+import { getMeetOwnerTokenKey } from "@/lib/meet";
 import MeetRoomPage from "./page";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
@@ -20,6 +21,28 @@ const room: MeetRoomResponse = {
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  localStorage.clear();
+});
+
+it("requires site confirmation before deleting with the original owner token", async () => {
+  localStorage.setItem(getMeetOwnerTokenKey("test-room"), "owner-test-token");
+  const fetchMock = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => Response.json(init?.method === "DELETE" ? { success: true } : room));
+  vi.stubGlobal("fetch", fetchMock);
+  await act(async () => { render(<Suspense fallback={null}><MeetRoomPage params={Promise.resolve({ roomId: "test-room" })} /></Suspense>); });
+  const trigger = await screen.findByRole("button", { name: "이 방 삭제" });
+  fireEvent.click(trigger);
+  let dialog = screen.getByRole("dialog", { name: "이 방 삭제" });
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "DELETE")).toHaveLength(0);
+  fireEvent.click(within(dialog).getByRole("button", { name: "취소" }));
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(localStorage.getItem(getMeetOwnerTokenKey("test-room"))).toBe("owner-test-token");
+  fireEvent.click(trigger);
+  dialog = screen.getByRole("dialog", { name: "이 방 삭제" });
+  fireEvent.click(within(dialog).getByRole("button", { name: "이 방 삭제" }));
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/meet/rooms/test-room", {
+    method: "DELETE", headers: { "x-owner-token": "owner-test-token" },
+  }));
+  await waitFor(() => expect(localStorage.getItem(getMeetOwnerTokenKey("test-room"))).toBeNull());
 });
 
 describe("Meet response editing when browser storage fails", () => {

@@ -11,6 +11,18 @@ import { CafeteriaPageClient } from "./CafeteriaPageClient";
 
 vi.mock("@/lib/api", () => ({ fetchCafeteriaSnapshot: vi.fn() }));
 vi.mock("@/app/components/CrawlDataStatus", () => ({ CrawlDataStatus: () => null }));
+vi.mock("next/navigation", async () => {
+  const { useSyncExternalStore } = await import("react");
+  return {
+    usePathname: () => "/campus/cafeteria",
+    useSearchParams: () => new URLSearchParams(useSyncExternalStore(
+      (listener) => { window.addEventListener("popstate", listener); return () => window.removeEventListener("popstate", listener); },
+      () => window.location.search,
+      () => window.location.search,
+    )),
+  };
+});
+const replaceHistory = window.history.replaceState.bind(window.history);
 
 vi.mock("@/app/features/cafeteria/StudentRestaurantMenu", () => ({
   StudentRestaurantMenu: ({ today }: { today: string }) => (
@@ -41,6 +53,10 @@ function page(data = snapshot, locale: Locale = "ko", now = initialNowIso) {
 
 beforeEach(() => {
   window.history.replaceState({}, "", "/campus/cafeteria");
+  vi.spyOn(window.history, "replaceState").mockImplementation((...args) => {
+    replaceHistory(...args);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
   vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
   vi.setSystemTime(new Date(initialNowIso));
   vi.mocked(fetchCafeteriaSnapshot).mockReset().mockResolvedValue(snapshot);
@@ -152,13 +168,15 @@ function renderPage(initialMenus = menus, locale: Locale = "ko") {
 
 describe("cafeteria selection and weekly menu", () => {
   it("opens Manna House from a home link and allows switching back to SU-Lounge", () => {
-    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna");
+    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna&lang=en");
     renderPage();
     const selector = screen.getByRole("group", { name: text.restaurantPicker });
     const manna = within(selector).getByRole("button", { name: text.mannaTab });
     expect(manna).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("manna-menu")).toBeInTheDocument();
     fireEvent.click(within(selector).getByRole("button", { name: text.suLoungeTitle }));
+    expect(window.location.search).toContain("restaurant=su-lounge");
+    expect(window.location.search).toContain("lang=en");
     expect(manna).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByText("오늘의 SU 메뉴")).toBeInTheDocument();
   });

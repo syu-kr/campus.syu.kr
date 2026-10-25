@@ -1,5 +1,7 @@
 "use client";
 
+import { focusFormError, FormFieldCounter } from "@/app/components/FormFieldFeedback";
+
 import { FormEvent, useEffect, useState } from "react";
 import {
   SubmissionResultModal,
@@ -7,6 +9,7 @@ import {
 } from "@/app/components/SubmissionResultModal";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Button } from "./Button";
+import { M3Select } from "./M3Select";
 import type { Dictionary } from "@/lib/i18n";
 import type { SiteInquiryType } from "@/types/submissions";
 
@@ -55,17 +58,14 @@ export function ContactForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const submittedForm=event.currentTarget;
     setResultModal(null);
     setFieldErrors({});
 
     const clientErrors = validateSiteInquiry({ title, message, pageUrl }, text);
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
-      setResultModal({
-        type: "error",
-        title: text.validationTitle,
-        message: text.validationMessage,
-      });
+      focusFormError(event.currentTarget);
       return;
     }
 
@@ -93,10 +93,12 @@ export function ContactForm({
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.field) {
+        if (data.field && ["title","message","pageUrl"].includes(data.field)) {
           setFieldErrors({
             [data.field]: getServerFieldError(data.code, data.error, text),
           });
+          focusFormError(submittedForm);
+          return;
         }
         throw new Error(
           getServerFieldError(data.code, data.error, text) ||
@@ -133,7 +135,8 @@ export function ContactForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate aria-busy={isSubmitting}>
+        {Object.keys(fieldErrors).length>0 && <p className="m3-validation-summary col-span-full" role="alert">{text.validationMessage}</p>}
         <input
           type="text"
           value={website}
@@ -146,23 +149,18 @@ export function ContactForm({
 
         <div>
           <label
+            id="inquiry-type-label"
             htmlFor="inquiry-type"
             className="block text-sm font-semibold text-neutral-900 mb-2"
           >
             {text.typeLabel}
           </label>
-          <select
+          <M3Select
             id="inquiry-type"
             value={type}
-            onChange={(event) => setType(event.target.value as SiteInquiryType)}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          >
-            {inquiryTypes.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={(value) => setType(value as SiteInquiryType)}
+            options={inquiryTypes}
+          />
         </div>
 
         <div>
@@ -188,6 +186,7 @@ export function ContactForm({
               fieldErrors.title ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id="inquiry-title-count" value={title} max={120}/>
           {fieldErrors.title && (
             <p id="inquiry-title-error" className="mt-1 text-xs text-red-600">
               {fieldErrors.title}
@@ -218,6 +217,7 @@ export function ContactForm({
               fieldErrors.message ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id="inquiry-message-count" value={message} max={2000}/>
           {fieldErrors.message && (
             <p id="inquiry-message-error" className="mt-1 text-xs text-red-600">
               {fieldErrors.message}
@@ -245,6 +245,7 @@ export function ContactForm({
               fieldErrors.pageUrl ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id="page-url-count" value={pageUrl} max={500}/>
           {fieldErrors.pageUrl && (
             <p id="page-url-error" className="mt-1 text-xs text-red-600">
               {fieldErrors.pageUrl}
@@ -272,6 +273,7 @@ export function ContactForm({
             aria-describedby="contact-help"
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
+          <FormFieldCounter id="contact-count" value={contact} max={120}/>
           <p id="contact-help" className="mt-1 text-xs text-neutral-500">
             {text.contactHelp}
           </p>

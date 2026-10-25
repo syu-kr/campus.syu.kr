@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { Button } from "@/app/components/Button";
@@ -39,7 +40,14 @@ export function CafeteriaPageClient({
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
   const text = dictionary.pages.cafeteria;
-  const [activeRestaurant, setActiveRestaurant] = useState<"su-lounge" | "manna">("su-lounge");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeRestaurant = searchParams.get("restaurant") === "manna" ? "manna" : "su-lounge";
+  const setActiveRestaurant = (restaurant: "su-lounge" | "manna") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("restaurant", restaurant);
+    window.history.replaceState(null, "", `${pathname}?${params}${window.location.hash}`);
+  };
   const [now, setNow] = useState(() => new Date(initialNowIso));
 
   const { data: snapshot, isLoading, isError, refetch } = useQuery({
@@ -51,12 +59,6 @@ export function CafeteriaPageClient({
     gcTime: 60 * 60 * 1000,
   });
   const menus = snapshot.menus;
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("restaurant") === "manna") {
-      setActiveRestaurant("manna");
-    }
-  }, []);
 
   useEffect(() => {
     setNow(getKoreaNow());

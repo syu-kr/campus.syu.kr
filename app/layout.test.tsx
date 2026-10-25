@@ -60,7 +60,7 @@ async function getAnalyticsScript() {
   return script!;
 }
 
-beforeEach(() => { request.pathname = "/"; });
+beforeEach(() => { request.pathname = "/"; vi.stubEnv("NODE_ENV", "production"); });
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("search engine ownership verification", () => {
@@ -104,6 +104,16 @@ describe("search engine ownership verification", () => {
 });
 
 describe("Meet invitation analytics privacy", () => {
+  it.each(["http://127.0.0.1:4180", "http://localhost:3000", "https://campus-preview.vercel.app"])("does not collect local or preview traffic from %s", async (origin) => {
+    const script = await getAnalyticsScript();
+    const { analyticsWindow } = runAnalyticsBootstrap(script, origin);
+    expect(analyticsWindow.gtag).toBeUndefined();
+    expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
+  });
+  it("does not send local development traffic to analytics", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect((await renderDocument()).querySelector("#google-analytics")).toBeNull();
+  });
   it.each([
     "/more/meet/dummy-private-invite",
     "/en/more/meet/dummy-private-invite/",

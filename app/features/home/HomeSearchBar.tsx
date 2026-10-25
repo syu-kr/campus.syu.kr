@@ -32,7 +32,7 @@ export function HomeSearchBar() {
 
   return (
     <Container className="pt-5 sm:pt-8">
-      <h1 className="sr-only">SYU CAMPUS</h1>
+      <p className="sr-only">SYU CAMPUS</p>
       <SearchBar onSearch={handleSearch} className="mt-2" />
     </Container>
   );

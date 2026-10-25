@@ -16,6 +16,11 @@ vi.mock("@/lib/api", () => ({
   fetchCompetitionPage: vi.fn(),
 }));
 vi.mock("@/lib/use-url-search", () => ({ useUrlSearch: () => ["", vi.fn()] }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/announcements",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const text = getDictionary("ko").crawlDataStatus;
 const staleHealth: CrawlSourceHealth = {

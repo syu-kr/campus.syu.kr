@@ -2,11 +2,24 @@ import { headers } from "next/headers";
 import { AnnouncementListPage } from "@/app/components/AnnouncementListPage";
 import { LOCALE_HEADER_NAME, getDictionary, normalizeLocale } from "@/lib/i18n";
 import { getAnnouncementPage } from "@/lib/server/announcements";
+import { getAnnouncementListMetadata, getAnnouncementListQuery, type AnnouncementListSearchParams } from "@/lib/announcement-list-query";
 
-export default async function CampusAnnouncementsPage() {
+export async function generateMetadata({
+  searchParams = Promise.resolve({}),
+}: { searchParams?: Promise<AnnouncementListSearchParams> } = {}) {
+  const [params, headerStore] = await Promise.all([searchParams, headers()]);
+  return getAnnouncementListMetadata("/campus/announcements", params, normalizeLocale(headerStore.get(LOCALE_HEADER_NAME)));
+}
+
+export default async function CampusAnnouncementsPage({
+  searchParams = Promise.resolve({}),
+}: {
+  searchParams?: Promise<AnnouncementListSearchParams>;
+} = {}) {
+  const listQuery = getAnnouncementListQuery(await searchParams);
   const [headerStore, initialPage] = await Promise.all([
     headers(),
-    getAnnouncementPage({ category: "campus" }),
+    getAnnouncementPage({ category: "campus", ...listQuery }),
   ]);
   const dictionary = getDictionary(normalizeLocale(headerStore.get(LOCALE_HEADER_NAME)));
 
@@ -14,6 +27,7 @@ export default async function CampusAnnouncementsPage() {
     <AnnouncementListPage
       category="campus"
       initialPage={initialPage}
+      initialQuery={listQuery.query}
       title={dictionary.pages.announcements.campusTitle}
       description={dictionary.pages.announcements.campusDescription}
       errorMessage={dictionary.pages.announcements.campusError}

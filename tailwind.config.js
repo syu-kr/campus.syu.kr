@@ -13,10 +13,10 @@ module.exports = {
           200: "#c7e0fd",
           300: "#a3cbfc",
           400: "#7eb3f9",
-          500: "#3182F6",
-          600: "#2563eb",
-          700: "#1d4ed8",
-          800: "#1e40af",
+          500: "#2459d4",
+          600: "#2459d4",
+          700: "#1e4fc0",
+          800: "#193fa0",
           900: "#1e3a8a",
         },
         neutral: {
@@ -37,8 +37,8 @@ module.exports = {
         safe: "max(1rem, env(safe-area-inset-bottom))",
       },
       borderRadius: {
-        card: "12px",
-        button: "8px",
+        card: "20px",
+        button: "999px",
       },
       boxShadow: {
         card: "0 1px 3px rgba(0, 0, 0, 0.1)",

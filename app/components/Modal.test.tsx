@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ContactModal } from "./ContactModal";
 import { CampusTipSuggestionForm } from "@/app/features/campus-tips/CampusTipSuggestionForm";
@@ -43,7 +43,7 @@ describe("Modal", () => {
     document.body.style.overflow = "";
   });
 
-  it.each(["contact", "campus-tip"])("confines keyboard handling to the %s result dialog and preserves its parent form", (formType) => {
+  it.each(["contact", "campus-tip"])("keeps %s validation in the form, focuses the field and preserves the draft", async (formType) => {
     vi.spyOn(HTMLElement.prototype, "getClientRects").mockReturnValue([{}] as unknown as DOMRectList);
     const onParentClose = vi.fn();
     const dictionary = getDictionary("ko");
@@ -54,15 +54,9 @@ describe("Modal", () => {
     const titleInput = container.querySelector<HTMLInputElement>(formType === "contact" ? "#inquiry-title" : "#tip-title")!;
     fireEvent.change(titleInput, { target: { value: "입력 중인 제목" } });
     fireEvent.submit(container.querySelector("form")!);
-    const resultDialog = screen.getByRole("dialog", { name: text.validationTitle });
-    const buttons = within(resultDialog).getAllByRole("button");
-    buttons.at(-1)!.focus();
-    fireEvent.keyDown(document, { key: "Tab" });
-    expect(resultDialog).toContainElement(document.activeElement as HTMLElement);
-    expect(buttons[0]).toHaveFocus();
-    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
-    expect(buttons.at(-1)).toHaveFocus();
-    fireEvent.keyDown(document, { key: "Escape" });
+    const messageInput = container.querySelector(formType === "contact" ? "#inquiry-message" : "#tip-description")!;
+    await waitFor(() => expect(messageInput).toHaveFocus());
+    expect(screen.getByRole("alert")).toHaveTextContent(text.validationMessage);
     expect(screen.queryByRole("dialog", { name: text.validationTitle })).not.toBeInTheDocument();
     expect(screen.getAllByRole("dialog")).toHaveLength(1);
     expect(onParentClose).not.toHaveBeenCalled();

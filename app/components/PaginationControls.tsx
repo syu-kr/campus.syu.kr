@@ -1,13 +1,15 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
-import { Button } from "./Button";
+import { Button, buttonStyles } from "./Button";
 
 interface PaginationControlsProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   pageRange?: number;
+  getPageHref?: (page: number) => string;
 }
 
 export function PaginationControls({
@@ -15,6 +17,7 @@ export function PaginationControls({
   totalPages,
   onPageChange,
   pageRange = 5,
+  getPageHref,
 }: PaginationControlsProps) {
   const dictionary = useDictionary();
 
@@ -28,40 +31,53 @@ export function PaginationControls({
     (_, index) => adjustedStartPage + index,
   );
 
+  const pageControl = (page: number, label: ReactNode, disabled = false, numbered = false) => {
+    const variant = numbered && currentPage === page ? "primary" : "secondary";
+    const className = numbered ? "min-w-11 px-2 md:px-3" : "px-2 md:px-3";
+    const current = numbered && currentPage === page ? "page" as const : undefined;
+
+    if (getPageHref && !disabled) {
+      return (
+        <a href={getPageHref(page)} aria-current={current} className={buttonStyles(variant, className)}
+          onClick={(event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            onPageChange(page);
+          }}>
+          {label}
+        </a>
+      );
+    }
+
+    return (
+      <Button variant={variant} onClick={() => onPageChange(page)} disabled={disabled}
+        aria-current={current} className={className}>
+        {label}
+      </Button>
+    );
+  };
+
   return (
     <nav
       aria-label={dictionary.pagination.label}
-      className="mt-8 flex flex-wrap items-center justify-center gap-1 md:gap-2"
+      className="m3-pagination"
     >
-      <Button
-        variant="secondary"
-        type="button"
-        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        disabled={currentPage === 1}
-        className="px-2 md:px-3"
-      >
-        {dictionary.pagination.previous}
-      </Button>
-
-      {pageNumbers.map((page) => (
-        <Button
-          key={page}
-          type="button"
-          aria-current={currentPage === page ? "page" : undefined}
-          onClick={() => onPageChange(page)}
-          variant={currentPage === page ? "primary" : "secondary"}
-          className="min-w-11 px-2 md:px-3"
-        >
-          {page}
-        </Button>
-      ))}
+      <div className="m3-pagination-step">
+        {pageControl(Math.max(1, currentPage - 1), dictionary.pagination.previous, currentPage === 1)}
+        <span className="m3-pagination-status" role="status" aria-live="polite">{currentPage} / {totalPages}</span>
+        {pageControl(Math.min(totalPages, currentPage + 1), dictionary.pagination.next, currentPage === totalPages)}
+      </div>
+      <div className="m3-pagination-pages">
+        {pageNumbers.map((page) => <span key={page}>{pageControl(page, page, false, true)}</span>)}
+      </div>
 
       {endPage < totalPages && (
+        <label className="m3-pagination-jump">
+        <span>{dictionary.pagination.pageSelect}</span>
         <select
           aria-label={dictionary.pagination.pageSelect}
           value={currentPage}
           onChange={(event) => onPageChange(Number(event.target.value))}
-          className="min-h-11 rounded-button border border-neutral-300 bg-white px-2 py-2 text-sm text-neutral-700 focus-visible:ring-2 focus-visible:ring-primary-500 md:px-3"
         >
           <option value={currentPage}>{currentPage}</option>
           {Array.from({ length: totalPages }, (_, index) => index + 1)
@@ -72,17 +88,8 @@ export function PaginationControls({
               </option>
             ))}
         </select>
+        </label>
       )}
-
-      <Button
-        variant="secondary"
-        type="button"
-        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-        disabled={currentPage === totalPages}
-        className="px-2 md:px-3"
-      >
-        {dictionary.pagination.next}
-      </Button>
     </nav>
   );
 }

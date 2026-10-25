@@ -77,6 +77,8 @@ export default function GraduationPageClient() {
   const [restored, setRestored] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [pendingProgressAction, setPendingProgressAction] = useState<(() => void) | null>(null);
+  const confirmationReturnFocusRef = useRef<HTMLElement | null>(null);
   const [persistenceMessage, setPersistenceMessage] =
     useState<PersistenceMessageKey | null>(null);
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
@@ -229,16 +231,31 @@ export default function GraduationPageClient() {
     setPlans({});
   };
 
-  const confirmProgressReset = () => {
+  useEffect(() => {
+    if (pendingProgressAction || !confirmationReturnFocusRef.current) return;
+    if (confirmationReturnFocusRef.current.isConnected) {
+      confirmationReturnFocusRef.current.focus({ preventScroll: true });
+    }
+    confirmationReturnFocusRef.current = null;
+  }, [pendingProgressAction]);
+
+  const confirmProgressReset = (action: () => void, trigger?: HTMLElement) => {
+    if (pendingProgressAction) return false;
     const hasProgress =
       Object.values(completedCredits).some((credits) => credits !== undefined) ||
       selectedCourseIds.length > 0 ||
       Object.keys(checklistAnswers).length > 0 ||
       Object.values(plans).some((plan) => plan.trim());
-    return !hasProgress || window.confirm(text.selectionChangeConfirm);
+    if (!hasProgress) {
+      action();
+      return true;
+    }
+    confirmationReturnFocusRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setPendingProgressAction(() => action);
+    return false;
   };
 
-  const updateSelection = (next: Partial<GraduationSelection>) => {
+  const updateSelection = (next: Partial<GraduationSelection>, trigger?: HTMLElement) => {
     if (
       Object.entries(next).every(
         ([key, value]) => selection[key as keyof GraduationSelection] === value,
@@ -246,10 +263,11 @@ export default function GraduationPageClient() {
     ) {
       return true;
     }
-    if (!confirmProgressReset()) return false;
-    setSelection({ ...selection, ...next });
-    resetProgress();
-    return true;
+    return confirmProgressReset(() => {
+      setSelection({ ...selection, ...next });
+      if (next.admissionYear !== undefined) setAdmissionYearDraft(next.admissionYear);
+      resetProgress();
+    }, trigger);
   };
 
   const handleCollegeSelect = (collegeId: string) => {
@@ -273,10 +291,10 @@ export default function GraduationPageClient() {
     });
   };
 
-  const commitAdmissionYear = () => {
+  const commitAdmissionYear = (trigger: HTMLInputElement) => {
     if (
       !/^\d{4}$/.test(admissionYearDraft) ||
-      !updateSelection({ admissionYear: admissionYearDraft })
+      !updateSelection({ admissionYear: admissionYearDraft }, trigger)
     ) {
       setAdmissionYearDraft(selection.admissionYear);
     }
@@ -303,17 +321,24 @@ export default function GraduationPageClient() {
   };
 
   const handleReset = () => {
-    if (!confirmProgressReset()) return;
-    setSelection(INITIAL_SELECTION);
-    setAdmissionYearDraft("");
-    resetProgress();
-    setPersistenceMessage(null);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      setPersistenceMessage("storageUnavailable");
-    }
-    setShareFallbackUrl("");
+    confirmProgressReset(() => {
+      setSelection(INITIAL_SELECTION);
+      setAdmissionYearDraft("");
+      resetProgress();
+      setPersistenceMessage(null);
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        setPersistenceMessage("storageUnavailable");
+      }
+      setShareFallbackUrl("");
+    });
+  };
+
+  const resolveProgressConfirmation = (confirmed: boolean) => {
+    const action = pendingProgressAction;
+    setPendingProgressAction(null);
+    if (confirmed) action?.();
   };
 
   const getCurrentSavedState = () =>
@@ -416,33 +441,7 @@ export default function GraduationPageClient() {
 
   return (
     <Container size="full" className="max-w-[88rem] pb-safe pt-6 md:pt-8">
-      {showMobileNotice && (
-        <Modal
-          isOpen
-          onClose={handleMobileContinue}
-          title={text.mobileTitle}
-          description={text.mobileDescription}
-          size="sm"
-        >
-          <Badge color="yellow">{text.mobileBadge}</Badge>
-          <div className="mt-5 grid gap-2">
-              <button
-                type="button"
-                onClick={handleMobileContinue}
-                className={buttonStyles("primary")}
-              >
-                {text.mobileContinue}
-              </button>
-              <button
-                type="button"
-                onClick={handleMobileBack}
-                className={buttonStyles("secondary")}
-              >
-                {text.mobileBack}
-              </button>
-          </div>
-        </Modal>
-      )}
+
 
       <header className="mb-8">
         <div className="mb-3 flex flex-wrap gap-2">
@@ -460,7 +459,29 @@ export default function GraduationPageClient() {
         </p>
       </header>
 
-      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+      {showMobileNotice && (
+        <details className="m3-graduation-mobile-notice">
+          <summary className="m3-disclosure-trigger">{text.mobileGuidanceLabel}</summary>
+          <div>
+            <p className="font-semibold">{text.mobileTitle}</p>
+            <p>{text.mobileDescription}</p>
+            <div className="m3-graduation-notice-actions">
+              <button type="button" onClick={(event) => {
+                const yearInput = event.currentTarget.closest(".m3-graduation-mobile-notice")?.parentElement?.querySelector<HTMLInputElement>('input[inputmode="numeric"]');
+                handleMobileContinue();
+                yearInput?.focus({preventScroll:true});
+              }} className={buttonStyles("secondary")}>
+                {text.dismissGuidanceLabel}
+              </button>
+              <button type="button" onClick={handleMobileBack} className={buttonStyles("ghost")}>
+                {text.mobileBack}
+              </button>
+            </div>
+          </div>
+        </details>
+      )}
+      <details className="m3-graduation-source-notice mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+        <summary className="m3-disclosure-trigger">{text.sourceGuidanceLabel}</summary>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-5xl">
             {text.sourceNoticePrefix}
@@ -475,7 +496,7 @@ export default function GraduationPageClient() {
             {text.contactWrongInfo}
           </button>
         </div>
-      </div>
+      </details>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
         <div className="space-y-6">
@@ -495,7 +516,7 @@ export default function GraduationPageClient() {
                     event.target.value.replace(/\D/g, "").slice(0, 4),
                   )
                 }
-                onBlur={commitAdmissionYear}
+                onBlur={(event) => commitAdmissionYear(event.currentTarget)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
@@ -996,6 +1017,18 @@ export default function GraduationPageClient() {
         </aside>
       </div>
 
+      <Modal
+        isOpen={pendingProgressAction !== null}
+        onClose={() => resolveProgressConfirmation(false)}
+        title={text.changeConfirmTitle}
+        description={text.selectionChangeConfirm}
+        size="sm"
+      >
+        <div className="flex flex-wrap justify-end gap-3">
+          <button type="button" className={buttonStyles("secondary")} onClick={() => resolveProgressConfirmation(false)}>{text.cancelChanges}</button>
+          <button type="button" className={buttonStyles("danger")} onClick={() => resolveProgressConfirmation(true)}>{text.confirmChanges}</button>
+        </div>
+      </Modal>
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}

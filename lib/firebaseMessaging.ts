@@ -33,7 +33,7 @@ export async function sendFCMMessage(
         notification: {
           title,
           body,
-          icon: "/images/syu-campus-app-icon-192.png",
+          icon: "/images/syu-campus-app-icon-192-m3.png",
           badge: "/images/syu-campus-notification-badge-96.png",
         },
         data: data || {},

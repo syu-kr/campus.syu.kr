@@ -150,6 +150,51 @@ describe("timetable recovery and mobile editing", () => {
     expect(input).toHaveValue("테스트");
   });
 
+  it("compares up to four plans on mobile and keeps courses in their chosen plan", () => {
+    const { container } = render(<TimetableBuilderClient />);
+    fireEvent.click(screen.getAllByRole("button", { name: "여러 시간표로" })[0]);
+    expect(container.querySelectorAll(".m3-timetable-comparison-card")).toHaveLength(2);
+    const addPlan = screen.getByRole("button", { name: "시간표 추가" });
+    fireEvent.click(addPlan);
+    fireEvent.click(addPlan);
+    expect(container.querySelectorAll(".m3-timetable-comparison-card")).toHaveLength(4);
+    expect(addPlan).toBeDisabled();
+    const thirdPlan = container.querySelectorAll<HTMLElement>(".m3-timetable-comparison-card")[2];
+    fireEvent.click(within(thirdPlan).getByRole("button", { name: "선택" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "강의 추가" }).at(-1)!);
+    const picker = screen.getByRole("dialog");
+    fireEvent.click(within(picker).getByRole("button", { name: "추가" }));
+    expect(within(picker).getByRole("button", { name: "삭제" })).toBeInTheDocument();
+    fireEvent.click(within(picker).getByRole("button", { name: "시간표 보기" }));
+    const plans = container.querySelectorAll<HTMLElement>(".m3-timetable-comparison-card");
+    expect(plans[0].querySelector(".m3-academic-print-surface")).not.toHaveTextContent("테스트 시간 미정 강의");
+    expect(plans[2].querySelector(".m3-academic-print-surface")).toHaveTextContent("테스트 시간 미정 강의");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it.each([390, 1440])("preserves department options and filtering through the M3 Select at %ipx", async (width) => {
+    viewportWidth = width;
+    responses.timetable = { success: true, data: { year: "2026", semester: "2", courses: [
+      { id: "computer", courseName: "컴퓨터 강의", normalizedName: "컴퓨터 강의", departmentName: "컴퓨터공학부", credits: 3, timeSlots: [] },
+      { id: "nursing", courseName: "간호 강의", normalizedName: "간호 강의", departmentName: "간호학과", credits: 3, timeSlots: [] },
+    ] } };
+    render(<TimetableBuilderClient />);
+    if (width < 1024) {
+      fireEvent.click(screen.getAllByRole("button", { name: "강의 추가" }).at(-1)!);
+      screen.getByRole("dialog").querySelector("details")!.open = true;
+    }
+    fireEvent.click(screen.getByRole("combobox", { name: "학과" }));
+    const computer = await screen.findByRole("option", { name: "컴퓨터공학부" });
+    expect(screen.getByRole("option", { name: "간호학과" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "전체 학과" })).toBeInTheDocument();
+    fireEvent.pointerDown(computer);
+    fireEvent.click(computer);
+    expect(screen.getAllByRole("article")).toHaveLength(1);
+    expect(screen.getByRole("heading", { name: "컴퓨터 강의" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "초기화" }));
+    expect(screen.getAllByRole("article")).toHaveLength(2);
+  });
+
   it("does not map a previous semester's shared course ID to the current course", () => {
     responses.search = "share=previous";
     responses.share = { success: true, data: { year: "2026", semester: "1", courseIds: ["same-id"] } };

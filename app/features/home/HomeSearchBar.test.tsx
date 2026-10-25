@@ -34,7 +34,7 @@ describe.each(["ko", "en"] as const)("independent home search for %s", (locale) 
 
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("SYU CAMPUS");
+    expect(screen.getByText("SYU CAMPUS")).toHaveClass("sr-only");
     fireEvent.change(screen.getByRole("textbox", { name: dictionary.search.label }), { target: { value: "  library  " } });
     fireEvent.submit(screen.getByRole("search"));
     expect(navigation.push).toHaveBeenLastCalledWith(`${navigation.pathname}?mode=preview&tag=a&tag=b&search=library`);

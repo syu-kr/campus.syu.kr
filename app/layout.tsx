@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
+import { SiteContent } from "./components/SiteContent";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 import { LocaleProvider } from "./components/LocaleProvider";
 import { StructuredDataScript } from "./components/StructuredDataScript";
@@ -17,12 +18,14 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { createSiteIdentitySchema } from "@/lib/structured-data";
+import { areRoommatesEnabled } from "@/lib/roommates";
 import "./fonts/pretendard-v1.3.9/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 
 const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
 const GOOGLE_ANALYTICS_SCRIPT = `
 (function initializeGoogleAnalytics() {
+  if (window.location.hostname !== 'campus.syu.kr') return;
   if (/^\\/(?:en\\/)?(?:campus\\/roommates(?:\\/|$)|more\\/meet\\/[^/]+(?:\\/|$))/.test(window.location.pathname)) {
     window['ga-disable-${GOOGLE_ANALYTICS_ID}'] = true;
   }
@@ -116,7 +119,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: dictionary.meta.description,
       images: [
         {
-          url: "/images/syu-campus-app-icon-512.png",
+          url: "/images/syu-campus-app-icon-512-m3.png",
           width: 512,
           height: 512,
           alt: "SYU CAMPUS",
@@ -127,7 +130,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary",
       title: dictionary.meta.title,
       description: dictionary.meta.description,
-      images: ["/images/syu-campus-app-icon-512.png"],
+      images: ["/images/syu-campus-app-icon-512-m3.png"],
     },
     verification: {
       google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
@@ -138,8 +141,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "SYU CAMPUS",
     },
     icons: {
-      icon: "/images/syu-campus-favicon-48.png",
-      apple: "/images/syu-campus-apple-touch-icon-180.png",
+      icon: "/images/syu-campus-favicon-48-m3.png",
+      apple: "/images/syu-campus-apple-touch-icon-180-m3.png",
     },
     manifest: "/manifest.json",
   };
@@ -148,7 +151,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#3182F6",
+  themeColor: "#2459d4",
   colorScheme: "light",
 };
 
@@ -166,7 +169,7 @@ export default async function RootLayout({
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
   return (
-    <html lang={locale} data-scroll-behavior="smooth">
+    <html lang={locale} className="m3-root" data-scroll-behavior="smooth">
       <head>
         <meta
           name="google-site-verification"
@@ -179,7 +182,7 @@ export default async function RootLayout({
         {bingVerification && (
           <meta name="msvalidate.01" content={bingVerification} />
         )}
-        <meta name="theme-color" content="#3182F6" />
+        <meta name="theme-color" content="#2459d4" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
@@ -187,7 +190,7 @@ export default async function RootLayout({
           content="black-translucent"
         />
 
-        {!isPrivateAnalyticsPage && <Script
+        {process.env.NODE_ENV === "production" && !isPrivateAnalyticsPage && <Script
           id="google-analytics"
           nonce={nonce}
           strategy="afterInteractive"
@@ -201,14 +204,14 @@ export default async function RootLayout({
           data={createSiteIdentitySchema(locale)}
         />
       </head>
-      <body>
+      <body className="m3-site">
         <LocaleProvider locale={locale}>
-          <Providers>
+          <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
-            <main className="min-h-screen pb-20 md:pb-0">
+            <SiteContent initialPathname={pathname}>
               {children}
               <NotificationPermissionPrompt />
-            </main>
+            </SiteContent>
             <Footer locale={locale} />
             <BottomNav />
           </Providers>

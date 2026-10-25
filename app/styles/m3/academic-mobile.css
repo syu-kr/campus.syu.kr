@@ -1,0 +1,75 @@
+.m3-academic-timetable{min-width:0;display:flex;flex-direction:column;flex:1;min-height:0}
+.m3-academic-weekly{min-width:0;display:flex;flex-direction:column;flex:1;min-height:0}
+.m3-academic-week-course{display:block;width:100%;text-align:left;font:inherit;cursor:pointer}
+.m3-academic-week-course:focus-visible{position:relative;z-index:2}
+.m3-academic-course-details{margin:0 0 24px;font-size:14px;line-height:1.7}
+.m3-academic-course-details>div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;padding:12px 0;border-bottom:1px solid var(--academic-outline,#d8deea)}
+.m3-academic-course-details dt{color:var(--academic-muted,#5b6679);font-weight:500}
+.m3-academic-course-details dd{min-width:0;margin:0;color:var(--academic-ink,#1b2538);overflow-wrap:anywhere;white-space:pre-wrap}
+.m3-academic-course-details li+li{margin-top:8px}
+.m3-academic-detail-close{width:100%}
+.m3-academic-detail-conflict{margin-bottom:16px;padding:12px 16px;border-radius:12px;background:#ffedee;color:#a62d35;font-weight:600;font-size:14px}
+@media(max-width:1023px){
+  .m3-academic-mobile-controls{margin-bottom:16px}
+  .m3-academic-view-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;border-radius:100px;background:var(--academic-surface-high,#e9eef8)}
+  .m3-academic-view-switch button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:8px 12px;border:0;border-radius:100px;background:transparent;color:var(--academic-muted,#5b6679);font-size:14px;font-weight:550;line-height:1.4}
+  .m3-academic-view-switch button>span{font-size:20px;line-height:1}
+  .m3-academic-view-switch button[aria-pressed=true]{background:var(--academic-container,#dfe8ff);color:var(--academic-on-container,#15336f);font-weight:650}
+  .m3-academic-week-help{margin:12px 0 0;color:var(--academic-muted,#5b6679);font-size:12px;line-height:1.7}
+  .m3-academic-day-picker{display:grid;grid-template-columns:repeat(5,minmax(48px,1fr));gap:6px;margin-bottom:16px;padding:3px;overflow-x:auto;scrollbar-width:thin;overscroll-behavior-x:contain}
+  .m3-academic-day-picker:has(>button:nth-child(6)){grid-template-columns:repeat(6,minmax(48px,1fr))}
+  .m3-academic-day-picker:has(>button:nth-child(7)){grid-template-columns:repeat(7,minmax(48px,1fr))}
+  .m3-academic-day-picker button{min-width:48px;min-height:48px;padding:8px 0;border:0;border-radius:100px;background:var(--academic-surface-low,#f1f4fb);color:var(--academic-muted,#5b6679);font-size:14px;font-weight:550}
+  .m3-academic-day-picker button[aria-pressed=true]{background:var(--academic-container,#dfe8ff);color:var(--academic-on-container,#15336f);font-weight:650}
+  .m3-academic-agenda-summary{margin:0 0 12px;font-size:12px;line-height:1.6;color:var(--academic-muted,#5b6679)}
+  .m3-academic-agenda-list{list-style:none;margin:0;padding:0}
+  .m3-academic-agenda-list>li+li{border-top:1px solid var(--academic-outline,#d8deea)}
+  .m3-academic-agenda-course{display:grid;grid-template-columns:54px minmax(0,1fr) 16px;align-items:start;gap:10px;width:100%;min-height:96px;padding:18px 0;border:0;border-radius:12px;background:transparent;color:var(--academic-ink,#1b2538);text-align:left}
+  .m3-academic-agenda-time{padding-top:1px;color:var(--academic-primary,#2459d4);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.6;overflow-wrap:anywhere}
+  .m3-academic-agenda-time>span{display:block;color:var(--academic-muted,#5b6679);font-size:11px;font-weight:400}
+  .m3-academic-agenda-copy{display:grid;gap:6px;min-width:0}
+  .m3-academic-agenda-copy>strong{font-size:15px;line-height:1.6;font-weight:650;overflow-wrap:anywhere;word-break:keep-all}
+  .m3-academic-agenda-copy>span{color:var(--academic-muted,#5b6679);font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+  .m3-academic-agenda-copy>span.m3-academic-conflict{justify-self:start;padding:2px 8px;border-radius:6px;background:#ffedee;color:#a62d35;font-weight:600}
+  .m3-academic-agenda-chevron{align-self:center;justify-self:end;color:var(--academic-muted,#5b6679);font-size:23px;line-height:1}
+  .m3-academic-agenda-empty{padding:28px 12px;text-align:center;background:var(--academic-surface-low,#f1f4fb);border-radius:16px;color:var(--academic-muted,#5b6679);font-size:13px;line-height:1.8}
+  .m3-academic-agenda-empty strong{display:block;color:var(--academic-ink,#1b2538);font-weight:550}
+  .m3-academic-agenda-empty p{margin:6px 0 0}
+  .m3-academic-unscheduled{margin-top:24px;padding-top:20px;border-top:1px solid var(--academic-outline,#d8deea)}
+  .m3-academic-unscheduled>h3{font-size:15px;font-weight:650}
+  .m3-academic-unscheduled>p{margin:6px 0 0;color:var(--academic-muted,#5b6679);font-size:12px;line-height:1.7}
+  .m3-content[data-site-route="/academic/timetable"] .m3-academic-picker-body{display:flex;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:12px}
+  .m3-academic-picker-contents{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 3px 0}
+  .m3-academic-picker-done{flex-shrink:0;padding-top:12px;margin-top:12px;border-top:1px solid var(--academic-outline,#d8deea);background:#fff}
+  .m3-academic-picker-done>button{min-height:48px}
+  .m3-content[data-site-route="/academic/timetable"] .m3-academic-course-dialog>div:first-child h2{overflow-wrap:anywhere;word-break:keep-all}
+}
+@media(max-width:359px){
+  .m3-academic-view-switch button{font-size:13px;gap:5px;padding-inline:8px}
+  .m3-academic-agenda-course{grid-template-columns:49px minmax(0,1fr) 12px;gap:8px}
+  .m3-academic-agenda-copy>strong{font-size:14px}
+  .m3-academic-day-picker{gap:4px}
+  .m3-academic-course-details>div{grid-template-columns:74px minmax(0,1fr);gap:8px}
+}
+@media(hover:hover){.m3-academic-agenda-course:hover{background:var(--academic-surface-low,#f1f4fb)}}
+@media print{.m3-academic-mobile-controls,.m3-academic-agenda{display:none}}
+
+/* Keep the original four-plan workspace and its actions available at every width. */
+.m3-timetable-compare-toggle{display:inline-flex;align-self:start}
+.m3-timetable-comparison{min-width:0}
+.m3-timetable-comparison-header{align-items:start}
+.m3-timetable-comparison-header>div{flex:1;min-width:180px}
+.m3-timetable-comparison-header p{margin-top:6px;max-width:62ch;line-height:1.7;color:var(--sys-on-surface-variant)}
+.m3-timetable-comparison-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.m3-site .timetable-page .m3-timetable-comparison-card{min-width:0;padding:20px;border:1px solid var(--sys-outline-variant);border-radius:var(--shape-card);background:var(--sys-surface-lowest)}
+.m3-site .timetable-page .m3-timetable-comparison-card[data-timetable-active=true]{border-color:var(--sys-primary);box-shadow:0 0 0 1px var(--sys-primary)}
+.m3-timetable-comparison-card>div:first-child{gap:12px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--sys-outline-variant)}
+.m3-timetable-comparison-card>div:first-child>div:last-child{justify-content:flex-start}
+.m3-timetable-comparison-card .ui-button{min-height:44px}
+.m3-timetable-compare-week>.max-w-none>.m3-timetable-period-row{height:112px;min-height:112px;max-height:112px;grid-template-rows:minmax(0,1fr)}
+.m3-timetable-compare-week .m3-timetable-period-row>div{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.m3-timetable-compare-week .m3-academic-week-course{height:44px;min-height:44px;padding:4px 6px;overflow:hidden;line-height:16px}
+.m3-timetable-compare-week .m3-academic-week-course p+p{display:none}
+@media(min-width:1024px){.m3-timetable-comparison-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px) and (max-width:1279px){.timetable-page>div.space-y-6>section.grid:has(.m3-timetable-comparison){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:639px){.m3-site .timetable-page .m3-timetable-comparison-card{padding:16px}.m3-timetable-comparison-header>.ui-button{width:100%}}

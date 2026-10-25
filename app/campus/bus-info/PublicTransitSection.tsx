@@ -9,6 +9,7 @@ import { fetchJson } from "@/lib/fetch-json";
 import { BusArrivalsAtStop, BusArrival } from "@/types";
 import { useEffect, useState, useMemo, type KeyboardEvent } from "react";
 import clsx from "clsx";
+import { usePathname, useSearchParams } from "next/navigation";
 import BusDetailModal from "./BusDetailModal";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import type { Dictionary } from "@/lib/i18n";
@@ -50,7 +51,15 @@ export default function PublicTransitSection() {
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.busInfo;
-  const [selectedStopId, setSelectedStopId] = useState<string>("jungmun-up");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const stopParam = searchParams.get("stop");
+  const selectedStopId = TRANSIT_STOPS.some((stop) => stop.id === stopParam) ? stopParam! : "jungmun-up";
+  const setSelectedStopId = (stop: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("stop", stop);
+    window.history.replaceState(null, "", `${pathname}?${params}${window.location.hash}`);
+  };
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
   // 10초마다 자동 갱신
@@ -189,7 +198,7 @@ export default function PublicTransitSection() {
             disabled={isFetching}
             title={text.refresh}
             aria-label={text.refreshTransit}
-            className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-primary-700 shadow-sm transition-colors hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="m3-icon-button shrink-0" data-m3-icon
           >
             <RefreshIcon className={isFetching ? "animate-spin" : undefined} />
           </button>
@@ -206,7 +215,7 @@ export default function PublicTransitSection() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
+              className="ui-button ui-button-danger px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700 transition"
             >
               {text.retry}
             </button>

@@ -65,7 +65,7 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                 setQuery("");
                 setIsOpen(false);
               }}
-              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              className="m3-icon-button shrink-0"
               aria-label={text.clearSearch}
             >
               <Icon

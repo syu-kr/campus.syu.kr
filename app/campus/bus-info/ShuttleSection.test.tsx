@@ -248,7 +248,8 @@ describe("public holiday shuttle display", () => {
     fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
     expect(screen.queryByText(/최종 업데이트: 2026-04-29/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "학기(월-목)" }));
-    expect(screen.getByText(text.pages.busInfo.scheduleNotice)).toBeInTheDocument();
+    expect(screen.queryByText(text.pages.busInfo.scheduleNotice)).not.toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`${text.pages.busInfo.updateDateLabel}: 2026-04-29`))).toBeInTheDocument();
     await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
     cleanup();
   });
@@ -290,7 +291,7 @@ describe("shuttle page festival announcement", () => {
       expect(notice.getByText(/10:00 이후.*30분/)).toBeInTheDocument();
       expect(notice.getByText(/22:00~22:30 · 총 5대/)).toBeInTheDocument();
       expect(notice.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
-      expect(screen.getByText(`${text.pages.busInfo.selectedSchedule}: ${text.pages.busInfo.semesterMonThu}`)).toBeInTheDocument();
+      expect(screen.getByRole("region", { name: `${text.pages.busInfo.scheduleToggleLabel}: ${text.pages.busInfo.semesterMonThu}` })).toBeInTheDocument();
     }
     fireEvent.click(route);
     expect(within(route.parentElement!).getByText("10:20")).toBeInTheDocument();

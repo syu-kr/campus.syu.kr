@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
 import { Container } from "@/app/components/Container";
@@ -12,7 +13,7 @@ import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage, type AnnouncementPageResponse } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import { useUrlSearch } from "@/lib/use-url-search";
+import { getAnnouncementListQuery } from "@/lib/announcement-list-query";
 import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type { AnnouncementCategory } from "@/types";
 
@@ -32,6 +33,7 @@ interface AnnouncementListPageProps {
   description: string;
   errorMessage: string;
   initialPage?: AnnouncementPageResponse;
+  initialQuery?: string;
 }
 
 export function AnnouncementListPage({
@@ -40,13 +42,51 @@ export function AnnouncementListPage({
   description,
   errorMessage,
   initialPage,
+  initialQuery = "",
 }: AnnouncementListPageProps) {
   const dictionary = useDictionary();
-  const [inputQuery, setInputQuery] = useUrlSearch();
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isNavigating, startNavigation] = useTransition();
+  const { query: urlQuery, page: urlPage } = getAnnouncementListQuery({
+    search: searchParams.get("search") ?? undefined,
+    page: searchParams.get("page") ?? undefined,
+  });
+  const [inputQuery, setInputQuery] = useState(urlQuery);
   const searchQuery = useDebouncedValue(inputQuery);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(urlPage);
 
-  const { data, isLoading, isError } = useQuery({
+  useEffect(() => {
+    if (isNavigating) return;
+    setInputQuery(urlQuery);
+    setCurrentPage(urlPage);
+  }, [urlQuery, urlPage, isNavigating]);
+
+  const pageHref = (page: number, query = inputQuery) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (query.trim()) params.set("search", query);
+    else params.delete("search");
+    if (page > 1) params.set("page", String(page));
+    else params.delete("page");
+    return `${pathname}${params.size ? `?${params}` : ""}`;
+  };
+  const changePage = (page: number) => {
+    setCurrentPage(page);
+    startNavigation(() => router.push(`${pageHref(page)}${window.location.hash}`, { scroll: false }));
+  };
+  const changeSearch = (query: string) => {
+    setInputQuery(query);
+    setCurrentPage(1);
+    startNavigation(() => router.replace(`${pageHref(1, query)}${window.location.hash}`, { scroll: false }));
+  };
+
+  // The RSC navigation returns the requested data and metadata together. Use that
+  // exact snapshot; callers without server data retain the existing API fallback.
+  const hasServerPage = initialPage?.page === currentPage && initialQuery === searchQuery && inputQuery === searchQuery;
+  const isUrlCurrent = urlPage === currentPage && urlQuery === searchQuery;
+
+  const { data: browserData, isLoading: browserLoading, isError: browserError } = useQuery({
     queryKey: ["announcement-page", category, searchQuery, currentPage],
     queryFn: ({ signal }) =>
       fetchAnnouncementPage({
@@ -56,15 +96,19 @@ export function AnnouncementListPage({
         limit: ITEMS_PER_PAGE,
         signal,
       }),
-    initialData: !searchQuery && currentPage === 1 ? initialPage : undefined,
+    initialData: hasServerPage ? initialPage : undefined,
+    enabled: !hasServerPage && !isNavigating && isUrlCurrent && inputQuery === searchQuery,
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });
 
+  const data = hasServerPage ? initialPage : browserData;
+  const isLoading = !hasServerPage && browserLoading;
+  const isError = !hasServerPage && browserError;
   const announcements = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
-  const showLoading = isLoading || inputQuery !== searchQuery;
+  const showLoading = isLoading || isNavigating || !isUrlCurrent || inputQuery !== searchQuery;
 
   return (
     <Container className="py-6 sm:py-8">
@@ -79,14 +123,8 @@ export function AnnouncementListPage({
         className="mb-6"
         defaultValue={inputQuery}
         placeholder={dictionary.pages.announcements.listSearchPlaceholder}
-        onSearch={(query) => {
-          setInputQuery(query);
-          setCurrentPage(1);
-        }}
-        onClear={() => {
-          setInputQuery("");
-          setCurrentPage(1);
-        }}
+        onSearch={changeSearch}
+        onClear={() => changeSearch("")}
         searchOnChange
       />
 
@@ -111,7 +149,8 @@ export function AnnouncementListPage({
         </div>
       )}
 
-      <div className="mb-6 space-y-3">
+      <div className="notice-workspace-layout">
+      <div className="notice-workspace-list mb-6 space-y-3">
         {showLoading && <Skeleton count={5} />}
         {!showLoading && (isError || announcements.length === 0) && (
           <StateCard
@@ -132,12 +171,14 @@ export function AnnouncementListPage({
             </div>
           ))}
       </div>
+      </div>
 
       {!showLoading && !isError && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={changePage}
+          getPageHref={pageHref}
         />
       )}
     </Container>

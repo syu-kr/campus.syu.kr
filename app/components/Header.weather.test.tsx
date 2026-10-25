@@ -31,11 +31,11 @@ beforeEach(() => {
 afterEach(() => { queryClient.clear(); vi.useRealTimers(); });
 
 describe("Header weather query", () => {
-  it("shares one refreshed snapshot with both widgets and the open modal, keeping stale data usable when refresh fails", async () => {
+  it("shares one refreshed snapshot with the responsive widget and the open modal, keeping stale data usable when refresh fails", async () => {
     vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
     fetchMock.mockResolvedValueOnce(weather);
     render(<QueryClientProvider client={queryClient}><Header /></QueryClientProvider>);
-    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 20°C/ })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 20°C/ })).toHaveLength(1));
     expect(fetchMock).toHaveBeenCalledOnce();
     fireEvent.click(screen.getAllByRole("button", { name: /날씨: 20°C/ })[0]);
     expect(within(await screen.findByRole("dialog", { name: text.weather.label })).getByText("20°C")).toBeInTheDocument();
@@ -43,18 +43,18 @@ describe("Header weather query", () => {
 
     fetchMock.mockResolvedValueOnce({ ...weather, temperature: 23 });
     await act(() => vi.advanceTimersByTimeAsync(WEATHER_REFRESH_INTERVAL_MS));
-    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 23°C/ })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 23°C/ })).toHaveLength(1));
     expect(within(screen.getByRole("dialog", { name: text.weather.label })).getByText("23°C")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
 
     fetchMock.mockRejectedValueOnce(new Error("Upstream unavailable"));
     await act(() => vi.advanceTimersByTimeAsync(WEATHER_REFRESH_INTERVAL_MS));
     await screen.findByText(text.liveData.statuses.error);
-    expect(screen.getAllByRole("button", { name: /날씨: 23°C/ })).toHaveLength(2);
-    expect(screen.getAllByText(text.liveData.statuses.stale)).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /날씨: 23°C/ })).toHaveLength(1);
+    expect(screen.getAllByText(text.liveData.statuses.stale)).toHaveLength(1);
     fetchMock.mockResolvedValueOnce({ ...weather, temperature: 25 });
     fireEvent.click(within(screen.getByRole("dialog", { name: text.weather.label })).getByRole("button", { name: text.home.dashboard.retry }));
-    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 25°C/ })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 25°C/ })).toHaveLength(1));
     expect(screen.queryByText(text.liveData.statuses.error)).not.toBeInTheDocument();
     expect(screen.queryByText(text.liveData.statuses.stale)).not.toBeInTheDocument();
   });
@@ -66,7 +66,7 @@ describe("Header weather query", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     fetchMock.mockResolvedValueOnce(weather);
     fireEvent.click(retries[0]);
-    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 20°C/ })).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByRole("button", { name: /날씨: 20°C/ })).toHaveLength(1));
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

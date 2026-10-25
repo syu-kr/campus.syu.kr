@@ -188,7 +188,7 @@ export function SubmissionDetail({
 
           <ResponseTemplatePanel item={item} />
 
-          <section className="space-y-3">
+          <section className="m3-admin-status-options space-y-3">
             <h3 className="text-sm font-bold text-neutral-900">처리 상태</h3>
             {statuses.map((status) => (
               <button
@@ -232,7 +232,7 @@ function AiClassificationPanel({
           type="button"
           disabled={isClassifying}
           onClick={() => void onClassify(item)}
-          className="rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="ui-button ui-button-secondary rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isClassifying ? "분류 중" : classification ? "분류 확인" : "분류"}
         </button>
@@ -345,7 +345,7 @@ function ResponseTemplatePanel({ item }: { item: AdminSubmissionItem }) {
       <button
         type="button"
         onClick={() => void copyTemplate()}
-        className="mt-3 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+        className="ui-button ui-button-secondary mt-3 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
       >
         템플릿 복사
       </button>

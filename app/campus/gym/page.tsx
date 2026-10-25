@@ -103,7 +103,7 @@ export default function GymPage() {
             href="https://www.syu.ac.kr/sportscenter/program/program-guide/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            className="ui-button ui-button-primary inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             {text.program.programLink}
           </a>
@@ -111,7 +111,7 @@ export default function GymPage() {
             href="https://www.syu.ac.kr/sportscenter/facilities/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+            className="ui-button ui-button-primary inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             {text.program.facilitiesLink}
           </a>

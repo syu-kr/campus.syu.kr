@@ -12,7 +12,7 @@ const api = vi.hoisted(() => ({
   fetchAnnouncements: vi.fn(),
   fetchAcademicSchedules: vi.fn(),
   fetchPublicHolidays: vi.fn(),
-  fetchCafeteriaMenu: vi.fn(),
+  fetchCafeteriaSnapshot: vi.fn(),
   fetchShuttleBuses: vi.fn(),
   fetchShuttleSpecialPeriods: vi.fn(),
   searchAll: vi.fn(),
@@ -41,9 +41,13 @@ const holidays: PublicHolidaySnapshot = {
 let client: QueryClient;
 
 beforeEach(() => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-10-19T00:00:00.000Z"));
+  sessionStorage.clear();
   client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   Object.values(api).forEach((reader) => reader.mockReset().mockResolvedValue([]));
   api.fetchPublicHolidays.mockResolvedValue(holidays);
+  api.fetchCafeteriaSnapshot.mockResolvedValue({ menus: [], checkedAt: null, stale: true });
+  api.fetchShuttleSpecialPeriods.mockResolvedValue({ specialPeriods: [], semesterPeriods: [], vacationPeriods: [] });
   api.searchAll.mockResolvedValue({ items: [], failedSources: [] });
   fetchServiceNotices.mockReset().mockResolvedValue([]);
   navigation.push.mockReset();
@@ -52,9 +56,6 @@ beforeEach(() => {
 
 afterEach(() => {
   client.clear();
-  expect(api.fetchCafeteriaMenu).not.toHaveBeenCalled();
-  expect(api.fetchShuttleBuses).not.toHaveBeenCalled();
-  expect(api.fetchShuttleSpecialPeriods).not.toHaveBeenCalled();
 });
 
 function renderHome(locale: Locale) {
@@ -65,28 +66,31 @@ function renderHome(locale: Locale) {
         <HomeSearchBar />
         <HomePageClient initialAnnouncements={[]} initialServiceNotices={[]}
           initialSchedules={[]} initialPublicHolidays={holidays}
-          initialNowIso="2026-10-19T00:00:00.000Z" />
+          initialNowIso="2026-10-19T00:00:00.000Z"
+          initialOverviewData={{ cafeteria: { menus: [], checkedAt: null, stale: true }, shuttles: [], specialPeriods: { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] } }} />
       </QueryClientProvider>
     </ClientLocaleProvider>,
   );
 }
 
 describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => {
-  it("shows notices after six shortcuts and refreshes only the four displayed data sources", async () => {
+  it("renders the M3 overview before shortcuts and refreshes the displayed actual data sources", async () => {
     renderHome(locale);
     const dictionary = getDictionary(locale);
     expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
+      dictionary.home.overview.mealTitle,
+      dictionary.home.dashboard.todaySchedules,
+      dictionary.home.overview.busTitle,
       dictionary.home.frequentMenuTitle,
       dictionary.home.notices.title,
-      dictionary.home.dashboard.todaySchedules,
       dictionary.home.relatedLinksTitle,
     ]);
     const prefix = locale === "en" ? "/en" : "";
     expect(screen.getByRole("link", { name: dictionary.home.menu.cafeteria })).toHaveAttribute("href", `${prefix}/campus/cafeteria`);
-    expect(screen.getByRole("link", { name: dictionary.home.menu.bus })).toHaveAttribute("href", `${prefix}/campus/bus-info`);
+    screen.getAllByRole("link", { name: dictionary.home.menu.bus }).forEach((link) => expect(link).toHaveAttribute("href", `${prefix}/campus/bus-info`));
     expect(screen.getByRole("heading", { name: "검증 공휴일" })).toBeInTheDocument();
     expect(client.getQueryCache().findAll({ type: "active" }).map((query) => query.queryKey[0]).sort()).toEqual([
-      "announcements", "public-holidays", "schedules", "serviceNotices",
+      "announcements", "cafeteria-weekly-snapshot", "public-holidays", "schedules", "serviceNotices", "shuttle-buses", "shuttle-special-periods",
     ]);
 
     await act(async () => { await client.invalidateQueries(); });
@@ -94,6 +98,9 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
     expect(fetchServiceNotices).toHaveBeenCalledOnce();
     expect(api.fetchAcademicSchedules).toHaveBeenCalledOnce();
     expect(api.fetchPublicHolidays).toHaveBeenCalledOnce();
+    expect(api.fetchCafeteriaSnapshot).toHaveBeenCalledOnce();
+    expect(api.fetchShuttleBuses).toHaveBeenCalledOnce();
+    expect(api.fetchShuttleSpecialPeriods).toHaveBeenCalledOnce();
     expect(api.searchAll).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: dictionary.home.notices.academic }));
@@ -118,10 +125,20 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
     expect(navigation.push).toHaveBeenLastCalledWith(`${navigation.pathname}?from=shortcut`);
   });
 
+  it("puts matching services before source results without a contradictory empty state", async () => {
+    navigation.params = new URLSearchParams("search=시간표");
+    renderHome(locale);
+    const dictionary = getDictionary(locale);
+    await waitFor(() => expect(api.searchAll).toHaveBeenCalledWith("시간표", expect.any(AbortSignal)));
+    const services = screen.getByRole("heading", { name: dictionary.m3.serviceSearch }).closest("section")!;
+    expect(services).toHaveClass("m3-service-results");
+    expect(services.querySelector("a")).toHaveAttribute("href", locale === "en" ? "/en/academic/timetable" : "/academic/timetable");
+    expect(screen.queryByRole("heading", { name: dictionary.search.noResultsTitle })).not.toBeInTheDocument();
+  });
   it("announces search loading without disabling clearing and removes busy status after completion", async () => {
     let finishSearch!: (result: { items: never[]; failedSources: never[] }) => void;
     api.searchAll.mockReturnValue(new Promise((resolve) => { finishSearch = resolve; }));
-    navigation.params = new URLSearchParams("search=library");
+    navigation.params = new URLSearchParams("search=unmatched-query");
     renderHome(locale);
     const dictionary = getDictionary(locale);
 
@@ -134,6 +151,6 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
     await act(async () => { finishSearch({ items: [], failedSources: [] }); });
     expect(await screen.findByRole("heading", { name: dictionary.search.noResultsTitle })).toBeInTheDocument();
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: dictionary.search.label })).toHaveValue("library");
+    expect(screen.getByRole("textbox", { name: dictionary.search.label })).toHaveValue("unmatched-query");
   });
 });

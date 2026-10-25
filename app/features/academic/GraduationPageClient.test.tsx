@@ -63,6 +63,20 @@ describe("graduation selection preserves progress", () => {
     expect(window.confirm).not.toHaveBeenCalled();
   });
 
+  it("offers nonblocking mobile guidance and preserves progress when dismissed", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const year = renderSavedProgress();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const guidance = screen.getByText("모바일 이용 안내").closest("details")!;
+    expect(guidance).not.toHaveAttribute("open");
+    guidance.open = true;
+    fireEvent.click(screen.getByRole("button", { name: "안내 닫기" }));
+    expect(screen.queryByText("모바일 이용 안내")).not.toBeInTheDocument();
+    expect(year).toHaveFocus();
+    expect(readSavedState()).toEqual(savedState);
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+
   it("keeps course search and checklist notes labeled after typing", () => {
     renderSavedProgress();
     const courseSearch = screen.getByRole("searchbox", {
@@ -112,8 +126,11 @@ describe("graduation selection preserves progress", () => {
     expect(readSavedState()).toEqual(savedState);
     fireEvent.blur(year);
 
-    expect(window.confirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "입력한 이수 현황을 초기화할까요?" })).toBeInTheDocument();
+    expect(readSavedState()).toEqual(savedState);
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
     expect(year).toHaveValue("2024");
+    expect(year).toHaveFocus();
     expect(readSavedState()).toEqual(savedState);
   });
 
@@ -133,25 +150,50 @@ describe("graduation selection preserves progress", () => {
       expect(readSavedState()).toEqual(savedState);
     }
     expect(window.confirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("cancels a full reset with Escape and clears progress only after approval", () => {
+    const year = renderSavedProgress();
+    const reset = screen.getByRole("button", { name: getDictionary("ko").pages.graduation.sidebar.reset });
+    reset.focus();
+    fireEvent.click(reset);
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(reset).toHaveFocus();
+    expect(readSavedState()).toEqual(savedState);
+    fireEvent.click(reset);
+    fireEvent.click(screen.getByRole("button", { name: "초기화하고 변경" }));
+    expect(year).toHaveValue("");
+    expect(readSavedState().completedCredits).toEqual({});
+    expect(readSavedState().selectedCourseIds).toEqual([]);
+    expect(readSavedState().checklistAnswers).toEqual({});
+    expect(readSavedState().plans).toEqual({});
+    expect(window.confirm).not.toHaveBeenCalled();
   });
 
   it("leaves the selected conditions unchanged when another major is canceled", () => {
     renderSavedProgress();
-    fireEvent.click(screen.getByRole("button", { name: "소프트웨어전공" }));
+    const trigger = screen.getByRole("button", { name: "소프트웨어전공" });
+    trigger.focus();
+    fireEvent.click(trigger);
 
-    expect(window.confirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "입력한 이수 현황을 초기화할까요?" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "취소" }));
+    expect(trigger).toHaveFocus();
     expect(readSavedState()).toEqual(savedState);
   });
 
   it("commits a confirmed year on Enter and clears records only then", () => {
     const year = renderSavedProgress();
-    vi.mocked(window.confirm).mockReturnValue(true);
     year.focus();
     fireEvent.change(year, { target: { value: "2025" } });
     expect(readSavedState()).toEqual(savedState);
     fireEvent.keyDown(year, { key: "Enter" });
 
-    expect(window.confirm).toHaveBeenCalledOnce();
+    expect(readSavedState()).toEqual(savedState);
+    fireEvent.click(screen.getByRole("button", { name: "초기화하고 변경" }));
+    expect(year).toHaveValue("2025");
     expect(readSavedState()).toEqual({
       selection: { ...savedState.selection, admissionYear: "2025" },
       completedCredits: {},
@@ -163,10 +205,10 @@ describe("graduation selection preserves progress", () => {
 
   it("resets dependent selections and records only after confirming a new major", () => {
     renderSavedProgress();
-    vi.mocked(window.confirm).mockReturnValue(true);
     fireEvent.click(screen.getByRole("button", { name: "소프트웨어전공" }));
 
-    expect(window.confirm).toHaveBeenCalledOnce();
+    expect(readSavedState()).toEqual(savedState);
+    fireEvent.click(screen.getByRole("button", { name: "초기화하고 변경" }));
     expect(readSavedState()).toEqual({
       selection: {
         ...savedState.selection,
@@ -195,7 +237,7 @@ describe("graduation selection preserves progress", () => {
     expect(screen.getByRole("textbox", { name: /입학년도/ })).toHaveValue("2024");
     expect(screen.getByText(/자동 저장할 수 없습니다/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "소프트웨어전공" }));
-    expect(window.confirm).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: "입력한 이수 현황을 초기화할까요?" })).toBeInTheDocument();
   });
 
   it("never overwrites an unread saved record after storage restoration fails", () => {

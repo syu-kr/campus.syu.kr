@@ -1,0 +1,580 @@
+/* M3 presentation over the original forms. Selectors never change source state. */
+.m3-site {
+  --forms-surface: var(--sys-surface-lowest);
+  --forms-container: var(--sys-surface-container);
+  --forms-container-low: var(--sys-surface-low);
+  --forms-primary: var(--sys-primary);
+  --forms-on-container: var(--sys-on-secondary-container);
+  --forms-tonal: var(--sys-secondary-container);
+  --forms-outline: var(--sys-outline-variant);
+  --forms-text: var(--sys-on-surface);
+  --forms-muted: var(--sys-on-surface-variant);
+  --forms-error: var(--sys-error);
+  --forms-error-container: var(--sys-error-container);
+}
+
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"], [data-site-route="/admin"]) :is(h1, h2, h3) {
+  text-wrap: balance;
+  color: var(--forms-text);
+}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"], [data-site-route="/admin"]) h1 {
+  font-size: var(--type-headline-size);
+  line-height: 1.35;
+  font-weight: 700;
+}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"], [data-site-route="/admin"]) :is(p, dd) {
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"]) > .mx-auto {
+  padding-top: 8px;
+}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"]) .rounded-card {
+  padding: 24px;
+  border: 1px solid var(--forms-outline);
+  border-radius: var(--shape-card);
+  background: var(--forms-surface);
+  box-shadow: none;
+}
+
+/* Form layout and surfaces; shared field states live in styles-controls-m3.css. */
+.m3-content:is([data-site-route^="/more"],[data-site-route^="/campus/roommates"]) .rounded-card.bg-neutral-50{background:var(--sys-surface-low)}
+.m3-content:is([data-site-route^="/more"],[data-site-route^="/campus/roommates"]) .rounded-card.bg-neutral-100{background:var(--sys-surface-container)}
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"], .m3-content[data-site-route^="/more/meet"], .m3-content[data-site-route="/admin"], [role="dialog"]:has(#inquiry-type)) :is(input[type="checkbox"], input[type="radio"]) {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--forms-primary);
+}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more/meet"], [data-site-route="/more/privacy"], [data-site-route="/admin"]) button:not([data-slot]):not(.text-left) {
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 100px;
+}
+.m3-content:is([data-site-route^="/more"],[data-site-route="/admin"]) :is(button,a):is(.border-neutral-300,.bg-neutral-100):not([aria-pressed]):not([data-slot]):not(.text-left){min-height:48px;border-radius:var(--shape-full);font-size:var(--type-label-size);line-height:1.5}
+.m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more/meet"], [data-site-route="/admin"]) :is([role="alert"], #roommate-form-error) {
+  padding: 12px 16px;
+  border: 1px solid #e9bfc3;
+  border-radius: 12px;
+  background: var(--forms-error-container);
+  color: var(--forms-error);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* The actual ContactModal: a distinct header, calm field grouping and clear CTA. */
+.m3-site [role="dialog"]:has(#inquiry-type) > div {
+  max-width: 720px;
+  border: 1px solid var(--forms-outline);
+  border-radius: 28px;
+  background: var(--forms-surface);
+}
+.m3-site [role="dialog"]:has(#inquiry-type) > div > .border-b {
+  gap: 24px;
+  padding: 24px 28px 20px;
+  border-color: var(--forms-outline);
+  background: var(--forms-container-low);
+}
+.m3-site [role="dialog"]:has(#inquiry-type) > div > .border-b h2 {
+  font-size: 23px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+.m3-site [role="dialog"]:has(#inquiry-type) > div > .border-b p {
+  margin-top: 8px;
+  max-width: 54ch;
+  color: var(--forms-muted);
+  font-size: 14px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.m3-site [role="dialog"]:has(#inquiry-type) > div > .overflow-y-auto {
+  padding: 24px 28px 28px;
+}
+.m3-site form:has(#inquiry-type) {
+  display: grid;
+  grid-template-columns: minmax(170px, .8fr) minmax(0, 1.6fr);
+  gap: 20px;
+}
+.m3-site form:has(#inquiry-type) > :not(input) {
+  min-width: 0;
+  margin-top: 0;
+}
+.m3-site form:has(#inquiry-type) > :is(div:has(#inquiry-message), div:has(#page-url), div:has(#contact), button) {
+  grid-column: 1 / -1;
+}
+.m3-site form:has(#inquiry-type) label {
+  margin-bottom: 8px;
+  color: #35435d;
+  font-size: 13px;
+  font-weight: 650;
+}
+.m3-site form:has(#inquiry-type) textarea {
+  min-height: 168px;
+  resize: vertical;
+}
+.m3-site form:has(#inquiry-type) p {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.m3-site form:has(#inquiry-type) #contact-help {
+  color: var(--forms-muted);
+}
+.m3-site .m3-validation-summary {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--shape-small);
+  background: var(--sys-error-container);
+  color: var(--sys-on-error-container);
+  font-size: var(--type-label-size);
+  line-height: 1.6;
+}
+.m3-site .m3-field-counter {
+  margin-top:6px;color:var(--sys-on-surface-variant);font-size:var(--type-caption-size);line-height:1.5;text-align:end;font-variant-numeric:tabular-nums;
+}
+.m3-site form:has(#inquiry-type) > button {
+  justify-self: end;
+  width: auto;
+  min-width: 160px;
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 12px 24px;
+}
+.m3-site [role="dialog"] > div:has(> .overflow-y-auto > div > #submission-result-title) {
+  max-width: 440px;
+  border: 1px solid var(--forms-outline);
+  border-radius: 28px;
+}
+.m3-site [role="dialog"] > div:has(> .overflow-y-auto > div > #submission-result-title) > .overflow-y-auto > div {
+  padding: 28px;
+}
+.m3-site #submission-result-title {
+  font-size: 21px;
+  line-height: 1.5;
+}
+.m3-site [role="dialog"]:has(#submission-result-title):not(:has(form)) dl {
+  padding: 16px;
+  border-color: var(--forms-outline);
+  border-radius: 16px;
+  background: var(--forms-container-low);
+}
+.m3-site [role="dialog"]:has(#submission-result-title):not(:has(form)) dd {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Roommate page and form share the same segmented navigation and section rhythm. */
+.m3-content[data-site-route^="/campus/roommates"] > .mx-auto {
+  max-width: 1200px;
+}
+.m3-content[data-site-route^="/campus/roommates"] header > div:has(> nav) {
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 8px;
+}
+.m3-content[data-site-route^="/campus/roommates"] header nav {
+  padding: 4px;
+  gap: 4px;
+  border-radius: 28px;
+  background: var(--forms-container);
+}
+.m3-content[data-site-route^="/campus/roommates"] header nav :is(a, span) {
+  min-height: 48px;
+  padding-inline: 16px;
+  color: var(--forms-muted);
+  font-size: 13px;
+}
+.m3-content[data-site-route^="/campus/roommates"] header nav [aria-current="page"] {
+  background: var(--forms-tonal);
+  color: var(--forms-on-container);
+  box-shadow: none;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) {
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--forms-outline);
+  border-radius: 20px;
+  background: var(--forms-surface);
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > p:first-child {
+  margin: 0;
+  padding: 16px 24px;
+  background: var(--forms-container-low);
+  color: var(--forms-muted);
+  font-size: 13px;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > fieldset {
+  min-width: 0;
+  margin-top: 0;
+  padding: 24px;
+  border-top: 1px solid var(--forms-outline);
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > fieldset > legend {
+  float: left;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 650;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > fieldset > legend + * {
+  clear: both;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > fieldset > .grid {
+  gap: 20px 24px;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) label {
+  color: #35435d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) label :is(input:not([type="checkbox"]), select) {
+  margin-top: 8px;
+}
+.m3-content[data-site-route^="/campus/roommates"] form fieldset:has(> div > label > input[type="checkbox"]) {
+  border: 1px solid var(--forms-outline);
+  border-radius: 14px;
+  padding: 8px 12px 12px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/campus/roommates"] form fieldset:has(> div > label > input[type="checkbox"]) label {
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.m3-content[data-site-route^="/campus/roommates"] form fieldset:has(> div > label > input[type="checkbox"]) label:has(input:checked) {
+  background: var(--forms-tonal);
+  color: var(--forms-on-container);
+}
+.m3-content[data-site-route^="/campus/roommates"] #roommate-disclosure-help {
+  padding: 0 16px;
+  border: 1px solid var(--forms-outline);
+  border-radius: 16px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/campus/roommates"] #roommate-disclosure-help > div {
+  padding-block: 14px;
+}
+.m3-content[data-site-route^="/campus/roommates"] label:has(> [name="disclosureConsent"]) {
+  border: 1px solid var(--forms-outline);
+  border-radius: 14px;
+  background: var(--forms-surface);
+}
+.m3-content[data-site-route^="/campus/roommates"] label:has(> [name="disclosureConsent"]:checked) {
+  border-color: var(--forms-primary);
+  background: var(--forms-tonal);
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > div:last-child {
+  justify-content: flex-end;
+  margin-top: 0;
+  padding: 20px 24px;
+  border-color: var(--forms-outline);
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/campus/roommates"] #roommate-form-error {
+  margin: 0 24px 20px;
+}
+.m3-content[data-site-route^="/campus/roommates"] :is(article, aside, form:has(#roommate-email)) {
+  border-radius: 20px;
+  border-color: var(--forms-outline);
+  box-shadow: none;
+}
+.m3-content[data-site-route^="/campus/roommates"] article {
+  padding: 24px;
+}
+.m3-content[data-site-route^="/campus/roommates"] article li {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--forms-container);
+  color: var(--forms-muted);
+}
+.m3-content[data-site-route^="/campus/roommates"] article dl > div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has(#roommate-email) {
+  padding: 28px;
+  border: 1px solid var(--forms-outline);
+  background: var(--forms-surface);
+}
+.m3-content[data-site-route^="/campus/roommates"] form:has(#roommate-email) > label:has(input[type="checkbox"]) {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route="/campus/roommates"] details:has(> summary + form) {
+  overflow: hidden;
+  border-color: var(--forms-outline);
+  border-radius: 20px;
+}
+.m3-content[data-site-route="/campus/roommates"] details:has(> summary + form) > summary {
+  min-height: 64px;
+  padding-inline: 24px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route="/campus/roommates"] details:has(> summary + form) > form {
+  padding: 24px;
+}
+
+/* Meet keeps its original controls and grid while gaining a desktop side column. */
+.m3-content[data-site-route="/more/meet"] > .mx-auto > div:has(> button[aria-pressed]) {
+  gap: 4px;
+  padding: 4px;
+  border-color: var(--forms-outline);
+  border-radius: 28px;
+  background: var(--forms-container);
+}
+.m3-content[data-site-route="/more/meet"] button[aria-pressed="true"] {
+  background: var(--forms-tonal);
+  color: var(--forms-on-container);
+  box-shadow: none;
+}
+.m3-content[data-site-route^="/more/meet"] form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #35435d;
+}
+.m3-content[data-site-route^="/more/meet"] :is(#date-range-error, #time-range-error) {
+  color: var(--forms-error);
+  line-height: 1.7;
+}
+.m3-content[data-site-route^="/more/meet"] button[data-slot] {
+  min-height: 44px;
+  border-radius: 0;
+  font-variant-numeric: tabular-nums;
+}
+.m3-content[data-site-route^="/more/meet"] button[data-slot][aria-pressed="true"] {
+  background: var(--forms-primary);
+  color: #fff;
+}
+@media(hover:hover){
+  .m3-content[data-site-route^="/more/meet"] button[data-slot]:hover:not(:disabled){box-shadow:inset 0 0 0 2px var(--sys-primary)}
+}
+.m3-content[data-site-route^="/more/meet"] button[data-slot]:active:not(:disabled){box-shadow:inset 0 0 0 3px var(--sys-on-secondary-container)}
+.m3-content[data-site-route^="/more/meet"] .rounded-card:has(button[data-slot]) {
+  padding: 0;
+}
+.m3-content[data-site-route^="/more/meet"] .rounded-card:has(button[data-slot]) > .border-b {
+  padding: 20px 24px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/more/meet"] form > .rounded-lg:has(+ button[type="submit"]) {
+  padding: 12px 16px;
+  border-color: var(--forms-outline);
+  border-radius: 12px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route="/more/meet/[roomId]"] .rounded-card h2 {
+  margin-bottom: 12px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* Management is intentionally denser; status cards and record rows stay distinct. */
+.m3-content[data-site-route="/admin"] > .min-h-screen {
+  min-height: auto;
+  padding: 8px 16px 24px;
+  background: transparent;
+}
+.m3-content[data-site-route="/admin"] > div > .max-w-7xl {
+  max-width: 1440px;
+}
+.m3-content[data-site-route="/admin"] :is(.rounded-lg.border, .rounded-lg.shadow-sm) {
+  border-color: var(--forms-outline);
+  border-radius: 18px;
+  box-shadow: none;
+}
+.m3-content[data-site-route="/admin"] header {
+  padding-bottom: 24px;
+  border-color: var(--forms-outline);
+}
+.m3-content[data-site-route="/admin"] section:has(> select):has(> input[type="search"]) {
+  padding: 16px;
+  border: 1px solid var(--forms-outline);
+  border-radius: 18px;
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route="/admin"] section.grid > button.text-left {
+  padding: 18px 20px;
+  border: 1px solid var(--forms-outline);
+  border-radius: 16px;
+  background: var(--forms-surface);
+  box-shadow: none;
+}
+.m3-content[data-site-route="/admin"] section.grid > button.text-left.ring-2 {
+  border-color: var(--forms-primary);
+  background: var(--forms-tonal);
+  box-shadow: inset 0 0 0 1px var(--forms-primary);
+}
+.m3-content[data-site-route="/admin"] section.grid > button.text-left strong {
+  color: var(--forms-on-container);
+  font-variant-numeric: tabular-nums;
+}
+.m3-content[data-site-route="/admin"] .overflow-y-auto > div:has(> button.text-left) {
+  padding: 18px;
+}
+.m3-content[data-site-route="/admin"] .overflow-y-auto > div.bg-primary-50:has(> button.text-left) {
+  background: var(--forms-tonal);
+  box-shadow: inset 3px 0 var(--forms-primary);
+}
+.m3-content[data-site-route="/admin"] .overflow-y-auto > div > button.text-left {
+  border-radius: 8px;
+}
+.m3-content[data-site-route="/admin"] :is(input, select, textarea, .grid > *) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Supporting pages use the same surfaces without turning legal copy into a grid. */
+.m3-content[data-site-route="/more/privacy"] .grid > .rounded-card:first-child {
+  border-color: #b9c9ed;
+  background: #f0f4ff;
+}
+.m3-content[data-site-route="/more/privacy"] .rounded-card p {
+  line-height: 1.8;
+}
+.m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) > .mx-auto {
+  max-width: 1080px;
+}
+.m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) .rounded-card {
+  padding: 28px 32px;
+}
+.m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) .rounded-card h2 {
+  font-size: 20px;
+  line-height: 1.5;
+  font-weight: 650;
+}
+.m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) :is(p, li, dd) {
+  line-height: 1.9;
+}
+.m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) [id^="privacy-article-"] {
+  scroll-margin-top: 100px;
+}
+.m3-content[data-site-route="/privacy"] nav[aria-label] a {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.m3-content[data-site-route="/privacy"] nav[aria-label] a:hover {
+  background: var(--forms-container-low);
+}
+.m3-content[data-site-route^="/service/notices"] .rounded-card {
+  border-radius: 18px;
+}
+.m3-content[data-site-route="/service/notices"] a:has(.rounded-card) {
+  display: block;
+}
+.m3-content[data-site-route="/service/notices"] a:has(.rounded-card):hover .rounded-card {
+  border-color: var(--sys-outline);
+  background: var(--sys-surface-high);
+  box-shadow: none;
+}
+
+@media (min-width: 1024px) {
+  .m3-content[data-site-route="/more/meet"] > .mx-auto > div.grid:has(form) {
+    grid-template-columns: minmax(0, 1.65fr) minmax(260px, .85fr);
+    align-items: start;
+    gap: 24px;
+  }
+  .m3-content[data-site-route="/more/meet"] > .mx-auto > div.grid:has(form) > .rounded-card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+  .m3-content[data-site-route="/campus/roommates"] .space-y-3:has(> article) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .m3-content[data-site-route="/campus/roommates"] .space-y-3:has(> article) > article {
+    margin-top: 0;
+  }
+}
+@media (min-width: 1280px) {
+  .m3-content[data-site-route="/more/meet/[roomId]"] > .mx-auto > .grid {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+  .m3-content[data-site-route="/more/meet/[roomId]"] > .mx-auto > .grid > div.grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 639px) {
+  .m3-content:is([data-site-route^="/campus/roommates"], [data-site-route^="/more"], [data-site-route^="/service/notices"], [data-site-route="/terms"], [data-site-route="/privacy"]) .rounded-card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+  .m3-content[data-site-route^="/more/meet"] .rounded-card:has(button[data-slot]) {
+    padding: 0;
+  }
+  .m3-site [role="dialog"]:has(#inquiry-type) {
+    padding: 16px 12px max(12px, env(safe-area-inset-bottom));
+  }
+  .m3-site [role="dialog"]:has(#inquiry-type) > div {
+    max-height: calc(100dvh - 28px);
+    border-radius: 24px;
+  }
+  .m3-site [role="dialog"]:has(#inquiry-type) > div > .border-b {
+    padding: 20px;
+  }
+  .m3-site [role="dialog"]:has(#inquiry-type) > div > .border-b h2 {
+    font-size: 21px;
+  }
+  .m3-site [role="dialog"]:has(#inquiry-type) > div > .overflow-y-auto {
+    padding: 20px;
+  }
+  .m3-site form:has(#inquiry-type) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .m3-site form:has(#inquiry-type) > button {
+    width: 100%;
+  }
+  .m3-site [role="dialog"] > div:has(> .overflow-y-auto > div > #submission-result-title) > .overflow-y-auto > div {
+    padding: 24px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] header nav {
+    width: 100%;
+    gap: 2px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] header nav :is(a, span) {
+    flex: 1;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] :is(article, form:has(#roommate-email)) {
+    padding: 20px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > fieldset {
+    padding: 20px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > p:first-child {
+    padding: 14px 20px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > div:last-child {
+    padding: 16px 20px;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] form:has([name="nickname"]) > div:last-child > button:first-child {
+    flex: 1;
+  }
+  .m3-content[data-site-route^="/campus/roommates"] #roommate-form-error {
+    margin-inline: 20px;
+  }
+  .m3-content[data-site-route="/admin"] > .min-h-screen {
+    padding-inline: 16px;
+  }
+  .m3-content[data-site-route="/admin"] header > div:last-child {
+    flex-wrap: wrap;
+  }
+  .m3-content[data-site-route="/admin"] section.grid:has(> button.text-left) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .m3-content[data-site-route="/admin"] section.grid > button.text-left {
+    padding: 16px;
+  }
+  .m3-content:is([data-site-route="/terms"], [data-site-route="/privacy"]) .rounded-card {
+    padding: 20px;
+  }
+}

@@ -2,89 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import clsx from "clsx";
 import { Icon } from "./Icon";
 import { NavigationPendingIndicator } from "./NavigationPendingIndicator";
 import { useDictionary, useLocale } from "./LocaleProvider";
 import { localizePath } from "@/lib/i18n/routing";
-
-interface NavItem {
-  iconName: string;
-  label: string;
-  href: string;
-  id: string;
-}
+import { getSiteSection } from "@/lib/site-presentation";
+import { getPrimaryNavigation } from "./site-navigation";
 
 export function BottomNav() {
-  const pathname = usePathname();
-  const locale = useLocale();
-  const dictionary = useDictionary();
-  const navItems: NavItem[] = [
-    {
-      id: "home",
-      iconName: "home",
-      label: dictionary.navigation.home,
-      href: "/",
-    },
-    {
-      id: "academic",
-      iconName: "book-open",
-      label: dictionary.navigation.academic,
-      href: "/academic",
-    },
-    {
-      id: "campus",
-      iconName: "building",
-      label: dictionary.navigation.campus,
-      href: "/campus",
-    },
-    {
-      id: "more",
-      iconName: "more-horizontal",
-      label: dictionary.navigation.more,
-      href: "/more",
-    },
-  ];
-
-  const isActive = (href: string) => {
-    if (!pathname) return false;
-    const localizedHref = localizePath(href, locale);
-    if (href === "/" && pathname === localizedHref) return true;
-    if (href !== "/" && pathname.startsWith(localizedHref)) return true;
-    return false;
-  };
-
-  return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-30 border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
-      aria-label={dictionary.navigation.mainNavigation}
-    >
-      <div className="grid grid-cols-4 gap-0">
-        {navItems.map((item) => {
-          const active = isActive(item.href);
-          return (
-            <Link
-              key={item.id}
-              href={localizePath(item.href, locale)}
-              className={clsx(
-                "relative flex flex-col items-center justify-center overflow-hidden py-3 px-2 transition-colors",
-                active
-                  ? "text-primary-600 font-semibold"
-                  : "text-neutral-600 hover:text-neutral-900",
-              )}
-              aria-current={active ? "page" : undefined}
-            >
-              <Icon
-                name={item.iconName}
-                size={24}
-                color="currentColor"
-              />
-              <div className="text-xs mt-1">{item.label}</div>
-              <NavigationPendingIndicator className="inset-x-4 top-0 bg-primary-500" />
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
-  );
+  const pathname = usePathname(), locale = useLocale(), dictionary = useDictionary();
+  const section = getSiteSection(pathname ?? "/");
+  const items = getPrimaryNavigation(dictionary);
+  return <nav className="m3-bottom-nav" aria-label={dictionary.navigation.mainNavigation}>
+    {items.map((item) => <Link key={item.path} href={localizePath(item.path, locale)} data-primary-destination
+      aria-current={section === item.path ? "page" : undefined}>
+      <span className="m3-nav-content">
+        <span className="m3-nav-indicator" aria-hidden="true"><Icon name={item.icon} size={24}
+          strokeWidth={section === item.path ? 2.6 : 1.8} /></span>
+        <span className="m3-nav-label">{item.label}</span>
+      </span>
+      <NavigationPendingIndicator className="inset-x-4 top-0 bg-primary-500" />
+    </Link>)}
+  </nav>;
 }

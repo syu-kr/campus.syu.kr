@@ -1,5 +1,16 @@
 @config "../tailwind.config.js";
 @import "tailwindcss";
+@import "./styles/m3/foundation.css";
+@import "./styles/m3/styles-home-m3.css";
+@import "./styles/m3/styles-academic-m3.css";
+@import "./styles/m3/styles-campus-m3.css";
+@import "./styles/m3/styles-forms-m3.css";
+@import "./styles/m3/academic-mobile.css";
+@import "./styles/m3/styles-shell-m3.css";
+@import "./styles/m3/notice-workspace.css";
+@import "./styles/m3/styles-controls-m3.css";
+@import "./styles/m3/styles-menu-hubs.css";
+@import "./styles/m3/m3-select.css";
 
 @layer base {
   * {
@@ -77,67 +88,8 @@
 
 @layer components {
   .ui-button {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-button border border-transparent px-4 py-2 text-sm font-medium no-underline;
-    @apply cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2;
-  }
-
-  .ui-button:active:not(:disabled):not([aria-disabled="true"]) {
-    transform: translateY(1px);
-  }
-
-  .ui-button:disabled,
-  .ui-button[aria-disabled="true"] {
-    @apply cursor-not-allowed opacity-50;
-  }
-
-  .ui-button-primary {
-    @apply bg-primary-600 text-white enabled:hover:bg-primary-700 enabled:active:bg-primary-800;
-  }
-
-  a.ui-button-primary:active:not([aria-disabled="true"]) {
-    @apply bg-primary-800;
-  }
-
-  .ui-button-secondary {
-    @apply border-neutral-300 bg-white text-neutral-700 enabled:hover:bg-neutral-50 enabled:active:bg-neutral-100;
-  }
-
-  a.ui-button-secondary:active:not([aria-disabled="true"]) {
-    @apply bg-neutral-100;
-  }
-
-  .ui-button-ghost {
-    @apply bg-transparent text-neutral-700 enabled:hover:bg-neutral-100 enabled:active:bg-neutral-200;
-  }
-
-  a.ui-button-ghost:active:not([aria-disabled="true"]) {
-    @apply bg-neutral-200;
-  }
-
-  .ui-button-danger {
-    @apply bg-red-600 text-white enabled:hover:bg-red-700 enabled:active:bg-red-800;
-  }
-
-  a.ui-button-danger:active:not([aria-disabled="true"]) {
-    @apply bg-red-800;
-  }
-
-  @media (hover: hover) {
-    a.ui-button-primary:hover {
-      @apply bg-primary-700;
-    }
-
-    a.ui-button-secondary:hover {
-      @apply bg-neutral-50;
-    }
-
-    a.ui-button-ghost:hover {
-      @apply bg-neutral-100;
-    }
-
-    a.ui-button-danger:hover {
-      @apply bg-red-700;
-    }
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-transparent px-4 py-2 text-sm font-medium no-underline;
+    @apply cursor-pointer transition-colors;
   }
 }
 

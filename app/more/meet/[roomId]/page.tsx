@@ -21,6 +21,7 @@ import {
   useLocale,
 } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
+import { Button } from "@/app/components/Button";
 import {
   formatDateLabel,
   formatDateTimeLabel,
@@ -97,6 +98,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   const [storageUnavailable, setStorageUnavailable] = useState(false);
   const [ownerToken, setOwnerToken] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const loadRoom = useCallback(async () => {
     setError("");
@@ -227,7 +229,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   }, [data]);
 
   const deleteRoom = async () => {
-    if (!ownerToken || isDeleting || !window.confirm(text.deleteConfirm)) return;
+    if (!ownerToken || isDeleting) return;
 
     setIsDeleting(true);
     setError("");
@@ -248,6 +250,7 @@ export default function MeetRoomPage({ params }: PageProps) {
       setError(text.deleteFailed);
     } finally {
       setIsDeleting(false);
+      setDeleteConfirmOpen(false);
     }
   };
 
@@ -410,7 +413,7 @@ export default function MeetRoomPage({ params }: PageProps) {
           <p className="text-sm text-red-700">{error || text.notFound}</p>
           <Link
             href={localizePath("/more/meet", locale)}
-            className="mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
+            className="ui-button ui-button-danger mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
           >
             {text.createRoom}
           </Link>
@@ -456,9 +459,9 @@ export default function MeetRoomPage({ params }: PageProps) {
         {ownerToken && (
           <button
             type="button"
-            onClick={deleteRoom}
+            onClick={() => setDeleteConfirmOpen(true)}
             disabled={isDeleting}
-            className="mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="ui-button ui-button-danger mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isDeleting ? text.deletingRoom : text.deleteRoom}
           </button>
@@ -665,7 +668,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                 !nickname.trim() ||
                 Boolean(matchedParticipant && !participantEditToken)
               }
-              className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+              className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
             >
               {isSaving
                 ? text.saving
@@ -732,6 +735,13 @@ export default function MeetRoomPage({ params }: PageProps) {
         </div>
       </div>
 
+      <Modal isOpen={deleteConfirmOpen} title={text.deleteRoom}
+        description={text.deleteConfirm} onClose={() => { if (!isDeleting) setDeleteConfirmOpen(false); }} size="sm">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="secondary" disabled={isDeleting} onClick={() => setDeleteConfirmOpen(false)}>{text.cancel}</Button>
+          <Button variant="danger" disabled={isDeleting} onClick={() => void deleteRoom()}>{isDeleting ? text.deletingRoom : text.deleteRoom}</Button>
+        </div>
+      </Modal>
       <Modal
         isOpen={overwriteConfirmOpen}
         title={text.overwriteTitle}
@@ -748,14 +758,14 @@ export default function MeetRoomPage({ params }: PageProps) {
             <button
               type="button"
               onClick={() => setOverwriteConfirmOpen(false)}
-              className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+              className="ui-button ui-button-secondary rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
             >
               {text.cancel}
             </button>
             <button
               type="button"
               onClick={() => void saveAvailability()}
-              className="rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
+              className="ui-button ui-button-primary rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
             >
               {text.overwrite}
             </button>

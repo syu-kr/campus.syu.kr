@@ -1,5 +1,7 @@
 "use client";
 
+import { focusFormError, FormFieldCounter } from "@/app/components/FormFieldFeedback";
+
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 
@@ -58,6 +60,7 @@ export function CampusTipSuggestionForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const submittedForm=event.currentTarget;
     setResultModal(null);
     setFieldErrors({});
 
@@ -72,11 +75,7 @@ export function CampusTipSuggestionForm({
     );
     if (Object.keys(clientErrors).length > 0) {
       setFieldErrors(clientErrors);
-      setResultModal({
-        type: "error",
-        title: text.validationTitle,
-        message: text.validationMessage,
-      });
+      focusFormError(event.currentTarget);
       return;
     }
 
@@ -107,8 +106,10 @@ export function CampusTipSuggestionForm({
 
       if (!response.ok) {
         const serverError = getServerFieldError(data.code, data.error, text);
-        if (data.field) {
+        if (data.field && ["title","description","url"].includes(data.field)) {
           setFieldErrors({ [data.field]: serverError });
+          focusFormError(submittedForm);
+          return;
         }
         throw new Error(serverError || text.submitFailed);
       }
@@ -153,7 +154,8 @@ export function CampusTipSuggestionForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate aria-busy={isSubmitting}>
+        {Object.keys(fieldErrors).length>0 && <p className="m3-validation-summary col-span-full" role="alert">{text.validationMessage}</p>}
         <input
           type="text"
           value={website}
@@ -187,6 +189,7 @@ export function CampusTipSuggestionForm({
               fieldErrors.title ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id={titleId+"-count"} value={title} max={120}/>
           {fieldErrors.title && (
             <p id={`${titleId}-error`} className="mt-1 text-xs text-red-600">
               {fieldErrors.title}
@@ -240,6 +243,7 @@ export function CampusTipSuggestionForm({
               fieldErrors.description ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id={descriptionId+"-count"} value={description} max={1200}/>
           {fieldErrors.description && (
             <p
               id={`${descriptionId}-error`}
@@ -270,6 +274,7 @@ export function CampusTipSuggestionForm({
               fieldErrors.url ? "border-red-300" : "border-neutral-300"
             }`}
           />
+          <FormFieldCounter id={urlId+"-count"} value={url} max={500}/>
           {fieldErrors.url && (
             <p id={`${urlId}-error`} className="mt-1 text-xs text-red-600">
               {fieldErrors.url}
@@ -314,6 +319,7 @@ export function CampusTipSuggestionForm({
             placeholder={text.notePlaceholder}
             className="w-full resize-none rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
+          <FormFieldCounter id={noteId+"-count"} value={note} max={1000}/>
         </div>
 
         <div>
@@ -336,6 +342,7 @@ export function CampusTipSuggestionForm({
             aria-describedby={`${contactId}-help`}
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
+          <FormFieldCounter id={contactId+"-count"} value={contact} max={120}/>
           <p
             id={`${contactId}-help`}
             className="mt-1 text-xs leading-5 text-neutral-500"
@@ -354,7 +361,7 @@ export function CampusTipSuggestionForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+          className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
         >
           {isSubmitting ? text.submitting : text.submit}
         </button>

@@ -1,0 +1,264 @@
+/* The original page components own all state, content, filters and responsive visibility. */
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){
+  --cm-primary:var(--sys-primary);
+  --cm-on-container:var(--sys-on-secondary-container);
+  --cm-container:var(--sys-secondary-container);
+  --cm-surface:var(--sys-surface-lowest);
+  --cm-low:var(--sys-surface-low);
+  --cm-outline:var(--sys-outline-variant);
+  --cm-text:var(--sys-on-surface);
+  --cm-muted:var(--sys-on-surface-variant);
+  padding:36px clamp(20px,3.2vw,48px) 56px;
+  color:var(--cm-text);
+  line-height:1.6;
+}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"])>.mx-auto,
+.m3-content[data-site-route="/campus/bus-info"]>div>.mx-auto{
+  width:100%;max-width:1320px;min-width:0;margin-inline:auto;padding:0;
+}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{
+  font-size:var(--type-headline-size);font-weight:700;line-height:1.3;letter-spacing:-.025em;
+}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) .mx-auto>.mb-8:first-child{margin-bottom:28px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1+p{margin-top:8px;color:var(--cm-muted);font-size:14px;line-height:1.7;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"]{max-width:760px;margin-bottom:24px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"] input{
+  min-height:56px;padding-left:48px;border:1px solid var(--sys-outline);border-radius:var(--shape-full);background:var(--cm-surface);font-size:var(--type-body-size);
+}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"]>div>svg{left:18px;width:18px;height:18px;color:var(--cm-muted);}
+.m3-content:is([data-site-route="/academic/competitions"],[data-site-route="/campus/campus-tips"]) div:has(>button[aria-pressed]){gap:4px;}
+.m3-content:is([data-site-route="/academic/competitions"],[data-site-route="/campus/campus-tips"]) div:has(>button[aria-pressed])>button{
+  min-height:48px;padding:10px 17px;border:1px solid transparent;border-radius:100px;background:transparent;color:var(--cm-muted);font-size:13px;font-weight:600;line-height:1.4;white-space:nowrap;
+}
+.m3-content:is([data-site-route="/academic/competitions"],[data-site-route="/campus/campus-tips"]) div:has(>button[aria-pressed])>button:hover{background:var(--cm-low);}
+.m3-content:is([data-site-route="/academic/competitions"],[data-site-route="/campus/campus-tips"]) div:has(>button[aria-pressed])>button[aria-pressed="true"]{background:var(--cm-container);color:var(--cm-on-container);font-weight:600;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) nav[aria-label] .ui-button{min-width:48px;border-color:transparent;background:transparent;color:var(--cm-muted);}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) nav[aria-label] .ui-button[aria-current="page"]{background:var(--cm-container);color:var(--cm-on-container);font-weight:700;}
+
+/* Notices are a continuous list surface; optional AI summaries retain their source button. */
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"],[data-site-route="/academic/competitions"]) article>a.rounded-card{border:0;border-radius:inherit;box-shadow:none;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"],[data-site-route="/academic/competitions"]) article>a:focus-visible{outline-offset:-3px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) .mx-auto>.space-y-3:has(article){overflow:hidden;border:1px solid var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) .mx-auto>.space-y-3>div:has(>article){margin:0;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article{padding:22px 26px;border:0;border-bottom:1px solid var(--cm-outline);border-radius:0;background:transparent;box-shadow:none;transition:background-color .15s;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article:hover{background:#f8faff;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) .space-y-3>div:last-child article{border-bottom:0;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative{display:grid;grid-template-columns:112px minmax(0,1fr) 160px;align-items:start;gap:12px 22px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:first-child{grid-column:1;grid-row:1;gap:5px;padding-top:2px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article h3{grid-column:2;grid-row:1;margin:0;font-size:16px;line-height:1.65;font-weight:600;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:last-child{grid-column:3;grid-row:1 / span 2;display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding:3px 0 0;border:0;text-align:right;line-height:1.6;color:var(--cm-muted);}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article button[aria-haspopup="dialog"]{grid-column:2;grid-row:2;min-width:0;padding:12px 14px;border:0;border-radius:12px;background:var(--cm-low);}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article button[aria-haspopup="dialog"]>p{font-size:12px;line-height:1.7;}
+.m3-content[data-site-route="/announcements/[category]/[id]"]>.mx-auto{max-width:1040px;}
+.m3-content[data-site-route="/announcements/[category]/[id]"] .rounded-card{padding:32px;border-radius:24px;}
+.m3-content[data-site-route="/announcements/[category]/[id]"] h1{max-width:850px;font-size:30px;line-height:1.5;}
+.m3-content[data-site-route="/announcements/[category]/[id]"] .whitespace-pre-wrap{font-size:15px;line-height:1.95;}
+
+/* Source/status filters stay independent, and cards fill the available desktop width. */
+.m3-content[data-site-route="/academic/competitions"] .mx-auto>.space-y-3:has(article){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start;}
+.m3-content[data-site-route="/academic/competitions"] article{height:100%;margin:0;padding:24px;border:1px solid var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
+.m3-content[data-site-route="/academic/competitions"] article:hover{border-color:#aac0e8;background:#fcfdff;}
+.m3-content[data-site-route="/academic/competitions"] article>div{height:100%;gap:16px;}
+.m3-content[data-site-route="/academic/competitions"] article h2{font-size:18px;font-weight:650;line-height:1.65;}
+.m3-content[data-site-route="/academic/competitions"] article p{line-height:1.75;}
+.m3-content[data-site-route="/academic/competitions"] article button[aria-haspopup="dialog"]{border-radius:12px;background:var(--cm-low);}
+.m3-content[data-site-route="/academic/competitions"] article>div>div:last-child{margin-top:auto;padding-top:16px;border-color:var(--cm-outline);}
+
+/* Both restaurants use the same visual hierarchy without adding menu-day controls. */
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child{margin-bottom:28px;border:0;background:var(--sys-surface);padding-block:12px;}
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child>div{display:flex;gap:4px;width:fit-content;max-width:100%;padding:4px;border-radius:100px;background:#eaf0f9;}
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child button{flex:0 1 auto;min-height:48px;min-width:140px;padding:10px 22px;border:0;border-radius:100px;background:transparent;color:var(--cm-muted);font-size:14px;box-shadow:none;}
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child button[aria-pressed="true"]{background:var(--cm-surface);color:var(--cm-on-container);font-weight:650;box-shadow:0 1px 4px #1d3d7010;}
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])),
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start;}
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>*,
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>*{min-width:0;margin:0;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu{display:grid;gap:16px;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu>*{margin-block:0;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card{padding:26px;border-radius:24px;background:#edf3ff;border-color:#d5e2fa;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu h2{font-size:22px;font-weight:680;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card>.space-y-4{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card>.space-y-4>div{min-width:0;margin:0;padding:0;border:0;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card>.space-y-4>div:not(:first-child){padding-left:20px;border-left:1px solid #d4dff3;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu hr{display:none;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu :is(ul.grid,.grid.grid-cols-2){grid-template-columns:minmax(0,1fr);gap:8px;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu .text-sm>p.font-medium{font-size:15px;font-weight:600;line-height:1.65;}
+.m3-content[data-site-route="/campus/cafeteria"] #today-menu .border-green-200{border-color:#cddadf;border-radius:12px;background:#ffffff80;}
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>.rounded-card,
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>.rounded-card{padding:24px;border-radius:22px;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6{display:grid;gap:12px;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{display:grid;grid-template-columns:160px minmax(0,1fr);gap:24px;margin:0;padding:24px;border-radius:18px;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] .rounded-card>.mb-4{margin:0;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] :is(h2,h3){font-size:16px;font-weight:650;line-height:1.65;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>h2{margin-bottom:18px;font-size:20px;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] .rounded-card>.space-y-4{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;}
+.m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])) :is(#today-menu>.rounded-card,section[aria-labelledby$="weekly-heading"] .rounded-card)>.space-y-4{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] .space-y-4>div{min-width:0;margin:0;padding:0;border:0;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] .space-y-4 hr{display:none;}
+.m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] :is(ul.grid,.grid.grid-cols-2){grid-template-columns:minmax(0,1fr);gap:8px;}
+.m3-content[data-site-route="/campus/cafeteria"] .border-amber-200{border-color:#eadcc1;background:#faf5e9;border-radius:14px;}
+.m3-content[data-site-route="/campus/cafeteria"] .mt-8.rounded-lg{margin-top:24px;padding:16px 20px;border-radius:14px;background:var(--cm-low);}
+
+/* Live transport, source status, route disclosure and off-service states remain original. */
+.m3-content[data-site-route="/campus/bus-info"] .rounded-card{padding:24px;border-radius:22px;}
+.m3-content[data-site-route="/campus/bus-info"] #shuttle-map{height:440px;margin-bottom:0;border-color:var(--cm-outline);border-radius:16px;}
+.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map){display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;}
+.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.mb-4{grid-column:1/-1;margin:0;}
+.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{margin:0;padding:8px 0;}
+.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]{background:#edf3ff;border-color:#d5e2fa;}
+.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]>.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;}
+.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]>.grid>div{padding:20px;border-color:#d5e2fa;border-radius:14px;background:#ffffffa8;}
+.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label] strong{font-size:28px;font-variant-numeric:tabular-nums;color:var(--cm-primary);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed]){display:flex;flex-wrap:wrap;gap:6px;margin-top:28px;}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed])>button{min-height:48px;padding:10px 18px;border:1px solid var(--cm-outline);border-radius:100px;background:var(--cm-surface);color:var(--cm-muted);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed])>button[aria-pressed="true"]{border-color:transparent;background:var(--cm-container);color:var(--cm-on-container);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed]) .bg-green-600{background:#256b4e;color:#fff;}
+.m3-content[data-site-route="/campus/bus-info"] #shuttle-schedules{scroll-margin-top:calc(var(--header-height) + 92px);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-4:has(>.rounded-card>button[aria-expanded]){display:flex;flex-direction:column;gap:16px;}
+.m3-content[data-site-route="/campus/bus-info"] .space-y-4>.rounded-card:has(>button[aria-expanded]){margin:0;padding:12px;}
+.m3-content[data-site-route="/campus/bus-info"] .space-y-4>.rounded-card:has(>button[aria-expanded="true"]){border-color:#b8caeb;background:#fcfdff;}
+.m3-content[data-site-route="/campus/bus-info"] .m3-shuttle-updated{margin-top:24px;color:var(--cm-muted);font-size:12px;line-height:1.7;}
+.m3-content[data-site-route="/campus/bus-info"] .m3-shuttle-updated p{margin:0;}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3:has(>[role="button"]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{min-height:188px;margin:0;padding:24px;border-left-width:4px;}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:28px;font-weight:650;line-height:1.3;}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-semibold.text-blue-600{font-size:18px;color:var(--cm-primary);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>.border-l-gray-300{background:var(--cm-low);}
+.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.rounded-lg:has(h2){padding:24px;border-color:var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
+.m3-content[data-site-route="/campus/bus-info"] .min-w-max>button[aria-pressed]{min-height:48px;padding:10px 18px;border-radius:100px;background:transparent;color:var(--cm-muted);}
+.m3-content[data-site-route="/campus/bus-info"] .min-w-max>button[aria-pressed="true"]{background:var(--cm-container);color:var(--cm-on-container);box-shadow:none;}
+
+/* Reading-room availability and the existing operating-hours table are separate surfaces. */
+.m3-content[data-site-route="/campus/library"]>.mx-auto{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:24px;align-items:start;}
+.m3-content[data-site-route="/campus/library"]>.mx-auto>*{grid-column:1/-1;min-width:0;margin:0;}
+.m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:has(strong){grid-column:1;grid-row:2;padding:26px;border-radius:24px;}
+.m3-content[data-site-route="/campus/library"]>.mx-auto>.mb-6:not(.rounded-card){grid-column:2;grid-row:2 / span 3;padding:26px;border:1px solid var(--cm-outline);border-radius:24px;background:var(--cm-surface);}
+.m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:not(:has(strong)){grid-column:1;padding:24px;border-radius:22px;}
+.m3-content[data-site-route="/campus/library"] h2{font-size:20px;font-weight:650;}
+.m3-content[data-site-route="/campus/library"] .space-y-4>div:has(strong){padding:18px 0;margin:0;border-bottom:1px solid var(--cm-outline);}
+.m3-content[data-site-route="/campus/library"] .space-y-4>div:has(strong):last-child{border-bottom:0;}
+.m3-content[data-site-route="/campus/library"] strong{font-size:15px;font-weight:600;}
+.m3-content[data-site-route="/campus/library"] .space-y-4 .ui-button{min-height:48px;padding:6px 12px;border:0;background:var(--cm-low);font-size:12px;}
+.m3-content[data-site-route="/campus/library"] .h-2{height:6px;}
+.m3-content[data-site-route="/campus/library"] .space-y-6>.rounded-card{padding:20px 0;border:0;border-bottom:1px solid var(--cm-outline);border-radius:0;background:transparent;}
+.m3-content[data-site-route="/campus/library"] .space-y-6>.rounded-card:first-child{padding-top:8px;}
+.m3-content[data-site-route="/campus/library"] .space-y-6 h3{font-size:16px;font-weight:650;color:var(--cm-primary);}
+.m3-content[data-site-route="/campus/library"] .space-y-6 h4{font-size:14px;font-weight:600;}
+.m3-content[data-site-route="/campus/library"] .space-y-6 .grid p{font-size:13px;font-variant-numeric:tabular-nums;}
+.m3-content[data-site-route="/campus/library"] button[aria-pressed]{min-height:48px;padding:10px 15px;border-radius:100px;background:transparent;color:var(--cm-muted);font-size:13px;white-space:nowrap;}
+.m3-content[data-site-route="/campus/library"] button[aria-pressed="true"]{background:var(--cm-container);color:var(--cm-on-container);}
+
+/* The complete directory is presented as paired rows rather than isolated floating boxes. */
+.m3-content[data-site-route="/campus/phone"] .mx-auto>.space-y-3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;overflow:hidden;border:1px solid var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
+.m3-content[data-site-route="/campus/phone"] .mx-auto>.space-y-3:has(>.rounded-card:only-child){grid-template-columns:minmax(0,1fr);}
+.m3-content[data-site-route="/campus/phone"] .space-y-3>.rounded-card{min-width:0;min-height:130px;margin:0;padding:24px;border:0;border-bottom:1px solid var(--cm-outline);border-radius:0;background:transparent;}
+.m3-content[data-site-route="/campus/phone"] .space-y-3>.rounded-card:nth-child(even){border-left:1px solid var(--cm-outline);}
+.m3-content[data-site-route="/campus/phone"] .space-y-3 h3{font-size:16px;font-weight:650;line-height:1.6;}
+.m3-content[data-site-route="/campus/phone"] .space-y-3 .ui-button{flex-shrink:0;border:0;background:var(--cm-container);color:var(--cm-on-container);}
+.m3-content[data-site-route="/campus/phone"] .mx-auto>.mt-8{padding:18px 22px;border:0;border-radius:16px;background:var(--cm-low);}
+.m3-content[data-site-route="/campus/phone"] .mx-auto>.mt-8 p{color:var(--cm-muted);font-size:13px;line-height:1.8;}
+
+/* Campus catalog links retain the original categories, external sources and destinations. */
+.m3-content[data-site-route="/campus/campus-tips"] .mx-auto>.space-y-3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a{min-width:0;margin:0;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a>.rounded-card{height:100%;padding:24px;border-radius:20px;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3 h2{font-size:17px;font-weight:650;line-height:1.6;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3 .sm\:flex-row{flex-direction:column;gap:16px;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3 .shrink-0.text-sm{align-self:flex-start;padding-top:4px;color:var(--cm-primary);font-size:13px;}
+
+/* Only the external map surface changes; existing desktop/mobile panels keep their media rules. */
+.m3-content[data-site-route="/campus/map"] .grid:has(>[class*="shadow-lg"]){gap:24px;}
+.m3-content[data-site-route="/campus/map"] .grid>[class*="shadow-lg"]{border-color:var(--cm-outline);border-radius:22px;box-shadow:none;}
+.m3-content[data-site-route="/campus/map"] input{min-height:48px;}
+.m3-content[data-site-route="/campus/map"] .h-14:has(input){height:58px;border-color:var(--sys-outline);border-radius:var(--shape-full);padding-inline:20px;}
+.m3-content[data-site-route="/campus/map"] .top-14{top:64px;max-width:760px;padding:6px;border-color:var(--cm-outline);border-radius:20px;box-shadow:0 14px 35px #19325714;}
+.m3-content[data-site-route="/campus/map"] .top-14 button{min-height:64px;border-radius:12px;}
+.m3-content[data-site-route="/campus/map"] .rounded-card:has(>button[aria-controls]){padding:0;border-radius:16px;}
+.m3-content[data-site-route="/campus/map"] button[aria-controls]{min-height:58px;padding:18px 20px;}
+.m3-content[data-site-route="/campus/map"] [id*="-floor-"]{padding:20px;background:var(--cm-low);border-color:var(--cm-outline);}
+
+@media(min-width:1280px){
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])),
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]{grid-template-columns:minmax(0,1fr) 320px;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>*,
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>*{grid-column:1/-1;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>#today-menu{grid-column:1;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>.rounded-card{grid-column:2;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>#today-menu{grid-column:1;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>.rounded-card{grid-column:2;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>.rounded-card .grid.gap-2,
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>.rounded-card .grid.gap-2{grid-template-columns:minmax(0,1fr);}
+}
+@media(min-width:768px){
+  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child{position:sticky;top:var(--header-height);z-index:30;}
+}
+@media(min-width:1024px){
+  .m3-content[data-site-route="/campus/map"] .grid:has(>[class*="shadow-lg"]){grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);}
+  .m3-content[data-site-route="/campus/map"] .grid:has(>[class*="shadow-lg"])>[class*="shadow-lg"]{grid-column:auto;}
+}
+@media(max-width:1099px){
+  .m3-content[data-site-route="/campus/library"]>.mx-auto{grid-template-columns:minmax(0,1fr);gap:22px;}
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:has(strong),
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.mb-6:not(.rounded-card),
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:not(:has(strong)){grid-column:1;grid-row:auto;}
+  .m3-content[data-site-route="/campus/library"] .space-y-6{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start;}
+  .m3-content[data-site-route="/campus/library"] .space-y-6>.rounded-card{margin:0;}
+  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map){grid-template-columns:minmax(0,1fr);}
+  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+}
+@media(max-width:899px){
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:26px 20px 36px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative{grid-template-columns:minmax(0,1fr) 150px;gap:10px 18px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:first-child{grid-column:1/-1;grid-row:auto;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article h3{grid-column:1;grid-row:auto;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:last-child{grid-column:2;grid-row:2 / span 2;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article button[aria-haspopup="dialog"]{grid-column:1;grid-row:auto;}
+  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3:has(>[role="button"]){grid-template-columns:minmax(0,1fr);}
+  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{min-height:auto;}
+  .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{grid-template-columns:minmax(0,1fr);gap:18px;}
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel :is(#today-menu>.rounded-card,section[aria-labelledby$="weekly-heading"] .rounded-card)>.space-y-4,
+  .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])) :is(#today-menu>.rounded-card,section[aria-labelledby$="weekly-heading"] .rounded-card)>.space-y-4{grid-template-columns:minmax(0,1fr);gap:18px;}
+  .m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card>.space-y-4>div:not(:first-child){padding-top:18px;padding-left:0;border-left:0;border-top:1px solid #d4dff3;}
+  .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] .space-y-4>div:not(:first-child){padding-top:16px;border-top:1px solid var(--cm-outline);}
+  .m3-content[data-site-route="/campus/cafeteria"] #today-menu :is(ul.grid,.grid.grid-cols-2),
+  .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] :is(ul.grid,.grid.grid-cols-2){grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;}
+}
+@media(max-width:599px){
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:22px 16px 32px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{font-size:26px;line-height:1.4;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"] input{font-size:16px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article{padding:20px 18px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative{grid-template-columns:minmax(0,1fr);gap:12px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>:is(div:first-child,h3,button[aria-haspopup="dialog"],div:last-child){grid-column:1;grid-row:auto;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:last-child{flex-direction:row;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-size:11px;}
+  .m3-content[data-site-route="/academic/competitions"] .mx-auto>.space-y-3:has(article),
+  .m3-content[data-site-route="/campus/phone"] .mx-auto>.space-y-3,
+  .m3-content[data-site-route="/campus/campus-tips"] .mx-auto>.space-y-3{grid-template-columns:minmax(0,1fr);}
+  .m3-content[data-site-route="/academic/competitions"] article,
+  .m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a>.rounded-card{padding:20px;}
+  .m3-content[data-site-route="/academic/competitions"] article h2{font-size:16px;}
+  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child>div{width:100%;}
+  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child button{flex:1;min-width:0;padding-inline:14px;}
+  .m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card{padding:22px 20px;}
+  .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{padding:20px;}
+  .m3-content[data-site-route="/campus/bus-info"] .rounded-card{padding:20px;}
+  .m3-content[data-site-route="/campus/bus-info"] #shuttle-map{height:340px;}
+  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{grid-template-columns:minmax(0,1fr);}
+  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{padding:20px;}
+  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:25px;}
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:has(strong),
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.mb-6:not(.rounded-card),
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:not(:has(strong)){padding:20px;}
+  .m3-content[data-site-route="/campus/library"] .space-y-6{grid-template-columns:minmax(0,1fr);}
+  .m3-content[data-site-route="/campus/library"] h2{font-size:18px;}
+  .m3-content[data-site-route="/campus/library"]>.mx-auto>.mb-6:not(.rounded-card)>.flex{align-items:flex-start;flex-wrap:wrap;gap:12px;}
+  .m3-content[data-site-route="/campus/phone"] .space-y-3>.rounded-card{min-height:124px;padding:22px 18px;}
+  .m3-content[data-site-route="/campus/phone"] .space-y-3>.rounded-card:nth-child(even){border-left:0;}
+  .m3-content[data-site-route="/campus/phone"] .space-y-3 h3{font-size:15px;}
+  .m3-content[data-site-route="/announcements/[category]/[id]"] .rounded-card{padding:22px;}
+  .m3-content[data-site-route="/announcements/[category]/[id]"] h1{font-size:24px;}
+}
+
+/* Map symbols keep their visual size while their input targets stay stable. */
+
+.m3-content[data-site-route="/campus/bus-info"] [role="button"]{min-height:48px}

@@ -10,9 +10,13 @@ const authMock = vi.hoisted(() => ({
   listener: null as ((user: User | null) => void) | null,
   unsubscribe: vi.fn(),
   roommateMounts: 0,
+  loadError: false,
 }));
 
-vi.mock("@/lib/firebase", () => ({ auth: authMock.auth }));
+vi.mock("@/lib/firebase", () => ({ get auth() {
+  if (authMock.loadError) throw new Error("Firebase client config is incomplete");
+  return authMock.auth;
+} }));
 vi.mock("firebase/auth", () => ({
   onAuthStateChanged: vi.fn(
     (_auth: unknown, listener: (user: User | null) => void) => {
@@ -76,7 +80,8 @@ function mockRequests(handler: (token: string, init?: RequestInit) => Response |
   return fetchMock;
 }
 
-function emitAuth(...users: (User | null)[]) {
+async function emitAuth(...users: (User | null)[]) {
+  await waitFor(() => expect(authMock.listener).not.toBeNull());
   act(() => {
     for (const user of users) {
       authMock.auth.currentUser = user;
@@ -97,24 +102,39 @@ beforeEach(() => {
   authMock.listener = null;
   authMock.unsubscribe.mockClear();
   authMock.roommateMounts = 0;
+  authMock.loadError = false;
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe("admin submission authentication boundary", () => {
+  it("recovers from Firebase startup errors without exposing data or sending admin requests", async () => {
+    authMock.loadError = true;
+    const fetchMock = mockRequests(() => { throw new Error("Admin request before authentication"); });
+    render(<AdminPage />);
+    expect(await screen.findByRole("heading", { name: "관리자 세션 확인 실패" })).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("관리자 인증을 시작하지 못했습니다");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(authMock.listener).toBeNull();
+    authMock.loadError = false;
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await emitAuth(null);
+    expect(screen.getByRole("button", { name: "로그인" })).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
   it("clears loaded contact, detail and selection when the next account is denied", async () => {
     const oldItem = fixtureItem("A");
     mockRequests((token) => token === "admin-a"
       ? pageResponse(oldItem)
       : Response.json({ error: "B access denied" }, { status: 403 }));
     render(<AdminPage />);
-    emitAuth(fixtureUser("admin-a"));
+    await emitAuth(fixtureUser("admin-a"));
     expect(await screen.findByText(oldItem.contact)).toBeVisible();
     fireEvent.click(screen.getByRole("checkbox", { name: `${oldItem.title} 선택` }));
     expect(screen.getByText("1개 항목 선택됨")).toBeVisible();
 
-    emitAuth(null);
+    await emitAuth(null);
     expect(screen.getByRole("button", { name: "로그인" })).toBeVisible();
-    emitAuth(fixtureUser("admin-b"));
+    await emitAuth(fixtureUser("admin-b"));
     await screen.findByText("B access denied");
 
     expectNoItem(oldItem);
@@ -128,10 +148,10 @@ describe("admin submission authentication boundary", () => {
     const oldResponse = deferred<Response>();
     const fetchMock = mockRequests((token) => token === "admin-a" ? oldResponse.promise : pageResponse(currentItem));
     render(<AdminPage />);
-    emitAuth(fixtureUser("admin-a"));
+    await emitAuth(fixtureUser("admin-a"));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
 
-    emitAuth(null, fixtureUser("admin-b"));
+    await emitAuth(null, fixtureUser("admin-b"));
     expect(await screen.findByText(currentItem.contact)).toBeVisible();
     await act(async () => oldResponse.resolve(pageResponse(oldItem)));
 
@@ -145,10 +165,10 @@ describe("admin submission authentication boundary", () => {
     const currentItem = fixtureItem("B");
     const fetchMock = mockRequests(() => pageResponse(currentItem));
     render(<AdminPage />);
-    emitAuth(fixtureUser("admin-a", getOldToken));
+    await emitAuth(fixtureUser("admin-a", getOldToken));
     await waitFor(() => expect(getOldToken).toHaveBeenCalled());
 
-    emitAuth(null, fixtureUser("admin-b"));
+    await emitAuth(null, fixtureUser("admin-b"));
     expect(await screen.findByText(currentItem.contact)).toBeVisible();
     await act(async () => oldToken.resolve("admin-a"));
 
@@ -168,7 +188,7 @@ describe("admin submission authentication boundary", () => {
         return pageResponse(token === "admin-a" ? oldItem : currentItem);
       });
       render(<AdminPage />);
-      emitAuth(fixtureUser("admin-a"));
+      await emitAuth(fixtureUser("admin-a"));
       await screen.findByText(oldItem.contact);
       if (operation === "bulk") {
         fireEvent.click(screen.getByRole("checkbox", { name: `${oldItem.title} 선택` }));
@@ -178,7 +198,7 @@ describe("admin submission authentication boundary", () => {
       }
       await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === method)).toBe(true));
 
-      emitAuth(null, fixtureUser("admin-b"));
+      await emitAuth(null, fixtureUser("admin-b"));
       expect(await screen.findByText(currentItem.contact)).toBeVisible();
       expect(screen.getByRole("button", { name: operation === "classify" ? "분류" : "대기" })).toBeEnabled();
       await act(async () => mutationResponse.resolve(Response.json(operation === "classify" ? {
@@ -206,11 +226,11 @@ describe("admin submission authentication boundary", () => {
     let loads = 0;
     const fetchMock = mockRequests(() => ++loads === 1 ? oldResponse.promise : pageResponse(currentItem));
     render(<AdminPage />);
-    emitAuth(sameUser);
+    await emitAuth(sameUser);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const previousRoommateSession = screen.getByTestId("roommate-session").textContent;
 
-    emitAuth(null, sameUser);
+    await emitAuth(null, sameUser);
     expect(await screen.findByText(currentItem.contact)).toBeVisible();
     expect(screen.getByTestId("roommate-session").textContent).not.toBe(previousRoommateSession);
     await act(async () => oldResponse.resolve(pageResponse(oldItem)));
