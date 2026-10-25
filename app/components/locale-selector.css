@@ -1,0 +1,30 @@
+.m3-locale-selector {
+  flex: 0 1 224px;
+  width: 224px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Footer navigation links are borderless; this control keeps the shared field surface. */
+.m3-footer .m3-locale-selector .m3-select-trigger {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--sys-outline);
+  background: var(--sys-surface-lowest);
+  color: var(--sys-on-surface);
+  font-size: var(--type-label-size);
+}
+
+.m3-footer .m3-locale-selector .m3-select-trigger:hover {
+  background: var(--sys-surface-low);
+}
+
+.m3-footer .m3-locale-selector .m3-select-trigger:focus {
+  border-color: var(--sys-primary);
+}
+
+@media (max-width: 899px) {
+  .m3-footer .m3-locale-selector .m3-select-trigger {
+    font-size: 16px;
+  }
+}

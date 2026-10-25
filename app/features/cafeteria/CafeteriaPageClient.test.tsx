@@ -76,6 +76,7 @@ describe("cafeteria menu content and sources", () => {
     const source = view.getByRole("link", { name: dictionary.pages.cafeteria.answer.source });
     const notice = view.getByText(dictionary.pages.cafeteria.noticeTitle);
 
+    expect(view.queryByRole("button", { name: dictionary.home.overview.refresh })).toBeNull();
     expect(view.getAllByText("비빔밥")).toHaveLength(1);
     expect(view.getByRole("heading", { name: dictionary.pages.cafeteria.todayMenu })).not.toBeNull();
     expect(source).toHaveAttribute("href", "https://www.syu.ac.kr/school-life/facility-information/cafeteria/");

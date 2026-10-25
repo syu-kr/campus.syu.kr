@@ -16,12 +16,11 @@ export const enDictionary = {
       referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
     },
     crawlDataStatus: {
-      staleTitle: "Some information updates are delayed",
-      staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
-      lastSuccess: "Last successful collection",
-      lastAttempt: "Latest collection attempt",
-      unknownSuccess: "The collection time of the previous verified snapshot is unknown.",
-      statusUnavailable: "Update status is unavailable. Check the official source for the latest information.",
+      label: "Information reference",
+      asOf: "As of:",
+      retained: "previously confirmed information",
+      unknownBasis: "The reference date of the previous information is unknown.",
+      statusUnavailable: "The information reference date is unavailable. Check the official source for the latest details.",
       fileLabels: {
         "announcements-academic.json": "Academic notices",
         "announcements-campus-life.json": "Campus life notices",
@@ -1387,7 +1386,10 @@ export const enDictionary = {
           "Please wait. If the map does not appear, you can still find building information through search.",
         unavailableTitle: "Could not load the map",
         unavailableMessage:
-          "Check the network status or Kakao Maps configuration. You can still use the search field and building list without the map.",
+          "The external map could not be connected. Building search and facility lists are still available.",
+        unavailableHelp: "If the map does not appear",
+        unavailableBrowserHelp:
+          "Check whether your browser blocks external content. If you restrict cookies or site data, review this site's settings or try another browser.",
         basementFloor: "B",
         floorSuffix: "F",
         categories: {

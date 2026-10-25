@@ -5,11 +5,14 @@ import { usePathname, useSearchParams } from "next/navigation";
 import {
   LOCALE_COOKIE_NAME,
   LOCALES,
+  isLocale,
   localeLabels,
   localizePath,
   type Locale,
 } from "@/lib/i18n/routing";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { M3Select } from "@/app/components/M3Select";
+import "./locale-selector.css";
 
 const LOCALE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
@@ -39,21 +42,16 @@ export function LanguageSelector() {
   };
 
   return (
-    <label className="flex flex-col gap-1 text-xs text-neutral-600 sm:text-sm">
-      <span className="font-medium text-neutral-700">
+    <div className="m3-locale-selector flex flex-col gap-1 text-xs text-neutral-600 sm:text-sm">
+      <label id="footer-locale-label" htmlFor="footer-locale" className="font-medium text-neutral-700">
         {dictionary.footer.countrySetting}
-      </span>
-      <select
+      </label>
+      <M3Select
+        id="footer-locale"
         value={locale}
-        onChange={(event) => handleChange(event.target.value as Locale)}
-        className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 outline-none transition-colors focus:border-primary-500 sm:w-48"
-      >
-        {LOCALES.map((item) => (
-          <option key={item} value={item}>
-            {localeLabels[item]}
-          </option>
-        ))}
-      </select>
-    </label>
+        onValueChange={(value) => { if (isLocale(value)) handleChange(value); }}
+        options={LOCALES.map((value) => ({ value, label: localeLabels[value] }))}
+      />
+    </div>
   );
 }

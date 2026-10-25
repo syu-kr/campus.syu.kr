@@ -159,6 +159,10 @@ function MapUnavailableState() {
         <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
           {text.unavailableMessage}
         </p>
+        <details className="mt-4 text-left text-sm text-neutral-600">
+          <summary className="m3-disclosure-trigger text-primary-600">{text.unavailableHelp}</summary>
+          <p className="mt-2 leading-6">{text.unavailableBrowserHelp}</p>
+        </details>
       </div>
     </div>
   );

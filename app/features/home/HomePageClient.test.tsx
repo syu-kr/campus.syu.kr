@@ -103,6 +103,7 @@ describe.each(["ko", "en"] as const)("home layout and data for %s", (locale) => 
       "announcements", "cafeteria-weekly-snapshot", "public-holidays", "schedules", "serviceNotices", "shuttle-buses", "shuttle-special-periods", "weather",
     ]);
 
+    expect(screen.queryByRole("button", { name: dictionary.home.overview.refresh })).not.toBeInTheDocument();
     expect(weatherApi.fetchWeather).not.toHaveBeenCalled();
     await act(async () => { await client.invalidateQueries(); });
     expect(weatherApi.fetchWeather).toHaveBeenCalledOnce();

@@ -51,16 +51,25 @@ function useHomeChoice<T extends string>(key: string, fallback: T, allowed: read
   }] as const;
 }
 
-function Status({ state, onRefresh, busy, disabled = false }: {
-  state: "fresh" | "loading" | "error" | "stale" | "unavailable";
-  onRefresh: () => void;
-  busy: boolean;
-  disabled?: boolean;
+function hasRetryableFailure(query: {
+  isError: boolean; isFetching: boolean; errorUpdatedAt: number; dataUpdatedAt: number;
 }) {
-  const text = useDictionary().home.overview;
+  return query.isError || (query.isFetching && query.errorUpdatedAt > query.dataUpdatedAt);
+}
+
+function Status({ state, onRefresh, onRetry, busy }: {
+  state: "fresh" | "loading" | "error" | "stale" | "unavailable";
+  onRefresh?: () => void;
+  onRetry?: () => void;
+  busy: boolean;
+}) {
+  const dictionary = useDictionary(), text = dictionary.home.overview;
+  const action = onRetry ?? onRefresh;
   return <div className="m3-home-status">
     <span data-state={state} role="status">{text.status[state]}</span>
-    <button type="button" onClick={onRefresh} disabled={busy || disabled}>{text.refresh}</button>
+    {action && <button type="button" onClick={action} disabled={busy}>
+      {onRetry ? dictionary.home.dashboard.retry : text.refresh}
+    </button>}
   </div>;
 }
 
@@ -90,7 +99,7 @@ function SuMeal({ now, initial }: { now: Date | null; initial: HomeOverviewData 
       <p className="m3-home-sides">{lunch?.slice(1).map((item) => item.name).join(" · ")}</p>
     </>}
     <Status state={food.isPending || food.isFetching ? "loading" : food.isError ? "error" : stale ? "stale" : "fresh"}
-      busy={food.isFetching} onRefresh={() => void food.refetch()} />
+      busy={food.isFetching} onRetry={hasRetryableFailure(food) ? () => void food.refetch() : undefined} />
   </>;
 }
 
@@ -111,7 +120,7 @@ function MannaMeal({ today }: { today: string }) {
     </>}
     <Status state={!query.isConfigured ? "unavailable" : query.isPending || query.isFetching ? "loading" :
       query.isError ? "error" : missingDay || lunch === null ? "stale" : "fresh"}
-      busy={query.isFetching} disabled={!query.isConfigured} onRefresh={() => void query.refetch()} />
+      busy={query.isFetching} onRetry={query.isConfigured && hasRetryableFailure(query) ? () => void query.refetch() : undefined} />
   </>;
 }
 
@@ -168,7 +177,7 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
             summary.operationStatus === "closed" ? text.serviceClosed : text.noMoreDepartures}</p>}
     {summary.isSpecialSchedule && !error && !loading && <p className="m3-home-sides">{text.specialTimetable}</p>}
     <Status state={loading || busy ? "loading" : error ? "error" : summary.operationStatus === "unconfirmed" ? "stale" : "fresh"}
-      busy={busy} onRefresh={() => { void buses.refetch(); void special.refetch(); void holidays.refetch(); }} />
+      busy={busy} onRetry={[buses, special, holidays].some(hasRetryableFailure) ? () => { void buses.refetch(); void special.refetch(); void holidays.refetch(); } : undefined} />
   </>;
 }
 
@@ -206,7 +215,7 @@ function TransitSummary({ stop, onStop }: { stop: StopId; onStop: (value: StopId
         arrivals[0] ? <><strong className="m3-home-food">{arrivals[0].routeName}</strong><p className="m3-home-sides">{arrivals[0].arrivalMsg1}</p></> :
           <p className="m3-home-empty">{overview.noArrivals}</p>}
     <Status state={query.isPending || query.isFetching ? "loading" : query.isError ? "error" : stale ? "stale" : "fresh"}
-      busy={query.isFetching} onRefresh={() => void query.refetch()} />
+      busy={query.isFetching} onRefresh={() => void query.refetch()} onRetry={hasRetryableFailure(query) ? () => void query.refetch() : undefined} />
   </>;
 }
 

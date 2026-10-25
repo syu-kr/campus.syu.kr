@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
-import { StateCard } from "@/app/components/StateCard";
 import type {
   CrawlSourceHealth,
   DailyCrawlDataFile,
@@ -43,43 +42,25 @@ export function CrawlDataStatus({ fileNames }: { fileNames: DailyCrawlDataFile[]
   if (!isError && staleFiles.length === 0) return null;
 
   return (
-    <div className="mb-4 space-y-3">
+    <div role="status" aria-label={text.label} className="mb-4 text-xs leading-relaxed text-neutral-600">
       {staleFiles.length > 0 && (
-        <StateCard
-          type="warning"
-          title={text.staleTitle}
-          message={text.staleMessage}
-          action={
-            <ul className="space-y-3 text-xs text-amber-900">
-              {staleFiles.map((fileName) => {
-                const health = data!.sourceHealth[fileName]!;
-                return (
-                  <li key={fileName}>
-                    <p className="font-semibold">{text.fileLabels[fileName]}</p>
-                    <p className="mt-1">
-                      {health.lastSuccessAt ? (
-                        <>
-                          {text.lastSuccess}:{" "}
-                          <time dateTime={health.lastSuccessAt}>
-                            {formatTime(health.lastSuccessAt)}
-                          </time>
-                        </>
-                      ) : text.unknownSuccess}
-                    </p>
-                    <p className="mt-1">
-                      {text.lastAttempt}:{" "}
-                      <time dateTime={health.lastAttemptAt}>
-                        {formatTime(health.lastAttemptAt)}
-                      </time>
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
-          }
-        />
+        <ul className="space-y-1">
+          {staleFiles.map((fileName) => {
+            const health = data!.sourceHealth[fileName]!;
+            const timestamp = health.lastSuccessAt && Number.isFinite(Date.parse(health.lastSuccessAt))
+              ? health.lastSuccessAt : undefined;
+            return (
+              <li key={fileName}>
+                {text.fileLabels[fileName]} · {timestamp ? <>
+                  {text.asOf}{" "}<time dateTime={timestamp}>{formatTime(timestamp)}</time>
+                  {" "}({text.retained})
+                </> : text.unknownBasis}
+              </li>
+            );
+          })}
+        </ul>
       )}
-      {isError && <StateCard type="warning" message={text.statusUnavailable} />}
+      {isError && <p>{text.statusUnavailable}</p>}
     </div>
   );
 }

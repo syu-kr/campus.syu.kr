@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { LOCALE_COOKIE_NAME, type Locale } from "@/lib/i18n";
+import { LOCALE_COOKIE_NAME, localeLabels, type Locale } from "@/lib/i18n";
 import { LanguageSelector } from "./LanguageSelector";
 import { LocaleProvider } from "./LocaleProvider";
 
@@ -38,16 +38,23 @@ function renderSelector(locale: Locale) {
   return screen.getByRole("combobox");
 }
 
+async function chooseLocale(trigger: HTMLElement, locale: Locale) {
+  fireEvent.click(trigger);
+  const option = await screen.findByRole("option", { name: localeLabels[locale] });
+  fireEvent.pointerDown(option);
+  fireEvent.click(option);
+}
+
 describe("language document navigation", () => {
   it.each([
     ["ko", "/campus/bus-info", "en", "/en/campus/bus-info"],
     ["en", "/en/campus/bus-info", "ko", "/campus/bus-info"],
     ["ko", "/", "en", "/en"],
     ["en", "/en", "ko", "/"],
-  ] as const)("switches %s to %s with the cookie, query and anchor intact", (locale, pathname, nextLocale, destination) => {
+  ] as const)("switches %s to %s with the cookie, query and anchor intact", async (locale, pathname, nextLocale, destination) => {
     route.pathname = pathname;
     route.query = "search=notice&mode=full";
-    fireEvent.change(renderSelector(locale), { target: { value: nextLocale } });
+    await chooseLocale(renderSelector(locale), nextLocale);
 
     expect(navigate).toHaveBeenCalledExactlyOnceWith(`${window.location.origin}${destination}?search=notice&mode=full#shuttle-map`);
     expect(cookieAtNavigation).toContain(`${LOCALE_COOKIE_NAME}=${nextLocale}`);
@@ -59,11 +66,11 @@ describe("language document navigation", () => {
     "//other.example/escape",
     "/en//other.example/escape",
     "/\\other.example/escape",
-  ])("keeps an unsafe pathname %s on the current origin", (pathname) => {
+  ])("keeps an unsafe pathname %s on the current origin", async (pathname) => {
     route.pathname = pathname;
     route.query = "redirect=javascript%3Aalert%281%29";
     window.history.replaceState(null, "", "/en/campus/bus-info#javascript:alert(1)");
-    fireEvent.change(renderSelector("en"), { target: { value: "ko" } });
+    await chooseLocale(renderSelector("en"), "ko");
 
     expect(navigate).toHaveBeenCalledOnce();
     const destination = new URL(navigate.mock.calls[0][0]);
@@ -73,11 +80,26 @@ describe("language document navigation", () => {
     expect(destination.hash).toBe("#javascript:alert(1)");
   });
 
-  it.each(["ko", "en"] as const)("leaves the current %s language and document untouched", (locale) => {
+  it.each(["ko", "en"] as const)("leaves the current %s language and document untouched", async (locale) => {
     document.cookie = `${LOCALE_COOKIE_NAME}=${locale}; path=/`;
-    fireEvent.change(renderSelector(locale), { target: { value: locale } });
+    await chooseLocale(renderSelector(locale), locale);
 
     expect(navigate).not.toHaveBeenCalled();
     expect(document.cookie).toContain(`${LOCALE_COOKIE_NAME}=${locale}`);
+  });
+
+  it("uses the shared popup with the two original language labels and restores keyboard focus on Escape", async () => {
+    const trigger = renderSelector("ko");
+    expect(trigger).toHaveAccessibleName("국가/언어 설정");
+    expect(document.querySelector("select")).toBeNull();
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([localeLabels.ko, localeLabels.en]);
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(options[0], { key: "Escape" });
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(navigate).not.toHaveBeenCalled();
   });
 });

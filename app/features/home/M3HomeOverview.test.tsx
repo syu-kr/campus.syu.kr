@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ClientLocaleProvider } from "@/app/components/LocaleContext";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { toCafeteriaMenus } from "@/lib/cafeteria";
 import shuttles from "@/public/data/shuttle-bus-schedule.json";
 import { M3HomeOverview, type HomeOverviewData } from "./M3HomeOverview";
 
@@ -43,7 +44,7 @@ beforeEach(() => {
     success: true, source: "public-transit-arrivals", data: [], timestamp: now.toISOString(), stale: false, sourceStatus: "fresh",
   });
 });
-afterEach(() => { client.clear(); vi.restoreAllMocks(); });
+afterEach(() => { client.clear(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
 function view(locale: Locale = "ko", data: HomeOverviewData = initial, at: Date = now) {
   return <ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}>
@@ -178,4 +179,96 @@ it("preserves verified exception service instead of implying all regular routes 
   render(view("ko", data, at));
   expect(screen.getByText(shuttles[0].routeName)).toBeInTheDocument();
   expect(screen.queryByRole("list", { name: text.shuttleDepartures })).not.toBeInTheDocument();
+});
+
+it.each([false, true])("does not offer forced refresh for a normal or retained meal or static shuttle (stale: %s)", (stale) => {
+  const data = { ...initial, cafeteria: {
+    menus: toCafeteriaMenus([{ date: "2026-10-19", day: "월", meals: { lunch: ["Actual meal"] } }]),
+    checkedAt: now.toISOString(), stale,
+  } };
+  render(view("ko", data));
+  expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument();
+});
+
+it("retains meal error recovery without adding a regular refresh action", async () => {
+  api.fetchCafeteriaSnapshot.mockRejectedValueOnce(new Error("offline"));
+  render(view());
+  await act(async () => { await client.invalidateQueries({ queryKey: ["cafeteria-weekly-snapshot"] }); });
+  const meal = within(screen.getByRole("heading", { name: text.mealTitle }).closest("section")!);
+  const retry = await meal.findByRole("button", { name: getDictionary("ko").home.dashboard.retry });
+  expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+  api.fetchCafeteriaSnapshot.mockResolvedValue(initial.cafeteria);
+  fireEvent.click(retry);
+  await waitFor(() => expect(meal.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument());
+  expect(api.fetchCafeteriaSnapshot).toHaveBeenCalledTimes(2);
+});
+
+it("retains a failed static-shuttle lookup retry but no regular refresh", async () => {
+  api.fetchShuttleBuses.mockRejectedValueOnce(new Error("offline"));
+  render(view());
+  await act(async () => { await client.invalidateQueries({ queryKey: ["shuttle-buses"] }); });
+  const bus = within(screen.getByRole("heading", { name: text.busTitle }).closest("section")!);
+  const retry = await bus.findByRole("button", { name: getDictionary("ko").home.dashboard.retry });
+  expect(bus.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+  api.fetchShuttleBuses.mockResolvedValue(initial.shuttles);
+  api.fetchShuttleSpecialPeriods.mockResolvedValue(initial.specialPeriods);
+  api.fetchPublicHolidays.mockResolvedValue(initial.holidays);
+  fireEvent.click(retry);
+  await waitFor(() => expect(bus.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument());
+  expect(api.fetchShuttleBuses).toHaveBeenCalledTimes(2);
+  expect(api.fetchShuttleSpecialPeriods).toHaveBeenCalledOnce();
+  expect(api.fetchPublicHolidays).toHaveBeenCalledOnce();
+});
+
+it("keeps manual refresh for actual transit arrivals and leaves static queries alone", async () => {
+  render(view());
+  fireEvent.click(screen.getByRole("button", { name: text.publicTransit }));
+  await waitFor(() => expect(fetchTransit).toHaveBeenCalledOnce());
+  const refresh = await screen.findByRole("button", { name: text.refresh });
+  await waitFor(() => expect(refresh).toBeEnabled());
+  fireEvent.click(refresh);
+  await waitFor(() => expect(fetchTransit).toHaveBeenCalledTimes(2));
+  Object.values(api).forEach((reader) => expect(reader).not.toHaveBeenCalled());
+});
+
+it.each(["fresh", "missing", "loading"] as const)("does not offer forced refresh for the Manna %s state", async (state) => {
+  const publicUrl = "https://example.github.io/data/cafeteria/student-restaurant-1.json";
+  vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", publicUrl);
+  if (state === "loading") fetchTransit.mockReturnValue(new Promise(() => {}));
+  else client.setQueryData(["student-restaurant", publicUrl], {
+    updatedAt: now.toISOString(), weekStart: "2026-10-19",
+    days: [{ date: state === "missing" ? "2026-10-18" : "2026-10-19", breakfast: [], lunch: ["Manna lunch"], dinner: [] }],
+  });
+  render(view());
+  fireEvent.click(screen.getByRole("button", { name: getDictionary("ko").pages.cafeteria.mannaTab }));
+  expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument();
+  if (state === "loading") expect(screen.getByText(text.mealLoading)).toBeInTheDocument();
+  else expect(fetchTransit).not.toHaveBeenCalled();
+});
+
+it("retains Manna error recovery and removes retry after a successful response", async () => {
+  const publicUrl = "https://example.github.io/data/cafeteria/student-restaurant-1.json";
+  vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", publicUrl);
+  client.setQueryDefaults(["student-restaurant", publicUrl], { retryDelay: 0 });
+  fetchTransit.mockRejectedValue(new Error("offline"));
+  render(view());
+  fireEvent.click(screen.getByRole("button", { name: getDictionary("ko").pages.cafeteria.mannaTab }));
+  const retry = await screen.findByRole("button", { name: getDictionary("ko").home.dashboard.retry });
+  expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+  let finish!: (value: unknown) => void;
+  fetchTransit.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+  retry.focus();
+  fireEvent.click(retry);
+  await waitFor(() => expect(retry).toBeDisabled());
+  expect(retry).toHaveFocus();
+  expect(screen.getByText(text.mealLoading)).toBeInTheDocument();
+  await act(async () => finish({
+    updatedAt: now.toISOString(), weekStart: "2026-10-19",
+    days: [{ date: "2026-10-19", breakfast: [], lunch: ["Recovered Manna lunch"], dinner: [] }],
+  }));
+  expect(await screen.findByText("Recovered Manna lunch")).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
 });

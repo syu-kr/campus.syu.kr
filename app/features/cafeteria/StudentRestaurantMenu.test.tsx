@@ -54,6 +54,7 @@ describe("Manna House menu", () => {
       cache: "no-store", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer",
     }));
     expect(screen.getByRole("region", { name: text.title })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: getDictionary("ko").home.overview.refresh })).not.toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
       cafeteriaText.todayMenu, cafeteriaText.weeklyMenu,
     ]);

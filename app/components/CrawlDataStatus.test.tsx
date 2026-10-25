@@ -51,7 +51,7 @@ function renderStatus(fileNames: DailyCrawlDataFile[]) {
 }
 
 describe("crawl source status", () => {
-  it("only warns about stale requested sources and distinguishes both KST collection times", async () => {
+  it("shows only the requested retained source reference date without a warning banner or internal attempts", async () => {
     vi.mocked(fetchJson).mockResolvedValue({
       sourceHealth: {
         "announcements-academic.json": staleHealth,
@@ -65,13 +65,14 @@ describe("crawl source status", () => {
     expect(warning).toHaveTextContent(text.fileLabels["announcements-academic.json"]);
     expect(warning).not.toHaveTextContent(text.fileLabels["announcements-campus-life.json"]);
     expect(warning).not.toHaveTextContent(text.fileLabels["announcements-sw.json"]);
-    expect(warning).toHaveTextContent(text.lastSuccess);
-    expect(warning).toHaveTextContent(text.lastAttempt);
+    expect(warning).toHaveTextContent(text.asOf);
+    expect(warning).toHaveTextContent(text.retained);
+    expect(view.container.querySelector("[class*=amber], h3, svg")).toBeNull();
     const times = view.container.querySelectorAll("time");
     expect(times[0]).toHaveAttribute("datetime", staleHealth.lastSuccessAt);
     expect(times[0]).toHaveTextContent(/10:00/);
-    expect(times[1]).toHaveAttribute("datetime", staleHealth.lastAttemptAt);
-    expect(times[1]).toHaveTextContent(/11:00/);
+    expect(times).toHaveLength(1);
+    expect(view.container.querySelector(`time[datetime="${staleHealth.lastAttemptAt}"]`)).toBeNull();
     expect(times[0]).toHaveTextContent(/GMT\+9/);
   });
 
@@ -84,9 +85,9 @@ describe("crawl source status", () => {
     const view = renderStatus(["cafeteria-menu.json"]);
     const warning = await screen.findByRole("status");
 
-    expect(warning).toHaveTextContent(text.unknownSuccess);
-    expect(warning).not.toHaveTextContent(text.lastSuccess);
-    expect(view.container.querySelectorAll("time")).toHaveLength(1);
+    expect(warning).toHaveTextContent(text.unknownBasis);
+    expect(warning).not.toHaveTextContent(text.asOf);
+    expect(view.container.querySelectorAll("time")).toHaveLength(0);
   });
 
   it("does not infer stale sources when a legacy manifest has no health records", async () => {
@@ -105,7 +106,7 @@ describe("crawl source status", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(text.statusUnavailable);
   });
 
-  it("keeps cached stale-source warnings visible after a failed status refresh", async () => {
+  it("keeps the last confirmed reference date after a failed status lookup without exposing collection diagnostics", async () => {
     client.setQueryData(["crawl-data-status"], {
       sourceHealth: { "announcements-academic.json": staleHealth },
     });
@@ -114,8 +115,9 @@ describe("crawl source status", () => {
     await act(async () => { await client.invalidateQueries({ queryKey: ["crawl-data-status"] }); });
 
     expect(await screen.findByText(text.statusUnavailable)).toBeInTheDocument();
-    expect(screen.getByText(text.staleTitle)).toBeInTheDocument();
-    expect(screen.getAllByRole("status")).toHaveLength(2);
+    expect(screen.getByText(text.retained, { exact: false })).toBeInTheDocument();
+    expect(screen.getAllByRole("status")).toHaveLength(1);
+    expect(screen.getByRole("status").querySelectorAll("time")).toHaveLength(1);
   });
 
   it("uses English date labels while retaining the Korean collection timezone", async () => {
@@ -131,13 +133,13 @@ describe("crawl source status", () => {
     );
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      getDictionary("en").crawlDataStatus.lastSuccess,
+      getDictionary("en").crawlDataStatus.asOf,
     );
     expect(view.container.querySelector("time")).toHaveTextContent(/10:00 AM/);
     expect(view.container.querySelector("time")).toHaveTextContent(/GMT\+9/);
   });
 
-  it("limits announcement warnings to the page category", async () => {
+  it("limits reference information to the announcement page category", async () => {
     vi.mocked(fetchJson).mockResolvedValue({
       sourceHealth: {
         "announcements-academic.json": staleHealth,
@@ -155,7 +157,7 @@ describe("crawl source status", () => {
     expect(warning).not.toHaveTextContent(text.fileLabels["announcements-campus-life.json"]);
   });
 
-  it("updates the competition warning sources when the source filter changes", async () => {
+  it("updates the reference sources when the competition source filter changes", async () => {
     vi.mocked(fetchJson).mockResolvedValue({
       sourceHealth: {
         "announcements-events.json": staleHealth,
@@ -168,12 +170,21 @@ describe("crawl source status", () => {
       </QueryClientProvider>,
     );
     const warning = await screen.findByRole("status");
-    expect(within(warning).getByText(text.fileLabels["announcements-departments.json"])).toBeInTheDocument();
+    expect(within(warning).getByText(text.fileLabels["announcements-departments.json"], { exact: false })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", {
       name: getDictionary("ko").pages.competitions.sourceFilters.event,
     }));
-    expect(within(warning).getByText(text.fileLabels["announcements-events.json"])).toBeInTheDocument();
-    expect(within(warning).queryByText(text.fileLabels["announcements-departments.json"])).not.toBeInTheDocument();
+    expect(within(warning).getByText(text.fileLabels["announcements-events.json"], { exact: false })).toBeInTheDocument();
+    expect(within(warning).queryByText(text.fileLabels["announcements-departments.json"], { exact: false })).not.toBeInTheDocument();
   });
+});
+
+it("does not substitute an attempt timestamp when the successful reference date is invalid", async () => {
+  vi.mocked(fetchJson).mockResolvedValue({
+    sourceHealth: { "cafeteria-menu.json": { ...staleHealth, lastSuccessAt: "invalid" } },
+  });
+  const view = renderStatus(["cafeteria-menu.json"]);
+  expect(await screen.findByRole("status")).toHaveTextContent(text.unknownBasis);
+  expect(view.container.querySelector("time")).toBeNull();
 });

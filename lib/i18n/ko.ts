@@ -16,12 +16,11 @@ export const koDictionary = {
       referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
     },
     crawlDataStatus: {
-      staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
-      staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
-      lastSuccess: "마지막 정상 수집",
-      lastAttempt: "최근 수집 시도",
-      unknownSuccess: "이전 검증본의 수집 시각은 확인되지 않았습니다.",
-      statusUnavailable: "갱신 상태를 확인할 수 없습니다. 최신 정보는 공식 원문에서 확인해 주세요.",
+      label: "정보 기준",
+      asOf: "정보 기준:",
+      retained: "이전 확인 정보",
+      unknownBasis: "이전 정보의 기준일을 확인할 수 없습니다.",
+      statusUnavailable: "정보 기준일을 확인할 수 없습니다. 최신 내용은 공식 원문을 확인해 주세요.",
       fileLabels: {
         "announcements-academic.json": "학사공지",
         "announcements-campus-life.json": "학교생활공지",
@@ -1364,7 +1363,10 @@ export const koDictionary = {
           "잠시만 기다려주세요. 지도가 표시되지 않으면 검색으로 건물 정보를 확인할 수 있습니다.",
         unavailableTitle: "지도를 불러오지 못했습니다",
         unavailableMessage:
-          "네트워크 상태나 Kakao Maps 설정을 확인해주세요. 지도 없이도 위 검색창과 건물 목록으로 시설 정보를 확인할 수 있습니다.",
+          "외부 지도에 연결하지 못했어요. 건물 검색과 시설 목록은 계속 이용할 수 있습니다.",
+        unavailableHelp: "지도가 표시되지 않을 때",
+        unavailableBrowserHelp:
+          "브라우저에서 외부 콘텐츠를 차단하는지 확인해 보세요. 쿠키·사이트 데이터 제한을 사용 중이라면 이 사이트의 설정을 확인하거나 다른 브라우저에서 열어보세요.",
         basementFloor: "지하",
         floorSuffix: "층",
         categories: {
