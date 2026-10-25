@@ -9,7 +9,7 @@
   },
   "overrides": {
     "@fastify/busboy": "3.2.2",
-    "@grpc/grpc-js": "1.14.5",
+    "@grpc/grpc-js": "1.14.6",
     "fast-glob@3.3.1": "$fast-glob",
     "minimatch@^3.0.0": {
       "brace-expansion": "$brace-expansion"
