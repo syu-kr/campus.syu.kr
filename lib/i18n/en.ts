@@ -188,8 +188,6 @@ export const enDictionary = {
           failedWithPrevious: "The weather update failed. Previous information: {temperature}°C, {description}.",
           stale: "Previous weather information: {temperature}°C, {description}. Current conditions need confirmation.",
         },
-        greeting: "Make room for your day.",
-        examGreeting: "Good luck with your exams today!",
         hint: "A quick look before your next class",
         mealTitle: "Today’s meal",
         busTitle: "Bus at a glance",

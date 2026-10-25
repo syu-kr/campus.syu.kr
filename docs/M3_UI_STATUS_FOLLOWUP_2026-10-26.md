@@ -28,7 +28,7 @@
 
 ## U 없는 콩 로고 시안
 
-실제 BrandMark·PWA·Android 자산은 이번에 교체하지 않았다. 비교를 위한 SVG 원본만 함께 보관한다.
+최초 검토 단계에서는 실제 BrandMark·PWA·Android 자산을 교체하지 않고 비교용 SVG 원본을 보관했다. 이후 A안 적용 승인을 받아 아래 추가 반영과 같이 실제 자산에 적용했다.
 
 | 안 | 원본 | 판단 |
 | --- | --- | --- |
@@ -48,3 +48,13 @@ U는 대학을 연상시키는 단서지만 필수는 아니다. 표정을 단�
 Git에서 제외한 로컬 증거: `output/playwright/m3-followup/home-refresh-controls-results.json`, `output/playwright/m3-select-audit-20261026/`, `output/playwright/m3-polish-20261026/map-help-results.json`, `output/playwright/brand-pea-20261026/index.html` 및 비교 PNG. 이번 요청에서 37개 전체 페이지를 다시 검사한 것은 아니며 변경 영역과 선택창 사용 화면을 검사했다.
 
 최종 빌드의 언어 전환 증거는 `output/playwright/m3-polish-20261026/production-locale-results.json`에 있다.
+
+## 후속 승인: 홈 날씨·검색 제목·A 로고 적용
+
+- 홈 인사말 h1을 캠퍼스 날씨 문장으로 교체하고 날짜 아래의 작은 날씨 중복을 제거했다. 시험 인사 판정과 사용하지 않는 KO/EN 인사 번역 키도 제거했다. 공유 날씨 query·서울 날짜·로딩/오류/이전 관측 상태·live region, 식단의 실제 주말 안내는 유지했다.
+- 검색 대화상자의 보이는 제목 줄과 구분선을 제거했다. 대화상자의 접근 가능한 이름은 유지하고, 검색창과 같은 줄에 48px 닫기 버튼을 배치했다. 자동 초점·Escape·닫기 후 초점 복귀·입력 중 메뉴 추천·Enter 검색은 유지했다.
+- A안의 두 눈과 작은 미소를 Header/Footer BrandMark에 적용했다. 실제 사용 웹 아이콘과 Android 자산도 맞췄다. 오래된 immutable 이미지 캐시가 U 로고를 계속 보여주지 않도록 새 `-smile.png` 경로를 연결하고 기존 파일은 보존했다. 세부 자산 검사는 [TWA 동기화 기록](M3_TWA_BRANDING_SYNC.md)에 있다.
+
+최종 관련 테스트 9개 파일 93개, 전체 린트·타입·i18n·TWA 준비 검사·최적화 빌드가 통과했다. 새 빌드를 4180에서 실행해 검색 320/390/1440px, 홈 KO/EN 정상 및 KO 오류 6경우, 헤더·푸터 로고 390/1440px를 재검증했다. 화면 밖 넘침·실행·hydration 오류는 없었고 헤더/푸터 마스크 ID는 독립적이었다. 새 아이콘 6개의 HTTP 200 응답과 로컬 원본 해시 일치도 확인했다.
+
+증거: `output/playwright/m3-polish-20261026/search-compact-results.json`, `applied-logo-results.json`, `output/playwright/m3-followup/home-weather-heading-results.json`. 운영 배포·실제 알림 발송·서명된 Android 빌드·실기기 설치는 수행하지 않았다.

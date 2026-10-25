@@ -182,8 +182,6 @@ export const koDictionary = {
           failedWithPrevious: "날씨 갱신에 실패했어요. 이전 정보: {temperature}°C, {description}.",
           stale: "이전 날씨 정보: {temperature}°C, {description}. 최신 상태는 확인이 필요해요.",
         },
-        greeting: "오늘도, 나의 속도로 한 걸음.",
-        examGreeting: "오늘도 시험공부 화이팅!",
         hint: "수업 가기 전, 필요한 정보만 빠르게",
         mealTitle: "오늘의 학식",
         busTitle: "버스 빠르게 보기",

@@ -49,7 +49,7 @@ afterEach(() => { client.clear(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 function view(locale: Locale = "ko", data: HomeOverviewData = initial, at: Date = now) {
   return <ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}>
     <QueryClientProvider client={client}>
-      <M3HomeOverview now={at} schedules={[]} initial={data}><p>schedule</p></M3HomeOverview>
+      <M3HomeOverview now={at} initial={data}><p>schedule</p></M3HomeOverview>
     </QueryClientProvider>
   </ClientLocaleProvider>;
 }
@@ -271,4 +271,26 @@ it("retains Manna error recovery and removes retry after a successful response",
   expect(await screen.findByText("Recovered Manna lunch")).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
+});
+
+it.each(["ko", "en"] as const)("uses the shared weather sentence as the only introduction heading in %s", (locale) => {
+  const { container } = render(view(locale));
+  const dictionary = getDictionary(locale);
+  const expected = dictionary.home.overview.weather.current
+    .replace("{temperature}", String(cachedWeather.temperature))
+    .replace("{description}", dictionary.weather.cloudy);
+  const heading = screen.getByRole("heading", { level: 1, name: expected });
+  expect(container.querySelectorAll(".m3-home-weather")).toHaveLength(1);
+  expect(heading.querySelector('[role="status"]')).toHaveAttribute("data-weather-state", "fresh");
+  const date = container.querySelector(".m3-home-date")!;
+  expect(date.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(weatherApi.fetchWeather).not.toHaveBeenCalled();
+});
+
+it("keeps the weather introduction and useful cafeteria weekend notice on weekends", () => {
+  const at = new Date("2026-10-25T09:00:00+09:00");
+  const { container } = render(view("ko", initial, at));
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("현재 캠퍼스 날씨는 14°C에 흐림입니다.");
+  expect(container.querySelectorAll(".m3-home-weather")).toHaveLength(1);
+  expect(screen.getByText(getDictionary("ko").pages.cafeteria.weekendMessage)).toBeInTheDocument();
 });

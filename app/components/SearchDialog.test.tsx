@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import SearchDialog from "./SearchDialog";
 import { getDictionary } from "@/lib/i18n";
@@ -6,6 +6,17 @@ import { getDictionary } from "@/lib/i18n";
 const navigation = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 beforeEach(() => { navigation.push.mockClear(); window.history.replaceState(null, "", "/"); });
+it("keeps the dialog named and supports input focus, Escape and the close button without a title row", async () => {
+  const onClose = vi.fn(), dictionary = getDictionary("ko");
+  render(<SearchDialog onClose={onClose} />);
+  expect(screen.getByRole("dialog", { name: dictionary.search.label })).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole("textbox", { name: dictionary.search.label })).toHaveFocus());
+  fireEvent.keyDown(document, { key: "Escape" });
+  expect(onClose).toHaveBeenCalledOnce();
+  onClose.mockClear();
+  fireEvent.click(screen.getByRole("button", { name: dictionary.labels.closeModal }));
+  expect(onClose).toHaveBeenCalledOnce();
+});
 it("offers menu links while typing and searches only after submission", () => {
   const onClose = vi.fn();
   render(<SearchDialog onClose={onClose} />);

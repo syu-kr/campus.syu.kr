@@ -13,9 +13,9 @@
   "backgroundColor": "#f6f8fc",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-512-m3.png",
-  "maskableIconUrl": "https://campus.syu.kr/images/syu-campus-maskable-icon-512-m3.png",
-  "monochromeIconUrl": "https://campus.syu.kr/images/syu-campus-monochrome-icon-512-m3.png",
+  "iconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-512-m3-smile.png",
+  "maskableIconUrl": "https://campus.syu.kr/images/syu-campus-maskable-icon-512-m3-smile.png",
+  "monochromeIconUrl": "https://campus.syu.kr/images/syu-campus-monochrome-icon-512-m3-smile.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "android.keystore",
@@ -28,25 +28,25 @@
       "name": "Notices",
       "shortName": "Notices",
       "url": "https://campus.syu.kr/academic/announcements",
-      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3.png"
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3-smile.png"
     },
     {
       "name": "Cafeteria",
       "shortName": "Meals",
       "url": "https://campus.syu.kr/campus/cafeteria",
-      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3.png"
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3-smile.png"
     },
     {
       "name": "Academic Schedule",
       "shortName": "Schedule",
       "url": "https://campus.syu.kr/academic/schedule",
-      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3.png"
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3-smile.png"
     },
     {
       "name": "Campus Map",
       "shortName": "Map",
       "url": "https://campus.syu.kr/campus/map",
-      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3.png"
+      "chosenIconUrl": "https://campus.syu.kr/images/syu-campus-app-icon-192-m3-smile.png"
     }
   ],
   "generatorApp": "bubblewrap-cli",

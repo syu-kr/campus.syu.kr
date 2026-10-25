@@ -6,14 +6,14 @@ import Link from "next/link";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Icon } from "@/app/components/Icon";
 import { localizePath } from "@/lib/i18n";
-import { getTodayInfo, isScheduleOnDate } from "@/lib/home";
+import { getTodayInfo } from "@/lib/home";
 import { getCafeteriaWeekMenus, isCafeteriaMenuDataStale, isCafeteriaClosedDay, isClosedMealItems, type CafeteriaSnapshot } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { fetchCafeteriaSnapshot, fetchShuttleBuses, fetchShuttleSpecialPeriods, fetchPublicHolidays } from "@/lib/api";
 import { fetchJson } from "@/lib/fetch-json";
 import { readSessionValue, writeSessionValue } from "@/lib/browser-storage";
 import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRestaurantMenu";
-import type { AcademicSchedule, BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
+import type { BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import type { LiveDataResponse } from "@/types/live-data";
 import { HomeWeatherLine } from "./HomeWeatherLine";
 
@@ -219,9 +219,8 @@ function TransitSummary({ stop, onStop }: { stop: StopId; onStop: (value: StopId
   </>;
 }
 
-export function M3HomeOverview({ now, schedules, initial, children }: {
+export function M3HomeOverview({ now, initial, children }: {
   now: Date | null;
-  schedules: AcademicSchedule[];
   initial: HomeOverviewData;
   children: ReactNode;
 }) {
@@ -232,13 +231,11 @@ export function M3HomeOverview({ now, schedules, initial, children }: {
   const [restaurant, setRestaurant] = useHomeChoice("campus-m3-home-restaurant", "su-lounge", RESTAURANTS);
   const [busMode, setBusMode] = useHomeChoice("campus-m3-home-transport", "shuttle", TRANSPORTS);
   const [stop, setStop] = useHomeChoice("campus-m3-home-stop", "jungmun-up", STOP_IDS);
-  const exam = schedules.some((item) => item.category === "exam" && isScheduleOnDate(item, today.dateStringDot));
   const link = (path: string) => localizePath(path, locale);
   return <div className="m3-home-overview">
     <header className="m3-home-intro"><div>
       <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
-      <HomeWeatherLine />
-      <h1>{exam ? text.examGreeting : text.greeting}</h1>
+      <h1><HomeWeatherLine /></h1>
     </div><span>{text.hint}</span></header>
     <div className="m3-home-essentials">
       <section className="m3-home-meal">

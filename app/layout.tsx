@@ -119,7 +119,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: dictionary.meta.description,
       images: [
         {
-          url: "/images/syu-campus-app-icon-512-m3.png",
+          url: "/images/syu-campus-app-icon-512-m3-smile.png",
           width: 512,
           height: 512,
           alt: "SYU CAMPUS",
@@ -130,7 +130,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary",
       title: dictionary.meta.title,
       description: dictionary.meta.description,
-      images: ["/images/syu-campus-app-icon-512-m3.png"],
+      images: ["/images/syu-campus-app-icon-512-m3-smile.png"],
     },
     verification: {
       google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
@@ -141,8 +141,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "SYU CAMPUS",
     },
     icons: {
-      icon: "/images/syu-campus-favicon-48-m3.png",
-      apple: "/images/syu-campus-apple-touch-icon-180-m3.png",
+      icon: "/images/syu-campus-favicon-48-m3-smile.png",
+      apple: "/images/syu-campus-apple-touch-icon-180-m3-smile.png",
     },
     manifest: "/manifest.json",
   };

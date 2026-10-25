@@ -48,7 +48,7 @@ describe.each(["ko", "en"] as const)("campus weather sentence in %s", locale => 
     const recoverableError = vi.fn();
     let root!: ReturnType<typeof hydrateRoot>;
     await act(async () => { root = hydrateRoot(container, content(client), { onRecoverableError: recoverableError }); });
-    await waitFor(() => expect(container.querySelector("p")).toHaveAttribute("data-weather-state", "fresh"));
+    await waitFor(() => expect(container.querySelector(".m3-home-weather")).toHaveAttribute("data-weather-state", "fresh"));
     expect(container).toHaveTextContent(message(locale, "current"));
     expect(recoverableError).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();

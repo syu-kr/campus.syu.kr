@@ -17,25 +17,25 @@
   ],
   "icons": [
     {
-      "src": "/images/syu-campus-app-icon-192-m3.png",
+      "src": "/images/syu-campus-app-icon-192-m3-smile.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/syu-campus-app-icon-512-m3.png",
+      "src": "/images/syu-campus-app-icon-512-m3-smile.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/images/syu-campus-maskable-icon-512-m3.png",
+      "src": "/images/syu-campus-maskable-icon-512-m3-smile.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/images/syu-campus-monochrome-icon-512-m3.png",
+      "src": "/images/syu-campus-monochrome-icon-512-m3-smile.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "monochrome"
@@ -49,7 +49,7 @@
       "url": "/academic/announcements",
       "icons": [
         {
-          "src": "/images/syu-campus-app-icon-192-m3.png",
+          "src": "/images/syu-campus-app-icon-192-m3-smile.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -62,7 +62,7 @@
       "url": "/campus/cafeteria",
       "icons": [
         {
-          "src": "/images/syu-campus-app-icon-192-m3.png",
+          "src": "/images/syu-campus-app-icon-192-m3-smile.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -75,7 +75,7 @@
       "url": "/academic/schedule",
       "icons": [
         {
-          "src": "/images/syu-campus-app-icon-192-m3.png",
+          "src": "/images/syu-campus-app-icon-192-m3-smile.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -88,7 +88,7 @@
       "url": "/campus/map",
       "icons": [
         {
-          "src": "/images/syu-campus-app-icon-192-m3.png",
+          "src": "/images/syu-campus-app-icon-192-m3-smile.png",
           "sizes": "192x192",
           "type": "image/png"
         }

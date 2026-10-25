@@ -45,5 +45,5 @@ export function HomeWeatherLine() {
     .replace("{temperature}", weather ? String(weather.temperature) : "")
     .replace("{description}", description);
 
-  return <p className="m3-home-weather" data-weather-state={state} role="status" aria-live="polite">{message}</p>;
+  return <span className="m3-home-weather" data-weather-state={state} role="status" aria-live="polite">{message}</span>;
 }
