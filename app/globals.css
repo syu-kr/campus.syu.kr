@@ -12,6 +12,7 @@
 @import "./styles/m3/styles-menu-hubs.css";
 @import "./styles/m3/m3-select.css";
 @import "./styles/m3/selection-controls.css";
+@import "./styles/m3/motion.css";
 
 @layer base {
   * {

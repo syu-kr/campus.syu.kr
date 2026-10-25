@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -180,11 +181,13 @@ export default function MeetCreatePage() {
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-1">
+      <div className="m3-selection-track mb-6 grid grid-cols-2 gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-1" data-selection-tone="surface">
+        <SlidingIndicator value={mode} />
         <button
           type="button"
           onClick={() => setMode("join")}
           aria-pressed={mode === "join"}
+          data-selection-value="join"
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "join"
               ? "bg-white text-primary-700 shadow-sm"
@@ -197,6 +200,7 @@ export default function MeetCreatePage() {
           type="button"
           onClick={() => setMode("create")}
           aria-pressed={mode === "create"}
+          data-selection-value="create"
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "create"
               ? "bg-white text-primary-700 shadow-sm"

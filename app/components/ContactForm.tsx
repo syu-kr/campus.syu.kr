@@ -349,7 +349,8 @@ function getServerFieldError(
   if (code === "MESSAGE_REQUIRED") return text.messageRequired;
   if (code === "INVALID_PAGE_URL") return text.invalidPageUrl;
 
-  return error || text.submitFailed;
+  if (code === "RATE_LIMITED") return error || text.submitFailed;
+  return text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {

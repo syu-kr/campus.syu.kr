@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ContactForm } from "./ContactForm";
 import { CampusTipSuggestionForm } from "@/app/features/campus-tips/CampusTipSuggestionForm";
 import { getDictionary } from "@/lib/i18n";
+import { LocaleProvider } from "./LocaleProvider";
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
@@ -52,4 +53,42 @@ describe.each(["contact", "campus-tip"])("%s field recovery", (kind) => {
     });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+});
+
+describe.each(["ko", "en"] as const)("contact server failures in %s", (locale) => {
+  it.each([
+    { code: "SERVICE_SETUP_MISSING", error: "Internal service configuration is unavailable", status: 503 },
+    { code: "RATE_LIMITED", error: "요청이 많습니다. 17초 후 다시 시도해주세요.", status: 429 },
+  ])("keeps the draft and exposes only the appropriate $code message", async (failure) => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json(failure, { status: failure.status })));
+    const { container } = render(<LocaleProvider locale={locale}>
+      <ContactForm defaultPageUrl="https://campus.syu.kr/campus" />
+    </LocaleProvider>);
+    const text = getDictionary(locale).pages.contactForm;
+    fireEvent.change(container.querySelector("#inquiry-title")!, { target: { value: "문의 제목" } });
+    fireEvent.change(container.querySelector("#inquiry-message")!, { target: { value: "입력한 문의 내용" } });
+    fireEvent.submit(container.querySelector("form")!);
+    const dialog = await screen.findByRole("dialog", { name: text.submitFailed });
+    expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? failure.error : text.submitFailed);
+    expect(dialog).not.toHaveTextContent("Internal service configuration");
+    expect(container.querySelector("#inquiry-title")).toHaveValue("문의 제목");
+    expect(container.querySelector("#inquiry-message")).toHaveValue("입력한 문의 내용");
+  });
+});
+
+it.each([
+  { code: "SERVICE_SETUP_MISSING", error: "Internal service configuration is unavailable", status: 503 },
+  { code: "RATE_LIMITED", error: "요청이 많습니다. 17초 후 다시 시도해주세요.", status: 429 },
+])("keeps the tip draft and only the appropriate $code failure message", async (failure) => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json(failure, { status: failure.status })));
+  const { container } = render(<CampusTipSuggestionForm />);
+  const text = getDictionary("ko").pages.campusTipsSuggest;
+  fireEvent.change(container.querySelector("#tip-title")!, { target: { value: "제안 제목" } });
+  fireEvent.change(container.querySelector("#tip-description")!, { target: { value: "입력한 제안 내용" } });
+  fireEvent.submit(container.querySelector("form")!);
+  const dialog = await screen.findByRole("dialog", { name: text.submitFailed });
+  expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? failure.error : text.submitFailed);
+  expect(dialog).not.toHaveTextContent("Internal service configuration");
+  expect(container.querySelector("#tip-title")).toHaveValue("제안 제목");
+  expect(container.querySelector("#tip-description")).toHaveValue("입력한 제안 내용");
 });

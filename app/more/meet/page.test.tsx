@@ -74,3 +74,17 @@ describe.each(["ko", "en"] as const)("Meet invitation navigation privacy (%s)", 
     expect(navigation.historyChange).toHaveBeenCalledWith(destination, true);
   });
 });
+
+it.each(["ko", "en"] as const)("keeps setup failures user-facing without changing the error-code mapping in %s", async (locale) => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+    error: "요청 제한 설정이 완료되지 않았습니다.", code: "RATE_LIMIT_CONFIG_MISSING",
+  }, { status: 503 })));
+  const text = show(locale);
+  fireEvent.click(screen.getByRole("button", { name: text.createMode }));
+  fireEvent.change(screen.getByLabelText(text.titleLabel), { target: { value: "모임" } });
+  fireEvent.click(screen.getByRole("button", { name: text.createInvite }));
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent(text.errors.rateLimitConfig);
+  expect(alert).not.toHaveTextContent(/요청 제한 설정|not configured|Content-Type|JSON/);
+  expect(screen.getByLabelText(text.titleLabel)).toHaveValue("모임");
+});

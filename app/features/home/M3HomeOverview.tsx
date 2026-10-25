@@ -65,9 +65,10 @@ function Status({ state, onRefresh, onRetry, busy }: {
 }) {
   const dictionary = useDictionary(), text = dictionary.home.overview;
   const action = onRetry ?? onRefresh;
+  if (state === "fresh" && !action) return null;
   return <div className="m3-home-status">
-    <span data-state={state} role="status">{text.status[state]}</span>
-    {action && <button type="button" onClick={action} disabled={busy}>
+    {state !== "fresh" && <span data-state={state} role="status">{text.status[state]}</span>}
+    {action && <button type="button" className="ml-auto" onClick={action} disabled={busy}>
       {onRetry ? dictionary.home.dashboard.retry : text.refresh}
     </button>}
   </div>;

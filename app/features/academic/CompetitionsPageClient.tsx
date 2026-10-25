@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "@/app/components/AnnouncementAiSummary";
 import { fetchCompetitionPage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
-import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type { Dictionary } from "@/lib/i18n";
 import { formatDateWithYear } from "@/lib/utils";
 import type {
@@ -29,13 +28,6 @@ import type {
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
-const SOURCE_FILES: Record<CompetitionSourceCategory, DailyCrawlDataFile> = {
-  academic: "announcements-academic.json",
-  campus: "announcements-campus-life.json",
-  scholarship: "announcements-scholarship.json",
-  event: "announcements-events.json",
-  department: "announcements-departments.json",
-};
 const statusFilters: CompetitionStatusFilter[] = [
   "open",
   "result",
@@ -63,8 +55,10 @@ export function CompetitionsPageClient() {
   const [selectedSource, setSelectedSource] =
     useState<CompetitionSourceFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const [pageLoadingHeight, setPageLoadingHeight] = useState(0);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, isPlaceholderData = false } = useQuery({
     queryKey: [
       "competition-page",
       selectedSource,
@@ -81,6 +75,10 @@ export function CompetitionsPageClient() {
         limit: ITEMS_PER_PAGE,
         signal,
       }),
+    placeholderData: (previous, previousQuery) => inputQuery === searchQuery &&
+      previousQuery?.queryKey[0] === "competition-page" &&
+      previousQuery.queryKey[1] === selectedSource && previousQuery.queryKey[2] === selectedStatus &&
+      previousQuery.queryKey[3] === searchQuery && previousQuery.queryKey[4] !== currentPage ? previous : undefined,
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });
@@ -88,7 +86,13 @@ export function CompetitionsPageClient() {
   const competitions = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
-  const showLoading = isLoading || inputQuery !== searchQuery;
+  const showLoading = isLoading || isPlaceholderData || inputQuery !== searchQuery;
+  const keepingPreviousPage = isPlaceholderData && inputQuery === searchQuery;
+
+  const handlePageChange = (page: number) => {
+    setPageLoadingHeight(resultsRef.current?.getBoundingClientRect().height ?? 0);
+    setCurrentPage(page);
+  };
 
   const handleStatusChange = (status: CompetitionStatusFilter) => {
     setSelectedStatus(status);
@@ -141,18 +145,15 @@ export function CompetitionsPageClient() {
         secondary
       />
 
-      <CrawlDataStatus
-        fileNames={selectedSource === "all" ? Object.values(SOURCE_FILES) : [SOURCE_FILES[selectedSource]]}
-      />
-
-      {!showLoading && !isError && (
+      {(!showLoading || keepingPreviousPage) && !isError && (
         <div className="mb-4 text-sm text-neutral-600">
           {`${total}${text.countSeparator}${text.foundItems}`}
           {searchQuery && ` (${text.searchQuery}: "${searchQuery}")`}
         </div>
       )}
 
-      <div className="mb-6 space-y-3">
+      <div ref={resultsRef} className="mb-6 space-y-3"
+        style={keepingPreviousPage && !isError ? { minHeight: pageLoadingHeight } : undefined}>
         {showLoading && <Skeleton count={5} />}
         {!showLoading && (isError || competitions.length === 0) && (
           <StateCard
@@ -170,11 +171,11 @@ export function CompetitionsPageClient() {
           ))}
       </div>
 
-      {!showLoading && !isError && (
+      {(!showLoading || keepingPreviousPage) && !isError && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
         />
       )}
     </Container>
@@ -200,13 +201,15 @@ function FilterRow<T extends string>({
 }: FilterRowProps<T>) {
   return (
     <div className={`-mx-4 overflow-x-auto px-4 ${className}`}>
-      <div className="flex min-w-max gap-2 pb-1">
+      <div className="m3-selection-track flex min-w-max gap-2 pb-1" data-selection-tone={secondary ? "tonal" : "primary"}>
+        <SlidingIndicator value={selected} />
         {filters.map((filter) => (
           <button
             key={filter}
             type="button"
             onClick={() => onChange(filter)}
             aria-pressed={selected === filter}
+            data-selection-value={filter}
             className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
               selected === filter
                 ? secondary

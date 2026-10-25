@@ -129,16 +129,6 @@ export function StudentRestaurantMenu({ today }: { today: string }) {
         </div>
       </section>
 
-      {data && (
-        <p className="mt-2 text-xs text-neutral-500">
-          {text.updatedAt}{" "}
-          <time dateTime={data.updatedAt}>
-            {new Intl.DateTimeFormat(locale === "ko" ? "ko-KR" : "en-US", {
-              dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Seoul",
-            }).format(new Date(data.updatedAt))}
-          </time>{" "}{text.koreaTime}
-        </p>
-      )}
     </section>
   );
 }

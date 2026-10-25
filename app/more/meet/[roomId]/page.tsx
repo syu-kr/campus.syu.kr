@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
+import "@/app/components/page-motion.css";
 import {
   useDictionary,
   useLocale,
@@ -689,7 +690,7 @@ export default function MeetRoomPage({ params }: PageProps) {
                 {bestSlots.map(({ slot, count }) => (
                   <div
                     key={slot}
-                    className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
+                    className="m3-meet-recommendation rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
                   >
                     <p className="text-sm font-semibold text-blue-900">
                       {formatMeetSlotLabel(slot, locale)}

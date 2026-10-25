@@ -128,6 +128,7 @@ it("shows each regular route's next departure instead of one global first depart
   expect(within(list).getByText("08:10 예정 출발")).toBeInTheDocument();
   expect(within(list).getByText("12:00 예정 출발")).toBeInTheDocument();
   expect(within(list).getByText("08:30 예정 출발")).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: text.busTitle }).closest("section")!.querySelector(".m3-home-status")).toBeNull();
 });
 
 it("retains each route after its last departure without claiming service is closed", () => {
@@ -187,6 +188,10 @@ it.each([false, true])("does not offer forced refresh for a normal or retained m
     checkedAt: now.toISOString(), stale,
   } };
   render(view("ko", data));
+  if (!stale) {
+    const meal = within(screen.getByRole("heading", { name: text.mealTitle }).closest("section")!);
+    expect(meal.queryByRole("status")).not.toBeInTheDocument();
+  }
   expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: getDictionary("ko").home.dashboard.retry })).not.toBeInTheDocument();
 });
@@ -227,6 +232,7 @@ it("keeps manual refresh for actual transit arrivals and leaves static queries a
   await waitFor(() => expect(fetchTransit).toHaveBeenCalledOnce());
   const refresh = await screen.findByRole("button", { name: text.refresh });
   await waitFor(() => expect(refresh).toBeEnabled());
+  expect(screen.getByRole("heading", { name: text.busTitle }).closest("section")!.querySelector(".m3-home-status [role=status]")).toBeNull();
   fireEvent.click(refresh);
   await waitFor(() => expect(fetchTransit).toHaveBeenCalledTimes(2));
   Object.values(api).forEach((reader) => expect(reader).not.toHaveBeenCalled());

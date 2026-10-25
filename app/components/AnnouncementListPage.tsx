@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
 import { Container } from "@/app/components/Container";
-import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
@@ -14,18 +13,11 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage, type AnnouncementPageResponse } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { getAnnouncementListQuery } from "@/lib/announcement-list-query";
-import type { DailyCrawlDataFile } from "@/lib/crawl-data-contract";
 import type { AnnouncementCategory } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
-const SOURCE_FILES: Record<AnnouncementCategory, DailyCrawlDataFile> = {
-  academic: "announcements-academic.json",
-  campus: "announcements-campus-life.json",
-  scholarship: "announcements-scholarship.json",
-  sw: "announcements-sw.json",
-};
 
 interface AnnouncementListPageProps {
   category: AnnouncementCategory | "all";
@@ -56,6 +48,8 @@ export function AnnouncementListPage({
   const [inputQuery, setInputQuery] = useState(urlQuery);
   const searchQuery = useDebouncedValue(inputQuery);
   const [currentPage, setCurrentPage] = useState(urlPage);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const [pageLoadingHeight, setPageLoadingHeight] = useState(0);
 
   useEffect(() => {
     if (isNavigating) return;
@@ -72,10 +66,12 @@ export function AnnouncementListPage({
     return `${pathname}${params.size ? `?${params}` : ""}`;
   };
   const changePage = (page: number) => {
+    setPageLoadingHeight(resultsRef.current?.getBoundingClientRect().height ?? 0);
     setCurrentPage(page);
     startNavigation(() => router.push(`${pageHref(page)}${window.location.hash}`, { scroll: false }));
   };
   const changeSearch = (query: string) => {
+    setPageLoadingHeight(0);
     setInputQuery(query);
     setCurrentPage(1);
     startNavigation(() => router.replace(`${pageHref(1, query)}${window.location.hash}`, { scroll: false }));
@@ -86,7 +82,7 @@ export function AnnouncementListPage({
   const hasServerPage = initialPage?.page === currentPage && initialQuery === searchQuery && inputQuery === searchQuery;
   const isUrlCurrent = urlPage === currentPage && urlQuery === searchQuery;
 
-  const { data: browserData, isLoading: browserLoading, isError: browserError } = useQuery({
+  const { data: browserData, isLoading: browserLoading, isError: browserError, isPlaceholderData: browserPlaceholder = false } = useQuery({
     queryKey: ["announcement-page", category, searchQuery, currentPage],
     queryFn: ({ signal }) =>
       fetchAnnouncementPage({
@@ -97,6 +93,10 @@ export function AnnouncementListPage({
         signal,
       }),
     initialData: hasServerPage ? initialPage : undefined,
+    placeholderData: (previous, previousQuery) => inputQuery === searchQuery &&
+      previousQuery?.queryKey[0] === "announcement-page" &&
+      previousQuery.queryKey[1] === category && previousQuery.queryKey[2] === searchQuery &&
+      previousQuery.queryKey[3] !== currentPage ? previous : undefined,
     enabled: !hasServerPage && !isNavigating && isUrlCurrent && inputQuery === searchQuery,
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
@@ -108,7 +108,10 @@ export function AnnouncementListPage({
   const announcements = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
-  const showLoading = isLoading || isNavigating || !isUrlCurrent || inputQuery !== searchQuery;
+  const showingPreviousPage = !hasServerPage && browserPlaceholder && inputQuery === searchQuery;
+  const showLoading = isLoading || showingPreviousPage || isNavigating || !isUrlCurrent || inputQuery !== searchQuery;
+  const keepingPageHeight = pageLoadingHeight > 0 && inputQuery === searchQuery && !isError &&
+    (showingPreviousPage || isNavigating);
 
   return (
     <Container className="py-6 sm:py-8">
@@ -128,20 +131,7 @@ export function AnnouncementListPage({
         searchOnChange
       />
 
-      <CrawlDataStatus
-        fileNames={category === "all" ? Object.values(SOURCE_FILES) : [SOURCE_FILES[category]]}
-      />
-
-      {!showLoading && !isError && Boolean(data?.fallbackSources?.length) && (
-        <p role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          {dictionary.pages.announcements.fallbackNotice}{" "}
-          {data?.fallbackSources?.map(({ category: source, latestDate }) =>
-            `${dictionary.pages.announcements.fallbackCategories[source]}: ${latestDate || "?"}`,
-          ).join(", ")}
-        </p>
-      )}
-
-      {!showLoading && !isError && (
+      {(!showLoading || keepingPageHeight) && !isError && (
         <div className="mb-4 text-sm text-neutral-600">
           {localeAwareResultCount(total, dictionary.pages.announcements.foundItems)}
           {searchQuery &&
@@ -150,7 +140,8 @@ export function AnnouncementListPage({
       )}
 
       <div className="notice-workspace-layout">
-      <div className="notice-workspace-list mb-6 space-y-3">
+      <div ref={resultsRef} className="notice-workspace-list mb-6 space-y-3"
+        style={keepingPageHeight ? { minHeight: pageLoadingHeight } : undefined}>
         {showLoading && <Skeleton count={5} />}
         {!showLoading && (isError || announcements.length === 0) && (
           <StateCard
@@ -173,7 +164,7 @@ export function AnnouncementListPage({
       </div>
       </div>
 
-      {!showLoading && !isError && (
+      {(!showLoading || keepingPageHeight) && !isError && (
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}

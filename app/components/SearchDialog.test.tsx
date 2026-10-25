@@ -6,7 +6,7 @@ import { getDictionary } from "@/lib/i18n";
 const navigation = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => navigation }));
 beforeEach(() => { navigation.push.mockClear(); window.history.replaceState(null, "", "/"); });
-it("keeps the dialog named and supports input focus, Escape and the close button without a title row", async () => {
+it("keeps the dialog named and supports input focus, Escape and outside dismissal without a close button", async () => {
   const onClose = vi.fn(), dictionary = getDictionary("ko");
   render(<SearchDialog onClose={onClose} />);
   expect(screen.getByRole("dialog", { name: dictionary.search.label })).toBeInTheDocument();
@@ -14,7 +14,8 @@ it("keeps the dialog named and supports input focus, Escape and the close button
   fireEvent.keyDown(document, { key: "Escape" });
   expect(onClose).toHaveBeenCalledOnce();
   onClose.mockClear();
-  fireEvent.click(screen.getByRole("button", { name: dictionary.labels.closeModal }));
+  expect(screen.queryByRole("button", { name: dictionary.labels.closeModal })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("dialog", { name: dictionary.search.label }));
   expect(onClose).toHaveBeenCalledOnce();
 });
 it("offers menu links while typing and searches only after submission", () => {

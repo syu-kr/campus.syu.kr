@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Button, buttonStyles } from "./Button";
+import { SlidingIndicator } from "./SlidingIndicator";
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -38,7 +39,7 @@ export function PaginationControls({
 
     if (getPageHref && !disabled) {
       return (
-        <a href={getPageHref(page)} aria-current={current} className={buttonStyles(variant, className)}
+        <a href={getPageHref(page)} aria-current={current} data-selection-value={numbered ? page : undefined} className={buttonStyles(variant, className)}
           onClick={(event) => {
             if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault();
@@ -51,7 +52,7 @@ export function PaginationControls({
 
     return (
       <Button variant={variant} onClick={() => onPageChange(page)} disabled={disabled}
-        aria-current={current} className={className}>
+        aria-current={current} data-selection-value={numbered ? page : undefined} className={className}>
         {label}
       </Button>
     );
@@ -67,7 +68,8 @@ export function PaginationControls({
         <span className="m3-pagination-status" role="status" aria-live="polite">{currentPage} / {totalPages}</span>
         {pageControl(Math.min(totalPages, currentPage + 1), dictionary.pagination.next, currentPage === totalPages)}
       </div>
-      <div className="m3-pagination-pages">
+      <div className="m3-pagination-pages m3-selection-track" data-selection-tone="primary">
+        <SlidingIndicator value={currentPage} />
         {pageNumbers.map((page) => <span key={page}>{pageControl(page, page, false, true)}</span>)}
       </div>
 

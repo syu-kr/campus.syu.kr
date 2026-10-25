@@ -1,0 +1,58 @@
+.m3-selection-track {
+  position: relative;
+  isolation: isolate;
+  --selection-fill: var(--sys-primary);
+  --selection-ink: var(--sys-on-primary);
+}
+
+.m3-selection-track[data-selection-tone="surface"] {
+  --selection-fill: var(--sys-surface-lowest);
+  --selection-ink: var(--sys-primary);
+}
+
+.m3-selection-track[data-selection-tone="tonal"] {
+  --selection-fill: var(--sys-secondary-container);
+  --selection-ink: var(--sys-on-secondary-container);
+}
+
+.m3-sliding-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: var(--shape-full, 999px);
+  background: var(--selection-fill);
+}
+
+.m3-sliding-indicator[data-ready="true"] { opacity: 1; }
+.m3-selection-track[data-selection-tone="surface"] > .m3-sliding-indicator { box-shadow: 0 1px 4px #1b253814; }
+.m3-sliding-indicator[data-animate="true"] {
+  transition: transform var(--motion-medium, 200ms) var(--motion-easing, cubic-bezier(.2, 0, 0, 1)), width var(--motion-medium, 200ms) var(--motion-easing, cubic-bezier(.2, 0, 0, 1)), height var(--motion-medium, 200ms) var(--motion-easing, cubic-bezier(.2, 0, 0, 1));
+}
+
+.m3-selection-track > :not(.m3-sliding-indicator) { position: relative; z-index: 1; }
+.m3-selection-track [data-selection-value] { min-width: 48px; min-height: 48px; border-radius: var(--shape-full, 999px); }
+.m3-selection-track[data-selection-tone]:has(> .m3-sliding-indicator[data-ready="true"]) :is(button, a)[data-selection-value]:is([aria-pressed="true"], [aria-current="page"]) {
+  background-color: transparent;
+  color: var(--selection-ink);
+  box-shadow: none;
+}
+
+.m3-calendar-month-grid,
+.m3-meet-recommendation {
+  animation-duration: var(--motion-medium, 200ms);
+  animation-timing-function: var(--motion-easing, cubic-bezier(.2, 0, 0, 1));
+}
+.m3-calendar-month-grid[data-motion-phase="0"],
+.m3-meet-recommendation { animation-name: m3-content-fade-a; }
+.m3-calendar-month-grid[data-motion-phase="1"] { animation-name: m3-content-fade-b; }
+@keyframes m3-content-fade-a { from { opacity: .65; } to { opacity: 1; } }
+@keyframes m3-content-fade-b { from { opacity: .65; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .m3-sliding-indicator[data-animate="true"] { transition: none; }
+  .m3-calendar-month-grid,
+  .m3-meet-recommendation { animation: none; }
+}

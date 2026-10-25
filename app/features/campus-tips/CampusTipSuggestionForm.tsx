@@ -442,7 +442,8 @@ function getServerFieldError(
   if (code === "DESCRIPTION_REQUIRED") return text.descriptionRequired;
   if (code === "INVALID_URL") return text.invalidUrl;
 
-  return error || text.submitFailed;
+  if (code === "RATE_LIMITED") return error || text.submitFailed;
+  return text.submitFailed;
 }
 
 function isValidHttpUrl(value: string): boolean {

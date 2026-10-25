@@ -7,7 +7,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { Button } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
-import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -114,7 +113,6 @@ export function CafeteriaPageClient({
                 {(!todayMenu || isCafeteriaClosedDay(todayMenu)) && (
                   <h2 className="mb-4 text-xl font-bold text-neutral-900">{text.todayMenu}</h2>
                 )}
-                <CrawlDataStatus fileNames={["cafeteria-menu.json"]} />
                 {isLoading && <Skeleton count={1} height="200px" />}
                 {isError && (
                   <StateCard

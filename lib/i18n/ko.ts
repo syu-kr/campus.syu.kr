@@ -15,24 +15,6 @@ export const koDictionary = {
       referenceHolidaySchedule: "아래 시간표는 운행일 기준입니다.",
       referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
     },
-    crawlDataStatus: {
-      label: "정보 기준",
-      asOf: "정보 기준:",
-      retained: "이전 확인 정보",
-      unknownBasis: "이전 정보의 기준일을 확인할 수 없습니다.",
-      statusUnavailable: "정보 기준일을 확인할 수 없습니다. 최신 내용은 공식 원문을 확인해 주세요.",
-      fileLabels: {
-        "announcements-academic.json": "학사공지",
-        "announcements-campus-life.json": "학교생활공지",
-        "announcements-scholarship.json": "장학공지",
-        "announcements-events.json": "행사공지",
-        "announcements-departments.json": "학과공지",
-        "announcements-sw.json": "SW중심대학공지",
-        "cafeteria-menu.json": "학식",
-        "announcement-ai-metadata.json": "공지 AI 요약",
-        "public-holidays.json": "공휴일",
-      },
-    },
     meta: {
       title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
       description: "삼육대학교 공지사항, 학식, 학사일정을 한눈에 확인하세요.",
@@ -160,7 +142,6 @@ export const koDictionary = {
       source: "원본",
       unavailable: "-",
       statuses: {
-        fresh: "정상",
         stale: "이전 정보",
         error: "오류",
       },
@@ -211,7 +192,6 @@ export const koDictionary = {
         departure: "출발",
         noArrivals: "도착 예정 정보가 없어요",
         status: {
-          fresh: "정보 갱신됨",
           loading: "갱신 중",
           error: "조회 실패",
           stale: "최신 확인 필요",
@@ -800,8 +780,6 @@ export const koDictionary = {
         swError:
           "SW중심대학 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         listSearchPlaceholder: "제목 또는 작성자로 검색...",
-        fallbackNotice: "게시 데이터 조회에 실패해 저장된 공지를 표시합니다. 저장본에 포함된 최신 공지일:",
-        fallbackCategories: { academic: "학사", campus: "캠퍼스", scholarship: "장학금", sw: "SW중심대학" },
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
         empty: "검색 결과가 없습니다.",
@@ -1160,7 +1138,7 @@ export const koDictionary = {
         transitLoadFailed: "대중교통 정보를 불러오지 못했습니다.",
         infoUnavailableTitle: "정보를 가져올 수 없습니다",
         infoUnavailableMessage:
-          "API 키가 설정되지 않았거나 일시적 오류가 발생했습니다.",
+          "도착 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
         transitPartialUnavailableMessage:
           "일부 실시간 제공처 조회가 지연되어 현재 선택한 정류장 정보가 비어 있을 수 있습니다. 잠시 후 다시 시도해 주세요.",
         retry: "재시도",
@@ -1222,8 +1200,6 @@ export const koDictionary = {
           ingredientsUnavailable: "재료 확인 불가",
           ingredientsNotListed: "표기 없음",
           allergyMessage: "별도의 알레르기 정보는 제공되지 않습니다. 원문 재료는 참고용이며 알레르기 유발 성분을 모두 확인할 수 없으므로 식당에 직접 확인하세요.",
-          updatedAt: "마지막 정상 분석:",
-          koreaTime: "(한국시간)",
         },
         restaurantPicker: "식당 선택",
         suLoungeTitle: "SU-Lounge",

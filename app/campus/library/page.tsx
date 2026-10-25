@@ -9,6 +9,7 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import { fetchJson } from "@/lib/fetch-json";
 import {
   getLibrarySeason,
@@ -257,11 +258,13 @@ export default function LibraryPage() {
           <h2 className="text-lg font-bold text-neutral-900">
             {text.operatingHours}
           </h2>
-          <div className="flex gap-2">
+          <div className="m3-selection-track flex gap-2" data-selection-tone="tonal">
+            <SlidingIndicator value={selectedSeason} />
             <button
               type="button"
               onClick={() => setSelectedSeason("semester")}
               aria-pressed={selectedSeason === "semester"}
+              data-selection-value="semester"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "semester"
                   ? "bg-primary-600 text-white"
@@ -274,6 +277,7 @@ export default function LibraryPage() {
               type="button"
               onClick={() => setSelectedSeason("vacation")}
               aria-pressed={selectedSeason === "vacation"}
+              data-selection-value="vacation"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "vacation"
                   ? "bg-primary-600 text-white"

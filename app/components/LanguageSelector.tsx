@@ -48,6 +48,13 @@ export function LanguageSelector() {
       </label>
       <M3Select
         id="footer-locale"
+        leadingIcon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" focusable="false">
+            <circle cx="12" cy="12" r="9" />
+            <ellipse cx="12" cy="12" rx="4" ry="9" />
+            <path d="M3 12h18" />
+          </svg>
+        }
         value={locale}
         onValueChange={(value) => { if (isLocale(value)) handleChange(value); }}
         options={LOCALES.map((value) => ({ value, label: localeLabels[value] }))}

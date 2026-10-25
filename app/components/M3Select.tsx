@@ -1,11 +1,11 @@
 "use client";
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {useModalVisibility} from '@/app/components/Modal';
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from './ui/select';
 
 
 type Option={value:string;label:string;disabled?:boolean};
-export function M3Select({id,value,onValueChange,options}:{id:string;value:string;onValueChange:(value:string)=>void;options:Option[]}) {
+export function M3Select({id,value,onValueChange,options,leadingIcon}:{id:string;value:string;onValueChange:(value:string)=>void;options:Option[];leadingIcon?:ReactNode}) {
   const trigger=useRef<HTMLButtonElement>(null);
   const [portal,setPortal]=useState<HTMLElement|null>(null);
   const [open,setOpen]=useState(false);
@@ -19,7 +19,10 @@ export function M3Select({id,value,onValueChange,options}:{id:string;value:strin
     if(details.reason==='outside-press'){details.cancel();return;}
     setContainer(next);setOpen(next);
   }} onValueChange={next=>{if(next!==null)onValueChange(next);}}>
-    <SelectTrigger id={id} ref={trigger} aria-labelledby={id+'-label'} data-value={value}><SelectValue data-slot="select-value"/></SelectTrigger>
+    <SelectTrigger id={id} ref={trigger} aria-labelledby={id+'-label'} data-value={value}>
+      {leadingIcon && <span className="m3-select-leading" aria-hidden="true">{leadingIcon}</span>}
+      <SelectValue data-slot="select-value"/>
+    </SelectTrigger>
     <SelectContent container={portal} onDismiss={()=>setOpen(false)}>
       {options.map(option=><SelectItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</SelectItem>)}
     </SelectContent>

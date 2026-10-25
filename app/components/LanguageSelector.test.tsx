@@ -91,6 +91,8 @@ describe("language document navigation", () => {
   it("uses the shared popup with the two original language labels and restores keyboard focus on Escape", async () => {
     const trigger = renderSelector("ko");
     expect(trigger).toHaveAccessibleName("국가/언어 설정");
+    expect(trigger.querySelector(".m3-select-leading")).toHaveAttribute("aria-hidden", "true");
+    expect(trigger.querySelector(".m3-select-leading svg")).toBeInTheDocument();
     expect(document.querySelector("select")).toBeNull();
     trigger.focus();
     fireEvent.keyDown(trigger, { key: "ArrowDown" });

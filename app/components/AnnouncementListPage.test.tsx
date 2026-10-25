@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { fetchAnnouncementPage, type AnnouncementPageResponse } from "@/lib/api";
@@ -14,7 +14,6 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams({ search: urlSearch.value, page: urlSearch.page, lang: "en" }),
 }));
 vi.mock("@/lib/api", () => ({ fetchAnnouncementPage: vi.fn() }));
-vi.mock("./CrawlDataStatus", () => ({ CrawlDataStatus: () => null }));
 
 const initialPage: AnnouncementPageResponse = {
   items: [{
@@ -53,10 +52,10 @@ beforeEach(() => {
 });
 afterEach(() => client.clear());
 
-function page() {
+function page(data = initialPage) {
   return (
     <QueryClientProvider client={client}>
-      <AnnouncementListPage category="academic" title="학사공지" description="설명" errorMessage="조회 실패" initialPage={initialPage} />
+      <AnnouncementListPage category="academic" title="학사공지" description="설명" errorMessage="조회 실패" initialPage={data} />
     </QueryClientProvider>
   );
 }
@@ -88,6 +87,76 @@ it("does not reuse the first page's initial notices for page two", async () => {
   expect(navigation.push).toHaveBeenCalledWith(expect.stringContaining("/academic/announcements?"), { scroll: false });
   expect(screen.queryByText("서버 초기 공지")).not.toBeInTheDocument();
   await waitFor(() => expect(fetchAnnouncementPage).toHaveBeenCalledWith(expect.objectContaining({ query: "", page: 2 })));
+});
+
+it("keeps the same pagination DOM for a pending page of the same query while the body remains loading", async () => {
+  let resolvePage: (value: AnnouncementPageResponse) => void = () => {};
+  vi.mocked(fetchAnnouncementPage).mockImplementation(() => new Promise(resolve => { resolvePage = resolve; }));
+  const { container } = render(page());
+  const marker = container.querySelector(".m3-sliding-indicator");
+  const results = container.querySelector<HTMLElement>(".notice-workspace-list")!;
+  vi.spyOn(results, "getBoundingClientRect").mockReturnValue({ height: 1800 } as DOMRect);
+  fireEvent.click(screen.getByRole("link", { name: "2" }));
+  await waitFor(() => expect(fetchAnnouncementPage).toHaveBeenCalled());
+  expect(container.querySelector(".m3-sliding-indicator")).toBe(marker);
+  expect(screen.getByRole("link", { name: "2" })).toHaveAttribute("aria-current", "page");
+  expect(screen.queryByText("서버 초기 공지")).not.toBeInTheDocument();
+  expect(results.style.minHeight).toBe("1800px");
+  await act(async () => resolvePage({ ...initialPage, page: 2, total: 21, totalPages: 3,
+    items: [{ ...initialPage.items[0], id: "second", title: "새 페이지 공지" }] }));
+  await screen.findByText("새 페이지 공지");
+  expect(results.style.minHeight).toBe("");
+  expect(container.querySelector(".m3-sliding-indicator")).toBe(marker);
+  expect(screen.getByText("2 / 3")).toBeInTheDocument();
+  expect(window.location.search).toContain("lang=en");
+});
+
+it("hides previous pagination when the search changes or the new page fails", async () => {
+  const { container, unmount } = render(page());
+  fireEvent.change(screen.getByRole("textbox", { name: getDictionary("ko").search.label }), { target: { value: "새 검색" } });
+  expect(container.querySelector(".m3-pagination")).toBeNull();
+  unmount();
+  client.clear();
+  urlSearch.value = "";
+  urlSearch.page = "1";
+  vi.mocked(fetchAnnouncementPage).mockRejectedValue(new Error("Unavailable"));
+  const next = render(page());
+  fireEvent.click(screen.getByRole("link", { name: "2" }));
+  await screen.findByText("조회 실패");
+  expect(next.container.querySelector(".m3-pagination")).toBeNull();
+  expect(next.container.querySelector<HTMLElement>(".notice-workspace-list")?.style.minHeight).toBe("");
+});
+
+it("releases a preserved page height immediately when a pending page is replaced by a search", async () => {
+  const { container } = render(page());
+  const results = container.querySelector<HTMLElement>(".notice-workspace-list")!;
+  vi.spyOn(results, "getBoundingClientRect").mockReturnValue({ height: 1800 } as DOMRect);
+  fireEvent.click(screen.getByRole("link", { name: "2" }));
+  await waitFor(() => expect(results.style.minHeight).toBe("1800px"));
+  fireEvent.change(screen.getByRole("textbox", { name: getDictionary("ko").search.label }), { target: { value: "다른 검색" } });
+  expect(results.style.minHeight).toBe("");
+  expect(container.querySelector(".m3-pagination")).toBeNull();
+});
+
+it("keeps pagination and list height during a page-only RSC transition even when its browser data is cached", async () => {
+  const secondPage = { ...initialPage, page: 2, items: [{ ...initialPage.items[0], title: "캐시된 두 번째 공지" }] };
+  client.setQueryData(["announcement-page", "academic", "", 2], secondPage);
+  let finishNavigation: () => void = () => {};
+  navigation.push.mockImplementation(() => new Promise<void>(resolve => { finishNavigation = resolve; }));
+  const { container, rerender } = render(page());
+  const marker = container.querySelector(".m3-sliding-indicator");
+  const results = container.querySelector<HTMLElement>(".notice-workspace-list")!;
+  vi.spyOn(results, "getBoundingClientRect").mockReturnValue({ height: 1800 } as DOMRect);
+  fireEvent.click(screen.getByRole("link", { name: "2" }));
+  expect(container.querySelector(".m3-sliding-indicator")).toBe(marker);
+  expect(results.style.minHeight).toBe("1800px");
+  expect(screen.queryByText("캐시된 두 번째 공지")).not.toBeInTheDocument();
+  await act(async () => { urlSearch.page = "2"; finishNavigation(); });
+  rerender(page(secondPage));
+  expect(screen.getByText("캐시된 두 번째 공지")).toBeInTheDocument();
+  expect(results.style.minHeight).toBe("");
+  expect(container.querySelector(".m3-sliding-indicator")).toBe(marker);
+  expect(fetchAnnouncementPage).not.toHaveBeenCalled();
 });
 
 it("uses an arriving RSC page directly instead of an old cached result or duplicate browser request", () => {
@@ -153,4 +222,13 @@ it("resets a searched list to page one while preserving the locale query", () =>
   expect(params.get("search")).toBe("장학");
   expect(params.has("page")).toBe(false);
   expect(params.get("lang")).toBe("en");
+});
+
+it("keeps original notices without exposing source-retention diagnostics or querying source health", () => {
+  render(page({ ...initialPage, fallbackSources: [{ category: "academic", latestDate: "2000-01-01" }] }));
+  expect(screen.getByText("서버 초기 공지")).toBeInTheDocument();
+  expect(screen.getByText("2026.10.14")).toBeInTheDocument();
+  expect(screen.queryByText("2000-01-01", { exact: false })).not.toBeInTheDocument();
+  expect(screen.queryByText(/저장된 공지|정보 기준|이전 확인 정보/)).not.toBeInTheDocument();
+  expect(client.getQueryCache().findAll().map((query) => query.queryKey[0])).toEqual(["announcement-page"]);
 });

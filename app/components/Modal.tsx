@@ -22,6 +22,7 @@ interface ModalProps {
   headerClassName?: string;
   bodyClassName?: string;
   hideHeader?: boolean;
+  showCloseButton?: boolean;
   keepMounted?: boolean;
 }
 
@@ -38,6 +39,7 @@ export function Modal({
   headerClassName = "",
   bodyClassName = "",
   hideHeader = false,
+  showCloseButton = true,
   keepMounted = false,
 }: ModalProps) {
   const parentVisible = useContext(ModalVisibilityContext);
@@ -171,14 +173,14 @@ export function Modal({
                 {description}
               </p>
             )}
-            <button
+            {showCloseButton && <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
               className="sr-only"
             >
               {closeLabel}
-            </button>
+            </button>}
           </>
         ) : (
           <div
@@ -194,7 +196,7 @@ export function Modal({
                 </p>
               )}
             </div>
-            <button
+            {showCloseButton && <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
@@ -202,7 +204,7 @@ export function Modal({
               aria-label={closeLabel}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
-            </button>
+            </button>}
           </div>
         )}
 

@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchJson } from "@/lib/fetch-json";
+import { getDictionary } from "@/lib/i18n";
+import { LocaleProvider } from "@/app/components/LocaleProvider";
 import PublicTransitSection from "./PublicTransitSection";
 
 vi.mock("@/lib/fetch-json", () => ({ fetchJson: vi.fn() }));
@@ -104,4 +106,20 @@ describe("public transit details", () => {
     expect(screen.getByRole("button", { name: /^200 / })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+});
+
+it.each(["ko", "en"] as const)("shows a user-facing transit failure and retains retry in %s", async (locale) => {
+  vi.mocked(fetchJson).mockRejectedValue(new Error("offline"));
+  render(<LocaleProvider locale={locale}><QueryClientProvider client={client}>
+    <PublicTransitSection />
+  </QueryClientProvider></LocaleProvider>);
+  await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+  const text = getDictionary(locale).pages.busInfo;
+  expect(screen.getByRole("alert")).toHaveTextContent(text.infoUnavailableMessage);
+  expect(screen.getByRole("alert")).not.toHaveTextContent(/API.?키|API key|not configured/i);
+  vi.mocked(fetchJson).mockResolvedValue(transitPayload(6));
+  fireEvent.click(screen.getByRole("button", { name: text.retry }));
+  await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /^200 / })).toBeInTheDocument();
 });

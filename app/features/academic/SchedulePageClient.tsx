@@ -18,6 +18,7 @@ import { useUrlSearch } from "@/lib/use-url-search";
 import type { AcademicSchedule, AnswerSource } from "@/types";
 import type { PublicHolidaySnapshot } from "@/types/public-holidays";
 import "./academic-schedule.css";
+import "@/app/components/page-motion.css";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
@@ -272,7 +273,7 @@ export default function SchedulePageClient({
     }
 
     days.push(
-      <div key="grid" className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div key="grid" className="m3-calendar-month-grid grid grid-cols-7 gap-1 sm:gap-2" data-motion-phase={currentMonth.getMonth() % 2}>
         {cells}
       </div>,
     );

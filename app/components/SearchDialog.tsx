@@ -15,7 +15,7 @@ export default function SearchDialog({ onClose }: { onClose: () => void }) {
   const body = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState(() => typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("search") ?? "");
   useEffect(() => { body.current?.querySelector("input")?.focus(); }, []);
-  return <Modal isOpen title={dictionary.search.label} onClose={onClose} initialFocus="none" overlayClassName="m3-search-overlay" className="m3-search-dialog" headerClassName="m3-search-dialog-header [&>div]:sr-only" bodyClassName="m3-search-dialog-body">
+  return <Modal isOpen title={dictionary.search.label} onClose={onClose} initialFocus="none" hideHeader showCloseButton={false} overlayClassName="m3-search-overlay" className="m3-search-dialog" bodyClassName="m3-search-dialog-body">
     <div ref={body}><SearchBar defaultValue={typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("search") ?? ""} onQueryChange={setQuery} onSearch={query => {
       const value = query.trim();
       if (!value) return;

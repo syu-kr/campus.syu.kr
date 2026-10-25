@@ -15,24 +15,6 @@ export const enDictionary = {
       referenceHolidaySchedule: "The timetable below applies to operating days.",
       referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
     },
-    crawlDataStatus: {
-      label: "Information reference",
-      asOf: "As of:",
-      retained: "previously confirmed information",
-      unknownBasis: "The reference date of the previous information is unknown.",
-      statusUnavailable: "The information reference date is unavailable. Check the official source for the latest details.",
-      fileLabels: {
-        "announcements-academic.json": "Academic notices",
-        "announcements-campus-life.json": "Campus life notices",
-        "announcements-scholarship.json": "Scholarship notices",
-        "announcements-events.json": "Event notices",
-        "announcements-departments.json": "Department notices",
-        "announcements-sw.json": "SW-centered university notices",
-        "cafeteria-menu.json": "Cafeteria",
-        "announcement-ai-metadata.json": "Notice AI summaries",
-        "public-holidays.json": "Public holidays",
-      },
-    },
     meta: {
       title: "SYU CAMPUS - Student Information Hub",
       description:
@@ -166,7 +148,6 @@ export const enDictionary = {
       source: "Source",
       unavailable: "-",
       statuses: {
-        fresh: "Fresh",
         stale: "Stale",
         error: "Error",
       },
@@ -217,7 +198,6 @@ export const enDictionary = {
         departure: "departure",
         noArrivals: "No arrivals available",
         status: {
-          fresh: "Information updated",
           loading: "Updating",
           error: "Could not update",
           stale: "Needs updating",
@@ -812,8 +792,6 @@ export const enDictionary = {
         swError:
           "Could not load SW-centered university notices. Please try again shortly.",
         listSearchPlaceholder: "Search by title or author...",
-        fallbackNotice: "The published data is unavailable. Showing saved notices. Latest notice dates in the saved copy:",
-        fallbackCategories: { academic: "Academic", campus: "Campus", scholarship: "Scholarships", sw: "SW-Centered University" },
         foundItems: "items found",
         searchQuery: "query",
         empty: "No results found.",
@@ -1175,7 +1153,7 @@ export const enDictionary = {
         transitLoadFailed: "Could not load public transit information.",
         infoUnavailableTitle: "Information unavailable",
         infoUnavailableMessage:
-          "The API key is not configured or a temporary error occurred.",
+          "Could not check arrival information. Please try again shortly.",
         transitPartialUnavailableMessage:
           "Some real-time providers are delayed, so the selected stop may be missing arrival information. Please try again shortly.",
         retry: "Retry",
@@ -1237,8 +1215,6 @@ export const enDictionary = {
           ingredientsUnavailable: "Ingredients unavailable",
           ingredientsNotListed: "Not listed",
           allergyMessage: "Separate allergen information is not provided. Printed ingredients are for reference and may not identify every allergen. Please confirm with the cafeteria directly.",
-          updatedAt: "Last successful analysis:",
-          koreaTime: "(Korea time)",
         },
         restaurantPicker: "Choose a cafeteria",
         suLoungeTitle: "SU-Lounge",

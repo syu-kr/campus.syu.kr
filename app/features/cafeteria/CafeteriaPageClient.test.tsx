@@ -10,7 +10,6 @@ import type { CafeteriaMenu } from "@/types";
 import { CafeteriaPageClient } from "./CafeteriaPageClient";
 
 vi.mock("@/lib/api", () => ({ fetchCafeteriaSnapshot: vi.fn() }));
-vi.mock("@/app/components/CrawlDataStatus", () => ({ CrawlDataStatus: () => null }));
 vi.mock("next/navigation", async () => {
   const { useSyncExternalStore } = await import("react");
   return {
