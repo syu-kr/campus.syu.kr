@@ -1,5 +1,7 @@
 # M3 서비스 배포·검증·롤백 체크리스트
 
+2026-10-27 후속: Firebase 실제 이전·Node 24 전체 검사·148뷰 및 추가 결함 보완 결과는 [이전 실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md)에 연결했다. 아래 운영/CI 체크박스는 로컬 통과와 구분하며, 번역 TTL 세 정책·공급자 quota 확인·원격 head CI·배포는 아직 완료가 아니다.
+
 후속: 의존성/SEO/언어/공개 자료 위치 보완 및 최종 Node22의1,602테스트·74화면 검증은 [반영 보고서](DEPLOYMENT_REMEDIATION_2026-10-26.md)에 기록했다. 아래 체크박스는 최종 릴리스 후보의 CI/운영 승인 기록용이며 로컬 통과만으로 자동 완료하지 않는다.
 
 기준일: 2026-10-26. [배포 준비 보고서](PRODUCTION_READINESS_2026-10-26.md)의 실행용 목록이다. **미완료 체크박스는 완료로 오인하지 않는다. 현재 배포 승인이 아니라 필요한 증거의 정의다.**
@@ -9,12 +11,12 @@
 | 항목 | 기록할 값 |
 | --- | --- |
 | 점검 소스 | 현재 보고서 기준 `699d653569eb59d0ccdccfd9b11e41af20e6d782` |
-| 수정 후 후보 PR/head SHA | 미정 — 아래 보완 후 확정 |
+| 수정 후 후보 PR/head SHA | 로컬 기능 후보 `b4ae09d`(후속 CLS·재시도 보완 포함), 최종 build `sQ87eW7dblv9HLwQme7fQ`(M3/Firebase `a1641aa`, 최신 main 통합 `1105828` 포함). 원격 PR/head CI 미실행 |
 | 병합 main SHA / CI run | 미확인 |
 | 배포 mirror SHA / sync run | 미확인 |
 | Vercel deployment ID / Production URL / Node | 미확인 |
 | 공개 `indexnow-deployment.json.sourceSha` | 배포된 main SHA와 대조 필요 |
-| 활성 Pages 데이터 version/hash | 배포 시 기록 |
+| 활성 공개 데이터 version/hash | 이전 후보 `firebase-migration-20261026`·revision 3, 실제 업로드 23파일 검증. 운영 앱은 아직 기존 설정이므로 배포 시 backend/version/hash 재대조 |
 | 배포 책임자 / 검증자 / 롤백 담당 | 운영자가 지정 |
 | 수용한 미해결 항목 | 셔틀 원본 등 항목별 영향·대체 기능·재확인 기준 기록 |
 | 이전 정상 앱 SHA / 데이터 version | 배포 전에 확보 |
