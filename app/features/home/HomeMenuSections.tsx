@@ -155,7 +155,7 @@ export function PwaInstallCard() {
           color="rgb(37, 99, 235)"
           className="mt-0.5 flex-shrink-0"
         />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
           <p className="text-sm font-semibold text-neutral-900">
             {dictionary.home.pwaTitle}
           </p>
@@ -249,7 +249,7 @@ export function RelatedLinksSection() {
           <Link
             key={link.path}
             href={localizePath(link.path, locale)}
-            className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50"
+            className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50 [overflow-wrap:anywhere]"
           >
             <Icon
               name={link.iconName}

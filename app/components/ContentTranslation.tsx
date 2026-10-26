@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ContentTranslationSource, PublicContentFields } from "@/lib/content-translation";
@@ -37,6 +37,7 @@ export function PublicContentTranslation({ source, content, children }: { source
 
 /** One page-level attribution and recovery control replaces per-item buttons. */
 export function PageTranslationStatus() {
+  const statusRef = useRef<HTMLParagraphElement>(null);
   const pathname = usePathname();
   const reserveSpace = pathname === "/" || pathname === "/en" || pathname === "/en/";
   const locale = useLocale(), dictionary = useDictionary().contentTranslation;
@@ -47,7 +48,7 @@ export function PageTranslationStatus() {
     <a className="m3-translation-attribution" href="https://translate.google.com/" target="_blank" rel="noopener noreferrer">
       <Image src="/brand/google-translate/powered-by-google-translate.png" width={176} height={16} unoptimized alt="Powered by Google Translate" />
     </a>
-    <p role="status">{state.error ? dictionary[state.error as "error" | "unavailable" | "limited" | "changed"] : state.loading || !active ? dictionary.pageLoading : dictionary.machineTranslated}</p>
-    {state.error && state.error !== "changed" && <button type="button" className={buttonStyles("ghost")} onClick={retryPageTranslation}>{dictionary.retry}</button>}
+    <p ref={statusRef} role="status" tabIndex={-1} className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">{state.error ? dictionary[state.error as "error" | "unavailable" | "limited" | "changed"] : state.loading || !active ? dictionary.pageLoading : dictionary.machineTranslated}</p>
+    {state.error && state.error !== "changed" && <button type="button" className={buttonStyles("ghost")} onClick={() => { statusRef.current?.focus({ preventScroll: true }); retryPageTranslation(); }}>{dictionary.retry}</button>}
   </aside>;
 }

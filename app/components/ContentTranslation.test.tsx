@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { usePathname } from "next/navigation";
 import { LocaleProvider } from "./LocaleProvider";
@@ -46,6 +46,12 @@ describe("automatic page translation", () => {
     expect(await screen.findByRole("button", { name: "Retry translation" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "공개 공지" })).toBeVisible();
     expect(screen.getByRole("status")).toHaveTextContent("currently unavailable");
+    const retry = screen.getByRole("button", { name: "Retry translation" });
+    act(() => retry.focus());
+    fireEvent.click(retry);
+    expect(screen.getByRole("status")).toHaveFocus();
+    expect(await screen.findByRole("button", { name: "Retry translation" })).toBeVisible();
+    expect(screen.getByRole("status")).toHaveFocus();
   });
   it("rejects stale source text instead of replacing the current view", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response({ title: "서버에서 바뀐 내용" })));
