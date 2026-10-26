@@ -26,6 +26,27 @@ function HeaderComponent() {
   const [weatherModalOpen, setWeatherModalOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchTrigger = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const root = document.documentElement;
+    const previous = root.style.getPropertyValue("--header-height");
+    const measure = () => {
+      const height = header.getBoundingClientRect().height;
+      if (height) root.style.setProperty("--header-height", height + "px");
+    };
+    measure();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(header);
+    return () => {
+      observer?.disconnect();
+      if (previous) root.style.setProperty("--header-height", previous);
+      else root.style.removeProperty("--header-height");
+    };
+  }, []);
+
   const { data: weather, isPending, isError, refetch } = useQuery({
     queryKey: ["weather"], queryFn: fetchWeather,
     staleTime: WEATHER_REFRESH_INTERVAL_MS, refetchInterval: WEATHER_REFRESH_INTERVAL_MS,
@@ -73,7 +94,7 @@ function HeaderComponent() {
     window.requestAnimationFrame(() => searchTrigger.current?.focus({ preventScroll: true }));
   };
   return <>
-    <header className="m3-header">
+    <header ref={headerRef} className="m3-header">
       <Link className="m3-brand relative" href={localizePath("/", locale)}
         aria-label={dictionary.navigation.homepageTitle} title={dictionary.navigation.homepageTitle}>
         <BrandMark className="m3-logo" /><span>SYU CAMPUS</span>

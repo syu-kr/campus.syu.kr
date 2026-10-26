@@ -46,7 +46,7 @@ export async function buildPublicDataSnapshot(directory: string, version: string
       bytes = await store.readObject(entry.path, publicDataMaxBytes(file));
       if (bytes.length !== entry.size || hash(bytes) !== entry.sha256) throw new Error(`Previous public data failed integrity: ${file}`);
     } else {
-      let local = await readLocalPublicData(directory, file);
+      let local: Buffer | undefined = await readLocalPublicData(directory, file);
       if (!local && file === "student-restaurant-1.json") {
         const entry = previous?.manifest.files[file];
         if (!entry) continue;

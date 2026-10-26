@@ -34,6 +34,29 @@ beforeEach(() => {
 afterEach(() => { breakpointListeners.clear(); vi.unstubAllGlobals(); });
 
 describe("M3 Header and BottomNav", () => {
+  it("keeps sticky content below the header when enlarged text wraps its tools", () => {
+    let height = 128;
+    const callbacks: (() => void)[] = [];
+    const disconnect = vi.fn();
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: () => void) { callbacks.push(callback); }
+      observe() {}
+      disconnect = disconnect;
+    });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      return new DOMRect(0, 0, 320, this.tagName === "HEADER" ? height : 0);
+    });
+    const previous = document.documentElement.style.getPropertyValue("--header-height");
+    const { unmount } = render(<Header />);
+    expect(document.documentElement.style.getPropertyValue("--header-height")).toBe("128px");
+    height = 64;
+    act(() => callbacks.forEach(callback => callback()));
+    expect(document.documentElement.style.getPropertyValue("--header-height")).toBe("64px");
+    unmount();
+    expect(document.documentElement.style.getPropertyValue("--header-height")).toBe(previous);
+    expect(disconnect).toHaveBeenCalled();
+  });
+
   it.each(["/", "/academic", "/campus/cafeteria", "/campus/roommates/verify/finish", "/en/more/meet/invitation"])(
     "keeps the logo first with no redundant parent back control at %s", (path) => {
       mockedUsePathname.mockReturnValue(path);

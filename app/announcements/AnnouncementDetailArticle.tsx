@@ -182,4 +182,3 @@ function getAiImportanceColor(
   if (importance === "normal") return "yellow";
   return "gray";
 }
-

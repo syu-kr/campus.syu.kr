@@ -23,7 +23,7 @@ export function M3Select({id,value,onValueChange,options,leadingIcon,variant="fi
       {leadingIcon && <span className="m3-select-leading" aria-hidden="true">{leadingIcon}</span>}
       <SelectValue data-slot="select-value"/>
     </SelectTrigger>
-    <SelectContent container={portal} onDismiss={()=>setOpen(false)}>
+    <SelectContent container={portal} finalFocus={trigger} onDismiss={()=>setOpen(false)}>
       {options.map(option=><SelectItem key={option.value} value={option.value} disabled={option.disabled}>{option.label}</SelectItem>)}
     </SelectContent>
   </Select>;

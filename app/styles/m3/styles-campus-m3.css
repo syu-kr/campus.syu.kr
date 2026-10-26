@@ -65,7 +65,9 @@
 .m3-content[data-site-route="/academic/competitions"] article>div>div:last-child{margin-top:auto;padding-top:16px;border-color:var(--cm-outline);}
 
 /* Both restaurants use the same visual hierarchy without adding menu-day controls. */
-.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child{margin-bottom:28px;border:0;background:var(--sys-surface);padding-block:12px;}
+/* Attribution stays in normal flow so it cannot share the tabs' sticky position. */
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.m3-page-translation{position:static;}
+.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:has(>.m3-segmented){margin-bottom:28px;border:0;background:var(--sys-surface);padding-block:12px;}
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])),
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start;}
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>*,
@@ -187,7 +189,7 @@
   .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>.rounded-card .grid.gap-2{grid-template-columns:minmax(0,1fr);}
 }
 @media(min-width:768px){
-  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:first-child{position:sticky;top:var(--header-height);z-index:30;}
+  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:has(>.m3-segmented){position:sticky;top:var(--header-height);z-index:30;}
 }
 @media(min-width:1024px){
   .m3-content[data-site-route="/campus/map"] .grid:has(>[class*="shadow-lg"]){grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);}
