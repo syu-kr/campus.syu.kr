@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import type { ContentTranslationSource, PublicContentFields } from "@/lib/content-translation";
 import { watchContentTranslation, subscribePageTranslation, getPageTranslationSnapshot, getServerTranslationSnapshot, retryPageTranslation, type TranslationSnapshot } from "@/lib/content-translation-client";
 import { useDictionary, useLocale } from "./LocaleContext";
@@ -36,14 +37,17 @@ export function PublicContentTranslation({ source, content, children }: { source
 
 /** One page-level attribution and recovery control replaces per-item buttons. */
 export function PageTranslationStatus() {
+  const pathname = usePathname();
+  const reserveSpace = pathname === "/" || pathname === "/en" || pathname === "/en/";
   const locale = useLocale(), dictionary = useDictionary().contentTranslation;
   const state = useSyncExternalStore(subscribePageTranslation, getPageTranslationSnapshot, getServerTranslationSnapshot);
-  if (locale !== "en" || (!state.loading && !state.translated && !state.error)) return null;
-  return <aside className="m3-page-translation" aria-label={dictionary.pageLabel}>
+  const active = state.loading || state.translated || Boolean(state.error);
+  if (locale !== "en" || (!active && !reserveSpace)) return null;
+  return <aside className="m3-page-translation" aria-label={dictionary.pageLabel} aria-hidden={!active || undefined} style={{ visibility: active ? undefined : "hidden" }}>
     <a className="m3-translation-attribution" href="https://translate.google.com/" target="_blank" rel="noopener noreferrer">
       <Image src="/brand/google-translate/powered-by-google-translate.png" width={176} height={16} unoptimized alt="Powered by Google Translate" />
     </a>
-    <p role="status">{state.error ? dictionary[state.error as "error" | "unavailable" | "limited" | "changed"] : state.loading ? dictionary.pageLoading : dictionary.machineTranslated}</p>
+    <p role="status">{state.error ? dictionary[state.error as "error" | "unavailable" | "limited" | "changed"] : state.loading || !active ? dictionary.pageLoading : dictionary.machineTranslated}</p>
     {state.error && state.error !== "changed" && <button type="button" className={buttonStyles("ghost")} onClick={retryPageTranslation}>{dictionary.retry}</button>}
   </aside>;
 }

@@ -1,7 +1,11 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { usePathname } from "next/navigation";
 import { LocaleProvider } from "./LocaleProvider";
 import { PageTranslationStatus, PublicContentTranslation } from "./ContentTranslation";
+
+vi.mock("next/navigation", () => ({ usePathname: vi.fn() }));
+beforeEach(() => vi.mocked(usePathname).mockReturnValue("/en/terms"));
 
 let sequence = 0;
 afterEach(() => vi.unstubAllGlobals());
@@ -10,6 +14,23 @@ function view(content = { title: "공개 공지" }, id = String(++sequence), loc
   return <LocaleProvider locale={locale}><PageTranslationStatus /><PublicContentTranslation source={{ kind: "announcement", id, category: "academic" }} content={content}>{translation => <h2 lang={translation.lang}>{translation.text("title", content.title)}</h2>}</PublicContentTranslation></LocaleProvider>;
 }
 describe("automatic page translation", () => {
+  it("reserves the English home status slot without exposing an idle message or adding other-page space", () => {
+    const { container, rerender } = render(<LocaleProvider locale="en"><PageTranslationStatus /></LocaleProvider>);
+    expect(container.querySelector("aside")).toBeNull();
+    vi.mocked(usePathname).mockReturnValue("/en");
+    rerender(<LocaleProvider locale="en"><PageTranslationStatus /></LocaleProvider>);
+    const slot = container.querySelector("aside")!;
+    expect(slot).toHaveStyle({ visibility: "hidden" });
+    expect(slot).toHaveAttribute("aria-hidden", "true");
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    vi.mocked(usePathname).mockReturnValue("/en/terms");
+    rerender(<LocaleProvider locale="en"><PageTranslationStatus /></LocaleProvider>);
+    expect(container.querySelector("aside")).toBeNull();
+    vi.mocked(usePathname).mockReturnValue("/");
+    rerender(<LocaleProvider locale="ko"><PageTranslationStatus /></LocaleProvider>);
+    expect(container.querySelector("aside")).toBeNull();
+  });
+
   it("automatically replaces Korean at the original position and provides one attribution without per-post buttons", async () => {
     const fetcher = vi.fn().mockResolvedValue(response({ title: "공개 공지" })); vi.stubGlobal("fetch", fetcher);
     render(view());
