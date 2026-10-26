@@ -48,6 +48,7 @@ export function getFacilityCategoryLabel(
     편의: text.categories.convenience,
     사무: text.categories.office,
     학습: text.categories.study,
+    연구: text.categories.research,
   };
 
   return category ? labels[category] ?? category : "";

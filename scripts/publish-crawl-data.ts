@@ -484,13 +484,13 @@ export function manifestsHaveSameFiles(
   });
 }
 
-async function readHealthCache(healthPath: string) {
+export async function readHealthCache(healthPath: string, fallback: NonNullable<CrawlDataManifest["sourceHealth"]> = {}) {
   let raw: string;
   try {
     raw = await readFile(healthPath, "utf8");
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT") {
-      return {};
+      return fallback;
     }
     throw error;
   }
@@ -498,7 +498,7 @@ async function readHealthCache(healthPath: string) {
   return parseCrawlSourceHealthMap(cache?.files);
 }
 
-async function writeHealthCache(
+export async function writeHealthCache(
   healthPath: string,
   files: NonNullable<CrawlDataManifest["sourceHealth"]>,
 ) {

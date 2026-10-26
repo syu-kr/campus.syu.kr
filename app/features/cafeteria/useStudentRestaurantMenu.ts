@@ -6,8 +6,8 @@ import { fetchJson } from "@/lib/fetch-json";
 import { parseStudentRestaurantMenu, parseStudentRestaurantPublicUrl } from "@/lib/student-restaurant";
 
 async function fetchStudentRestaurantMenu(jsonUrl: string) {
-  const url = parseStudentRestaurantPublicUrl(jsonUrl);
-  const value = await fetchJson<unknown>(url.href, {
+  parseStudentRestaurantPublicUrl(jsonUrl);
+  const value = await fetchJson<unknown>("/api/public-data/student-restaurant-1.json", {
     fallback: null,
     throwOnError: true,
     timeoutMs: 12_000,

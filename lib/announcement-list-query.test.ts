@@ -9,7 +9,7 @@ describe("announcement list URLs", () => {
     expect(getAnnouncementListQuery({ page: ["3.9", "6"], search: ["장학", "취업"] })).toEqual({ page: 3, query: "장학" });
   });
   it("keeps non-search pagination canonical and hreflang URLs distinct", () => {
-    expect(getAnnouncementListMetadata("/academic/announcements", { page: "3", lang: "en" }, "en")).toEqual({
+    expect(getAnnouncementListMetadata("/academic/announcements", { page: "3", lang: "en" }, "en")).toMatchObject({
       alternates: {
         canonical: "/en/academic/announcements?page=3",
         languages: { ko: "/academic/announcements?page=3", en: "/en/academic/announcements?page=3", "x-default": "/academic/announcements?page=3" },

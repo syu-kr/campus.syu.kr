@@ -109,16 +109,18 @@ If GSC shows only the English URL, check these in order:
 4. The Korean page has an `x-default` alternate pointing to the Korean URL.
 5. The Korean URL is not blocked by `robots.txt`, middleware, or deployment protection.
 
-## Answer summaries and source timestamps
+## Current M3 metadata, content language, and data state
 
-- Cafeteria, shuttle, and academic schedule pages render the visible answer and FAQ JSON-LD from the same client snapshot, including the server-rendered initial response. Date changes and query refreshes update both together.
-- These pages await initial data before rendering, and the default shuttle tab uses a direct import. This keeps answers and sources visible without JavaScript instead of leaving them in hidden streaming segments; the first response waits for the existing data reads.
-- `Answer as of` is the time used to calculate the answer. It is not evidence that a source was checked at that time.
-- Cafeteria uses the `sourceHealth.lastSuccessAt` attached to the same menu snapshot. The API includes additive `checkedAt` and `stale` fields; existing menu fields and array-returning helpers remain compatible. Missing health metadata or a bundled fallback has no recorded check time. A stale/failed refresh does not present retained meals as a confirmed current menu.
-- Public holidays use their own `lastSuccessAt`. A public-holiday timestamp is never presented as verification of academic dates or the base shuttle timetable.
-- Confirmed school shuttle exceptions use their recorded official `sourceUrl` and `verifiedAt`. The base timetable's `lastUpdated` is only a data reference date; special periods without recorded verification remain unverified.
-- The static academic schedule and base shuttle files currently have no source-check timestamp. They explicitly show `Check time not recorded`. Request time, file modification time, publication time, and Git commit dates are not substituted. Future data collection should record verification separately when it actually happens.
-- Check the Korean and English initial HTML for one page-answer JSON-LD script, matching visible question/answer text, official source links, and separate per-source check times. Retry/failure, stale data, midnight, and shuttle departure boundaries should keep visible answers and JSON-LD consistent.
+- Page metadata uses complete shared OG/Twitter fields. Nested `openGraph` objects replace inherited fields, so public pages explicitly retain the shared image with their own title, description, locale, and social URL.
+- Korean announcement source titles, text, and AI summaries remain Korean on the English UI. Source regions use Korean language markup and Article `inLanguage` is `ko-KR`. Navigation and labels remain localized. The English URL is an English reading interface, not a claim that the original notice was translated. Service notice source titles and bodies follow the same rule.
+- KO/EN routes stay self-canonical with reciprocal alternates. A later translation/canonical policy change must update HTML, sitemap, links, and IndexNow together.
+- Public announcement lists/details render content and links on the server. Competitions and campus tips also receive server snapshots and restore validated filters from the URL. Search/filtered variants are noindex with a base canonical; unfiltered page URLs use their own page canonical.
+- Current schema includes site identity, announcement Article, and real FAQ on graduation/phone pages. Do not assume cafeteria/shuttle/schedule still output FAQ schema from an older implementation.
+- Google discontinued FAQ rich results starting May 7, 2026. Useful Q&A can remain, but schema count does not guarantee a search feature or GEO result. See [Google's update log](https://developers.google.com/search/updates).
+- Normal UI does not display internal collection logs or generic update messages. Keep the actual meal date/week, announcement publication date, base shuttle update date, and meaningful stale/error/retry states.
+- Snapshot `sourceHealth.lastSuccessAt`, version, and source verification remain operational data. Request time, file modification, Git commit time, and an answer calculation time must not substitute for source verification. Keep source-specific dates separate.
+- API freshness fields and retained-data contracts remain compatible. A previous observation or missing meal week must not be represented as fresh current data. Validate visible text and any schema against the same snapshot.
+- AI text files and GEO-only markup are not required. Prioritize crawlable text, actual sources, accurate language, and useful content. See [Google's generative search guidance](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide).
 
 ## IndexNow 변경 알림 (PR 3)
 

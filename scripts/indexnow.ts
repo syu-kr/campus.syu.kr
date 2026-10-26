@@ -8,6 +8,10 @@ import { CRAWL_DATA_MAX_BYTES, parseCrawlDataManifest, validateDailyCrawlData, t
 import { readResponseBytes } from "../lib/server/read-response-bytes";
 import { buildIndexNowSnapshot, changedIndexNowUrls, type IndexNowSnapshot, type SnapshotFile } from "./indexnow-snapshot";
 import { assertIndexNowUrl, INDEXNOW_KEY_LOCATION, INDEXNOW_ORIGIN, submitIndexNow } from "./indexnow-submit";
+import { asDailyCrawlManifest, parsePublicDataManifest, type PublicDataFile } from "../lib/public-data-snapshot";
+import { getActivePublicData, firebasePublicDataStore, publicDataFirebaseEnabled, readPublicSnapshotFile } from "../lib/server/public-data-storage";
+import { parseStudentRestaurantMenu } from "../lib/student-restaurant";
+import { collectServiceNoticeSnapshot, SERVICE_NOTICE_SNAPSHOT_KEY } from "./indexnow-service-notices";
 
 const PAGES = "https://syu-kr.github.io/campus.syu.kr/crawl-data";
 const CACHE_SETTLE_MS = 6 * 60 * 1000;
@@ -49,9 +53,9 @@ async function saveJson(file: string, value: unknown) {
 export async function assertIndexNowTarget(sourceSha: string, version: string, fetchImpl: typeof fetch = fetch) {
   const options = { cache: "no-store" as const, redirect: "error" as const, signal: AbortSignal.timeout(15_000) };
   const marker = await fetchImpl(`${INDEXNOW_ORIGIN}/indexnow-deployment.json?source=${sourceSha}`, options);
-  const current = await fetchImpl(`${PAGES}/current.json?indexnow=verify`, options);
+  const current = await fetchImpl(publicDataFirebaseEnabled() ? `${INDEXNOW_ORIGIN}/api/public-data/current?indexnow=verify` : `${PAGES}/current.json?indexnow=verify`, options);
   if (!marker.ok || !current.ok || (await marker.json() as { sourceSha?: string }).sourceSha !== sourceSha ||
-    parseCrawlDataManifest(await current.json()).version !== version) {
+    (publicDataFirebaseEnabled() ? parsePublicDataManifest(await current.json()).version : parseCrawlDataManifest(await current.json()).version) !== version) {
     throw new Error("Production changed during verification; retry with a fresh snapshot");
   }
 }
@@ -83,7 +87,7 @@ export async function verifyIndexNowProduction(
     let matched = false;
     for (let attempt = 0; attempt < 8; attempt++) {
       const response = await request(`${INDEXNOW_ORIGIN}/api/crawl-data/${file}?indexnow=${manifest.version}&attempt=${attempt}`);
-      matched = response.status === 200 && response.headers.get("x-crawl-data-source") === "github-pages" && response.headers.get("x-crawl-data-version") === manifest.version;
+      matched = response.status === 200 && response.headers.get("x-crawl-data-source") === (publicDataFirebaseEnabled() ? "firebase-storage" : "github-pages") && response.headers.get("x-crawl-data-version") === manifest.version;
       await response.body?.cancel();
       if (matched) break;
       if (attempt < 7) await sleep(15_000);
@@ -126,6 +130,15 @@ async function collectFiles(fetchImpl: typeof fetch, send: boolean) {
     files[file] = { hash };
     if (/^public\/data\/[^/]+\.json$/.test(file)) files[file].data = JSON.parse(await readFile(file, "utf8"));
   }
+  if (publicDataFirebaseEnabled() || process.env.SERVICE_NOTICES_SOURCE === "database") files[SERVICE_NOTICE_SNAPSHOT_KEY] = await collectServiceNoticeSnapshot(fetchImpl);
+  if (publicDataFirebaseEnabled()) {
+    const active = await getActivePublicData(), store = firebasePublicDataStore();
+    for (const [file, entry] of Object.entries(active.manifest.files) as [PublicDataFile, NonNullable<typeof active.manifest.files[PublicDataFile]>][]) {
+      const data = await readPublicSnapshotFile(store, active.manifest, file);
+      files[file === "student-restaurant-1.json" ? `public/cafeteria/${file}` : `public/data/${file}`] = { hash: entry.sha256, data, stale: active.manifest.sourceHealth[file as keyof typeof active.manifest.sourceHealth]?.status === "stale" };
+    }
+    return { sourceSha: source.trim(), manifest: asDailyCrawlManifest(active.manifest), observedAt: Date.now(), fingerprints: buildIndexNowSnapshot(files) };
+  }
   const response = await fetchImpl(`${PAGES}/current.json?indexnow=snapshot`, { cache: "no-store", signal: AbortSignal.timeout(15_000), redirect: "error" });
   if (!response.ok) throw new Error(`Pages manifest HTTP ${response.status}`);
   const manifest = parseCrawlDataManifest(JSON.parse(new TextDecoder().decode(await readResponseBytes(response, 64 * 1024, "IndexNow manifest"))));
@@ -142,6 +155,12 @@ async function collectFiles(fetchImpl: typeof fetch, send: boolean) {
       stale: manifest.sourceHealth?.[file as keyof typeof manifest.files]?.status === "stale",
     };
   }
+  const student = await fetchImpl("https://syu-kr.github.io/campus.syu.kr/cafeteria/student-restaurant-1.json", { cache: "no-store", signal: AbortSignal.timeout(15_000), redirect: "error" });
+  if (student.ok) {
+    const bytes = await readResponseBytes(student, 128 * 1024, "IndexNow Manna menu");
+    const menu = parseStudentRestaurantMenu(JSON.parse(new TextDecoder().decode(bytes)));
+    files["public/cafeteria/student-restaurant-1.json"] = { hash: createHash("sha256").update(bytes).digest("hex"), data: menu };
+  } else if (student.status !== 404) throw new Error("Manna menu is unavailable; IndexNow snapshot not advanced");
   return { sourceSha: source.trim(), manifest, observedAt, fingerprints: buildIndexNowSnapshot(files) };
 }
 

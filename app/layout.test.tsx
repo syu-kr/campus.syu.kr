@@ -2,9 +2,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RootLayout, { generateMetadata } from "./layout";
 
-const request = vi.hoisted(() => ({ pathname: "/" }));
+const request = vi.hoisted(() => ({ pathname: "/", locale: "ko" }));
 vi.mock("next/headers", () => ({
-  headers: async () => new Headers({ "x-syu-pathname": request.pathname }),
+  headers: async () => new Headers({ "x-syu-pathname": request.pathname, "x-syu-locale": request.locale }),
 }));
 vi.mock("next/script", () => ({
   default: ({ id, dangerouslySetInnerHTML }: {
@@ -60,10 +60,27 @@ async function getAnalyticsScript() {
   return script!;
 }
 
-beforeEach(() => { request.pathname = "/"; vi.stubEnv("NODE_ENV", "production"); });
+beforeEach(() => { request.pathname = "/"; request.locale = "ko"; vi.stubEnv("NODE_ENV", "production"); });
 afterEach(() => { vi.unstubAllEnvs(); });
 
 describe("search engine ownership verification", () => {
+  it("installs search return capture in the initial head before interactive content", async () => {
+    const document = await renderDocument();
+    const script = document.head.querySelector("#search-return-bootstrap");
+    expect(script?.textContent).toContain("syu-campus-search-return");
+    expect(script?.textContent).toContain("document.addEventListener('click'");
+  });
+  it("uses the English homepage URL without replacing the root title template", async () => {
+    request.locale = "en";
+    request.pathname = "/en";
+    expect(await generateMetadata()).toMatchObject({
+      title: { template: "%s" },
+      alternates: { canonical: "/en" },
+      openGraph: { url: "https://campus.syu.kr/en", locale: "en_US", images: [expect.any(Object)] },
+      twitter: { images: ["/images/syu-campus-app-icon-512-m3-smile.png"] },
+    });
+  });
+
   it("renders configured tokens in the initial head while preserving Google verification", async () => {
     vi.stubEnv("NAVER_SITE_VERIFICATION", "  test-naver-token  ");
     vi.stubEnv("BING_SITE_VERIFICATION", "\ttest-bing-token\n");
@@ -104,6 +121,15 @@ describe("search engine ownership verification", () => {
 });
 
 describe("Meet invitation analytics privacy", () => {
+  it.each(["http://127.0.0.1:4180/", "https://campus-preview.example/", "https://campus.syu.kr.attacker.test/"])("does not initialize analytics outside the production host (%s)", async (href) => {
+    const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(await getAnalyticsScript(), href);
+    expect(analyticsWindow.dataLayer).toBeUndefined();
+    expect(analyticsWindow.gtag).toBeUndefined();
+    expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
+    expect(analyticsWindow.addEventListener).not.toHaveBeenCalled();
+    expect(analyticsDocument.head.appendChild).not.toHaveBeenCalled();
+  });
+
   it.each(["http://127.0.0.1:4180", "http://localhost:3000", "https://campus-preview.vercel.app"])("does not collect local or preview traffic from %s", async (origin) => {
     const script = await getAnalyticsScript();
     const { analyticsWindow } = runAnalyticsBootstrap(script, origin);
@@ -142,7 +168,7 @@ describe("Meet invitation analytics privacy", () => {
     "/en/campus/roommates/verify/finish",
   ])("stops a delayed bootstrap before any private config is queued (%s)", async (pathname) => {
     const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
-      await getAnalyticsScript(), `https://campus.test${pathname}?private=query#fragment`,
+      await getAnalyticsScript(), `https://campus.syu.kr${pathname}?private=query#fragment`,
     );
     expect(analyticsWindow[ANALYTICS_DISABLE_KEY]).toBe(true);
     expect(analyticsWindow.dataLayer).toBeUndefined();
@@ -153,7 +179,7 @@ describe("Meet invitation analytics privacy", () => {
 
   it("keeps analytics disabled after returning to a public route in the same document", async () => {
     const { analyticsWindow } = runAnalyticsBootstrap(
-      await getAnalyticsScript(), "https://campus.test/more", "", true,
+      await getAnalyticsScript(), "https://campus.syu.kr/more", "", true,
     );
     expect(analyticsWindow.dataLayer).toBeUndefined();
     expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
@@ -161,7 +187,7 @@ describe("Meet invitation analytics privacy", () => {
 
   it.each(["/", "/en"])("waits for window load and the delay before loading the public tag (%s)", async (pathname) => {
     const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
-      await getAnalyticsScript(), `https://campus.test${pathname}`, "", false, "loading",
+      await getAnalyticsScript(), `https://campus.syu.kr${pathname}`, "", false, "loading",
     );
     expect(analyticsWindow.gtag).toEqual(expect.any(Function));
     expect(analyticsWindow.setTimeout).not.toHaveBeenCalled();
@@ -182,7 +208,7 @@ describe("Meet invitation analytics privacy", () => {
 
   it("honors a privacy lock enabled while waiting for window load", async () => {
     const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
-      await getAnalyticsScript(), "https://campus.test/more", "", false, "loading",
+      await getAnalyticsScript(), "https://campus.syu.kr/more", "", false, "loading",
     );
     analyticsWindow[ANALYTICS_DISABLE_KEY] = true;
     analyticsWindow.addEventListener.mock.calls[0][1]();
@@ -194,13 +220,13 @@ describe("Meet invitation analytics privacy", () => {
   it.each(["/more/meet/dummy-private-invite", "/en/more/meet/dummy-private-invite/"])(
     "removes the previous invitation from a public document's referrer (%s)", async (pathname) => {
       const { analyticsWindow } = runAnalyticsBootstrap(
-        await getAnalyticsScript(), "https://campus.test/more?filter=value#section",
-        `https://campus.test${pathname}?private=query#fragment`,
+        await getAnalyticsScript(), "https://campus.syu.kr/more?filter=value#section",
+        `https://campus.syu.kr${pathname}?private=query#fragment`,
       );
       const commands = analyticsWindow.dataLayer?.map((args) => Array.from(args));
       expect(commands?.find(([command]) => command === "config")).toEqual([
         "config", "G-SD8QFQWFVQ",
-        { page_location: "https://campus.test/more", page_referrer: "https://campus.test" },
+        { page_location: "https://campus.syu.kr/more", page_referrer: "https://campus.syu.kr" },
       ]);
       expect(JSON.stringify(commands)).not.toContain("dummy-private-invite");
     },
@@ -208,13 +234,13 @@ describe("Meet invitation analytics privacy", () => {
 
   it("preserves the public queue, global gtag, and query/hash removal", async () => {
     const { analyticsWindow, analyticsDocument } = runAnalyticsBootstrap(
-      await getAnalyticsScript(), "https://campus.test/more/meet?private=query#fragment",
+      await getAnalyticsScript(), "https://campus.syu.kr/more/meet?private=query#fragment",
       "https://example.test/public?private=query#fragment",
     );
     const commands = analyticsWindow.dataLayer?.map((args) => Array.from(args));
     expect(commands?.find(([command]) => command === "config")).toEqual([
       "config", "G-SD8QFQWFVQ",
-      { page_location: "https://campus.test/more/meet", page_referrer: "https://example.test/public" },
+      { page_location: "https://campus.syu.kr/more/meet", page_referrer: "https://example.test/public" },
     ]);
     analyticsWindow.gtag!("event", "public-event");
     expect(Array.from(analyticsWindow.dataLayer!.at(-1)!)).toEqual(["event", "public-event"]);

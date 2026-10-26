@@ -1,177 +1,87 @@
 "use server";
 
-import { readFile, readdir } from "node:fs/promises";
-import path from "path";
+import type { Locale } from "./i18n/routing";
+import type { ManagedContentRecord, NoticeOriginalMetadata, PublicManagedPublication } from "@/types/managed-content";
+import { getPublicManagedContentRecords, getPublicManagedContentRecord, isVisiblePublication } from "./server/public-managed-content";
+import { createPlainTextExcerpt, getServiceNoticePath, getRepositoryServiceNotices, getRepositoryServiceNoticeBySlug, readRepositoryManagedContent } from "./service-notice-repository";
+import type { ServiceNotice, ServiceNoticeDetail } from "./service-notice-repository";
+export type { ServiceNotice, ServiceNoticeDetail } from "./service-notice-repository";
 
-const NOTICES_DIR = path.join(process.cwd(), "public", "service-notices");
-const SERVICE_NOTICE_SLUG_PATTERN = /^[0-9A-Za-z][0-9A-Za-z-]*$/;
-
-export interface ServiceNotice {
-  id: string;
-  slug: string;
-  title: string;
-  date: string;
-  author: string;
-  excerpt?: string;
-  description?: string;
+function databaseOnly() {
+  const mode = process.env.SERVICE_NOTICES_SOURCE;
+  if (mode && mode !== "hybrid" && mode !== "database") throw new Error("Invalid service notice source mode");
+  if (mode === "database" && !process.env.FIREBASE_SERVICE_ACCOUNT) throw new Error("Service notice database is not configured");
+  return mode === "database";
 }
 
-export interface ServiceNoticeDetail extends ServiceNotice {
-  content: string;
+export async function getRepositoryManagedContent(): Promise<ManagedContentRecord[]> {
+  if (databaseOnly()) return [];
+  return readRepositoryManagedContent();
 }
 
-/**
- * 마크다운 파일의 frontmatter와 컨텐츠를 파싱
- */
-function parseFrontmatter(content: string): {
-  metadata: Record<string, string>;
-  body: string;
-} {
-  // Windows/Unix 줄바꿈 호환성: \r\n을 \n으로 정규화
-  const normalizedContent = content.replace(/\r\n/g, "\n");
-
-  // Frontmatter 매칭: --- ... --- 패턴
-  const frontmatterMatch = normalizedContent.match(
-    /^---\n([\s\S]*?)\n---\n([\s\S]*)$/,
-  );
-
-  if (!frontmatterMatch) {
-    return { metadata: {}, body: content };
-  }
-
-  const yamlContent = frontmatterMatch[1];
-  const body = frontmatterMatch[2];
-
-  const metadata: Record<string, string> = {};
-
-  // YAML 파싱: key: value 형식
-  yamlContent.split("\n").forEach((line) => {
-    line = line.trim();
-    if (!line || line.startsWith("#")) return; // 빈 줄이나 주석 무시
-
-    const colonIndex = line.indexOf(":");
-    if (colonIndex === -1) return;
-
-    const key = line.substring(0, colonIndex).trim();
-    let value = line.substring(colonIndex + 1).trim();
-
-    // 따옴표 제거 (앞뒤 따옴표)
-    if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1);
-    }
-
-    metadata[key] = value;
-  });
-
-  return { metadata, body };
+function noticeSummary(summary: string, content: string, metadata: NoticeOriginalMetadata | undefined, english: boolean) {
+  const original = english ? metadata?.english : metadata;
+  if (original?.excerpt !== undefined && summary === original.excerpt.slice(0, 300).trim()) return { excerpt: original.excerpt, description: original.description ?? createPlainTextExcerpt(summary || content, 160) };
+  return { excerpt: createPlainTextExcerpt(summary || content, 300), description: createPlainTextExcerpt(summary || content, 160) };
 }
 
-function getServiceNoticePath(slug: string): string | null {
-  if (!SERVICE_NOTICE_SLUG_PATTERN.test(slug)) {
-    return null;
-  }
-
-  const noticesDir = path.resolve(NOTICES_DIR);
-  const filePath = path.resolve(noticesDir, `${slug}.md`);
-  const noticesDirPrefix = `${noticesDir}${path.sep}`;
-
-  if (!filePath.startsWith(noticesDirPrefix)) {
-    return null;
-  }
-
-  return filePath;
-}
-
-function createPlainTextExcerpt(content: string, maxLength: number): string {
-  const plainText = content
-    .replace(/\r\n/g, "\n")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !/^([-*_])\1{2,}$/.test(line))
-    .map((line) =>
-      line
-        .replace(/^#{1,6}\s+/, "")
-        .replace(/^[-*+]\s+/, "")
-        .replace(/^\d+\.\s+/, "")
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-        .replace(/[*_`>#~]/g, "")
-        .trim(),
-    )
-    .filter(Boolean)
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (plainText.length <= maxLength) {
-    return plainText;
-  }
-
-  return `${plainText.slice(0, maxLength).trimEnd()}...`;
-}
-
-function createServiceNotice(slug: string, metadata: Record<string, string>, body: string): ServiceNotice {
-  const descriptionSource = metadata.description || body;
+function managedNotice(record: PublicManagedPublication, locale: Locale, repository?: ServiceNoticeDetail): ServiceNoticeDetail | null {
+  if (!isVisiblePublication(record) || record.published?.kind !== "notice") return null;
+  const publication = record.published;
+  const english = locale === "en" ? publication.english : undefined;
+  const matchingRepository = repository && publication.title === repository.title && publication.content === repository.content && publication.summary === repository.excerpt;
+  const title = english?.title || publication.title;
+  const content = english?.content || publication.content;
+  const summary = english?.summary || publication.summary;
+  const metadata = record.noticeMetadata;
+  const date = metadata?.date ?? repository?.date ?? record.publishedAt;
+  if (!date) return null;
   return {
-    id: slug.split("-")[0],
-    slug,
-    title: metadata.title || "무제",
-    date: metadata.date || new Date().toISOString().split("T")[0],
-    author: metadata.author || "시스템",
-    excerpt: createPlainTextExcerpt(descriptionSource, 300),
-    description: createPlainTextExcerpt(descriptionSource, 160),
+    id: metadata?.publicId ?? repository?.id ?? publication.slug, slug: publication.slug, title,
+    content, date, author: metadata?.author ?? repository?.author ?? "SYU CAMPUS",
+    lang: english ? "en" : metadata?.lang ?? (matchingRepository ? repository.lang : "ko"),
+    startsAt: publication.startsAt, endsAt: publication.endsAt,
+    ...(record.publishedUpdatedAt || record.publishedAt ? { modifiedAt: record.publishedUpdatedAt ?? record.publishedAt! } : {}),
+    ...noticeSummary(summary, content, metadata, Boolean(english)),
   };
 }
 
-function isMissingFile(error: unknown): boolean {
-  return typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT";
+export async function getAllServiceNotices(locale: Locale = "ko"): Promise<ServiceNotice[]> {
+  const [repository, records] = await Promise.all([databaseOnly() ? [] : getRepositoryServiceNotices(locale), getPublicManagedContentRecords()]);
+  const merged = new Map(repository.map(notice => [notice.slug, notice]));
+  for (const record of records) {
+    if (record.published && record.published.kind !== "notice") continue;
+    if (!isVisiblePublication(record) || record.published?.kind !== "notice") { merged.delete(record.id);continue; }
+    const original = merged.get(record.id);
+    const publication = record.published;
+    const english = locale === "en" ? publication.english : undefined;
+    const metadata = record.noticeMetadata;
+    const date = metadata?.date ?? original?.date ?? record.publishedAt;
+    if (!date) { merged.delete(record.id);continue; }
+    const title = english?.title || publication.title, summary = english?.summary || publication.summary;
+    merged.set(publication.slug, {
+      id: metadata?.publicId ?? original?.id ?? publication.slug, slug: publication.slug, title,
+      date, author: metadata?.author ?? original?.author ?? "SYU CAMPUS", lang: english ? "en" : metadata?.lang ?? original?.lang ?? "ko",
+      ...noticeSummary(summary, title, metadata, Boolean(english)),
+      startsAt: publication.startsAt, endsAt: publication.endsAt,
+      ...(record.publishedUpdatedAt || record.publishedAt ? { modifiedAt: record.publishedUpdatedAt ?? record.publishedAt! } : {}),
+    });
+  }
+  return [...merged.values()].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
-/**
- * 모든 서비스 공지 조회 (목록)
- */
-export async function getAllServiceNotices(): Promise<ServiceNotice[]> {
-  let files: string[];
-  try {
-    files = (await readdir(NOTICES_DIR)).filter((file) => file.endsWith(".md"));
-  } catch (error) {
-    if (isMissingFile(error)) return [];
-    throw error;
+export async function getServiceNoticeBySlug(slug: string, locale: Locale = "ko"): Promise<ServiceNoticeDetail | null> {
+  if (!getServiceNoticePath(slug)) return null;
+  if (databaseOnly()) {
+    const record = await getPublicManagedContentRecord(slug);
+    return record ? managedNotice(record, locale) : null;
   }
-  const notices = await Promise.all(files.map(async (file) => {
-    const filePath = path.join(NOTICES_DIR, file);
-    const content = await readFile(filePath, "utf-8");
-    const { metadata, body } = parseFrontmatter(content);
-    return createServiceNotice(file.replace(".md", ""), metadata, body);
-  }));
-  return notices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
-/**
- * 특정 서비스 공지 상세 조회
- */
-export async function getServiceNoticeBySlug(
-  slug: string,
-): Promise<ServiceNoticeDetail | null> {
-  const filePath = getServiceNoticePath(slug);
-
-  if (!filePath) {
-    return null;
+  const [repository, record] = await Promise.all([getRepositoryServiceNoticeBySlug(slug, locale), getPublicManagedContentRecord(slug)]);
+  if (!record) return repository;
+  const original = locale === "ko" ? repository : await getRepositoryServiceNoticeBySlug(slug);
+  const managed = managedNotice(record, locale, original ?? undefined);
+  if (managed && locale === "en" && record.published?.kind === "notice" && !record.published.english && original && record.published.title === original.title && record.published.content === original.content && record.published.summary === original.excerpt) {
+    return repository ? { ...repository, startsAt: record.published.startsAt, endsAt: record.published.endsAt, ...(record.publishedUpdatedAt || record.publishedAt ? { modifiedAt: record.publishedUpdatedAt ?? record.publishedAt! } : {}) } : null;
   }
-
-  let content: string;
-  try {
-    content = await readFile(filePath, "utf-8");
-  } catch (error) {
-    if (isMissingFile(error)) return null;
-    throw error;
-  }
-  const { metadata, body } = parseFrontmatter(content);
-  return {
-    ...createServiceNotice(slug, metadata, body),
-    content: body,
-  };
+  return managed;
 }

@@ -111,12 +111,16 @@ export default function MeetRoomPage({ params }: PageProps) {
       const roomData = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(roomData, text));
+        setError(getMeetRoomErrorMessage(roomData, text, text.loadFailed));
+        return;
       }
 
+      if (!roomData?.room || !Array.isArray(roomData.slots) || !Array.isArray(roomData.participants)) {
+        throw new Error("Invalid room response");
+      }
       setData(roomData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : text.loadFailed);
+    } catch {
+      setError(text.loadFailed);
     } finally {
       setIsLoading(false);
     }
@@ -360,7 +364,8 @@ export default function MeetRoomPage({ params }: PageProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetRoomErrorMessage(result, text));
+        setError(getMeetRoomErrorMessage(result, text, text.errors.saveFailed));
+        return;
       }
 
       if (typeof result.editToken === "string") {
@@ -377,8 +382,8 @@ export default function MeetRoomPage({ params }: PageProps) {
 
       setStatus(text.savedStatus);
       await loadRoom();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : text.errors.saveFailed);
+    } catch {
+      setError(text.errors.saveFailed);
     } finally {
       setIsSaving(false);
       setOverwriteConfirmOpen(false);
@@ -399,6 +404,7 @@ export default function MeetRoomPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <Container className="py-6 sm:py-8">
+        <h1 className="mb-6">{dictionary.pages.meet.title}</h1>
         <Card hover={false}>
           <p className="text-sm text-neutral-600">{text.loading}</p>
         </Card>
@@ -409,8 +415,12 @@ export default function MeetRoomPage({ params }: PageProps) {
   if (!data) {
     return (
       <Container className="py-6 sm:py-8">
+        <h1 className="mb-6">{dictionary.pages.meet.title}</h1>
         <Card className="border border-red-200 bg-red-50" hover={false}>
-          <p className="text-sm text-red-700">{error || text.notFound}</p>
+          <p className="text-sm text-red-700" role="alert">{error || text.notFound}</p>
+          <Button type="button" variant="secondary" className="mt-4 mr-2" onClick={() => void loadRoom()}>
+            {dictionary.home.dashboard.retry}
+          </Button>
           <Link
             href={localizePath("/more/meet", locale)}
             className="ui-button ui-button-danger mt-4 inline-block rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
@@ -772,6 +782,7 @@ export default function MeetRoomPage({ params }: PageProps) {
 function getMeetRoomErrorMessage(
   payload: unknown,
   text: MeetRoomDictionary,
+  fallback: string,
 ): string {
   const response =
     payload && typeof payload === "object"
@@ -782,7 +793,7 @@ function getMeetRoomErrorMessage(
   if (codeKey) return text.errors[codeKey];
 
   const error = response.error;
-  if (typeof error !== "string") return text.errors.saveFailed;
+  if (typeof error !== "string") return fallback;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
   if (rateLimitSeconds) {
@@ -790,7 +801,7 @@ function getMeetRoomErrorMessage(
   }
 
   const key = meetRoomErrorKeys[error];
-  return key ? text.errors[key] : text.errors.saveFailed;
+  return key ? text.errors[key] : fallback;
 }
 
 function formatMeetSlotLabel(slot: string, locale: Locale): string {

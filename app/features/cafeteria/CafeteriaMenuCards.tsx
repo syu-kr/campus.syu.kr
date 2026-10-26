@@ -8,6 +8,7 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { isCafeteriaClosedDay, isClosedMealItems } from "@/lib/cafeteria";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import type { CafeteriaMenu, MenuItem } from "@/types";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 
 type MealColor = "blue" | "green" | "red";
 type CafeteriaDictionary = Dictionary["pages"]["cafeteria"];
@@ -17,36 +18,43 @@ interface MealSectionProps {
   color: MealColor;
   items: MenuItem[];
   dividerColor?: string;
+  menuId: string;
+  meal: "breakfast" | "dinner";
 }
 
 interface LunchSectionProps {
   lunch: CafeteriaMenu["lunch"];
   highlighted?: boolean;
+  menuId: string;
 }
 
-export function MealItemCard({ item }: { item: MenuItem }) {
+export function MealItemCard({ item, name = item.name, allergens = item.allergens, lang = "ko" }: { item: MenuItem; name?: string; allergens?: string[]; lang?: string }) {
   return (
     <div className="text-sm">
-      <p className="text-neutral-700 font-medium">{item.name}</p>
+      <p lang={lang} className="text-neutral-700 font-medium">{name}</p>
       {item.calories && (
         <p className="text-xs text-neutral-500">{item.calories}kcal</p>
       )}
-      {item.allergens && (
-        <p className="text-xs text-red-600 flex items-center">
+      {allergens && (
+        <p lang={lang} className="text-xs text-red-600 flex items-center">
           <Icon
             name="alert-circle"
             size={14}
             className="mr-1 flex-shrink-0"
             color="rgb(220, 38, 38)"
           />
-          {item.allergens.join(", ")}
+          {allergens.join(", ")}
         </p>
       )}
     </div>
   );
 }
 
-function MealSection({ title, color, items }: MealSectionProps) {
+function mealFields(items: MenuItem[], prefix: string) {
+  return Object.fromEntries(items.flatMap((item, index) => [[`${prefix}.${index}`, item.name], ...(item.allergens ?? []).map((allergen, allergenIndex) => [`allergens.${prefix}.${index}.${allergenIndex}`, allergen])]));
+}
+
+function MealSection({ title, color, items, menuId, meal }: MealSectionProps) {
   const text = useDictionary().pages.cafeteria;
 
   if (isClosedMealItems(items)) {
@@ -65,11 +73,12 @@ function MealSection({ title, color, items }: MealSectionProps) {
       <Badge color={color} size="sm" className="mb-2">
         {title}
       </Badge>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <PublicContentTranslation source={{ kind: "cafeteria", id: menuId }}
+        content={mealFields(items, meal)}>{translation => <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.map((item, idx) => (
-          <MealItemCard key={`${item.name}-${idx}`} item={item} />
+          <MealItemCard key={`${item.name}-${idx}`} item={item} name={translation.text(`${meal}.${idx}`, item.name)} allergens={item.allergens?.map((allergen, index) => translation.text(`allergens.${meal}.${idx}.${index}`, allergen))} lang={translation.lang} />
         ))}
-      </div>
+      </div>}</PublicContentTranslation>
     </div>
   );
 }
@@ -78,10 +87,14 @@ function LunchCorner({
   title,
   items,
   highlighted,
+  menuId,
+  corner,
 }: {
   title: string;
   items?: MenuItem[];
   highlighted?: boolean;
+  menuId: string;
+  corner: "a" | "b";
 }) {
   if (!items || items.length === 0) return null;
 
@@ -92,16 +105,17 @@ function LunchCorner({
       }`}
     >
       <p className="text-xs font-semibold text-green-700 mb-2">{title}</p>
-      <div className="space-y-2">
+      <PublicContentTranslation source={{ kind: "cafeteria", id: menuId }}
+        content={mealFields(items, `lunch.${corner}`)}>{translation => <div className="space-y-2">
         {items.map((item, idx) => (
-          <MealItemCard key={`${title}-${item.name}-${idx}`} item={item} />
+          <MealItemCard key={`${title}-${item.name}-${idx}`} item={item} name={translation.text(`lunch.${corner}.${idx}`, item.name)} allergens={item.allergens?.map((allergen, index) => translation.text(`allergens.lunch.${corner}.${idx}.${index}`, allergen))} lang={translation.lang} />
         ))}
-      </div>
+      </div>}</PublicContentTranslation>
     </div>
   );
 }
 
-function LunchSection({ lunch, highlighted }: LunchSectionProps) {
+function LunchSection({ lunch, highlighted, menuId }: LunchSectionProps) {
   const text = useDictionary().pages.cafeteria;
 
   if (isClosedMealItems(lunch.a) && isClosedMealItems(lunch.b)) {
@@ -121,8 +135,8 @@ function LunchSection({ lunch, highlighted }: LunchSectionProps) {
         {text.lunch}
       </Badge>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LunchCorner title={text.cornerA} items={lunch.a} highlighted={highlighted} />
-        <LunchCorner title={text.cornerB} items={lunch.b} highlighted={highlighted} />
+        <LunchCorner title={text.cornerA} items={lunch.a} highlighted={highlighted} menuId={menuId} corner="a" />
+        <LunchCorner title={text.cornerB} items={lunch.b} highlighted={highlighted} menuId={menuId} corner="b" />
       </div>
     </div>
   );
@@ -151,11 +165,11 @@ function MenuSections({
 
   return (
     <div className="space-y-4">
-      <MealSection title={text.breakfast} color="blue" items={menu.breakfast} />
+      <MealSection title={text.breakfast} color="blue" items={menu.breakfast} menuId={menu.id} meal="breakfast" />
       <hr className={dividerColor} />
-      <LunchSection lunch={menu.lunch} highlighted={highlighted} />
+      <LunchSection lunch={menu.lunch} highlighted={highlighted} menuId={menu.id} />
       <hr className={dividerColor} />
-      <MealSection title={text.dinner} color="red" items={menu.dinner} />
+      <MealSection title={text.dinner} color="red" items={menu.dinner} menuId={menu.id} meal="dinner" />
     </div>
   );
 }
@@ -325,9 +339,9 @@ export function TodayMenuCardFrame({
 
 export function TodayMenuCard({ menu }: { menu: CafeteriaMenu }) {
   return (
-    <TodayMenuCardFrame date={menu.date} location={menu.location}>
+    <PublicContentTranslation source={{ kind: "cafeteria", id: menu.id }} content={{ location: menu.location }}>{translation => <TodayMenuCardFrame date={menu.date} location={translation.text("location", menu.location)}>
       <MenuSections menu={menu} />
-    </TodayMenuCardFrame>
+    </TodayMenuCardFrame>}</PublicContentTranslation>
   );
 }
 
@@ -379,9 +393,7 @@ export function WeeklyMenuCard({
             )}
           </h2>
         </div>
-        <p className="text-sm text-neutral-600">
-          {menu.location}
-        </p>
+        <PublicContentTranslation source={{ kind: "cafeteria", id: menu.id }} content={{ location: menu.location }}>{translation => <p lang={translation.lang} className="text-sm text-neutral-600">{translation.text("location", menu.location)}</p>}</PublicContentTranslation>
       </div>
 
       {isToday ? (

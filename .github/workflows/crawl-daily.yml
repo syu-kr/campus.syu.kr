@@ -37,7 +37,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: crawl-data-pages
+  group: ${{ vars.PUBLIC_DATA_BACKEND == 'firebase' && 'public-data-firebase' || 'crawl-data-pages' }}
   cancel-in-progress: false
 
 jobs:
@@ -53,6 +53,9 @@ jobs:
       changed: ${{ steps.prepare.outputs.changed }}
       version: ${{ steps.prepare.outputs.version }}
     env:
+      PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
+      PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
       CRAWL_ACADEMIC_NOTICES_URL: ${{ vars.CRAWL_ACADEMIC_NOTICES_URL }}
       CRAWL_SCHOLARSHIP_NOTICES_URL: ${{ vars.CRAWL_SCHOLARSHIP_NOTICES_URL }}
       CRAWL_CAMPUS_NOTICES_URL: ${{ vars.CRAWL_CAMPUS_NOTICES_URL }}
@@ -99,7 +102,14 @@ jobs:
         run: npm ci --ignore-scripts --no-audit
 
       - name: Restore current crawl data snapshot
-        run: npm run pull:crawl-data
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ "$PUBLIC_DATA_BACKEND" = "firebase" ]; then
+            npm run data:snapshot -- --pull-current
+          else
+            npm run pull:crawl-data
+          fi
 
       - name: Run independent daily crawlers with validated fallback
         env:
@@ -132,7 +142,15 @@ jobs:
           ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT: ${{ vars.ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT }}
         run: npm run crawl:daily -- --ai-only
 
+      - name: Publish validated Firebase snapshot
+        id: firebase
+        if: env.PUBLIC_DATA_BACKEND == 'firebase'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: npm run data:snapshot -- --publish --scope daily
+
       - name: Prepare versioned Pages artifact
+        if: env.PUBLIC_DATA_BACKEND != 'firebase'
         id: prepare
         run: npm run prepare:crawl-data-pages -- "$RUNNER_TEMP/crawl-data-pages-${GITHUB_RUN_ID}"
 

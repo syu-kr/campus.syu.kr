@@ -1,5 +1,5 @@
 "use client";
-import { AcademicTimetablePresentation, AcademicTimetableCell } from "@/app/features/academic/AcademicTimetablePresentation";
+import { AcademicTimetablePresentation, AcademicTimetableCell, publicCourseFields } from "@/app/features/academic/AcademicTimetablePresentation";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync, preload } from "react-dom";
@@ -16,6 +16,7 @@ import { M3Select } from "@/app/components/M3Select";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { PublicContentTranslation, useContentTranslation } from "@/app/components/ContentTranslation";
 import { fetchJson } from "@/lib/fetch-json";
 import type { Dictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/routing";
@@ -721,7 +722,7 @@ export function TimetableBuilderClient() {
       );
 
       if (!share.success || !share.shareId || !share.ownerToken) {
-        setShareMessage(share.error ?? text.shareCreateFailed);
+        setShareMessage(text.shareCreateFailed);
         setShareFallbackUrl("");
         return;
       }
@@ -883,7 +884,7 @@ export function TimetableBuilderClient() {
             </p>
             {response.data.updatedAt && (
               <p className="mt-1 text-xs text-neutral-500">
-                {text.sourceUpdatedAt}: {response.data.updatedAt}
+                {text.sourceUpdatedAt}: {formatSourceUpdatedAt(response.data.updatedAt, locale)}
               </p>
             )}
           </div>
@@ -1027,7 +1028,7 @@ export function TimetableBuilderClient() {
               ? text.shareLoading
               : shareMessage ||
                 (shouldLoadShareFromUrl
-                  ? shareResponse.error || text.shareLoadFailed
+                  ? text.shareLoadFailed
                   : "")}
           </p>
         )}
@@ -1076,18 +1077,16 @@ export function TimetableBuilderClient() {
       </section>
 
       {isLoading ? (
-        <div className="space-y-6">
-          <Skeleton height="620px" />
+        <div className="m3-timetable-loading space-y-6" role="status" aria-live="polite" aria-busy="true">
+          <p>{dictionary.errorBoundary.loading}</p>
+          <Skeleton height="360px" />
           <Skeleton count={3} height="120px" />
         </div>
       ) : !hasCourses ? (
         <StateCard
           type={isError || !response.success ? "error" : "info"}
-          title={text.loadFailedTitle}
-          message={
-            response.error ??
-            text.loadFailedMessage
-          }
+          title={isError || !response.success ? text.loadFailedTitle : text.emptyCoursesTitle}
+          message={isError || !response.success ? text.loadFailedMessage : text.emptyCoursesMessage}
           action={
             <button
               type="button"
@@ -1747,6 +1746,15 @@ function CoursePicker({
           />
         </div>
 
+        <FilterSelect
+          id={`${idPrefix}-department-filter`}
+          label={text.department}
+          value={departmentFilter}
+          onChange={onDepartmentFilterChange}
+          options={departments}
+          allLabel={text.allDepartments}
+        />
+
         <details open={!collapseFilters || undefined} className="group/filters">
           <summary className={clsx(
             "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-neutral-800 [&::-webkit-details-marker]:hidden",
@@ -1830,14 +1838,6 @@ function CoursePicker({
                 compact ? "grid-cols-1 2xl:grid-cols-3" : "sm:grid-cols-3",
               )}
             >
-              <FilterSelect
-                id={`${idPrefix}-department-filter`}
-                label={text.department}
-                value={departmentFilter}
-                onChange={onDepartmentFilterChange}
-                options={departments}
-                allLabel={text.allDepartments}
-              />
               <FilterSelect
                 id={`${idPrefix}-grade-filter`}
                 label={text.grade}
@@ -1982,6 +1982,9 @@ function FilterSelect({
   allLabel: string;
   getOptionLabel?: (value: string) => string;
 }) {
+  const departmentOptions = id.endsWith("-department-filter") ? [...options].sort((first, second) => first.localeCompare(second, "en-US")) : [];
+  const translation = useContentTranslation({ kind: "course", id: "__departments__" }, Object.fromEntries(departmentOptions.map((option, index) => [`departments.${index}`, option])));
+  const optionLabel = (option: string) => departmentOptions.length ? translation.text(`departments.${departmentOptions.indexOf(option)}`, getOptionLabel ? getOptionLabel(option) : option) : getOptionLabel ? getOptionLabel(option) : option;
   return (
     <div>
       <label
@@ -2000,7 +2003,7 @@ function FilterSelect({
             { value: "", label: allLabel },
             ...options.map((option) => ({
               value: option,
-              label: getOptionLabel ? getOptionLabel(option) : option,
+              label: optionLabel(option),
             })),
           ]}
         />
@@ -2013,7 +2016,7 @@ function FilterSelect({
         <option value="">{allLabel}</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {getOptionLabel ? getOptionLabel(option) : option}
+            {optionLabel(option)}
           </option>
         ))}
       </select>}
@@ -2046,6 +2049,7 @@ function CourseResultCard({
 }) {
   const text = useDictionary().pages.timetable;
   const locale = useLocale();
+  const translation = useContentTranslation({ kind: "course", id: course.id }, publicCourseFields(course));
   const visibleSearchMatches = getLectureCourseSearchMatches(
     course,
     searchQuery,
@@ -2076,17 +2080,13 @@ function CourseResultCard({
             )}
             {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
-          <h3 className="break-keep text-base font-bold text-neutral-900">
-            {course.courseName}
+          <h3 lang={translation.lang} className="break-keep text-base font-bold text-neutral-900">
+            {translation.text("courseName", course.courseName)}
           </h3>
           <p className="mt-1 text-sm text-neutral-600">
-            {joinParts([
-              course.professor || text.professorMissing,
-              course.departmentName,
-              course.grade
-                ? formatGrade(course.grade.toString(), text, locale)
-                : undefined,
-            ])}
+            <span lang={course.professor ? "ko" : locale} translate="no">{course.professor || text.professorMissing}</span>
+            {course.departmentName && <> · <span lang={translation.lang}>{translation.text("departmentName", course.departmentName)}</span></>}
+            {course.grade ? <> · {formatGrade(course.grade.toString(), text, locale)}</> : null}
           </p>
           {visibleSearchMatches.length > 0 && (
             <p className="mt-2 text-xs font-semibold text-primary-700">
@@ -2104,7 +2104,7 @@ function CourseResultCard({
             <div
               className="flex flex-wrap justify-end gap-1"
               role="group"
-              aria-label={`${course.courseName} ${text.addToTimetable}`}
+              aria-label={`${translation.text("courseName", course.courseName)} ${text.addToTimetable}`}
             >
               {timetableMemberships.map((membership) => (
                 <button
@@ -2143,22 +2143,22 @@ function CourseResultCard({
       </div>
 
       <dl className="mt-3 grid gap-2 text-sm text-neutral-700">
-        <CourseMeta label={text.time} value={course.classTime || text.timeMissing} />
-        <CourseMeta label={text.place} value={course.place || text.placeMissing} />
+        <CourseMeta label={text.time} value={course.classTime || text.timeMissing} translate="no" />
+        <CourseMeta label={text.place} value={translation.text("place", course.place || text.placeMissing)} />
         {course.areaType && (
-          <CourseMeta label={text.areaType} value={course.areaType} />
+          <CourseMeta label={text.areaType} value={translation.text("areaType", course.areaType)} />
         )}
-        {course.note && <CourseMeta label={text.note} value={course.note} />}
+        {course.note && <CourseMeta label={text.note} value={translation.text("note", course.note)} />}
       </dl>
     </article>
   );
 }
 
-function CourseMeta({ label, value }: { label: string; value: string }) {
+function CourseMeta({ label, value, translate }: { label: string; value: string; translate?: "no" }) {
   return (
     <div className="grid grid-cols-[3rem_1fr] gap-2">
       <dt className="font-semibold text-neutral-500">{label}</dt>
-      <dd className="break-keep text-neutral-800">{value}</dd>
+      <dd translate={translate} className="break-keep text-neutral-800">{value}</dd>
     </div>
   );
 }
@@ -2285,10 +2285,9 @@ function TimetableGrid({
                 >
                   <div className="space-y-1">
                     {cellCourses.map((course) => (
-                      <AcademicTimetableCell
+                      <PublicContentTranslation key={course.id} source={{ kind: "course", id: course.id }} content={publicCourseFields(course)}>{translation => <AcademicTimetableCell
                         course={course}
                         onOpenCourse={onOpenCourse}
-                        key={course.id}
                         className={clsx(
                           "min-w-0 rounded border px-1 py-1 text-[11px] leading-4 sm:px-2 sm:py-1.5",
                           conflictCourseIds.has(course.id)
@@ -2297,15 +2296,15 @@ function TimetableGrid({
                         )}
                       >
                         <p className="line-clamp-2 break-words font-bold sm:text-xs">
-                          {course.courseName}
+                          {translation.text("courseName", course.courseName)}
                         </p>
-                        <p className="mt-0.5 break-words text-[10px] text-neutral-700 sm:text-[11px]">
+                        <p translate="no" className="mt-0.5 break-words text-[10px] text-neutral-700 sm:text-[11px]">
                           {course.classTime || text.timeMissing}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-neutral-600 sm:line-clamp-2 sm:block">
-                          {joinParts([course.professor, course.place])}
+                          <span lang="ko" translate="no">{course.professor}</span>{course.professor && course.place ? " · " : ""}{translation.text("place", course.place ?? "")}
                         </p>
-                      </AcademicTimetableCell>
+                      </AcademicTimetableCell>}</PublicContentTranslation>
                     ))}
                   </div>
                 </div>
@@ -2405,6 +2404,7 @@ function SelectedCourseRow({
   onRemove: () => void;
 }) {
   const text = useDictionary().pages.timetable;
+  const translation = useContentTranslation({ kind: "course", id: course.id }, publicCourseFields(course));
 
   return (
     <div
@@ -2424,15 +2424,11 @@ function SelectedCourseRow({
             )}
             {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
-          <p className="break-keep font-bold text-neutral-900">
-            {course.courseName}
+          <p lang={translation.lang} className="break-keep font-bold text-neutral-900">
+            {translation.text("courseName", course.courseName)}
           </p>
           <p className="mt-1 text-sm text-neutral-600">
-            {joinParts([
-              course.classTime || text.timeMissing,
-              course.professor || text.professorMissing,
-              course.place || text.placeMissing,
-            ])}
+            <span translate="no">{course.classTime || text.timeMissing}</span> · <span lang={course.professor ? "ko" : undefined} translate="no">{course.professor || text.professorMissing}</span> · {translation.text("place", course.place || text.placeMissing)}
           </p>
         </div>
         <button
@@ -2519,13 +2515,26 @@ function formatSemesterBaseLabel(
       .trim();
   }
 
-  const sourceLabel = [normalizedYear, normalizedSemester]
+  const term = normalizedSemester.match(/^(\d+)\s*(?:학기)?(?:\s*(정규|계절))?$/);
+  const semesterLabel = term ? `Semester ${term[1]}${term[2] === "정규" ? " (regular)" : term[2] === "계절" ? " (seasonal)" : ""}`
+    : normalizedSemester.replace(/하계(?:계절)?학기/g, "Summer session").replace(/동계(?:계절)?학기/g, "Winter session");
+  const sourceLabel = [normalizedYear, semesterLabel]
     .filter(Boolean)
     .join(" ");
 
   return sourceLabel
     ? `Based on ${sourceLabel} ${text.semesterBase}.`
     : text.semesterBase;
+}
+
+function formatSourceUpdatedAt(value: string, locale: Locale) {
+  if (locale === "ko") return value;
+  const match = value.trim().match(/^['’]?(\d{2}|\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})(?:\.?\s*\([^)]*\))?\.?$/);
+  if (!match) return value;
+  const year = Number(match[1]) + (match[1].length === 2 ? 2000 : 0), month = Number(match[2]), day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return value;
+  return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(date);
 }
 
 function getDayLabel(day: LectureDay, text: TimetableDictionary) {
@@ -2740,8 +2749,4 @@ function getCoursesForTimetable(
 
 function formatTimetableLabel(index: number, text: TimetableDictionary): string {
   return `${text.timetable} ${index + 1}`;
-}
-
-function joinParts(parts: Array<string | undefined>) {
-  return parts.filter(Boolean).join(" · ");
 }

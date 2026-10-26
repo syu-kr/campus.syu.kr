@@ -43,3 +43,9 @@ it("uses the latest public detail inventory when a new sitemap is requested", as
   expect(urls).toContain("https://campus.syu.kr/announcements/campus/new");
   expect(urls).not.toContain("https://campus.syu.kr/announcements/sw/sw-1");
 });
+
+it("uses a managed notice publication timestamp rather than its saved draft time", async () => {
+  mocks.notices.mockResolvedValue([{ slug: "managed", date: "2026-10-01", modifiedAt: "2026-10-26T09:00:00Z" }]);
+  const entries = (await sitemap()).filter(entry => entry.url.endsWith("/service/notices/managed"));
+  expect(entries).toHaveLength(2);expect(entries.every(entry => entry.lastModified === "2026-10-26T09:00:00Z")).toBe(true);
+});

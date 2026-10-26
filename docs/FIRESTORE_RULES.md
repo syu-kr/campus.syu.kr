@@ -149,12 +149,15 @@ Firestore TTL은 보존 기간을 정책에 입력하는 방식이 아닙니다.
 | `admin_audit_logs` | `expires_at` | 관리자 작업 시점부터 365일 후 |
 | `roommate_sessions` | `expires_at` | 검증된 인증 시각부터 고정 30일 또는 12시간 |
 | `roommate_posts` | `expires_at` | 최초 완료·삭제와 원래 모집 마감 중 이른 시각부터 30일 후 |
+| `public_content_translation_fields` | `expires_at` | 공개 문구 번역 캐시 생성부터 30일 후 |
+| `public_content_translations` | `expires_at` | 기존 출처 단위 번역 캐시의 만료 시각 |
+| `public_content_translation_usage` | `expires_at` | 일별 예약량 기록 생성부터 2일 후 |
 
 `roommate_reports`와 `roommate_owner_state`에는 관리형 TTL을 설정하지 않습니다. 신고는 만료 직전 미처리 보존 종료의 최소 감사 기록을 같은 트랜잭션에 남겨야 하고, 작성자 상태는 유효한 보류와 활성 글을 다시 확인해야 하기 때문입니다. 일일 정리 스크립트가 신고 접수 후 30일, 비활성 작성자 최종 활동 후 90일 기준으로 처리합니다. 유효한 보류 중에는 과거 `expires_at`만으로 작성자 상태를 삭제하지 않습니다.
 
-Google Cloud Console의 Firestore **Time-to-live > Create Policy** 화면에서는 컬렉션 그룹 이름과 timestamp 필드 이름만 입력합니다. 표준 Firestore TTL 정책에는 만료 오프셋이나 단위를 별도로 설정하지 않습니다.
+Google Cloud Console의 Firestore **Time-to-live > Create Policy** 화면에서는 컬렉션 그룹 이름과 timestamp 필드 이름을 입력합니다. 콘솔에 선택적인 만료 오프셋이 있으면 **0**으로 유지합니다. 코드가 이미 절대 만료 시각을 기록하므로 보존 기간을 한 번 더 더하지 않습니다. [공식 TTL 설정 안내](https://firebase.google.com/docs/firestore/ttl)
 
-- 만료 오프셋 입력란이 없는 경우: 아무 값도 추가하지 않습니다.
+- 만료 오프셋 입력란이 없는 경우: 아무 값도 추가하지 않습니다. 입력란이 있으면 기본 0을 유지합니다.
 - 다른 관리 화면에서 오프셋과 단위를 반드시 요구하는 경우: `0 seconds`를 선택합니다.
 - `90 days`를 입력하지 않습니다. 코드가 이미 `expires_at`을 90일 후의 절대 시각으로 저장하므로, 정책에 90일을 추가하면 총 180일 가까이 보존될 수 있습니다.
 

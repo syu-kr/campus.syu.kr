@@ -23,7 +23,7 @@ Translate UI shell and interaction text:
 - Legal and privacy pages for the English route, with Korean originals kept authoritative
 - Common component fallback text and accessibility labels
 
-Keep source data in Korean unless a separate product decision is made:
+Keep authoritative source data in Korean. The approved English display layer may add reviewed aliases or automatic public-content translations without replacing these values:
 
 - University notice titles and bodies
 - Course names, department names, completion categories, and timetable source fields
@@ -32,7 +32,7 @@ Keep source data in Korean unless a separate product decision is made:
 - Library room names and original operating-hour labels
 - Any crawler output or official source payload stored under `public/data`
 
-The reason is reliability. These values come from official or source systems, change often, and may be legally or operationally important. Translating them manually would create drift between the source and the displayed value.
+These values come from official or source systems and can change often. Original IDs, selected values, search/filter keys, dates, credits, and saved progress remain authoritative. A translation is a separate reading aid.
 
 ## User-facing expectation
 
@@ -45,7 +45,18 @@ When source content is Korean-only, prefer one of these patterns:
 - Add a short notice that source content may remain Korean.
 - Provide a small alias only for stable high-level labels, such as `Academic Notices`, `Campus Map`, or `Cafeteria`.
 
-Do not machine-translate official notices, menus, course names, or legal source content inside the app without an explicit review process.
+The 2026-10-26 implementation adds an explicitly approved public-content translation layer:
+
+- Reviewed English service-notice variants are selected on `/en` only while their normalized source SHA256 matches the Korean original. Slugs, dates, authors, and page ordering are unchanged; stale variants fall back to the original.
+- Fixed place and room display aliases keep the Korean source available. They never change source IDs or seat-map ordering.
+- Selecting English automatically translates remaining Korean public fields in place. Existing UI dictionaries, reviewed variants and aliases remain preferred; per-item translation buttons and appended translation blocks are removed. The original remains readable on configuration, network, quota, stale-source, or translation failures. One page-level attribution/recovery area accompanies machine-translated content. Selecting Korean restores originals.
+- The server resolves allowlisted published IDs and fields itself. It accepts no arbitrary text, URLs, private records, or user input. Only strings containing Korean reach Google. Exact public phrases share a 30-day cache across sources and pages. Credentials, shared daily reservations, and provider calls remain server-side.
+- The interface compares the returned public original fields with the displayed snapshot before showing a translation. Long text leaves use deterministic bounded parts and requests; Markdown links/code/structure are preserved. No whole-page HTML or DOM is submitted or mutated outside React.
+- Personal timetable names/notes, graduation inputs/progress, inquiries, unpublished suggestions, roommate posts/reports, meet rooms/participants, emails, and administrator data are excluded.
+- English readers do not add machine-translated names to existing search/filter indexes. The original search conditions remain valid, and the Korean source is available for matching.
+- Existing legal pages retain their reviewed UI/original policy; they are not sent to the automatic translator. Historical legal text inside an English service-notice variant is an editorial translation of that published notice, with the Korean source authoritative.
+
+On 2026-10-26, a real public-title translation returned 200 and reserved 9 input characters; repeating it returned the cached result with 0 additional reserved characters. This is local provider/cache evidence, not a production deployment or billing-statement audit. Further quality sampling remains appropriate. Details: [content translation operations](CONTENT_TRANSLATION.md).
 
 ## Development rules
 

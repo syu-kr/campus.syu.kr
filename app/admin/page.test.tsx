@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { User } from "firebase/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdminSubmissionItem } from "@/types/submissions";
@@ -31,6 +31,8 @@ vi.mock("./RoommateAdmin", () => ({ RoommateAdmin: () => {
   const [session] = useState(() => ++authMock.roommateMounts);
   return <span data-testid="roommate-session">{session}</span>;
 } }));
+// This suite isolates the existing session boundary; dashboard navigation has its own tests.
+vi.mock("./AdminDashboard", () => ({ AdminDashboard: ({ children, roommates }: { children: ReactNode; roommates: ReactNode }) => <>{roommates}{children}</> }));
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -135,11 +137,12 @@ describe("admin submission authentication boundary", () => {
     await emitAuth(null);
     expect(screen.getByRole("button", { name: "로그인" })).toBeVisible();
     await emitAuth(fixtureUser("admin-b"));
-    await screen.findByText("B access denied");
+    expect(await screen.findByRole("alert")).toHaveTextContent("다시 로그인해 주세요");
 
     expectNoItem(oldItem);
     expect(screen.queryByText("1개 항목 선택됨")).not.toBeInTheDocument();
-    expect(screen.getByRole("checkbox", { name: "현재 페이지 항목 전체 선택" })).toBeDisabled();
+    expect(screen.queryByRole("checkbox", { name: "현재 페이지 항목 전체 선택" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "로그인" })).toBeVisible();
   });
 
   it("ignores an old account's list response after the new account has loaded", async () => {

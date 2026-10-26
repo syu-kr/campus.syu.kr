@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import "./timetable-font.css";
 
 import { Skeleton } from "@/app/components/Skeleton";
+import { LoadingStatus } from "@/app/components/PageLoadingSkeletons";
 import { TimetableBuilderClient } from "./TimetableBuilderClient";
 
 export default function TimetableWizardPage() {
@@ -14,7 +15,7 @@ export default function TimetableWizardPage() {
 
 function TimetablePageFallback() {
   return (
-    <div className="timetable-page mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 2xl:max-w-[112rem]">
+    <LoadingStatus className="timetable-page mx-auto w-full max-w-[88rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-8 2xl:max-w-[112rem]">
       <Skeleton height="240px" />
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_420px]">
         <Skeleton height="520px" />
@@ -23,6 +24,6 @@ function TimetablePageFallback() {
       <div className="mt-6">
         <Skeleton height="620px" />
       </div>
-    </div>
+    </LoadingStatus>
   );
 }

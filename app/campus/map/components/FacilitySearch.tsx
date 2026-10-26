@@ -4,6 +4,7 @@ import { useId, useState, useMemo } from "react";
 import { searchFacilities, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 import {
   useDictionary,
   useLocale,
@@ -85,9 +86,15 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
             </div>
           ) : (
             <div className="divide-y">
-              {results.map((result, idx) => (
-                <button
-                  key={`${result.building.id}-${result.facility?.id || "building"}-${idx}`}
+              {results.map((result, idx) => {
+                const floorIndex = result.building.floors.findIndex(floor => floor === result.floor);
+                const facilityIndex = result.floor?.facilities.findIndex(facility => facility === result.facility) ?? -1;
+                const prefix = `floors.${floorIndex}.facilities.${facilityIndex}`;
+                return <PublicContentTranslation key={`${result.building.id}-${result.facility?.id || "building"}-${idx}`} source={{ kind: "map", id: result.building.id }} content={{
+                  name: result.building.name,
+                  ...(result.facility?.name ? { [`${prefix}.name`]: result.facility.name } : {}),
+                  ...(result.facility?.description ? { [`${prefix}.description`]: result.facility.description } : {}),
+                }}>{translation => <button
                   type="button"
                   onClick={() => {
                     onSelect?.(result.building.id);
@@ -121,23 +128,23 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                     <div className="flex-1 min-w-0">
                       {result.facility ? (
                         <>
-                          <h4 className="font-semibold text-neutral-900 text-sm">
-                            {result.facility.name}
+                          <h4 lang={translation.lang} className="font-semibold text-neutral-900 text-sm">
+                            {translation.text(`${prefix}.name`, result.facility.name ?? "")}
                           </h4>
                           <p className="text-xs text-neutral-600 mt-0.5">
-                            {result.building.name}{" "}
+                            <span lang={translation.lang}>{translation.text("name", result.building.name)}</span>{" "}
                             {formatMapFloor(result.floor!.floor, locale, text)}
                           </p>
                           {result.facility.description && (
-                            <p className="text-xs text-neutral-500 mt-1">
-                              {result.facility.description}
+                            <p lang={translation.lang} className="text-xs text-neutral-500 mt-1">
+                              {translation.text(`${prefix}.description`, result.facility.description)}
                             </p>
                           )}
                         </>
                       ) : (
                         <>
-                          <h4 className="font-semibold text-neutral-900 text-sm">
-                            {result.building.name}
+                          <h4 lang={translation.lang} className="font-semibold text-neutral-900 text-sm">
+                            {translation.text("name", result.building.name)}
                           </h4>
                           <p className="text-xs text-neutral-600 mt-0.5">
                             {formatMapCountSummary(
@@ -154,8 +161,8 @@ export function FacilitySearch({ onSelect }: FacilitySearchProps) {
                       )}
                     </div>
                   </div>
-                </button>
-              ))}
+                </button>}</PublicContentTranslation>;
+              })}
             </div>
           )}
         </Card>

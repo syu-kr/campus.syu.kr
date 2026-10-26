@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/app/components/Badge";
 import { Card } from "@/app/components/Card";
@@ -12,10 +13,15 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "@/app/components/AnnouncementAiSummary";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
+import { announcementTranslationFields, splitPublicContentText } from "@/lib/content-translation";
 import { fetchCompetitionPage } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
+import { useListSearchNavigation } from "@/lib/use-list-search-navigation";
+import { useUrlHash } from "@/lib/use-url-hash";
 import type { Dictionary } from "@/lib/i18n";
 import { formatDateWithYear } from "@/lib/utils";
+import { competitionSourceFilters as sourceFilters, competitionStatusFilters as statusFilters, getCompetitionListQuery } from "@/lib/public-list-query";
 import type {
   CompetitionAnnouncement,
   CompetitionKind,
@@ -23,42 +29,64 @@ import type {
   CompetitionSourceFilter,
   CompetitionStatus,
   CompetitionStatusFilter,
+  CompetitionPageResponse,
 } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
-const statusFilters: CompetitionStatusFilter[] = [
-  "open",
-  "result",
-  "closed",
-  "all",
-];
-const sourceFilters: CompetitionSourceFilter[] = [
-  "all",
-  "event",
-  "department",
-  "academic",
-  "campus",
-  "scholarship",
-];
-
 type CompetitionsDictionary = Dictionary["pages"]["competitions"];
 
-export function CompetitionsPageClient() {
+export function CompetitionsPageClient({ initialPage, initialQuery = getCompetitionListQuery({}) }: {
+  initialPage?: CompetitionPageResponse;
+  initialQuery?: ReturnType<typeof getCompetitionListQuery>;
+} = {}) {
   const dictionary = useDictionary();
   const text = dictionary.pages.competitions;
-  const [inputQuery, setInputQuery] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const hash = useUrlHash();
+  const [isNavigating, startNavigation] = useTransition();
+  const urlQuery = getCompetitionListQuery({ search: searchParams.get("search") ?? undefined, page: searchParams.get("page") ?? undefined,
+    source: searchParams.get("source") ?? undefined, status: searchParams.get("status") ?? undefined });
+  const [inputQuery, setInputQuery] = useState(urlQuery.query);
   const searchQuery = useDebouncedValue(inputQuery);
   const [selectedStatus, setSelectedStatus] =
-    useState<CompetitionStatusFilter>("open");
+    useState<CompetitionStatusFilter>(urlQuery.status);
   const [selectedSource, setSelectedSource] =
-    useState<CompetitionSourceFilter>("all");
-  const [currentPage, setCurrentPage] = useState(1);
+    useState<CompetitionSourceFilter>(urlQuery.source);
+  const [currentPage, setCurrentPage] = useState(urlQuery.page);
   const resultsRef = useRef<HTMLDivElement>(null);
   const [pageLoadingHeight, setPageLoadingHeight] = useState(0);
 
-  const { data, isLoading, isError, isPlaceholderData = false } = useQuery({
+
+
+  const pageHref = (page: number, query = inputQuery, status = selectedStatus, source = selectedSource) => {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value, fallback] of [["search", query, ""], ["status", status, "open"], ["source", source, "all"], ["page", String(page), "1"]]) {
+      if (value === fallback || (key === "search" && !value.trim())) params.delete(key);
+      else params.set(key, value);
+    }
+    return `${pathname}${params.size ? `?${params}` : ""}${hash}`;
+  };
+  const navigate = (href: string, replace = false) => startNavigation(() =>
+    router[replace ? "replace" : "push"](href, { scroll: false }));
+  const searchNavigation = useListSearchNavigation(query => navigate(pageHref(1, query), true));
+
+  useEffect(() => {
+    if (isNavigating) return;
+    if (!searchNavigation.pending.current) setInputQuery(urlQuery.query);
+    setSelectedStatus(urlQuery.status);
+    setSelectedSource(urlQuery.source);
+    setCurrentPage(urlQuery.page);
+  }, [urlQuery.query, urlQuery.status, urlQuery.source, urlQuery.page, isNavigating, searchNavigation.pending]);
+  const isUrlCurrent = urlQuery.query === searchQuery && urlQuery.source === selectedSource &&
+    urlQuery.status === selectedStatus && urlQuery.page === currentPage;
+  const hasServerPage = initialPage?.page === currentPage && initialQuery.query === searchQuery &&
+    initialQuery.source === selectedSource && initialQuery.status === selectedStatus && inputQuery === searchQuery;
+
+  const { data: browserData, isLoading: browserLoading, isError: browserError, isPlaceholderData = false } = useQuery({
     queryKey: [
       "competition-page",
       selectedSource,
@@ -75,37 +103,51 @@ export function CompetitionsPageClient() {
         limit: ITEMS_PER_PAGE,
         signal,
       }),
+    initialData: hasServerPage ? initialPage : undefined,
     placeholderData: (previous, previousQuery) => inputQuery === searchQuery &&
       previousQuery?.queryKey[0] === "competition-page" &&
       previousQuery.queryKey[1] === selectedSource && previousQuery.queryKey[2] === selectedStatus &&
       previousQuery.queryKey[3] === searchQuery && previousQuery.queryKey[4] !== currentPage ? previous : undefined,
+    enabled: !hasServerPage && !isNavigating && isUrlCurrent && inputQuery === searchQuery,
     staleTime: searchQuery ? 0 : ONE_MINUTE,
     gcTime: FIVE_MINUTES,
   });
 
+  const data = hasServerPage ? initialPage : browserData;
+  const isLoading = !hasServerPage && browserLoading;
+  const isError = !hasServerPage && browserError;
   const competitions = data?.items || [];
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
-  const showLoading = isLoading || isPlaceholderData || inputQuery !== searchQuery;
-  const keepingPreviousPage = isPlaceholderData && inputQuery === searchQuery;
+  const showLoading = isLoading || (!hasServerPage && isPlaceholderData) || isNavigating || !isUrlCurrent || inputQuery !== searchQuery;
+  const keepingPreviousPage = pageLoadingHeight > 0 && inputQuery === searchQuery && !isError &&
+    ((!hasServerPage && isPlaceholderData) || isNavigating);
 
   const handlePageChange = (page: number) => {
     setPageLoadingHeight(resultsRef.current?.getBoundingClientRect().height ?? 0);
     setCurrentPage(page);
+    searchNavigation.cancel();
+    navigate(pageHref(page));
   };
 
   const handleStatusChange = (status: CompetitionStatusFilter) => {
     setSelectedStatus(status);
     setCurrentPage(1);
+    setPageLoadingHeight(0);
+    searchNavigation.cancel();
+    navigate(pageHref(1, inputQuery, status));
   };
 
   const handleSourceChange = (source: CompetitionSourceFilter) => {
     setSelectedSource(source);
     setCurrentPage(1);
+    setPageLoadingHeight(0);
+    searchNavigation.cancel();
+    navigate(pageHref(1, inputQuery, selectedStatus, source));
   };
 
   return (
-    <Container className="py-6 sm:py-8">
+    <Container className="py-6 sm:py-8" onCompositionStartCapture={searchNavigation.onCompositionStartCapture} onCompositionEndCapture={searchNavigation.onCompositionEndCapture}>
       <div className="mb-8">
         <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
           {text.title}
@@ -121,10 +163,15 @@ export function CompetitionsPageClient() {
         onSearch={(query) => {
           setInputQuery(query);
           setCurrentPage(1);
+          setPageLoadingHeight(0);
+          searchNavigation.schedule(query);
         }}
         onClear={() => {
           setInputQuery("");
           setCurrentPage(1);
+          setPageLoadingHeight(0);
+          searchNavigation.cancel();
+          navigate(pageHref(1, ""), true);
         }}
         searchOnChange
       />
@@ -176,6 +223,7 @@ export function CompetitionsPageClient() {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+          getPageHref={pageHref}
         />
       )}
     </Container>
@@ -183,7 +231,7 @@ export function CompetitionsPageClient() {
 }
 
 interface FilterRowProps<T extends string> {
-  filters: T[];
+  filters: readonly T[];
   selected: T;
   getLabel: (filter: T) => string;
   onChange: (filter: T) => void;
@@ -234,8 +282,10 @@ function CompetitionCard({
   text: CompetitionsDictionary;
 }) {
   const href = competition.url;
-  const overlayLabel = `${competition.title} ${text.originalLink}`;
-  const preview = competition.content.trim().replace(/\s+/g, " ");
+  const firstPart = splitPublicContentText(competition.content)[0];
+  const translation = useContentTranslation({ kind: "competition", id: competition.id, category: competition.sourceCategory }, { ...announcementTranslationFields(competition), ...(firstPart ? { "contentParts.0": firstPart } : {}) });
+  const overlayLabel = `${translation.text("title", competition.title)} ${text.originalLink}`;
+  const preview = translation.text("contentParts.0", firstPart ?? "").trim().replace(/\s+/g, " ");
   const authorLabel =
     competition.sourceName || competition.author || text.defaultAuthor;
 
@@ -274,23 +324,23 @@ function CompetitionCard({
             {getKindLabel(competition.competitionKind, text)}
           </Badge>
         </div>
-        <h2 className="text-base font-semibold text-neutral-900 sm:text-lg">
-          {competition.title}
+        <h2 lang={translation.lang} className="text-base font-semibold text-neutral-900 sm:text-lg">
+          {translation.text("title", competition.title)}
         </h2>
         {preview && (
-          <p className="line-clamp-2 text-sm leading-6 text-neutral-600">
+          <p lang={translation.lang} className="line-clamp-2 text-sm leading-6 text-neutral-600">
             {preview}
           </p>
         )}
         {competition.aiSummary?.summary && (
           <AnnouncementAiSummary
             aiSummary={competition.aiSummary}
-            variant="preview"
+            translation={translation}
           />
         )}
         <div className="flex items-center justify-between border-t border-neutral-100 pt-2 text-xs text-neutral-500">
           <span>{formatDateWithYear(competition.date)}</span>
-          <span className="ml-3 truncate text-right">{authorLabel}</span>
+          <span lang="ko" translate="no" className="ml-3 truncate text-right">{authorLabel}</span>
         </div>
       </div>
     </Card>

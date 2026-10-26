@@ -88,7 +88,9 @@ it("preserves the English inline viewer on home announcement previews", () => {
   const labels = getDictionary("en").labels.aiSummaryDetails;
   render(<LocaleProvider locale="en"><HomeNoticeCard notice={{ type: "announcement", data: summarizedAnnouncement }} /></LocaleProvider>);
   expect(screen.getAllByRole("link")).toHaveLength(1);
+  expect(screen.getByText("신청서 제출")).not.toBeVisible();
+  fireEvent.click(screen.getByText(labels.previewMore));
   expect(screen.getByText("신청서 제출")).toBeVisible();
-  expect(screen.getByText(labels.more)).toHaveClass("m3-disclosure-trigger");
+  expect(screen.getByText(labels.previewMore)).toHaveClass("m3-disclosure-trigger");
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });

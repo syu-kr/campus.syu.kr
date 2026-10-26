@@ -41,6 +41,10 @@ export interface Announcement {
 }
 
 export interface ServiceNotice {
+  modifiedAt?: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  lang?: "ko" | "en";
   id: string;
   slug: string;
   title: string;

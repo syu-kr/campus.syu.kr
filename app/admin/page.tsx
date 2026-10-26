@@ -16,6 +16,7 @@ import {
   type User,
 } from "firebase/auth";
 import { RoommateAdmin } from "./RoommateAdmin";
+import { AdminDashboard } from "./AdminDashboard";
 import type {
   AdminSubmissionAiClassification,
   AdminSubmissionItem,
@@ -30,6 +31,7 @@ import {
   aiUrgencyLabels,
   formatDateTime,
   kindLabels,
+  getAdminErrorMessage,
   readAdminApiResponse,
   statuses,
   statusLabel,
@@ -92,6 +94,8 @@ export default function AdminPage() {
   const [classifyingKey, setClassifyingKey] = useState("");
   const [pageError, setPageError] = useState("");
   const [pageNotice, setPageNotice] = useState("");
+  const [dashboardRefresh, setDashboardRefresh] = useState(0);
+  const [countsLoaded, setCountsLoaded] = useState(false);
 
   const replaceAuthSession = useCallback((nextUser: User | null) => {
     const nextGeneration = ++sessionGenerationRef.current;
@@ -109,12 +113,18 @@ export default function AdminPage() {
     setClassifyingKey("");
     setPageError("");
     setPageNotice("");
+    setDashboardRefresh(0);
+    setCountsLoaded(false);
   }, []);
 
   const isCurrentSession = useCallback(
     () => generation === sessionGenerationRef.current,
     [generation],
   );
+  const handleAccessLost = useCallback(() => {
+    replaceAuthSession(null);
+    setLoginError("관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요.");
+  }, [replaceAuthSession]);
 
   useEffect(() => {
     let settled = false;
@@ -278,6 +288,8 @@ export default function AdminPage() {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
         });
+        if (!isCurrentSession()) return;
+        if (response.status === 401 || response.status === 403) { handleAccessLost(); return; }
         const data = await readAdminApiResponse<
           Partial<AdminSubmissionPageResponse> & { error?: string }
         >(response);
@@ -289,6 +301,7 @@ export default function AdminPage() {
 
         setSubmissions(data.submissions || []);
         setCounts({ ...emptyCounts, ...(data.counts || {}) });
+        setCountsLoaded(Boolean(data.counts));
         const nextPagination = data.pagination || emptyPagination;
         setPagination(nextPagination);
         pageCursorsRef.current = Object.fromEntries(
@@ -303,13 +316,13 @@ export default function AdminPage() {
       } catch (error) {
         if (!isCurrentSession()) return;
         setPageError(
-          error instanceof Error ? error.message : "목록을 불러오지 못했습니다",
+          getAdminErrorMessage(error, "목록을 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로고침해주세요."),
         );
       } finally {
         if (isCurrentSession()) setIsLoading(false);
       }
     },
-    [isCurrentSession, kindFilter, page, statusFilter, user],
+    [handleAccessLost, isCurrentSession, kindFilter, page, statusFilter, user],
   );
 
   useEffect(() => {
@@ -338,6 +351,8 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ id: item.id, kind: item.kind, status }),
       });
+      if (!isCurrentSession()) return;
+      if (response.status === 401 || response.status === 403) { handleAccessLost(); return; }
       const data = await readAdminApiResponse<{ error?: string }>(response);
       if (!isCurrentSession()) return;
 
@@ -385,7 +400,7 @@ export default function AdminPage() {
     } catch (error) {
       if (!isCurrentSession()) return;
       setPageError(
-        error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
+        getAdminErrorMessage(error, "변경 결과를 확인하지 못했습니다. 목록을 다시 불러와 처리 상태를 확인해주세요."),
       );
     } finally {
       if (isCurrentSession()) setIsSaving(false);
@@ -443,6 +458,8 @@ export default function AdminPage() {
           status: bulkStatus,
         }),
       });
+      if (!isCurrentSession()) return;
+      if (response.status === 401 || response.status === 403) { handleAccessLost(); return; }
       const data = await readAdminApiResponse<{ error?: string }>(response);
       if (!isCurrentSession()) return;
 
@@ -457,7 +474,7 @@ export default function AdminPage() {
     } catch (error) {
       if (!isCurrentSession()) return;
       setPageError(
-        error instanceof Error ? error.message : "상태를 변경하지 못했습니다",
+        getAdminErrorMessage(error, "변경 결과를 확인하지 못했습니다. 목록을 다시 불러와 처리 상태를 확인해주세요."),
       );
     } finally {
       if (isCurrentSession()) setIsSaving(false);
@@ -483,6 +500,8 @@ export default function AdminPage() {
         },
         body: JSON.stringify({ id: item.id, kind: item.kind }),
       });
+      if (!isCurrentSession()) return;
+      if (response.status === 401 || response.status === 403) { handleAccessLost(); return; }
       const data = await readAdminApiResponse<{
         error?: string;
         classification?: AdminSubmissionAiClassification;
@@ -508,7 +527,7 @@ export default function AdminPage() {
     } catch (error) {
       if (!isCurrentSession()) return;
       setPageError(
-        error instanceof Error ? error.message : "AI 분류를 생성하지 못했습니다",
+        getAdminErrorMessage(error, "AI 분류 결과를 확인하지 못했습니다. 목록을 다시 불러온 뒤 확인해주세요."),
       );
     } finally {
       if (isCurrentSession()) setClassifyingKey("");
@@ -559,11 +578,10 @@ export default function AdminPage() {
           <div className="mb-8">
             <p className="text-sm font-semibold text-primary-600">Admin</p>
             <h1 className="mt-2 text-2xl font-bold text-neutral-950">
-              제보·문의·룸메이트 관리
+              사이트 관리 대시보드
             </h1>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
-              Firebase Authentication으로 인증된 허용 계정만 접근할 수
-              있습니다.
+              허용된 관리자 계정으로 로그인해 주세요.
             </p>
           </div>
 
@@ -629,10 +647,10 @@ export default function AdminPage() {
           <div>
             <p className="text-sm font-semibold text-primary-600">Admin</p>
             <h1 className="mt-1 text-2xl font-bold text-neutral-950">
-              제보·문의·룸메이트 관리
+              사이트 관리 대시보드
             </h1>
             <p className="mt-2 text-sm text-neutral-600">
-              룸메이트 신고와 모집글, 문의와 캠퍼스 꿀팁 제보를 확인하고 관리합니다.
+              서비스 공지와 배너, 문의·제보·룸메이트 게시판을 한곳에서 관리합니다.
             </p>
           </div>
 
@@ -640,7 +658,7 @@ export default function AdminPage() {
             <span className="text-sm text-neutral-600">{user.email}</span>
             <button
               type="button"
-              onClick={() => void loadSubmissions()}
+              onClick={() => { void loadSubmissions(); setDashboardRefresh(value => value + 1); }}
               className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
             >
               새로고침
@@ -655,7 +673,7 @@ export default function AdminPage() {
           </div>
         </header>
 
-        <RoommateAdmin key={generation} user={user} />
+        <AdminDashboard key={generation} user={user} counts={counts} countsReady={countsLoaded && !isLoading && !pageError} submissionScope={kindFilter === "all" ? "문의·제보" : kindLabels[kindFilter]} refreshKey={dashboardRefresh} onAccessLost={handleAccessLost} roommates={<RoommateAdmin key={generation} user={user} onAccessLost={handleAccessLost} />}>
 
         <section className="mb-6 grid gap-3 md:grid-cols-5">
           {statuses.map((status) => (
@@ -898,6 +916,7 @@ export default function AdminPage() {
             onClassify={classifySubmission}
           />
         </section>
+        </AdminDashboard>
       </div>
     </div>
   );

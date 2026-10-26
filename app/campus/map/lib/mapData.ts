@@ -11,7 +11,8 @@ export interface Facility {
     | "체육"
     | "편의"
     | "사무"
-    | "학습";
+    | "학습"
+    | "연구";
   description?: string;
 }
 

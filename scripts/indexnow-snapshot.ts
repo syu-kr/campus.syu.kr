@@ -21,22 +21,24 @@ const GRADUATION_FILES = [
 ] as const;
 const ROUTE_CODE: Record<string, readonly string[]> = {
   "/": ["app/features/cafeteria/CafeteriaMenuCards.", "app/features/shuttle/ShuttleAdditionalServicesCard.", "lib/search.", "lib/phone."],
-  "/academic/competitions": ["app/features/academic/CompetitionsPageClient.", "lib/server/competitions.", "app/api/competitions/"],
+  "/academic/competitions": ["app/features/academic/CompetitionsPageClient.", "lib/server/competitions.", "app/api/competitions/", "lib/public-list-query.", "lib/use-list-search-navigation.", "lib/use-url-hash."],
   "/academic/schedule": ["app/features/academic/SchedulePageClient.", "lib/use-url-search."],
-  "/academic/graduation": ["app/features/academic/GraduationPageClient.", "app/features/academic/graduation-persistence.", "lib/graduation."],
+  "/academic/graduation": ["app/features/academic/GraduationPageClient.", "app/features/academic/graduation-persistence.", "lib/graduation.", "lib/graduation-model.", "lib/server/graduation-data."],
   "/academic/timetable": ["lib/lecture-timetable", "lib/timetable-", "app/api/lecture/timetable/", "lib/fetch-json."],
   "/campus": ["app/features/roommates/RoommateMenuLink.", "lib/roommates.", "lib/roommate-link-privacy."],
   "/campus/bus-info": ["lib/kakao-maps-loader."],
   "/campus/library": ["lib/library."],
   "/campus/map": ["lib/kakao-maps-loader."],
   "/campus/phone": ["lib/phone.", "lib/use-pagination.", "lib/use-url-search."],
-  "/campus/campus-tips": ["lib/use-pagination."],
+  "/campus/campus-tips": ["lib/use-pagination.", "lib/public-list-query.", "lib/campus-tip-filters.", "lib/use-list-search-navigation.", "lib/use-url-hash."],
+  "/service/notices": ["lib/use-url-hash.", "lib/announcement-list-query.", "lib/public-list-query.", "app/styles/m3/styles-service-notices-m3.css"],
+  "/service/notices/[slug]": ["lib/announcement-list-query."],
   "/more/meet": ["lib/meet.", "app/api/meet/rooms/"],
   "/privacy": ["app/features/legal/"],
   "/terms": ["app/features/legal/"],
 };
 const VOLATILE = new Set([
-  "lastUpdated", "lastSuccessAt", "lastAttemptAt", "checkedAt", "publishedAt", "generatedAt",
+  "lastUpdated", "updatedAt", "lastSuccessAt", "lastAttemptAt", "checkedAt", "publishedAt", "generatedAt",
   "crawledAt", "views", "sourceHash", "inputHash", "detailContentHash", "model", "contentSource",
 ]);
 
@@ -92,6 +94,7 @@ export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): Inde
   const holidays = { data: data("public-holidays.json"), stale: files["public/data/public-holidays.json"]?.stale === true };
   contentByRoute["/campus/cafeteria"] = {
     data: data("cafeteria-menu.json"), stale: files["public/data/cafeteria-menu.json"]?.stale === true,
+    studentRestaurant: files["public/cafeteria/student-restaurant-1.json"]?.data ?? null,
   };
   contentByRoute["/campus/bus-info"] = [data("shuttle-bus-schedule.json"), data("shuttle-special-periods.json"), holidays];
   contentByRoute["/academic/schedule"] = [data("schedules-major.json"), holidays];
@@ -99,9 +102,15 @@ export function buildIndexNowSnapshot(files: Record<string, SnapshotFile>): Inde
   contentByRoute["/campus/campus-tips"] = data("campus-tips.json");
   contentByRoute["/campus/library"] = (data("shuttle-special-periods.json") as ShuttleSpecialPeriods | null)?.semesterPeriods ?? null;
   contentByRoute["/academic/graduation"] = GRADUATION_FILES.map(data);
-  const notices = Object.entries(files).filter(([file]) => /^public\/service-notices\/[0-9A-Za-z][0-9A-Za-z-]*\.md$/.test(file));
-  contentByRoute["/service/notices"] = notices.map(([file, value]) => [file, value.hash]);
-  for (const [file, value] of notices) put(`/service/notices/${file.split("/").at(-1)!.slice(0, -3)}`, value.hash);
+  const publishedNotices = files["runtime/service-notices.json"]?.data as { ko: { slug: string }[]; en: { slug: string }[] } | undefined;
+  if (publishedNotices) {
+    contentByRoute["/service/notices"] = publishedNotices;
+    for (const notice of publishedNotices.ko) put(`/service/notices/${notice.slug}`, [notice, publishedNotices.en.find(item => item.slug === notice.slug)]);
+  } else {
+    const notices = Object.entries(files).filter(([file]) => /^public\/service-notices\/[0-9A-Za-z][0-9A-Za-z-]*\.md$/.test(file));
+    contentByRoute["/service/notices"] = notices.map(([file, value]) => [file, value.hash]);
+    for (const [file, value] of notices) put(`/service/notices/${file.split("/").at(-1)!.slice(0, -3)}`, value.hash);
+  }
   contentByRoute["/"] = [
     // The home page renders the latest twelve notices, not the historical archive.
     [...allAnnouncements].sort((a, b) => b.date.localeCompare(a.date, "en-US")).slice(0, 12),
@@ -138,7 +147,7 @@ function visibleAnnouncement<T extends Announcement>(item: T) {
 
 function isRouteCode(file: string, route: string) {
   // shortcut: Dependencies are explicit; extend this map when adding a page or source.
-  if (file === "proxy.ts" || /^(next\.config\.|app\/(layout\.|globals\.|providers\.|components\/|fonts\/)|lib\/(i18n|utils|korea-time|structured-data|public-routes|push-notifications|firebase)(\.|\/))/.test(file)) return true;
+  if (file === "proxy.ts" || /^(next\.config\.|app\/(layout\.|globals\.|providers\.|components\/|fonts\/)|lib\/(i18n|utils|korea-time|structured-data|page-metadata|public-routes|push-notifications|firebase)(\.|\/))/.test(file)) return true;
   if (ROUTE_CODE[route]?.some((prefix) => file.startsWith(prefix))) return true;
   const parts = route === "/" ? [] : route.slice(1).split("/");
   const directory = `app/${parts.join("/")}`;
@@ -156,12 +165,12 @@ function isRouteCode(file: string, route: string) {
   if ((announcementList || route === "/academic/competitions") && /^lib\/use-(debounced-value|url-search)\./.test(file)) return true;
   const dataRoute = ["/", "/announcements", ...Object.values(COLLECTIONS), "/academic/competitions", "/academic/schedule", "/campus/bus-info", "/campus/cafeteria", "/campus/phone", "/campus/library", "/campus/campus-tips"].includes(route);
   if (dataRoute && /^lib\/(api\.|fetch-json)/.test(file)) return true;
-  if ((dataRoute || route.startsWith("/announcements/")) && /^(lib\/(server\/(crawl-data|home-data|read-response-bytes)|crawl-data-contract)|app\/api\/crawl-data\/)/.test(file)) return true;
+  if ((dataRoute || route.startsWith("/announcements/")) && /^(lib\/(server\/(crawl-data|home-data|public-data|read-response-bytes)|crawl-data-contract|public-data-snapshot)|app\/api\/(crawl-data|public-data)\/)/.test(file)) return true;
   if ((announcementList || route === "/") && /^app\/api\/announcements\//.test(file)) return true;
   if (route === "/academic/competitions" && /^lib\/server\/announcement-ai\./.test(file)) return true;
   if (["/", "/campus/bus-info", "/campus/cafeteria"].includes(route) && /^lib\/(cafeteria|shuttle)/.test(file)) return true;
   if (["/", "/academic/schedule", "/academic/graduation", "/campus/bus-info", "/campus/cafeteria", "/campus/library", "/campus/phone"].includes(route) && /^lib\/(home|public-holidays)/.test(file)) return true;
   if (["/academic/schedule", "/academic/graduation", "/campus/phone"].includes(route) && /^lib\/academic-aeo/.test(file)) return true;
-  if ((route === "/" || route.startsWith("/service/notices")) && /^lib\/serviceNotices/.test(file)) return true;
+  if ((route === "/" || route.startsWith("/service/notices")) && /^lib\/(serviceNotices|service-notice-repository)/.test(file)) return true;
   return false;
 }

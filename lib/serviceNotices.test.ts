@@ -1,6 +1,8 @@
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 import { getAllServiceNotices, getServiceNoticeBySlug } from "./serviceNotices";
+import { readRepositoryManagedContent } from "./service-notice-repository";
 
 const files = vi.hoisted(() => ({ readdir: vi.fn(), readFile: vi.fn() }));
 vi.mock("node:fs/promises", () => ({ ...files, default: files }));
@@ -14,7 +16,7 @@ it("reads markdown asynchronously with consistent list/detail metadata and desce
     : "---\ndate: 2026-10-01\n---\n# 이전 공지\n- 안내\n");
   const notices = await getAllServiceNotices();
   expect(notices.map((notice) => notice.slug)).toEqual(["002-new", "001-old"]);
-  expect(notices[0]).toEqual({ id: "002", slug: "002-new", title: "새 공지", date: "2026-10-05", author: "운영팀", excerpt: "중요 안내", description: "중요 안내" });
+  expect(notices[0]).toEqual({ id: "002", slug: "002-new", title: "새 공지", date: "2026-10-05", author: "운영팀", lang: "ko", excerpt: "중요 안내", description: "중요 안내" });
   expect(notices[1]).toMatchObject({ title: "무제", author: "시스템", excerpt: "이전 공지 안내" });
   expect(await getServiceNoticeBySlug("002-new")).toEqual({ ...notices[0], content: "# 본문\n" });
   expect(files.readFile).toHaveBeenCalledTimes(3);
@@ -25,8 +27,17 @@ it("preserves excerpt limits and fallback metadata for files without frontmatter
   const text = "가".repeat(350);
   files.readFile.mockResolvedValue(text);
   const notice = await getServiceNoticeBySlug("003-long");
-  expect(notice).toMatchObject({ id: "003", title: "무제", author: "시스템", content: text, excerpt: `${"가".repeat(300)}...`, description: `${"가".repeat(160)}...` });
+  expect(notice).toMatchObject({ id: "003", title: "무제", author: "시스템", lang: "ko", content: text, excerpt: `${"가".repeat(300)}...`, description: `${"가".repeat(160)}...` });
   expect(notice?.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+});
+
+it.each([[undefined, "ko"], ["ko", "ko"], ["en", "en"], ["ja", "ko"], ["en-US", "ko"], ["EN", "ko"]])("reads only supported source language %s and keeps list/detail consistent", async (lang, expected) => {
+  files.readdir.mockResolvedValue(["012-english-version-beta.md"]);
+  files.readFile.mockResolvedValue(`---\ntitle: English Version Now Available\ndate: 2026-06-16\n${lang ? `lang: ${lang}\n` : ""}---\nHello from SYU CAMPUS.\n`);
+  const [notice] = await getAllServiceNotices();
+  expect(notice.lang).toBe(expected);
+  expect((await getServiceNoticeBySlug("012-english-version-beta"))?.lang).toBe(expected);
+  expect(notice.excerpt).toBe("Hello from SYU CAMPUS.");
 });
 
 it("returns empty results only for missing files and does not hide permission errors", async () => {
@@ -43,4 +54,57 @@ it("returns empty results only for missing files and does not hide permission er
 it.each(["../secret", "nested/file", "nested\\file", "", "%2e%2e", "notice.md"])("rejects invalid slug %s before file access", async (slug) => {
   expect(await getServiceNoticeBySlug(slug)).toBeNull();
   expect(files.readFile).not.toHaveBeenCalled();
+});
+
+it("selects a matching reviewed English variant without changing source identity or pagination count", async () => {
+  const source = "---\ntitle: 원문 제목\ndate: 2026-10-04\nauthor: 원문 작성자\n---\n# 원문 내용\n";
+  const hash = createHash("sha256").update(source).digest("hex");
+  files.readdir.mockResolvedValue(["017-roommate-board.md", "en", "ignored.json"]);
+  files.readFile.mockImplementation(async (file: string) => path.basename(path.dirname(file)) === "en"
+    ? `---\ntitle: Reviewed English\ndate: 2099-01-01\nauthor: Different author\nlang: en\nsourceSha256: ${hash}\ndescription: English excerpt\n---\n# Complete English content\n`
+    : source.replace(/\n/g, "\r\n"));
+  const [original] = await getAllServiceNotices();
+  const english = await getAllServiceNotices("en");
+  expect(english).toHaveLength(1);
+  expect(english[0]).toEqual({ ...original, title: "Reviewed English", lang: "en", excerpt: "English excerpt", description: "English excerpt" });
+  expect(await getServiceNoticeBySlug("017-roommate-board", "en")).toEqual({ ...english[0], content: "# Complete English content\n" });
+  expect((await getServiceNoticeBySlug("017-roommate-board"))?.content).toBe("# 원문 내용\n");
+});
+
+it("falls back to original content when a reviewed variant is missing, stale, incomplete or not English", async () => {
+  const source = "---\ntitle: 수정된 공지\ndate: 2026-10-04\n---\n# 수정된 전체 원문\n";
+  const matchingHash = createHash("sha256").update(source).digest("hex");
+  let variant: string | undefined;
+  files.readFile.mockImplementation(async (file: string) => {
+    if (path.basename(path.dirname(file)) !== "en") return source;
+    if (variant === undefined) throw Object.assign(new Error("Missing variant"), { code: "ENOENT" });
+    return variant;
+  });
+  const original = await getServiceNoticeBySlug("017-roommate-board");
+  for (const candidate of [
+    undefined,
+    "---\ntitle: Old English\nlang: en\nsourceSha256: " + "0".repeat(64) + "\n---\nOld content",
+    `---\ntitle: Wrong language\nlang: ko\nsourceSha256: ${matchingHash}\n---\nContent`,
+    `---\nlang: en\nsourceSha256: ${matchingHash}\n---\nContent`,
+    `---\ntitle: Empty content\nlang: en\nsourceSha256: ${matchingHash}\n---\n`,
+  ]) {
+    variant = candidate;
+    expect(await getServiceNoticeBySlug("017-roommate-board", "en")).toEqual(original);
+  }
+});
+
+it("does not need a variant for an English source and rejects English traversal before reading", async () => {
+  files.readFile.mockResolvedValue("---\ntitle: Original English\nlang: en\n---\nFull English body\n");
+  expect((await getServiceNoticeBySlug("012-english-version-beta", "en"))?.lang).toBe("en");
+  expect(files.readFile).toHaveBeenCalledTimes(1);
+  files.readFile.mockClear();
+  expect(await getServiceNoticeBySlug("../en/secret", "en")).toBeNull();
+  expect(files.readFile).not.toHaveBeenCalled();
+});
+it("refuses to import an existing stale reviewed English file instead of silently dropping it", async () => {
+  files.readdir.mockResolvedValue(["001-test.md"]);
+  files.readFile.mockImplementation(async (file: string) => path.basename(path.dirname(file)) === "en"
+    ? `---\ntitle: Old English\nlang: en\nsourceSha256: ${"0".repeat(64)}\n---\nOld English body\n`
+    : "---\ntitle: Current Korean\ndate: 2026-10-26\nauthor: Original author\n---\n한국어 원문\n");
+  await expect(readRepositoryManagedContent(true)).rejects.toThrow("Reviewed English does not match source");
 });

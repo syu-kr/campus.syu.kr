@@ -41,6 +41,8 @@ import {
 } from "@/app/features/home/HomeDashboardSections";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { M3HomeOverview, type HomeOverviewData } from "./M3HomeOverview";
+import { ManagedBanners } from "@/app/components/ManagedBanners";
+import type { PublicBanner } from "@/types/managed-content";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
@@ -51,6 +53,8 @@ const ONE_HOUR = 60 * ONE_MINUTE;
 interface HomePageClientProps {
   initialAnnouncements: Announcement[];
   initialServiceNotices: ServiceNotice[];
+  initialServiceNoticesFailed?: boolean;
+  initialBanners?: PublicBanner[];
   initialSchedules: AcademicSchedule[];
   initialPublicHolidays?: PublicHolidaySnapshot;
   initialNowIso: string;
@@ -60,6 +64,8 @@ interface HomePageClientProps {
 export function HomePageClient({
   initialAnnouncements,
   initialServiceNotices,
+  initialServiceNoticesFailed = false,
+  initialBanners = [],
   initialSchedules,
   initialPublicHolidays,
   initialNowIso,
@@ -104,16 +110,19 @@ export function HomePageClient({
     data: serviceNotices,
     isLoading: serviceNoticesLoading,
     isError: serviceNoticesError,
+    isFetchedAfterMount: serviceNoticesFetched,
     refetch: refetchServiceNotices,
   } = useQuery({
-    queryKey: ["serviceNotices"],
+    queryKey: ["serviceNotices", locale],
     queryFn: () =>
-      fetchJson<ServiceNotice[]>("/api/service-notices", {
+      fetchJson<ServiceNotice[]>(`/api/service-notices?locale=${locale}`, {
         fallback: [],
         throwOnError: true,
       }),
     initialData: initialServiceNotices,
-    staleTime: FIVE_MINUTES,
+    initialDataUpdatedAt: initialServiceNoticesFailed ? 0 : undefined,
+    staleTime: 30_000,
+    refetchInterval: 30_000,
     gcTime: TEN_MINUTES,
   });
 
@@ -169,8 +178,8 @@ export function HomePageClient({
   }, [dictionary.categories, locale, showSearchResults, searchResults]);
 
   const homeNotices = useMemo(
-    () => getHomeNotices(announcements, serviceNotices, selectedCategory),
-    [announcements, serviceNotices, selectedCategory],
+    () => getHomeNotices(announcements, serviceNotices.filter(notice => (!notice.startsAt || Date.parse(notice.startsAt) <= (now?.getTime() ?? 0)) && (!notice.endsAt || (now?.getTime() ?? 0) < Date.parse(notice.endsAt))), selectedCategory),
+    [announcements, serviceNotices, selectedCategory, now],
   );
 
   if (showSearchResults) {
@@ -192,6 +201,7 @@ export function HomePageClient({
   return (
     <Container className="m3-home-content space-y-6 pb-5 pt-6 sm:pb-8">
       <M3HomeOverview now={now}
+        banner={<ManagedBanners initialBanners={initialBanners} placement="home" initialNow={Date.parse(initialNowIso)} />}
         initial={{ ...initialOverviewData, holidays: initialPublicHolidays, updatedAt: Date.parse(initialNowIso) }}>
         <TodaySchedulesSection isLoading={schedulesLoading} isError={schedulesError}
           onRetry={() => { void refetchSchedules(); void refetchHolidays(); }} schedules={todaySchedules} />
@@ -222,8 +232,8 @@ export function HomePageClient({
         announcementsLoading={announcementsLoading}
         hasError={
           selectedCategory === "service"
-            ? serviceNoticesError
-            : announcementsError || serviceNoticesError
+            ? serviceNoticesError || (initialServiceNoticesFailed && !serviceNoticesFetched)
+            : announcementsError || serviceNoticesError || (initialServiceNoticesFailed && !serviceNoticesFetched)
         }
         onRetry={() => {
           if (selectedCategory === "service") {

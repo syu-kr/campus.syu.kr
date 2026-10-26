@@ -72,6 +72,7 @@ export default function MeetCreatePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState("");
+  const [ownerStorageUnavailable, setOwnerStorageUnavailable] = useState(false);
   const [mode, setMode] = useState<"join" | "create">("join");
 
   const rangeValidation = useMemo(
@@ -115,11 +116,17 @@ export default function MeetCreatePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetErrorMessage(data, text));
+        setError(getMeetErrorMessage(data, text));
+        return;
+      }
+
+      if (typeof data?.inviteUrl !== "string" || typeof data?.roomId !== "string") {
+        throw new Error("Invalid room response");
       }
 
       setInviteUrl(localizeInviteUrl(data.inviteUrl, locale));
       setRoomId(data.roomId);
+      setOwnerStorageUnavailable(false);
       if (typeof data.ownerToken === "string") {
         try {
           localStorage.setItem(
@@ -127,11 +134,11 @@ export default function MeetCreatePage() {
             data.ownerToken,
           );
         } catch {
-          // The invite still works when browser storage is unavailable.
+          setOwnerStorageUnavailable(true);
         }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : text.createFailed);
+    } catch {
+      setError(text.createFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -455,6 +462,7 @@ export default function MeetCreatePage() {
               <p className="mt-2 text-xs text-green-900">
                 {text.invitePrivacyNotice}
               </p>
+              {ownerStorageUnavailable && <p className="mt-2 text-sm text-amber-900" role="alert">{text.ownerStorageUnavailable}</p>}
               <div className="mt-3 grid grid-cols-1 gap-2">
                 <button
                   type="button"
@@ -530,10 +538,10 @@ function validateMeetRange(
 }
 
 function getMeetErrorMessage(
-  payload: { error?: unknown; code?: unknown },
+  payload: { error?: unknown; code?: unknown } | null,
   text: MeetDictionary,
 ): string {
-  const error = payload.error;
+  const error = payload?.error;
   if (typeof error !== "string") return text.createFailed;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
@@ -546,7 +554,7 @@ function getMeetErrorMessage(
     return text.errors.dateRangeMax.replace("{max}", dateRangeMax);
   }
 
-  if (typeof payload.code === "string") {
+  if (typeof payload?.code === "string") {
     const codeKey = meetErrorCodeKeys[payload.code];
     if (codeKey) {
       return codeKey === "dateRangeMax"

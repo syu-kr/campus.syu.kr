@@ -3,11 +3,15 @@ import { hydrateRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TimetableBuilderClient } from "./TimetableBuilderClient";
+import { LocaleProvider } from "@/app/components/LocaleProvider";
+import { getDictionary } from "@/lib/i18n";
+import { TIMETABLE_DRAFT_STORAGE_KEY } from "@/lib/timetable-draft";
 
 const responses = vi.hoisted(() => ({
   search: "",
   timetable: {} as Record<string, unknown>,
   share: {} as Record<string, unknown>,
+  loading: false,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -18,7 +22,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@tanstack/react-query", () => ({
   useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
     data: queryKey[0] === "lecture-timetable" ? responses.timetable : responses.share,
-    isLoading: false,
+    isLoading: queryKey[0] === "lecture-timetable" && responses.loading,
     isFetching: false,
     isError: false,
     refetch: vi.fn(),
@@ -60,6 +64,7 @@ describe("timetable recovery and mobile editing", () => {
     }));
     localStorage.clear();
     responses.search = "";
+    responses.loading = false;
     responses.share = { success: false };
     responses.timetable = {
       success: true,
@@ -72,12 +77,90 @@ describe("timetable recovery and mobile editing", () => {
 
   afterEach(() => vi.unstubAllGlobals());
 
+  it.each(["ko", "en"] as const)("announces loading instead of leaving an unexplained empty surface in %s", (locale) => {
+    responses.loading = true;
+    responses.timetable = { success: true, data: { courses: [] } };
+    render(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    const status = screen.getByText(getDictionary(locale).errorBoundary.loading).closest('[role="status"]');
+    expect(status).toHaveAttribute("aria-busy", "true");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+  });
+
+  it.each(["ko", "en"] as const)("distinguishes empty results and server failures without raw diagnostics in %s", (locale) => {
+    const text = getDictionary(locale).pages.timetable;
+    responses.timetable = { success: false, error: "Internal provider traceback", data: { courses: [] } };
+    const view = render(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    expect(screen.getByText(text.loadFailedMessage)).toBeInTheDocument();
+    expect(screen.queryByText("Internal provider traceback")).not.toBeInTheDocument();
+    responses.timetable = { success: true, data: { year: "2026", semester: "2", courses: [] } };
+    view.rerender(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    expect(screen.getByText(text.emptyCoursesTitle)).toBeInTheDocument();
+    expect(screen.queryByText(text.loadFailedTitle)).not.toBeInTheDocument();
+  });
+
+  it.each(["ko", "en"] as const)("uses localized share recovery copy in %s", (locale) => {
+    responses.search = "share=test-share";
+    responses.share = { success: false, error: "Internal share diagnostic" };
+    const text = getDictionary(locale).pages.timetable;
+    render(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    expect(screen.getByText(text.shareLoadFailed)).toBeInTheDocument();
+    expect(screen.queryByText("Internal share diagnostic")).not.toBeInTheDocument();
+  });
+
+  it("automatically replaces public course fields inline without changing the draft", async () => {
+    const fetch = vi.fn(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      return { ok: true, json: async () => ({ results: body.requests.map((request: { fields: string[] }) => ({ ok: true, result: { target: "en", provider: "google", originals: { courseName: "테스트 시간 미정 강의" }, translations: Object.fromEntries(request.fields.map(field => [field, "English course"])) } })) }) };
+    });
+    vi.stubGlobal("fetch", fetch);
+    render(<LocaleProvider locale="en"><TimetableBuilderClient /></LocaleProvider>);
+    fireEvent.click(screen.getAllByRole("button", { name: getDictionary("en").pages.timetable.addCourse }).at(-1)!);
+    const originalDraft = localStorage.getItem(TIMETABLE_DRAFT_STORAGE_KEY);
+    const article = screen.getByRole("article");
+    expect(await within(article).findByText("English course")).toBeInTheDocument();
+    expect(JSON.parse(fetch.mock.calls[0][1].body as string)).toEqual({ requests: [{ source: { kind: "course", id: "same-id" }, fields: ["courseName"], target: "en" }] });
+    expect(within(article).getByRole("heading", { name: "English course" })).toBeInTheDocument();
+    expect(within(article).queryByRole("heading", { name: "테스트 시간 미정 강의" })).not.toBeInTheDocument();
+    expect(article.querySelector(".m3-content-translation")).toBeNull();
+    expect(localStorage.getItem(TIMETABLE_DRAFT_STORAGE_KEY)).toBe(originalDraft);
+  });
+
+  it("translates department option labels while retaining their raw filter values", async () => {
+    const department = "컴퓨터공학부";
+    responses.timetable = { success: true, data: { courses: [{ id: "department-fixture", courseName: "Public course", normalizedName: "Public course", departmentName: department, professor: "교수 이름", grade: 0, credits: 3, timeSlots: [] }] } };
+    const fetch = vi.fn(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      return { ok: true, json: async () => ({ results: body.requests.map((request: { fields: string[] }) => ({ ok: true, result: { target: "en", provider: "google", originals: Object.fromEntries(request.fields.map(field => [field, department])), translations: Object.fromEntries(request.fields.map(field => [field, "Computer Science"])) } })) }) };
+    });vi.stubGlobal("fetch", fetch);
+    render(<LocaleProvider locale="en"><TimetableBuilderClient /></LocaleProvider>);
+    fireEvent.click(screen.getAllByRole("button", { name: getDictionary("en").pages.timetable.addCourse }).at(-1)!);
+    const dialog = screen.getByRole("dialog"), combo = within(dialog).getByRole("combobox", { name: getDictionary("en").pages.timetable.department });
+    await within(dialog).findByText("Computer Science");fireEvent.click(combo);
+    expect(within(dialog).getByRole("heading", { name: "Public course" }).nextElementSibling).not.toHaveTextContent("0");
+    const option = await screen.findByRole("option", { name: "Computer Science" });fireEvent.pointerDown(option);fireEvent.click(option);
+    expect(combo).toHaveAttribute("data-value", department);
+    const requests = fetch.mock.calls.flatMap(([, init]) => JSON.parse(String(init.body)).requests);
+    expect(requests.some(request => request.source.id === "__departments__" && request.fields.includes("departments.0"))).toBe(true);
+    expect(JSON.stringify(requests)).not.toContain("교수 이름");
+    expect(requests.every(request => !request.fields.includes("professor"))).toBe(true);
+  });
+
   it.each([1023, 1024, 1279, 1280, 1440])("mounts only the usable course picker at %ipx", (width) => {
     viewportWidth = width;
     setManyCourses();
     render(<TimetableBuilderClient />);
     expect(screen.queryAllByRole("article")).toHaveLength(width < 1024 ? 0 : 300);
     expect(screen.queryAllByRole("searchbox")).toHaveLength(width < 1024 ? 0 : 1);
+  });
+
+  it("formats public semester and source-date metadata in English while retaining the raw dataset", () => {
+    const data = { year: "2026", semester: "2학기 정규", updatedAt: "'26.09.10.(목)", courses: [] };
+    responses.timetable = { success: true, data };
+    render(<LocaleProvider locale="en"><TimetableBuilderClient /></LocaleProvider>);
+    expect(screen.getAllByText("Based on 2026 Semester 2 (regular) timetable data.").length).toBeGreaterThan(0);
+    expect(screen.getByText("Course source updated: Sep 10, 2026")).toBeInTheDocument();
+    expect(data.semester).toBe("2학기 정규");expect(data.updatedAt).toBe("'26.09.10.(목)");
   });
 
   it("mounts mobile results only while the sheet is open and keeps detailed filters collapsed", () => {
@@ -90,6 +173,9 @@ describe("timetable recovery and mobile editing", () => {
     const filters = dialog.querySelector("details")!;
     expect(filters).not.toHaveAttribute("open");
     expect(within(dialog).getByRole("searchbox")).toBeInTheDocument();
+    const department = within(dialog).getByRole("combobox", { name: "학과" });
+    expect(department).toHaveTextContent("전체 학과");
+    expect(department.closest("details")).toBeNull();
     filters.open = true;
     fireEvent.click(within(dialog).getByRole("checkbox", { name: "월" }));
     expect(filters).toHaveAttribute("open");
@@ -216,7 +302,7 @@ describe("timetable recovery and mobile editing", () => {
     responses.timetable.stale = true;
     responses.timetable.timestamp = "2026-10-01T00:00:00Z";
     render(<TimetableBuilderClient />);
-    expect(screen.getByText(/마지막 정상 저장본을 표시/)).toBeInTheDocument();
+    expect(screen.getByText(getDictionary("ko").pages.timetable.staleDataNotice)).toBeInTheDocument();
     expect(screen.getByText(/마지막 정상 조회:/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "다시 불러오기" })).toBeInTheDocument();
   });

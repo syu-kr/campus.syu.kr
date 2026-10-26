@@ -3,13 +3,14 @@
 import { Container } from "@/app/components/Container";
 import { Button, buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { Icon } from "@/app/components/Icon";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules, fetchPublicHolidays } from "@/lib/api";
-import { emptyPublicHolidays, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
+import { emptyPublicHolidays, formatPublicHolidayName, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
@@ -41,6 +42,7 @@ export default function SchedulePageClient({
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
   const holidayText = dictionary.publicHolidays;
+  const scheduleTitle = (schedule: AcademicSchedule) => schedule.id.startsWith("public-holiday-") ? schedule.title.split(" · ").map(name => formatPublicHolidayName(name, locale)).join(" · ") : schedule.title;
   const [now, setNow] = useState(() => new Date(initialNowIso));
   const { data: academicSchedules, isLoading, isError, refetch } = useQuery({
     queryKey: ["schedules"],
@@ -234,7 +236,7 @@ export default function SchedulePageClient({
         <button
           type="button"
           key={day}
-          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${isHoliday ? `, ${holidayText.label}: ${holiday.names.join(", ")}` : ""}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
+          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${isHoliday ? `, ${holidayText.label}: ${holiday.names.map(name => formatPublicHolidayName(name, locale)).join(", ")}` : ""}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
           aria-pressed={isSelected}
           aria-current={dateStr === initialDateStringDot ? "date" : undefined}
           onClick={() => setSelectedDate(dateStr)}
@@ -416,7 +418,7 @@ export default function SchedulePageClient({
                           {getScheduleTypeLabel(schedule)}
                         </span>
                         <div>
-                          <p className="font-medium">{schedule.title}</p>
+                          <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <p lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-medium">{translation.text("title", scheduleTitle(schedule))}</p>}</PublicContentTranslation>
                           <p className="text-xs text-neutral-600">
                             {formatDateRange(
                               schedule.startDate,
@@ -518,9 +520,7 @@ export default function SchedulePageClient({
                                     {schedule.category === "exam" && (
                                       <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
                                     )}
-                                    <h4 className="font-medium text-sm text-neutral-900">
-                                      {schedule.title}
-                                    </h4>
+                                    <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h4 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-medium text-sm text-neutral-900">{translation.text("title", scheduleTitle(schedule))}</h4>}</PublicContentTranslation>
                                   </div>
                                   <p className="text-xs text-neutral-600">
                                     {formatDateRange(
@@ -570,9 +570,7 @@ export default function SchedulePageClient({
                               {schedule.category === "exam" && (
                                 <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
                               )}
-                              <h3 className="font-semibold text-neutral-900">
-                                {schedule.title}
-                              </h3>
+                              <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h3 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-semibold text-neutral-900">{translation.text("title", scheduleTitle(schedule))}</h3>}</PublicContentTranslation>
                             </div>
                             <p className="text-xs text-neutral-600 mb-2">
                               {formatDateRange(

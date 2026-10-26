@@ -50,7 +50,7 @@ describe("Manna House menu", () => {
   it("shows today's menu above the weekly menu and distinguishes closed from unreadable meals", async () => {
     renderMenu();
     expect(await screen.findByText("목요일 중식")).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith(publicUrl, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith("/api/public-data/student-restaurant-1.json", expect.objectContaining({
       cache: "no-store", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer",
     }));
     expect(screen.getByRole("region", { name: text.title })).toBeInTheDocument();

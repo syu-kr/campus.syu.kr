@@ -2,7 +2,7 @@
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
-const { withSentryConfig } = require("@sentry/nextjs");
+const { withSentryConfig } = require("@sentry/nextjs/config");
 
 const PERMANENT_REDIRECTS = [
   ["/index", "/"],
@@ -22,6 +22,10 @@ const PERMANENT_REDIRECTS = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Keep verified fallback snapshots in serverless functions after switching the primary store.
+  outputFileTracingIncludes: {
+    "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json"],
+  },
   turbopack: {
     root: __dirname,
   },
@@ -61,12 +65,14 @@ const nextConfig = {
     optimizePackageImports: ["@tanstack/react-query"],
   },
 
-  rewrites: async () => [
-    {
-      source: "/bus/shuttle",
-      destination: "/api/bus/shuttle",
-    },
-  ],
+  rewrites: async () => ({
+    beforeFiles: process.env.PUBLIC_DATA_BACKEND === "firebase" ? [
+      { source: "/data/:fileName", destination: "/api/public-data/:fileName" },
+      { source: "/cafeteria/student-restaurant-1.json", destination: "/api/public-data/student-restaurant-1.json" },
+    ] : [],
+    afterFiles: [{ source: "/bus/shuttle", destination: "/api/bus/shuttle" }],
+    fallback: [],
+  }),
   redirects: async () =>
     PERMANENT_REDIRECTS.map(([source, destination]) => ({
       source,
@@ -154,10 +160,10 @@ const nextConfig = {
         source,
         headers: noStoreHeaders,
       })),
-      {
-        source: "/admin/:path*",
+      ...["/admin/:path*", "/en/admin/:path*"].map((source) => ({
+        source,
         headers: noIndexPrivatePageHeaders,
-      },
+      })),
       ...["/more/meet/:roomId", "/en/more/meet/:roomId"].map((source) => ({
         source,
         headers: noIndexPrivatePageHeaders,

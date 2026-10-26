@@ -12,11 +12,11 @@ from pypdf import PdfReader
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OCR_PATH = ROOT / "public/data/curriculum-courses-2025-ocr.json"
-VERIFICATION_PATH = ROOT / "public/data/curriculum-course-verifications.json"
+OCR_PATH = ROOT / "data-source/curriculum/curriculum-courses-2025-ocr.json"
+VERIFICATION_PATH = ROOT / "data-source/curriculum/curriculum-course-verifications.json"
 SOURCE_PATH = ROOT / "졸업요건/2025학년도-삼육대학교요람_졸업요건.pdf"
 FULL_SOURCE_PATH = ROOT / "졸업요건/★2025학년도-삼육대학교요람_국문수정.pdf"
-OUTPUT_PATH = ROOT / "public/data/curriculum-courses-2025-audit.json"
+OUTPUT_PATH = ROOT / "data-source/curriculum/curriculum-courses-2025-audit.json"
 
 PAGE_RE = re.compile(r"^OCR PAGE (\d+)$")
 SUSPICIOUS_NAME_PARTS = (

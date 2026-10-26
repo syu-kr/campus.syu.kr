@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: crawl-data-pages
+  group: ${{ vars.PUBLIC_DATA_BACKEND == 'firebase' && 'public-data-firebase' || 'crawl-data-pages' }}
   cancel-in-progress: false
 
 jobs:
@@ -37,6 +37,9 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
+      PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
+      PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
       PUBLIC_HOLIDAYS_ENABLED: ${{ vars.PUBLIC_HOLIDAYS_ENABLED }}
 
     steps:
@@ -64,7 +67,14 @@ jobs:
           restore-keys: student-restaurant-state-v1-
 
       - name: Restore current public data
-        run: npm run pull:crawl-data
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ "$PUBLIC_DATA_BACKEND" = "firebase" ]; then
+            npm run data:snapshot -- --pull-current
+          else
+            npm run pull:crawl-data
+          fi
 
       - name: Collect and validate 만나의집 menu
         env:
@@ -73,7 +83,15 @@ jobs:
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
         run: npm run collect:student-restaurant
 
+      - name: Publish validated Firebase snapshot
+        id: firebase
+        if: env.PUBLIC_DATA_BACKEND == 'firebase'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: npm run data:snapshot -- --publish --scope student-restaurant
+
       - name: Prepare public Pages artifact
+        if: env.PUBLIC_DATA_BACKEND != 'firebase'
         id: prepare
         run: npm run prepare:crawl-data-pages -- "$RUNNER_TEMP/crawl-data-pages-${GITHUB_RUN_ID}"
 
@@ -95,7 +113,7 @@ jobs:
 
       # Save only after successful deployment, or when the verified public data was unchanged.
       - name: Save successful internal image state
-        if: success() && (steps.deployment.outcome == 'success' || steps.prepare.outputs.changed == 'false')
+        if: success() && (steps.firebase.outcome == 'success' || steps.deployment.outcome == 'success' || steps.prepare.outputs.changed == 'false')
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .cache/student-restaurant/state.json

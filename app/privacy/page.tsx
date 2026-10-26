@@ -8,6 +8,7 @@ import {
 } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createPageMetadata } from "@/lib/page-metadata";
 
 const policySections = [
   ["개인정보의 처리 목적", "Purposes of Processing"],
@@ -56,7 +57,7 @@ async function getRequestLocale(): Promise<Locale> {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
 
-  return locale === "en"
+  const page = locale === "en"
     ? {
         title: "Privacy Policy",
         description: "SYU CAMPUS Privacy Policy",
@@ -65,6 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "개인정보처리방침",
         description: "SYU CAMPUS 개인정보처리방침",
       };
+  return createPageMetadata({ ...page, pathname: "/privacy", locale });
 }
 
 function RoommateRetention({ english = false }: { english?: boolean }) {

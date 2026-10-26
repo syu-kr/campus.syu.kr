@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { stripLocalePrefix } from "@/lib/i18n";
-import { readSessionValue, removeSessionValue, writeSessionValue } from "@/lib/browser-storage";
+import { readSessionValue, removeSessionValue } from "@/lib/browser-storage";
 import { useDictionary } from "./LocaleProvider";
 
 const key = "syu-campus-search-return";
@@ -32,18 +32,6 @@ export function SearchReturn() {
     const prior = parseSearchReturn(readSessionValue(key), location.origin);
     setSaved(current => prior ?? current);
     if (home && !query) { removeSessionValue(key); setSaved(null); }
-    if (!home || !query) return;
-    const capture = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      const anchor = (event.target as Element)?.closest<HTMLAnchorElement>("main a[href]");
-      if (!anchor || anchor.target || anchor.hasAttribute("download")) return;
-      const destination = new URL(anchor.href);
-      if (destination.origin !== location.origin || destination.pathname === pathname) return;
-      const next = { url: location.pathname + location.search, scrollY: window.scrollY, result: destination.pathname + destination.search + destination.hash };
-      writeSessionValue(key, JSON.stringify(next)); setSaved(next);
-    };
-    document.addEventListener("click", capture, true);
-    return () => document.removeEventListener("click", capture, true);
   }, [home, pathname, query]);
   useEffect(() => {
     if (!home || !query || !saved || location.pathname + location.search !== saved.url) return;

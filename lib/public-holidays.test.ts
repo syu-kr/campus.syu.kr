@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { PublicHolidaySnapshot } from "../types/public-holidays";
 import { getTodayInfo } from "./home";
-import { emptyPublicHolidays, getPublicHoliday, mergePublicHolidays, parsePublicHolidaySnapshot, PUBLIC_HOLIDAY_SOURCE_URL } from "./public-holidays";
+import { emptyPublicHolidays, formatPublicHolidayName, getPublicHoliday, mergePublicHolidays, parsePublicHolidaySnapshot, PUBLIC_HOLIDAY_SOURCE_URL } from "./public-holidays";
+import publicHolidayData from "@/public/data/public-holidays.json";
 
 const now = new Date("2026-10-05T00:00:00Z");
 const snapshot: PublicHolidaySnapshot = {
@@ -11,6 +12,12 @@ const snapshot: PublicHolidaySnapshot = {
 };
 
 describe("shared public holiday lookup", () => {
+  it("provides fixed English display names for all bundled public holidays without changing Korean sources", () => {
+    const names = Array.from(new Set(publicHolidayData.holidays.flatMap(holiday => holiday.names)));
+    for (const name of names) { expect(formatPublicHolidayName(name, "ko")).toBe(name);expect(formatPublicHolidayName(name, "en")).not.toMatch(/\p{Script=Hangul}/u); }
+    expect(formatPublicHolidayName("대체공휴일(개천절)", "en")).toBe("Substitute holiday (National Foundation Day)");
+    expect(formatPublicHolidayName("새로 지정된 기념일", "en")).toBe("새로 지정된 기념일");
+  });
   it("distinguishes known holidays, non-holidays, and missing coverage", () => {
     expect(getPublicHoliday("2026.10.05", snapshot, now).status).toBe("holiday");
     expect(getPublicHoliday("2026-10-06", snapshot, now).status).toBe("not-holiday");

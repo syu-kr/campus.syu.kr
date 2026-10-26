@@ -4,6 +4,11 @@ import { Building } from "../lib/mapData";
 import { useEffect, useRef } from "react";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { formatMapCountSummary } from "../lib/mapI18n";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+}
 
 interface BuildingMarkerProps {
   building: Building;
@@ -26,6 +31,8 @@ export function BuildingMarker({
 }: BuildingMarkerProps) {
   const markerRef = useRef<KakaoMarker | null>(null);
   const infoWindowRef = useRef<KakaoInfoWindow | null>(null);
+  const translation = useContentTranslation({ kind: "map", id: building.id }, { name: building.name });
+  const displayName = translation.text("name", building.name);
 
   useEffect(() => {
     const kakaoMaps = window.kakao?.maps as KakaoMapsNamespace | undefined;
@@ -67,7 +74,7 @@ export function BuildingMarker({
       const marker = new kakaoMaps.Marker({
         position: position,
         image: markerImage,
-        title: building.name,
+        title: displayName,
       });
 
       marker.setMap(map);
@@ -77,13 +84,13 @@ export function BuildingMarker({
       // 마커에 클릭 이벤트 추가
       const content = `
         <div style="width: 100%; padding: 12px; min-width: 250px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); box-sizing: border-box; border: none; outline: none;">
-          <h3 style="font-weight: bold; font-size: 14px; color: #111; margin: 0 0 6px 0;">${building.name}</h3>
-          <p style="font-size: 12px; color: #666; margin: 0;">${formatMapCountSummary(
+          <h3 lang="${escapeHtml(translation.lang)}" style="font-weight: bold; font-size: 14px; color: #111; margin: 0 0 6px 0;">${escapeHtml(displayName)}</h3>
+          <p style="font-size: 12px; color: #666; margin: 0;">${escapeHtml(formatMapCountSummary(
             building.floors.length,
             building.floors.reduce((acc, f) => acc + f.facilities.length, 0),
             locale,
             labels,
-          )}</p>
+          ))}</p>
         </div>
       `;
 
@@ -115,7 +122,7 @@ export function BuildingMarker({
       markerRef.current = null;
       infoWindowRef.current = null;
     };
-  }, [building, labels, locale, map, onClick, onInfoWindowOpen]);
+  }, [building, labels, locale, map, onClick, onInfoWindowOpen, displayName, translation.lang]);
 
   // isHighlighted 변경 시 InfoWindow 자동 열기/닫기
   useEffect(() => {
@@ -131,7 +138,7 @@ export function BuildingMarker({
     } else {
       infoWindowRef.current.close();
     }
-  }, [isHighlighted, map, onInfoWindowOpen, building, labels, locale]);
+  }, [isHighlighted, map, onInfoWindowOpen, building, labels, locale, displayName, translation.lang]);
 
   return null;
 }

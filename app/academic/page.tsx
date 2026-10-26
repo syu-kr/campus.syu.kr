@@ -1,3 +1,4 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import { Metadata } from "next";
 import { headers } from "next/headers";
 
@@ -6,7 +7,6 @@ import { Container } from "@/app/components/Container";
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
-  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
@@ -21,18 +21,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.academic.title} | SYU CAMPUS`,
-    description: dictionary.academic.metaDescription,
+    ...createPageMetadata({
+      title: `${dictionary.academic.title} | SYU CAMPUS`,
+      description: dictionary.academic.metaDescription,
+      pathname: "/academic",
+      locale,
+    }),
     keywords:
       locale === "en"
         ? "academic, academic schedule, academic notices, graduation, timetable"
         : "학사,학사일정,학사공지,졸업요건,시간표",
-    openGraph: {
-      title: `${dictionary.academic.title} | SYU CAMPUS`,
-      description: dictionary.academic.metaDescription,
-      type: "website",
-      url: `https://campus.syu.kr${localizePath("/academic", locale)}`,
-    },
   };
 }
 

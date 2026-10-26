@@ -105,14 +105,17 @@ export function CampusTipSuggestionForm({
       const data = await response.json();
 
       if (!response.ok) {
-        const serverError = getServerFieldError(data.code, data.error, text);
-        if (data.field && ["title","description","url"].includes(data.field)) {
+        const serverError = getServerFieldError(data?.code, text);
+        if (data?.field && ["title","description","url"].includes(data.field)) {
           setFieldErrors({ [data.field]: serverError });
           focusFormError(submittedForm);
           return;
         }
-        throw new Error(serverError || text.submitFailed);
+        setResultModal({ type: "error", title: text.submitFailed, message: serverError });
+        return;
       }
+
+      if (data?.success !== true) throw new Error("Invalid submission response");
 
       setResultModal({
         type: "success",
@@ -133,11 +136,11 @@ export function CampusTipSuggestionForm({
       setNote("");
       setContact("");
       setWebsite("");
-    } catch (err) {
+    } catch {
       setResultModal({
         type: "error",
-        title: text.submitFailed,
-        message: err instanceof Error ? err.message : text.submitFailed,
+        title: text.submitUnconfirmedTitle,
+        message: text.submitUnconfirmed,
       });
     } finally {
       setIsSubmitting(false);
@@ -434,7 +437,6 @@ function getCampusTipCategories(text: CampusTipsDictionary): Array<{
 
 function getServerFieldError(
   code: string | undefined,
-  error: string | undefined,
   text: CampusTipSuggestDictionary,
 ) {
   if (code === "TITLE_REQUIRED") return text.titleRequired;
@@ -442,8 +444,8 @@ function getServerFieldError(
   if (code === "DESCRIPTION_REQUIRED") return text.descriptionRequired;
   if (code === "INVALID_URL") return text.invalidUrl;
 
-  if (code === "RATE_LIMITED") return error || text.submitFailed;
-  return text.submitFailed;
+  if (code === "RATE_LIMITED") return text.rateLimited;
+  return text.submitRetry;
 }
 
 function isValidHttpUrl(value: string): boolean {

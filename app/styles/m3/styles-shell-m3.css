@@ -34,7 +34,7 @@
 .m3-home-status button:disabled{opacity:.45;cursor:not-allowed}
 .m3-home-status [data-state=error],.m3-home-status [data-state=stale]{color:var(--sys-error)}
 .m3-home-stop{display:grid;gap:4px;margin-bottom:12px;font-size:12px}
-.m3-home-stop select{max-width:100%;width:100%}
+.m3-home-stop :is(select,.m3-select-trigger){min-width:0;max-width:100%;width:100%}
 .m3-home-empty{font-size:16px;font-weight:600;line-height:1.5;min-height:64px}
 .m3-notice-workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;max-width:1440px;margin:auto;min-width:0}
 .m3-notice-preview{position:sticky;top:calc(var(--header-height) + 20px);align-self:start;max-height:calc(100dvh - var(--header-height) - 40px);overflow:auto;border:1px solid var(--sys-outline-variant);border-radius:24px;padding:24px;background:var(--sys-surface-lowest)}

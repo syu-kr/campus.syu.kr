@@ -297,7 +297,13 @@
   border-radius:14px;
   background:var(--academic-surface-low);
   line-height:1.75;
+  color:var(--sys-on-surface-variant);
 }
+.m3-graduation-next-condition{margin:0;color:var(--sys-on-surface-variant);line-height:1.75;}
+.m3-graduation-pending-step{border-block:1px solid var(--sys-outline-variant);padding:4px 0;color:var(--sys-on-surface-variant);}
+.m3-graduation-pending-step>summary h2{margin:0;color:var(--sys-on-surface);font-size:var(--type-title-size);}
+.m3-graduation-pending-step>div{padding:12px 0 16px;}
+.m3-timetable-loading>p{margin:0;color:var(--sys-on-surface-variant);font-size:var(--type-label-size);}
 .m3-content[data-site-route="/academic/graduation"] label.border{
   min-width:0;
   border-radius:16px;
@@ -451,6 +457,14 @@
   .m3-content[data-site-route="/academic/graduation"] .rounded-card>div.mt-5>div.border-t{
     margin-top:20px;
     padding-top:20px;
+  }
+}
+@media(max-width:359px){
+  .timetable-page>section.m3-timetable-summary[data-empty=true]>div:first-child{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .timetable-page>section.m3-timetable-summary[data-empty=true]>div:first-child>button{
+    grid-column:auto;
   }
 }
 @media print{

@@ -4,6 +4,7 @@ import { Container } from "@/app/components/Container";
 import { buttonStyles } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
@@ -26,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Dictionary } from "@/lib/i18n";
 import type { LiveDataResponse } from "@/types/live-data";
 import initialShuttleSpecialPeriods from "@/public/data/shuttle-special-periods.json";
+import { getPublicContentAlias } from "@/lib/public-content-aliases";
 
 type LibraryDictionary = Dictionary["pages"]["library"];
 type ReadingRoomStatusPayload = LiveDataResponse<ReadingRoom[]>;
@@ -137,6 +139,13 @@ export default function LibraryPage() {
   }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
+  const hoursTranslation = useContentTranslation({ kind: "library", id: selectedSeason }, Object.fromEntries(currentHours.floors.flatMap((floor, floorIndex) => [
+    [`floors.${floorIndex}.name`, floor.name],
+    ...floor.rooms.flatMap((room, roomIndex) => isLibraryRoomVisible(room.name) ? [
+      [`floors.${floorIndex}.rooms.${roomIndex}.name`, room.name],
+      ...(room.note ? [[`floors.${floorIndex}.rooms.${roomIndex}.note`, room.note]] : []),
+    ] : []),
+  ])));
   const renderRefreshButton = (className = "") => (
     <button
       type="button"
@@ -208,7 +217,7 @@ export default function LibraryPage() {
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <strong className="text-neutral-900">
-                        {room.strRoomNm}
+                        {getPublicContentAlias(room.strRoomNm, locale)}
                       </strong>
                       {roomSeatMapUrl && (
                         <button
@@ -292,18 +301,18 @@ export default function LibraryPage() {
         <div className="space-y-6">
           {currentHours.floors.map((floor, floorIdx) => (
             <Card key={floorIdx} className="border border-neutral-300">
-              <h3 className="font-bold text-neutral-900 mb-4 text-lg">
-                {floor.name}
+              <h3 lang={hoursTranslation.lang} className="font-bold text-neutral-900 mb-4 text-lg">
+                {hoursTranslation.text(`floors.${floorIdx}.name`, floor.name)}
               </h3>
               <div className="space-y-3">
-                {floor.rooms.filter((room) => isLibraryRoomVisible(room.name)).map((room, roomIdx) => (
+                {floor.rooms.map((room, roomIdx) => isLibraryRoomVisible(room.name) && (
                   <div
                     key={roomIdx}
                     className="border-t border-neutral-200 pt-3 first:border-t-0 first:pt-0"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-semibold text-neutral-900">
-                        {room.name}
+                      <h4 lang={hoursTranslation.lang} className="font-semibold text-neutral-900">
+                        {hoursTranslation.text(`floors.${floorIdx}.rooms.${roomIdx}.name`, room.name)}
                       </h4>
                     </div>
                     <div className="grid grid-cols-3 gap-3 mb-2 text-sm">
@@ -336,8 +345,8 @@ export default function LibraryPage() {
                       </div>
                     </div>
                     {room.note && (
-                      <p className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
-                        {room.note}
+                      <p lang={hoursTranslation.lang} className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
+                        {hoursTranslation.text(`floors.${floorIdx}.rooms.${roomIdx}.note`, room.note)}
                       </p>
                     )}
                   </div>

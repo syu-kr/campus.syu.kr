@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { unstable_rethrow } from "next/navigation";
 import { readResponseBytes } from "./read-response-bytes";
+import { getActivePublicData, publicDataFirebaseEnabled, readFirebasePublicData } from "./public-data-storage";
 import {
   CRAWL_DATA_MAX_BYTES,
   type CrawlDataManifest,
@@ -28,7 +29,7 @@ interface ManifestCacheEntry {
 
 export interface CrawlDataSnapshot<T> {
   data: T;
-  source: "github-pages" | "bundled-fallback";
+  source: "github-pages" | "firebase-storage" | "bundled-fallback";
   version: string;
   publishedAt?: string;
   sourceHealth?: CrawlSourceHealth;
@@ -41,6 +42,7 @@ const remoteDataCache = new Map<string, Promise<unknown>>();
 export async function readDailyCrawlSourceHealth(): Promise<
   NonNullable<CrawlDataManifest["sourceHealth"]>
 > {
+  if (publicDataFirebaseEnabled()) return (await getActivePublicData()).manifest.sourceHealth;
   const manifest = await getCurrentManifest(getCrawlDataBaseUrl());
   return manifest.sourceHealth ?? {};
 }
@@ -56,6 +58,10 @@ export async function readDailyCrawlDataSnapshot<T>(
   fileName: DailyCrawlDataFile,
 ): Promise<CrawlDataSnapshot<T>> {
   try {
+    if (publicDataFirebaseEnabled()) {
+      const snapshot = await readFirebasePublicData<T>(fileName);
+      return { data: snapshot.data, source: "firebase-storage", version: snapshot.manifest.version, publishedAt: snapshot.manifest.publishedAt, sourceHealth: snapshot.manifest.sourceHealth[fileName] };
+    }
     return await readRemoteSnapshot<T>(fileName);
   } catch (error) {
     unstable_rethrow(error);
@@ -195,7 +201,7 @@ function warnRemoteFallback(fileName: DailyCrawlDataFile, error: unknown) {
   if (remoteWarningExpiresAt > now) return;
   remoteWarningExpiresAt = now + MANIFEST_CACHE_TTL_MS;
   console.warn(
-    `[crawl-data] ${fileName} Pages 조회 실패, 번들 데이터로 대체합니다.`,
+    `[crawl-data] ${fileName} 원격 조회 실패, 번들 데이터로 대체합니다.`,
     error,
   );
 }

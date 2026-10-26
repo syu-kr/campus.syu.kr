@@ -70,7 +70,7 @@ it("restores allowed choices after mounting without re-fetching fresh server sna
   sessionStorage.setItem("campus-m3-home-stop", "humun-down");
   render(view());
   await waitFor(() => expect(screen.getByRole("button", { name: text.publicTransit })).toHaveAttribute("aria-pressed", "true"));
-  expect(screen.getByRole("combobox", { name: text.busStop })).toHaveValue("humun-down");
+  expect(screen.getByRole("combobox", { name: text.busStop })).toHaveAttribute("data-value", "humun-down");
   await waitFor(() => expect(fetchTransit).toHaveBeenCalledOnce());
   Object.values(api).forEach((reader) => expect(reader).not.toHaveBeenCalled());
   expect(sessionStorage.getItem("campus-m3-home-transport")).toBe("transit");
@@ -89,11 +89,38 @@ it("keeps selection usable when browser storage is denied and ignores invalid st
   const write = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new DOMException("Denied", "SecurityError"); });
   render(view());
   fireEvent.click(screen.getByRole("button", { name: text.publicTransit }));
-  await waitFor(() => expect(screen.getByRole("combobox", { name: text.busStop })).toHaveValue("jungmun-up"));
-  fireEvent.change(screen.getByRole("combobox", { name: text.busStop }), { target: { value: "humun-up" } });
-  expect(screen.getByRole("combobox", { name: text.busStop })).toHaveValue("humun-up");
+  const trigger = await screen.findByRole("combobox", { name: text.busStop });
+  expect(trigger).toHaveAttribute("data-value", "jungmun-up");
+  fireEvent.click(trigger);
+  const option = await screen.findByRole("option", { name: getDictionary("ko").pages.busInfo.stopLabels.humunUp });
+  fireEvent.pointerDown(option);
+  fireEvent.click(option);
+  expect(trigger).toHaveAttribute("data-value", "humun-up");
   expect(read).toHaveBeenCalled();
   expect(write).toHaveBeenCalled();
+});
+
+it.each(["ko", "en"] as const)("uses the shared stop popup and preserves choices, focus and detail navigation in %s", async (locale) => {
+  const dictionary = getDictionary(locale), overview = dictionary.home.overview, labels = dictionary.pages.busInfo.stopLabels;
+  render(view(locale));
+  fireEvent.click(screen.getByRole("button", { name: overview.publicTransit }));
+  const trigger = screen.getByRole("combobox", { name: overview.busStop });
+  expect(trigger).toHaveAttribute("data-variant", "tonal");
+  trigger.focus();
+  fireEvent.keyDown(trigger, { key: "ArrowDown" });
+  const options = await screen.findAllByRole("option");
+  expect(options.map(option => option.textContent)).toEqual([labels.jungmunUp, labels.jungmunDown, labels.humunUp, labels.humunDown]);
+  expect(options[0]).toHaveAttribute("aria-selected", "true");
+  fireEvent.keyDown(options[0], { key: "Escape" });
+  await waitFor(() => expect(trigger).toHaveFocus());
+  expect(trigger).toHaveAttribute("aria-expanded", "false");
+  fireEvent.click(trigger);
+  const next = await screen.findByRole("option", { name: labels.humunDown });
+  fireEvent.pointerDown(next);
+  fireEvent.click(next);
+  expect(trigger).toHaveAttribute("data-value", "humun-down");
+  expect(sessionStorage.getItem("campus-m3-home-stop")).toBe("humun-down");
+  expect(screen.getByRole("link", { name: new RegExp(overview.busInfo) })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/campus/bus-info?tab=public-transit&stop=humun-down`);
 });
 
 

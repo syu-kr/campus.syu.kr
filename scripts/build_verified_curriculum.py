@@ -8,8 +8,8 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OCR_PATH = ROOT / "public/data/curriculum-courses-2025-ocr.json"
-VERIFICATION_PATH = ROOT / "public/data/curriculum-course-verifications.json"
+OCR_PATH = ROOT / "data-source/curriculum/curriculum-courses-2025-ocr.json"
+VERIFICATION_PATH = ROOT / "data-source/curriculum/curriculum-course-verifications.json"
 OUTPUT_PATH = ROOT / "public/data/curriculum-courses-2025-verified.json"
 
 

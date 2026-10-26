@@ -14,12 +14,12 @@ const sha256 = (relativePath) =>
     .digest("hex")
     .toUpperCase();
 
-const ocrData = readJson("public/data/curriculum-courses-2025-ocr.json");
+const ocrData = readJson("data-source/curriculum/curriculum-courses-2025-ocr.json");
 const verificationData = readJson(
-  "public/data/curriculum-course-verifications.json",
+  "data-source/curriculum/curriculum-course-verifications.json",
 );
 const verifiedData = readJson("public/data/curriculum-courses-2025-verified.json");
-const auditData = readJson("public/data/curriculum-courses-2025-audit.json");
+const auditData = readJson("data-source/curriculum/curriculum-courses-2025-audit.json");
 const selectionRuleData = readJson(
   "public/data/curriculum-course-selection-rules.json",
 );

@@ -12,6 +12,8 @@ import {
 } from "@/lib/utils";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
+import { useContentTranslation } from "./ContentTranslation";
+import { announcementTranslationFields } from "@/lib/content-translation";
 
 interface AnnouncementCardProps {
   announcement: Announcement;
@@ -29,7 +31,8 @@ function AnnouncementCardComponent({
   external = false,
 }: AnnouncementCardProps) {
   const dictionary = useDictionary();
-  const overlayLabel = `${announcement.title} ${dictionary.labels.notice}`;
+  const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, announcementTranslationFields(announcement));
+  const overlayLabel = `${translation.text("title", announcement.title)} ${dictionary.labels.notice}`;
   const overlayClassName =
     "absolute inset-0 z-10 rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2";
   const content = (
@@ -81,21 +84,22 @@ function AnnouncementCardComponent({
             </Badge>
           )}
         </div>
-        <h3 className="font-semibold text-neutral-900 line-clamp-2">
-          {announcement.title}
+        <h3 lang={translation.lang} className="font-semibold text-neutral-900 line-clamp-2">
+          {translation.text("title", announcement.title)}
         </h3>
         {announcement.aiSummary?.summary && aiSummaryMode === "preview" && (
           <AnnouncementAiSummary
             aiSummary={announcement.aiSummary}
             variant="preview"
+            translation={translation}
           />
         )}
         {announcement.aiSummary?.summary && aiSummaryMode === "action" && (
-          <AnnouncementAiSummary aiSummary={announcement.aiSummary} />
+          <AnnouncementAiSummary aiSummary={announcement.aiSummary} translation={translation} />
         )}
         <div className="flex items-center justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-100">
           <span>{formatDateWithYear(announcement.date)}</span>
-          <span>{announcement.author || dictionary.labels.sahmyookUniversity}</span>
+          <span lang={announcement.author ? "ko" : undefined} translate={announcement.author ? "no" : undefined}>{announcement.author || dictionary.labels.sahmyookUniversity}</span>
         </div>
       </div>
     </Card>

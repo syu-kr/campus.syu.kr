@@ -14,6 +14,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+import { createPageMetadata } from "@/lib/page-metadata";
 
 const REVISED_TERMS_EFFECTIVE_AT = Date.parse("2026-11-04T00:00:00+09:00");
 
@@ -29,7 +30,7 @@ async function getRequestLocale(): Promise<Locale> {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
 
-  return locale === "en"
+  const page = locale === "en"
     ? {
         title: revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use",
         description: "SYU CAMPUS Terms of Use",
@@ -38,6 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)",
         description: "SYU CAMPUS 이용약관",
       };
+  return createPageMetadata({ ...page, pathname: "/terms", locale });
 }
 
 function TermsRevisionNotice({ locale }: { locale: Locale }) {

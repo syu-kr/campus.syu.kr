@@ -4,13 +4,11 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin
-Disallow: /more/campus-tips/suggest
 
 # Locale-prefixed equivalents
 Allow: /en/
 Disallow: /en/api/
 Disallow: /en/admin
-Disallow: /en/more/campus-tips/suggest
 
 # Block bad bots
 User-agent: MJ12bot

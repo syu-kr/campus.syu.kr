@@ -5,6 +5,7 @@ import { Modal } from "@/app/components/Modal";
 import { buttonStyles } from "@/app/components/Button";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { useContentTranslation, PublicContentTranslation } from "@/app/components/ContentTranslation";
 import { getVisibleTimetableDays } from "@/lib/timetable-display";
 import type { LectureDay, LectureTimeSlot, LectureTimetableCourse } from "@/lib/lecture-timetable";
 import "./academic-presentation.css";
@@ -19,6 +20,14 @@ interface Props {
   periodTimeLabel: (period: number) => string;
   completionLabel: (value: string) => string;
   renderWeek: (onOpenCourse?: (course: LectureTimetableCourse) => void) => ReactNode;
+}
+
+export function publicCourseFields(course: LectureTimetableCourse) {
+  return { courseName: course.courseName, departmentName: course.departmentName ?? "", collegeName: course.collegeName ?? "", areaType: course.areaType ?? "", place: course.place ?? "", note: course.note ?? "" };
+}
+
+function TranslatedCourse({ course, children }: { course: LectureTimetableCourse; children: (translation: ReturnType<typeof useContentTranslation>) => ReactNode }) {
+  return <PublicContentTranslation source={{ kind: "course", id: course.id }} content={publicCourseFields(course)}>{children}</PublicContentTranslation>;
 }
 
 export function getAcademicAgendaRows(courses: LectureTimetableCourse[], day: LectureDay) {
@@ -41,10 +50,11 @@ export function AcademicTimetableCell({ course, onOpenCourse, className, childre
   children: ReactNode;
 }) {
   const text = useDictionary().pages.timetable.presentation;
+  const translation = useContentTranslation({ kind: "course", id: course.id }, { courseName: course.courseName });
   if (!onOpenCourse) return <div className={className}>{children}</div>;
   return (
     <button type="button" className={`m3-academic-week-course ${className || ""}`}
-      onClick={() => onOpenCourse(course)} aria-label={`${course.courseName} ${text.details}`}
+      onClick={() => onOpenCourse(course)} aria-label={`${translation.text("courseName", course.courseName)} ${text.details}`}
       aria-haspopup="dialog" data-academic-course-id={course.id}>
       {children}
     </button>
@@ -69,18 +79,18 @@ export function AcademicTimetablePresentation({ contextLabel, referenceCourses, 
   const dayName = (value: LectureDay) => copy.fullDayLabel.replace("{day}", dayLabel(value));
   const credit = (course: LectureTimetableCourse) => course.credits == null ? "—" : `${course.credits}${locale === "ko" ? "" : " "}${text.creditsUnit}`;
   const courseRow = (course: LectureTimetableCourse, time?: ReturnType<typeof getAcademicSlotTime>, key = course.id) => (
-    <li key={key}>
+    <TranslatedCourse key={key} course={course}>{translation => <li>
       <button type="button" className="m3-academic-agenda-course" onClick={() => openCourse(course)}
-        aria-label={`${course.courseName} ${copy.details}`} aria-haspopup="dialog" data-academic-course-id={course.id}>
+        aria-label={`${translation.text("courseName", course.courseName)} ${copy.details}`} aria-haspopup="dialog" data-academic-course-id={course.id}>
         <span className="m3-academic-agenda-time">{time ? <>{time.start}<span>–{time.end}</span></> : text.timeMissing}</span>
         <span className="m3-academic-agenda-copy">
-          <strong>{course.courseName}</strong><span>{course.place || text.placeMissing}</span>
-          <span>{[course.professor || text.professorMissing, course.completionType ? completionLabel(course.completionType) : undefined, credit(course)].filter(Boolean).join(" · ")}</span>
+          <strong lang={translation.lang}>{translation.text("courseName", course.courseName)}</strong><span lang={translation.lang}>{translation.text("place", course.place || text.placeMissing)}</span>
+          <span><span lang={course.professor ? "ko" : locale} translate="no">{course.professor || text.professorMissing}</span>{[course.completionType ? completionLabel(course.completionType) : undefined, credit(course)].filter(Boolean).map((part, index) => <span key={index}> · {part}</span>)}</span>
           {conflictCourseIds.has(course.id) && <span className="m3-academic-conflict">{text.conflictBadge}</span>}
         </span>
         <span className="m3-academic-agenda-chevron" aria-hidden="true">›</span>
       </button>
-    </li>
+    </li>}</TranslatedCourse>
   );
 
   // Both compact selected-course views are server-rendered; CSS chooses the viewport without a hydration swap.
@@ -113,41 +123,41 @@ export function AcademicTimetablePresentation({ contextLabel, referenceCourses, 
         {days.map((value) => {
           const printRows = getAcademicAgendaRows(selectedCourses, value);
           return printRows.length > 0 && <section key={value}><h4>{dayName(value)}</h4><ul>
-            {printRows.map(({ course, slot, key }) => <li key={key}>
-              <strong>{getAcademicSlotTime(slot, periodTimeLabel).label} · {course.courseName}</strong>
-              <span>{[course.professor || text.professorMissing, course.place || text.placeMissing, credit(course)].join(" · ")}</span>
+            {printRows.map(({ course, slot, key }) => <TranslatedCourse key={key} course={course}>{translation => <li>
+              <strong lang={translation.lang}>{getAcademicSlotTime(slot, periodTimeLabel).label} · {translation.text("courseName", course.courseName)}</strong>
+              <span><span lang={course.professor ? "ko" : locale} translate="no">{course.professor || text.professorMissing}</span> · {translation.text("place", course.place || text.placeMissing)} · {credit(course)}</span>
               {conflictCourseIds.has(course.id) && <span>{text.conflictBadge}</span>}
-            </li>)}
+            </li>}</TranslatedCourse>)}
           </ul></section>;
         })}
-        {unscheduled.length > 0 && <section><h4>{text.timeMissing}</h4><ul>{unscheduled.map((course) => <li key={course.id}>
-          <strong>{course.courseName}</strong><span>{[course.professor || text.professorMissing, course.place || text.placeMissing, credit(course)].join(" · ")}</span>
-        </li>)}</ul></section>}
+        {unscheduled.length > 0 && <section><h4>{text.timeMissing}</h4><ul>{unscheduled.map((course) => <TranslatedCourse key={course.id} course={course}>{translation => <li>
+          <strong lang={translation.lang}>{translation.text("courseName", course.courseName)}</strong><span><span lang={course.professor ? "ko" : locale} translate="no">{course.professor || text.professorMissing}</span> · {translation.text("place", course.place || text.placeMissing)} · {credit(course)}</span>
+        </li>}</TranslatedCourse>)}</ul></section>}
         {selectedCourses.length === 0 && <p>{text.selectedEmpty}</p>}
       </section>
-      {detailCourse && <Modal isOpen onClose={() => setDetailId(null)} title={detailCourse.courseName}
+      {detailCourse && <TranslatedCourse course={detailCourse}>{translation => <Modal isOpen onClose={() => setDetailId(null)} title={translation.text("courseName", detailCourse.courseName)}
         description={copy.detailsDescription} size="sm" className="m3-academic-course-dialog">
         {conflictCourseIds.has(detailCourse.id) && <p className="m3-academic-detail-conflict">{text.conflictSummaryTitle}</p>}
         <dl className="m3-academic-course-details">
           <Detail label={copy.courseId} value={detailCourse.id} />
           {detailCourse.courseCode && <Detail label={copy.courseCode} value={detailCourse.courseCode} />}
-          {detailCourse.departmentName && <Detail label={text.department} value={detailCourse.departmentName} />}
-          {detailCourse.collegeName && <Detail label={text.college} value={detailCourse.collegeName} />}
+          {detailCourse.departmentName && <Detail label={text.department} value={translation.text("departmentName", detailCourse.departmentName)} />}
+          {detailCourse.collegeName && <Detail label={text.college} value={translation.text("collegeName", detailCourse.collegeName)} />}
           {detailCourse.grade && <Detail label={text.grade} value={String(detailCourse.grade)} />}
-          <Detail label={copy.professor} value={detailCourse.professor || text.professorMissing} />
-          <Detail label={text.time} value={detailCourse.classTime || text.timeMissing} />
+          <Detail label={copy.professor} value={<span lang={detailCourse.professor ? "ko" : locale} translate="no">{detailCourse.professor || text.professorMissing}</span>} />
+          <Detail label={text.time} value={<span translate="no">{detailCourse.classTime || text.timeMissing}</span>} />
           {detailCourse.timeSlots.length > 0 && <Detail label={copy.classTimes} value={<ul>{detailCourse.timeSlots.map((slot, index) => <li key={index}>
             {dayLabel(slot.day)} {periodLabel(slot.startPeriod)}{slot.endPeriod !== slot.startPeriod ? `–${periodLabel(slot.endPeriod)}` : ""}<br />{getAcademicSlotTime(slot, periodTimeLabel).label}
           </li>)}</ul>} />}
-          <Detail label={text.place} value={detailCourse.place || text.placeMissing} />
+          <Detail label={text.place} value={translation.text("place", detailCourse.place || text.placeMissing)} />
           <Detail label={copy.credits} value={credit(detailCourse)} />
           {detailCourse.completionType && <Detail label={text.completionType} value={completionLabel(detailCourse.completionType)} />}
-          {detailCourse.areaType && <Detail label={text.areaType} value={detailCourse.areaType} />}
-          {detailCourse.teamTeaching && <Detail label={text.teamTeaching} value={detailCourse.teamTeaching} />}
-          {detailCourse.note && <Detail label={text.note} value={detailCourse.note} />}
+          {detailCourse.areaType && <Detail label={text.areaType} value={translation.text("areaType", detailCourse.areaType)} />}
+          {detailCourse.teamTeaching && <Detail label={text.teamTeaching} value={<span translate="no">{detailCourse.teamTeaching}</span>} />}
+          {detailCourse.note && <Detail label={text.note} value={translation.text("note", detailCourse.note)} />}
         </dl>
         <button type="button" className={buttonStyles("primary", "m3-academic-detail-close")} onClick={() => setDetailId(null)}>{text.close}</button>
-      </Modal>}
+      </Modal>}</TranslatedCourse>}
     </div>
   );
 }

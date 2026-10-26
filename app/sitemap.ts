@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const noticeRoutes: MetadataRoute.Sitemap = serviceNotices.map((notice) => ({
     url: `${BASE_URL}/service/notices/${notice.slug}`,
-    lastModified: notice.date,
+    lastModified: notice.modifiedAt ?? notice.date,
     changeFrequency: "monthly",
     priority: 0.5,
     alternates: createAlternates(`/service/notices/${notice.slug}`),
@@ -35,7 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const englishNoticeRoutes: MetadataRoute.Sitemap = serviceNotices.map(
     (notice) => ({
       url: `${BASE_URL}${localizePath(`/service/notices/${notice.slug}`, "en")}`,
-      lastModified: notice.date,
+      lastModified: notice.modifiedAt ?? notice.date,
       changeFrequency: "monthly",
       priority: 0.4,
       alternates: createAlternates(`/service/notices/${notice.slug}`),

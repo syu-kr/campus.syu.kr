@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Icon } from "@/app/components/Icon";
+import { M3Select } from "@/app/components/M3Select";
 import { localizePath } from "@/lib/i18n";
 import { getTodayInfo } from "@/lib/home";
 import { getCafeteriaWeekMenus, isCafeteriaMenuDataStale, isCafeteriaClosedDay, isClosedMealItems, type CafeteriaSnapshot } from "@/lib/cafeteria";
@@ -16,6 +17,8 @@ import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRes
 import type { BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import type { LiveDataResponse } from "@/types/live-data";
 import { HomeWeatherLine } from "./HomeWeatherLine";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
+import { getPublicContentAlias } from "@/lib/public-content-aliases";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -96,8 +99,11 @@ function SuMeal({ now, initial }: { now: Date | null; initial: HomeOverviewData 
   return <>
     <p className="m3-home-context">{text.suLoungeTitle} · {overview.lunchCorner.replace("{corner}", corner.toUpperCase())}</p>
     {message ? <p className="m3-home-empty">{message}</p> : <>
-      <strong className="m3-home-food">{lunch?.[0]?.name}</strong>
-      <p className="m3-home-sides">{lunch?.slice(1).map((item) => item.name).join(" · ")}</p>
+      {meal && <PublicContentTranslation source={{ kind: "cafeteria", id: meal.id }}
+        content={Object.fromEntries((lunch ?? []).map((item, index) => [`lunch.${corner}.${index}`, item.name]))}>{translation => <>
+          <strong lang={translation.lang} className="m3-home-food">{translation.text(`lunch.${corner}.0`, lunch?.[0]?.name ?? "")}</strong>
+          <p lang={translation.lang} className="m3-home-sides">{lunch?.slice(1).map((item, index) => translation.text(`lunch.${corner}.${index + 1}`, item.name)).join(" · ")}</p>
+        </>}</PublicContentTranslation>}
     </>}
     <Status state={food.isPending || food.isFetching ? "loading" : food.isError ? "error" : stale ? "stale" : "fresh"}
       busy={food.isFetching} onRetry={hasRetryableFailure(food) ? () => void food.refetch() : undefined} />
@@ -116,8 +122,11 @@ function MannaMeal({ today }: { today: string }) {
   return <>
     <p className="m3-home-context">{overview.mannaLunch}</p>
     {message ? <p className="m3-home-empty">{message}</p> : <>
-      <strong className="m3-home-food">{lunch?.[0]}</strong>
-      <p className="m3-home-sides">{lunch?.slice(1).join(" · ")}</p>
+      {day && <PublicContentTranslation source={{ kind: "student-restaurant", id: day.date }}
+        content={Object.fromEntries((lunch ?? []).map((item, index) => [`lunch.${index}`, item]))}>{translation => <>
+          <strong lang={translation.lang} className="m3-home-food">{translation.text("lunch.0", lunch?.[0] ?? "")}</strong>
+          <p lang={translation.lang} className="m3-home-sides">{lunch?.slice(1).map((item, index) => translation.text(`lunch.${index + 1}`, item)).join(" · ")}</p>
+        </>}</PublicContentTranslation>}
     </>}
     <Status state={!query.isConfigured ? "unavailable" : query.isPending || query.isFetching ? "loading" :
       query.isError ? "error" : missingDay || lunch === null ? "stale" : "fresh"}
@@ -127,6 +136,7 @@ function MannaMeal({ today }: { today: string }) {
 
 function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverviewData }) {
   const text = useDictionary().home.overview;
+  const locale = useLocale();
   const buses = useQuery({
     queryKey: ["shuttle-buses"], queryFn: fetchShuttleBuses,
     initialData: initial.shuttles, initialDataUpdatedAt: initial.updatedAt,
@@ -161,7 +171,7 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
             const next = summary.departures.find((item) => item.routeName === bus.routeName);
             return <li key={bus.id} className="m3-home-shuttle-row">
               <div>
-                <strong className="m3-home-shuttle-name">{bus.routeName}</strong>
+                <PublicContentTranslation source={{ kind: "shuttle", id: bus.id }} content={getPublicContentAlias(bus.routeName, locale) === bus.routeName ? { routeName: bus.routeName } : {}}>{translation => <strong lang={getPublicContentAlias(bus.routeName, locale) === bus.routeName ? translation.lang : locale} title={bus.routeName} className="m3-home-shuttle-name">{translation.text("routeName", getPublicContentAlias(bus.routeName, locale))}</strong>}</PublicContentTranslation>
                 <p className="m3-home-shuttle-support">{next
                   ? text.shuttleDepartureAt.replace("{time}", next.time)
                   : text.shuttleNextNone}</p>
@@ -170,7 +180,7 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
             </li>;
           })}
         </ul> : departure ? <>
-          <p className="m3-home-context">{departure.routeName}</p>
+          <p title={departure.routeName} className="m3-home-context">{getPublicContentAlias(departure.routeName, locale)}</p>
           <div className="m3-home-countdown"><strong>{departure.minutesUntil}</strong><span>{text.minutesUntilDeparture}</span></div>
           <p className="m3-home-sides">{departure.time} {text.departure}</p>
         </> : <p className="m3-home-empty">{summary.additionalServicePeriods.length ? text.specialService :
@@ -203,27 +213,29 @@ function TransitSummary({ stop, onStop }: { stop: StopId; onStop: (value: StopId
     .sort((a, b) => (a.predictTime1 ?? Infinity) - (b.predictTime1 ?? Infinity));
   const stale = query.data?.stale || query.data?.sourceStatus === "error";
   return <>
-    <label className="m3-home-stop">{overview.busStop}
-      <select value={stop} onChange={(event) => {
-        const next = STOP_IDS.find((id) => id === event.target.value);
-        if (next) onStop(next);
-      }}>
-        {STOPS.map(([id, key]) => <option key={id} value={id}>{text.stopLabels[key]}</option>)}
-      </select>
-    </label>
+    <div className="m3-home-stop">
+      <label id="home-transit-stop-label" htmlFor="home-transit-stop">{overview.busStop}</label>
+      <M3Select id="home-transit-stop" value={stop} variant="tonal" leadingIcon={<Icon name="map-pin" size={20} />}
+        options={STOPS.map(([value, key]) => ({ value, label: text.stopLabels[key] }))}
+        onValueChange={(value) => {
+          const next = STOP_IDS.find((id) => id === value);
+          if (next) onStop(next);
+        }} />
+    </div>
     {query.isPending ? <p className="m3-home-empty">{overview.status.loading}</p> :
       query.isError ? <p className="m3-home-empty">{text.transitLoadFailed}</p> :
-        arrivals[0] ? <><strong className="m3-home-food">{arrivals[0].routeName}</strong><p className="m3-home-sides">{arrivals[0].arrivalMsg1}</p></> :
+        arrivals[0] ? <><strong translate="no" className="m3-home-food">{arrivals[0].routeName}</strong><p className="m3-home-sides">{locale === "ko" ? arrivals[0].arrivalMsg1 : `${Math.ceil(arrivals[0].predictTime1 ?? 0)} ${text.minutesAfter}`}</p></> :
           <p className="m3-home-empty">{overview.noArrivals}</p>}
     <Status state={query.isPending || query.isFetching ? "loading" : query.isError ? "error" : stale ? "stale" : "fresh"}
       busy={query.isFetching} onRefresh={() => void query.refetch()} onRetry={hasRetryableFailure(query) ? () => void query.refetch() : undefined} />
   </>;
 }
 
-export function M3HomeOverview({ now, initial, children }: {
+export function M3HomeOverview({ now, initial, children, banner }: {
   now: Date | null;
   initial: HomeOverviewData;
   children: ReactNode;
+  banner?: ReactNode;
 }) {
   const locale = useLocale(), dictionary = useDictionary(), text = dictionary.home.overview, today = getTodayInfo(now);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
@@ -238,6 +250,7 @@ export function M3HomeOverview({ now, initial, children }: {
       <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
       <h1><HomeWeatherLine /></h1>
     </div><span>{text.hint}</span></header>
+    {banner}
     <div className="m3-home-essentials">
       <section className="m3-home-meal">
         <header><h2><Icon name="utensils" />{text.mealTitle}</h2>

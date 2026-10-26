@@ -425,18 +425,30 @@ export function formatDateTime(value: string | null) {
   }).format(new Date(value));
 }
 
+export class AdminRequestError extends Error {}
+
+export function getAdminErrorMessage(error: unknown, fallback: string) {
+  return error instanceof AdminRequestError ? error.message : fallback;
+}
+
 export async function readAdminApiResponse<T>(
   response: Response,
 ): Promise<T> {
   const contentType = response.headers.get("content-type") || "";
 
   if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error(
+    throw new AdminRequestError(
       response.ok
-        ? "관리자 API가 올바르지 않은 응답을 반환했습니다"
-        : `관리자 API 서버 오류가 발생했습니다 (${response.status})`,
+        ? "처리 결과를 확인하지 못했습니다. 목록을 다시 불러와 확인해주세요."
+        : `관리자 요청을 처리하지 못했습니다 (${response.status}). 잠시 후 다시 시도해주세요.`,
     );
   }
 
-  return (await response.json()) as T;
+  const data = await response.json();
+  if (!response.ok) {
+    throw new AdminRequestError(typeof data?.error === "string"
+      ? data.error : "관리자 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.");
+  }
+  if (!data || typeof data !== "object") throw new Error("Invalid admin response");
+  return data as T;
 }

@@ -69,7 +69,7 @@ describe.each(["ko", "en"] as const)("contact server failures in %s", (locale) =
     fireEvent.change(container.querySelector("#inquiry-message")!, { target: { value: "입력한 문의 내용" } });
     fireEvent.submit(container.querySelector("form")!);
     const dialog = await screen.findByRole("dialog", { name: text.submitFailed });
-    expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? failure.error : text.submitFailed);
+    expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? text.rateLimited : text.submitRetry);
     expect(dialog).not.toHaveTextContent("Internal service configuration");
     expect(container.querySelector("#inquiry-title")).toHaveValue("문의 제목");
     expect(container.querySelector("#inquiry-message")).toHaveValue("입력한 문의 내용");
@@ -87,7 +87,7 @@ it.each([
   fireEvent.change(container.querySelector("#tip-description")!, { target: { value: "입력한 제안 내용" } });
   fireEvent.submit(container.querySelector("form")!);
   const dialog = await screen.findByRole("dialog", { name: text.submitFailed });
-  expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? failure.error : text.submitFailed);
+  expect(dialog).toHaveTextContent(failure.code === "RATE_LIMITED" ? text.rateLimited : text.submitRetry);
   expect(dialog).not.toHaveTextContent("Internal service configuration");
   expect(container.querySelector("#tip-title")).toHaveValue("제안 제목");
   expect(container.querySelector("#tip-description")).toHaveValue("입력한 제안 내용");

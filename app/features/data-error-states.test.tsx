@@ -8,6 +8,8 @@ import CampusTipsPageClient from "./campus-tips/CampusTipsPageClient";
 
 vi.mock("@/lib/api", () => ({ fetchCampusTips: vi.fn(), fetchPhoneNumbers: vi.fn() }));
 vi.mock("@/lib/use-url-search", () => ({ useUrlSearch: () => ["", vi.fn()] }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/campus/campus-tips", useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
 
 const dictionary = getDictionary("ko");
 let client: QueryClient;

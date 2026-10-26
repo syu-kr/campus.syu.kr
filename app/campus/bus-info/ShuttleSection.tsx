@@ -4,6 +4,8 @@ import { Container } from "@/app/components/Container";
 import { SourceAttribution } from "@/app/components/SourceAttribution";
 
 import { Card } from "@/app/components/Card";
+import { PublicContentTranslation, useContentTranslation } from "@/app/components/ContentTranslation";
+import { getPublicContentAlias } from "@/lib/public-content-aliases";
 import { Badge } from "@/app/components/Badge";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { Skeleton } from "@/app/components/Skeleton";
@@ -17,7 +19,7 @@ import {
 } from "@/lib/api";
 import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
 import type { AnswerSource, PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
-import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
+import { PUBLIC_HOLIDAY_SOURCE_URL, formatPublicHolidayName } from "@/lib/public-holidays";
 import {
   useState,
   useMemo,
@@ -183,7 +185,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   const isWeekendWithoutException = dateInfo.isWeekend && !isException;
   const canPredictDepartures = dayStatus.operationStatus === "regular" || isException;
   const nonOperatingDayMessage = dayStatus.holiday.status === "holiday"
-    ? dictionary.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", dayStatus.holiday.names.join(" · "))
+    ? dictionary.publicHolidays.shuttleHolidayClosedNamed.replace("{holiday}", dayStatus.holiday.names.map(name => formatPublicHolidayName(name, locale)).join(" · "))
     : dayStatus.operationEvidence.length > 0
       ? dictionary.publicHolidays.shuttleClosed
       : isWeekendWithoutException
@@ -234,6 +236,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   const activeReplacementSpecialPeriods = activeSpecialPeriods.filter(
     (period) => isReplacementSpecialPeriod(period),
   );
+  const periodTranslation = useContentTranslation({ kind: "shuttle", id: "__periods__" }, Object.fromEntries(activeSpecialPeriods.flatMap(period => [[`periods.${period.id}.name`, period.name], [`periods.${period.id}.description`, period.description]])));
   const sources: AnswerSource[] = dayStatus.operationEvidence.length > 0
     ? Array.from(new Set(dayStatus.operationEvidence.map((record) => record.sourceUrl))).map((url) => ({
       name: text.verifiedSource, url,
@@ -242,7 +245,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
       name: text.verifiedSource,
       url: "https://www.syu.ac.kr/school-life/school-bus/",
     }, ...activeSpecialPeriods.flatMap((period) => period.sourceUrl
-      ? [{ name: period.name, url: period.sourceUrl }]
+      ? [{ name: periodTranslation.text(`periods.${period.id}.name`, period.name), url: period.sourceUrl }]
       : [])];
   sources.push({
     name: dictionary.publicHolidays.source,
@@ -678,7 +681,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                 >
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-bold text-neutral-900 sm:text-lg">
-                      {bus.routeName}
+                      {getPublicContentAlias(bus.routeName, locale)}
                     </h3>
                     {bus.additionalService && <Badge color="purple" size="sm">{text.specialSchedule}</Badge>}
                   </div>
@@ -837,7 +840,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                         key={bus.id}
                         role="button"
                         tabIndex={0}
-                        aria-label={`${routeNames[bus.routeid]} ${statusLabels[bus.status] || text.unknown}`}
+                        aria-label={`${getPublicContentAlias(routeNames[bus.routeid] ?? text.unknown, locale)} ${statusLabels[bus.status] || text.unknown}`}
                         onClick={() => selectLiveBus(bus.id)}
                         onKeyDown={(event) =>
                           handleLiveBusKeyDown(event, bus.id)
@@ -846,7 +849,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                       >
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-sm sm:text-base truncate">
-                            {routeNames[bus.routeid]}
+                            {getPublicContentAlias(routeNames[bus.routeid] ?? text.unknown, locale)}
                           </p>
                         </div>
                         <span className="text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0">
@@ -956,7 +959,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
           <ul className="list-disc list-inside space-y-1">
             {timetableSpecialPeriods.map((period) => (
               <li key={period.id} className="text-purple-800">
-                {period.name}: {period.description}
+                <span lang={periodTranslation.lang}>{periodTranslation.text(`periods.${period.id}.name`, period.name)}: {periodTranslation.text(`periods.${period.id}.description`, period.description)}</span>
               </li>
             ))}
           </ul>
@@ -1000,21 +1003,24 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
             const routeStops = Array.isArray(bus.stops) ? bus.stops : [];
 
             return (
-              <Card key={bus.id} className="overflow-hidden">
+              <PublicContentTranslation key={bus.id} source={{ kind: "shuttle", id: bus.id }} content={Object.fromEntries([
+                ["routeName", bus.routeName], ["startLocation", bus.startLocation], ["endLocation", bus.endLocation],
+                ...routeStops.map((stop, index) => [`stops.${index}`, stop]),
+              ].filter(([, value]) => getPublicContentAlias(value, locale) === value))}>{translation => <Card className="overflow-hidden">
                 <button
                   type="button"
                   onClick={() => toggleBusExpand(bus.id)}
                   className="w-full rounded-lg px-1 py-1 text-left transition-all duration-200 hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
                   aria-expanded={isExpanded}
-                  aria-label={`${bus.routeName} ${text.scheduleToggleLabel} ${
+                  aria-label={`${translation.text("routeName", getPublicContentAlias(bus.routeName, locale))} ${text.scheduleToggleLabel} ${
                     isExpanded ? text.collapse : text.expand
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3 p-3">
                     <div className="flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
-                        <h2 className="text-lg font-bold text-neutral-900">
-                          {bus.routeName}
+                        <h2 title={bus.routeName} className="text-lg font-bold text-neutral-900">
+                          {translation.text("routeName", getPublicContentAlias(bus.routeName, locale))}
                         </h2>
                         {bus.additionalService && <Badge color="purple" size="sm">{text.specialSchedule}</Badge>}
                       </div>
@@ -1034,7 +1040,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                                 className="flex items-center gap-1.5"
                               >
                                 <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 leading-4">
-                                  {stop}
+                                  <span lang={getPublicContentAlias(stop, locale) === stop ? translation.lang : locale} title={stop}>{translation.text(`stops.${stopIndex}`, getPublicContentAlias(stop, locale))}</span>
                                 </span>
                                 {stopIndex < routeStops.length - 1 && (
                                   <span
@@ -1050,7 +1056,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                         </>
                       ) : (
                         <p className="text-sm text-neutral-600">
-                          {bus.startLocation} → {bus.endLocation}
+                          {translation.text("startLocation", getPublicContentAlias(bus.startLocation, locale))} → {translation.text("endLocation", getPublicContentAlias(bus.endLocation, locale))}
                         </p>
                       )}
                     </div>
@@ -1149,7 +1155,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
 
                   </div>
                 )}
-              </Card>
+              </Card>}</PublicContentTranslation>
             );
           })}
       </div>
@@ -1160,7 +1166,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
           ) : (
             <>
               <p>{text.updateDateLabel} ({text.regularTimetable})</p>
-              {(buses ?? []).map(bus => <p key={bus.id}>{bus.routeName}: {bus.lastUpdated.trim() || text.unknown}</p>)}
+              {(buses ?? []).map(bus => <p key={bus.id}>{getPublicContentAlias(bus.routeName, locale)}: {bus.lastUpdated.trim() || text.unknown}</p>)}
             </>
           )}
         </div>
@@ -1199,5 +1205,5 @@ function formatWeekday(date: Date, locale: Locale) {
 }
 
 function formatRouteBoundLabel(routeName: string, locale: Locale) {
-  return locale === "ko" ? `${routeName}행` : `${routeName} bound`;
+  return locale === "ko" ? `${routeName}행` : `${getPublicContentAlias(routeName, locale)} bound`;
 }

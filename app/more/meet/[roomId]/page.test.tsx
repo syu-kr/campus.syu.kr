@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { MeetRoomResponse } from "@/types/meet";
 import { getMeetOwnerTokenKey } from "@/lib/meet";
 import MeetRoomPage from "./page";
+import { LocaleProvider } from "@/app/components/LocaleProvider";
+import { getDictionary } from "@/lib/i18n";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 
@@ -83,6 +85,45 @@ describe("Meet response editing when browser storage fails", () => {
 });
 
 const secondSlot = "2026-10-05T10:00:00+09:00";
+
+describe.each(["ko", "en"] as const)("Meet room recovery (%s)", (locale) => {
+  it.each(["network", "unknown", "malformed"])("uses a loading error for %s and retries without a new room", async (failure) => {
+    const fetchMock = vi.fn().mockImplementationOnce(async () => {
+      if (failure === "network") throw new TypeError("Failed to fetch private backend");
+      return Response.json({ error: "internal diagnostic" }, { status: failure === "unknown" ? 500 : 200 });
+    }).mockResolvedValue(Response.json(room));
+    vi.stubGlobal("fetch", fetchMock);
+    const dictionary = getDictionary(locale);
+    await act(async () => { render(<LocaleProvider locale={locale}><Suspense fallback={null}>
+      <MeetRoomPage params={Promise.resolve({ roomId: "test-room" })} />
+    </Suspense></LocaleProvider>); });
+    const alert = await screen.findByRole("alert");
+    expect(screen.getByRole("heading", { level: 1, name: dictionary.pages.meet.title })).toBeInTheDocument();
+    expect(alert).toHaveTextContent(dictionary.pages.meetRoom.loadFailed);
+    expect(alert).not.toHaveTextContent(dictionary.pages.meetRoom.errors.saveFailed);
+    fireEvent.click(screen.getByRole("button", { name: dictionary.home.dashboard.retry }));
+    expect(await screen.findByRole("heading", { name: "모임" })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps nickname and selected time after a save network failure", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init?: RequestInit) => {
+      if (init?.method === "PUT") throw new TypeError("Failed to fetch private backend");
+      return Response.json(room);
+    }));
+    const text = getDictionary(locale).pages.meetRoom;
+    await act(async () => { render(<LocaleProvider locale={locale}><Suspense fallback={null}>
+      <MeetRoomPage params={Promise.resolve({ roomId: "test-room" })} />
+    </Suspense></LocaleProvider>); });
+    fireEvent.change(await screen.findByLabelText(text.nickname), { target: { value: "학생" } });
+    const slotButton = document.querySelector<HTMLButtonElement>(`button[data-slot="${slot}"]`)!;
+    fireEvent.click(slotButton, { detail: 0 });
+    fireEvent.click(screen.getByRole("button", { name: text.saveAction }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(text.errors.saveFailed);
+    expect(screen.getByLabelText(text.nickname)).toHaveValue("학생");
+    expect(slotButton).toHaveAttribute("aria-pressed", "true");
+  });
+});
 const thirdSlot = "2026-10-05T11:00:00+09:00";
 
 async function renderSelectableRoom() {

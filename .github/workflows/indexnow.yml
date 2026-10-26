@@ -6,6 +6,8 @@ on:
       - Sync to Vercel Repository
       - Daily Crawl - Notices, Cafeteria & Public Holidays
       - Rollback Crawl Data
+      - Weekly Crawl - 만나의집 (기숙사 식당)
+      - Publish Reference Data
     types:
       - completed
   workflow_dispatch:
@@ -99,6 +101,10 @@ jobs:
 
       - name: Verify production and process changed URLs
         env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
+          PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
           SEND: ${{ github.event_name == 'workflow_run' || inputs.send }}
         run: |
           if [ "$SEND" = "true" ]; then

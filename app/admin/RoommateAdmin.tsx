@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "firebase/auth";
 import type { AdminPostAction, AdminRoommateHold, AdminRoommatePost, AdminRoommateReport } from "@/lib/server/roommate-admin";
 import { getRoommateText } from "@/lib/i18n/roommates";
-import { formatDateTime, readAdminApiResponse } from "./AdminSubmissionDetail";
+import { AdminRequestError, formatDateTime, getAdminErrorMessage, readAdminApiResponse } from "./AdminSubmissionDetail";
 import { RoommatePostDetail, RoommateReportDetail, reportStatuses } from "./RoommateAdminDetail";
 
 interface PostPage { items: AdminRoommatePost[]; holds: AdminRoommateHold[]; nextCursor: string | null; holdsNextCursor: string | null; recruitingCount: number; mailRequests: { dateUtc: string; count: number; partial: boolean } }
@@ -13,7 +13,7 @@ const buttonClass = "rounded-md border border-neutral-300 bg-white px-3 py-2 tex
 const actionButtonClass = `ui-button ui-button-secondary ${buttonClass}`;
 const text = getRoommateText("ko");
 
-export function RoommateAdmin({ user }: { user: User }) {
+export function RoommateAdmin({ user, onAccessLost }: { user: User; onAccessLost?: () => void }) {
   const [view, setView] = useState<"reports" | "posts" | "holds">("reports");
   const [reportFilter, setReportFilter] = useState("pending");
   const [postFilter, setPostFilter] = useState("all");
@@ -25,16 +25,29 @@ export function RoommateAdmin({ user }: { user: User }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [holdReason, setHoldReason] = useState("");
+  const [accessLost, setAccessLost] = useState(false);
+  const accessLostRef = useRef(false);
   const identityRef = useRef(user.uid);
-  useEffect(() => { identityRef.current = user.uid; return () => { identityRef.current = ""; }; }, [user.uid]);
+  useEffect(() => { identityRef.current = user.uid; accessLostRef.current = false; setAccessLost(false); return () => { identityRef.current = ""; }; }, [user.uid]);
+
+  const loseAccess = useCallback(() => {
+    if (accessLostRef.current) return;
+    accessLostRef.current = true; setAccessLost(true); setPosts(null); setReports(null); setSelectedPost(null); setSelectedReport(null); setHoldReason(""); setNotice(""); setBusy(false);
+    onAccessLost?.();
+  }, [onAccessLost]);
 
   const request = useCallback(async <T,>(endpoint: string, init?: RequestInit) => {
+    const identity = user.uid;
     const token = await user.getIdToken();
+    if (identityRef.current !== identity || accessLostRef.current || init?.signal?.aborted) throw new AdminRequestError("관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요.");
     const response = await fetch(`/api/admin/${endpoint}`, { ...init, headers: { Authorization: `Bearer ${token}`, ...(init?.body ? { "Content-Type": "application/json" } : {}) }, cache: "no-store" });
+    if (identityRef.current !== identity || accessLostRef.current || init?.signal?.aborted) throw new AdminRequestError("관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요.");
+    if (response.status === 401 || response.status === 403) { loseAccess(); throw new AdminRequestError("관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요."); }
     const data = await readAdminApiResponse<T & { error?: string }>(response);
+    if (identityRef.current !== identity || accessLostRef.current || init?.signal?.aborted) throw new AdminRequestError("관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요.");
     if (!response.ok) throw new Error(data.error || "룸메이트 관리 요청에 실패했습니다.");
     return data;
-  }, [user]);
+  }, [user, loseAccess]);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     const identity = user.uid;
@@ -43,7 +56,7 @@ export function RoommateAdmin({ user }: { user: User }) {
       const [nextReports, nextPosts] = await Promise.all([request<ReportPage>(`roommate-reports?status=${reportFilter}`, { signal }), request<PostPage>(`roommate-posts?status=${postFilter}`, { signal })]);
       if (signal?.aborted || identityRef.current !== identity) return;
       setReports(nextReports); setPosts(nextPosts); setSelectedReport(null); setSelectedPost(null);
-    } catch (failure) { if (!signal?.aborted && identityRef.current === identity) setError(failure instanceof Error ? failure.message : "목록을 불러오지 못했습니다."); }
+    } catch (failure) { if (!signal?.aborted && identityRef.current === identity) setError(getAdminErrorMessage(failure, "목록을 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로고침해주세요.")); }
     finally { if (!signal?.aborted && identityRef.current === identity) setBusy(false); }
   }, [postFilter, reportFilter, request, user.uid]);
   useEffect(() => { const controller = new AbortController(); setReports(null); setPosts(null); setSelectedReport(null); setSelectedPost(null); void load(controller.signal); return () => controller.abort(); }, [load]);
@@ -51,7 +64,7 @@ export function RoommateAdmin({ user }: { user: User }) {
   const mutate = async (endpoint: string, body: unknown) => {
     setBusy(true); setError(""); setNotice("");
     try { await request(endpoint, { method: "PATCH", body: JSON.stringify(body) }); await load(); setNotice("조치와 감사 기록을 저장했습니다."); }
-    catch (failure) { setError(failure instanceof Error ? failure.message : "저장하지 못했습니다."); throw failure; }
+    catch (failure) { setError(getAdminErrorMessage(failure, "저장 결과를 확인하지 못했습니다. 목록을 다시 불러와 확인해주세요.")); throw failure; }
     finally { setBusy(false); }
   };
   const more = async () => {
@@ -60,16 +73,17 @@ export function RoommateAdmin({ user }: { user: User }) {
       if (view === "reports" && reports?.nextCursor) { const next = await request<ReportPage>(`roommate-reports?status=${reportFilter}&cursor=${encodeURIComponent(reports.nextCursor)}`); setReports({ ...next, items: [...reports.items, ...next.items] }); }
       if (view === "posts" && posts?.nextCursor) { const next = await request<PostPage>(`roommate-posts?status=${postFilter}&cursor=${encodeURIComponent(posts.nextCursor)}`); setPosts({ ...next, items: [...posts.items, ...next.items] }); }
       if (view === "holds" && posts?.holdsNextCursor) { const next = await request<PostPage>(`roommate-posts?holdsCursor=${encodeURIComponent(posts.holdsNextCursor)}`); setPosts({ ...posts, holds: [...posts.holds, ...next.holds], holdsNextCursor: next.holdsNextCursor }); }
-    } catch (failure) { setError(failure instanceof Error ? failure.message : "목록을 불러오지 못했습니다."); }
+    } catch (failure) { setError(getAdminErrorMessage(failure, "목록을 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로고침해주세요.")); }
     finally { setBusy(false); }
   };
   const openPost = async (id: string) => {
     setBusy(true); setError("");
-    try { const page = await request<PostPage>(`roommate-posts?id=${encodeURIComponent(id)}`); if (!page.items[0]) throw new Error("원문 글은 보존 기한에 따라 정리되었습니다. 신고 당시 근거는 신고 상세에서 확인하세요."); setSelectedPost(page.items[0]); setView("posts"); }
-    catch (failure) { setError(failure instanceof Error ? failure.message : "글을 불러오지 못했습니다."); }
+    try { const page = await request<PostPage>(`roommate-posts?id=${encodeURIComponent(id)}`); if (!page.items[0]) throw new AdminRequestError("원문 글을 찾을 수 없습니다. 신고 당시 근거는 신고 상세에서 확인하세요."); setSelectedPost(page.items[0]); setView("posts"); }
+    catch (failure) { setError(getAdminErrorMessage(failure, "글을 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해주세요.")); }
     finally { setBusy(false); }
   };
 
+  if (accessLost) return <p role="alert" className="admin-content-error">관리자 세션 또는 권한을 확인하지 못했습니다. 다시 로그인해 주세요.</p>;
   return (
     <section className="mb-8 rounded-lg border border-neutral-200 bg-neutral-50 p-4 sm:p-5" aria-labelledby="roommate-admin-heading" aria-busy={busy}>
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="roommate-admin-heading" className="text-xl font-bold text-neutral-950">룸메이트 관리</h2><p className="mt-1 text-sm text-neutral-600">미처리 신고와 근거 정리 예정일을 먼저 확인하세요. 게시판이 중지되어도 관리할 수 있습니다.</p></div><button type="button" disabled={busy} onClick={() => void load()} className={actionButtonClass}>룸메이트 새로고침</button></div>

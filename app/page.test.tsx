@@ -15,7 +15,9 @@ const overviewReaders = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/server/announcements", () => readers);
+vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("@/lib/serviceNotices", () => readers);
+vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: vi.fn(async () => []) }));
 vi.mock("@/lib/server/home-data", () => ({ ...readers, ...overviewReaders }));
 vi.mock("@/lib/home", () => ({
   getKoreaNow: () => new Date("2026-10-19T00:00:00.000Z"),
@@ -38,7 +40,7 @@ const initialProps = {
   initialPublicHolidays: { holidays: [] },
 };
 const initialOverviewData = { cafeteria: { menus: [], checkedAt: null, stale: false }, shuttles: [], specialPeriods: { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] } };
-const expectedProps = { ...initialProps, initialOverviewData, initialNowIso: "2026-10-19T00:00:00.000Z" };
+const expectedProps = { ...initialProps, initialServiceNoticesFailed: false, initialBanners: [], initialOverviewData, initialNowIso: "2026-10-19T00:00:00.000Z" };
 
 function deferred() {
   let resolve!: (value: unknown) => void;
@@ -84,6 +86,17 @@ it("renders search before and outside the cold data boundary without starting da
   expect(Object.values(overviewReaders).every((reader) => reader.mock.calls.length === 0)).toBe(true);
 });
 
+it("keeps campus data available when the managed service notice store fails", async () => {
+  readers.getAllServiceNotices.mockRejectedValue(new Error("Notice store unavailable"));
+  const child = Home().props.children[1].props.children;
+  const content = await child.type(child.props);
+  expect(content.props.children.props).toMatchObject({
+    initialServiceNotices: [], initialServiceNoticesFailed: true,
+    initialAnnouncements: initialProps.initialAnnouncements,
+    initialSchedules: initialProps.initialSchedules,
+  });
+});
+
 it("keeps search independent while resolving required and overview server reads", async () => {
   const pendingReads = Object.values(readers).map((reader) => {
     const read = deferred();
@@ -95,6 +108,9 @@ it("keeps search independent while resolving required and overview server reads"
   expect(page.props.fallback.type).toBe(HomePageSkeleton);
   const child = page.props.children;
   const pendingContent = child.type(child.props);
+  // The notice read follows the request's resolved locale; other reads start immediately.
+  await Promise.resolve();
+  await Promise.resolve();
   expect(Object.values(readers).map((reader) => reader.mock.calls.length)).toEqual(Array(4).fill(1));
   expect(Home().props.children[1].type).toBe(Suspense);
   pendingReads.slice(0, -1).forEach((read, index) => read.resolve(Object.values(initialProps)[index]));

@@ -1,6 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { Suspense } from "react";
+import { ManagedBannerPlacement } from "./components/ManagedBannerPlacement";
+import { PageTranslationStatus } from "./components/ContentTranslation";
 import Script from "next/script";
+import { SEARCH_RETURN_BOOTSTRAP } from "@/lib/search-return-bootstrap";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
@@ -18,6 +22,7 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { createSiteIdentitySchema } from "@/lib/structured-data";
+import { createPageMetadata } from "@/lib/page-metadata";
 import { areRoommatesEnabled } from "@/lib/roommates";
 import "./fonts/pretendard-v1.3.9/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
@@ -89,6 +94,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
+    ...createPageMetadata({
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      pathname,
+      locale,
+    }),
     metadataBase: new URL("https://campus.syu.kr"),
     applicationName: "SYU CAMPUS",
     title: {
@@ -109,28 +120,6 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
         "max-video-preview": -1,
       },
-    },
-    openGraph: {
-      type: "website",
-      locale: dictionary.meta.openGraphLocale,
-      url: "https://campus.syu.kr",
-      siteName: "SYU CAMPUS",
-      title: dictionary.meta.title,
-      description: dictionary.meta.description,
-      images: [
-        {
-          url: "/images/syu-campus-app-icon-512-m3-smile.png",
-          width: 512,
-          height: 512,
-          alt: "SYU CAMPUS",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary",
-      title: dictionary.meta.title,
-      description: dictionary.meta.description,
-      images: ["/images/syu-campus-app-icon-512-m3-smile.png"],
     },
     verification: {
       google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
@@ -171,6 +160,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} className="m3-root" data-scroll-behavior="smooth">
       <head>
+        <script id="search-return-bootstrap" nonce={nonce} dangerouslySetInnerHTML={{ __html: SEARCH_RETURN_BOOTSTRAP }} />
         <meta
           name="google-site-verification"
           content="Gy1EGZh0gfxtv6UGI1szYk9uo1YzjaDMyoHRca7EZj4"
@@ -208,7 +198,9 @@ export default async function RootLayout({
         <LocaleProvider locale={locale}>
           <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
+            {!isPrivateAnalyticsPage && !/^\/(?:en\/)?admin(?:\/|$)/.test(pathname) && <Suspense fallback={null}><ManagedBannerPlacement placement="site-top" /></Suspense>}
             <SiteContent initialPathname={pathname}>
+              <PageTranslationStatus />
               {children}
               <NotificationPermissionPrompt />
             </SiteContent>

@@ -1,3 +1,4 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
@@ -5,7 +6,6 @@ import {
   LOCALE_HEADER_NAME,
   createLocalizedAlternates,
   getDictionary,
-  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
@@ -20,18 +20,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.pages.cafeteria.title} | SYU CAMPUS`,
-    description: dictionary.pages.cafeteria.metaDescription,
-    alternates: createLocalizedAlternates("/campus/cafeteria", locale),
-    openGraph: {
+    ...createPageMetadata({
       title: `${dictionary.pages.cafeteria.title} | SYU CAMPUS`,
       description: dictionary.pages.cafeteria.metaDescription,
-      type: "website",
-      url: `https://campus.syu.kr${localizePath(
-        "/campus/cafeteria",
-        locale,
-      )}`,
-    },
+      pathname: "/campus/cafeteria",
+      locale,
+    }),
+    alternates: createLocalizedAlternates("/campus/cafeteria", locale),
   };
 }
 

@@ -1,0 +1,6 @@
+.m3-page-translation{position:sticky;top:var(--header-height,76px);z-index:25;display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:10px 20px;border-bottom:1px solid var(--sys-outline-variant);background:var(--sys-surface-lowest);color:var(--sys-on-surface-variant);font-size:12px;line-height:1.6}
+.m3-page-translation p{margin:0;flex:1;min-width:160px}
+.m3-page-translation .ui-button{padding:6px 12px;font-size:12px;min-height:36px}
+.m3-translation-attribution{display:inline-flex;align-items:center;flex-shrink:0;max-width:100%}
+.m3-translation-attribution img{display:block;width:176px;height:16px;max-width:100%;object-fit:contain}
+@media(max-width:599px){.m3-page-translation{padding:8px 16px;gap:4px 12px}}

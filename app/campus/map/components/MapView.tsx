@@ -151,7 +151,7 @@ function MapUnavailableState() {
   const text = dictionary.pages.map;
 
   return (
-    <div className="flex h-[min(60vh,600px)] min-h-[360px] w-full items-center justify-center bg-neutral-50 px-4">
+    <div className="flex w-full items-center justify-center bg-neutral-50 px-4 py-6 sm:py-8">
       <div className="w-full max-w-[18rem] text-center sm:max-w-sm">
         <p className="font-semibold text-neutral-900">
           {text.unavailableTitle}

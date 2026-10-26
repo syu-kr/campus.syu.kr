@@ -93,18 +93,19 @@ export function ContactForm({
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.field && ["title","message","pageUrl"].includes(data.field)) {
+        if (data?.field && ["title","message","pageUrl"].includes(data.field)) {
           setFieldErrors({
-            [data.field]: getServerFieldError(data.code, data.error, text),
+            [data.field]: getServerFieldError(data.code, text),
           });
           focusFormError(submittedForm);
           return;
         }
-        throw new Error(
-          getServerFieldError(data.code, data.error, text) ||
-            text.submitFailed,
-        );
+        setResultModal({ type: "error", title: text.submitFailed,
+          message: getServerFieldError(data?.code, text) });
+        return;
       }
+
+      if (data?.success !== true) throw new Error("Invalid submission response");
 
       setResultModal({
         type: "success",
@@ -122,11 +123,11 @@ export function ContactForm({
       setMessage("");
       setContact("");
       setWebsite("");
-    } catch (err) {
+    } catch {
       setResultModal({
         type: "error",
-        title: text.submitFailed,
-        message: err instanceof Error ? err.message : text.submitFailed,
+        title: text.submitUnconfirmedTitle,
+        message: text.submitUnconfirmed,
       });
     } finally {
       setIsSubmitting(false);
@@ -342,15 +343,14 @@ function getInquiryTypes(text: ContactFormDictionary): Array<{
 
 function getServerFieldError(
   code: string | undefined,
-  error: string | undefined,
   text: ContactFormDictionary,
 ) {
   if (code === "TITLE_REQUIRED") return text.titleRequired;
   if (code === "MESSAGE_REQUIRED") return text.messageRequired;
   if (code === "INVALID_PAGE_URL") return text.invalidPageUrl;
 
-  if (code === "RATE_LIMITED") return error || text.submitFailed;
-  return text.submitFailed;
+  if (code === "RATE_LIMITED") return text.rateLimited;
+  return text.submitRetry;
 }
 
 function isValidHttpUrl(value: string): boolean {

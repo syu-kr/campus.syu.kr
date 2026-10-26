@@ -1,8 +1,14 @@
+import { bundledGraduationReference } from "@/lib/graduation";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientLocaleProvider } from "@/app/components/LocaleContext";
 import { getDictionary } from "@/lib/i18n";
 import GraduationPageClient from "./GraduationPageClient";
+import publicReference from "@/public/data/graduation-requirements-2026.json";
+import publicRules from "@/public/data/graduation-department-rules.json";
+import publicSources from "@/public/data/graduation-sources.json";
+import publicCurriculum from "@/public/data/curriculum-courses-2026-verified.json";
+import publicSelectionRules from "@/public/data/curriculum-course-selection-rules-2026.json";
 import {
   createGraduationSavedState,
   GRADUATION_STORAGE_KEY,
@@ -32,7 +38,7 @@ function renderSavedProgress(initialState = savedState) {
     GRADUATION_STORAGE_KEY,
     JSON.stringify(initialState),
   );
-  render(<GraduationPageClient />);
+  render(<GraduationPageClient snapshot={bundledGraduationReference} />);
   return screen.getByRole("textbox", { name: /입학년도/ });
 }
 
@@ -48,6 +54,59 @@ describe("graduation selection preserves progress", () => {
       configurable: true,
       value: vi.fn(() => ({ matches: false })),
     });
+  });
+
+  it("starts with the next available condition and keeps pending steps compact without dropping their guidance", () => {
+    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+    expect(screen.getByText("입학년도를 먼저 선택하세요.")).toBeVisible();
+    expect(screen.queryByText("대학을 먼저 선택하세요.")).not.toBeInTheDocument();
+    const pending = screen.getByText("3. 학점 입력").closest("details")!;
+    expect(pending).not.toHaveAttribute("open");
+    expect(screen.getByText("내 조건을 모두 선택하면 입력할 학점 항목이 표시됩니다.")).not.toBeVisible();
+    pending.open = true;
+    expect(screen.getByText("내 조건을 모두 선택하면 입력할 학점 항목이 표시됩니다.")).toBeVisible();
+
+    const year = screen.getByRole("textbox", { name: /입학년도/ });
+    fireEvent.change(year, { target: { value: "2024" } });
+    fireEvent.blur(year);
+    expect(screen.getByRole("button", { name: "미래융합대학" })).toBeVisible();
+    expect(screen.getByText("대학을 먼저 선택하세요.")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "미래융합대학" }));
+    expect(screen.getByRole("button", { name: /^컴퓨터공학부/ })).toBeVisible();
+  });
+
+  it("translates only published reference paths while preserving private progress", async () => {
+    const fetch = vi.fn(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      const results = body.requests.map((request: { source: { id: string }; fields: string[] }) => {
+        const read = (field: string) => {
+          if (request.source.id === "2026") return field.split(".").reduce<unknown>((value, part) => (value as Record<string, unknown>)[part], publicReference);
+          const [section, id, key] = field.split(".");
+          const rows = request.source.id === "curriculum-2026" ? publicCurriculum.courses : section === "rules" ? publicRules.rules : section === "sources" ? publicSources.sources : publicSelectionRules.exclusiveGroups;
+          return (rows.find(item => item.id === id) as unknown as Record<string, unknown>)?.[key];
+        };
+        return { ok: true, result: { target: "en", provider: "google", originals: Object.fromEntries(request.fields.map(field => [field, read(field)])), translations: Object.fromEntries(request.fields.map(field => [field, `English ${field}`])) } };
+      });
+      return { ok: true, json: async () => ({ results }) };
+    });
+    vi.stubGlobal("fetch", fetch);
+    const dictionary = getDictionary("en");
+    localStorage.setItem(GRADUATION_STORAGE_KEY, JSON.stringify(savedState));
+    render(<ClientLocaleProvider locale="en" dictionary={dictionary}><GraduationPageClient snapshot={bundledGraduationReference} /></ClientLocaleProvider>);
+    const original = localStorage.getItem(GRADUATION_STORAGE_KEY);
+    expect(screen.getByRole("button", { name: "미래융합대학" }).querySelector("span")).toHaveAttribute("lang", "ko");
+    expect(await screen.findByRole("button", { name: "English colleges.4.name" })).toBeInTheDocument();
+    const requests = fetch.mock.calls.flatMap(([, init]) => JSON.parse(init.body as string).requests);
+    const request = requests.find(item => item.source.id === "2026" && item.fields.includes("metadata.sourceTitle"));
+    expect(request.source).toEqual({ kind: "graduation", id: "2026" });
+    expect(request.fields.length).toBeLessThanOrEqual(40);
+    expect(request.fields).toContain("metadata.sourceTitle");
+    expect(request.fields.some((field: string) => /requirementProfiles\.\d+\.graduationConditions\.\d+/.test(field))).toBe(true);
+    expect(JSON.stringify(requests)).not.toContain("COURSE-1");
+    expect(JSON.stringify(requests)).not.toContain("남은 학기 계획");
+    expect(JSON.stringify(requests)).not.toContain("completedCredits");
+    expect(document.querySelector(".m3-content-translation")).toBeNull();
+    expect(localStorage.getItem(GRADUATION_STORAGE_KEY)).toBe(original);
   });
 
   it("keeps saved records while editing and rejects an incomplete year on blur", () => {
@@ -103,7 +162,7 @@ describe("graduation selection preserves progress", () => {
     window.localStorage.setItem(GRADUATION_STORAGE_KEY, JSON.stringify(savedState));
     render(
       <ClientLocaleProvider locale={locale} dictionary={dictionary}>
-        <GraduationPageClient />
+        <GraduationPageClient snapshot={bundledGraduationReference} />
       </ClientLocaleProvider>,
     );
 
@@ -232,7 +291,7 @@ describe("graduation selection preserves progress", () => {
       throw new DOMException("Storage unavailable", "SecurityError");
     });
 
-    render(<GraduationPageClient />);
+    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
 
     expect(screen.getByRole("textbox", { name: /입학년도/ })).toHaveValue("2024");
     expect(screen.getByText(/자동 저장할 수 없습니다/)).toBeInTheDocument();
@@ -250,7 +309,7 @@ describe("graduation selection preserves progress", () => {
       throw new DOMException("Storage unavailable", "SecurityError");
     });
 
-    render(<GraduationPageClient />);
+    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
 
     expect(screen.getByText(/자동 저장할 수 없습니다/)).toBeInTheDocument();
     expect(write).not.toHaveBeenCalled();
@@ -268,7 +327,7 @@ describe("graduation selection preserves progress", () => {
     );
     const write = vi.spyOn(Storage.prototype, "setItem");
 
-    render(<GraduationPageClient />);
+    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
 
     expect(readSavedState()).toEqual(savedState);
     expect(write).not.toHaveBeenCalled();

@@ -77,7 +77,7 @@ const lineAllowList = [
   {
     file: "app/academic/timetable/TimetableBuilderClient.tsx",
     pattern:
-      /const DAYS|label: "(전공|교양|연계|교직|채플|일반|기타)"|types: \[.*"(전공필수|전공선택|교양필수|교양선택|연계필수|연계선택|교직필수|채플|일반선택)".*\]|normalizedYear.*년|^\s*(월|화|수|목|금|전공필수|전공선택|교양필수|교양선택|연계필수|연계선택|교직필수|채플|일반선택):|가-힣/,
+      /const DAYS|label: "(전공|교양|연계|교직|채플|일반|기타)"|types: \[.*"(전공필수|전공선택|교양필수|교양선택|연계필수|연계선택|교직필수|채플|일반선택)".*\]|normalizedYear.*년|const term = normalizedSemester\.match|const semesterLabel = term|: normalizedSemester\.replace|^\s*(월|화|수|목|금|전공필수|전공선택|교양필수|교양선택|연계필수|연계선택|교직필수|채플|일반선택):|가-힣/,
     reason: "Timetable parser and category keys depend on Korean source data.",
   },
   {

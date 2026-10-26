@@ -157,8 +157,8 @@
 
 /* Campus catalog links retain the original categories, external sources and destinations. */
 .m3-content[data-site-route="/campus/campus-tips"] .mx-auto>.space-y-3{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
-.m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a{min-width:0;margin:0;}
-.m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a>.rounded-card{height:100%;padding:24px;border-radius:20px;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3>:is(a,.m3-tip-translation-item){min-width:0;margin:0;}
+.m3-content[data-site-route="/campus/campus-tips"] .space-y-3 a>.rounded-card{height:100%;padding:24px;border-radius:20px;}
 .m3-content[data-site-route="/campus/campus-tips"] .space-y-3 h2{font-size:17px;font-weight:650;line-height:1.6;}
 .m3-content[data-site-route="/campus/campus-tips"] .space-y-3 .sm\:flex-row{flex-direction:column;gap:16px;}
 .m3-content[data-site-route="/campus/campus-tips"] .space-y-3 .shrink-0.text-sm{align-self:flex-start;padding-top:4px;color:var(--cm-primary);font-size:13px;}
@@ -232,7 +232,7 @@
   .m3-content[data-site-route="/campus/phone"] .mx-auto>.space-y-3,
   .m3-content[data-site-route="/campus/campus-tips"] .mx-auto>.space-y-3{grid-template-columns:minmax(0,1fr);}
   .m3-content[data-site-route="/academic/competitions"] article,
-  .m3-content[data-site-route="/campus/campus-tips"] .space-y-3>a>.rounded-card{padding:20px;}
+  .m3-content[data-site-route="/campus/campus-tips"] .space-y-3 a>.rounded-card{padding:20px;}
   .m3-content[data-site-route="/academic/competitions"] article h2{font-size:16px;}
   .m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card{padding:22px 20px;}
   .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{padding:20px;}

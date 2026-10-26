@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/app/components/Badge";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -14,7 +15,12 @@ import { type StudentRestaurantMenu as StudentRestaurantData } from "@/lib/stude
 function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][number] }) {
   const text = useDictionary().pages.cafeteria;
   return (
-    <div className="space-y-4">
+    <PublicContentTranslation source={{ kind: "student-restaurant", id: day.date }} content={Object.fromEntries(
+      (["breakfast", "lunch", "dinner"] as const).flatMap(meal => [
+        ...(day[meal] ?? []).map((item, index) => [`${meal}.${index}`, item]),
+        ...(day.ingredients?.[meal] ?? []).map((item, index) => [`ingredients.${meal}.${index}`, item]),
+      ]),
+    )}>{translation => <div className="space-y-4">
       {(["breakfast", "lunch", "dinner"] as const).map((meal, index) => (
         <div key={meal} className={index ? "border-t border-neutral-200 pt-4" : ""}>
           <Badge color={meal === "breakfast" ? "blue" : meal === "lunch" ? "green" : "red"} size="sm" className="mb-2">
@@ -26,7 +32,7 @@ function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][nu
             <p className="text-sm text-neutral-600">{text.closedMeal}</p>
           ) : (
             <ul className="grid grid-cols-2 gap-2 text-sm text-neutral-700 sm:grid-cols-3">
-              {day[meal].map((item, itemIndex) => <li key={`${item}-${itemIndex}`}><MealItemCard item={{ name: item }} /></li>)}
+              {day[meal].map((item, itemIndex) => <li key={`${item}-${itemIndex}`}><MealItemCard item={{ name: item }} name={translation.text(`${meal}.${itemIndex}`, item)} lang={translation.lang} /></li>)}
             </ul>
           )}
           {day.ingredients && (
@@ -35,13 +41,13 @@ function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][nu
               {day.ingredients[meal] === null
                 ? text.studentRestaurant.ingredientsUnavailable
                 : day.ingredients[meal].length
-                  ? day.ingredients[meal].join(", ")
+                  ? day.ingredients[meal].map((item, index) => translation.text(`ingredients.${meal}.${index}`, item)).join(", ")
                   : text.studentRestaurant.ingredientsNotListed}
             </p>
           )}
         </div>
       ))}
-    </div>
+    </div>}</PublicContentTranslation>
   );
 }
 

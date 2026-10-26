@@ -1,6 +1,6 @@
 # 성능 점검 가이드
 
-2026-10-20 저장소 코드 기준의 개발·운영 가이드입니다. 측정 결과와 남은 문제는 [디자인·사용성·성능 점검](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에 기록합니다. 로컬 측정은 운영 CDN·서버 cold start·실제 기기의 성능을 보장하지 않습니다.
+현행 경계 설명은 2026-10-26 M3 서비스 구현 기준입니다. 아래 과거 비교 실험은 각 실행 당시 코드·fixture의 결과이며 현재 성능으로 승계하지 않습니다. [배포 준비 보고서](./docs/PRODUCTION_READINESS_2026-10-26.md)의 측정 조건과 [과거 측정 기록](./docs/DESIGN_UX_AUDIT_2026-10-18.md)을 함께 확인합니다. 로컬 측정은 운영 CDN·서버 cold start·실제 기기의 성능을 보장하지 않습니다.
 
 ## 빌드와 분석
 
@@ -25,10 +25,10 @@ npm run build:analyze
 
 ### 홈의 메뉴와 서버 데이터
 
-- [홈](./app/page.tsx)의 [HomeSearchBar](./app/features/home/HomeSearchBar.tsx)는 두 언어 모두 데이터 조회 경계 밖에서 SSR·hydration합니다. 6개 메뉴와 대시보드는 기존 4개 데이터(공지 요약·서비스 공지·학사일정·공휴일)를 기다립니다. [HomeDashboardClient](./app/features/home/HomeDashboardClient.tsx)의 `next/dynamic`과 `Activity mode="visible"`로 대시보드 JS 로딩을 검색과 분리하며 준비된 SSR 본문을 처음부터 표시합니다. 비어 있지 않은 `?search`는 기존 검색 결과 화면의 입력만 표시합니다. 두 화면이 같은 query 처리 hook을 사용해 언어 경로와 다른 query parameter를 유지합니다.
-- 자주 사용하는 메뉴 다음에는 공지사항을 표시합니다. 별도 학식·다음 셔틀 요약을 제거하면서 해당 서버 읽기·초기 props·클라이언트 query와 요약 계산도 제거했습니다. 서버의 최상위 조회 함수와 홈의 활성 background query 종류는 각각 7개에서 4개로 줄었습니다. 이는 원본 파일 다운로드 횟수나 실제 로딩 시간이 3/7 감소한다는 뜻은 아닙니다. 학식·버스 상세 링크와 상세 페이지의 조회·오류 처리는 유지하며 공휴일은 오늘의 일정에 계속 사용합니다. 기간 한정 행사 배너의 기존 노출 조건도 유지합니다.
-- 서버 프로세스에서 홈 데이터 조회가 한 번도 완료되지 않았으면 동기 `Home`이 기존 `Suspense`와 스켈레톤을 바로 반환합니다. 이 경로에는 별도의 20ms 대기를 추가하지 않습니다. 4개 조회가 모두 완료된 뒤에만 모듈의 `hasResolvedHomeData`를 설정합니다. 이 boolean은 렌더링 경로 선택용이며 데이터·버전·만료·로케일을 저장하는 캐시가 아닙니다.
-- 이후 요청의 `WarmHomeContent`도 동일한 4개 조회를 시작합니다. 조회 완료와 20ms 타이머를 `Promise.race`로 비교해 데이터가 먼저 준비되면 대시보드의 `Activity` 경계를 반환하고, 타이머가 먼저 끝나면 기존 스켈레톤과 `DeferredHomeContent`에 같은 Promise를 전달해 스트리밍합니다. OS 파일 I/O나 캐시 갱신으로 조회가 20ms를 넘는 경로는 계속 스트리밍합니다. 이 제한은 데이터 대기 시간이며 SSR 모듈 로드까지 포함한 전체 TTFB의 상한이 아닙니다.
+- [홈](./app/page.tsx)의 [HomeSearchBar](./app/features/home/HomeSearchBar.tsx)는 두 언어 모두 데이터 조회 경계 밖에서 SSR·hydration합니다. 대시보드는 공지 요약·서비스 공지·학사일정·공휴일·학식·셔틀 시간표·특별 운행의 7개 병렬 작업을 기다립니다. [HomeDashboardClient](./app/features/home/HomeDashboardClient.tsx)의 `next/dynamic`과 `Activity mode="visible"`로 대시보드 JS 로딩을 검색과 분리하며 준비된 SSR 본문을 표시합니다. 비어 있지 않은 `?search`는 검색 결과 화면의 입력을 표시하고 같은 query 처리 hook으로 언어 경로와 다른 parameter를 유지합니다.
+- M3 홈에는 학식·일정·노선별 다음 셔틀과 선택한 실시간 교통 요약이 있습니다. 식당/교통 선택·실패 복구·공휴일 판정을 유지합니다. 화면·서버 작업 수와 원본 JSON 다운로드 수·시간은 다르며 이전 4조회 비교의 성능 감소율을 현재 7개 작업에 대입하지 않습니다.
+- 서버 프로세스에서 홈 데이터 조회가 한 번도 완료되지 않았으면 동기 `Home`이 `Suspense`와 스켈레톤을 바로 반환합니다. 이 경로에는 별도의 20ms 대기를 추가하지 않습니다. 7개 작업이 완료된 뒤에만 모듈의 `hasResolvedHomeData`를 설정합니다. 이 boolean은 렌더링 경로 선택용이며 데이터·버전·만료·로케일을 저장하는 캐시가 아닙니다.
+- 이후 요청의 `WarmHomeContent`도 동일한 7개 작업을 시작합니다. 조회 완료와 20ms 타이머를 `Promise.race`로 비교해 데이터가 먼저 준비되면 대시보드의 `Activity` 경계를 반환하고, 타이머가 먼저 끝나면 스켈레톤과 `DeferredHomeContent`에 같은 Promise를 전달해 스트리밍합니다. 이 제한은 데이터 준비 대기이며 SSR 모듈 로드를 포함한 전체 TTFB 상한이 아닙니다.
 - 큰 내부 `Suspense`는 데이터와 렌더가 완료돼도 React의 출력 크기 정책으로 본문을 숨김 segment에 보내고 나중에 표시할 수 있습니다. 설치된 React 19.3의 공개 `Activity`를 항상 `visible`로 사용해 이 표시 지연을 피하면서 선택적 hydration을 유지합니다([공식 설명](https://react.dev/reference/react/Activity#speeding-up-interactions-during-page-load)). private 렌더 설정이나 서버·브라우저별 renderer 분기는 사용하지 않습니다. 드문 대시보드 SSR 렌더·모듈 오류는 이전 내부 Suspense의 재시도 대신 기존 페이지 오류 경계에서 복구할 수 있으므로 오류 UI까지 같다고 가정하지 않습니다.
 - 조회의 버전·만료·갱신 정책과 오류 전파는 유지합니다. 타이머는 `finally`에서 정리하며, 조회 오류를 성공이나 빈 데이터로 바꾸지 않습니다. 이 경로 선택이 브라우저 hydration이나 검색·메뉴 조작 준비의 단축을 보장하지는 않습니다. Sentry의 초기 오류 수집과 라우터 전환 breadcrumb도 유지합니다.
 - [SearchBar](./app/components/SearchBar.tsx)는 서버 HTML 표시 후 hydration 전에 입력한 DOM 값을 초기 effect에서 state에 채택합니다. React에 이미 입력 state 갱신이 큐되어 있으면 그 값을 우선해 첫 입력을 덮어쓰지 않습니다. 초기 DOM 값이 기본값과 같으면 setState 호출 자체를 생략하며 실제 `defaultValue` prop 변경은 계속 동기화합니다. 입력 문구뿐 아니라 검색 버튼 활성화·제출 값·초기화 동작과 포커스도 함께 확인합니다.
@@ -217,5 +217,7 @@ first-party `/_next/static` JS encoded는 매번 **16요청·281,125→281,264B(
 원시 50행·악화 쌍·shift·CPU·fixture 무결성과 별도 기능 검증의 범위는 [세부 점검 보고서](./docs/DESIGN_UX_AUDIT_2026-10-18.md)에 남깁니다. 운영/Vercel 요청·배포·PSI·실기기·운영 Sentry/GA 수신은 수행하지 않았습니다.
 
 ## 배포 후 확인
+
+2026-10-26 M3 보완 빌드의 JS/폰트 graph와 로컬40회 측정은 [보완 결과](./docs/DEPLOYMENT_REMEDIATION_2026-10-26.md#성능-해석)에 있다. 이전 fixture와 합치지 않는다. 해당 측정은 Playwright routing으로 HTTP cache가 꺼졌으므로 새 context/재탐색 비교이며, 진짜 cache warm 및 현장 INP가 아니다.
 
 배포한 커밋과 연결된 URL에서 실제 압축·캐시 헤더·폰트 요청·오류 수집을 확인합니다. Lighthouse 및 Core Web Vitals는 로컬 실험과 구분해 기록하고, 실제 모바일 기기와 서비스 워커가 있는 재방문도 점검합니다. 로컬 검사 통과 여부를 이 문서의 고정 체크 표시로 유지하지 않습니다.

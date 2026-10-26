@@ -1,6 +1,7 @@
 ---
 title: "English Version Now Available"
 date: "2026-06-16"
+lang: en
 author: "SYU CAMPUS Team"
 ---
 
@@ -30,7 +31,7 @@ You can now use English UI on areas such as:
 - Graduation requirement checker
 - Terms and privacy pages
 
-Users outside Korea may be routed to the English version automatically. You can also change the language anytime from the country and language selector in the footer.
+Open `/en` to use the English version, or choose English from the country and language selector in the footer. Your saved language choice is remembered; your location alone does not automatically switch the site to English.
 
 ---
 
