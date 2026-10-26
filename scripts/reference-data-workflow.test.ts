@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 const workflow = readFileSync(".github/workflows/publish-reference-data.yml", "utf8").replace(/\r\n/g, "\n");
 const monthly = readFileSync(".github/workflows/crawl-monthly.yml", "utf8");
+const ci = readFileSync(".github/workflows/ci.yml", "utf8").replace(/\r\n/g, "\n");
 const guard = workflow.split("      - name: Verify trusted latest main")[1]
   .split("        run: |\n")[1].split("\n      - name:")[0].replace(/^          /gm, "");
 const bash = process.platform === "win32" ? path.join(process.env.ProgramFiles ?? "C:/Program Files", "Git/bin/bash.exe") : "bash";
@@ -31,6 +32,12 @@ gh() { [[ "$*" == "api repos/syu-kr/campus.syu.kr/git/ref/heads/main --jq .objec
 }
 
 describe("reviewed reference data publication", () => {
+  it("uses the CI-verified Node version and setup action", () => {
+    const setup = ci.match(/uses: (actions\/setup-node@[a-f0-9]{40})[^\n]*\n\s+with:\n\s+node-version: "([^"]+)"/);
+    expect(setup).not.toBeNull();
+    expect(workflow).toContain(`uses: ${setup![1]}`);
+    expect(workflow).toContain(`node-version: "${setup![2]}"`);
+  });
   it("requires successful same-repository main push CI and an explicit Firebase backend", () => {
     for (const requirement of [
       "vars.PUBLIC_DATA_BACKEND == 'firebase'",

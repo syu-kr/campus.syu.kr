@@ -22,7 +22,7 @@
 
 ### 요구사항
 
-- Node.js 22.22.2 이상
+- Node.js 24.22.1 이상, 25 미만 (24.x)
 - npm 10.9.4 (`package.json`의 `packageManager`, CI 고정 버전)
 - Python 3.11 이상: 크롤러 검사 및 실행 시 필요
 

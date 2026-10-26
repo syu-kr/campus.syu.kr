@@ -87,7 +87,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ## Vercel Runtime
 
-Node.js 요구 조건은 `package.json`의 `engines.node`(`>=22.22.2`)를 따릅니다. 저장소 Actions는 `22.22.2`를 사용합니다. Vercel 프로젝트에서 선택한 실제 런타임과 일치 여부는 배포 설정·로그에서 확인합니다.
+Node.js 요구 조건은 `package.json`의 `engines.node`(`>=24.22.1 <25`)를 따릅니다. 저장소 Actions는 `24.22.1`을 사용하며 Vercel 프로젝트의 Node.js Version은 `24.x`를 유지합니다. Vercel의 minor/patch는 플랫폼이 관리하므로 이 설정이나 CI 성공만으로 운영 patch를 증명하지 않습니다. 실제 버전은 배포 설정·기존 빌드/runtime 로그에서 확인합니다.
 
 Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합니다. 현재 의존성 범위는 `firebase-admin: ^13.10.0`이며 실제 설치 버전은 `package-lock.json`을 따릅니다. 상위 메이저로 바꿀 때에는 함수 번들의 모듈 로딩과 ID token 검증을 다시 확인합니다.
 
