@@ -17,7 +17,7 @@
     "minimatch@^10.0.0": {
       "brace-expansion": "5.0.12"
     },
-    "postcss": "8.5.28",
+    "postcss": "8.5.31",
     "protobufjs": "7.6.5",
     "sharp": "0.35.5",
     "uuid": "11.1.1"
@@ -99,7 +99,7 @@
     "fast-glob": "file:vendor/eslint-root-glob",
     "jsdom": "^30.0.1",
     "knip": "^6.29.0",
-    "postcss": "8.5.28",
+    "postcss": "8.5.31",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
