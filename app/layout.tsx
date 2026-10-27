@@ -158,7 +158,8 @@ export default async function RootLayout({
   const showSiteTopBanners = !isPrivateAnalyticsPage && !/^\/(?:en\/)?admin(?:\/|$)/.test(pathname);
   const bannerNow = getKoreaNow().getTime();
   // Resolve the bounded public snapshot before the first shell to avoid pushing visible content down.
-  const siteTopBanners = showSiteTopBanners ? await getPublicBanners("site-top", bannerNow) : [];
+  const [siteTopBanners, popupBanners] = showSiteTopBanners
+    ? await Promise.all([getPublicBanners("site-top", bannerNow), getPublicBanners("popup", bannerNow)]) : [[], []];
   const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
@@ -204,6 +205,7 @@ export default async function RootLayout({
           <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
             {showSiteTopBanners && <ManagedBanners placement="site-top" initialBanners={siteTopBanners} initialNow={bannerNow} />}
+            <ManagedBanners placement="popup" initialBanners={popupBanners} initialNow={bannerNow} />
             <SiteContent initialPathname={pathname}>
               <PageTranslationStatus />
               {children}

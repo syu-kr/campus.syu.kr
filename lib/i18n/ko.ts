@@ -4,6 +4,7 @@ export const koDictionary = {
     managedBanners: {
       regionLabel: "사이트 안내", notice: "안내", event: "행사·모집", ad: "광고",
       close: "배너 닫기", hideToday: "오늘 그만 보기", external: "새 창에서 열림",
+      popupClose: "닫기", details: "자세히 보기",
     },
     contentTranslation: {
       pageLabel: "페이지 번역", pageLoading: "한국어 내용을 번역하고 있습니다…", retry: "번역 다시 시도",

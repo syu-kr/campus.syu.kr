@@ -130,14 +130,15 @@ export function ManagedContentManager({ kind, user, items, mediaAvailable, onSav
               </details>
             </> : <>
               <SelectField id="banner-category" label="배너 유형" value={draft.category} onChange={value => update({ category: value as ManagedBannerDraft["category"] })} options={[["notice", "서비스 공지"], ["event", "행사·모집"], ["ad", "광고·제휴"]]} />
-              <SelectField id="banner-placement" label="노출 위치" value={draft.placement} onChange={value => update({ placement: value as ManagedBannerDraft["placement"] })} options={[["home", "홈 카드 배너"], ["site-top", "사이트 상단 안내"]]} />
+              <SelectField id="banner-placement" label="노출 위치" value={draft.placement} onChange={value => update({ placement: value as ManagedBannerDraft["placement"], ...(value === "popup" ? { dismissible: true } : {}) })} options={[["home", "홈 카드 배너"], ["site-top", "사이트 상단 안내"], ["popup", "팝업 공지"]]} />
               <Field label="안내 문구"><textarea value={draft.description} maxLength={500} rows={3} onChange={event => update({ description: event.target.value })} /></Field>
               <UploadField key={`${editing.id}-desktop`} label="데스크톱 이미지" value={draft.imageDesktop} available={mediaAvailable} busy={busy} onUpload={file => void upload("imageDesktop", file)} onClear={() => update({ imageDesktop: "", imageMobile: "" })} />
               <UploadField key={`${editing.id}-mobile`} label="모바일 이미지" value={draft.imageMobile} available={mediaAvailable} busy={busy || !draft.imageDesktop} onUpload={file => void upload("imageMobile", file)} onClear={() => update({ imageMobile: "" })} />
               <Field label="이미지 설명"><input value={draft.imageAlt} maxLength={180} onChange={event => update({ imageAlt: event.target.value })} /><small>이미지의 핵심 내용을 적어주세요.</small></Field>
               <Field label="연결 주소"><input value={draft.link} maxLength={2048} placeholder="/service/notices 또는 https://…" onChange={event => update({ link: event.target.value })} /></Field>
               <Field label="노출 우선순위"><input type="number" min={0} max={1000} value={draft.priority} onChange={event => update({ priority: Number(event.target.value) })} /><small>숫자가 클수록 먼저 표시합니다.</small></Field>
-              <label className="admin-content-check"><input type="checkbox" checked={draft.dismissible} onChange={event => update({ dismissible: event.target.checked })} />닫기 허용</label>
+              <label className="admin-content-check"><input type="checkbox" checked={draft.placement === "popup" || draft.dismissible} disabled={draft.placement === "popup"} onChange={event => update({ dismissible: event.target.checked })} />닫기 허용</label>
+              {draft.placement === "popup" && <small>팝업은 항상 닫을 수 있으며, 방문자가 오늘 하루 보지 않기를 선택할 수 있습니다.</small>}
             </>}
             <div className="admin-content-dates"><Field label="노출 시작"><input type="datetime-local" value={toSeoulInput(draft.startsAt)} onChange={event => update({ startsAt: fromSeoulInput(event.target.value) })} /></Field><Field label="노출 종료"><input type="datetime-local" value={toSeoulInput(draft.endsAt)} onChange={event => update({ endsAt: fromSeoulInput(event.target.value) })} /></Field></div>
             <small>비워두면 게시 즉시 시작하며, 종료 시간을 지정하지 않으면 계속 표시합니다.</small>
@@ -178,6 +179,7 @@ function UploadField({ label, value, busy, available, onUpload, onClear }: { lab
 }
 function ContentPreview({ draft }: { draft: ManagedContentDraft }) {
   return <article className="admin-content-preview-surface">
+    {draft.kind === "banner" && draft.placement === "popup" && <p>팝업 공지 · 방문 시 배경 위에 표시합니다.</p>}
     {draft.kind === "banner" && draft.category === "ad" && <span className="admin-content-ad-label">광고</span>}
     {draft.kind === "banner" && draft.imageDesktop && <picture>{draft.imageMobile && <source media="(max-width:599px)" srcSet={draft.imageMobile} />}<img src={draft.imageDesktop} alt={draft.imageAlt || "이미지 설명을 입력해 주세요"} /></picture>}
     <h3>{draft.title || "제목 미리보기"}</h3><p>{draft.kind === "notice" ? draft.summary : draft.description}</p>

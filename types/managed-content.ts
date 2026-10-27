@@ -13,7 +13,7 @@ export interface ManagedNoticeDraft extends PublicationWindow {
 export interface ManagedBannerDraft extends PublicationWindow {
   kind: "banner";
   category: "notice" | "event" | "ad";
-  placement: "site-top" | "home";
+  placement: "site-top" | "home" | "popup";
   title: string;
   description: string;
   imageDesktop: string;

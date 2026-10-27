@@ -120,6 +120,27 @@ describe("managed content editing", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
+  it("offers popup placement, fixes dismissal on, and identifies the popup in publish review", async () => {
+    const id = "d2d4132c-1683-4e6a-915c-574201a76566";
+    const banner: ManagedContentRecord = { ...item, id, published: null, draft: { kind: "banner", category: "notice", placement: "site-top", title: "점검 안내", description: "점검 시간 안내", imageDesktop: "", imageMobile: "", imageAlt: "", link: "", priority: 1, dismissible: false, startsAt: null, endsAt: null } };
+    const fetcher = vi.fn(async (_url, init) => Response.json({ item: { ...banner, revision: 2, draft: JSON.parse(init.body).draft, published: JSON.parse(init.body).draft } }));
+    vi.stubGlobal("fetch", fetcher);
+    render(<ManagedContentManager kind="banner" user={user} items={[banner]} mediaAvailable onSaved={vi.fn()} onReload={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /점검 안내/ }));
+    expect(screen.getByRole("checkbox", { name: "닫기 허용" })).not.toBeChecked();
+    fireEvent.click(screen.getByRole("combobox", { name: "노출 위치" }));
+    const popup = await screen.findByRole("option", { name: "팝업 공지" });fireEvent.pointerDown(popup);fireEvent.click(popup);
+    expect(screen.getByRole("checkbox", { name: "닫기 허용" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "닫기 허용" })).toBeDisabled();
+    expect(screen.getByText(/팝업은 항상 닫을 수 있으며/)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "게시 검토" }));
+    const dialog = screen.getByRole("dialog", { name: "배너 게시 검토" });
+    expect(within(dialog).getByText("팝업 공지 · 방문 시 배경 위에 표시합니다.")).toBeVisible();
+    fireEvent.click(within(dialog).getByRole("button", { name: "게시하기" }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toMatchObject({ id, expectedRevision: 1, action: "publish", draft: { placement: "popup", dismissible: true } });
+  });
+
   it("does not dispatch an old session's write after its token resolves", async () => {
     let finish!: (token: string) => void;
     const oldUser = { uid: "old", getIdToken: () => new Promise<string>(resolve => { finish = resolve; }) } as unknown as User;

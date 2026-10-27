@@ -4,6 +4,7 @@ export const enDictionary = {
     managedBanners: {
       regionLabel: "Site notices", notice: "Notice", event: "Events", ad: "Advertisement",
       close: "Dismiss banner", hideToday: "Hide for today", external: "Opens in a new tab",
+      popupClose: "Close", details: "View details",
     },
     contentTranslation: {
       pageLabel: "Page translation", pageLoading: "Translating Korean content…", retry: "Retry translation",

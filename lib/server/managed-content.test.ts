@@ -45,6 +45,12 @@ describe("managed content validation", () => {
     expect(() => parseManagedDraft({ ...note, content: "" }, true)).toThrow();
     expect(() => parseManagedDraft({ ...banner, placement: "home" }, true)).toThrow("기본 이미지");
   });
+  it("always allows popup dismissal while preserving inline settings and publication validation", () => {
+    expect(parseManagedDraft({ ...banner, placement: "popup", dismissible: false }, true)).toMatchObject({ placement: "popup", dismissible: true });
+    expect(parseManagedDraft({ ...banner, dismissible: false }, true)).toMatchObject({ placement: "site-top", dismissible: false });
+    expect(() => parseManagedDraft({ ...banner, placement: "popup", imageDesktop: "/api/content-media/11111111-1111-4111-8111-111111111111" }, true)).toThrow("이미지 설명");
+    expect(() => parseManagedDraft({ ...banner, placement: "private" })).toThrow("배너 위치");
+  });
   it("rejects mass assignment, unknown actions and traversal IDs", () => {
     expect(() => parseContentMutation({ id: "../private", expectedRevision: 0, action: "archive" })).toThrow();
     expect(() => parseContentMutation({ id: "notice", expectedRevision: 0, action: "delete" })).toThrow();

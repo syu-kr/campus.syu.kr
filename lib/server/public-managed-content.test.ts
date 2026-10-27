@@ -34,6 +34,13 @@ it("fails closed for banners and keeps notice DB errors observable", async () =>
   expect(await getPublicBanners("home", now)).toEqual([]);
   await expect(getPublicManagedContentRecords()).rejects.toThrow("unavailable");
 });
+it("keeps popup publications separate from inline placements and excludes future popups", async () => {
+  const popup = banner("popup", 100);if (popup.published?.kind === "banner") popup.published.placement = "popup";
+  const future = banner("future", 1000);if (future.published?.kind === "banner") { future.published.placement = "popup";future.published.startsAt = new Date(now + 1000).toISOString(); }
+  db.read.mockResolvedValue([banner("inline"), popup, future]);
+  expect((await getPublicBanners("popup", now)).map(row => row.id)).toEqual(["popup"]);
+  expect((await getPublicBanners("home", now)).map(row => row.id)).toEqual(["inline"]);
+});
 it("does not reset a banner dismissal revision when only its draft changes", async () => {
   const row = banner("stable");row.publishedRevision = 1;
   db.read.mockResolvedValue([row]);

@@ -51,7 +51,7 @@ export function parseManagedDraft(value: unknown, publishing = false): ManagedCo
   if (value.kind !== "banner") invalid("콘텐츠 유형을 확인해 주세요.", "kind");
   only(value, ["kind", "category", "placement", "title", "description", "imageDesktop", "imageMobile", "imageAlt", "link", "priority", "dismissible", "startsAt", "endsAt"]);
   if (!["notice", "event", "ad"].includes(String(value.category))) invalid("배너 유형을 선택해 주세요.", "category");
-  if (!["site-top", "home"].includes(String(value.placement))) invalid("배너 위치를 선택해 주세요.", "placement");
+  if (!["site-top", "home", "popup"].includes(String(value.placement))) invalid("배너 위치를 선택해 주세요.", "placement");
   if (!Number.isInteger(value.priority) || Number(value.priority) < 0 || Number(value.priority) > 1000) invalid("노출 순서는 0부터 1000까지 입력해 주세요.", "priority");
   if (typeof value.dismissible !== "boolean") invalid("닫기 설정을 확인해 주세요.", "dismissible");
   const imageDesktop = text(value.imageDesktop, "imageDesktop", 200), imageMobile = text(value.imageMobile, "imageMobile", 200);
@@ -65,7 +65,7 @@ export function parseManagedDraft(value: unknown, publishing = false): ManagedCo
   const link = text(value.link, "link", 2048);
   if (link && !isSafeContentLink(link)) invalid("사이트 내부 주소 또는 https 주소를 입력해 주세요.", "link");
   if (publishing && value.category === "ad" && !link) invalid("광고·제휴 연결 주소를 입력해 주세요.", "link");
-  return { kind: "banner", category: value.category as ManagedBannerDraft["category"], placement: value.placement as ManagedBannerDraft["placement"], title, description: text(value.description, "description", 300), imageDesktop, imageMobile, imageAlt, link, priority: Number(value.priority), dismissible: value.dismissible, startsAt, endsAt };
+  return { kind: "banner", category: value.category as ManagedBannerDraft["category"], placement: value.placement as ManagedBannerDraft["placement"], title, description: text(value.description, "description", 300), imageDesktop, imageMobile, imageAlt, link, priority: Number(value.priority), dismissible: value.placement === "popup" || value.dismissible, startsAt, endsAt };
 }
 
 export function isSafeContentLink(value: string) {

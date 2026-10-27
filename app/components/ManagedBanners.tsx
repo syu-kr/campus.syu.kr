@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import type { PublicBanner } from "@/types/managed-content";
 import { useDictionary, useLocale } from "./LocaleContext";
 import { localizePath } from "@/lib/i18n/routing";
 import { getKoreaDateTimeParts } from "@/lib/korea-time";
-import { useContentTranslation } from "./ContentTranslation";
+import { PageTranslationStatus, useContentTranslation } from "./ContentTranslation";
+import { Modal } from "./Modal";
 import "@/app/styles/m3/managed-banners.css";
 
 function safeLink(value: string) {
@@ -19,7 +21,7 @@ function validBanner(value: unknown): value is PublicBanner {
   if (!value || typeof value !== "object") return false;
   const item = value as PublicBanner;
   return item.kind === "banner" && typeof item.id === "string" && Number.isSafeInteger(item.revision) &&
-    ["home", "site-top"].includes(item.placement) && ["notice", "event", "ad"].includes(item.category) &&
+    ["home", "site-top", "popup"].includes(item.placement) && ["notice", "event", "ad"].includes(item.category) &&
     [item.title, item.description, item.imageAlt, item.imageDesktop, item.imageMobile, item.link].every(field => typeof field === "string") &&
     [item.imageDesktop, item.imageMobile].every(field => !field || mediaPattern.test(field)) &&
     [item.startsAt, item.endsAt].every(field => field === null || (typeof field === "string" && Number.isFinite(Date.parse(field)))) &&
@@ -30,17 +32,24 @@ const visibleAt = (item: PublicBanner, now: number) => (!item.startsAt || Date.p
 
 export function ManagedBanners({ initialBanners, placement, initialNow }: { initialBanners: PublicBanner[]; placement: PublicBanner["placement"]; initialNow: number }) {
   const labels = useDictionary().managedBanners;
+  const pathname = usePathname() ?? "/";
+  const excluded = /^\/(?:en\/)?(?:admin(?:\/|$)|campus\/roommates(?:\/|$)|more\/meet\/[^/]+(?:\/|$))/.test(pathname);
   const [items, setItems] = useState(initialBanners);
   const [now, setNow] = useState(initialNow);
   const [dismissed, setDismissed] = useState<Record<string, number>>({});
+  const [checkedStorage, setCheckedStorage] = useState<string | null>(null);
+  const storageSnapshot = items.map(storageKey).join("|");
   useEffect(() => {
     const stored: Record<string, number> = {};
     for (const item of items) {
       try { const until = Number(localStorage.getItem(storageKey(item)));if (until > Date.now()) stored[storageKey(item)] = until; } catch { /* Reading remains available without browser storage. */ }
+      if (placement === "popup") try { if (sessionStorage.getItem(storageKey(item)) === "closed") stored[storageKey(item)] = Infinity; } catch { /* Dismissal remains available in memory. */ }
     }
     setDismissed(current => ({ ...stored, ...current }));
-  }, [items]);
+    setCheckedStorage(storageSnapshot);
+  }, [items, placement, storageSnapshot]);
   useEffect(() => {
+    if (excluded) return;
     let disposed = false;
     const controller = new AbortController();
     const poll = async () => {
@@ -58,7 +67,7 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
     const refresh = () => { if (document.visibilityState === "visible") void poll(); };
     document.addEventListener("visibilitychange", refresh);
     return () => { disposed = true;controller.abort();window.clearInterval(interval);document.removeEventListener("visibilitychange", refresh); };
-  }, [placement, initialBanners.length]);
+  }, [placement, initialBanners.length, excluded]);
   useEffect(() => {
     const nextEnd = items.map(item => item.endsAt ? Date.parse(item.endsAt) : Infinity).filter(time => time > now).sort((a, b) => a - b)[0];
     if (!Number.isFinite(nextEnd)) return;
@@ -71,9 +80,12 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
     const until = today ? Date.UTC(parts.year, parts.month - 1, parts.date + 1) - 9 * 60 * 60 * 1000 : Infinity;
     setDismissed(value => ({ ...value, [storageKey(item)]: until }));
     if (today) try { localStorage.setItem(storageKey(item), String(until)); } catch { /* This visit can still dismiss the banner. */ }
+    if (!today && item.placement === "popup") try { sessionStorage.setItem(storageKey(item), "closed"); } catch { /* This visit can still dismiss the popup. */ }
   }, []);
+  if (excluded) return null;
   const shown = items.filter(item => item.placement === placement && visibleAt(item, now) && !(dismissed[storageKey(item)] > now)).slice(0, 3);
   if (!shown.length) return null;
+  if (placement === "popup") return checkedStorage === storageSnapshot ? <ManagedBannerItem key={storageKey(shown[0])} item={shown[0]} onDismiss={handleDismiss} /> : null;
   return <section className={`m3-managed-banners m3-managed-banners-${placement}`} aria-label={labels.regionLabel}>
     {shown.map(item => <ManagedBannerItem key={`${item.id}:${item.revision}`} item={item} onDismiss={handleDismiss} />)}
   </section>;
@@ -81,8 +93,26 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
 
 function ManagedBannerItem({ item, onDismiss }: { item: PublicBanner; onDismiss: (item: PublicBanner, today: boolean) => void }) {
   const locale = useLocale(), labels = useDictionary().managedBanners;
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (item.placement === "popup") closeRef.current?.focus({ preventScroll: true }); }, [item.id, item.revision, item.placement]);
   const translation = useContentTranslation({ kind: "banner", id: item.id }, { title: item.title, ...(item.description ? { description: item.description } : {}), ...(item.imageAlt ? { imageAlt: item.imageAlt } : {}) });
   const href = safeLink(item.link), external = href.startsWith("https://");
+  if (item.placement === "popup") return <Modal isOpen title={translation.text("title", item.title)} titleLang={translation.lang} onClose={() => onDismiss(item, false)} initialFocus="none" showCloseButton={false} size="sm" className="m3-managed-popup" overlayClassName="m3-managed-popup-overlay" headerClassName="m3-managed-popup-header" bodyClassName="m3-managed-popup-body">
+    {mediaPattern.test(item.imageDesktop) && <picture className="m3-managed-popup-image">
+      {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" srcSet={item.imageMobile} />}
+      <Image src={item.imageDesktop} alt={translation.text("imageAlt", item.imageAlt)} width={1600} height={1000} unoptimized />
+    </picture>}
+    <div className="m3-managed-popup-copy">
+      {item.category === "ad" && <span className="m3-managed-banner-category">{labels.ad}</span>}
+      {item.description && <p lang={translation.lang}>{translation.text("description", item.description)}</p>}
+      {href && <Link href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined} onClick={() => onDismiss(item, false)}>{labels.details}{external && <span className="sr-only"> · {labels.external}</span>}</Link>}
+    </div>
+    <PageTranslationStatus />
+    <div className="m3-managed-popup-actions">
+      <button type="button" onClick={() => onDismiss(item, true)}>{labels.hideToday}</button>
+      <button ref={closeRef} type="button" onClick={() => onDismiss(item, false)}>{labels.popupClose}</button>
+    </div>
+  </Modal>;
   const content = <>
         {mediaPattern.test(item.imageDesktop) && <picture className="m3-managed-banner-image">
           {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" srcSet={item.imageMobile} />}

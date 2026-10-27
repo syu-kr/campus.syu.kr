@@ -12,6 +12,7 @@ let originalBodyOverflow = "";
 interface ModalProps {
   isOpen: boolean;
   title: string;
+  titleLang?: string;
   description?: string;
   onClose: () => void;
   children: ReactNode;
@@ -29,6 +30,7 @@ interface ModalProps {
 export function Modal({
   isOpen,
   title,
+  titleLang,
   description,
   onClose,
   children,
@@ -165,7 +167,7 @@ export function Modal({
       >
         {hideHeader ? (
           <>
-            <h2 id={titleId} className="sr-only">
+            <h2 id={titleId} lang={titleLang} className="sr-only">
               {title}
             </h2>
             {description && (
@@ -187,7 +189,7 @@ export function Modal({
             className={`flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4 ${headerClassName}`}
           >
             <div>
-              <h2 id={titleId} className="text-lg font-bold text-neutral-900">
+              <h2 id={titleId} lang={titleLang} className="text-lg font-bold text-neutral-900">
                 {title}
               </h2>
               {description && (
