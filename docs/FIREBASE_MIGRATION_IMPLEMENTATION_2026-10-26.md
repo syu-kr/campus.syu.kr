@@ -1,8 +1,10 @@
 # Firebase 이전과 UI 보완 실행 기록
 
-2026-10-26–27 KST. [실행 계획](FIREBASE_MIGRATION_RELEASE_PLAN_2026-10-26.md)을 구현하고 있다. 현재 서비스 공지 19개와 공개 자료 23개의 실제 복사·검증을 마쳤다. **운영 앱 배포·main 병합·원격 환경 설정은 수행하지 않았다.** 로컬 구현·빌드·화면·기능·성능 검증을 마쳤다. 번역 TTL·공급자 설정과 원격 CI·출시 확인은 남아 있으므로 운영 적용 완료로 표시하지 않는다.
+2026-10-26–27 KST. [실행 계획](FIREBASE_MIGRATION_RELEASE_PLAN_2026-10-26.md)을 구현하고 있다. 현재 서비스 공지 19개와 공개 자료 23개의 실제 복사·검증을 마쳤다. 로컬 구현·빌드·화면·기능·성능 검증을 마쳤고, 10월 27일 승인 후 번역 TTL 세 정책과 Google 일일 문자 한도를 적용했다. 사용자 별도 승인 후 Vercel Production 번역 키 한 개만 Secret으로 등록했다. **운영 앱 배포·main 병합·backend/source 플래그 전환은 수행하지 않았다.** 원격 CI·출시 확인과 아래 미검증 운영 항목은 남아 있으므로 운영 적용 완료로 표시하지 않는다.
 
-검토한 원격 main `6d95a0f`에는 Node 24.22.1, 타입 24.19.2, gRPC 1.14.6과 알림 보완이 반영되어 있었다. 후보가 운영 수정을 되돌리지 않도록 기능 브랜치에 반영했다. 이전 누적 구현 보존 커밋은 `a1641aa`, 최신 main 반영 커밋은 `1105828`, UI·초점·Node 타입 보완은 `ef016a7`, 영어 홈 CLS 보완은 `ee29500`, 재시도 초점·확대 텍스트 보완은 `b4ae09d`다. M3 레이아웃·자동 번역·선택지와 main의 알림/보안 수정을 함께 유지했다. main 자체나 원격은 변경하지 않았다.
+검토한 원격 main `6d95a0f`에는 Node 24.22.1, 타입 24.19.2, gRPC 1.14.6과 알림 보완이 반영되어 있었다. 후보가 운영 수정을 되돌리지 않도록 기능 브랜치에 반영했다. 이전 누적 구현 보존 커밋은 `a1641aa`, 최신 main 반영 커밋은 `1105828`, UI·초점·Node 타입 보완은 `ef016a7`, 영어 홈 CLS 보완은 `ee29500`, 재시도 초점·확대 텍스트 보완은 `b4ae09d`다. M3 레이아웃·자동 번역·선택지와 main의 알림/보안 수정을 함께 유지했다. 그 통합 단계에서 main 자체나 원격 Git 소스는 변경하지 않았다.
+
+10월 27일 추가 기능 후보 `d59a00d`·build `htH-qdrTGfa4sdnE2dBOj`, 졸업 응답 축소·새 검사 경계·현재 Pages/Firebase 차이와 PR/운영 게이트는 [배포 전 진행 상태](PRE_RELEASE_PROGRESS_2026-10-27.md)에 모았다. 아래 `b4ae09d`·`sQ87eW7dblv9HLwQme7fQ`의 전체 통합 검증은 앞선 실행 기록이다.
 
 ## 실제 변경한 데이터
 
@@ -35,9 +37,13 @@ Firestore 활성 정보는 `site_public_data/current`에 저장했다. 이 포�
 
 ## 번역 TTL과 운영 설정
 
-세 번역 collection group의 `expires_at` TTL이 미설정임을 실제 GET으로 확인했다. 자동 승인 검토는 최초 정책 변경을 구체적 승인 부족으로 차단했고, 사용자 명시 승인 후 실제 요청을 보냈으나 서비스 계정 권한 부족으로 403을 반환했다. **정책 변경은 적용되지 않았다.** 사용자가 콘솔에서 설정한 뒤 알리기로 한 상태다. 2026-10-27 02:06 KST에 읽기 전용으로 재조회했으나 세 그룹 모두 여전히 미설정이었다. 실제 활성 상태 확인은 남아 있다.
+2026-10-27 02:06 KST까지 세 번역 collection group의 `expires_at` TTL은 미설정이었다. 최초 자동 승인 차단과 승인 후 서비스 계정의 403은 당시 실패 기록이다. 이후 사용자가 콘솔 작업과 세 정책 생성을 구체적으로 승인해 `syu-campus`의 `(default)` DB에 생성했다. **12:50:36 KST 읽기 전용 API 재조회에서 세 정책 모두 GET 200·`ACTIVE`·`expirationOffset:0s`를 확인했다.** 근거는 Git 제외 `output/playwright/firebase-goal/cloud-settings-readonly-ttl-activation-check-1.json`이다. 기존 만료 문서는 자동 삭제 대상이 되며, 실제 물리 삭제 시점·삭제 비용은 아직 측정하지 않았다.
 
-대상은 `public_content_translation_fields`, `public_content_translations`, `public_content_translation_usage` 세 그룹이며 추가 만료 지연은 0이다. 다른 그룹의 TTL은 변경하지 않았다. 번역 캐시·사용량의 앱 만료 검사와 하루 25,000자/UTC 예산은 유지한다. Google quota 조회도 `AUTH_PERMISSION_DENIED`였으므로 공급자 할당량·예산 알림·키 제한 설정을 확인 완료로 표시하지 않는다.
+대상은 `public_content_translation_fields`, `public_content_translations`, `public_content_translation_usage` 세 그룹이며 추가 만료 지연은 0이다. 다른 그룹의 TTL은 변경하지 않았다. 번역 캐시·사용량의 앱 만료 검사와 하루 25,000자/UTC 예산은 유지한다.
+
+Cloud Console에서 `syu-campus`의 Cloud Translation API(`translate.googleapis.com`) **`v2 and v3 general model characters per day`를 무제한에서 50,000자로 변경**했고 성공 안내와 표의 적용값을 확인했다. 새로고침 후 전체 23개 한도를 변경 전과 비교해 일일 한도 1개만 바뀌고 나머지 22개 값이 같음을 확인했다. 사용자는 현재 환경의 키가 같은 프로젝트의 ‘번역’ 키임을 확인했고, 콘솔에서 Cloud Translation API 서비스 제한을 확인했다. Google 콘솔에서 키 표시를 열지 않았고 값을 대화·로그에 출력하지 않았다. 앱의 UTC 일일 예산과 Google의 태평양 시간 기준 일일 할당량은 별개다. 실제 한도 소진 시험은 수행하지 않았고 일일 한도 변경의 효력 반영에는 최대 24시간이 걸릴 수 있다. 서버 계정의 quota 메타데이터 조회는 `AUTH_PERMISSION_DENIED` 403, API Keys lookup은 `SERVICE_DISABLED` 403으로 남아 있으므로 콘솔 확인과 구분한다. 새 IAM 권한·예산 알림·과금 설정은 변경하지 않았다.
+
+후속으로 사용자의 ‘Production 번역 키만 등록 승인’을 받아 Vercel `syu-campus`의 Production에 `GOOGLE_TRANSLATION_API_KEY` 한 개를 Secret으로 저장하고 새로고침 후 등록 행을 확인했다. 값은 대화·로그에 출력하지 않았다. 재배포·backend/source 전환은 하지 않았으며, 배포된 앱의 설정 반영·키 유효성·실제 번역 성공은 아직 검증하지 않았다.
 
 Storage는 미국 동부, Firestore는 서울 리전이다. 리전 차이의 영향은 전환 전후 실측에 포함한다. 버킷이나 요금제·IAM 역할을 자동 생성/변경하지 않았다.
 
@@ -135,11 +141,11 @@ Firestore 과금 읽기 수·Storage 청구 다운로드·공급자 quota/비용
 
 ## 현재 완료 범위와 남은 출시 게이트
 
-승인한 reference 자동 발행 workflow는 코드와 회귀까지 준비했다. 같은 저장소·성공한 main push CI·최신 main 확인·Firebase opt-in·공유 동시성·CAS·무변경 no-op 조건을 유지한다. 이번에는 workflow 실행·원격 secret/변수 등록·PR/main 병합·배포를 하지 않았다. 로컬 후보는 준비됐지만 운영 적용 완료나 전체 GOAL 달성으로 표시하지 않는다.
+승인한 reference 자동 발행 workflow는 코드와 회귀까지 준비했다. 같은 저장소·성공한 main push CI·최신 main 확인·Firebase opt-in·공유 동시성·CAS·무변경 no-op 조건을 유지한다. 이전 구현 단계에서는 workflow 실행·원격 secret/변수 등록·PR/main 병합·배포를 하지 않았다. 이후 별도 승인으로 Vercel Production 번역 키 한 개만 등록했으며 Actions secret/변수·backend/source 전환과 배포는 하지 않았다. 로컬 후보 준비와 운영 적용 완료를 구분한다. 운영 적용은 완료로 표시하지 않는다.
 
-1. TTL 세 정책은 02:06 KST 실제 GET에서도 미설정이다. 콘솔 설정 후 활성 상태 확인이 필요하다. 서비스 계정 권한을 임의로 넓히지 않았다.
-2. Google quota 조회는 AUTH_PERMISSION_DENIED 403이므로 공급자 할당량·키 제한·예산 알림 확인이 남아 있다. 앱 문자 예산과 공급자 과금 설정은 다르다.
+1. 번역 TTL 세 정책은 승인 후 생성했고 12:50:36 KST GET에서 모두 `ACTIVE`·추가 지연 0초를 확인했다. 실제 만료 문서 삭제 시점·청구량은 아직 확인하지 않았다. 서비스 계정 권한은 넓히지 않았다.
+2. Google 일일 일반 모델 문자 한도 50,000자 적용과 해당 키의 Cloud Translation API 서비스 제한은 콘솔에서 확인했다. 서버 계정의 quota 조회 403은 남아 있으며 예산 알림·실제 과금·한도 소진 동작은 미검증이다. 앱의 하루 25,000자/UTC 예산은 유지한다.
 3. 원격 정확한 PR/head CI·Linux/Python 3.11·CodeQL/Dependency Review·실기기/Safari/IME·운영 도메인·다음 수집 발행 주기는 로컬 검사로 대체하지 않는다. 배포 승인 이후의 source SHA→mirror→Vercel→운영 확인도 미실행이다.
 4. 첫 서버 프로세스의 홈 전체 HTML 지연과 졸업 HTML 크기, 늘어난 모바일 요청 수는 운영 성능·비용 관찰 및 최적화 검토 항목이다. 실제 사용자의 CWV/INP와 청구량은 아직 확인하지 않았다.
 
-최종 로컬 소스는 b4ae09d, 실행 build는 sQ87eW7dblv9HLwQme7fQ다. 상세 근거는 Git 제외 output/playwright/firebase-goal/의 validation-node24-results.json, final-build-artifacts-after-cls.json, english-cls-final/final-verification.json, flows/latest-search-return/early-search-regression-latest.json, performance-comparison-final.json, cold-warm-performance.json 및 cloud-settings-read.json에 있다. 백업/초안/인증 관련 원시 자료를 공개 저장소로 옮기지 않았다.
+앞선 통합 검증의 로컬 소스는 b4ae09d, 실행 build는 sQ87eW7dblv9HLwQme7fQ다. 이후 기능 후보와 새 검사·실제 데이터 최신성 판정은 [배포 전 진행 상태](PRE_RELEASE_PROGRESS_2026-10-27.md)를 따른다. 상세 근거는 Git 제외 output/playwright/firebase-goal/의 validation-node24-results.json, final-build-artifacts-after-cls.json, english-cls-final/final-verification.json, flows/latest-search-return/early-search-regression-latest.json, performance-comparison-final.json, cold-warm-performance.json 및 cloud-settings-read.json에 있다. 백업/초안/인증 관련 원시 자료를 공개 저장소로 옮기지 않았다.

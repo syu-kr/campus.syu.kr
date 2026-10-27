@@ -5,7 +5,7 @@
 | 목적 | 문서 |
 | --- | --- |
 | M3 프로덕션 배포 준비 | [보완 반영·재검증](DEPLOYMENT_REMEDIATION_2026-10-26.md), [조사 보고서](PRODUCTION_READINESS_2026-10-26.md), [공개 저장소 정리](PUBLIC_REPOSITORY_CLEANUP_2026-10-26.md), [배포·롤백 체크리스트](RELEASE_CHECKLIST_2026-10-26.md) |
-| Firebase 이전과 다음 작업 | [실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md), [상세 계획](FIREBASE_MIGRATION_RELEASE_PLAN_2026-10-26.md), [독립 UI 검증](UI_UX_VERIFICATION_2026-10-26.md), [공지 이전](SERVICE_NOTICE_MIGRATION.md), [공개 snapshot 운영](PUBLIC_DATA_FIREBASE.md) |
+| Firebase 이전과 다음 작업 | [배포 전 남은 작업·진행 상태](PRE_RELEASE_PROGRESS_2026-10-27.md), [실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md), [상세 계획](FIREBASE_MIGRATION_RELEASE_PLAN_2026-10-26.md), [독립 UI 검증](UI_UX_VERIFICATION_2026-10-26.md), [공지 이전](SERVICE_NOTICE_MIGRATION.md), [공개 snapshot 운영](PUBLIC_DATA_FIREBASE.md) |
 | 프로젝트 기능·설치 | [프로젝트 소개](../README.md) |
 | 개발 환경·명령·검증 | [개발 가이드](../DEVELOPMENT.md), [기여 안내](../CONTRIBUTING.md) |
 | UI 구현·다국어 | [UI 가이드](UI_DESIGN_GUIDE.md), [다국어 정책](I18N_POLICY.md), [사용자 문구·예외 처리](USER_COPY_AUDIT_2026-10-26.md) |

@@ -1,17 +1,19 @@
 # M3 서비스 배포·검증·롤백 체크리스트
 
-2026-10-27 후속: Firebase 실제 이전·Node 24 전체 검사·148뷰 및 추가 결함 보완 결과는 [이전 실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md)에 연결했다. 아래 운영/CI 체크박스는 로컬 통과와 구분하며, 번역 TTL 세 정책·공급자 quota 확인·원격 head CI·배포는 아직 완료가 아니다.
+2026-10-27 후속: Firebase 실제 이전·Node 24 전체 검사·148뷰 및 추가 결함 보완 결과는 [이전 실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md)에 연결했다. 승인 후 번역 TTL 세 정책은 12:50:36 KST GET에서 모두 `ACTIVE`·추가 지연 0초를 확인했고, Google 일반 모델 일일 문자 한도는 콘솔에서 50,000자로 적용했다. 앱의 25,000자/UTC 예산은 유지한다. 아래 운영/CI 체크박스는 로컬 통과와 구분하며 원격 head CI·배포, 실제 만료 삭제·과금·예산 알림은 아직 완료가 아니다. 서버 계정의 quota 조회 403도 콘솔 적용 확인과 구분한다. 사용자 별도 승인 후 Vercel Production의 `GOOGLE_TRANSLATION_API_KEY` 한 개를 Secret으로 저장하고 새로고침 후 등록 행을 확인했다. 배포된 앱의 설정 반영·키 유효성·실제 번역 성공은 미검증이며 재배포·backend/source 전환은 하지 않았다.
 
 후속: 의존성/SEO/언어/공개 자료 위치 보완 및 최종 Node22의1,602테스트·74화면 검증은 [반영 보고서](DEPLOYMENT_REMEDIATION_2026-10-26.md)에 기록했다. 아래 체크박스는 최종 릴리스 후보의 CI/운영 승인 기록용이며 로컬 통과만으로 자동 완료하지 않는다.
 
 기준일: 2026-10-26. [배포 준비 보고서](PRODUCTION_READINESS_2026-10-26.md)의 실행용 목록이다. **미완료 체크박스는 완료로 오인하지 않는다. 현재 배포 승인이 아니라 필요한 증거의 정의다.**
+
+10월 27일 후속 기능 후보·검사 결과와 남은 P0/P1·수동/출시 후 게이트는 [배포 전 진행 상태](PRE_RELEASE_PROGRESS_2026-10-27.md)에 모았다. 아래 이전 검증 수치와 새 후보의 정확한 head 검사를 구분한다.
 
 ## 1. 릴리스 기록
 
 | 항목 | 기록할 값 |
 | --- | --- |
 | 점검 소스 | 현재 보고서 기준 `699d653569eb59d0ccdccfd9b11e41af20e6d782` |
-| 수정 후 후보 PR/head SHA | 로컬 기능 후보 `b4ae09d`(후속 CLS·재시도 보완 포함), 최종 build `sQ87eW7dblv9HLwQme7fQ`(M3/Firebase `a1641aa`, 최신 main 통합 `1105828` 포함). 원격 PR/head CI 미실행 |
+| 수정 후 후보 PR/head SHA | 추가 기능 후보 `d59a00dd7bb418724e409fd07f4a43cdd7ffaed4`, 로컬 build `htH-qdrTGfa4sdnE2dBOj`. 문서 후속 commit을 포함한 실제 PR head와 필수 4검사 결과는 PR Checks에서 확인. 이전 `b4ae09d`·`sQ87eW7dblv9HLwQme7fQ` 통합 검증과 구분 |
 | 병합 main SHA / CI run | 미확인 |
 | 배포 mirror SHA / sync run | 미확인 |
 | Vercel deployment ID / Production URL / Node | 미확인 |
