@@ -98,28 +98,142 @@ describe("public content translation", () => {
     }
     expect(fieldCaches()).toHaveLength(0);
   });
-  it("preserves reordered credits, dates and room numbers through protected placeholders", async () => {
-    memory.fields.title = "2026년 11월 12일 3.5학점 다니엘관207호";
+  it("preserves reordered credits, dates and room numbers through visible protected spans", async () => {
+    memory.fields.title = "2026학년도, 11월, 12일, 3.5학점 다니엘관207호";
     vi.mocked(fetch).mockImplementationOnce(async (_url, options) => {
-      const sent=JSON.parse(options!.body as string).q[0] as string;
-      expect(sent).not.toContain("2026");expect(sent).not.toContain("3.5");
-      const tokens=sent.match(/__SYUN[a-f0-9]+X\d+__/g)!;
-      return Response.json({ data:{ translations:[{translatedText:`Room ${tokens[4]}, ${tokens[3]} credits on ${tokens[1]}/${tokens[2]}/${tokens[0]}`}] } });
+      const payload=JSON.parse(options!.body as string),sent=payload.q[0] as string;
+      expect(payload.format).toBe("html");expect(sent).toContain(">2026</span>");expect(sent).toContain(">3.5</span>");
+      const tokens=sent.match(/<span translate="no" class="notranslate" id="SYUN[a-f0-9]+X\d+">[^<]+<\/span>/g)!;
+      return Response.json({ data:{ translations:[{translatedText: `Room ${tokens[4]}, ${tokens[3]} credits on ${tokens[1]}/${tokens[2]}/${tokens[0]}`}] } });
     });
     const result=await translatePublicContent(request());
     expect(result.translations.title).toBe("Room 207, 3.5 credits on 11/12/2026");
   });
-  it("rejects dropped, altered, duplicated placeholders and invented numbers", async () => {
+  it("rejects dropped, altered, duplicated protected spans, invented numbers and markup", async () => {
     memory.fields.title="3학점";
-    for(const change of ["drop","alter","duplicate","invent"]){
+    for(const change of ["drop","alter","duplicate","invent","encoded","markup"]){
       vi.mocked(fetch).mockImplementationOnce(async (_url,options)=>{
         const sent=JSON.parse(options!.body as string).q[0] as string;
-        const token=sent.match(/__SYUN[a-f0-9]+X\d+__/)![0];
-        const text=change==="drop"?"credits":change==="alter"?"4 credits":change==="duplicate"?`${token} ${token} credits`:`${token} credits, 4 classes`;
+        const token=sent.match(/<span[^>]*>3<\/span>/)![0];
+        const text=change==="drop"?"credits":change==="alter"?token.replace(">3<",">4<"):change==="duplicate"?token+token:change==="invent"?token+" credits, 4 classes":change==="encoded"?token+" credits, &#x34; classes":token+"<script>bad()</script>";
         return Response.json({data:{translations:[{translatedText:text}]}});
       });
       await expect(translatePublicContent(request())).rejects.toMatchObject({status:503,code:"TRANSLATION_FAILED"});
     }
+  });
+  it("keeps installment numbers visible and still rejects the production invented ordinal", async () => {
+    memory.fields.title="등록 2026-2학기 등록금 분납3차 납부 안내";
+    const reply=(invented:boolean)=>async(_url:unknown,options?:RequestInit)=>{
+      const sent=JSON.parse(options!.body as string).q[0] as string,tokens=sent.match(/<span[^>]*>[^<]+<\/span>/g)!;
+      expect(tokens[0]).toContain(">2026-2</span>");expect(tokens[1]).toContain(">3</span>");
+      return Response.json({data:{translations:[{translatedText:"Registration "+tokens[0]+" semester tuition "+tokens[1]+(invented?"1st":"rd")+" installment payment guide"}]}});
+    };
+    vi.mocked(fetch).mockImplementationOnce(reply(true));
+    await expect(translatePublicContent(request())).rejects.toMatchObject({status:503,code:"TRANSLATION_FAILED"});expect(fieldCaches()).toHaveLength(0);
+    vi.mocked(fetch).mockImplementationOnce(reply(false));
+    expect((await translatePublicContent(request())).translations.title).toBe("Registration 2026-2 semester tuition 3rd installment payment guide");
+  });
+  it("escapes literal source markup and decodes it once as plain text", async () => {
+    memory.fields.title="공지 <script>3</script> & &#52;";
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const sent=JSON.parse(options!.body as string).q[0] as string;
+      expect(sent).toContain("&lt;script&gt;");expect(sent).toContain("&amp; &amp;#");expect(sent).not.toContain("<script>");
+      return Response.json({data:{translations:[{translatedText:sent.replace("공지","Notice")}]}});
+    });
+    expect((await translatePublicContent(request())).translations.title).toBe("Notice <script>3</script> & &#52;");
+  });
+  it("keeps duplicate numeric values distinct while reusing caches without numbers", async () => {
+    await translatePublicContent(request());
+    const originalCache=fieldCaches()[0];expect(originalCache[1].version).toBe("google-v2-nmt-ko-en-numbers-2");
+    memory.fields.content="3학점 3과목";
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const sent=JSON.parse(options!.body as string).q[0] as string,tokens=sent.match(/<span[^>]*>3<\/span>/g)!;expect(tokens).toHaveLength(2);expect(tokens[0]).not.toBe(tokens[1]);
+      return Response.json({data:{translations:[{translatedText:tokens[1]+" courses for "+tokens[0]+" credits"}]}});
+    });
+    const result=await translatePublicContent({...request(),fields:["title","content"]});expect(result.translations).toEqual({title:"Notice & title",content:"3 courses for 3 credits"});
+    expect(fieldCaches().find(([,value])=>value.version==="google-v2-nmt-ko-en-html-numbers-4")).toBeDefined();
+    await translatePublicContent(request());expect(fetch).toHaveBeenCalledTimes(2);expect(fieldCaches().find(([id])=>id===originalCache[0])?.[1]).toEqual(originalCache[1]);
+  });
+  it("keeps Korean calendar dates readable without changing their numeric values", async () => {
+    memory.fields.title="2026년 11월 3일, 10월 28일~11월 3일 납부";
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const sent=JSON.parse(options!.body as string).q[0] as string,tokens=sent.match(/<span[^>]*>[^<]+<\/span>/g)!;
+      expect(tokens.map(token=>token.match(/>([^<]+)</)![1])).toEqual(["2026/11/3","10/28~11/3"]);
+      return Response.json({data:{translations:[{translatedText:tokens[0]+", pay during "+tokens[1]}]}});
+    });
+    expect((await translatePublicContent(request())).translations.title).toBe("2026/11/3, pay during 10/28~11/3");
+  });
+  it("decodes ordinary apostrophes before rejecting newly introduced numeric data", async () => {
+    for(const title of ["학생의 공지", "3학점 학생의 공지"]){
+      memory.fields.title=title;
+      vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+        const sent=JSON.parse(options!.body as string).q[0] as string,token=sent.match(/<span[^>]*>3<\/span>/)?.[0]??"";
+        return Response.json({data:{translations:[{translatedText:token+" Students&#39; notice &#x27;quoted&#x27;"}]}});
+      });
+      expect((await translatePublicContent(request())).translations.title).toBe((title.startsWith("3")?"3":"")+" Students' notice 'quoted'");
+    }
+  });
+  it("ignores legacy numeric translations while preserving the old documents", async () => {
+    memory.fields.title="분납3차";const req=request(),sourceHash=hash(JSON.stringify(Object.entries(memory.fields).sort(([a],[b])=>a.localeCompare(b,"en"))));
+    const legacyVersion="google-v2-nmt-ko-en-numbers-2",expiresAt=Date.now()+60_000;
+    const requestKey=hash(JSON.stringify([legacyVersion,req.source,sourceHash,req.fields])),oldFieldKey=hash(JSON.stringify([legacyVersion,"en",memory.fields.title]));
+    memory.documents.set("public_content_translations/"+requestKey,{translations:{title:"3Car Payment"},sourceHash,version:legacyVersion,expiresAt});
+    memory.documents.set("public_content_translation_fields/"+oldFieldKey,{translation:"3Car Payment",sourceHash:hash(memory.fields.title),version:legacyVersion,expiresAt});
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const token=(JSON.parse(options!.body as string).q[0] as string).match(/<span[^>]*>3<\/span>/)![0];return Response.json({data:{translations:[{translatedText:token+"rd installment"}]}});
+    });
+    expect((await translatePublicContent(req)).translations.title).toBe("3rd installment");expect(fetch).toHaveBeenCalledTimes(1);
+    expect(memory.documents.get("public_content_translation_fields/"+oldFieldKey)?.translation).toBe("3Car Payment");
+  });
+  it("rejects expanded protected input before reserving budget and clears its cache lease", async () => {
+    memory.fields.title="1가".repeat(200);
+    await expect(translatePublicContent(request())).rejects.toMatchObject({status:413,code:"TRANSLATION_TOO_LARGE"});expect(fetch).not.toHaveBeenCalled();expect(fieldCaches()).toHaveLength(0);
+    expect([...memory.documents.keys()].some(key=>key.startsWith("public_content_translation_usage/"))).toBe(false);
+  });
+  it("retries only rejected numeric fields once using budgeted opaque protection", async () => {
+    memory.fields={title:"2026.10.27 공지",content:"3학점"};
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const payload=JSON.parse(options!.body as string);expect(payload.format).toBe("html");
+      return Response.json({data:{translations:payload.q.map((sent:string)=>({translatedText:sent.includes(">2026.10.27<")?"October 27 "+sent.match(/<span[^>]*>[^<]+<\/span>/)![0]:sent.match(/<span[^>]*>3<\/span>/)![0]+" credits"}))}});
+    }).mockImplementationOnce(async(_url,options)=>{
+      const payload=JSON.parse(options!.body as string);expect(payload.format).toBe("text");expect(payload.q).toHaveLength(1);
+      const token=payload.q[0].match(/__SYUN[a-f0-9]+X\d+__/)[0];return Response.json({data:{translations:[{translatedText:"Notice on "+token}]}});
+    });
+    const result=await translatePublicContent({...request(),fields:["title","content"]});expect(result.translations).toEqual({title:"Notice on 2026.10.27",content:"3 credits"});expect(fetch).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(fetch).mock.calls[1][1]!.signal).toBe(vi.mocked(fetch).mock.calls[0][1]!.signal);
+    const reserved=vi.mocked(fetch).mock.calls.reduce((total,[,options])=>total+JSON.parse(options!.body as string).q.reduce((n:number,value:string)=>n+[...value].length,0),0);
+    expect([...memory.documents.entries()].find(([key])=>key.startsWith("public_content_translation_usage/"))?.[1].characters).toBe(reserved);
+    await translatePublicContent({...request(),fields:["title","content"]});expect(fetch).toHaveBeenCalledTimes(2);
+  });
+  it("does not let a fallback bypass the daily reservation limit", async () => {
+    memory.fields.title="3학점";
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const payload=JSON.parse(options!.body as string);vi.stubEnv("CONTENT_TRANSLATION_DAILY_CHARACTERS",String([...payload.q[0]].length));
+      const token=payload.q[0].match(/<span[^>]*>3<\/span>/)[0];return Response.json({data:{translations:[{translatedText:token+" credits 1st"}]}});
+    });
+    await expect(translatePublicContent(request())).rejects.toMatchObject({status:429,code:"TRANSLATION_DAILY_LIMIT"});expect(fetch).toHaveBeenCalledTimes(1);expect(fieldCaches()).toHaveLength(0);
+  });
+  it("never decodes a numeric entity assembled around a protected value", async () => {
+    for(const fallback of [false,true]){
+      memory.documents.clear();memory.fields.title="공지 &#52;";
+      vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+        const token=(JSON.parse(options!.body as string).q[0] as string).match(/<span[^>]*>52<\/span>/)![0];
+        return Response.json({data:{translations:[{translatedText:fallback?token+" notice 1st":"Notice &#"+token+";"}]}});
+      });
+      if(fallback)vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+        const token=(JSON.parse(options!.body as string).q[0] as string).match(/__SYUN[a-f0-9]+X\d+__/)![0];return Response.json({data:{translations:[{translatedText:"Notice &#"+token+";"}]}});
+      });
+      expect((await translatePublicContent(request())).translations.title).toBe("Notice &#52;");
+    }
+  });
+  it("rejects extra digits in entity fragments without decoding across removed tokens", async () => {
+    memory.fields.title="3학점";
+    vi.mocked(fetch).mockImplementationOnce(async(_url,options)=>{
+      const token=(JSON.parse(options!.body as string).q[0] as string).match(/<span[^>]*>3<\/span>/)![0];return Response.json({data:{translations:[{translatedText:"&#x"+token+"1; credits"}]}});
+    }).mockImplementationOnce(async(_url,options)=>{
+      const token=(JSON.parse(options!.body as string).q[0] as string).match(/__SYUN[a-f0-9]+X\d+__/)![0];return Response.json({data:{translations:[{translatedText:"&#x"+token+"1; credits"}]}});
+    });
+    await expect(translatePublicContent(request())).rejects.toMatchObject({status:503,code:"TRANSLATION_FAILED"});expect(fetch).toHaveBeenCalledTimes(2);expect(fieldCaches()).toHaveLength(0);
   });
   it("does not send numeric/date-only fields to Google or bill them", async () => {
     memory.fields={title:"2026-11-12 18:00"};
