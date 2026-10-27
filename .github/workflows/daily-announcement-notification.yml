@@ -39,6 +39,9 @@ jobs:
       - name: 🚀 Send Daily Notification
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
+          PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
           PUSH_API_KEY: ${{ secrets.PUSH_API_KEY }}
           API_URL: ${{ secrets.API_URL }}

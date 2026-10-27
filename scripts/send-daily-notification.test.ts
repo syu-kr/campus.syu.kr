@@ -1,9 +1,20 @@
+import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { runDailyNotificationJob } from "./send-daily-notification";
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+});
+
+it("uses the selected public data backend and bucket for notification statistics", () => {
+  const workflow = readFileSync(".github/workflows/daily-announcement-notification.yml", "utf8");
+  const delivery = workflow.split(/\r?\n      - name:/).find(step => step.includes("run: npm run send-daily-notification"));
+  expect(delivery).toBeDefined();
+  for (const name of ["PUBLIC_DATA_BACKEND", "PUBLIC_DATA_STORAGE_BUCKET", "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET"]) {
+    expect(delivery).toContain(name + ": ${{ vars." + name + " }}");
+  }
+  expect(delivery).toContain("FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}");
 });
 
 describe("daily notification dry-run", () => {
