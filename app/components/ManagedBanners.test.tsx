@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ManagedBanners } from "./ManagedBanners";
 import { LocaleProvider } from "./LocaleProvider";
 import { Modal } from "./Modal";
+import { PageTranslationStatus, PublicContentTranslation } from "./ContentTranslation";
 import type { PublicBanner } from "@/types/managed-content";
 const now = Date.parse("2026-10-26T10:00:00Z");
 const banner: PublicBanner = { id: "banner-one", kind: "banner", category: "ad", placement: "home", title: "제휴 안내", description: "공개 내용", imageDesktop: "/api/content-media/11111111-1111-4111-8111-111111111111", imageMobile: "/api/content-media/22222222-2222-4222-8222-222222222222", imageAlt: "배너 이미지 설명", link: "https://example.com/event", priority: 1, dismissible: true, startsAt: null, endsAt: new Date(now + 30000).toISOString(), revision: 1 };
@@ -13,6 +14,52 @@ const popup = { ...banner, placement: "popup" as const, endsAt: null };
 const popupView = (items = [popup]) => <LocaleProvider locale="ko"><ManagedBanners initialBanners={items} placement="popup" initialNow={Date.now()} /></LocaleProvider>;
 beforeEach(() => { vi.useFakeTimers();vi.setSystemTime(now);route.path = "/";localStorage.clear();sessionStorage.clear();vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ banners: [] }))); });
 afterEach(() => { vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks(); });
+
+function translationView(id: string) {
+  return <LocaleProvider locale="en"><PageTranslationStatus />
+    <PublicContentTranslation source={{ kind: "announcement", id, category: "academic" }} content={{ title: "공개 공지" }}>{translation => <h2>{translation.text("title", "공개 공지")}</h2>}</PublicContentTranslation>
+    <ManagedBanners initialBanners={[{ ...popup, id }]} placement="popup" initialNow={now} />
+  </LocaleProvider>;
+}
+function translatedBanner(request: { fields: string[] }) {
+  const originals = { title: banner.title, description: banner.description, imageAlt: banner.imageAlt };
+  return { ok: true, result: { originals: Object.fromEntries(request.fields.map(field => [field, originals[field as keyof typeof originals]])), translations: Object.fromEntries(request.fields.map(field => [field, field === "title" ? "Banner notice" : "Public banner text"])), target: "en", provider: "google" } };
+}
+
+it("keeps an unrelated page translation failure out of a successfully translated popup", async () => {
+  vi.mocked(fetch).mockImplementation(async (_url, options) => Response.json({ results: JSON.parse(options!.body as string).requests.map((request: { source: { kind: string }; fields: string[] }) => request.source.kind === "banner" ? translatedBanner(request) : { ok: false, status: 503, code: "TRANSLATION_FAILED" }) }));
+  render(translationView("popup-independent-status"));
+  await act(async () => vi.advanceTimersByTimeAsync(100));
+  const dialog = screen.getByRole("dialog", { name: "Banner notice" });
+  expect(within(dialog).getByRole("status")).toHaveTextContent("Automatic translation");
+  expect(within(dialog).queryByRole("button", { name: "Retry translation" })).toBeNull();
+  expect(screen.getByRole("heading", { name: "공개 공지" })).toBeVisible();
+  expect(screen.getAllByRole("status").some(status => status.textContent?.includes("currently unavailable"))).toBe(true);
+  fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
+  expect(screen.getByRole("button", { name: "Retry translation" })).toBeVisible();
+});
+
+it("retries only a failed popup and preserves its focus and the page recovery control", async () => {
+  const payloads: { source: { kind: string }; fields: string[] }[][] = [];
+  vi.mocked(fetch).mockImplementation(async (_url, options) => {
+    const requests = JSON.parse(options!.body as string).requests;payloads.push(requests);
+    return Response.json({ results: requests.map((request: { fields: string[] }) => payloads.length === 1 ? { ok: false, status: 503, code: "TRANSLATION_FAILED" } : translatedBanner(request)) });
+  });
+  render(translationView("popup-independent-retry"));
+  await act(async () => vi.advanceTimersByTimeAsync(100));
+  const dialog = screen.getByRole("dialog", { name: popup.title }), status = within(dialog).getByRole("status");
+  expect(status).toHaveTextContent("currently unavailable");
+  const retry = within(dialog).getByRole("button", { name: "Retry translation" });retry.focus();fireEvent.click(retry);
+  expect(status).toHaveFocus();
+  await act(async () => vi.advanceTimersByTimeAsync(100));
+  expect(payloads).toHaveLength(2);expect(payloads[1].map(request => request.source.kind)).toEqual(["banner"]);
+  expect(screen.getByRole("dialog", { name: "Banner notice" })).toBeVisible();
+  expect(within(dialog).getByRole("status")).toHaveFocus();
+  expect(within(dialog).getByRole("status")).toHaveTextContent("Automatic translation");
+  expect(within(dialog).queryByRole("button", { name: "Retry translation" })).toBeNull();
+  expect(screen.getByRole("heading", { name: "공개 공지" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Retry translation" })).toBeVisible();
+});
 
 it("uses responsive media, an accessible description, and sponsored external links without nesting controls", () => {
   const { container } = render(view());

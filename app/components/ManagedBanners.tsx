@@ -138,7 +138,7 @@ function ManagedBannerItem({ item, onDismiss }: { item: PublicBanner; onDismiss:
       {item.description && <p lang={translation.lang}>{translation.text("description", item.description)}</p>}
       {href && <Link href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined} onClick={() => onDismiss(item, false)}>{labels.details}{external && <span className="sr-only"> · {labels.external}</span>}</Link>}
     </div>
-    <PageTranslationStatus />
+    <PageTranslationStatus translation={translation} />
     <div className="m3-managed-popup-actions">
       <button type="button" onClick={() => onDismiss(item, true)}>{labels.hideToday}</button>
       <button ref={closeRef} type="button" onClick={() => onDismiss(item, false)}>{labels.popupClose}</button>

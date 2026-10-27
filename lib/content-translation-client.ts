@@ -138,8 +138,9 @@ export function watchContentTranslation(source: ContentTranslationSource, origin
 export function subscribePageTranslation(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; }
 export function getPageTranslationSnapshot() { return pageSnapshot; }
 export function getServerTranslationSnapshot() { return emptyPage; }
-export function retryPageTranslation() {
+export function retryPageTranslation(source?: ContentTranslationSource) {
   for (const entry of entries.values()) {
+    if (source && (entry.source.kind !== source.kind || entry.source.id !== source.id || entry.source.category !== source.category)) continue;
     if (entry.listeners.size && !["idle", "loading"].includes(entry.snapshot.status)) { entry.queued = true; update(entry, { status: "loading", fields: null }); }
   }
   schedule();
