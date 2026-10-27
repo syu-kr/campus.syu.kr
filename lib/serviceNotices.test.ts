@@ -2,7 +2,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 import { getAllServiceNotices, getServiceNoticeBySlug } from "./serviceNotices";
-import { readRepositoryManagedContent } from "./service-notice-repository";
+import { getServiceNoticePath, getRepositoryServiceNoticeBySlug, readRepositoryManagedContent } from "./service-notice-repository";
 
 const files = vi.hoisted(() => ({ readdir: vi.fn(), readFile: vi.fn() }));
 vi.mock("node:fs/promises", () => ({ ...files, default: files }));
@@ -51,9 +51,22 @@ it("returns empty results only for missing files and does not hide permission er
   await expect(getServiceNoticeBySlug("missing")).rejects.toBe(error);
 });
 
-it.each(["../secret", "nested/file", "nested\\file", "", "%2e%2e", "notice.md"])("rejects invalid slug %s before file access", async (slug) => {
-  expect(await getServiceNoticeBySlug(slug)).toBeNull();
+it.each(["../secret", "..\\secret", "nested/file", "nested\\file", "", "%2e%2e", "%2fsecret", "%5csecret", "notice.md", "notice\0", "공지", "/absolute", "C:\\notice"])("rejects invalid slug %s before file access in either locale", async (slug) => {
+  for (const locale of ["ko", "en"] as const) {
+    expect(getServiceNoticePath(slug, locale)).toBeNull();
+    expect(await getServiceNoticeBySlug(slug, locale)).toBeNull();
+    expect(await getRepositoryServiceNoticeBySlug(slug, locale)).toBeNull();
+  }
   expect(files.readFile).not.toHaveBeenCalled();
+});
+
+it.each(["ko", "en"] as const)("resolves valid slugs only inside the fixed %s notice directory", locale => {
+  const directory = path.resolve(process.cwd(), "public", "service-notices", ...(locale === "en" ? ["en"] : []));
+  const file = getServiceNoticePath("019-Test-2026", locale)!;
+  expect(path.dirname(file)).toBe(directory);
+  expect(file.startsWith(directory + path.sep)).toBe(true);
+  expect(path.basename(file)).toBe("019-Test-2026.md");
+  expect(getServiceNoticePath("019-Test-2026")).toBe(getServiceNoticePath("019-Test-2026", "ko"));
 });
 
 it("selects a matching reviewed English variant without changing source identity or pagination count", async () => {
@@ -68,6 +81,7 @@ it("selects a matching reviewed English variant without changing source identity
   expect(english).toHaveLength(1);
   expect(english[0]).toEqual({ ...original, title: "Reviewed English", lang: "en", excerpt: "English excerpt", description: "English excerpt" });
   expect(await getServiceNoticeBySlug("017-roommate-board", "en")).toEqual({ ...english[0], content: "# Complete English content\n" });
+  expect(files.readFile).toHaveBeenCalledWith(getServiceNoticePath("017-roommate-board", "en"), "utf-8");
   expect((await getServiceNoticeBySlug("017-roommate-board"))?.content).toBe("# 원문 내용\n");
 });
 
@@ -107,4 +121,25 @@ it("refuses to import an existing stale reviewed English file instead of silentl
     ? `---\ntitle: Old English\nlang: en\nsourceSha256: ${"0".repeat(64)}\n---\nOld English body\n`
     : "---\ntitle: Current Korean\ndate: 2026-10-26\nauthor: Original author\n---\n한국어 원문\n");
   await expect(readRepositoryManagedContent(true)).rejects.toThrow("Reviewed English does not match source");
+  expect(files.readFile).toHaveBeenCalledWith(getServiceNoticePath("001-test", "en"), "utf8");
+});
+
+it("keeps a missing English variant optional during a strict import", async () => {
+  files.readdir.mockResolvedValue(["001-test.md"]);
+  files.readFile.mockImplementation(async (file: string) => {
+    if (file === getServiceNoticePath("001-test", "en")) throw Object.assign(new Error("Missing variant"), { code: "ENOENT" });
+    return "---\ntitle: Current Korean\ndate: 2026-10-26\nauthor: Original author\n---\n한국어 원문\n";
+  });
+  const [notice] = await readRepositoryManagedContent(true);
+  expect(notice.published).toMatchObject({ slug: "001-test", title: "Current Korean", content: "한국어 원문\n" });
+  expect(notice.published).not.toHaveProperty("english");
+});
+
+it("propagates an English file permission error instead of hiding it as a missing translation", async () => {
+  const error = Object.assign(new Error("Permission denied"), { code: "EACCES" });
+  files.readFile.mockImplementation(async (file: string) => {
+    if (file === getServiceNoticePath("001-test", "en")) throw error;
+    return "---\ntitle: Current Korean\ndate: 2026-10-26\n---\n한국어 원문\n";
+  });
+  await expect(getRepositoryServiceNoticeBySlug("001-test", "en")).rejects.toBe(error);
 });

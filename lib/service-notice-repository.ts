@@ -74,12 +74,12 @@ function parseFrontmatter(content: string): {
   return { metadata, body };
 }
 
-export function getServiceNoticePath(slug: string): string | null {
+export function getServiceNoticePath(slug: string, locale: Locale = "ko"): string | null {
   if (!SERVICE_NOTICE_SLUG_PATTERN.test(slug)) {
     return null;
   }
 
-  const noticesDir = path.resolve(NOTICES_DIR);
+  const noticesDir = path.resolve(locale === "en" ? path.join(NOTICES_DIR, "en") : NOTICES_DIR);
   const filePath = path.resolve(noticesDir, `${slug}.md`);
   const noticesDirPrefix = `${noticesDir}${path.sep}`;
 
@@ -139,9 +139,11 @@ function isMissingFile(error: unknown): boolean {
 async function localizedContent(slug: string, source: string, locale: Locale) {
   const original = parseFrontmatter(source);
   if (locale !== "en" || original.metadata.lang === "en") return original;
+  const translatedPath = getServiceNoticePath(slug, "en");
+  if (!translatedPath) return original;
   let translated: string;
   try {
-    translated = await readFile(path.join(NOTICES_DIR, "en", `${slug}.md`), "utf-8");
+    translated = await readFile(translatedPath, "utf-8");
   } catch (error) {
     if (isMissingFile(error)) return original;
     throw error;
@@ -217,7 +219,7 @@ export async function readRepositoryManagedContent(strictEnglish = false): Promi
     const sourceSha256 = createHash("sha256").update(source, "utf8").digest("hex");
     if (strictEnglish && notice.lang !== "en" && english?.lang !== "en") {
       try {
-        await readFile(path.join(NOTICES_DIR, "en", `${notice.slug}.md`), "utf8");
+        await readFile(getServiceNoticePath(notice.slug, "en")!, "utf8");
         throw new Error(`Reviewed English does not match source: ${notice.slug}`);
       } catch (error) { if (!isMissingFile(error)) throw error; }
     }
