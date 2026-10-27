@@ -4,7 +4,7 @@ import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import GraduationPageClient from "@/app/features/academic/GraduationPageClient";
 import { createGraduationAnswerSummary } from "@/lib/academic-aeo";
 import { createGraduationModel } from "@/lib/graduation-model";
-import { readGraduationReference } from "@/lib/server/graduation-data";
+import { createGraduationClientReference, readGraduationReference } from "@/lib/server/graduation-data";
 import { getKoreaNow } from "@/lib/home";
 import {
   LOCALE_HEADER_NAME,
@@ -47,7 +47,7 @@ export default async function GraduationPage() {
           url: `${SITE_ORIGIN}${localizePath("/academic/graduation", locale)}`,
         })}
       />
-      <GraduationPageClient snapshot={snapshot} />
+      <GraduationPageClient snapshot={createGraduationClientReference(snapshot)} />
     </>
   );
 }

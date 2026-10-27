@@ -7,3 +7,18 @@ export async function readGraduationReference(): Promise<GraduationReferenceData
   createGraduationModel(snapshot).getColleges();
   return snapshot;
 }
+
+export function createGraduationClientReference(snapshot: GraduationReferenceData): GraduationReferenceData {
+  const reviewedDepartments = new Set([
+    ...snapshot.curriculum.metadata.fullyVerifiedDepartmentIds,
+    ...(snapshot.curriculum.metadata.reviewedDepartmentIds ?? []),
+  ]);
+  // Unreviewed departments cannot expose course selection; retain their requirements and availability guidance.
+  return {
+    ...snapshot,
+    curriculum: {
+      ...snapshot.curriculum,
+      courses: snapshot.curriculum.courses.filter(course => reviewedDepartments.has(course.departmentId)),
+    },
+  };
+}

@@ -1,4 +1,5 @@
 import { bundledGraduationReference } from "@/lib/graduation";
+import { createGraduationClientReference } from "@/lib/server/graduation-data";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientLocaleProvider } from "@/app/components/LocaleContext";
@@ -13,6 +14,8 @@ import {
   createGraduationSavedState,
   GRADUATION_STORAGE_KEY,
 } from "./graduation-persistence";
+
+const clientReference = createGraduationClientReference(bundledGraduationReference);
 
 const savedState = createGraduationSavedState(
   {
@@ -38,7 +41,7 @@ function renderSavedProgress(initialState = savedState) {
     GRADUATION_STORAGE_KEY,
     JSON.stringify(initialState),
   );
-  render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+  render(<GraduationPageClient snapshot={clientReference} />);
   return screen.getByRole("textbox", { name: /입학년도/ });
 }
 
@@ -57,7 +60,7 @@ describe("graduation selection preserves progress", () => {
   });
 
   it("starts with the next available condition and keeps pending steps compact without dropping their guidance", () => {
-    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+    render(<GraduationPageClient snapshot={clientReference} />);
     expect(screen.getByText("입학년도를 먼저 선택하세요.")).toBeVisible();
     expect(screen.queryByText("대학을 먼저 선택하세요.")).not.toBeInTheDocument();
     const pending = screen.getByText("3. 학점 입력").closest("details")!;
@@ -92,7 +95,7 @@ describe("graduation selection preserves progress", () => {
     vi.stubGlobal("fetch", fetch);
     const dictionary = getDictionary("en");
     localStorage.setItem(GRADUATION_STORAGE_KEY, JSON.stringify(savedState));
-    render(<ClientLocaleProvider locale="en" dictionary={dictionary}><GraduationPageClient snapshot={bundledGraduationReference} /></ClientLocaleProvider>);
+    render(<ClientLocaleProvider locale="en" dictionary={dictionary}><GraduationPageClient snapshot={clientReference} /></ClientLocaleProvider>);
     const original = localStorage.getItem(GRADUATION_STORAGE_KEY);
     expect(screen.getByRole("button", { name: "미래융합대학" }).querySelector("span")).toHaveAttribute("lang", "ko");
     expect(await screen.findByRole("button", { name: "English colleges.4.name" })).toBeInTheDocument();
@@ -162,7 +165,7 @@ describe("graduation selection preserves progress", () => {
     window.localStorage.setItem(GRADUATION_STORAGE_KEY, JSON.stringify(savedState));
     render(
       <ClientLocaleProvider locale={locale} dictionary={dictionary}>
-        <GraduationPageClient snapshot={bundledGraduationReference} />
+        <GraduationPageClient snapshot={clientReference} />
       </ClientLocaleProvider>,
     );
 
@@ -291,7 +294,7 @@ describe("graduation selection preserves progress", () => {
       throw new DOMException("Storage unavailable", "SecurityError");
     });
 
-    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+    render(<GraduationPageClient snapshot={clientReference} />);
 
     expect(screen.getByRole("textbox", { name: /입학년도/ })).toHaveValue("2024");
     expect(screen.getByText(/자동 저장할 수 없습니다/)).toBeInTheDocument();
@@ -309,7 +312,7 @@ describe("graduation selection preserves progress", () => {
       throw new DOMException("Storage unavailable", "SecurityError");
     });
 
-    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+    render(<GraduationPageClient snapshot={clientReference} />);
 
     expect(screen.getByText(/자동 저장할 수 없습니다/)).toBeInTheDocument();
     expect(write).not.toHaveBeenCalled();
@@ -327,7 +330,7 @@ describe("graduation selection preserves progress", () => {
     );
     const write = vi.spyOn(Storage.prototype, "setItem");
 
-    render(<GraduationPageClient snapshot={bundledGraduationReference} />);
+    render(<GraduationPageClient snapshot={clientReference} />);
 
     expect(readSavedState()).toEqual(savedState);
     expect(write).not.toHaveBeenCalled();
