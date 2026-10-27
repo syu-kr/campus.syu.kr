@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ManagedBanners } from "./ManagedBanners";
 import { LocaleProvider } from "./LocaleProvider";
+import { Modal } from "./Modal";
 import type { PublicBanner } from "@/types/managed-content";
 const now = Date.parse("2026-10-26T10:00:00Z");
 const banner: PublicBanner = { id: "banner-one", kind: "banner", category: "ad", placement: "home", title: "제휴 안내", description: "공개 내용", imageDesktop: "/api/content-media/11111111-1111-4111-8111-111111111111", imageMobile: "/api/content-media/22222222-2222-4222-8222-222222222222", imageAlt: "배너 이미지 설명", link: "https://example.com/event", priority: 1, dismissible: true, startsAt: null, endsAt: new Date(now + 30000).toISOString(), revision: 1 };
@@ -96,4 +97,79 @@ it("opens and closes even when local and session storage are unavailable", () =>
   vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("unavailable"); });
   vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("unavailable"); });
   render(popupView());expect(screen.getByRole("dialog")).toBeVisible();fireEvent.click(screen.getByRole("button", { name: "오늘 그만 보기" }));expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+it("recovers a cold empty snapshot with bounded early retries instead of waiting thirty seconds", async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({ banners: [] })).mockResolvedValueOnce(Response.json({ banners: [] })).mockResolvedValue(Response.json({ banners: [popup] }));
+  render(popupView([]));
+  await act(async () => vi.advanceTimersByTimeAsync(3011));
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+});
+
+it("bounds empty-state recovery and cancels it when the banner unmounts", async () => {
+  vi.mocked(fetch).mockImplementation(async () => Response.json({ banners: [] }));
+  const current = render(popupView([]));
+  await act(async () => vi.advanceTimersByTimeAsync(10000));
+  expect(fetch).toHaveBeenCalledTimes(3);
+  current.unmount();
+  await act(async () => vi.advanceTimersByTimeAsync(30000));
+  expect(fetch).toHaveBeenCalledTimes(3);
+});
+
+it("does not overlap an unfinished read when the tab becomes visible", async () => {
+  let finish!: (response: Response) => void;
+  vi.mocked(fetch).mockReturnValue(new Promise<Response>(resolve => { finish = resolve; }));
+  render(popupView([]));fireEvent(document, new Event("visibilitychange"));
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await act(async () => finish(Response.json({ banners: [popup] })));
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+});
+
+it("aborts a stalled read after eight seconds and recovers with a fresh request", async () => {
+  const signals: AbortSignal[] = [];
+  const startedTimeouts = vi.spyOn(window, "setTimeout"), clearedTimeouts = vi.spyOn(window, "clearTimeout");
+  vi.mocked(fetch).mockImplementationOnce((_input, init) => new Promise<Response>((_resolve, reject) => {
+    const signal = init!.signal!;signals.push(signal);
+    signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")));
+  })).mockImplementationOnce(async (_input, init) => { signals.push(init!.signal!);return Response.json({ banners: [popup] }); })
+    .mockImplementationOnce((_input, init) => new Promise<Response>((_resolve, reject) => {
+      const signal = init!.signal!;signals.push(signal);
+      signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")));
+    }));
+  const current = render(popupView([]));
+  await act(async () => vi.advanceTimersByTimeAsync(7999));expect(signals[0].aborted).toBe(false);
+  await act(async () => vi.advanceTimersByTimeAsync(1));expect(signals[0].aborted).toBe(true);
+  await act(async () => vi.advanceTimersByTimeAsync(1001));
+  expect(fetch).toHaveBeenCalledTimes(2);expect(signals[1]).not.toBe(signals[0]);expect(signals[1].aborted).toBe(false);
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+  fireEvent(document, new Event("visibilitychange"));expect(signals[2].aborted).toBe(false);
+  await act(async () => current.unmount());expect(signals[2].aborted).toBe(true);
+  const requestTimers = startedTimeouts.mock.calls.flatMap(([, delay], index) => delay === 8000 ? [startedTimeouts.mock.results[index].value] : []);
+  expect(requestTimers).toHaveLength(3);for (const timer of requestTimers) expect(clearedTimeouts).toHaveBeenCalledWith(timer);
+});
+
+it("starts a known scheduled popup at its boundary without waiting for polling", async () => {
+  render(popupView([{ ...popup, startsAt: new Date(now + 1000).toISOString() }]));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  await act(async () => vi.advanceTimersByTimeAsync(1011));
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+});
+
+it("ends today's dismissal at Korean midnight while the page remains open", async () => {
+  vi.setSystemTime(Date.parse("2026-10-26T14:59:59Z"));
+  render(popupView());fireEvent.click(screen.getByRole("button", { name: "오늘 그만 보기" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  await act(async () => vi.advanceTimersByTimeAsync(1011));
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+});
+
+it("waits for an existing dialog to close before opening an automatic popup", async () => {
+  const active = render(<LocaleProvider locale="ko"><Modal isOpen title="입력 중" onClose={() => undefined}><input aria-label="작성 중" /></Modal></LocaleProvider>);
+  const input = screen.getByRole("textbox", { name: "작성 중" });input.focus();
+  render(popupView());
+  expect(screen.queryByRole("dialog", { name: popup.title })).toBeNull();expect(input).toHaveFocus();
+  active.rerender(<LocaleProvider locale="ko"><Modal isOpen={false} title="입력 중" onClose={() => undefined}>Content</Modal></LocaleProvider>);
+  await act(async () => { await Promise.resolve(); });
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
 });

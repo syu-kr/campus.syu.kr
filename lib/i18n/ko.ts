@@ -1343,6 +1343,7 @@ export const koDictionary = {
         unavailableMessage:
           "외부 지도에 연결하지 못했어요. 건물 검색과 시설 목록은 계속 이용할 수 있습니다.",
         unavailableHelp: "지도가 표시되지 않을 때",
+        retry: "지도 다시 불러오기",
         unavailableBrowserHelp:
           "브라우저에서 외부 콘텐츠를 차단하는지 확인해 보세요. 쿠키·사이트 데이터 제한을 사용 중이라면 이 사이트의 설정을 확인하거나 다른 브라우저에서 열어보세요.",
         basementFloor: "지하",

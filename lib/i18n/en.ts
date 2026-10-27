@@ -1366,6 +1366,7 @@ export const enDictionary = {
         unavailableMessage:
           "The external map could not be connected. Building search and facility lists are still available.",
         unavailableHelp: "If the map does not appear",
+        retry: "Reload map",
         unavailableBrowserHelp:
           "Check whether your browser blocks external content. If you restrict cookies or site data, review this site's settings or try another browser.",
         basementFloor: "B",

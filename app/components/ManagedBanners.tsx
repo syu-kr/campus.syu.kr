@@ -38,7 +38,19 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
   const [now, setNow] = useState(initialNow);
   const [dismissed, setDismissed] = useState<Record<string, number>>({});
   const [checkedStorage, setCheckedStorage] = useState<string | null>(null);
+  const [otherDialogOpen, setOtherDialogOpen] = useState(false);
   const storageSnapshot = items.map(storageKey).join("|");
+  useEffect(() => {
+    if (placement !== "popup" || excluded) return;
+    const refresh = () => {
+      if (document.querySelector(".m3-managed-popup-overlay")) return;
+      setOtherDialogOpen(Boolean(document.querySelector('[role="dialog"][aria-modal="true"]')));
+    };
+    refresh();
+    const observer = new MutationObserver(refresh);
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["role", "aria-modal"] });
+    return () => observer.disconnect();
+  }, [placement, excluded]);
   useEffect(() => {
     const stored: Record<string, number> = {};
     for (const item of items) {
@@ -51,29 +63,48 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
   useEffect(() => {
     if (excluded) return;
     let disposed = false;
-    const controller = new AbortController();
+    let inFlight = false;
+    let recovered = initialBanners.length > 0;
+    let recoveryAttempts = 0;
+    let recoveryTimer: number | undefined;
+    let controller: AbortController | undefined;
+    let requestTimer: number | undefined;
     const poll = async () => {
       setNow(Date.now());
-      if (document.visibilityState === "hidden") return;
+      if (document.visibilityState === "hidden" || inFlight) return;
+      window.clearTimeout(recoveryTimer);
+      inFlight = true;
+      const request = new AbortController();
+      controller = request;
+      requestTimer = window.setTimeout(() => request.abort(), 8000);
       try {
-        const response = await fetch(`/api/banners?placement=${placement}`, { signal: controller.signal, cache: "no-store" });
+        const response = await fetch(`/api/banners?placement=${placement}`, { signal: request.signal, cache: "no-store" });
         if (!response.ok) return;
         const body: unknown = await response.json();
-        if (!disposed && body && typeof body === "object" && "banners" in body && Array.isArray(body.banners) && body.banners.every(validBanner)) setItems(body.banners);
+        if (!disposed && body && typeof body === "object" && "banners" in body && Array.isArray(body.banners) && body.banners.every(validBanner)) {
+          setItems(body.banners);
+          recovered ||= body.banners.length > 0;
+        }
       } catch { /* Preserve the last public snapshot; expiration is checked separately. */ }
+      finally {
+        window.clearTimeout(requestTimer);
+        controller = undefined;
+        inFlight = false;
+        if (!disposed && !recovered && recoveryAttempts < 2) recoveryTimer = window.setTimeout(() => void poll(), ++recoveryAttempts * 1000);
+      }
     };
     const interval = window.setInterval(() => void poll(), 30_000);
     if (!initialBanners.length) void poll();
     const refresh = () => { if (document.visibilityState === "visible") void poll(); };
     document.addEventListener("visibilitychange", refresh);
-    return () => { disposed = true;controller.abort();window.clearInterval(interval);document.removeEventListener("visibilitychange", refresh); };
+    return () => { disposed = true;controller?.abort();window.clearTimeout(requestTimer);window.clearInterval(interval);window.clearTimeout(recoveryTimer);document.removeEventListener("visibilitychange", refresh); };
   }, [placement, initialBanners.length, excluded]);
   useEffect(() => {
-    const nextEnd = items.map(item => item.endsAt ? Date.parse(item.endsAt) : Infinity).filter(time => time > now).sort((a, b) => a - b)[0];
-    if (!Number.isFinite(nextEnd)) return;
-    const timer = window.setTimeout(() => setNow(Date.now()), Math.min(2_147_000_000, nextEnd - Date.now() + 10));
+    const nextBoundary = [...items.flatMap(item => [item.startsAt, item.endsAt].map(value => value ? Date.parse(value) : Infinity)), ...Object.values(dismissed)].filter(time => time > now).sort((a, b) => a - b)[0];
+    if (!Number.isFinite(nextBoundary)) return;
+    const timer = window.setTimeout(() => setNow(Date.now()), Math.min(2_147_000_000, nextBoundary - Date.now() + 10));
     return () => window.clearTimeout(timer);
-  }, [items, now]);
+  }, [items, now, dismissed]);
   const handleDismiss = useCallback((item: PublicBanner, today: boolean) => {
     const current = Date.now();
     const parts = getKoreaDateTimeParts(new Date(current));
@@ -85,7 +116,7 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
   if (excluded) return null;
   const shown = items.filter(item => item.placement === placement && visibleAt(item, now) && !(dismissed[storageKey(item)] > now)).slice(0, 3);
   if (!shown.length) return null;
-  if (placement === "popup") return checkedStorage === storageSnapshot ? <ManagedBannerItem key={storageKey(shown[0])} item={shown[0]} onDismiss={handleDismiss} /> : null;
+  if (placement === "popup") return !otherDialogOpen && checkedStorage === storageSnapshot ? <ManagedBannerItem key={storageKey(shown[0])} item={shown[0]} onDismiss={handleDismiss} /> : null;
   return <section className={`m3-managed-banners m3-managed-banners-${placement}`} aria-label={labels.regionLabel}>
     {shown.map(item => <ManagedBannerItem key={`${item.id}:${item.revision}`} item={item} onDismiss={handleDismiss} />)}
   </section>;

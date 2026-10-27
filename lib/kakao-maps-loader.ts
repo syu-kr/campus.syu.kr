@@ -18,48 +18,48 @@ export function loadKakaoMapsSdk(): Promise<boolean> {
     return Promise.resolve(false);
   }
 
-  kakaoMapsPromise = new Promise((resolve) => {
+  kakaoMapsPromise = new Promise<boolean>((resolve) => {
     const existingScript = document.getElementById("kakao-maps-sdk");
-
-    const resolveWhenReady = () => {
-      let attempts = 0;
-      const poll = () => {
-        attempts += 1;
-        if (isKakaoMapsReady()) {
-          resolve(true);
-          return;
-        }
-
-        if (attempts >= 300) {
-          resolve(false);
-          return;
-        }
-
-        window.setTimeout(poll, 100);
-      };
-
-      poll();
-    };
-
-    if (existingScript) {
-      resolveWhenReady();
-      return;
+    const script = existingScript ?? document.createElement("script");
+    let settled = false;
+    let pollTimer: number | undefined;
+    const timeout = window.setTimeout(() => finish(isKakaoMapsReady()), 10_000);
+    function finish(loaded: boolean) {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      window.clearTimeout(pollTimer);
+      script.removeEventListener("load", onLoad);
+      script.removeEventListener("error", onError);
+      if (!loaded) script.remove();
+      resolve(loaded);
     }
-
-    const script = document.createElement("script");
-    script.id = "kakao-maps-sdk";
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&libraries=services&autoload=false`;
-    script.async = true;
-    script.onload = () => {
-      if (window.kakao?.maps?.load) {
-        window.kakao.maps.load(resolveWhenReady);
-        return;
-      }
-
-      resolveWhenReady();
-    };
-    script.onerror = () => resolve(false);
-    document.head.appendChild(script);
+    function poll() {
+      if (settled) return;
+      window.clearTimeout(pollTimer);
+      if (isKakaoMapsReady()) finish(true);
+      else pollTimer = window.setTimeout(poll, 100);
+    }
+    function onLoad() {
+      try {
+        if (window.kakao?.maps?.load) window.kakao.maps.load(poll);
+        else poll();
+      } catch { finish(false); }
+    }
+    function onError() { finish(false); }
+    script.addEventListener("load", onLoad);
+    script.addEventListener("error", onError);
+    if (existingScript) onLoad();
+    else {
+      const sdkScript = script as HTMLScriptElement;
+      sdkScript.id = "kakao-maps-sdk";
+      sdkScript.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&libraries=services&autoload=false`;
+      sdkScript.async = true;
+      try { document.head.appendChild(sdkScript); } catch { finish(false); }
+    }
+  }).then(loaded => {
+    if (!loaded) kakaoMapsPromise = null;
+    return loaded;
   });
 
   return kakaoMapsPromise;

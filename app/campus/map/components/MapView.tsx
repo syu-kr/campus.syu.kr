@@ -4,6 +4,7 @@ import { buildings } from "../lib/mapData";
 import { BuildingMarker } from "./BuildingMarker";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadKakaoMapsSdk } from "@/lib/kakao-maps-loader";
+import { Button } from "@/app/components/Button";
 import {
   useDictionary,
   useLocale,
@@ -26,6 +27,8 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<KakaoMap | null>(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const retryStatusRef = useRef<HTMLParagraphElement>(null);
   const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(
     "loading",
   );
@@ -46,7 +49,7 @@ export function MapView({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [retryAttempt]);
 
   useEffect(() => {
     if (!sdkReady || !mapContainer.current) {
@@ -107,8 +110,9 @@ export function MapView({
 
   return (
     <>
+      <p ref={retryStatusRef} role="status" tabIndex={-1} className="sr-only">{loadState === "loading" ? text.loadingTitle : loadState === "error" ? text.unavailableTitle : text.selectBuilding}</p>
       {loadState === "error" ? (
-        <MapUnavailableState />
+        <MapUnavailableState onRetry={() => { retryStatusRef.current?.focus({ preventScroll: true });setSdkReady(false);setLoadState("loading");setRetryAttempt(value => value + 1); }} />
       ) : (
         <div className="relative h-[min(60vh,600px)] min-h-[360px] w-full">
           <div ref={mapContainer} className="h-full w-full" />
@@ -146,7 +150,7 @@ export function MapView({
   );
 }
 
-function MapUnavailableState() {
+function MapUnavailableState({ onRetry }: { onRetry: () => void }) {
   const dictionary = useDictionary();
   const text = dictionary.pages.map;
 
@@ -159,6 +163,7 @@ function MapUnavailableState() {
         <p className="mt-2 break-keep text-sm leading-6 text-neutral-600">
           {text.unavailableMessage}
         </p>
+        <Button variant="secondary" className="mt-4" onClick={onRetry}>{text.retry}</Button>
         <details className="mt-4 text-left text-sm text-neutral-600">
           <summary className="m3-disclosure-trigger text-primary-600">{text.unavailableHelp}</summary>
           <p className="mt-2 leading-6">{text.unavailableBrowserHelp}</p>
