@@ -51,12 +51,12 @@ function StudentRestaurantMeals({ day }: { day: StudentRestaurantData["days"][nu
   );
 }
 
-export function StudentRestaurantMenu({ today }: { today: string }) {
+export function StudentRestaurantMenu({ today, firebaseDataEnabled = false }: { today: string; firebaseDataEnabled?: boolean }) {
   const dictionary = useDictionary();
   const cafeteriaText = dictionary.pages.cafeteria;
   const text = cafeteriaText.studentRestaurant;
   const locale = useLocale();
-  const { data, isPending, isError, refetch, isFetching, isConfigured } = useStudentRestaurantMenu();
+  const { data, isPending, isError, refetch, isFetching, isConfigured } = useStudentRestaurantMenu(firebaseDataEnabled);
   const weeklyMenus = getCafeteriaWeekMenus(data?.days, today);
   const todayMenu = data?.days.find((day) => day.date === today);
   const dayOfWeek = new Date(`${today}T00:00:00Z`).getUTCDay();

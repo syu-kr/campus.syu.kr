@@ -15,9 +15,10 @@ import { splitPublicContentText } from "../content-translation";
 import { readDailyCrawlDataJson } from "./crawl-data";
 import { getPublicManagedContentRecord } from "./public-managed-content";
 import type { PublicManagedPublication } from "@/types/managed-content";
+import * as publicData from "./public-data";
 
 beforeEach(() => vi.stubGlobal("fetch", vi.fn(() => { throw new Error("No external source/provider calls in source tests"); })));
-afterEach(() => {vi.unstubAllGlobals();vi.unstubAllEnvs();vi.clearAllMocks();});
+afterEach(() => {vi.unstubAllGlobals();vi.unstubAllEnvs();vi.clearAllMocks();vi.restoreAllMocks();});
 describe("allowlisted published translation sources", () => {
   it("projects public announcement/AI fields but excludes authors, URLs, IDs and dates", async () => {
     vi.mocked(getAnnouncementById).mockResolvedValue({ id: "a", title: "제목", content: "본문", author: "개인 이름", date: "2026-10-26", url: "https://school.test", aiSummary: { summary: "요약", deadline: "기한", target: "대상", requiredAction: "제출", keywords: ["키워드"] } } as Announcement);
@@ -84,6 +85,17 @@ describe("allowlisted published translation sources", () => {
     vi.mocked(fetch).mockResolvedValueOnce(Response.json({ updatedAt: "2026-10-26T00:00:00Z", weekStart: "2026-10-26", days: [{ date: "2026-10-26", breakfast: null, lunch: ["김치볶음밥"], dinner: ["우동"], ingredients: { breakfast: null, lunch: ["쌀, 김치"], dinner: null } }] }));
     expect(await resolvePublicTranslationSource({ kind: "student-restaurant", id: "2026-10-26" })).toEqual({ "lunch.0": "김치볶음밥", "dinner.0": "우동", "ingredients.lunch.0": "쌀, 김치" });
     expect(fetch).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ credentials: "omit", redirect: "error" }));
+  });
+  it.each(["", "firebase"])("uses the same Manna reader as the displayed menu and never a separate URL (%s)", async (backend) => {
+    vi.stubEnv("PUBLIC_DATA_BACKEND", backend);
+    vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "");
+    const read = vi.spyOn(publicData, "readPublicDataJson").mockResolvedValueOnce({
+      updatedAt: "2026-10-26T00:00:00Z", weekStart: "2026-10-26",
+      days: [{ date: "2026-10-26", breakfast: null, lunch: ["공용 원문"], dinner: [], ingredients: { breakfast: null, lunch: ["쌀"], dinner: [] } }],
+    });
+    expect(await resolvePublicTranslationSource({ kind: "student-restaurant", id: "2026-10-26" })).toEqual({ "lunch.0": "공용 원문", "ingredients.lunch.0": "쌀" });
+    expect(read).toHaveBeenCalledWith("student-restaurant-1.json");
+    expect(fetch).not.toHaveBeenCalled();
   });
   it("normalizes configured live course source and excludes professor/contact/credit/time fields", async () => {
     vi.stubEnv("LECTURE_TIMETABLE_URL", "https://fixture.example/lectures");

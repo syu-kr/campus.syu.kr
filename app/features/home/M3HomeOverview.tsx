@@ -34,6 +34,7 @@ const STOP_IDS = STOPS.map(([id]) => id);
 type StopId = (typeof STOPS)[number][0];
 
 export interface HomeOverviewData {
+  firebaseDataEnabled?: boolean;
   cafeteria?: CafeteriaSnapshot;
   shuttles?: ShuttleBusSchedule[];
   specialPeriods?: ShuttleSpecialPeriods;
@@ -110,9 +111,9 @@ function SuMeal({ now, initial }: { now: Date | null; initial: HomeOverviewData 
   </>;
 }
 
-function MannaMeal({ today }: { today: string }) {
+function MannaMeal({ today, firebaseDataEnabled }: { today: string; firebaseDataEnabled?: boolean }) {
   const dictionary = useDictionary(), text = dictionary.pages.cafeteria, overview = dictionary.home.overview;
-  const query = useStudentRestaurantMenu();
+  const query = useStudentRestaurantMenu(firebaseDataEnabled);
   const day = query.data?.days.find((item) => item.date === today), lunch = day?.lunch;
   const missingDay = Boolean(query.data && !day);
   const message = !query.isConfigured ? text.studentRestaurant.notConfigured :
@@ -261,7 +262,7 @@ export function M3HomeOverview({ now, initial, children, banner }: {
             {value === "su-lounge" ? dictionary.pages.cafeteria.suLoungeTitle : dictionary.pages.cafeteria.mannaTab}
           </button>)}
         </div>
-        {restaurant === "su-lounge" ? <SuMeal now={now} initial={initial} /> : <MannaMeal today={today.dateStringDash} />}
+        {restaurant === "su-lounge" ? <SuMeal now={now} initial={initial} /> : <MannaMeal today={today.dateStringDash} firebaseDataEnabled={initial.firebaseDataEnabled} />}
       </section>
       <section className="m3-home-schedules">{children}</section>
       <section className="m3-home-bus">

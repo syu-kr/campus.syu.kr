@@ -8,7 +8,7 @@ import { getHomeAcademicSchedules, getHomeCafeteriaSnapshot, getHomePhoneNumbers
 import { getServiceNoticeBySlug } from "../serviceNotices";
 import { LIBRARY_OPERATING_HOURS } from "../library";
 import { normalizeLectureTimetablePayload } from "../lecture-timetable";
-import { parseStudentRestaurantMenu, parseStudentRestaurantPublicUrl } from "../student-restaurant";
+import { parseStudentRestaurantMenu } from "../student-restaurant";
 import { readResponseBytes } from "./read-response-bytes";
 import { toCompetitionCandidate } from "./competitions";
 import type { ContentTranslationSource } from "../content-translation";
@@ -132,17 +132,7 @@ export async function resolvePublicTranslationSource(source: ContentTranslationS
       return fields;
     }
     case "student-restaurant": {
-      if (process.env.PUBLIC_DATA_BACKEND === "firebase") {
-        const menu = parseStudentRestaurantMenu(await readPublicDataJson("student-restaurant-1.json"));
-        const day = menu.days.find(item => item.date === source.id) ?? missing();
-        const fields: PublicFields = {};
-        for (const meal of ["breakfast", "lunch", "dinner"] as const) { strings(fields, meal, day[meal]); strings(fields, `ingredients.${meal}`, day.ingredients?.[meal]); }
-        return fields;
-      }
-      const url = parseStudentRestaurantPublicUrl(process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL ?? "");
-      const response = await fetch(url, { cache: "no-store", credentials: "omit", redirect: "error", signal: AbortSignal.timeout(12_000) });
-      if (!response.ok) missing();
-      const menu = parseStudentRestaurantMenu(JSON.parse(new TextDecoder().decode(await readResponseBytes(response, 256 * 1024, "Menu source"))));
+      const menu = parseStudentRestaurantMenu(await readPublicDataJson("student-restaurant-1.json"));
       const day = menu.days.find(item => item.date === source.id) ?? missing();
       const fields: PublicFields = {};
       for (const meal of ["breakfast", "lunch", "dinner"] as const) {

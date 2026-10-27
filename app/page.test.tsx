@@ -18,6 +18,7 @@ vi.mock("@/lib/server/announcements", () => readers);
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("@/lib/serviceNotices", () => readers);
 vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: vi.fn(async () => []) }));
+vi.mock("@/lib/server/public-data-storage", () => ({ publicDataFirebaseEnabled: () => process.env.PUBLIC_DATA_BACKEND === "firebase" }));
 vi.mock("@/lib/server/home-data", () => ({ ...readers, ...overviewReaders }));
 vi.mock("@/lib/home", () => ({
   getKoreaNow: () => new Date("2026-10-19T00:00:00.000Z"),
@@ -40,7 +41,7 @@ const initialProps = {
   initialPublicHolidays: { holidays: [] },
 };
 const initialOverviewData = { cafeteria: { menus: [], checkedAt: null, stale: false }, shuttles: [], specialPeriods: { specialPeriods: [], semesterPeriods: [], vacationPeriods: [] } };
-const expectedProps = { ...initialProps, initialServiceNoticesFailed: false, initialBanners: [], initialOverviewData, initialNowIso: "2026-10-19T00:00:00.000Z" };
+const expectedProps = { ...initialProps, initialServiceNoticesFailed: false, initialBanners: [], initialOverviewData: { ...initialOverviewData, firebaseDataEnabled: false }, initialNowIso: "2026-10-19T00:00:00.000Z" };
 
 function deferred() {
   let resolve!: (value: unknown) => void;
@@ -57,6 +58,7 @@ async function prepareWarmHome() {
 }
 
 beforeEach(async () => {
+  vi.stubEnv("PUBLIC_DATA_BACKEND", "");
   vi.resetModules();
   vi.useFakeTimers();
   vi.spyOn(globalThis, "clearTimeout");
@@ -68,8 +70,16 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
   vi.useRealTimers();
+});
+
+it("passes the runtime Firebase choice to the home menu without exposing server settings", async () => {
+  vi.stubEnv("PUBLIC_DATA_BACKEND", "firebase");
+  const child = Home().props.children[1].props.children;
+  const content = await child.type(child.props);
+  expect(content.props.children.props.initialOverviewData).toEqual({ ...initialOverviewData, firebaseDataEnabled: true });
 });
 
 it("keeps public home indexing and excludes nonempty search result URLs", async () => {
@@ -215,7 +225,7 @@ it("keeps the ready home usable if the optional cafeteria source fails", async (
   const child = Home().props.children[1].props.children;
   const content = await child.type(child.props);
   expect(content.props.children.props.initialOverviewData).toEqual({
-    ...initialOverviewData, cafeteria: undefined,
+    ...initialOverviewData, cafeteria: undefined, firebaseDataEnabled: false,
   });
   expect(content.props.children.props.initialAnnouncements).toEqual(initialProps.initialAnnouncements);
 });

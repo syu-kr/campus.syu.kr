@@ -30,11 +30,13 @@ import { getKoreaNow, getTodayInfo } from "@/lib/home";
 interface CafeteriaPageClientProps {
   initialSnapshot: CafeteriaSnapshot;
   initialNowIso: string;
+  firebaseDataEnabled?: boolean;
 }
 
 export function CafeteriaPageClient({
   initialSnapshot,
   initialNowIso,
+  firebaseDataEnabled = false,
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
   const text = dictionary.pages.cafeteria;
@@ -106,7 +108,7 @@ export function CafeteriaPageClient({
 
         <div id="cafeteria-panel" role="region" aria-label={activeRestaurant === "su-lounge" ? text.suLoungeTitle : text.mannaTab}>
           {activeRestaurant === "manna" ? (
-            <StudentRestaurantMenu today={todayInfo.dateStringDash} />
+            <StudentRestaurantMenu today={todayInfo.dateStringDash} firebaseDataEnabled={firebaseDataEnabled} />
           ) : (
             <>
               <section id="today-menu" className="scroll-mt-24 md:scroll-mt-40">

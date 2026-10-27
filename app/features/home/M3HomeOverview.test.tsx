@@ -306,6 +306,19 @@ it("retains Manna error recovery and removes retry after a successful response",
   expect(screen.queryByRole("button", { name: text.refresh })).not.toBeInTheDocument();
 });
 
+it("loads Firebase Manna from a restored home choice without the legacy URL", async () => {
+  vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "");
+  sessionStorage.setItem("campus-m3-home-restaurant", "manna");
+  fetchTransit.mockResolvedValue({
+    updatedAt: now.toISOString(), weekStart: "2026-10-19",
+    days: [{ date: "2026-10-19", breakfast: [], lunch: ["Firebase Manna lunch"], dinner: [] }],
+  });
+  render(view("ko", { ...initial, firebaseDataEnabled: true }));
+  expect(await screen.findByText("Firebase Manna lunch")).toBeInTheDocument();
+  expect(fetchTransit).toHaveBeenCalledWith("/api/public-data/student-restaurant-1.json", expect.objectContaining({ credentials: "omit", redirect: "error" }));
+  expect(screen.queryByText(getDictionary("ko").pages.cafeteria.studentRestaurant.notConfigured)).not.toBeInTheDocument();
+});
+
 it.each(["ko", "en"] as const)("uses the shared weather sentence as the only introduction heading in %s", (locale) => {
   const { container } = render(view(locale));
   const dictionary = getDictionary(locale);

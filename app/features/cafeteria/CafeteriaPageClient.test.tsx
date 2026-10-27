@@ -24,8 +24,8 @@ vi.mock("next/navigation", async () => {
 const replaceHistory = window.history.replaceState.bind(window.history);
 
 vi.mock("@/app/features/cafeteria/StudentRestaurantMenu", () => ({
-  StudentRestaurantMenu: ({ today }: { today: string }) => (
-    <div data-testid="manna-menu">Manna menu for {today}</div>
+  StudentRestaurantMenu: ({ today, firebaseDataEnabled }: { today: string; firebaseDataEnabled?: boolean }) => (
+    <div data-testid="manna-menu" data-firebase={String(firebaseDataEnabled)}>Manna menu for {today}</div>
   ),
 }));
 
@@ -39,13 +39,13 @@ const snapshot: CafeteriaSnapshot = {
 };
 const clients: QueryClient[] = [];
 
-function page(data = snapshot, locale: Locale = "ko", now = initialNowIso) {
+function page(data = snapshot, locale: Locale = "ko", now = initialNowIso, firebaseDataEnabled = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   clients.push(client);
   return {
     client,
     tree: <QueryClientProvider client={client}><LocaleProvider locale={locale}>
-      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} />
+      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} firebaseDataEnabled={firebaseDataEnabled} />
     </LocaleProvider></QueryClientProvider>,
   };
 }
@@ -167,6 +167,17 @@ function renderPage(initialMenus = menus, locale: Locale = "ko") {
 }
 
 describe("cafeteria selection and weekly menu", () => {
+  it("carries the server data backend through direct Manna entry and restaurant changes", () => {
+    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna&lang=en");
+    render(page(snapshot, "ko", initialNowIso, true).tree);
+    expect(screen.getByTestId("manna-menu")).toHaveAttribute("data-firebase", "true");
+    const selector = screen.getByRole("group", { name: text.restaurantPicker });
+    fireEvent.click(within(selector).getByRole("button", { name: text.suLoungeTitle }));
+    fireEvent.click(within(selector).getByRole("button", { name: text.mannaTab }));
+    expect(screen.getByTestId("manna-menu")).toHaveAttribute("data-firebase", "true");
+    expect(window.location.search).toContain("lang=en");
+  });
+
   it("opens Manna House from a home link and allows switching back to SU-Lounge", () => {
     window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna&lang=en");
     renderPage();

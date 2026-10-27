@@ -18,6 +18,7 @@ import {
 import { getKoreaNow } from "@/lib/home";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
 import { getPublicBanners } from "@/lib/server/public-managed-content";
+import { publicDataFirebaseEnabled } from "@/lib/server/public-data-storage";
 
 export const revalidate = 300;
 
@@ -107,7 +108,7 @@ async function HomeContent() {
         initialBanners={initialBanners}
         initialSchedules={initialSchedules}
         initialPublicHolidays={initialPublicHolidays}
-        initialOverviewData={{ cafeteria: initialCafeteria, shuttles: initialShuttles, specialPeriods: initialSpecialPeriods }}
+        initialOverviewData={{ cafeteria: initialCafeteria, shuttles: initialShuttles, specialPeriods: initialSpecialPeriods, firebaseDataEnabled: publicDataFirebaseEnabled() }}
         initialNowIso={getKoreaNow().toISOString()}
       />
     </Activity>
