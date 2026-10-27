@@ -35,3 +35,16 @@ it("does not execute unsafe URLs and preserves the locale on internal links", ()
   render(<LocaleProvider locale="en"><ManagedBanners initialBanners={[{ ...banner, link: "/service/notices" }]} placement="home" initialNow={now} /></LocaleProvider>);
   expect(screen.getByRole("link")).toHaveAttribute("href", "/en/service/notices");
 });
+it("recovers an empty server snapshot immediately instead of waiting for the polling interval", async () => {
+  vi.mocked(fetch).mockResolvedValue(Response.json({ banners: [banner] }));
+  render(<LocaleProvider locale="ko"><ManagedBanners initialBanners={[]} placement="home" initialNow={now} /></LocaleProvider>);
+  await act(async () => { await Promise.resolve(); });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("heading", { name: banner.title })).toBeVisible();
+  expect(Date.now()).toBe(now);
+});
+it("uses a populated server snapshot without an extra initial request", () => {
+  render(view());
+  expect(screen.getByRole("heading", { name: banner.title })).toBeVisible();
+  expect(fetch).not.toHaveBeenCalled();
+});

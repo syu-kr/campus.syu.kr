@@ -54,10 +54,11 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
       } catch { /* Preserve the last public snapshot; expiration is checked separately. */ }
     };
     const interval = window.setInterval(() => void poll(), 30_000);
+    if (!initialBanners.length) void poll();
     const refresh = () => { if (document.visibilityState === "visible") void poll(); };
     document.addEventListener("visibilitychange", refresh);
     return () => { disposed = true;controller.abort();window.clearInterval(interval);document.removeEventListener("visibilitychange", refresh); };
-  }, [placement]);
+  }, [placement, initialBanners.length]);
   useEffect(() => {
     const nextEnd = items.map(item => item.endsAt ? Date.parse(item.endsAt) : Infinity).filter(time => time > now).sort((a, b) => a - b)[0];
     if (!Number.isFinite(nextEnd)) return;
@@ -92,8 +93,8 @@ function ManagedBannerItem({ item, onDismiss }: { item: PublicBanner; onDismiss:
           {external && <span className="sr-only">{labels.external}</span>}
         </div>
       </>;
-      return <article className="m3-managed-banner" data-category={item.category}>
-        {href ? <Link href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined}>{content}</Link> : <div>{content}</div>}
+      return <article className="m3-managed-banner" data-category={item.category} data-has-image={mediaPattern.test(item.imageDesktop) || undefined}>
+        {href ? <Link className="m3-managed-banner-content" href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined}>{content}</Link> : <div className="m3-managed-banner-content">{content}</div>}
         {item.dismissible && <div className="m3-managed-banner-actions">
           <button type="button" onClick={() => onDismiss(item, true)}>{labels.hideToday}</button>
           <button type="button" aria-label={`${labels.close}: ${translation.text("title", item.title)}`} onClick={() => onDismiss(item, false)}>×</button>
