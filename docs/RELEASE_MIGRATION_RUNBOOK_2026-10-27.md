@@ -172,9 +172,9 @@ GitHub Actions는 수집·검토·발행을 실행하는 장소로 유지한다.
 | `.github/workflows/student-restaurant.yml:34,94` | Firebase 모드에서도 job에 `github-pages` environment 및 Pages 권한 선언이 남음 | Firebase 수집은 유지하고 Pages 전용 environment/권한/준비·배포 단계 정리. workflow 전체 삭제 금지 |
 | `.github/workflows/rollback-crawl-data.yml:60` | backend 미설정 시 Pages 복구 | Firebase CAS rollback 경로를 유지하며 Pages 복구 제거 시점을 확정 |
 | `scripts/indexnow.ts:16,133,146,158` | Firebase 분기 밖에 Pages manifest/만나의집 경로가 존재 | Actions backend/버킷 연결과 운영 source/version 검증 통과 후 legacy 분기 정리 |
-| `app/features/cafeteria/useStudentRestaurantMenu.ts:22` | 현재 화면은 같은 origin API를 읽지만 `NEXT_PUBLIC_CAFETERIA_JSON_URL` 유무로 기능 활성화 | Pages 종료를 이유로 이 값을 먼저 비우면 만나의집이 사라짐. 기능 활성 조건과 fallback 계약을 함께 변경·검증해야 함 |
+| `app/features/cafeteria/useStudentRestaurantMenu.ts` | 후속 보완으로 Firebase 모드에서는 옛 URL 없이 홈·학식 상세가 같은 origin API를 읽음 | 코드 게이트는 해소됐다. Pages 모드와 Firebase 장애 fallback을 위해 현행 URL은 출시 중 보존하며 [최종 보완](PRE_DEPLOY_FIXES_2026-10-27.md)을 따른다 |
 | `lib/server/public-data.ts:15` | 만나의집 번들 파일이 없으면 설정된 공개 URL을 fallback으로 요청 | Git에 만나의집 fallback 파일은 없음. 대체 복구 자료/명시적 오류 흐름을 마련한 뒤 Pages 의존 제거. 단순히 자기 API URL로 치환하면 순환 요청 방지 검사에 걸림 |
-| `lib/server/content-translation-sources.ts:135,142` | Firebase 분기 외 만나의집 공개 URL 번역 원본 | Production backend와 페이지/번역이 같은 자료를 사용하도록 확인 |
+| `lib/server/content-translation-sources.ts` | 후속 보완으로 만나의집 화면·번역 원본이 공용 `readPublicDataJson` 경로로 통일됨 | 코드의 별도 URL 분기는 제거됐다. 공용 reader의 실제 fallback과 운영 버전 검증은 유지 |
 | 공개 설정·구버전 앱/외부 사용자 | 빌드에 포함된 옛 식단 URL, 직접 공유한 Pages JSON 주소 | 기존 앱·설치 PWA·외부 소비자를 조사하고 유예/대체 주소 공지 후 종료. 소스 검색만으로 외부 사용 0을 단정하지 않음 |
 
 ### Pages 종료 순서
