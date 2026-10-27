@@ -29,7 +29,7 @@
 | 데이터 호환 경로 | 식당 API·`/data/cafeteria-menu.json`·옛 식당 경로·공지 crawl API의 실제 GET 4개가 `firebase-storage` 출처·기존 활성 버전을 반환. ETag 있는 3개는 재조회 304. 원래 ETag 없는 crawl 응답을 304 성공으로 계산하지 않음 |
 | 배포 산출물 | 브라우저 80파일·2,657,492B의 선택 서버 비밀값 표현 10개/개인 경로 일치 0. 서버 trace 81개에서 로컬 QA·환경·무관한 Markdown 0. 공지 37개·졸업 JSON 5개 보존. 전체 비밀정보·권리 감사는 아님 |
 
-빌드·서버는 `PUBLIC_DATA_BACKEND=firebase`, `SERVICE_NOTICES_SOURCE=database`, **`NEXT_PUBLIC_CAFETERIA_JSON_URL=''`**로 검증했다. 운영 플래그 변경을 뜻하지 않는다. 브라우저 번역·지도 성공은 fixture이며 실제 Google/Kakao·업무 쓰기는 0이다. 기존 실제 Google 표본·TTL 설정·Storage 왕복은 [앞선 준비 판정](RELEASE_READINESS_2026-10-27.md)의 별도 근거다.
+빌드·서버는 `PUBLIC_DATA_BACKEND=firebase`, `SERVICE_NOTICES_SOURCE=database`, **`NEXT_PUBLIC_CAFETERIA_JSON_URL=''`**로 검증했다. 운영 플래그 변경을 뜻하지 않는다. 번역 UI 응답과 특화 지도 성공은 fixture다. 특화 7흐름의 실제 Google/Kakao 호출·업무 쓰기는 0이다. 전체 148화면의 Kakao GET은 차단하지 않았고 외부 호출 수도 수집하지 않았다. 로컬 지도 실패·재시도 안내를 실제 공급자 성공으로 계산하지 않는다. 기존 실제 Google 표본·TTL 설정·Storage 왕복은 [앞선 준비 판정](RELEASE_READINESS_2026-10-27.md)의 별도 근거다.
 
 ## 운영 설정·이전 후보의 준비 상태
 
@@ -48,7 +48,7 @@
 5. 실제 관리자 인증·업로드·번역 키/캐시·Kakao 운영 도메인·설치 앱·실기기·스크린리더·운영 CWV를 확인한다. TTL 삭제·비용은 만료 후 관찰하며 인위적으로 만료 문서를 만들지 않았다.
 6. 실제 완료 후 팝업을 게시 중단한다. Pages는 새 생산자·소비자·장애 복구 및 옛 주소/설치 앱 유예를 확인한 뒤 별도로 종료한다.
 
-셔틀의 기존 공급자 403/앱 502는 코드로 우회하지 않았다. 정적 시간표·오류 복구는 유지하며 실시간 정상 복귀는 공급자 확인 항목이다. 로컬 지도 fixture 성공을 실제 Kakao 연결 성공으로 표시하지 않는다. [상세 출시·Pages 종료·복구 실행표](RELEASE_MIGRATION_RUNBOOK_2026-10-27.md)를 함께 따른다.
+셔틀의 기존 공급자 403/앱 502는 코드로 우회하지 않았다. 최종 148화면에서도 동일 출처 API의 셔틀 502가 4회, 존재하지 않는 일정 방의 의도된 404가 4회 관측됐다. 정적 시간표·오류 복구는 유지하며 실시간 정상 복귀는 공급자 확인 항목이다. 로컬 지도 fixture 성공을 실제 Kakao 연결 성공으로 표시하지 않는다. [상세 출시·Pages 종료·복구 실행표](RELEASE_MIGRATION_RUNBOOK_2026-10-27.md)를 함께 따른다.
 
 ## 실행 근거와 한계
 
