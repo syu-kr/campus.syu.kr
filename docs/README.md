@@ -4,6 +4,8 @@
 
 | 목적 | 문서 |
 | --- | --- |
+| 2026-10-27 출시 준비 판정 | [새 기능·검증 결과·점검 배너](RELEASE_READINESS_2026-10-27.md), [디자인·접근성](RELEASE_DESIGN_VERIFICATION_2026-10-27.md), [격리 보안 검사](RELEASE_SECURITY_VERIFICATION_2026-10-27.md) |
+| 2026-10-27 16–17시 출시·데이터 이전 | [남은 작업·순차 전환·배포 후 검사·Pages 종료·복구](RELEASE_MIGRATION_RUNBOOK_2026-10-27.md) |
 | M3 프로덕션 배포 준비 | [보완 반영·재검증](DEPLOYMENT_REMEDIATION_2026-10-26.md), [조사 보고서](PRODUCTION_READINESS_2026-10-26.md), [공개 저장소 정리](PUBLIC_REPOSITORY_CLEANUP_2026-10-26.md), [배포·롤백 체크리스트](RELEASE_CHECKLIST_2026-10-26.md) |
 | Firebase 이전과 다음 작업 | [배포 전 남은 작업·진행 상태](PRE_RELEASE_PROGRESS_2026-10-27.md), [실행 기록](FIREBASE_MIGRATION_IMPLEMENTATION_2026-10-26.md), [상세 계획](FIREBASE_MIGRATION_RELEASE_PLAN_2026-10-26.md), [독립 UI 검증](UI_UX_VERIFICATION_2026-10-26.md), [공지 이전](SERVICE_NOTICE_MIGRATION.md), [공개 snapshot 운영](PUBLIC_DATA_FIREBASE.md) |
 | 프로젝트 기능·설치 | [프로젝트 소개](../README.md) |
