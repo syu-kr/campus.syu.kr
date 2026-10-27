@@ -26,9 +26,9 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json", "./public/service-notices/**/*.md"],
   },
-  // Local verification files and credentials must never enter server function packages.
+  // Keep local files and contributor documentation out of server function packages.
   outputFileTracingExcludes: {
-    "/*": ["./output/**/*", "./.cache/**/*", "./.playwright-mcp/**/*", "./.env*", "./.vercel/**/*"],
+    "/*": ["./output/**/*", "./.cache/**/*", "./.playwright-mcp/**/*", "./.env*", "./.vercel/**/*", "./*.md", "./docs/**/*.md", "./app/fonts/**/*.md", "./data-source/**/*.md", "./vendor/**/*.md", "./public/brand/**/*.md"],
   },
   turbopack: {
     root: __dirname,
