@@ -1,3 +1,4 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
@@ -16,10 +17,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const text = getDictionary(locale).pages.announcements;
 
-  return {
+  return createPageMetadata({
     title: `${text.campusTitle} | SYU CAMPUS`,
     description: text.campusDescription,
-  };
+    pathname: "/campus/announcements",
+    locale,
+  });
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

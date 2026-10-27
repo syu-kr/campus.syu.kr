@@ -1,0 +1,26 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { localizePath } from "@/lib/i18n";
+import { useDictionary, useLocale } from "./LocaleProvider";
+import { Modal } from "./Modal";
+import { SearchBar } from "./SearchBar";
+import { ServiceSearchLinks } from "./ServiceSearchLinks";
+
+export default function SearchDialog({ onClose }: { onClose: () => void }) {
+  const dictionary = useDictionary();
+  const locale = useLocale();
+  const router = useRouter();
+  const body = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState(() => typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("search") ?? "");
+  useEffect(() => { body.current?.querySelector("input")?.focus(); }, []);
+  return <Modal isOpen title={dictionary.search.label} onClose={onClose} initialFocus="none" hideHeader showCloseButton={false} overlayClassName="m3-search-overlay" className="m3-search-dialog" bodyClassName="m3-search-dialog-body">
+    <div ref={body}><SearchBar defaultValue={typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("search") ?? ""} onQueryChange={setQuery} onSearch={query => {
+      const value = query.trim();
+      if (!value) return;
+      router.push(`${localizePath("/", locale)}?search=${encodeURIComponent(value)}`);
+      onClose();
+    }} /><ServiceSearchLinks query={query} onNavigate={onClose} /></div>
+  </Modal>;
+}

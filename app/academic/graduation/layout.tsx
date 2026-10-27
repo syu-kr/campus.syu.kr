@@ -1,10 +1,10 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
   LOCALE_HEADER_NAME,
   createLocalizedAlternates,
   getDictionary,
-  localizePath,
   normalizeLocale,
 } from "@/lib/i18n";
 
@@ -18,17 +18,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const text = getDictionary(locale).pages.graduation;
 
   return {
-    title: text.metaTitle,
-    description: text.metaDescription,
-    alternates: createLocalizedAlternates("/academic/graduation", locale),
-    openGraph: {
+    ...createPageMetadata({
       title: text.metaTitle,
       description: text.metaDescription,
-      url: `https://campus.syu.kr${localizePath(
-        "/academic/graduation",
-        locale,
-      )}`,
-    },
+      pathname: "/academic/graduation",
+      locale,
+    }),
+    alternates: createLocalizedAlternates("/academic/graduation", locale),
   };
 }
 

@@ -1,13 +1,12 @@
 "use client";
 
-import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import { SourceAttribution } from "@/app/components/SourceAttribution";
 import { Button } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
-import { CrawlDataStatus } from "@/app/components/CrawlDataStatus";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
@@ -31,15 +30,24 @@ import { getKoreaNow, getTodayInfo } from "@/lib/home";
 interface CafeteriaPageClientProps {
   initialSnapshot: CafeteriaSnapshot;
   initialNowIso: string;
+  firebaseDataEnabled?: boolean;
 }
 
 export function CafeteriaPageClient({
   initialSnapshot,
   initialNowIso,
+  firebaseDataEnabled = false,
 }: CafeteriaPageClientProps) {
   const dictionary = useDictionary();
   const text = dictionary.pages.cafeteria;
-  const [activeRestaurant, setActiveRestaurant] = useState<"su-lounge" | "manna">("su-lounge");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeRestaurant = searchParams.get("restaurant") === "manna" ? "manna" : "su-lounge";
+  const setActiveRestaurant = (restaurant: "su-lounge" | "manna") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("restaurant", restaurant);
+    window.history.replaceState(null, "", `${pathname}?${params}${window.location.hash}`);
+  };
   const [now, setNow] = useState(() => new Date(initialNowIso));
 
   const { data: snapshot, isLoading, isError, refetch } = useQuery({
@@ -51,12 +59,6 @@ export function CafeteriaPageClient({
     gcTime: 60 * 60 * 1000,
   });
   const menus = snapshot.menus;
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("restaurant") === "manna") {
-      setActiveRestaurant("manna");
-    }
-  }, []);
 
   useEffect(() => {
     setNow(getKoreaNow());
@@ -79,7 +81,7 @@ export function CafeteriaPageClient({
   return (
     <>
       <Container className="py-3 sm:py-4 bg-white border-b border-neutral-200 md:sticky md:top-[73px] md:z-30">
-        <div className="flex gap-2" role="group" aria-label={text.restaurantPicker}>
+        <div className="m3-segmented" data-selected-index={activeRestaurant === "manna" ? 1 : 0} role="group" aria-label={text.restaurantPicker}>
           {([
             ["su-lounge", text.suLoungeTitle],
             ["manna", text.mannaTab],
@@ -90,12 +92,7 @@ export function CafeteriaPageClient({
               aria-pressed={activeRestaurant === restaurant}
               aria-controls="cafeteria-panel"
               onClick={() => setActiveRestaurant(restaurant)}
-              className={clsx(
-                "flex-1 px-3 sm:px-4 py-2 rounded-lg font-medium text-sm sm:text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2",
-                activeRestaurant === restaurant
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
-              )}
+              className="m3-segmented-option"
             >
               {label}
             </button>
@@ -111,14 +108,13 @@ export function CafeteriaPageClient({
 
         <div id="cafeteria-panel" role="region" aria-label={activeRestaurant === "su-lounge" ? text.suLoungeTitle : text.mannaTab}>
           {activeRestaurant === "manna" ? (
-            <StudentRestaurantMenu today={todayInfo.dateStringDash} />
+            <StudentRestaurantMenu today={todayInfo.dateStringDash} firebaseDataEnabled={firebaseDataEnabled} />
           ) : (
             <>
               <section id="today-menu" className="scroll-mt-24 md:scroll-mt-40">
                 {(!todayMenu || isCafeteriaClosedDay(todayMenu)) && (
                   <h2 className="mb-4 text-xl font-bold text-neutral-900">{text.todayMenu}</h2>
                 )}
-                <CrawlDataStatus fileNames={["cafeteria-menu.json"]} />
                 {isLoading && <Skeleton count={1} height="200px" />}
                 {isError && (
                   <StateCard

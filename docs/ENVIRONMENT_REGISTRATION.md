@@ -33,6 +33,12 @@
 | `LECTURE_TIMETABLE_URL` | 필수 | 강의 시간표 endpoint |
 | `LIBRARY_READING_ROOMS_URL` | 필수 | 도서관 열람실 현황 endpoint |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin service account JSON 문자열. 운영 값은 Production 전용 |
+| `MANAGED_CONTENT_STORAGE_BUCKET` | 이미지 사용 시 | 관리자 이미지용 서버 버킷 이름. 미설정이면 기존 `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` 사용. 프로토콜 접두어 제외 |
+| `SERVICE_NOTICES_SOURCE` | 이전 후 | 기본 `hybrid`. 공지 import·DB 단독 대조 후 `database`로 전환. 미설정 CI는 고정 원본을 사용 |
+| `PUBLIC_DATA_BACKEND` | 이전 후 | 기본 `pages`, 이전 검증 후 `firebase`. build/runtime 같은 값으로 설정하고 재빌드. 기존 `/data` rewrite도 이 값에 따라 생성 |
+| `PUBLIC_DATA_STORAGE_BUCKET` | Firebase 데이터 사용 시 | 공개 JSON 서버 버킷 이름. 미설정이면 관리자 버킷·기존 Firebase 버킷 순 fallback. 배포와 Actions에 같은 대상을 지정 |
+| `GOOGLE_TRANSLATION_API_KEY` | 자동 영어 사용 시 | Cloud Translation Basic v2 전용 서버 키. 해당 API 사용 제한·할당량·예산 알림을 확인. UI에 공개하지 않음 |
+| `CONTENT_TRANSLATION_DAILY_CHARACTERS` | 선택 | 신규 번역 실제 입력의 UTC 일일 예약 한도. 기본 25,000. 공급자 할당량과 별도 |
 | `NAVER_SITE_VERIFICATION` | 선택 | 네이버 소유확인 메타태그의 `content` 값. Production에 등록하고 재배포. HTML에서 공개되며 미설정·공백이면 태그 생략 |
 | `BING_SITE_VERIFICATION` | 선택 | Bing `msvalidate.01` 메타태그의 `content` 값. Production에 등록하고 재배포. GSC 가져오기·DNS 인증 사용 시 불필요 |
 | `CRAWL_DATA_BASE_URL` | 선택 | 일일 크롤링 데이터 Pages base URL override. 기본 공식 URL 사용 시 등록하지 않음 |
@@ -137,7 +143,7 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 | `HAKSIK_API_URL` | 만나의집 수집 시 필수 | `student-restaurant.yml` | 비공개 식단 이미지 수집 endpoint. Vercel·브라우저·공개 Pages에 등록하지 않음 |
 | `API_URL` | 필수 | `daily-announcement-notification.yml` | 알림 발송 API 호출 대상 앱 URL. GitHub Actions에서는 운영 HTTPS URL만 사용하고 localhost를 쓰지 않음 |
 | `PUSH_API_KEY` | 필수 | `daily-announcement-notification.yml` | `/api/notifications/send` 호출 인증 키 |
-| `FIREBASE_SERVICE_ACCOUNT` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin service account JSON 문자열 |
+| `FIREBASE_SERVICE_ACCOUNT` | 필수 | 알림·정리, Firebase 모드의 일일/식단/참조 발행·복구·IndexNow | Firebase Admin service account JSON 문자열. 발행 step에만 주입하며 공개 변수로 등록하지 않음 |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | 필수 | `daily-announcement-notification.yml`, `cleanup-expired-firestore.yml` | Firebase Admin 초기화용 project id |
 | `VERCEL_PERSONAL_ACCOUNT_TOKEN` | 필수 | `sync-to-vercel-repo.yml` | 개인 배포 레포에 push 가능한 GitHub token |
 
@@ -145,9 +151,15 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 
 `crawl-monthly.yml`은 기본 `GITHUB_TOKEN`의 `contents: write`, `pull-requests: write` 권한으로 임시 브랜치와 PR을 생성합니다. 별도 Deploy Key, PAT 또는 Ruleset bypass를 등록하지 않습니다.
 
+### Firebase 공개 데이터 발행 설정
+
+데이터 복사·버전 전환·앱 대조를 마친 뒤 Actions Variable `PUBLIC_DATA_BACKEND=firebase`, `PUBLIC_DATA_STORAGE_BUCKET=<검증한 버킷 이름>`을 지정합니다. 버킷 이름은 공개 설정이지만 서버 인증은 위 Secret을 사용합니다. 기존 Firebase 버킷 변수를 fallback으로 쓰려면 실제 새 버킷과 같은 대상인지 먼저 확인합니다. 새 workflow 코드를 추가하는 것만으로 변수/Secret이 등록되거나 운영 데이터 발행이 시작되지는 않습니다.
+
+`publish-reference-data.yml`은 검토된 main의 CI 성공 뒤 참조 13파일을 대조하고, 이전 내용과 같으면 발행하지 않습니다. 이전 SHA·실패한 CI·다른 저장소 결과는 거부합니다. 다른 Firebase publisher와 같은 동시성 그룹을 사용하고 활성 revision 충돌을 검사합니다. 상세 전환·복구 절차는 [공개 데이터 운영](PUBLIC_DATA_FIREBASE.md)을 따릅니다.
+
 ### 일일 크롤링 데이터 GitHub Pages 권한
 
-공개 저장소의 GitHub Pages와 Actions 아티팩트만 사용하며 별도 결제 계정, 클라우드 bucket, service account, 장기 키가 필요하지 않습니다.
+아래는 `PUBLIC_DATA_BACKEND` 미설정/`pages`인 기존 경로입니다. GitHub Pages와 Actions 아티팩트를 사용하며 Firebase bucket이나 service account를 요구하지 않습니다. Firebase 모드는 위 설정과 별도 검증을 따릅니다.
 
 1. `Settings -> Pages -> Build and deployment -> Source`를 `GitHub Actions`로 설정합니다.
 2. Pages 배포에는 Actions의 기본 `GITHUB_TOKEN`을 사용합니다. 공휴일 원본 수집에는 위 표의 `PUBLIC_DATA_SERVICE_KEY` Secret을 별도로 연결합니다.

@@ -188,7 +188,7 @@ export function SubmissionDetail({
 
           <ResponseTemplatePanel item={item} />
 
-          <section className="space-y-3">
+          <section className="m3-admin-status-options space-y-3">
             <h3 className="text-sm font-bold text-neutral-900">처리 상태</h3>
             {statuses.map((status) => (
               <button
@@ -232,7 +232,7 @@ function AiClassificationPanel({
           type="button"
           disabled={isClassifying}
           onClick={() => void onClassify(item)}
-          className="rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className="ui-button ui-button-secondary rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isClassifying ? "분류 중" : classification ? "분류 확인" : "분류"}
         </button>
@@ -345,7 +345,7 @@ function ResponseTemplatePanel({ item }: { item: AdminSubmissionItem }) {
       <button
         type="button"
         onClick={() => void copyTemplate()}
-        className="mt-3 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+        className="ui-button ui-button-secondary mt-3 w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
       >
         템플릿 복사
       </button>
@@ -425,18 +425,30 @@ export function formatDateTime(value: string | null) {
   }).format(new Date(value));
 }
 
+export class AdminRequestError extends Error {}
+
+export function getAdminErrorMessage(error: unknown, fallback: string) {
+  return error instanceof AdminRequestError ? error.message : fallback;
+}
+
 export async function readAdminApiResponse<T>(
   response: Response,
 ): Promise<T> {
   const contentType = response.headers.get("content-type") || "";
 
   if (!contentType.toLowerCase().includes("application/json")) {
-    throw new Error(
+    throw new AdminRequestError(
       response.ok
-        ? "관리자 API가 올바르지 않은 응답을 반환했습니다"
-        : `관리자 API 서버 오류가 발생했습니다 (${response.status})`,
+        ? "처리 결과를 확인하지 못했습니다. 목록을 다시 불러와 확인해주세요."
+        : `관리자 요청을 처리하지 못했습니다 (${response.status}). 잠시 후 다시 시도해주세요.`,
     );
   }
 
-  return (await response.json()) as T;
+  const data = await response.json();
+  if (!response.ok) {
+    throw new AdminRequestError(typeof data?.error === "string"
+      ? data.error : "관리자 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.");
+  }
+  if (!data || typeof data !== "object") throw new Error("Invalid admin response");
+  return data as T;
 }

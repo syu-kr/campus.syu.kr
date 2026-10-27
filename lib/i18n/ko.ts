@@ -1,6 +1,20 @@
 import { koMeetPages } from "./meet";
 
 export const koDictionary = {
+    managedBanners: {
+      regionLabel: "사이트 안내", notice: "안내", event: "행사·모집", ad: "광고",
+      close: "배너 닫기", hideToday: "오늘 그만 보기", external: "새 창에서 열림",
+      popupClose: "닫기", details: "자세히 보기",
+    },
+    contentTranslation: {
+      pageLabel: "페이지 번역", pageLoading: "한국어 내용을 번역하고 있습니다…", retry: "번역 다시 시도",
+      error: "번역을 완료하지 못했습니다. 원문을 읽거나 다시 시도해 주세요.",
+      unavailable: "현재 번역을 이용할 수 없습니다. 원문은 계속 확인할 수 있습니다.",
+      limited: "번역 이용 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.",
+      changed: "내용이 변경되었습니다. 페이지를 다시 연 뒤 번역해 주세요.",
+      machineTranslated: "자동 번역입니다. 중요한 내용은 원문을 확인해 주세요.",
+    },
+    m3: { searchReturn: "검색 결과로 돌아가기", serviceSearch: "서비스 바로가기" },
     publicHolidays: {
       label: "공휴일",
       source: "공휴일 출처: 한국천문연구원",
@@ -13,25 +27,6 @@ export const koDictionary = {
       shuttleClosed: "학교 안내에 따라 오늘 셔틀버스가 운행되지 않습니다.",
       referenceHolidaySchedule: "아래 시간표는 운행일 기준입니다.",
       referenceSchedule: "아래 시간표와 위치 정보는 참고용입니다. 공휴일 운행 여부는 학교 공지를 확인해주세요.",
-    },
-    crawlDataStatus: {
-      staleTitle: "일부 정보의 갱신이 지연되고 있습니다",
-      staleMessage: "최근 수집에 실패한 출처는 마지막 검증본을 표시합니다. 기한과 신청 조건은 공식 원문을 확인해 주세요.",
-      lastSuccess: "마지막 정상 수집",
-      lastAttempt: "최근 수집 시도",
-      unknownSuccess: "이전 검증본의 수집 시각은 확인되지 않았습니다.",
-      statusUnavailable: "갱신 상태를 확인할 수 없습니다. 최신 정보는 공식 원문에서 확인해 주세요.",
-      fileLabels: {
-        "announcements-academic.json": "학사공지",
-        "announcements-campus-life.json": "학교생활공지",
-        "announcements-scholarship.json": "장학공지",
-        "announcements-events.json": "행사공지",
-        "announcements-departments.json": "학과공지",
-        "announcements-sw.json": "SW중심대학공지",
-        "cafeteria-menu.json": "학식",
-        "announcement-ai-metadata.json": "공지 AI 요약",
-        "public-holidays.json": "공휴일",
-      },
     },
     meta: {
       title: "SYU CAMPUS - 학생 통합 정보 플랫폼",
@@ -89,7 +84,7 @@ export const koDictionary = {
     trust: {
       title: "출처와 검증 기준",
       description:
-        "SYU CAMPUS는 공개된 학교 공식 정보, 교내 데이터, 실시간 API를 학생이 확인하기 쉽게 모아 보여주는 비공식 참고 서비스입니다.",
+        "SYU CAMPUS는 학교 공지, 학식, 시간표, 버스 정보를 학생이 확인하기 쉽게 모아 보여주는 비공식 참고 서비스입니다.",
       unofficialBadge: "비공식 참고 서비스",
       sourceBasedBadge: "출처 기반",
       officialFirstBadge: "공식 출처 우선",
@@ -117,7 +112,7 @@ export const koDictionary = {
       previewLabel: "건 표시",
       previewNotice: "최근 공지 최대 60건을 포함해 최대 100건을 보여주는 미리보기입니다. 전체 결과는 각 항목의 전체보기에서 확인하세요.",
       partialFailure: "일부 검색 정보를 불러오지 못했습니다:",
-      partialNoResults: "현재 불러온 정보에는 일치하는 결과가 없습니다. 누락된 항목은 다시 검색해 주세요.",
+      partialNoResults: "불러온 정보에서는 검색 결과를 찾지 못했습니다. 확인하지 못한 항목은 다시 검색하거나 해당 메뉴에서 확인해 주세요.",
       searchSources: { schedules: "학사일정", announcements: "공지사항", phone: "연락처" },
       resetToHome: "검색 초기화 / 홈으로",
       noResultsTitle: "검색 결과가 없습니다",
@@ -160,7 +155,6 @@ export const koDictionary = {
       source: "원본",
       unavailable: "-",
       statuses: {
-        fresh: "정상",
         stale: "이전 정보",
         error: "오류",
       },
@@ -172,6 +166,52 @@ export const koDictionary = {
       },
     },
     home: {
+      overview: {
+        weather: {
+          current: "현재 캠퍼스 날씨는 {temperature}°C에 {description}입니다.",
+          currentUnknownSky: "현재 캠퍼스 기온은 {temperature}°C이며, 하늘 상태는 확인이 필요해요.",
+          loading: "캠퍼스 날씨를 확인하고 있어요.",
+          updating: "날씨를 새로 확인하고 있어요. 마지막 확인: {temperature}°C, {description}.",
+          unavailable: "현재 캠퍼스 날씨를 확인하지 못했어요.",
+          failedWithPrevious: "현재 날씨를 확인하지 못했어요. 마지막으로 확인한 날씨는 {temperature}°C, {description}입니다.",
+          stale: "이전 날씨 정보: {temperature}°C, {description}. 최신 상태는 확인이 필요해요.",
+        },
+        hint: "수업 가기 전, 필요한 정보만 빠르게",
+        mealTitle: "오늘의 학식",
+        busTitle: "버스 빠르게 보기",
+        shuttleDepartures: "노선별 다음 셔틀",
+        shuttleDepartureAt: "{time} 예정 출발",
+        shuttleNextNone: "다음 출발 없음",
+        shuttleMinutes: "분 후",
+        fullMenu: "전체 식단",
+        busInfo: "버스 정보",
+        restaurant: "식당 선택",
+        transport: "교통 수단 선택",
+        busStop: "정류장",
+        lunchCorner: "중식 {corner}코너",
+        mannaLunch: "만나의 집 · 중식",
+        mealLoading: "식단을 불러오고 있어요",
+        mealError: "식단을 불러오지 못했어요",
+        lunchClosed: "중식은 운영하지 않아요",
+        shuttle: "셔틀",
+        publicTransit: "대중교통",
+        serviceError: "운행 정보를 확인하지 못했어요",
+        serviceUnconfirmed: "운행 여부 확인 필요",
+        serviceClosed: "오늘은 운행하지 않아요",
+        noMoreDepartures: "남은 출발편이 없어요",
+        specialService: "특별 운행 안내",
+        specialTimetable: "특별 시간표 적용 중",
+        minutesUntilDeparture: "분 뒤 출발",
+        departure: "출발",
+        noArrivals: "도착 예정 정보가 없어요",
+        status: {
+          loading: "갱신 중",
+          error: "조회 실패",
+          stale: "최신 확인 필요",
+          unavailable: "정보 확인 불가",
+        },
+        refresh: "새로고침",
+      },
       frequentMenuTitle: "자주 사용하는 메뉴",
       festival: {
         title: "🎉 10월 6일, 삼육대학교 천보축전 Make A Wish",
@@ -201,7 +241,7 @@ export const koDictionary = {
         campusTitle: "캠퍼스 정보",
         campusDescription: "생활·시설·교통",
         moreTitle: "더보기",
-        moreDescription: "장학금·연락처·도구",
+        moreDescription: "서비스 공지·일정 도구·설정",
         serviceTitle: "서비스 공지",
         serviceDescription: "업데이트 안내",
       },
@@ -233,11 +273,11 @@ export const koDictionary = {
           "공휴일 또는 운영하지 않는 날입니다. 전체 식단에서 다른 날짜를 확인해보세요.",
         missingMenu:
           "오늘 식단 정보가 없습니다. 전체 식단에서 다른 날짜를 확인해보세요.",
-        staleMenuTitle: "식단 정보 갱신 대기 중입니다",
+        staleMenuTitle: "이번 주 식단을 확인하지 못했습니다",
         staleMenuMessage:
-          "현재 주간 식단이 아직 갱신되지 않아 이전 주 데이터를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
-        pendingMenuTitle: "식단 준비 중입니다",
-        pendingMenuMessage: "데이터가 준비되고 있습니다. 잠시만 기다려주세요.",
+          "이번 주 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
+        pendingMenuTitle: "오늘 식단을 확인하지 못했습니다",
+        pendingMenuMessage: "식당 이용 전 다시 확인해주세요.",
         fullMenu: "전체 식단 보기",
         todayMenu: "오늘의 메뉴",
         breakfast: "조식",
@@ -261,7 +301,7 @@ export const koDictionary = {
         schedule: "일정",
         loadFailedTitle: "정보를 불러오지 못했습니다",
         loadFailedMessage:
-          "기존 정보가 있다면 계속 표시합니다. 잠시 후 다시 시도해 주세요.",
+          "연결 상태를 확인한 뒤 다시 시도해 주세요. 표시된 정보가 있다면 날짜도 확인해주세요.",
         retry: "다시 시도",
       },
     },
@@ -324,7 +364,7 @@ export const koDictionary = {
       description: "추가 기능을 확인하세요",
       translationTitle: "번역 안내",
       translationDescription:
-        "외국어 번역이 필요하다면 Chrome, Edge, Safari의 브라우저 번역 기능을 사용하세요. PWA 앱에서는 현재 페이지를 브라우저에서 연 뒤 번역 메뉴를 사용할 수 있습니다.",
+        "영어 화면에서는 한국어 공개 자료를 자동으로 번역합니다. 이름·기준 코드·개인 입력값은 원문을 유지합니다. 원문은 언어 설정에서 한국어를 선택해 확인할 수 있습니다.",
       menus: {
         serviceTitle: "서비스 공지",
         serviceDescription: "SYU CAMPUS 서비스 공지",
@@ -350,6 +390,7 @@ export const koDictionary = {
       event: "행사",
     },
     labels: {
+      charactersUsed: "입력 글자 수: ",
       pinned: "고정글",
       important: "중요",
       notice: "공지",
@@ -360,6 +401,9 @@ export const koDictionary = {
         low: "낮음",
       },
       aiSummaryDetails: {
+        previewMore: "신청 방법·대상·유의사항",
+        more: "대상·키워드·유의사항",
+        caution: "원문 확인 필요",
         title: "AI 요약 자세히 보기",
         open: "전체 보기",
         empty: "원문 확인 필요",
@@ -387,7 +431,7 @@ export const koDictionary = {
     },
     submissionResult: {
       successBadge: "접수 완료",
-      errorBadge: "접수 실패",
+      errorBadge: "접수 확인 필요",
       confirm: "확인",
     },
     pagination: {
@@ -424,15 +468,7 @@ export const koDictionary = {
       loading: "페이지를 불러오는 중입니다.",
     },
     notFound: {
-      funMessages: [
-        "어... 여기 아무것도 없네요",
-        "이 페이지는 숨바꼭질 중입니다",
-        "404... 404... 어디 있어요?",
-        "이 길은 막혔어요",
-        "404 Not Found in the system\n404 The new era era",
-        "페이지가 방학을 가버렸나 봐요",
-      ],
-      defaultFunMessage: "어... 여기 아무것도 없네요",
+      title: "페이지를 찾을 수 없습니다",
       description: "찾으시던 페이지가 존재하지 않거나 이동된 것 같아요.",
       homeAction: "홈으로 돌아가기",
       contactAction: "사이트 문의하기",
@@ -441,9 +477,6 @@ export const koDictionary = {
         "URL에 오타가 있는지 확인해 주세요.",
         "계속 문제가 생기면 사이트 문의하기로 알려주세요.",
       ],
-    },
-    legal: {
-      home: "홈으로",
     },
     pages: {
       serviceNotices: {
@@ -480,7 +513,7 @@ export const koDictionary = {
         itemCountPrefix: "",
         itemCountSuffix: "개",
         answer: {
-          eyebrow: "AI 답변 요약",
+          eyebrow: "핵심 안내",
           title: "오늘 학사일정",
           question: "오늘 삼육대학교 학사일정이 있나요?",
           source: "출처: 2026학년도 학사일정 데이터",
@@ -493,7 +526,7 @@ export const koDictionary = {
           noToday:
             "{date} 기준 등록된 주요 학사일정은 없습니다. {next}",
           nextSchedule: "가장 가까운 다음 일정은 {date}의 {title}입니다.",
-          noNext: "다가오는 학사일정을 데이터에서 찾지 못했습니다.",
+          noNext: "현재 확인할 수 있는 예정 학사일정이 없습니다.",
           noNextShort: "없음",
           itemSeparator: ", ",
           moreSuffix: " 외 {count}개",
@@ -509,6 +542,12 @@ export const koDictionary = {
           "과목 선택과 학점 입력이 많아 데스크톱 사용을 권장합니다. 그래도 모바일에서 계속 사용할 수 있습니다.",
         mobileContinue: "모바일로 계속 사용하기",
         mobileBack: "이전 페이지로 돌아가기",
+        mobileGuidanceLabel: "모바일 이용 안내",
+        sourceGuidanceLabel: "진단 기준과 자료 안내",
+        dismissGuidanceLabel: "안내 닫기",
+        changeConfirmTitle: "입력한 이수 현황을 초기화할까요?",
+        cancelChanges: "취소",
+        confirmChanges: "초기화하고 변경",
         selectionChangeConfirm: "선택 조건을 변경하면 입력한 학점, 과목, 체크리스트와 계획이 초기화됩니다. 변경할까요?",
         badges: {
           selfCheck: "자가진단",
@@ -522,7 +561,7 @@ export const koDictionary = {
         sourceNoticeSuffix:
           "을 구조화한 참고값입니다. 자료별 갱신 시점이 달라 값이 다를 수 있으며, 편입·전과·다전공·교직 과정은 결과와 함께 표시되는 공식 출처와 학과사무실을 반드시 확인하세요.",
         answer: {
-          eyebrow: "AI 답변 요약",
+          eyebrow: "핵심 안내",
           title: "졸업요건 확인 방법",
           question: "삼육대학교 졸업요건은 어디서 확인하나요?",
           body:
@@ -637,7 +676,7 @@ export const koDictionary = {
             shareLoaded: "공유된 졸업요건 진행률을 불러왔습니다.",
             storageUnavailable: "현재 브라우저에서는 진행 상황을 자동 저장할 수 없습니다. 파일로 내보내기를 이용해 주세요.",
             shareLoadFailed:
-              "공유 링크를 읽지 못했습니다. 링크가 잘렸거나 만료되었을 수 있습니다.",
+              "공유 링크를 읽지 못했습니다. 주소가 끝까지 복사되었는지 확인하거나 보낸 사람에게 새 링크를 받아주세요.",
           },
           principlesTitle: "진단 원칙",
           principles: [
@@ -744,8 +783,6 @@ export const koDictionary = {
         swError:
           "SW중심대학 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         listSearchPlaceholder: "제목 또는 작성자로 검색...",
-        fallbackNotice: "게시 데이터 조회에 실패해 저장된 공지를 표시합니다. 저장본에 포함된 최신 공지일:",
-        fallbackCategories: { academic: "학사", campus: "캠퍼스", scholarship: "장학금", sw: "SW중심대학" },
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
         empty: "검색 결과가 없습니다.",
@@ -807,9 +844,31 @@ export const koDictionary = {
         },
       },
       timetable: {
-        backToAcademic: "학사 정보",
         title: "시간표 짜기",
         desktopHint: "큰 화면에서 더 편해요",
+        presentation: {
+          viewLabel: "시간표 보기 방식",
+          dayList: "요일별 목록",
+          weekGrid: "주간표",
+          weekHelp: "좌우로 이동해 한 주를 보고, 수업을 눌러 상세정보를 확인하세요.",
+          agendaLabel: "요일별 시간표",
+          dayPickerLabel: "수업 요일 선택",
+          fullDayLabel: "{day}요일",
+          dayClassCount: "{day} · {count}개 수업",
+          emptyDayTitle: "이 요일에는 담은 수업이 없습니다.",
+          emptyDayDescription: "강의 추가에서 수업을 찾아보세요.",
+          unscheduledDescription: "수업 시간이 없는 강의도 선택한 시간표에 포함됩니다.",
+          details: "상세 보기",
+          detailsDescription: "선택한 강의의 전체 정보",
+          courseId: "강의번호",
+          courseCode: "교과목 코드",
+          professor: "교수",
+          classTimes: "수업 시간",
+          credits: "학점",
+          viewTimetable: "시간표 보기",
+          compareDescription: "최대 4개 시간표를 비교하세요. 선택한 시간표에 강의를 추가합니다. 강의를 담으면 모든 안이 이 기기에 자동 저장됩니다.",
+          printTitle: "선택한 전체 수업",
+        },
         semesterBase: "시간표를 기준으로 합니다.",
         totalCredits: "총 학점",
         selected: "선택",
@@ -830,11 +889,11 @@ export const koDictionary = {
         shareCoursesMissing: "현재 강의 정보에 없는 {count}개 과목을 제외하고 공유 시간표를 불러왔습니다.",
         sourceUpdatedAt: "강의 원본 갱신일",
         lastSuccessfulFetch: "마지막 정상 조회",
-        staleDataNotice: "강의 정보를 갱신하지 못해 마지막 정상 저장본을 표시합니다. 변경 사항은 학교 원본에서 확인해 주세요.",
-        shareCreateFailed: "공유 링크를 만들지 못했습니다.",
+        staleDataNotice: "최근에 확인한 강의 정보를 보여드리고 있습니다. 수강신청 전 변경 사항을 SU-WINGs에서 확인해주세요.",
+        shareCreateFailed: "공유 링크를 만들지 못했습니다. 선택한 강의는 유지됩니다. 잠시 후 다시 시도해주세요.",
         shareCreated: "공유 링크를 만들고 클립보드에 복사했습니다.",
         shareCreatedCopyFailed:
-          "공유 링크를 만들었습니다. 브라우저 권한 문제로 자동 복사는 되지 않았습니다.",
+          "공유 링크를 만들었지만 자동으로 복사하지 못했습니다. 아래 주소를 직접 복사해주세요.",
         shareFallbackInputLabel: "직접 복사할 공유 링크",
         deleteShare: "공유 링크 삭제",
         deletingShare: "공유 링크 삭제 중",
@@ -842,7 +901,7 @@ export const koDictionary = {
         shareDeleted: "공유 링크를 삭제했습니다.",
         shareDeleteFailed: "공유 링크를 삭제하지 못했습니다.",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
-        shareLoadFailed: "공유 시간표를 불러오지 못했습니다.",
+        shareLoadFailed: "공유 시간표를 불러오지 못했습니다. 연결 상태와 링크 주소를 확인한 뒤 다시 열어주세요. 삭제된 링크라면 새 링크를 받아주세요.",
         draftAutoSaveNotice:
           "직접 구성한 시간표는 이 브라우저에 30일간 자동 저장됩니다.",
         draftStorageUnavailable:
@@ -855,6 +914,8 @@ export const koDictionary = {
         draftNoMatchingCourses:
           "이전 초안의 과목이 현재 강의 데이터에 남아 있지 않습니다.",
         loadFailedTitle: "강의 정보를 불러올 수 없습니다",
+        emptyCoursesTitle: "표시할 강의가 없습니다",
+        emptyCoursesMessage: "현재 학기의 강의 정보를 확인할 수 없습니다. 잠시 후 다시 불러오거나 SU-WINGs에서 확인해주세요.",
         loadFailedMessage:
           "잠시 후 다시 시도하거나 네트워크 상태를 확인해 주세요.",
         retry: "다시 불러오기",
@@ -955,6 +1016,8 @@ export const koDictionary = {
         },
       },
       busInfo: {
+        updateDateLabel: "업데이트 날짜",
+        regularTimetable: "기본 시간표",
         shuttleTab: "셔틀버스",
         publicTransitTab: "대중교통",
         loading: "로딩 중...",
@@ -1079,7 +1142,7 @@ export const koDictionary = {
         transitLoadFailed: "대중교통 정보를 불러오지 못했습니다.",
         infoUnavailableTitle: "정보를 가져올 수 없습니다",
         infoUnavailableMessage:
-          "API 키가 설정되지 않았거나 일시적 오류가 발생했습니다.",
+          "도착 정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
         transitPartialUnavailableMessage:
           "일부 실시간 제공처 조회가 지연되어 현재 선택한 정류장 정보가 비어 있을 수 있습니다. 잠시 후 다시 시도해 주세요.",
         retry: "재시도",
@@ -1124,15 +1187,15 @@ export const koDictionary = {
         studentRestaurant: {
           title: "만나의집 (기숙사 식당)",
           extractionNote: "식단표 이미지에서 AI로 추출한 정보입니다. 읽기 어렵거나 제공 여부가 불명확한 식사는 ‘식단 확인 불가’로 표시합니다.",
-          notConfigured: "만나의집 식단은 준비 중입니다.",
+          notConfigured: "지금은 만나의집 식단을 확인할 수 없습니다. 식당에 직접 확인해주세요.",
           loading: "만나의집 식단을 불러오는 중입니다.",
           errorTitle: "만나의집 식단을 불러오지 못했습니다",
           errorMessage: "잠시 후 다시 시도해주세요. 표시된 식단이 있다면 날짜를 확인해주세요.",
           empty: "아직 공개된 만나의집 식단이 없습니다.",
-          staleTitle: "이전 날짜의 만나의집 식단입니다",
-          staleMessage: "이번 주 식단이 아직 없습니다. 이전 주의 식단은 표시하지 않습니다.",
-          upcomingTitle: "예정 날짜의 만나의집 식단입니다",
-          upcomingMessage: "이번 주 식단이 아직 없습니다. 다음 주의 식단은 표시하지 않습니다.",
+          staleTitle: "이번 주 만나의집 식단을 확인하지 못했습니다",
+          staleMessage: "확인된 식단은 지난주 이전의 내용입니다. 식당 이용 전 다시 확인해주세요.",
+          upcomingTitle: "다음 주 이후의 만나의집 식단만 확인됩니다",
+          upcomingMessage: "이번 주 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
           unknownMeal: "식단 확인 불가",
           breakfastHours: "아침: 알 수 없음",
           lunchHours: "점심: 알 수 없음",
@@ -1141,8 +1204,6 @@ export const koDictionary = {
           ingredientsUnavailable: "재료 확인 불가",
           ingredientsNotListed: "표기 없음",
           allergyMessage: "별도의 알레르기 정보는 제공되지 않습니다. 원문 재료는 참고용이며 알레르기 유발 성분을 모두 확인할 수 없으므로 식당에 직접 확인하세요.",
-          updatedAt: "마지막 정상 분석:",
-          koreaTime: "(한국시간)",
         },
         restaurantPicker: "식당 선택",
         suLoungeTitle: "SU-Lounge",
@@ -1164,7 +1225,7 @@ export const koDictionary = {
           weekend:
             "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
           pending:
-            "오늘 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요.",
+            "오늘 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
           missing:
             "오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
           closed:
@@ -1172,14 +1233,14 @@ export const koDictionary = {
         },
         weekendMessage:
           "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
-        pendingTitle: "식단 준비 중입니다",
+        pendingTitle: "오늘 식단을 확인하지 못했습니다",
         pendingMessage:
-          "월요일 식단 데이터가 아직 준비 중입니다. 잠시 후 다시 확인해주세요.",
+          "월요일 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
         missingToday:
           "오늘 식단 정보가 없습니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
-        staleMenuTitle: "식단 정보 갱신 대기 중입니다",
+        staleMenuTitle: "이번 주 식단을 확인하지 못했습니다",
         staleMenuMessage:
-          "식단의 최신 상태를 확인하지 못해 현재 메뉴를 표시하지 않습니다. 잠시 후 다시 확인해주세요.",
+          "이번 주 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
         closedTodayTitle: "오늘은 운영하지 않습니다",
         closedTodayMessage:
           "공휴일 또는 운영하지 않는 날입니다. 주간 메뉴에서 다른 날짜를 확인해주세요.",
@@ -1280,7 +1341,11 @@ export const koDictionary = {
           "잠시만 기다려주세요. 지도가 표시되지 않으면 검색으로 건물 정보를 확인할 수 있습니다.",
         unavailableTitle: "지도를 불러오지 못했습니다",
         unavailableMessage:
-          "네트워크 상태나 Kakao Maps 설정을 확인해주세요. 지도 없이도 위 검색창과 건물 목록으로 시설 정보를 확인할 수 있습니다.",
+          "외부 지도에 연결하지 못했어요. 건물 검색과 시설 목록은 계속 이용할 수 있습니다.",
+        unavailableHelp: "지도가 표시되지 않을 때",
+        retry: "지도 다시 불러오기",
+        unavailableBrowserHelp:
+          "브라우저에서 외부 콘텐츠를 차단하는지 확인해 보세요. 쿠키·사이트 데이터 제한을 사용 중이라면 이 사이트의 설정을 확인하거나 다른 브라우저에서 열어보세요.",
         basementFloor: "지하",
         floorSuffix: "층",
         categories: {
@@ -1292,6 +1357,7 @@ export const koDictionary = {
           convenience: "편의",
           office: "사무",
           study: "학습",
+          research: "연구",
         },
       },
       phone: {
@@ -1314,13 +1380,13 @@ export const koDictionary = {
         page: "페이지",
         notice: "안내: 더 많은 전화번호는 학교 홈페이지를 참고하세요.",
         answer: {
-          eyebrow: "AI 답변 요약",
+          eyebrow: "핵심 안내",
           title: "대표 연락처 검색",
           question: "삼육대학교 학적·수업·증명서 문의는 어디로 전화하나요?",
           body:
             "현재 {count}개 연락처를 부서명, 업무 설명, 전화번호로 검색할 수 있습니다. 졸업·학적·수업·증명서 문의는 {department}({description}) {phone}에서 확인하세요.",
           emptyBody:
-            "현재 표시할 연락처 데이터가 없습니다. 학교 홈페이지의 공식 전화번호부를 확인하세요.",
+            "현재 확인할 수 있는 연락처가 없습니다. 학교 홈페이지의 공식 전화번호부를 확인해주세요.",
           source: "출처: 교내 전화번호 데이터",
           updatedPrefix: "확인 시각",
           totalLabel: "등록 연락처",
@@ -1333,7 +1399,7 @@ export const koDictionary = {
       },
       gym: {
         title: "체육시설",
-        description: "건강한 신체에 건강한 정신이 깃듭니다",
+        description: "체육시설 위치와 이용 안내를 확인하세요",
         metaDescription:
           "삼육대학교 체육시설과 체육문화센터 이용 정보를 확인하세요.",
         locationContact: "위치 및 연락처",
@@ -1571,10 +1637,13 @@ export const koDictionary = {
           "학교생활에 도움이 되는 정보나 링크를 알려주세요. 검토 후 서비스에 반영될 수 있습니다.",
         metaDescription:
           "캠퍼스 꿀팁 자료에 추가할 링크와 내용을 제보하는 페이지입니다.",
-        backToTips: "캠퍼스 꿀팁",
         validationTitle: "입력 내용을 확인해주세요",
         validationMessage: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
         submitFailed: "제보를 접수하지 못했습니다",
+        submitRetry: "입력한 내용은 그대로 남아 있습니다. 잠시 후 다시 제출해주세요.",
+        submitUnconfirmedTitle: "접수 여부를 확인하지 못했습니다",
+        submitUnconfirmed: "입력한 내용은 그대로 남아 있습니다. 연결 상태를 확인한 뒤 다시 제출하면 중복 접수될 수 있습니다.",
+        rateLimited: "접수 요청이 많아 잠시 기다려야 합니다. 잠시 후 다시 제출해주세요.",
         successTitle: "제보가 접수되었습니다",
         successMessage: "검토 후 캠퍼스 꿀팁에 반영될 수 있습니다.",
         summaryTitle: "제목",
@@ -1605,14 +1674,13 @@ export const koDictionary = {
         titleRequired: "제목을 입력해주세요",
         categoryRequired: "카테고리를 선택해주세요",
         descriptionRequired: "꿀팁 내용을 입력해주세요",
-        invalidUrl: "관련 링크 형식이 올바르지 않습니다",
+        invalidUrl: "http:// 또는 https://로 시작하는 전체 주소를 입력해주세요",
       },
       notificationPrivacy: {
         title: "알림 및 개인정보",
         description: "알림 권한, 분석 도구, 개인정보 안내를 한곳에서 확인하세요.",
         metaDescription:
           "SYU CAMPUS의 브라우저 알림 권한과 분석 도구 사용 안내입니다.",
-        backToMore: "더보기",
         statusTitle: "알림 설정 상태",
         permissionLabel: "브라우저 알림 권한",
         tokenLabel: "이 브라우저의 알림 등록",
@@ -1705,6 +1773,10 @@ export const koDictionary = {
         validationTitle: "입력 내용을 확인해주세요",
         validationMessage: "표시된 항목을 수정한 뒤 다시 제출해주세요.",
         submitFailed: "문의를 접수하지 못했습니다",
+        submitRetry: "입력한 내용은 그대로 남아 있습니다. 잠시 후 다시 제출해주세요.",
+        submitUnconfirmedTitle: "접수 여부를 확인하지 못했습니다",
+        submitUnconfirmed: "입력한 내용은 그대로 남아 있습니다. 연결 상태를 확인한 뒤 다시 제출하면 중복 접수될 수 있습니다.",
+        rateLimited: "접수 요청이 많아 잠시 기다려야 합니다. 잠시 후 다시 제출해주세요.",
         successTitle: "문의가 접수되었습니다",
         successMessage:
           "개별 답장은 어려울 수 있으나 접수된 내용은 서비스 개선에 참고하겠습니다.",
@@ -1726,7 +1798,7 @@ export const koDictionary = {
         submit: "문의 등록하기",
         titleRequired: "제목을 입력해주세요",
         messageRequired: "문의 내용을 입력해주세요",
-        invalidPageUrl: "관련 페이지 URL 형식이 올바르지 않습니다",
+        invalidPageUrl: "http:// 또는 https://로 시작하는 전체 주소를 입력해주세요",
       },
     },
   } as const;

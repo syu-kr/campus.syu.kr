@@ -1,0 +1,45 @@
+.m3-schedule-page .m3-calendar-day {
+  min-width: 0;
+  border-radius: var(--shape-small, 8px);
+  background: var(--sys-surface-lowest);
+  color: var(--sys-on-surface);
+}
+
+.m3-schedule-page .m3-calendar-day[data-has-event="true"] {
+  background: var(--sys-surface-container);
+}
+
+.m3-schedule-page .m3-calendar-day[aria-pressed="true"] {
+  background: var(--sys-primary);
+  color: var(--sys-on-primary);
+}
+
+.m3-schedule-page .m3-calendar-marker {
+  border-radius: var(--shape-full, 999px);
+  background: var(--sys-secondary-container);
+  color: var(--sys-on-secondary-container);
+}
+
+.m3-schedule-page .m3-calendar-marker:is([data-kind="exam"], [data-kind="holiday"]) {
+  background: var(--sys-error-container);
+  color: var(--sys-on-error-container);
+}
+
+.m3-schedule-page .m3-schedule-selected {
+  background: var(--sys-surface-low);
+  border-color: var(--sys-outline-variant);
+}
+
+.m3-schedule-page .m3-schedule-search input {
+  min-height: 56px;
+}
+
+@media (hover: hover) {
+  .m3-schedule-page .m3-calendar-day:hover {
+    background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent), color-mix(in srgb, currentColor 8%, transparent));
+  }
+}
+
+.m3-schedule-page .m3-calendar-day:active {
+  background-image: linear-gradient(color-mix(in srgb, currentColor 10%, transparent), color-mix(in srgb, currentColor 10%, transparent));
+}

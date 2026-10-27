@@ -1,3 +1,4 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
@@ -24,18 +25,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.campus.title} | SYU CAMPUS`,
-    description: dictionary.campus.metaDescription,
+    ...createPageMetadata({
+      title: `${dictionary.campus.title} | SYU CAMPUS`,
+      description: dictionary.campus.metaDescription,
+      pathname: "/campus",
+      locale,
+    }),
     keywords:
       locale === "en"
         ? "campus, cafeteria, library, shuttle bus, campus map"
         : "캠퍼스,동아리,식당,도서관,셔틀버스,캠퍼스 지도",
-    openGraph: {
-      title: `${dictionary.campus.title} | SYU CAMPUS`,
-      description: dictionary.campus.metaDescription,
-      type: "website",
-      url: `https://campus.syu.kr${localizePath("/campus", locale)}`,
-    },
   };
 }
 

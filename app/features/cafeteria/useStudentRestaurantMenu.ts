@@ -5,9 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetch-json";
 import { parseStudentRestaurantMenu, parseStudentRestaurantPublicUrl } from "@/lib/student-restaurant";
 
-async function fetchStudentRestaurantMenu(jsonUrl: string) {
-  const url = parseStudentRestaurantPublicUrl(jsonUrl);
-  const value = await fetchJson<unknown>(url.href, {
+async function fetchStudentRestaurantMenu(jsonUrl: string, firebaseDataEnabled: boolean) {
+  if (!firebaseDataEnabled) parseStudentRestaurantPublicUrl(jsonUrl);
+  const value = await fetchJson<unknown>("/api/public-data/student-restaurant-1.json", {
     fallback: null,
     throwOnError: true,
     timeoutMs: 12_000,
@@ -18,16 +18,17 @@ async function fetchStudentRestaurantMenu(jsonUrl: string) {
   return parseStudentRestaurantMenu(value);
 }
 
-export function useStudentRestaurantMenu() {
+export function useStudentRestaurantMenu(firebaseDataEnabled = false) {
   const jsonUrl = process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL?.trim() ?? "";
+  const isConfigured = firebaseDataEnabled || Boolean(jsonUrl);
   const query = useQuery({
-    queryKey: ["student-restaurant", jsonUrl],
-    queryFn: () => fetchStudentRestaurantMenu(jsonUrl),
-    enabled: Boolean(jsonUrl),
+    queryKey: ["student-restaurant", firebaseDataEnabled ? "firebase" : jsonUrl],
+    queryFn: () => fetchStudentRestaurantMenu(jsonUrl, firebaseDataEnabled),
+    enabled: isConfigured,
     staleTime: 30 * 60 * 1000,
     refetchInterval: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
     retry: 1,
   });
-  return { ...query, isConfigured: Boolean(jsonUrl) };
+  return { ...query, isConfigured };
 }

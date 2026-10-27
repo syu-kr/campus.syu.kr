@@ -7,6 +7,7 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 interface SearchBarProps {
   placeholder?: string;
   onSearch: (query: string) => void;
+  onQueryChange?: (query: string) => void;
   defaultValue?: string;
   onClear?: () => void;
   searchOnChange?: boolean;
@@ -17,6 +18,7 @@ interface SearchBarProps {
 function SearchBarComponent({
   placeholder,
   onSearch,
+  onQueryChange,
   defaultValue = "",
   onClear,
   searchOnChange = false,
@@ -34,6 +36,7 @@ function SearchBarComponent({
       previousDefaultValue.current = defaultValue;
       // Adopt pre-hydration typing without replacing an input event already queued by React.
       const initialValue = inputRef.current?.value ?? defaultValue;
+      onQueryChange?.(initialValue);
       if (initialValue !== defaultValue) {
         setQuery((current) => current === defaultValue ? initialValue : current);
         if (searchOnChange) onSearch(initialValue);
@@ -43,16 +46,18 @@ function SearchBarComponent({
     if (previousDefaultValue.current === defaultValue) return;
     previousDefaultValue.current = defaultValue;
     setQuery(defaultValue);
-  }, [defaultValue, onSearch, searchOnChange]);
+    onQueryChange?.(defaultValue);
+  }, [defaultValue, onSearch, onQueryChange, searchOnChange]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     previousDefaultValue.current ??= defaultValue;
     setQuery(value);
+    onQueryChange?.(value);
     if (searchOnChange) {
       onSearch(value);
     }
-  }, [defaultValue, onSearch, searchOnChange]);
+  }, [defaultValue, onSearch, onQueryChange, searchOnChange]);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -66,9 +71,10 @@ function SearchBarComponent({
 
   const handleClear = useCallback(() => {
     setQuery("");
+    onQueryChange?.("");
     if (onClear) onClear();
     else onSearch("");
-  }, [onClear, onSearch]);
+  }, [onClear, onSearch, onQueryChange]);
 
   return (
     <form onSubmit={handleSubmit} className={className} role="search">
@@ -106,7 +112,7 @@ function SearchBarComponent({
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-13 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center hover:bg-neutral-200 rounded-lg transition-colors"
+            className="m3-icon-button m3-search-clear absolute right-13 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center hover:bg-neutral-200 rounded-lg transition-colors"
             aria-label={dictionary.search.clear}
           >
             <svg
@@ -133,7 +139,7 @@ function SearchBarComponent({
         )}
         <button
           type="submit"
-          className="absolute right-1 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+          className="m3-icon-button m3-search-submit absolute right-1 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
           aria-label={dictionary.search.submit}
           disabled={!query.trim() || isLoading}
         >

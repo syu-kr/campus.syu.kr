@@ -1,4 +1,5 @@
 "use client";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 
 import Link from "next/link";
 import { Badge } from "@/app/components/Badge";
@@ -18,6 +19,7 @@ import type {
   ServiceNotice,
 } from "@/types";
 import type { HomeNotice } from "@/lib/home";
+import { formatPublicHolidayName } from "@/lib/public-holidays";
 
 function getCategoryFilters(dictionary: Dictionary): Array<{
   id: string;
@@ -196,9 +198,7 @@ export function TodaySchedulesSection({
                         >
                           {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, dictionary.categories)}
                         </Badge>
-                        <h3 className="mt-2 font-semibold text-neutral-900">
-                          {schedule.title}
-                        </h3>
+                        <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h3 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="mt-2 font-semibold text-neutral-900">{translation.text("title", schedule.id.startsWith("public-holiday-") ? schedule.title.split(" · ").map(name => formatPublicHolidayName(name, locale)).join(" · ") : schedule.title)}</h3>}</PublicContentTranslation>
                         <p className="mt-1 text-xs text-neutral-600">
                           {formatDate(schedule.startDate)} ~{" "}
                           {formatDate(schedule.endDate)}

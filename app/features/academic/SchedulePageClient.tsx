@@ -3,12 +3,14 @@
 import { Container } from "@/app/components/Container";
 import { Button, buttonStyles } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { SourceAttribution } from "@/app/components/SourceAttribution";
+import { Icon } from "@/app/components/Icon";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAcademicSchedules, fetchPublicHolidays } from "@/lib/api";
-import { emptyPublicHolidays, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
+import { emptyPublicHolidays, formatPublicHolidayName, getPublicHoliday, mergePublicHolidays } from "@/lib/public-holidays";
 import { getKoreaNow, getTodayInfo } from "@/lib/home";
 import { formatDateRange } from "@/lib/utils";
 import { useState, useMemo, useEffect } from "react";
@@ -16,6 +18,8 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { useUrlSearch } from "@/lib/use-url-search";
 import type { AcademicSchedule, AnswerSource } from "@/types";
 import type { PublicHolidaySnapshot } from "@/types/public-holidays";
+import "./academic-schedule.css";
+import "@/app/components/page-motion.css";
 
 const THIRTY_MINUTES = 30 * 60 * 1000;
 const ONE_HOUR = 60 * 60 * 1000;
@@ -38,6 +42,7 @@ export default function SchedulePageClient({
   const locale = useLocale();
   const text = dictionary.pages.academicSchedule;
   const holidayText = dictionary.publicHolidays;
+  const scheduleTitle = (schedule: AcademicSchedule) => schedule.id.startsWith("public-holiday-") ? schedule.title.split(" · ").map(name => formatPublicHolidayName(name, locale)).join(" · ") : schedule.title;
   const [now, setNow] = useState(() => new Date(initialNowIso));
   const { data: academicSchedules, isLoading, isError, refetch } = useQuery({
     queryKey: ["schedules"],
@@ -229,12 +234,14 @@ export default function SchedulePageClient({
 
       cells.push(
         <button
+          type="button"
           key={day}
-          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${isHoliday ? `, ${holidayText.label}: ${holiday.names.join(", ")}` : ""}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
+          aria-label={`${formatDateRange(dateStr, dateStr, locale)}${isHoliday ? `, ${holidayText.label}: ${holiday.names.map(name => formatPublicHolidayName(name, locale)).join(", ")}` : ""}${hasEvent ? `, ${hasExam ? text.exam : text.schedule}` : ""}`}
           aria-pressed={isSelected}
           aria-current={dateStr === initialDateStringDot ? "date" : undefined}
           onClick={() => setSelectedDate(dateStr)}
-          className={`relative flex min-h-[58px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:min-h-[64px] sm:px-2 sm:py-2 ${
+          data-has-event={hasEvent || isHoliday}
+          className={`m3-calendar-day relative flex min-h-[58px] flex-col items-center justify-center overflow-hidden rounded-lg px-1 py-1 text-center text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:min-h-[64px] sm:px-2 sm:py-2 ${
             isSelected
               ? "bg-primary-600 text-white"
               : hasEvent || isHoliday
@@ -246,18 +253,18 @@ export default function SchedulePageClient({
             {day}
           </div>
           {isHoliday && (
-            <span className="mt-0.5 max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
+            <span data-kind="holiday" className="m3-calendar-marker mt-0.5 max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
               {holidayText.label}
             </span>
           )}
           {hasEvent && (
             <div className="mt-0.5 flex min-w-0 shrink-0 justify-center sm:mt-1">
               {hasExam ? (
-                <span className="max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
+                <span data-kind="exam" className="m3-calendar-marker max-w-full whitespace-nowrap rounded bg-red-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-red-700 sm:text-[10px]">
                   {text.exam}
                 </span>
               ) : (
-                <span className="max-w-full whitespace-nowrap rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-blue-700 sm:text-[10px]">
+                <span data-kind="schedule" className="m3-calendar-marker max-w-full whitespace-nowrap rounded bg-blue-50 px-1 py-0.5 text-[9px] font-semibold leading-none text-blue-700 sm:text-[10px]">
                   {text.schedule}
                 </span>
               )}
@@ -268,7 +275,7 @@ export default function SchedulePageClient({
     }
 
     days.push(
-      <div key="grid" className="grid grid-cols-7 gap-1 sm:gap-2">
+      <div key="grid" className="m3-calendar-month-grid grid grid-cols-7 gap-1 sm:gap-2" data-motion-phase={currentMonth.getMonth() % 2}>
         {cells}
       </div>,
     );
@@ -296,7 +303,7 @@ export default function SchedulePageClient({
         : text.schedule;
 
   return (
-    <Container className="py-6 sm:py-8">
+    <Container className="m3-schedule-page py-6 sm:py-8">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {text.title}
@@ -324,7 +331,7 @@ export default function SchedulePageClient({
         <Skeleton count={4} height="100px" />
       ) : isError && (!schedules || schedules.length === 0) ? null : (
         <div className="space-y-6">
-          <Card className="p-4 sm:p-6">
+          <Card className="m3-schedule-calendar p-4 sm:p-6">
             <div className="flex items-center justify-between mb-6">
               <button
                 type="button"
@@ -337,9 +344,9 @@ export default function SchedulePageClient({
                     ),
                   )
                 }
-                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-200 text-sm hover:bg-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className={buttonStyles("secondary", "m3-icon-button")}
               >
-                ←
+                <Icon name="chevron-right" size={22} className="rotate-180" />
               </button>
               <h2 className="text-lg font-semibold text-neutral-900">
                 {currentMonthLabel}
@@ -355,15 +362,15 @@ export default function SchedulePageClient({
                     ),
                   )
                 }
-                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-neutral-200 text-sm hover:bg-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+                className={buttonStyles("secondary", "m3-icon-button")}
               >
-                →
+                <Icon name="chevron-right" size={22} />
               </button>
             </div>
             {renderCalendar()}
             <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-neutral-600">
               <div className="flex items-center gap-2">
-                <span className="rounded bg-red-50 px-1 py-0.5 font-semibold text-red-700">{holidayText.label}</span>
+                <span data-kind="holiday" className="m3-calendar-marker rounded bg-red-50 px-1 py-0.5 font-semibold text-red-700">{holidayText.label}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-500"></div>
@@ -388,7 +395,7 @@ export default function SchedulePageClient({
 
           {selectedDate && (
             <>
-              <Card className="p-6 bg-blue-50 border border-blue-200">
+              <Card className="m3-schedule-selected p-6 bg-blue-50 border border-blue-200">
                 <h3 className="font-semibold text-neutral-900 mb-3">
                   {selectedDateTitle}
                 </h3>
@@ -411,7 +418,7 @@ export default function SchedulePageClient({
                           {getScheduleTypeLabel(schedule)}
                         </span>
                         <div>
-                          <p className="font-medium">{schedule.title}</p>
+                          <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <p lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-medium">{translation.text("title", scheduleTitle(schedule))}</p>}</PublicContentTranslation>
                           <p className="text-xs text-neutral-600">
                             {formatDateRange(
                               schedule.startDate,
@@ -430,7 +437,7 @@ export default function SchedulePageClient({
           )}
 
           <Card className="p-6">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="m3-schedule-search flex items-center gap-2 mb-4">
               <input
                 type="text"
                 placeholder={text.searchPlaceholder}
@@ -443,11 +450,11 @@ export default function SchedulePageClient({
                 <Button
                   variant="ghost"
                   onClick={() => setSearchQuery("")}
-                  className="w-11 shrink-0 px-0"
+                  className="m3-icon-button shrink-0"
                   title={text.resetSearch}
                   aria-label={text.resetSearch}
                 >
-                  ✕
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
                 </Button>
               )}
             </div>
@@ -513,9 +520,7 @@ export default function SchedulePageClient({
                                     {schedule.category === "exam" && (
                                       <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
                                     )}
-                                    <h4 className="font-medium text-sm text-neutral-900">
-                                      {schedule.title}
-                                    </h4>
+                                    <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h4 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-medium text-sm text-neutral-900">{translation.text("title", scheduleTitle(schedule))}</h4>}</PublicContentTranslation>
                                   </div>
                                   <p className="text-xs text-neutral-600">
                                     {formatDateRange(
@@ -565,9 +570,7 @@ export default function SchedulePageClient({
                               {schedule.category === "exam" && (
                                 <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
                               )}
-                              <h3 className="font-semibold text-neutral-900">
-                                {schedule.title}
-                              </h3>
+                              <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h3 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="font-semibold text-neutral-900">{translation.text("title", scheduleTitle(schedule))}</h3>}</PublicContentTranslation>
                             </div>
                             <p className="text-xs text-neutral-600 mb-2">
                               {formatDateRange(

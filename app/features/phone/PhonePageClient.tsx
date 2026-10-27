@@ -4,6 +4,7 @@ import { Container } from "@/app/components/Container";
 import { Button } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
+import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 import {
   useDictionary,
   useLocale,
@@ -133,11 +134,11 @@ export default function PhonePageClient({
         ) : (
           !isLoading &&
           paginatedDirectory.map((item) => (
-            <Card key={`${item.department}-${item.phone}`}>
+            <PublicContentTranslation key={`${item.department}-${item.phone}`} source={{ kind: "phone", id: String(phoneData?.indexOf(item) ?? -1) }} content={{ department: item.department, ...(item.description ? { description: item.description } : {}) }}>{translation => <Card>
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-lg font-bold text-neutral-900 mb-1">
-                    {item.department}
+                  <h3 lang={translation.lang} className="text-lg font-bold text-neutral-900 mb-1">
+                    {translation.text("department", item.department)}
                   </h3>
                   <p className="text-sm text-neutral-600 break-words">
                     {getPhoneDisplayText(item).split(", ").map((number, index) => (
@@ -148,18 +149,18 @@ export default function PhonePageClient({
                     ))}
                   </p>
                   {item.description && (
-                    <p className="mt-1 text-sm text-neutral-500">
-                      {item.description}
+                    <p lang={translation.lang} className="mt-1 text-sm text-neutral-500">
+                      {translation.text("description", item.description)}
                     </p>
                   )}
                 </div>
                 <PhoneCallButton
-                  department={item.department}
+                  department={translation.text("department", item.department)}
                   phone={item.phone}
                   phoneNumbers={item.phoneNumbers}
                 />
               </div>
-            </Card>
+            </Card>}</PublicContentTranslation>
           ))
         )}
       </div>

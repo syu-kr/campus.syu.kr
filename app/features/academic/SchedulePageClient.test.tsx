@@ -107,7 +107,7 @@ describe("academic schedule content and sources", () => {
     const source = screen.getByRole("link", { name: dictionary.pages.academicSchedule.title });
     const holidaySource = screen.getByRole("link", { name: dictionary.publicHolidays.source });
 
-    expect(screen.getByRole("button", { name: /한글날/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: locale === "ko" ? /한글날/ : /Hangeul Day/ })).toBeInTheDocument();
     expect(source).toHaveAttribute("href", "https://www.syu.ac.kr/academic/major-schedule/");
     expect(holidaySource).toHaveAttribute("href", PUBLIC_HOLIDAY_SOURCE_URL);
     expect(schedule.compareDocumentPosition(source) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -173,6 +173,19 @@ describe("academic schedule content and sources", () => {
       expect(screen.getByRole("heading", { name: "변경 전 시험" })).toBeInTheDocument();
     }
   });
+});
+
+it("uses fixed English holiday names in list and calendar labels without changing Korean search matching", () => {
+  const text = getDictionary("en").pages.academicSchedule;
+  render(<LocaleProvider locale="en"><SchedulePageClient initialDateStringDot="2026.10.09" initialNowIso="2026-10-09T03:00:00Z" initialSchedules={[]} initialPublicHolidays={holidaySnapshot({ holidays: [
+    { date: "2026-10-09", names: ["한글날"] }, { date: "2026-10-10", names: ["대체공휴일(한글날)"] },
+    { date: "2026-01-01", names: ["1월1일"] }, { date: "2026-02-17", names: ["설날"] }, { date: "2026-03-01", names: ["삼일절"] },
+  ] })} /></LocaleProvider>);
+  expect(screen.getByRole("heading", { name: "New Year's Day" })).toBeInTheDocument();expect(screen.getByRole("heading", { name: "Seollal" })).toBeInTheDocument();expect(screen.getByRole("heading", { name: "Independence Movement Day" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /Public holiday: Hangeul Day/ })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Substitute holiday (Hangeul Day)" })).toBeInTheDocument();
+  fireEvent.change(screen.getByRole("textbox", { name: text.searchPlaceholder }), { target: { value: "대체공휴일" } });
+  expect(screen.getByRole("heading", { name: "Substitute holiday (Hangeul Day)" })).toBeInTheDocument();expect(screen.queryByRole("heading", { name: "Seollal" })).not.toBeInTheDocument();
 });
 
 describe.each(["ko", "en"] as const)("current month schedule access in %s", (locale) => {

@@ -68,10 +68,10 @@ function serializePushOperation<T>(operation: () => Promise<T>): Promise<T> {
 }
 
 export function getNotificationPreference(): NotificationPreference | null {
-  const preference = localStorage.getItem(NOTIFICATION_PREFERENCE_KEY);
-  return preference === "enabled" || preference === "disabled"
-    ? preference
-    : null;
+  try {
+    const preference = localStorage.getItem(NOTIFICATION_PREFERENCE_KEY);
+    return preference === "enabled" || preference === "disabled" ? preference : null;
+  } catch { return null; }
 }
 
 export function setNotificationPreference(preference: NotificationPreference) {

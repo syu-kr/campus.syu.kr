@@ -16,7 +16,7 @@ export function Skeleton({
   count = 1,
 }: SkeletonProps) {
   const variantClasses = {
-    card: "rounded-card h-24 bg-neutral-100",
+    card: "ui-skeleton rounded-[var(--shape-card,20px)] h-24 bg-neutral-100",
     text: "rounded h-4 bg-neutral-100 w-3/4",
     line: "rounded h-2 bg-neutral-100 w-full",
     circle: "rounded-full w-10 h-10 bg-neutral-100",
@@ -25,6 +25,7 @@ export function Skeleton({
   const styles = {
     width: width || (variant === "circle" ? "40px" : "100%"),
     height: height || (variant === "card" ? "96px" : "16px"),
+    backgroundColor: "var(--sys-surface-high, #e5ebf5)",
   };
 
   return (

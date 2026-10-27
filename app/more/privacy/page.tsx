@@ -97,13 +97,6 @@ export default function NotificationPrivacyPage() {
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
-        <Link
-          href={localizePath("/more", locale)}
-          className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900"
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToMore}
-        </Link>
         <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
           {text.title}
         </h1>
@@ -160,7 +153,7 @@ export default function NotificationPrivacyPage() {
                       disabled={
                         isProcessing || retryAt !== null || permission === "denied"
                       }
-                      className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="ui-button ui-button-primary rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {isProcessing ? text.enableProcessing : text.enableAction}
                     </button>

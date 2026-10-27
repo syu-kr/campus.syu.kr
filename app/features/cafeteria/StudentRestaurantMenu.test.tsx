@@ -19,13 +19,13 @@ const cafeteriaText = getDictionary("ko").pages.cafeteria;
 const text = cafeteriaText.studentRestaurant;
 const clients: QueryClient[] = [];
 
-function renderMenu(today = "2026-10-15", locale: Locale = "ko") {
+function renderMenu(today = "2026-10-15", locale: Locale = "ko", firebaseDataEnabled = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } });
   clients.push(client);
   return render(
     <QueryClientProvider client={client}>
       <LocaleProvider locale={locale}>
-        <StudentRestaurantMenu today={today} />
+        <StudentRestaurantMenu today={today} firebaseDataEnabled={firebaseDataEnabled} />
       </LocaleProvider>
     </QueryClientProvider>,
   );
@@ -50,10 +50,13 @@ describe("Manna House menu", () => {
   it("shows today's menu above the weekly menu and distinguishes closed from unreadable meals", async () => {
     renderMenu();
     expect(await screen.findByText("목요일 중식")).toBeInTheDocument();
-    expect(fetch).toHaveBeenCalledWith(publicUrl, expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith("/api/public-data/student-restaurant-1.json", expect.objectContaining({
       cache: "no-store", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer",
     }));
     expect(screen.getByRole("region", { name: text.title })).toBeInTheDocument();
+    expect(screen.queryByText(/마지막 정상 분석|Last successful analysis/)).not.toBeInTheDocument();
+    expect(document.querySelector(`time[datetime="${menu.updatedAt}"]`)).toBeNull();
+    expect(screen.queryByRole("button", { name: getDictionary("ko").home.overview.refresh })).not.toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent)).toEqual([
       cafeteriaText.todayMenu, cafeteriaText.weeklyMenu,
     ]);
@@ -252,6 +255,26 @@ describe("Manna House menu", () => {
     renderMenu();
     expect(screen.getByText(text.notConfigured)).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["", "https://retired.example/unused"])("loads Firebase menu without a usable legacy URL (%s)", async (url) => {
+    vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", url);
+    renderMenu("2026-10-15", "ko", true);
+    expect(await screen.findByText("목요일 중식")).toBeInTheDocument();
+    expect(screen.queryByText(text.notConfigured)).not.toBeInTheDocument();
+    expect(fetch).toHaveBeenCalledWith("/api/public-data/student-restaurant-1.json", expect.objectContaining({ credentials: "omit", redirect: "error" }));
+  });
+
+  it("keeps retry available if Firebase is configured but unavailable without a legacy URL", async () => {
+    vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "");
+    const fetchMock = vi.fn().mockRejectedValue(new Error("unavailable"));
+    vi.stubGlobal("fetch", fetchMock);
+    renderMenu("2026-10-15", "ko", true);
+    expect(await screen.findByRole("alert")).toHaveTextContent(text.errorTitle);
+    expect(screen.queryByText(text.notConfigured)).not.toBeInTheDocument();
+    fetchMock.mockResolvedValue({ ok: true, json: async () => menu });
+    fireEvent.click(screen.getByRole("button", { name: getDictionary("ko").home.dashboard.retry }));
+    expect(await screen.findByText("목요일 중식")).toBeInTheDocument();
   });
 
   it.each([

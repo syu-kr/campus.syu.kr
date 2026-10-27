@@ -1,193 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { createPortal } from "react-dom";
 import type { AnnouncementAiSummary as AnnouncementAiSummaryData } from "@/types";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Badge } from "./Badge";
-import { Modal } from "./Modal";
-
-type AiImportance = AnnouncementAiSummaryData["importance"];
-type BadgeColor = "blue" | "red" | "green" | "yellow" | "purple" | "gray";
+import type { useContentTranslation } from "./ContentTranslation";
 
 interface AnnouncementAiSummaryProps {
   aiSummary: AnnouncementAiSummaryData;
   compact?: boolean;
   showPreview?: boolean;
   variant?: "action" | "preview";
+  translation?: ReturnType<typeof useContentTranslation>;
 }
 
-const importanceBadgeColor: Record<AiImportance, BadgeColor> = {
-  high: "red",
-  normal: "yellow",
-  low: "gray",
-};
+const importanceBadgeColor = { high: "red", normal: "yellow", low: "gray" } as const;
 
-const cardToneClass: Record<AiImportance, string> = {
-  high: "border-red-100 bg-red-50/50",
-  normal: "border-yellow-100 bg-yellow-50/60",
-  low: "border-neutral-200 bg-neutral-50",
-};
-
-export function AnnouncementAiSummary({
-  aiSummary,
-  compact = false,
-  showPreview = true,
-  variant = "action",
-}: AnnouncementAiSummaryProps) {
+export function AnnouncementAiSummary({ aiSummary, compact = false, variant = "action", translation }: AnnouncementAiSummaryProps) {
   const dictionary = useDictionary();
-  const [isOpen, setIsOpen] = useState(false);
+  const locale = useLocale();
   const labels = dictionary.labels.aiSummaryDetails;
-  const confidenceLabel = labels.confidence[aiSummary.confidence];
+  const preview = variant === "preview";
+  const hasDeadline = Boolean(aiSummary.deadline.trim()) && aiSummary.deadline.trim().toLowerCase() !== "unknown";
+  const actionFields = preview ? (hasDeadline ? ["deadline"] as const : []) : ["deadline", "requiredAction"] as const;
+  const detail = (field: "summary" | "deadline" | "requiredAction" | "target") => {
+    const original = formatAiDetail(aiSummary[field], labels.empty);
+    return original === labels.empty ? original : translation?.text(`aiSummary.${field}`, original) ?? original;
+  };
+  const detailLang = (value: string) => value === labels.empty ? locale : translation?.lang ?? "ko";
 
   return (
-    <>
-      <button
-        type="button"
-        className={
-          variant === "preview"
-            ? "pointer-events-auto w-full rounded-md bg-neutral-50 px-3 py-2 text-left transition-colors hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-            : compact
-              ? "pointer-events-auto mt-2 w-full rounded-md text-left focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-              : `pointer-events-auto w-full rounded-md border p-3 text-left transition-colors hover:bg-white/70 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${cardToneClass[aiSummary.importance]}`
-        }
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        aria-label={labels.open}
-        onClick={(event) => {
-          event.stopPropagation();
-          setIsOpen(true);
-        }}
-      >
-        {variant === "preview" ? (
-          <div className="flex items-start gap-2">
-            <span
-              aria-hidden="true"
-              className="mt-0.5 shrink-0 rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-primary-700"
-            >
-              AI
-            </span>
-            <p className="line-clamp-2 text-xs leading-5 text-neutral-600">
-              {aiSummary.summary}
-            </p>
+    <div className={"notice-inline-summary pointer-events-auto" + (compact ? " notice-inline-summary-compact" : "") + (preview ? " notice-inline-summary-preview" : "")} data-notice-inline-summary>
+      <div className="notice-inline-summary-header">
+        <strong>{dictionary.labels.aiSummary}</strong>
+        <Badge color={importanceBadgeColor[aiSummary.importance]} size="sm">
+          {dictionary.labels.aiImportance[aiSummary.importance]}
+        </Badge>
+        <span className="notice-inline-summary-caution">{labels.caution}</span>
+      </div>
+      <p lang={detailLang(detail("summary"))} className="notice-inline-summary-text">{detail("summary")}</p>
+      {actionFields.length > 0 && <dl className="notice-inline-summary-details">
+        {actionFields.map((field) => (
+          <div key={field}>
+            <dt>{labels.fields[field]}</dt>
+            <dd lang={detailLang(detail(field))}>{detail(field)}</dd>
           </div>
-        ) : (
-          <>
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <Badge color="blue" size="sm">
-                {dictionary.labels.aiSummary}
-              </Badge>
-              <Badge
-                color={importanceBadgeColor[aiSummary.importance]}
-                size="sm"
-              >
-                {dictionary.labels.aiImportance[aiSummary.importance]}
-              </Badge>
-              <span className="ml-auto text-xs font-medium text-primary-700">
-                {labels.open}
-              </span>
-            </div>
-            {showPreview && (
-              <p
-                className={
-                  compact
-                    ? "line-clamp-2 text-xs text-neutral-600"
-                    : "line-clamp-2 text-sm leading-6 text-neutral-700"
-                }
-              >
-                {aiSummary.summary}
-              </p>
-            )}
-          </>
-        )}
-      </button>
-
-      {isOpen &&
-        createPortal(
-          <Modal
-            isOpen={isOpen}
-            title={labels.title}
-            description={dictionary.labels.aiSummary}
-            onClose={() => setIsOpen(false)}
-            size="sm"
-          >
-            <div className="space-y-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  color={importanceBadgeColor[aiSummary.importance]}
-                  size="sm"
-                >
-                  {dictionary.labels.aiImportance[aiSummary.importance]}
-                </Badge>
-                <Badge color="gray" size="sm">
-                  {confidenceLabel}
-                </Badge>
-              </div>
-
-              <section>
-                <h3 className="text-sm font-semibold text-neutral-900">
-                  {labels.fields.summary}
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-neutral-700">
-                  {formatAiDetail(aiSummary.summary, labels.empty)}
-                </p>
-              </section>
-
-              <dl className="space-y-4">
-                <AiDetailRow
-                  label={labels.fields.target}
-                  value={formatAiDetail(aiSummary.target, labels.empty)}
-                />
-                <AiDetailRow
-                  label={labels.fields.deadline}
-                  value={formatAiDetail(aiSummary.deadline, labels.empty)}
-                />
-                <AiDetailRow
-                  label={labels.fields.requiredAction}
-                  value={formatAiDetail(aiSummary.requiredAction, labels.empty)}
-                />
-              </dl>
-
-              {aiSummary.keywords.length > 0 && (
-                <section>
-                  <h3 className="text-sm font-semibold text-neutral-900">
-                    {labels.fields.keywords}
-                  </h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {aiSummary.keywords.map((keyword) => (
-                      <span
-                        key={keyword}
-                        className="rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700"
-                      >
-                        {keyword}
-                      </span>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
-          </Modal>,
-          document.body,
-        )}
-    </>
-  );
-}
-
-function AiDetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-sm font-semibold text-neutral-900">{label}</dt>
-      <dd className="mt-1 text-sm leading-6 text-neutral-700">{value}</dd>
+        ))}
+      </dl>}
+      <details className="notice-inline-summary-more">
+        <summary className="m3-disclosure-trigger">{preview ? labels.previewMore : labels.more}</summary>
+        <div className="notice-inline-summary-extra">
+          <dl className="notice-inline-summary-audience">
+            {preview && <div><dt>{labels.fields.requiredAction}</dt><dd lang={detailLang(detail("requiredAction"))}>{detail("requiredAction")}</dd></div>}
+            <div><dt>{labels.fields.target}</dt><dd lang={detailLang(detail("target"))}>{detail("target")}</dd></div>
+          </dl>
+          <p className="notice-inline-summary-confidence">{labels.confidence[aiSummary.confidence]}</p>
+          {aiSummary.keywords.length > 0 && (
+            <ul className="notice-inline-summary-keywords" aria-label={labels.fields.keywords}>
+              {aiSummary.keywords.map((keyword, index) => <li lang={translation?.lang ?? "ko"} key={keyword + "-" + index}>{translation?.text(`aiSummary.keywords.${index}`, keyword) ?? keyword}</li>)}
+            </ul>
+          )}
+          <p className="notice-inline-summary-source">{dictionary.pages.announcements.sourceNotice}</p>
+        </div>
+      </details>
     </div>
   );
 }
 
 function formatAiDetail(value: string, fallback: string) {
   const normalized = value.trim();
-
-  if (!normalized || normalized.toLowerCase() === "unknown") {
-    return fallback;
-  }
-
-  return normalized;
+  return !normalized || normalized.toLowerCase() === "unknown" ? fallback : normalized;
 }

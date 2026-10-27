@@ -59,29 +59,38 @@ it("keeps the original notice as the only link when no AI summary is available",
   expect(original).toHaveFocus();
 });
 
-it("opens the full AI summary without an additional summary detail link", () => {
-  const labels = getDictionary("ko").labels.aiSummaryDetails;
-  render(<AnnouncementCard announcement={summarizedAnnouncement} href={announcement.url} external />);
-
-  const summary = screen.getByRole("button", { name: labels.open });
+it("shows summary, deadline and action inline while preserving the original notice link", () => {
+  const dictionary = getDictionary("ko"), labels = dictionary.labels.aiSummaryDetails;
+  const { container } = render(<AnnouncementCard announcement={summarizedAnnouncement} href={announcement.url} external />);
   expect(screen.getAllByRole("link")).toHaveLength(1);
-  expect(screen.queryByText("요약 상세")).not.toBeInTheDocument();
-  expect(summary).toHaveClass("pointer-events-auto");
+  expect(screen.getByRole("link")).toHaveAttribute("href", announcement.url);
+  expect(screen.getByText("테스트 요약 내용")).toBeVisible();
+  expect(screen.getByText("2026-10-31")).toBeVisible();
+  expect(screen.getByText("신청서 제출")).toBeVisible();
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  const details = container.querySelector("details")!;
+  const summary = details.querySelector("summary")!;
+  expect(summary).toHaveTextContent(labels.more);
+  expect(summary).toHaveClass("m3-disclosure-trigger");
+  expect(details).not.toHaveAttribute("open");
   summary.focus();
   expect(summary).toHaveFocus();
   fireEvent.click(summary);
-  expect(screen.getByRole("dialog", { name: labels.title })).toHaveTextContent("신청서 제출");
+  expect(details).toHaveAttribute("open");
+  expect(screen.getByText("전체 재학생")).toBeVisible();
+  expect(screen.getByText("신청")).toBeVisible();
+  expect(screen.getByText(labels.confidence.high)).toBeVisible();
+  expect(screen.getByText(dictionary.pages.announcements.sourceNotice)).toBeVisible();
+  expect(container.querySelector("a a")).toBeNull();
 });
 
-it("keeps the localized full AI summary viewer on home announcement previews", () => {
+it("preserves the English inline viewer on home announcement previews", () => {
   const labels = getDictionary("en").labels.aiSummaryDetails;
-  render(
-    <LocaleProvider locale="en">
-      <HomeNoticeCard notice={{ type: "announcement", data: summarizedAnnouncement }} />
-    </LocaleProvider>,
-  );
+  render(<LocaleProvider locale="en"><HomeNoticeCard notice={{ type: "announcement", data: summarizedAnnouncement }} /></LocaleProvider>);
   expect(screen.getAllByRole("link")).toHaveLength(1);
-  expect(screen.queryByText("Summary details")).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: labels.open }));
-  expect(screen.getByRole("dialog", { name: labels.title })).toHaveTextContent("신청서 제출");
+  expect(screen.getByText("신청서 제출")).not.toBeVisible();
+  fireEvent.click(screen.getByText(labels.previewMore));
+  expect(screen.getByText("신청서 제출")).toBeVisible();
+  expect(screen.getByText(labels.previewMore)).toHaveClass("m3-disclosure-trigger");
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 });

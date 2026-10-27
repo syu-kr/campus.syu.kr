@@ -2,6 +2,7 @@
 
 import { getBuildingById, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
 import { Badge } from "@/app/components/Badge";
 import { useState } from "react";
 import { Icon } from "@/app/components/Icon";
@@ -24,6 +25,16 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
   const locale = useLocale();
   const text = dictionary.pages.map;
   const building = buildingId ? getBuildingById(buildingId) : null;
+  const translation = useContentTranslation({ kind: "map", id: building?.id ?? "" }, building ? {
+    name: building.name,
+    ...Object.fromEntries(building.floors.flatMap((floor, floorIndex) => [
+      ...(floor.description ? [[`floors.${floorIndex}.description`, floor.description]] : []),
+      ...floor.facilities.flatMap((facility, facilityIndex) => [
+        [`floors.${floorIndex}.facilities.${facilityIndex}.name`, facility.name],
+        ...(facility.description ? [[`floors.${floorIndex}.facilities.${facilityIndex}.description`, facility.description]] : []),
+      ]),
+    ])),
+  } : {});
   const [expandedFloors, setExpandedFloors] = useState<Set<number>>(
     new Set(building?.floors.map((floor) => floor.floor) ?? []),
   );
@@ -65,8 +76,8 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
             className="flex-shrink-0 mt-0.5"
           />
           <div>
-            <h2 className="font-bold text-neutral-900 text-lg">
-              {building.name}
+            <h2 lang={translation.lang} className="font-bold text-neutral-900 text-lg">
+              {translation.text("name", building.name)}
             </h2>
             <p className="text-sm text-neutral-600 mt-1">
               {formatMapCountSummary(
@@ -84,7 +95,7 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
       </Card>
 
       <div className="space-y-2">
-        {building.floors.map((floor) => {
+        {building.floors.map((floor, floorIndex) => {
           const isExpanded = expandedFloors.has(floor.floor);
           const panelId = `${building.id}-floor-${floor.floor}`;
 
@@ -116,8 +127,8 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
                   className="border-t border-neutral-200 bg-neutral-50 p-4 space-y-3"
                 >
                   {floor.facilities.length === 0 ? (
-                    <p className="text-neutral-600 text-sm italic">
-                      {floor.description}
+                    <p lang={translation.lang} className="text-neutral-600 text-sm italic">
+                      {translation.text(`floors.${floorIndex}.description`, floor.description ?? "")}
                     </p>
                   ) : (
                     floor.facilities.map((facility, facilityIndex) => (
@@ -134,8 +145,8 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-semibold text-neutral-900 text-sm">
-                              {facility.name}
+                            <p lang={translation.lang} className="font-semibold text-neutral-900 text-sm">
+                              {translation.text(`floors.${floorIndex}.facilities.${facilityIndex}.name`, facility.name)}
                             </p>
                             <Badge
                               color={
@@ -159,8 +170,8 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
                             </Badge>
                           </div>
                           {facility.description && (
-                            <p className="text-xs text-neutral-600 mt-1">
-                              {facility.description}
+                            <p lang={translation.lang} className="text-xs text-neutral-600 mt-1">
+                              {translation.text(`floors.${floorIndex}.facilities.${facilityIndex}.description`, facility.description)}
                             </p>
                           )}
                         </div>

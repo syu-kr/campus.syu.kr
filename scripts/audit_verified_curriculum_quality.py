@@ -5,10 +5,10 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OCR_PATH = ROOT / "public/data/curriculum-courses-2025-ocr.json"
-VERIFICATIONS_PATH = ROOT / "public/data/curriculum-course-verifications.json"
+OCR_PATH = ROOT / "data-source/curriculum/curriculum-courses-2025-ocr.json"
+VERIFICATIONS_PATH = ROOT / "data-source/curriculum/curriculum-course-verifications.json"
 VERIFIED_PATH = ROOT / "public/data/curriculum-courses-2025-verified.json"
-AUDIT_PATH = ROOT / "public/data/curriculum-courses-2025-audit.json"
+AUDIT_PATH = ROOT / "data-source/curriculum/curriculum-courses-2025-audit.json"
 REQUIREMENTS_PATH = ROOT / "public/data/graduation-requirements-2025.json"
 SELECTION_RULES_PATH = ROOT / "public/data/curriculum-course-selection-rules.json"
 

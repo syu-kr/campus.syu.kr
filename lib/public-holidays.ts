@@ -1,5 +1,20 @@
 import type { AcademicSchedule } from "../types/academic";
 import type { PublicHolidaySnapshot } from "../types/public-holidays";
+import type { Locale } from "./i18n/routing";
+
+/** Display names only; holiday matching, dates and source values remain unchanged. */
+export function formatPublicHolidayName(name: string, locale: Locale): string {
+  if (locale === "ko") return name;
+  const names: Record<string, string> = {
+    "1월1일": "New Year's Day", 신정: "New Year's Day", 설날: "Seollal", 삼일절: "Independence Movement Day",
+    노동절: "Labour Day", 근로자의날: "Labour Day", 어린이날: "Children's Day", 부처님오신날: "Buddha's Birthday",
+    전국동시지방선거: "Local elections", 지방선거: "Local elections", 현충일: "Memorial Day", 제헌절: "Constitution Day",
+    광복절: "National Liberation Day", 추석: "Chuseok", 개천절: "National Foundation Day", 한글날: "Hangeul Day",
+    기독탄신일: "Christmas Day", 성탄절: "Christmas Day", 대체공휴일: "Substitute holiday", 대체휴일: "Substitute holiday", 임시공휴일: "Temporary public holiday",
+  };
+  const substitute = name.match(/^대체공휴일\s*\((.+)\)$/);
+  return names[name.replace(/\s/g, "")] ?? (substitute ? `Substitute holiday (${formatPublicHolidayName(substitute[1], locale)})` : name);
+}
 
 export const PUBLIC_HOLIDAY_SOURCE_URL =
   "https://www.data.go.kr/data/15012690/openapi.do";

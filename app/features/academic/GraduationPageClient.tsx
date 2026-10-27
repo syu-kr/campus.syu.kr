@@ -10,34 +10,18 @@ import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
 import { ContactModal } from "@/app/components/ContactModal";
 import { Modal } from "@/app/components/Modal";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import {
-  evaluateGraduation,
-  getAvailableAdmissionTypes,
-  getAvailableDepartments,
-  getAvailableMajorTracks,
-  getAvailableMajors,
-  getAvailableTransferYears,
-  getChecklistItems,
-  getCollegeById,
-  getColleges,
-  getDepartmentById,
-  getGraduationMetadata,
-  getInputCreditKeys,
-  getMutuallyExclusiveCourseIds,
-  getSourcesForSelection,
-  getVerifiedCurriculumAvailability,
-  getVerifiedCurriculumCourses,
-  isCompleteSelection,
-  resolveRequirement,
-  summarizeSelectedCourses,
   type ChecklistAnswer,
   type CompletedCreditInput,
   type CreditCategoryKey,
   type EvaluationStatus,
   type GraduationSelection,
   type VerifiedCurriculumCourse,
-} from "@/lib/graduation";
+  type GraduationReferenceData,
+  createGraduationModel,
+} from "@/lib/graduation-model";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
 
 import {
@@ -57,8 +41,11 @@ import {
 
 type GraduationText = Dictionary["pages"]["graduation"];
 type PersistenceMessageKey = keyof GraduationText["sidebar"]["messages"];
-type GraduationSourceList = ReturnType<typeof getSourcesForSelection>;
-export default function GraduationPageClient() {
+type GraduationSourceList = ReturnType<ReturnType<typeof createGraduationModel>["getSourcesForSelection"]>;
+export default function GraduationPageClient({ snapshot }: { snapshot: GraduationReferenceData }) {
+  const model = useMemo(() => createGraduationModel(snapshot), [snapshot]);
+  const { getGraduationMetadata, getColleges, getCollegeById, getAvailableDepartments, getDepartmentById, getAvailableMajors, getAvailableAdmissionTypes, getAvailableMajorTracks, getAvailableTransferYears, resolveRequirement, getInputCreditKeys, getChecklistItems, getSourcesForSelection, getVerifiedCurriculumAvailability, getVerifiedCurriculumCourses, summarizeSelectedCourses, getMutuallyExclusiveCourseIds, evaluateGraduation, isCompleteSelection } = model;
+  const graduationReference = snapshot.requirements;
   const dictionary = useDictionary();
   const locale = useLocale();
   const text = dictionary.pages.graduation;
@@ -77,6 +64,8 @@ export default function GraduationPageClient() {
   const [restored, setRestored] = useState(false);
   const [showMobileNotice, setShowMobileNotice] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [pendingProgressAction, setPendingProgressAction] = useState<(() => void) | null>(null);
+  const confirmationReturnFocusRef = useRef<HTMLElement | null>(null);
   const [persistenceMessage, setPersistenceMessage] =
     useState<PersistenceMessageKey | null>(null);
   const [shareFallbackUrl, setShareFallbackUrl] = useState("");
@@ -106,7 +95,7 @@ export default function GraduationPageClient() {
   const selectedCollege = getCollegeById(selection.collegeId);
   const selectedDepartment = getDepartmentById(selection.departmentId);
   const selectedMajor = majors.find((major) => major.id === selection.majorId);
-  const requirement = useMemo(() => resolveRequirement(selection), [selection]);
+  const requirement = useMemo(() => resolveRequirement(selection), [selection, resolveRequirement]);
   const creditKeys = requirement ? getInputCreditKeys(requirement) : [];
   const checklistItems = getChecklistItems(requirement, selection.departmentId);
   const sources = getSourcesForSelection(selection.departmentId);
@@ -133,6 +122,44 @@ export default function GraduationPageClient() {
     locale,
   );
   const selectionComplete = isCompleteSelection(selection);
+  const publicReferenceContent = useMemo(() => {
+    const content: Record<string, string> = { "metadata.sourceTitle": graduationReference.metadata.sourceTitle };
+    graduationReference.colleges.forEach((college, index) => {
+      content[`colleges.${index}.name`] = college.name;
+    });
+    graduationReference.departments.forEach((department, index) => {
+      if (department.collegeId !== selection.collegeId) return;
+      content[`departments.${index}.name`] = department.name;
+      if ("warnings" in department) department.warnings?.forEach((warning, warningIndex) => { content[`departments.${index}.warnings.${warningIndex}`] = warning; });
+      if ("majors" in department) department.majors?.forEach((major, majorIndex) => {
+        content[`departments.${index}.majors.${majorIndex}.name`] = major.name;
+      });
+    });
+    const profileIndex = graduationReference.requirementProfiles.findIndex(profile => profile.id === requirement?.id);
+    if (profileIndex >= 0) {
+      const profile = graduationReference.requirementProfiles[profileIndex];
+      for (const field of ["graduationConditions", "requiredCourses", "warnings"] as const) {
+        const values = profile[field];
+        if (Array.isArray(values)) values.forEach((value, index) => {
+          if (typeof value === "string") content[`requirementProfiles.${profileIndex}.${field}.${index}`] = value;
+        });
+      }
+    }
+    return content;
+  }, [graduationReference, selection.collegeId, requirement?.id]);
+  const referenceTranslation = useContentTranslation({ kind: "graduation", id: "2026" }, publicReferenceContent);
+  const supportContent = Object.fromEntries([
+    ...sources.flatMap(source => [[`sources.${source.id}.title`, source.title], [`sources.${source.id}.scope`, source.scope]]),
+    ...checklistItems.filter(item => !item.id.startsWith("common-")).flatMap(item => [[`rules.${item.id}.label`, item.label], ...(item.description ? [[`rules.${item.id}.description`, item.description]] : [])]),
+  ]);
+  const supportTranslation = useContentTranslation({ kind: "graduation", id: "support-2026" }, supportContent);
+  const publicText = (value: string) => {
+    const reference = Object.entries(publicReferenceContent).find(([, original]) => original === value)?.[0];
+    if (reference) return referenceTranslation.text(reference, value);
+    const support = Object.entries(supportContent).find(([, original]) => original === value)?.[0];
+    return support ? supportTranslation.text(support, value) : value;
+  };
+  const displaySources = sources.map(source => ({ ...source, title: publicText(source.title), scope: publicText(source.scope) }));
   const applySavedState = useCallback((saved: SavedState) => {
     setSelection(saved.selection);
     setAdmissionYearDraft(saved.selection.admissionYear);
@@ -229,16 +256,31 @@ export default function GraduationPageClient() {
     setPlans({});
   };
 
-  const confirmProgressReset = () => {
+  useEffect(() => {
+    if (pendingProgressAction || !confirmationReturnFocusRef.current) return;
+    if (confirmationReturnFocusRef.current.isConnected) {
+      confirmationReturnFocusRef.current.focus({ preventScroll: true });
+    }
+    confirmationReturnFocusRef.current = null;
+  }, [pendingProgressAction]);
+
+  const confirmProgressReset = (action: () => void, trigger?: HTMLElement) => {
+    if (pendingProgressAction) return false;
     const hasProgress =
       Object.values(completedCredits).some((credits) => credits !== undefined) ||
       selectedCourseIds.length > 0 ||
       Object.keys(checklistAnswers).length > 0 ||
       Object.values(plans).some((plan) => plan.trim());
-    return !hasProgress || window.confirm(text.selectionChangeConfirm);
+    if (!hasProgress) {
+      action();
+      return true;
+    }
+    confirmationReturnFocusRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setPendingProgressAction(() => action);
+    return false;
   };
 
-  const updateSelection = (next: Partial<GraduationSelection>) => {
+  const updateSelection = (next: Partial<GraduationSelection>, trigger?: HTMLElement) => {
     if (
       Object.entries(next).every(
         ([key, value]) => selection[key as keyof GraduationSelection] === value,
@@ -246,10 +288,11 @@ export default function GraduationPageClient() {
     ) {
       return true;
     }
-    if (!confirmProgressReset()) return false;
-    setSelection({ ...selection, ...next });
-    resetProgress();
-    return true;
+    return confirmProgressReset(() => {
+      setSelection({ ...selection, ...next });
+      if (next.admissionYear !== undefined) setAdmissionYearDraft(next.admissionYear);
+      resetProgress();
+    }, trigger);
   };
 
   const handleCollegeSelect = (collegeId: string) => {
@@ -273,10 +316,10 @@ export default function GraduationPageClient() {
     });
   };
 
-  const commitAdmissionYear = () => {
+  const commitAdmissionYear = (trigger: HTMLInputElement) => {
     if (
       !/^\d{4}$/.test(admissionYearDraft) ||
-      !updateSelection({ admissionYear: admissionYearDraft })
+      !updateSelection({ admissionYear: admissionYearDraft }, trigger)
     ) {
       setAdmissionYearDraft(selection.admissionYear);
     }
@@ -303,17 +346,24 @@ export default function GraduationPageClient() {
   };
 
   const handleReset = () => {
-    if (!confirmProgressReset()) return;
-    setSelection(INITIAL_SELECTION);
-    setAdmissionYearDraft("");
-    resetProgress();
-    setPersistenceMessage(null);
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      setPersistenceMessage("storageUnavailable");
-    }
-    setShareFallbackUrl("");
+    confirmProgressReset(() => {
+      setSelection(INITIAL_SELECTION);
+      setAdmissionYearDraft("");
+      resetProgress();
+      setPersistenceMessage(null);
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        setPersistenceMessage("storageUnavailable");
+      }
+      setShareFallbackUrl("");
+    });
+  };
+
+  const resolveProgressConfirmation = (confirmed: boolean) => {
+    const action = pendingProgressAction;
+    setPendingProgressAction(null);
+    if (confirmed) action?.();
   };
 
   const getCurrentSavedState = () =>
@@ -416,33 +466,7 @@ export default function GraduationPageClient() {
 
   return (
     <Container size="full" className="max-w-[88rem] pb-safe pt-6 md:pt-8">
-      {showMobileNotice && (
-        <Modal
-          isOpen
-          onClose={handleMobileContinue}
-          title={text.mobileTitle}
-          description={text.mobileDescription}
-          size="sm"
-        >
-          <Badge color="yellow">{text.mobileBadge}</Badge>
-          <div className="mt-5 grid gap-2">
-              <button
-                type="button"
-                onClick={handleMobileContinue}
-                className={buttonStyles("primary")}
-              >
-                {text.mobileContinue}
-              </button>
-              <button
-                type="button"
-                onClick={handleMobileBack}
-                className={buttonStyles("secondary")}
-              >
-                {text.mobileBack}
-              </button>
-          </div>
-        </Modal>
-      )}
+
 
       <header className="mb-8">
         <div className="mb-3 flex flex-wrap gap-2">
@@ -460,11 +484,33 @@ export default function GraduationPageClient() {
         </p>
       </header>
 
-      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+      {showMobileNotice && (
+        <details className="m3-graduation-mobile-notice">
+          <summary className="m3-disclosure-trigger">{text.mobileGuidanceLabel}</summary>
+          <div>
+            <p className="font-semibold">{text.mobileTitle}</p>
+            <p>{text.mobileDescription}</p>
+            <div className="m3-graduation-notice-actions">
+              <button type="button" onClick={(event) => {
+                const yearInput = event.currentTarget.closest(".m3-graduation-mobile-notice")?.parentElement?.querySelector<HTMLInputElement>('input[inputmode="numeric"]');
+                handleMobileContinue();
+                yearInput?.focus({preventScroll:true});
+              }} className={buttonStyles("secondary")}>
+                {text.dismissGuidanceLabel}
+              </button>
+              <button type="button" onClick={handleMobileBack} className={buttonStyles("ghost")}>
+                {text.mobileBack}
+              </button>
+            </div>
+          </div>
+        </details>
+      )}
+      <details className="m3-graduation-source-notice mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+        <summary className="m3-disclosure-trigger">{text.sourceGuidanceLabel}</summary>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-5xl">
             {text.sourceNoticePrefix}
-            {metadata.sourceTitle}
+            <span lang={referenceTranslation.lang}>{publicText(metadata.sourceTitle)}</span>
             {text.sourceNoticeSuffix}
           </p>
           <button
@@ -475,7 +521,7 @@ export default function GraduationPageClient() {
             {text.contactWrongInfo}
           </button>
         </div>
-      </div>
+      </details>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:gap-8">
         <div className="space-y-6">
@@ -495,7 +541,7 @@ export default function GraduationPageClient() {
                     event.target.value.replace(/\D/g, "").slice(0, 4),
                   )
                 }
-                onBlur={commitAdmissionYear}
+                onBlur={(event) => commitAdmissionYear(event.currentTarget)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     event.preventDefault();
@@ -520,7 +566,7 @@ export default function GraduationPageClient() {
                 <ChoiceButton
                   key={college.id}
                   selected={selection.collegeId === college.id}
-                  title={college.name}
+                  title={publicText(college.name)}
                   onClick={() => handleCollegeSelect(college.id)}
                 />
               ))}
@@ -528,6 +574,7 @@ export default function GraduationPageClient() {
 
             <ChoiceGroup
               label={text.labels.department}
+              hidden={!selection.admissionYear}
               emptyMessage={text.empty.collegeFirst}
               disabled={departments.length === 0}
             >
@@ -535,7 +582,7 @@ export default function GraduationPageClient() {
                 <ChoiceButton
                   key={department.id}
                   selected={selection.departmentId === department.id}
-                  title={department.name}
+                  title={publicText(department.name)}
                   description={
                     department.majors?.length
                       ? text.helps.majorRequired
@@ -552,7 +599,7 @@ export default function GraduationPageClient() {
                   <ChoiceButton
                     key={major.id}
                     selected={selection.majorId === major.id}
-                    title={major.name}
+                    title={publicText(major.name)}
                     onClick={() => {
                       if (major.id === selection.majorId) return;
                       updateSelection({
@@ -569,6 +616,7 @@ export default function GraduationPageClient() {
 
             <ChoiceGroup
               label={text.labels.admissionType}
+              hidden={!selection.collegeId}
               emptyMessage={text.empty.departmentAndMajorFirst}
               disabled={
                 !selection.departmentId ||
@@ -608,6 +656,7 @@ export default function GraduationPageClient() {
 
             <ChoiceGroup
               label={text.labels.majorTrack}
+              hidden={!selection.departmentId}
               emptyMessage={text.empty.admissionTypeFirst}
               disabled={!selection.admissionType || (transferYears.length > 0 && !selection.transferYear)}
             >
@@ -624,6 +673,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.coursesTitle}
+            pending={!selection.departmentId || !selection.admissionYear}
             description={text.sections.coursesDescription.replace("{sourceYear}", curriculumAvailability.sourceYear)}
           >
             {!selection.departmentId || !selection.admissionYear ? (
@@ -640,6 +690,7 @@ export default function GraduationPageClient() {
                   </p>
                 )}
                 <CurriculumCourseSelector
+                  selectionRules={snapshot.selectionRules}
                   courses={verifiedCourses}
                   selectedCourseIds={selectedCourseIds}
                   summary={selectedCourseSummary}
@@ -654,6 +705,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.creditsTitle}
+            pending={!requirement}
             description={text.sections.creditsDescription}
           >
             {!requirement ? (
@@ -685,6 +737,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.checklistTitle}
+            pending={checklistItems.length === 0}
             description={text.sections.checklistDescription}
           >
             {checklistItems.length === 0 ? (
@@ -694,8 +747,8 @@ export default function GraduationPageClient() {
                 {checklistItems.map((item) => (
                   <ChecklistCard
                     key={item.id}
-                    label={item.label}
-                    description={item.description}
+                    label={publicText(item.label)}
+                    description={item.description ? publicText(item.description) : undefined}
                     answer={checklistAnswers[item.id]}
                     plan={plans[item.id] ?? ""}
                     text={text}
@@ -716,6 +769,7 @@ export default function GraduationPageClient() {
 
           <Section
             title={text.sections.resultsTitle}
+            pending={!selectionComplete || !requirement}
             description={text.sections.resultsDescription}
           >
             {!selectionComplete || !requirement ? (
@@ -750,7 +804,7 @@ export default function GraduationPageClient() {
                     >
                       <div>
                         <p className="font-semibold text-neutral-900">
-                          {item.label}
+                          {publicText(item.label)}
                         </p>
                         <p className="mt-0.5 text-xs text-neutral-500">
                           {text.result.requiredInput
@@ -760,7 +814,7 @@ export default function GraduationPageClient() {
                         <EvidenceLine
                           sourceIds={item.sourceIds}
                           sourcePages={item.sourcePages}
-                          sources={sources}
+                          sources={displaySources}
                           text={text}
                         />
                       </div>
@@ -787,7 +841,7 @@ export default function GraduationPageClient() {
                     >
                       <div>
                         <p className="font-semibold text-neutral-900">
-                          {item.label}
+                          {publicText(item.label)}
                         </p>
                         <p className="mt-0.5 text-xs text-neutral-500">
                           {text.result.answerPrefix}{" "}
@@ -796,7 +850,7 @@ export default function GraduationPageClient() {
                         <EvidenceLine
                           sourceIds={item.sourceIds}
                           sourcePages={item.sourcePages}
-                          sources={sources}
+                          sources={displaySources}
                           text={text}
                         />
                       </div>
@@ -814,7 +868,7 @@ export default function GraduationPageClient() {
                     </p>
                     <ul className="mt-2 space-y-1.5 text-sm leading-6 text-blue-800">
                       {evaluation.warnings.map((warning) => (
-                        <li key={warning}>- {warning}</li>
+                        <li key={warning}>- {publicText(warning)}</li>
                       ))}
                     </ul>
                   </div>
@@ -828,7 +882,7 @@ export default function GraduationPageClient() {
             description={text.sections.sourcesDescription}
           >
             <div className="space-y-3">
-              {sources.map((source) => (
+              {displaySources.map((source) => (
                 <div
                   key={source.id}
                   className="rounded-lg border border-neutral-200 p-4"
@@ -876,12 +930,12 @@ export default function GraduationPageClient() {
                     : undefined
                 }
               />
-              <SummaryRow label={text.labels.college} value={selectedCollege?.name} />
+              <SummaryRow label={text.labels.college} value={selectedCollege?.name ? publicText(selectedCollege.name) : undefined} />
               <SummaryRow
                 label={text.labels.department}
-                value={selectedDepartment?.name}
+                value={selectedDepartment?.name ? publicText(selectedDepartment.name) : undefined}
               />
-              <SummaryRow label={text.labels.major} value={selectedMajor?.name} />
+              <SummaryRow label={text.labels.major} value={selectedMajor?.name ? publicText(selectedMajor.name) : undefined} />
               <SummaryRow
                 label={text.labels.admissionType}
                 value={
@@ -996,6 +1050,18 @@ export default function GraduationPageClient() {
         </aside>
       </div>
 
+      <Modal
+        isOpen={pendingProgressAction !== null}
+        onClose={() => resolveProgressConfirmation(false)}
+        title={text.changeConfirmTitle}
+        description={text.selectionChangeConfirm}
+        size="sm"
+      >
+        <div className="flex flex-wrap justify-end gap-3">
+          <button type="button" className={buttonStyles("secondary")} onClick={() => resolveProgressConfirmation(false)}>{text.cancelChanges}</button>
+          <button type="button" className={buttonStyles("danger")} onClick={() => resolveProgressConfirmation(true)}>{text.confirmChanges}</button>
+        </div>
+      </Modal>
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
@@ -1008,11 +1074,24 @@ function Section({
   title,
   description,
   children,
+  pending = false,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
+  pending?: boolean;
 }) {
+  if (pending) {
+    return (
+      <details className="m3-graduation-pending-step">
+        <summary className="m3-disclosure-trigger"><h2>{title}</h2></summary>
+        <div>
+          <p className="text-sm leading-6">{description}</p>
+          <div className="mt-4">{children}</div>
+        </div>
+      </details>
+    );
+  }
   return (
     <Card hover={false} className="border border-neutral-200">
       <h2 className="text-lg font-bold text-neutral-900">{title}</h2>
@@ -1043,18 +1122,21 @@ function ChoiceGroup({
   label,
   emptyMessage,
   disabled = false,
+  hidden = false,
   children,
 }: {
   label: string;
   emptyMessage?: string;
   disabled?: boolean;
+  hidden?: boolean;
   children: React.ReactNode;
 }) {
+  if (hidden) return null;
   return (
     <div className="mt-5 border-t border-neutral-100 pt-5">
       <p className="mb-3 text-sm font-semibold text-neutral-900">{label}</p>
       {disabled ? (
-        <EmptyState message={emptyMessage ?? ""} />
+        <p className="m3-graduation-next-condition text-sm">{emptyMessage ?? ""}</p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {children}
@@ -1086,9 +1168,9 @@ function ChoiceButton({
           : "border-neutral-200 hover:border-primary-300 hover:bg-primary-50/40",
       )}
     >
-      <span className="block font-semibold text-neutral-900">{title}</span>
+      <span lang={/\p{Script=Hangul}/u.test(title) ? "ko" : undefined} className="block font-semibold text-neutral-900">{title}</span>
       {description && (
-        <span className="mt-1 block text-xs text-neutral-500">
+        <span lang={/\p{Script=Hangul}/u.test(description) ? "ko" : undefined} className="mt-1 block text-xs text-neutral-500">
           {description}
         </span>
       )}
@@ -1097,6 +1179,7 @@ function ChoiceButton({
 }
 
 function CurriculumCourseSelector({
+  selectionRules,
   courses,
   selectedCourseIds,
   summary,
@@ -1105,15 +1188,19 @@ function CurriculumCourseSelector({
   onToggle,
   onReset,
 }: {
+  selectionRules: GraduationReferenceData["selectionRules"];
   courses: VerifiedCurriculumCourse[];
   selectedCourseIds: string[];
-  summary: ReturnType<typeof summarizeSelectedCourses>;
+  summary: ReturnType<ReturnType<typeof createGraduationModel>["summarizeSelectedCourses"]>;
   text: GraduationText;
   locale: Locale;
   onToggle: (courseId: string) => void;
   onReset: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const courseTranslation = useContentTranslation({ kind: "graduation", id: "curriculum-2026" }, Object.fromEntries(courses.map(course => [`courses.${course.id}.name`, course.name])));
+  const conflictGroups = selectionRules.exclusiveGroups.filter(group => summary.conflicts.some(conflict => conflict.groupLabel === group.label));
+  const groupTranslation = useContentTranslation({ kind: "graduation", id: "support-2026" }, Object.fromEntries(conflictGroups.map(group => [`selectionGroups.${group.id}.label`, group.label])));
   const searchLocale = locale === "ko" ? "ko" : "en-US";
   const normalizedQuery = query.trim().toLocaleLowerCase(searchLocale);
   const filteredCourses = courses.filter(
@@ -1186,7 +1273,7 @@ function CurriculumCourseSelector({
           <ul className="mt-2 space-y-1 text-xs leading-5">
             {summary.conflicts.map((conflict) => (
               <li key={conflict.groupLabel}>
-                - {conflict.groupLabel}: {conflict.courseNames.join(", ")}
+                - {groupTranslation.text(`selectionGroups.${conflictGroups.find(group => group.label === conflict.groupLabel)?.id}.label`, conflict.groupLabel)}: {conflict.courseIds.map(id => { const course = courses.find(item => item.id === id); return course ? `${courseTranslation.text(`courses.${id}.name`, course.name)} (${course.year}-${course.semester})` : ""; }).filter(Boolean).join(", ")}
               </li>
             ))}
           </ul>
@@ -1234,7 +1321,7 @@ function CurriculumCourseSelector({
                     >
                       <span>
                         <span className="block text-sm font-semibold text-neutral-900">
-                          {course.name}
+                          {courseTranslation.text(`courses.${course.id}.name`, course.name)}
                         </span>
                         <span className="mt-1 block text-xs text-neutral-500">
                           {getCourseCategoryLabel(text, course.category)}
@@ -1377,6 +1464,7 @@ function ChecklistCard({
         </span>
         <input
           type="text"
+          translate="no"
           value={plan}
           onChange={(event) => onPlan(event.target.value)}
           placeholder={text.placeholders.checklistPlan}
@@ -1502,8 +1590,8 @@ function getEvaluationBadgeColor(status: EvaluationStatus) {
 function SummaryRow({ label, value }: { label: string; value?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-neutral-500">{label}</span>
-      <span className="text-right font-semibold text-neutral-900">
+      <span className="text-[var(--sys-on-surface-variant)]">{label}</span>
+      <span lang={value && /\p{Script=Hangul}/u.test(value) ? "ko" : undefined} className="text-right font-semibold text-neutral-900">
         {value || "-"}
       </span>
     </div>
@@ -1512,7 +1600,7 @@ function SummaryRow({ label, value }: { label: string; value?: string }) {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-500">
+    <div className="rounded-lg border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-[var(--sys-on-surface-variant)]">
       {message}
     </div>
   );

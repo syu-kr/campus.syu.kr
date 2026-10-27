@@ -8,7 +8,7 @@ import { formatDateTime } from "./AdminSubmissionDetail";
 
 export const reportStatuses: Record<AdminReportStatus, string> = { pending: "미처리", reviewing: "검토 중", done: "처리 완료", rejected: "기각" };
 const text = getRoommateText("ko");
-const buttonClass = "rounded-md border border-neutral-300 px-3 py-2 text-sm font-semibold hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-primary-600 disabled:opacity-50";
+const buttonClass = "ui-button ui-button-secondary rounded-md border border-neutral-300 px-3 py-2 text-sm font-semibold hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-primary-600 disabled:opacity-50";
 
 export function RoommateReportDetail({ item, busy, onSave, onOpenPost }: { item: AdminRoommateReport; busy: boolean; onSave: (status: AdminReportStatus, memo: string) => Promise<void>; onOpenPost: () => void }) {
   const [status, setStatus] = useState(item.status);

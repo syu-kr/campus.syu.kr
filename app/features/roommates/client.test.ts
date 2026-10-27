@@ -1,7 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ROOMMATE_CLEAR_EVENT, clearPendingEmail, readPendingEmail, roommateRequest, safeRoommatePath, savePendingEmail } from "./client";
+import { ROOMMATE_CLEAR_EVENT, RoommateApiError, roommateErrorMessage, clearPendingEmail, readPendingEmail, roommateRequest, safeRoommatePath, savePendingEmail } from "./client";
+import { getRoommateText } from "@/lib/i18n/roommates";
 
 describe("roommate browser privacy", () => {
+  it.each(["ko", "en"] as const)("does not blame inputs for a server failure in %s", (locale) => {
+    const text = getRoommateText(locale);
+    expect(roommateErrorMessage(new RoommateApiError(500, "INTERNAL_ERROR"), text, locale)).toBe(text.failed);
+    expect(roommateErrorMessage(new RoommateApiError(400, "INVALID_BODY"), text, locale)).toBe(text.invalid);
+    expect(roommateErrorMessage(new TypeError("Failed to fetch"), text, locale)).toBe(text.failed);
+  });
+  it("rejects unreadable success bodies and still clears private UI for an unreadable 401", async () => {
+    const clear = vi.fn(); window.addEventListener(ROOMMATE_CLEAR_EVENT, clear);
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(new Response("upstream html"))
+      .mockResolvedValueOnce(Response.json(null))
+      .mockResolvedValueOnce(new Response("upstream html", { status: 401 })));
+    await expect(roommateRequest("posts", { method: "POST" })).rejects.toThrow();
+    await expect(roommateRequest("posts", { method: "POST" })).rejects.toThrow();
+    expect(clear).not.toHaveBeenCalled();
+    await expect(roommateRequest("posts")).rejects.toMatchObject({ status: 401 });
+    expect(clear).toHaveBeenCalledTimes(1);
+    window.removeEventListener(ROOMMATE_CLEAR_EVENT, clear);
+  });
   beforeEach(() => { localStorage.clear(); vi.unstubAllGlobals(); });
   it("allows only internal roommate destinations and keeps the current locale", () => {
     expect(safeRoommatePath("/campus/roommates/abc_123", "en")).toBe("/en/campus/roommates/abc_123");

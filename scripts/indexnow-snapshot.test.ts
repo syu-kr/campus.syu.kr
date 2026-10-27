@@ -17,6 +17,25 @@ function files(): Record<string, SnapshotFile> {
 }
 
 describe("IndexNow content snapshots", () => {
+  it("tracks Manna meals for cafeteria and home without notifying for update timestamps", () => {
+    const before = files(), after = files();
+    const menu = { updatedAt: "2026-10-19T00:00:00Z", weekStart: "2026-10-19", days: [{ date: "2026-10-19", lunch: ["rice"] }] };
+    before["public/cafeteria/student-restaurant-1.json"] = { hash: "old", data: menu };
+    after["public/cafeteria/student-restaurant-1.json"] = { hash: "new", data: { ...menu, days: [{ date: "2026-10-19", lunch: ["noodles"] }] } };
+    expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual([`${origin}/`, `${origin}/campus/cafeteria`, `${origin}/en`, `${origin}/en/campus/cafeteria`]);
+    after["public/cafeteria/student-restaurant-1.json"].data = { ...menu, updatedAt: "2026-10-20T00:00:00Z" };
+    expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual([]);
+  });
+  it("tracks a repository notice parser change for home and service notices", () => {
+    const before = files(), after = files();
+    before["lib/service-notice-repository.ts"] = { hash: "before" };
+    after["lib/service-notice-repository.ts"] = { hash: "after" };
+    const changed = changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after));
+    expect(changed).toContain(`${origin}/`);
+    expect(changed).toContain(`${origin}/service/notices`);
+    expect(changed).toContain(`${origin}/en/service/notices`);
+    expect(changed).not.toContain(`${origin}/academic/graduation`);
+  });
   it.each(["object keys", "source paths"])("preserves production fingerprints across host locales for mixed-language %s", (target) => {
     const input = files();
     if (target === "object keys") {
@@ -120,9 +139,9 @@ describe("IndexNow content snapshots", () => {
     expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toContain(`${origin}/campus/cafeteria`);
   });
 
-  it("tracks proxy changes that determine language and canonical URLs for every public page", () => {
+  it.each(["proxy.ts", "lib/page-metadata.ts", "app/components/M3Select.tsx", "app/components/ui/select.tsx"])("tracks shared shell and metadata changes in %s for every public page", (file) => {
     const before = files(), after = files();
-    before["proxy.ts"] = { hash: "old" }; after["proxy.ts"] = { hash: "new" };
+    before[file] = { hash: "old" }; after[file] = { hash: "new" };
     const baseline = buildIndexNowSnapshot(before);
     expect(changedIndexNowUrls(baseline, buildIndexNowSnapshot(after))).toEqual(Object.keys(baseline).sort());
   });
@@ -133,6 +152,10 @@ describe("IndexNow content snapshots", () => {
     ["lib/graduation.ts", ["/academic/graduation"]],
     ["app/features/academic/CompetitionsPageClient.tsx", ["/academic/competitions"]],
     ["lib/server/competitions.ts", ["/academic/competitions"]],
+    ["lib/public-list-query.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
+    ["lib/campus-tip-filters.ts", ["/campus/campus-tips"]],
+    ["lib/use-list-search-navigation.ts", ["/academic/competitions", "/campus/campus-tips"]],
+    ["lib/use-url-hash.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
     ["lib/phone.ts", ["/", "/campus/phone"]],
     ["lib/library.ts", ["/campus/library"]],
     ["lib/lecture-timetable-filter.ts", ["/academic/timetable"]],
@@ -142,6 +165,21 @@ describe("IndexNow content snapshots", () => {
     ["app/features/cafeteria/CafeteriaMenuCards.tsx", ["/", "/campus/cafeteria"]],
   ] as const)("tracks actual page dependencies in %s without changing unrelated pages", (file, routes) => {
     const before = files(), after = files();
+    before[file] = { hash: "old" }; after[file] = { hash: "new" };
+    const expected = routes.flatMap((route) => [`${origin}${route}`, `${origin}${route === "/" ? "/en" : `/en${route}`}`]).sort();
+    expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual(expected);
+  });
+
+  it.each([
+    ["lib/announcement-list-query.ts", ["/", "/announcements", "/academic/announcements", "/academic/scholarship", "/academic/sw-notices", "/campus/announcements", "/announcements/academic/academic-abc", "/service/notices", "/service/notices/001-test"]],
+    ["lib/public-list-query.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
+    ["lib/use-url-hash.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
+    ["app/service/notices/ServiceNoticePagination.tsx", ["/service/notices"]],
+    ["app/styles/m3/styles-service-notices-m3.css", ["/service/notices"]],
+  ] as const)("tracks service notice pagination dependencies in %s without notifying unrelated details", (file, routes) => {
+    const before = files(), after = files();
+    before["public/service-notices/001-test.md"] = { hash: "notice" };
+    after["public/service-notices/001-test.md"] = { hash: "notice" };
     before[file] = { hash: "old" }; after[file] = { hash: "new" };
     const expected = routes.flatMap((route) => [`${origin}${route}`, `${origin}${route === "/" ? "/en" : `/en${route}`}`]).sort();
     expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual(expected);
@@ -160,13 +198,16 @@ describe("IndexNow content snapshots", () => {
   });
 
   it.each([
-    "graduation-requirements-2025.json", "curriculum-course-selection-rules.json",
-    "curriculum-course-verifications.json", "curriculum-courses-2025-audit.json",
-    "curriculum-courses-2025-ocr.json", "curriculum-courses-2025-verified.json",
+    "public/data/graduation-requirements-2025.json", "public/data/curriculum-course-selection-rules.json",
+    "public/data/curriculum-course-verifications.json", "public/data/curriculum-courses-2025-audit.json",
+    "public/data/curriculum-courses-2025-ocr.json", "public/data/curriculum-courses-2025-verified.json",
+    "data-source/curriculum/curriculum-course-verifications.json",
+    "data-source/curriculum/curriculum-courses-2025-audit.json",
+    "data-source/curriculum/curriculum-courses-2025-ocr.json",
   ])("does not notify on unused reference data %s", (file) => {
     const before = files(), after = files();
-    before[`public/data/${file}`] = { hash: "old", data: { title: "before" } };
-    after[`public/data/${file}`] = { hash: "new", data: { title: "after" } };
+    before[file] = { hash: "old", data: { title: "before" } };
+    after[file] = { hash: "new", data: { title: "after" } };
     expect(changedIndexNowUrls(buildIndexNowSnapshot(before), buildIndexNowSnapshot(after))).toEqual([]);
   });
 

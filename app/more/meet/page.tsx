@@ -1,12 +1,12 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/components/Card";
 import { Container } from "@/app/components/Container";
-import { Icon } from "@/app/components/Icon";
 import {
   useDictionary,
   useLocale,
@@ -72,6 +72,7 @@ export default function MeetCreatePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState("");
+  const [ownerStorageUnavailable, setOwnerStorageUnavailable] = useState(false);
   const [mode, setMode] = useState<"join" | "create">("join");
 
   const rangeValidation = useMemo(
@@ -115,11 +116,17 @@ export default function MeetCreatePage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(getMeetErrorMessage(data, text));
+        setError(getMeetErrorMessage(data, text));
+        return;
+      }
+
+      if (typeof data?.inviteUrl !== "string" || typeof data?.roomId !== "string") {
+        throw new Error("Invalid room response");
       }
 
       setInviteUrl(localizeInviteUrl(data.inviteUrl, locale));
       setRoomId(data.roomId);
+      setOwnerStorageUnavailable(false);
       if (typeof data.ownerToken === "string") {
         try {
           localStorage.setItem(
@@ -127,11 +134,11 @@ export default function MeetCreatePage() {
             data.ownerToken,
           );
         } catch {
-          // The invite still works when browser storage is unavailable.
+          setOwnerStorageUnavailable(true);
         }
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : text.createFailed);
+    } catch {
+      setError(text.createFailed);
     } finally {
       setIsSubmitting(false);
     }
@@ -167,24 +174,19 @@ export default function MeetCreatePage() {
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
-        <Link
-          href={localizePath("/more", locale)}
-          className="inline-flex items-center gap-1 text-sm font-medium text-neutral-600 hover:text-neutral-900 mb-4"
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToMore}
-        </Link>
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {text.title}
         </h1>
         <p className="text-neutral-600">{text.description}</p>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-1">
+      <div className="m3-selection-track mb-6 grid grid-cols-2 gap-2 rounded-xl border border-neutral-200 bg-neutral-50 p-1" data-selection-tone="surface">
+        <SlidingIndicator value={mode} />
         <button
           type="button"
           onClick={() => setMode("join")}
           aria-pressed={mode === "join"}
+          data-selection-value="join"
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "join"
               ? "bg-white text-primary-700 shadow-sm"
@@ -197,6 +199,7 @@ export default function MeetCreatePage() {
           type="button"
           onClick={() => setMode("create")}
           aria-pressed={mode === "create"}
+          data-selection-value="create"
           className={`rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
             mode === "create"
               ? "bg-white text-primary-700 shadow-sm"
@@ -241,7 +244,7 @@ export default function MeetCreatePage() {
               )}
               <button
                 type="submit"
-                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
+                className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700"
               >
                 {text.joinAction}
               </button>
@@ -430,7 +433,7 @@ export default function MeetCreatePage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
+                className="ui-button ui-button-primary w-full rounded-lg bg-primary-600 px-4 py-3 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300"
               >
                 {isSubmitting ? text.submitting : text.createInvite}
               </button>
@@ -459,6 +462,7 @@ export default function MeetCreatePage() {
               <p className="mt-2 text-xs text-green-900">
                 {text.invitePrivacyNotice}
               </p>
+              {ownerStorageUnavailable && <p className="mt-2 text-sm text-amber-900" role="alert">{text.ownerStorageUnavailable}</p>}
               <div className="mt-3 grid grid-cols-1 gap-2">
                 <button
                   type="button"
@@ -534,10 +538,10 @@ function validateMeetRange(
 }
 
 function getMeetErrorMessage(
-  payload: { error?: unknown; code?: unknown },
+  payload: { error?: unknown; code?: unknown } | null,
   text: MeetDictionary,
 ): string {
-  const error = payload.error;
+  const error = payload?.error;
   if (typeof error !== "string") return text.createFailed;
 
   const rateLimitSeconds = error.match(/요청이 많습니다\. (\d+)초/)?.[1];
@@ -550,7 +554,7 @@ function getMeetErrorMessage(
     return text.errors.dateRangeMax.replace("{max}", dateRangeMax);
   }
 
-  if (typeof payload.code === "string") {
+  if (typeof payload?.code === "string") {
     const codeKey = meetErrorCodeKeys[payload.code];
     if (codeKey) {
       return codeKey === "dateRangeMax"

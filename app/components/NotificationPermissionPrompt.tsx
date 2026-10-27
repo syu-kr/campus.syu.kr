@@ -34,12 +34,15 @@ export function NotificationPermissionPrompt() {
   useEffect(() => {
     if (isRoommatePage) return;
     const permission = "Notification" in window ? Notification.permission : null;
+    let hasStoredToken = false;
+    try { hasStoredToken = !!localStorage.getItem(FCM_TOKEN_KEY); }
+    catch { return; }
 
     if (
       !permission ||
       !("serviceWorker" in navigator) ||
       permission === "denied" ||
-      localStorage.getItem(FCM_TOKEN_KEY) ||
+      hasStoredToken ||
       getNotificationPreference()
     ) {
       return;
@@ -111,10 +114,10 @@ export function NotificationPermissionPrompt() {
 
   return (
     <section
-      className="mx-auto my-4 max-w-4xl px-4"
+      className="m3-notification-prompt mx-auto my-4 max-w-4xl px-4"
       aria-labelledby="notification-permission-title"
     >
-      <div className="min-w-0 overflow-hidden rounded-xl border border-primary-100 bg-white p-4 shadow-2xl sm:p-5">
+      <div className="min-w-0 overflow-hidden rounded-card border border-neutral-200 bg-white p-4 sm:p-5">
         <h2
           id="notification-permission-title"
           className="text-base font-bold text-neutral-900 sm:text-lg"

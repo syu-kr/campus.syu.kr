@@ -24,13 +24,15 @@ SYU CAMPUS는 삼육대학교 공식 서비스가 아닌 비공식 학생 편의
 | `public/data/cafeteria-menu.json` | 삼육대학교 공개 식단 페이지 | 서면 허가 미확인 | 메뉴 정보를 구조화한 가공 데이터 |
 | `public/data/phone-numbers.json` | 삼육대학교 공개 전화번호 안내 | 서면 허가 미확인 | 공개 업무 연락처를 구조화한 가공 데이터 |
 | `public/data/schedules-major.json` | 삼육대학교 공개 학사일정 | 서면 허가 미확인 | 일정 정보를 구조화한 가공 데이터 |
-| `public/data/graduation-requirements-2025.json`, `public/data/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 서면 허가 미확인 | 참고용 구조화·OCR 가공 데이터 |
+| `public/data/graduation-requirements-2025.json`, `data-source/curriculum/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 서면 허가 미확인 | 참고용 구조화·OCR 가공 데이터 |
 | `public/data/shuttle-*.json` | 삼육대학교 공개 안내 및 운영 정보 | 서면 허가 미확인 | 실제 운영 정보와 다를 수 있음 |
 | `public/data/campus-tips.json` | 학교 공식 페이지 및 외부 공개 안내 | 항목별 확인 필요 | 각 항목의 원문 링크와 출처 유형 포함 |
 
 공개 웹페이지에서 접근할 수 있다는 사실만으로 재배포 허가가 확인되는 것은 아닙니다. 이 저장소는 위 데이터와 상표 자산에 대한 별도 재배포 라이선스 또는 서면 허가를 보증하지 않습니다. 운영자는 공개 전 제공처 이용약관과 허가 근거를 확인·보관해야 하며, 재사용자는 필요한 권리를 별도로 확인해야 합니다.
 
 ## Permission Checks
+
+Google Translate 귀속 배지(`public/brand/google-translate/`)는 Google의 공식 귀속 자산입니다. 해당 폴더의 README에 출처와 이용 지침을 보존하며 Google의 상표·귀속 지침을 따릅니다.
 
 - [삼육대학교 로고·UI 안내](https://www.syu.ac.kr/about-sahmyook/symbols-ui/logo-ui/)는 로고 파일 다운로드를 제공하지만 별도 재배포 라이선스는 명시하지 않습니다. 로고·상표 사용 허가가 필요하면 페이지에 안내된 커뮤니케이션팀(`supr@syu.ac.kr`, `02-3399-3808`)에 확인하세요.
 - [공공데이터포털 이용정책](https://www.data.go.kr/ugs/selectPortalPolicyView.do)에 따라 각 데이터의 공공누리 유형과 출처 표시·상업 이용·변경 허용 범위를 확인해야 합니다. 제3자 권리가 포함된 데이터는 권리자의 정당한 이용허락이 별도로 필요할 수 있습니다.

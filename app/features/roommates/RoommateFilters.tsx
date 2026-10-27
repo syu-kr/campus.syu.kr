@@ -31,7 +31,7 @@ export default function RoommateFilters({ initialFilters, onApply }: { initialFi
         <label className="text-sm font-medium">{text.stayEnd}<input className={inputClass} type="date" min={draft.stayStart} value={draft.stayEnd ?? ""} onChange={(event) => setDraft({ ...draft, stayEnd: event.target.value || undefined })} /></label>
       </div>
       <details open={Object.keys(initialFilters.habits ?? {}).length > 0 || undefined} className="border-t border-neutral-100 pt-2">
-        <summary className="min-h-11 cursor-pointer py-3 text-sm font-medium text-neutral-700 focus-visible:outline-2 focus-visible:outline-primary-500">{text.habits}</summary>
+        <summary className="m3-disclosure-trigger text-sm font-medium text-neutral-700">{text.habits}</summary>
         <div className="pt-2"><HabitFields emptyLabel={text.all} value={draft.habits ?? {}} onChange={(habits) => setDraft({ ...draft, habits })} /></div>
       </details>
       <div className="flex flex-wrap items-center gap-3 border-t border-neutral-100 pt-5"><Button type="submit">{text.apply}</Button><Button variant="secondary" onClick={() => { setDraft({}); onApply({}); }}>{text.reset}</Button></div>

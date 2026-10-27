@@ -1,5 +1,5 @@
-import { readFile } from "fs/promises";
-import path from "path";
+import { readPublicDataJson } from "./public-data";
+import type { PublicDataFile } from "../public-data-snapshot";
 import type {
   AcademicSchedule,
   PhoneNumber,
@@ -25,11 +25,9 @@ export async function getHomePublicHolidays(): Promise<PublicHolidaySnapshot> {
   }
 }
 
-async function readPublicData<T>(fileName: string, fallback: T): Promise<T> {
+async function readPublicData<T>(fileName: PublicDataFile, fallback: T): Promise<T> {
   try {
-    const filePath = path.join(process.cwd(), "public", "data", fileName);
-    const content = await readFile(filePath, "utf8");
-    return JSON.parse(content) as T;
+    return await readPublicDataJson<T>(fileName);
   } catch {
     return fallback;
   }

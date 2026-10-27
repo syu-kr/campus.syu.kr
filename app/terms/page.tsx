@@ -6,7 +6,6 @@ import {
 } from "@/app/features/legal/LegalPageLayout";
 import {
   LOCALE_HEADER_NAME,
-  getDictionary,
   localizePath,
   normalizeLocale,
   type Locale,
@@ -15,6 +14,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
+import { createPageMetadata } from "@/lib/page-metadata";
 
 const REVISED_TERMS_EFFECTIVE_AT = Date.parse("2026-11-04T00:00:00+09:00");
 
@@ -30,7 +30,7 @@ async function getRequestLocale(): Promise<Locale> {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
 
-  return locale === "en"
+  const page = locale === "en"
     ? {
         title: revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use",
         description: "SYU CAMPUS Terms of Use",
@@ -39,6 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)",
         description: "SYU CAMPUS 이용약관",
       };
+  return createPageMetadata({ ...page, pathname: "/terms", locale });
 }
 
 function TermsRevisionNotice({ locale }: { locale: Locale }) {
@@ -198,15 +199,11 @@ function RoommateTerms({ english = false }: { english?: boolean }) {
 }
 
 function EnglishTermsPage() {
-  const legal = getDictionary("en").legal;
-
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title={revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use"}
         description="SYU CAMPUS Terms amendment announced October 4, 2026. Effective November 4, 2026."
-        homeHref={localizePath("/", "en")}
-        homeLabel={legal.home}
         noticeTitle="Important Notice"
         noticeTone="red"
         notice="SYU CAMPUS is not an official Sahmyook University service. This English version is provided for convenience; if it differs from the Korean version, the Korean version applies."
@@ -400,7 +397,6 @@ function EnglishTermsPage() {
 
 export default async function TermsPage() {
   const locale = await getRequestLocale();
-  const legal = getDictionary(locale).legal;
 
   if (locale === "en") {
     return <EnglishTermsPage />;
@@ -411,8 +407,6 @@ export default async function TermsPage() {
       <LegalPageHeader
         title={revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)"}
         description="SYU CAMPUS 이용약관 개정안입니다. 2026년 10월 4일 공지, 2026년 11월 4일 시행."
-        homeHref={localizePath("/", locale)}
-        homeLabel={legal.home}
         noticeTitle="중요 공지"
         noticeTone="red"
         notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 학사·캠퍼스 안내는 참고용이며 학교 공식 웹사이트에서 확인해주세요. 룸메이트 모집글은 이용자가 작성한 내용입니다."

@@ -54,6 +54,14 @@ describe("NotificationPermissionPrompt", () => {
     expect(screen.getByRole("heading")).toBeInTheDocument();
   });
 
+  it("keeps the page usable when browser storage is denied", () => {
+    const read = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new DOMException("Denied", "SecurityError"); });
+    expect(() => renderPrompt()).not.toThrow();
+    fireEvent.scroll(window);
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+    read.mockRestore();
+  });
+
   it.each(["ko", "en"] as const)("waits for the completed %s footer click before inserting an inline prompt", async (locale) => {
     vi.useRealTimers();
     const dictionary = dictionaries[locale];

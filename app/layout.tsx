@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { ManagedBanners } from "./components/ManagedBanners";
+import { getPublicBanners } from "@/lib/server/public-managed-content";
+import { getKoreaNow } from "@/lib/home";
+import { PageTranslationStatus } from "./components/ContentTranslation";
 import Script from "next/script";
+import { SEARCH_RETURN_BOOTSTRAP } from "@/lib/search-return-bootstrap";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
+import { SiteContent } from "./components/SiteContent";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 import { LocaleProvider } from "./components/LocaleProvider";
 import { StructuredDataScript } from "./components/StructuredDataScript";
@@ -17,12 +23,15 @@ import {
   type Locale,
 } from "@/lib/i18n";
 import { createSiteIdentitySchema } from "@/lib/structured-data";
+import { createPageMetadata } from "@/lib/page-metadata";
+import { areRoommatesEnabled } from "@/lib/roommates";
 import "./fonts/pretendard-v1.3.9/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 
 const GOOGLE_ANALYTICS_ID = "G-SD8QFQWFVQ";
 const GOOGLE_ANALYTICS_SCRIPT = `
 (function initializeGoogleAnalytics() {
+  if (window.location.hostname !== 'campus.syu.kr') return;
   if (/^\\/(?:en\\/)?(?:campus\\/roommates(?:\\/|$)|more\\/meet\\/[^/]+(?:\\/|$))/.test(window.location.pathname)) {
     window['ga-disable-${GOOGLE_ANALYTICS_ID}'] = true;
   }
@@ -86,6 +95,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
+    ...createPageMetadata({
+      title: dictionary.meta.title,
+      description: dictionary.meta.description,
+      pathname,
+      locale,
+    }),
     metadataBase: new URL("https://campus.syu.kr"),
     applicationName: "SYU CAMPUS",
     title: {
@@ -107,28 +122,6 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-video-preview": -1,
       },
     },
-    openGraph: {
-      type: "website",
-      locale: dictionary.meta.openGraphLocale,
-      url: "https://campus.syu.kr",
-      siteName: "SYU CAMPUS",
-      title: dictionary.meta.title,
-      description: dictionary.meta.description,
-      images: [
-        {
-          url: "/images/syu-campus-app-icon-512.png",
-          width: 512,
-          height: 512,
-          alt: "SYU CAMPUS",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary",
-      title: dictionary.meta.title,
-      description: dictionary.meta.description,
-      images: ["/images/syu-campus-app-icon-512.png"],
-    },
     verification: {
       google: "5Ow1OdBZo0zgRn7w0rscMVMBYlw71tIxaw79JoYgCfY",
     },
@@ -138,8 +131,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "SYU CAMPUS",
     },
     icons: {
-      icon: "/images/syu-campus-favicon-48.png",
-      apple: "/images/syu-campus-apple-touch-icon-180.png",
+      icon: "/images/syu-campus-favicon-48-m3-smile.png",
+      apple: "/images/syu-campus-apple-touch-icon-180-m3-smile.png",
     },
     manifest: "/manifest.json",
   };
@@ -148,7 +141,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#3182F6",
+  themeColor: "#2459d4",
   colorScheme: "light",
 };
 
@@ -162,12 +155,18 @@ export default async function RootLayout({
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const pathname = await getRequestPathname();
   const isPrivateAnalyticsPage = /^\/(?:en\/)?(?:campus\/roommates(?:\/|$)|more\/meet\/[^/]+(?:\/|$))/.test(pathname);
+  const showSiteTopBanners = !isPrivateAnalyticsPage && !/^\/(?:en\/)?admin(?:\/|$)/.test(pathname);
+  const bannerNow = getKoreaNow().getTime();
+  // Resolve the bounded public snapshot before the first shell to avoid pushing visible content down.
+  const [siteTopBanners, popupBanners] = showSiteTopBanners
+    ? await Promise.all([getPublicBanners("site-top", bannerNow), getPublicBanners("popup", bannerNow)]) : [[], []];
   const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
   return (
-    <html lang={locale} data-scroll-behavior="smooth">
+    <html lang={locale} className="m3-root" data-scroll-behavior="smooth">
       <head>
+        <script id="search-return-bootstrap" nonce={nonce} dangerouslySetInnerHTML={{ __html: SEARCH_RETURN_BOOTSTRAP }} />
         <meta
           name="google-site-verification"
           content="Gy1EGZh0gfxtv6UGI1szYk9uo1YzjaDMyoHRca7EZj4"
@@ -179,7 +178,7 @@ export default async function RootLayout({
         {bingVerification && (
           <meta name="msvalidate.01" content={bingVerification} />
         )}
-        <meta name="theme-color" content="#3182F6" />
+        <meta name="theme-color" content="#2459d4" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
@@ -187,7 +186,7 @@ export default async function RootLayout({
           content="black-translucent"
         />
 
-        {!isPrivateAnalyticsPage && <Script
+        {process.env.NODE_ENV === "production" && !isPrivateAnalyticsPage && <Script
           id="google-analytics"
           nonce={nonce}
           strategy="afterInteractive"
@@ -201,14 +200,17 @@ export default async function RootLayout({
           data={createSiteIdentitySchema(locale)}
         />
       </head>
-      <body>
+      <body className="m3-site">
         <LocaleProvider locale={locale}>
-          <Providers>
+          <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
-            <main className="min-h-screen pb-20 md:pb-0">
+            {showSiteTopBanners && <ManagedBanners placement="site-top" initialBanners={siteTopBanners} initialNow={bannerNow} />}
+            <ManagedBanners placement="popup" initialBanners={popupBanners} initialNow={bannerNow} />
+            <SiteContent initialPathname={pathname}>
+              <PageTranslationStatus />
               {children}
               <NotificationPermissionPrompt />
-            </main>
+            </SiteContent>
             <Footer locale={locale} />
             <BottomNav />
           </Providers>

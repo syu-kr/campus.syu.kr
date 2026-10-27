@@ -5,12 +5,14 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { buttonStyles } from "./Button";
 
 const ModalVisibilityContext = createContext(true);
+export function useModalVisibility() { return useContext(ModalVisibilityContext); }
 let scrollLockCount = 0;
 let originalBodyOverflow = "";
 
 interface ModalProps {
   isOpen: boolean;
   title: string;
+  titleLang?: string;
   description?: string;
   onClose: () => void;
   children: ReactNode;
@@ -21,12 +23,14 @@ interface ModalProps {
   headerClassName?: string;
   bodyClassName?: string;
   hideHeader?: boolean;
+  showCloseButton?: boolean;
   keepMounted?: boolean;
 }
 
 export function Modal({
   isOpen,
   title,
+  titleLang,
   description,
   onClose,
   children,
@@ -37,6 +41,7 @@ export function Modal({
   headerClassName = "",
   bodyClassName = "",
   hideHeader = false,
+  showCloseButton = true,
   keepMounted = false,
 }: ModalProps) {
   const parentVisible = useContext(ModalVisibilityContext);
@@ -80,6 +85,7 @@ export function Modal({
         return;
       }
       if (event.key === "Escape") {
+        if (event.defaultPrevented || dialogRef.current?.querySelector('[data-slot="select-trigger"][aria-expanded="true"]')) return;
         event.preventDefault();
         onCloseRef.current();
         return;
@@ -161,7 +167,7 @@ export function Modal({
       >
         {hideHeader ? (
           <>
-            <h2 id={titleId} className="sr-only">
+            <h2 id={titleId} lang={titleLang} className="sr-only">
               {title}
             </h2>
             {description && (
@@ -169,21 +175,21 @@ export function Modal({
                 {description}
               </p>
             )}
-            <button
+            {showCloseButton && <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
               className="sr-only"
             >
               {closeLabel}
-            </button>
+            </button>}
           </>
         ) : (
           <div
             className={`flex items-start justify-between gap-4 border-b border-neutral-200 px-5 py-4 ${headerClassName}`}
           >
             <div>
-              <h2 id={titleId} className="text-lg font-bold text-neutral-900">
+              <h2 id={titleId} lang={titleLang} className="text-lg font-bold text-neutral-900">
                 {title}
               </h2>
               {description && (
@@ -192,15 +198,15 @@ export function Modal({
                 </p>
               )}
             </div>
-            <button
+            {showCloseButton && <button
               ref={closeButtonRef}
               type="button"
               onClick={onClose}
-              className={buttonStyles("ghost", "w-11 shrink-0 px-0")}
+              className={buttonStyles("ghost", "m3-icon-button shrink-0 px-0")}
               aria-label={closeLabel}
             >
-              x
-            </button>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
+            </button>}
           </div>
         )}
 

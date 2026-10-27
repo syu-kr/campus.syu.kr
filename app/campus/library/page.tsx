@@ -4,16 +4,19 @@ import { Container } from "@/app/components/Container";
 import { buttonStyles } from "@/app/components/Button";
 
 import { Card } from "@/app/components/Card";
+import { useContentTranslation } from "@/app/components/ContentTranslation";
 import { LiveDataStatusBadge } from "@/app/components/LiveDataStatusBadge";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Modal } from "@/app/components/Modal";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { SlidingIndicator } from "@/app/components/SlidingIndicator";
 import { fetchJson } from "@/lib/fetch-json";
 import {
   getLibrarySeason,
+  getVisibleReadingRooms,
+  isLibraryRoomVisible,
   LIBRARY_OPERATING_HOURS,
-  ROOM_SEAT_MAP_URLS,
   type LibrarySeason,
   type ReadingRoom,
 } from "@/lib/library";
@@ -24,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Dictionary } from "@/lib/i18n";
 import type { LiveDataResponse } from "@/types/live-data";
 import initialShuttleSpecialPeriods from "@/public/data/shuttle-special-periods.json";
+import { getPublicContentAlias } from "@/lib/public-content-aliases";
 
 type LibraryDictionary = Dictionary["pages"]["library"];
 type ReadingRoomStatusPayload = LiveDataResponse<ReadingRoom[]>;
@@ -112,7 +116,7 @@ export default function LibraryPage() {
     gcTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
   });
-  const rooms = readingRoomStatus.data;
+  const rooms = getVisibleReadingRooms(readingRoomStatus.data);
 
   const defaultSeason = useMemo<LibrarySeason | null>(() => {
     if (!now) return null;
@@ -135,6 +139,13 @@ export default function LibraryPage() {
   }, [defaultSeason]);
 
   const currentHours = LIBRARY_OPERATING_HOURS[selectedSeason];
+  const hoursTranslation = useContentTranslation({ kind: "library", id: selectedSeason }, Object.fromEntries(currentHours.floors.flatMap((floor, floorIndex) => [
+    [`floors.${floorIndex}.name`, floor.name],
+    ...floor.rooms.flatMap((room, roomIndex) => isLibraryRoomVisible(room.name) ? [
+      [`floors.${floorIndex}.rooms.${roomIndex}.name`, room.name],
+      ...(room.note ? [[`floors.${floorIndex}.rooms.${roomIndex}.note`, room.note]] : []),
+    ] : []),
+  ])));
   const renderRefreshButton = (className = "") => (
     <button
       type="button"
@@ -190,7 +201,7 @@ export default function LibraryPage() {
           />
         ) : (
           <div className="space-y-4">
-            {rooms.map((room, idx) => {
+            {rooms.map(({ room, sourceIndex, seatMapUrl: roomSeatMapUrl }) => {
               const hasValidSeatTotal = room.strTotalSeat > 0;
               const usagePercent = hasValidSeatTotal
                 ? Math.min(
@@ -201,13 +212,12 @@ export default function LibraryPage() {
                     ),
                   )
                 : 0;
-              const roomSeatMapUrl = ROOM_SEAT_MAP_URLS[idx];
               return (
-                <div key={idx}>
+                <div key={sourceIndex}>
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <strong className="text-neutral-900">
-                        {room.strRoomNm}
+                        {getPublicContentAlias(room.strRoomNm, locale)}
                       </strong>
                       {roomSeatMapUrl && (
                         <button
@@ -257,11 +267,13 @@ export default function LibraryPage() {
           <h2 className="text-lg font-bold text-neutral-900">
             {text.operatingHours}
           </h2>
-          <div className="flex gap-2">
+          <div className="m3-selection-track flex gap-2" data-selection-tone="tonal">
+            <SlidingIndicator value={selectedSeason} />
             <button
               type="button"
               onClick={() => setSelectedSeason("semester")}
               aria-pressed={selectedSeason === "semester"}
+              data-selection-value="semester"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "semester"
                   ? "bg-primary-600 text-white"
@@ -274,6 +286,7 @@ export default function LibraryPage() {
               type="button"
               onClick={() => setSelectedSeason("vacation")}
               aria-pressed={selectedSeason === "vacation"}
+              data-selection-value="vacation"
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 selectedSeason === "vacation"
                   ? "bg-primary-600 text-white"
@@ -288,18 +301,18 @@ export default function LibraryPage() {
         <div className="space-y-6">
           {currentHours.floors.map((floor, floorIdx) => (
             <Card key={floorIdx} className="border border-neutral-300">
-              <h3 className="font-bold text-neutral-900 mb-4 text-lg">
-                {floor.name}
+              <h3 lang={hoursTranslation.lang} className="font-bold text-neutral-900 mb-4 text-lg">
+                {hoursTranslation.text(`floors.${floorIdx}.name`, floor.name)}
               </h3>
               <div className="space-y-3">
-                {floor.rooms.map((room, roomIdx) => (
+                {floor.rooms.map((room, roomIdx) => isLibraryRoomVisible(room.name) && (
                   <div
                     key={roomIdx}
                     className="border-t border-neutral-200 pt-3 first:border-t-0 first:pt-0"
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-semibold text-neutral-900">
-                        {room.name}
+                      <h4 lang={hoursTranslation.lang} className="font-semibold text-neutral-900">
+                        {hoursTranslation.text(`floors.${floorIdx}.rooms.${roomIdx}.name`, room.name)}
                       </h4>
                     </div>
                     <div className="grid grid-cols-3 gap-3 mb-2 text-sm">
@@ -332,8 +345,8 @@ export default function LibraryPage() {
                       </div>
                     </div>
                     {room.note && (
-                      <p className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
-                        {room.note}
+                      <p lang={hoursTranslation.lang} className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded">
+                        {hoursTranslation.text(`floors.${floorIdx}.rooms.${roomIdx}.note`, room.note)}
                       </p>
                     )}
                   </div>

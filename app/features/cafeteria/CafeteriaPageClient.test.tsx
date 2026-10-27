@@ -10,11 +10,22 @@ import type { CafeteriaMenu } from "@/types";
 import { CafeteriaPageClient } from "./CafeteriaPageClient";
 
 vi.mock("@/lib/api", () => ({ fetchCafeteriaSnapshot: vi.fn() }));
-vi.mock("@/app/components/CrawlDataStatus", () => ({ CrawlDataStatus: () => null }));
+vi.mock("next/navigation", async () => {
+  const { useSyncExternalStore } = await import("react");
+  return {
+    usePathname: () => "/campus/cafeteria",
+    useSearchParams: () => new URLSearchParams(useSyncExternalStore(
+      (listener) => { window.addEventListener("popstate", listener); return () => window.removeEventListener("popstate", listener); },
+      () => window.location.search,
+      () => window.location.search,
+    )),
+  };
+});
+const replaceHistory = window.history.replaceState.bind(window.history);
 
 vi.mock("@/app/features/cafeteria/StudentRestaurantMenu", () => ({
-  StudentRestaurantMenu: ({ today }: { today: string }) => (
-    <div data-testid="manna-menu">Manna menu for {today}</div>
+  StudentRestaurantMenu: ({ today, firebaseDataEnabled }: { today: string; firebaseDataEnabled?: boolean }) => (
+    <div data-testid="manna-menu" data-firebase={String(firebaseDataEnabled)}>Manna menu for {today}</div>
   ),
 }));
 
@@ -28,19 +39,23 @@ const snapshot: CafeteriaSnapshot = {
 };
 const clients: QueryClient[] = [];
 
-function page(data = snapshot, locale: Locale = "ko", now = initialNowIso) {
+function page(data = snapshot, locale: Locale = "ko", now = initialNowIso, firebaseDataEnabled = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   clients.push(client);
   return {
     client,
     tree: <QueryClientProvider client={client}><LocaleProvider locale={locale}>
-      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} />
+      <CafeteriaPageClient initialSnapshot={data} initialNowIso={now} firebaseDataEnabled={firebaseDataEnabled} />
     </LocaleProvider></QueryClientProvider>,
   };
 }
 
 beforeEach(() => {
   window.history.replaceState({}, "", "/campus/cafeteria");
+  vi.spyOn(window.history, "replaceState").mockImplementation((...args) => {
+    replaceHistory(...args);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
   vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
   vi.setSystemTime(new Date(initialNowIso));
   vi.mocked(fetchCafeteriaSnapshot).mockReset().mockResolvedValue(snapshot);
@@ -60,6 +75,7 @@ describe("cafeteria menu content and sources", () => {
     const source = view.getByRole("link", { name: dictionary.pages.cafeteria.answer.source });
     const notice = view.getByText(dictionary.pages.cafeteria.noticeTitle);
 
+    expect(view.queryByRole("button", { name: dictionary.home.overview.refresh })).toBeNull();
     expect(view.getAllByText("비빔밥")).toHaveLength(1);
     expect(view.getByRole("heading", { name: dictionary.pages.cafeteria.todayMenu })).not.toBeNull();
     expect(source).toHaveAttribute("href", "https://www.syu.ac.kr/school-life/facility-information/cafeteria/");
@@ -151,14 +167,27 @@ function renderPage(initialMenus = menus, locale: Locale = "ko") {
 }
 
 describe("cafeteria selection and weekly menu", () => {
+  it("carries the server data backend through direct Manna entry and restaurant changes", () => {
+    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna&lang=en");
+    render(page(snapshot, "ko", initialNowIso, true).tree);
+    expect(screen.getByTestId("manna-menu")).toHaveAttribute("data-firebase", "true");
+    const selector = screen.getByRole("group", { name: text.restaurantPicker });
+    fireEvent.click(within(selector).getByRole("button", { name: text.suLoungeTitle }));
+    fireEvent.click(within(selector).getByRole("button", { name: text.mannaTab }));
+    expect(screen.getByTestId("manna-menu")).toHaveAttribute("data-firebase", "true");
+    expect(window.location.search).toContain("lang=en");
+  });
+
   it("opens Manna House from a home link and allows switching back to SU-Lounge", () => {
-    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna");
+    window.history.replaceState({}, "", "/campus/cafeteria?restaurant=manna&lang=en");
     renderPage();
     const selector = screen.getByRole("group", { name: text.restaurantPicker });
     const manna = within(selector).getByRole("button", { name: text.mannaTab });
     expect(manna).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("manna-menu")).toBeInTheDocument();
     fireEvent.click(within(selector).getByRole("button", { name: text.suLoungeTitle }));
+    expect(window.location.search).toContain("restaurant=su-lounge");
+    expect(window.location.search).toContain("lang=en");
     expect(manna).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByText("오늘의 SU 메뉴")).toBeInTheDocument();
   });

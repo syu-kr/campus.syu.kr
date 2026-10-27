@@ -1,0 +1,10 @@
+.m3-locale-selector {
+  flex: 0 1 256px;
+  width: 256px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.m3-locale-selector > label {
+  padding-inline: 4px;
+}

@@ -27,7 +27,7 @@ export default function RoommateVerify() {
     } catch (err) { setError(roommateErrorMessage(err, text, locale)); }
     finally { setBusy(false); }
   }
-  return <Container size="sm" className="py-8"><Link href={localizePath("/campus", locale)} onClick={clearPendingEmail} className="text-sm text-neutral-600 hover:underline">{text.campus}</Link><h1 className="mt-4 text-2xl font-bold">{text.verifyTitle}</h1><p className="mt-2 text-neutral-600">{text.verifyHelp}</p>
+  return <Container size="sm" className="py-8"><h1 className="mt-4 text-2xl font-bold">{text.verifyTitle}</h1><p className="mt-2 text-neutral-600">{text.verifyHelp}</p>
     <form onSubmit={submit} className="mt-6 rounded-xl border border-neutral-200 bg-white p-5 sm:p-6">
       <label htmlFor="roommate-email" className="text-sm font-medium">{text.email}</label><input id="roommate-email" type="email" inputMode="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => { setEmail(event.target.value); setSent(false); }} placeholder="name@syuin.ac.kr" className={inputClass} aria-describedby="roommate-email-help" aria-invalid={!!error} />
       <p id="roommate-email-help" className="mt-2 text-sm text-neutral-500">{text.emailHint}</p>
@@ -40,6 +40,7 @@ export default function RoommateVerify() {
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         <Link href={localizePath("/terms", locale)} className="text-primary-700 underline">{footer.terms}</Link>
         <Link href={localizePath("/privacy", locale)} className="text-primary-700 underline">{footer.privacy}</Link>
+        <Link href={localizePath("/campus", locale)} onClick={clearPendingEmail} className="text-sm text-neutral-600 hover:underline">{text.cancel}</Link>
       </div>
     </div>
   </Container>;

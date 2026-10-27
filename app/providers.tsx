@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
-import { NotificationModal } from "@/components/NotificationModal";
+import { RoommatesAvailabilityProvider } from "./components/RoommatesAvailability";
+import { NotificationModal } from "./components/NotificationModal";
 import {
   FCM_TOKEN_KEY,
   enablePushNotifications,
@@ -41,9 +42,10 @@ function getQueryClient() {
 
 interface ProvidersProps {
   children: ReactNode;
+  roommatesEnabled?: boolean;
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function Providers({ children, roommatesEnabled = false }: ProvidersProps) {
   const queryClient = getQueryClient();
 
   useEffect(() => {
@@ -56,8 +58,10 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RoommatesAvailabilityProvider value={roommatesEnabled}>
       <NotificationModal />
       {children}
+      </RoommatesAvailabilityProvider>
     </QueryClientProvider>
   );
 }
@@ -86,19 +90,11 @@ async function initializePushNotifications() {
     return;
   }
 
-  const permission = Notification.permission;
-  const preference = getNotificationPreference();
-  const storedToken = localStorage.getItem(FCM_TOKEN_KEY);
-
-  if (
-    permission !== "granted" ||
-    preference === "disabled" ||
-    (!preference && !storedToken)
-  ) {
-    return;
-  }
-
   try {
+    const permission = Notification.permission;
+    const preference = getNotificationPreference();
+    const storedToken = localStorage.getItem(FCM_TOKEN_KEY);
+    if (permission !== "granted" || preference === "disabled" || (!preference && !storedToken)) return;
     await enablePushNotifications({ trigger: "automatic" });
   } catch {
     return;

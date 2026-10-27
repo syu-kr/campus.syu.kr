@@ -1,6 +1,20 @@
 import { enMeetPages } from "./meet";
 
 export const enDictionary = {
+    managedBanners: {
+      regionLabel: "Site notices", notice: "Notice", event: "Events", ad: "Advertisement",
+      close: "Dismiss banner", hideToday: "Hide for today", external: "Opens in a new tab",
+      popupClose: "Close", details: "View details",
+    },
+    contentTranslation: {
+      pageLabel: "Page translation", pageLoading: "Translating Korean content…", retry: "Retry translation",
+      error: "Translation could not be completed. The original is still available. Try again.",
+      unavailable: "Translation is currently unavailable. You can still read the original.",
+      limited: "The translation limit has been reached. Please try again later.",
+      changed: "This content has changed. Reopen the page before translating it.",
+      machineTranslated: "Automatic translation. Check the original for important details.",
+    },
+    m3: { searchReturn: "Back to search results", serviceSearch: "Go to a service" },
     publicHolidays: {
       label: "Public holiday",
       source: "Holiday source: Korea Astronomy and Space Science Institute",
@@ -13,25 +27,6 @@ export const enDictionary = {
       shuttleClosed: "Shuttle buses are not operating today according to the university's notice.",
       referenceHolidaySchedule: "The timetable below applies to operating days.",
       referenceSchedule: "The timetable and location information below are for reference. Check the university's notice for public holiday service.",
-    },
-    crawlDataStatus: {
-      staleTitle: "Some information updates are delayed",
-      staleMessage: "Sources that failed their latest collection show the last verified snapshot. Check the official notice for deadlines and application requirements.",
-      lastSuccess: "Last successful collection",
-      lastAttempt: "Latest collection attempt",
-      unknownSuccess: "The collection time of the previous verified snapshot is unknown.",
-      statusUnavailable: "Update status is unavailable. Check the official source for the latest information.",
-      fileLabels: {
-        "announcements-academic.json": "Academic notices",
-        "announcements-campus-life.json": "Campus life notices",
-        "announcements-scholarship.json": "Scholarship notices",
-        "announcements-events.json": "Event notices",
-        "announcements-departments.json": "Department notices",
-        "announcements-sw.json": "SW-centered university notices",
-        "cafeteria-menu.json": "Cafeteria",
-        "announcement-ai-metadata.json": "Notice AI summaries",
-        "public-holidays.json": "Public holidays",
-      },
     },
     meta: {
       title: "SYU CAMPUS - Student Information Hub",
@@ -94,7 +89,7 @@ export const enDictionary = {
     trust: {
       title: "Sources and Verification",
       description:
-        "SYU CAMPUS is an unofficial reference service that collects public university information, campus data, and live APIs in a student-friendly format.",
+        "SYU CAMPUS is an unofficial reference service that brings together university notices, cafeteria menus, timetables, and bus information for students.",
       unofficialBadge: "Unofficial reference service",
       sourceBasedBadge: "Source-based",
       officialFirstBadge: "Official source first",
@@ -123,7 +118,7 @@ export const enDictionary = {
       previewLabel: "shown",
       previewNotice: "This preview shows up to 100 results, including up to 60 recent notices. Open a category to see all matches.",
       partialFailure: "Some search sources could not be loaded:",
-      partialNoResults: "No matches were found in the available sources. Retry to include the missing sources.",
+      partialNoResults: "No matches were found in the information we could load. Search again or open the relevant menu to check the missing results.",
       searchSources: { schedules: "Academic schedule", announcements: "Notices", phone: "Contacts" },
       resetToHome: "Clear search / Home",
       noResultsTitle: "No results found",
@@ -166,7 +161,6 @@ export const enDictionary = {
       source: "Source",
       unavailable: "-",
       statuses: {
-        fresh: "Fresh",
         stale: "Stale",
         error: "Error",
       },
@@ -178,6 +172,52 @@ export const enDictionary = {
       },
     },
     home: {
+      overview: {
+        weather: {
+          current: "The campus weather is currently {temperature}°C and {description}.",
+          currentUnknownSky: "The campus temperature is currently {temperature}°C. The sky conditions need confirmation.",
+          loading: "Checking the campus weather.",
+          updating: "Updating the weather. Last known: {temperature}°C, {description}.",
+          unavailable: "The current campus weather could not be checked.",
+          failedWithPrevious: "Current weather is unavailable. The last reported weather was {temperature}°C, {description}.",
+          stale: "Previous weather information: {temperature}°C, {description}. Current conditions need confirmation.",
+        },
+        hint: "A quick look before your next class",
+        mealTitle: "Today’s meal",
+        busTitle: "Bus at a glance",
+        shuttleDepartures: "Next shuttle by route",
+        shuttleDepartureAt: "Scheduled departure at {time}",
+        shuttleNextNone: "No upcoming departure",
+        shuttleMinutes: "min",
+        fullMenu: "See menu",
+        busInfo: "Bus info",
+        restaurant: "Restaurant",
+        transport: "Transport type",
+        busStop: "Bus stop",
+        lunchCorner: "Lunch corner {corner}",
+        mannaLunch: "Manna House · Lunch",
+        mealLoading: "Loading menu",
+        mealError: "Could not load menu",
+        lunchClosed: "Lunch is not available",
+        shuttle: "Shuttle",
+        publicTransit: "Public transit",
+        serviceError: "Could not confirm shuttle service",
+        serviceUnconfirmed: "Service needs confirmation",
+        serviceClosed: "No service today",
+        noMoreDepartures: "No more departures",
+        specialService: "Special shuttle service",
+        specialTimetable: "Special timetable in effect",
+        minutesUntilDeparture: "min until departure",
+        departure: "departure",
+        noArrivals: "No arrivals available",
+        status: {
+          loading: "Updating",
+          error: "Could not update",
+          stale: "Needs updating",
+          unavailable: "Information unavailable",
+        },
+        refresh: "Refresh",
+      },
       frequentMenuTitle: "Frequently Used",
       festival: {
         title: "🎉 October 6: Sahmyook University Festival Make A Wish",
@@ -207,7 +247,7 @@ export const enDictionary = {
         campusTitle: "Campus Info",
         campusDescription: "Life, facilities, transit",
         moreTitle: "More",
-        moreDescription: "Scholarships, contacts, tools",
+        moreDescription: "Service notices, schedule tools and settings",
         serviceTitle: "Service Notices",
         serviceDescription: "Updates and announcements",
       },
@@ -238,11 +278,11 @@ export const enDictionary = {
           "The cafeteria is closed for a holiday or non-operating day. Check the full menu for other dates.",
         missingMenu:
           "Today's menu is unavailable. Check the full menu for other dates.",
-        staleMenuTitle: "Menu update pending",
+        staleMenuTitle: "This week's menu is unavailable",
         staleMenuMessage:
-          "This week's menu has not been updated yet, so previous-week data is hidden. Please check again shortly.",
-        pendingMenuTitle: "Menu is being prepared",
-        pendingMenuMessage: "The data is being prepared. Please check again soon.",
+          "We cannot confirm this week's menu. Please check again before visiting the cafeteria.",
+        pendingMenuTitle: "Today's menu is unavailable",
+        pendingMenuMessage: "Please check again before visiting the cafeteria.",
         fullMenu: "View full menu",
         todayMenu: "Today's Menu",
         breakfast: "Breakfast",
@@ -266,7 +306,7 @@ export const enDictionary = {
         schedule: "Schedule",
         loadFailedTitle: "Could not load this information",
         loadFailedMessage:
-          "Existing information remains visible when available. Please try again shortly.",
+          "Check your connection and try again. If any information is shown, check its date as well.",
         retry: "Try again",
       },
     },
@@ -330,7 +370,7 @@ export const enDictionary = {
       description: "Explore additional features",
       translationTitle: "Language Notice",
       translationDescription:
-        "The interface supports English in beta. School source data such as notices, cafeteria menus, course names, and department names may still appear in Korean.",
+        "Public Korean content is translated automatically on the English site. Names, reference codes and personal entries keep their original values. Select Korean to read the original content.",
       menus: {
         serviceTitle: "Service Notices",
         serviceDescription: "SYU CAMPUS service updates",
@@ -356,6 +396,7 @@ export const enDictionary = {
       event: "Event",
     },
     labels: {
+      charactersUsed: "Characters used: ",
       pinned: "Pinned",
       important: "Important",
       notice: "Notice",
@@ -366,6 +407,9 @@ export const enDictionary = {
         low: "Low",
       },
       aiSummaryDetails: {
+        previewMore: "Actions, audience and notes",
+        more: "Audience, keywords and notes",
+        caution: "Check the original notice",
         title: "AI summary details",
         open: "View details",
         empty: "Check the original notice",
@@ -393,7 +437,7 @@ export const enDictionary = {
     },
     submissionResult: {
       successBadge: "Submitted",
-      errorBadge: "Submission Failed",
+      errorBadge: "Check Submission",
       confirm: "OK",
     },
     pagination: {
@@ -431,15 +475,7 @@ export const enDictionary = {
       loading: "Loading the page.",
     },
     notFound: {
-      funMessages: [
-        "There is nothing here yet",
-        "This page seems to have moved",
-        "404... where did it go?",
-        "This path is blocked",
-        "404 Not Found in the system\n404 The new era era",
-        "This page may be on break",
-      ],
-      defaultFunMessage: "There is nothing here yet",
+      title: "Page not found",
       description: "The page you are looking for does not exist or has moved.",
       homeAction: "Go Home",
       contactAction: "Contact Us",
@@ -448,9 +484,6 @@ export const enDictionary = {
         "Check whether the URL has a typo.",
         "If the problem continues, please let us know through Contact Us.",
       ],
-    },
-    legal: {
-      home: "Home",
     },
     pages: {
       serviceNotices: {
@@ -487,7 +520,7 @@ export const enDictionary = {
         itemCountPrefix: "",
         itemCountSuffix: " items",
         answer: {
-          eyebrow: "AI answer summary",
+          eyebrow: "Key information",
           title: "Today's academic schedule",
           question: "Are there any Sahmyook University academic schedules today?",
           source: "Source: 2026 academic schedule data",
@@ -500,7 +533,7 @@ export const enDictionary = {
           noToday:
             "No major academic schedules are registered for {date}. {next}",
           nextSchedule: "The nearest upcoming schedule is {title} on {date}.",
-          noNext: "No upcoming academic schedule was found in the data.",
+          noNext: "No upcoming academic events are available to view.",
           noNextShort: "None",
           itemSeparator: ", ",
           moreSuffix: " and {count} more",
@@ -516,6 +549,12 @@ export const enDictionary = {
           "This page has many course selections and credit inputs. Desktop use is recommended, but you can continue on mobile.",
         mobileContinue: "Continue on mobile",
         mobileBack: "Go back",
+        mobileGuidanceLabel: "Using this page on mobile",
+        sourceGuidanceLabel: "Assessment basis and source guidance",
+        dismissGuidanceLabel: "Dismiss notice",
+        changeConfirmTitle: "Reset your entered progress?",
+        cancelChanges: "Cancel",
+        confirmChanges: "Reset and continue",
         selectionChangeConfirm: "Changing your selection clears entered credits, courses, checklist answers, and plans. Continue?",
         badges: {
           selfCheck: "Self-check",
@@ -529,7 +568,7 @@ export const enDictionary = {
         sourceNoticeSuffix:
           ". Update times may differ by source. Transfer, department transfer, multi-major, and teaching-track students must check the official sources and department office shown with the result.",
         answer: {
-          eyebrow: "AI answer summary",
+          eyebrow: "Key information",
           title: "How to check graduation requirements",
           question: "Where can I check Sahmyook University graduation requirements?",
           body:
@@ -648,7 +687,7 @@ export const enDictionary = {
             shareLoaded: "Shared graduation progress loaded.",
             storageUnavailable: "This browser cannot save your progress automatically. Export a file to keep it.",
             shareLoadFailed:
-              "Could not read the share link. It may be truncated or expired.",
+              "Could not read the share link. Check that the full address was copied, or ask the sender for a new link.",
           },
           principlesTitle: "Check Principles",
           principles: [
@@ -756,8 +795,6 @@ export const enDictionary = {
         swError:
           "Could not load SW-centered university notices. Please try again shortly.",
         listSearchPlaceholder: "Search by title or author...",
-        fallbackNotice: "The published data is unavailable. Showing saved notices. Latest notice dates in the saved copy:",
-        fallbackCategories: { academic: "Academic", campus: "Campus", scholarship: "Scholarships", sw: "SW-Centered University" },
         foundItems: "items found",
         searchQuery: "query",
         empty: "No results found.",
@@ -819,9 +856,31 @@ export const enDictionary = {
         },
       },
       timetable: {
-        backToAcademic: "Academic Info",
         title: "Timetable Builder",
         desktopHint: "Best on a larger screen",
+        presentation: {
+          viewLabel: "Timetable view",
+          dayList: "Day list",
+          weekGrid: "Week grid",
+          weekHelp: "Scroll across the week. Select a class to see its details.",
+          agendaLabel: "Daily timetable",
+          dayPickerLabel: "Class day",
+          fullDayLabel: "{day}",
+          dayClassCount: "{day} · {count} classes",
+          emptyDayTitle: "No selected classes on this day.",
+          emptyDayDescription: "Use Add Course to find a class.",
+          unscheduledDescription: "These courses are included without a scheduled time.",
+          details: "details",
+          detailsDescription: "Full details of the selected course",
+          courseId: "Course ID",
+          courseCode: "Course code",
+          professor: "Professor",
+          classTimes: "Class times",
+          credits: "Credits",
+          viewTimetable: "View timetable",
+          compareDescription: "Compare up to four timetables. Add courses to the selected timetable. Once a course is added, all alternatives save on this device.",
+          printTitle: "All selected classes",
+        },
         semesterBase: "timetable data",
         totalCredits: "Credits",
         selected: "Selected",
@@ -842,11 +901,11 @@ export const enDictionary = {
         shareCoursesMissing: "Shared timetable loaded without {count} courses unavailable in the current course data.",
         sourceUpdatedAt: "Course source updated",
         lastSuccessfulFetch: "Last successful fetch",
-        staleDataNotice: "Course data could not be refreshed. Showing the last successful snapshot. Check the university source for changes.",
-        shareCreateFailed: "Could not create a share link.",
+        staleDataNotice: "Showing previously available course information. Check SU-WINGs for changes before registering for courses.",
+        shareCreateFailed: "Could not create a share link. Your selected courses remain in place. Please try again shortly.",
         shareCreated: "Share link created and copied to clipboard.",
         shareCreatedCopyFailed:
-          "Share link created. Your browser blocked automatic copying.",
+          "The share link was created, but could not be copied automatically. Copy the address below.",
         shareFallbackInputLabel: "Share link to copy manually",
         deleteShare: "Delete share link",
         deletingShare: "Deleting share link",
@@ -855,7 +914,7 @@ export const enDictionary = {
         shareDeleted: "The share link was deleted.",
         shareDeleteFailed: "Could not delete the share link.",
         shareLoading: "Loading shared timetable.",
-        shareLoadFailed: "Could not load the shared timetable.",
+        shareLoadFailed: "Could not load the shared timetable. Check your connection and link address, then open it again. If the link was deleted, ask for a new one.",
         draftAutoSaveNotice:
           "Timetables you build are saved in this browser for 30 days.",
         draftStorageUnavailable:
@@ -868,6 +927,8 @@ export const enDictionary = {
         draftNoMatchingCourses:
           "None of the courses in the previous draft remain in the current data.",
         loadFailedTitle: "Could not load course information",
+        emptyCoursesTitle: "No courses to display",
+        emptyCoursesMessage: "Course information for the current semester is unavailable. Try reloading later or check SU-WINGs.",
         loadFailedMessage:
           "Please try again shortly or check your network connection.",
         retry: "Reload",
@@ -968,6 +1029,8 @@ export const enDictionary = {
         },
       },
       busInfo: {
+        updateDateLabel: "Last updated",
+        regularTimetable: "regular timetable",
         shuttleTab: "Shuttle Bus",
         publicTransitTab: "Public Transit",
         loading: "Loading...",
@@ -1094,7 +1157,7 @@ export const enDictionary = {
         transitLoadFailed: "Could not load public transit information.",
         infoUnavailableTitle: "Information unavailable",
         infoUnavailableMessage:
-          "The API key is not configured or a temporary error occurred.",
+          "Could not check arrival information. Please try again shortly.",
         transitPartialUnavailableMessage:
           "Some real-time providers are delayed, so the selected stop may be missing arrival information. Please try again shortly.",
         retry: "Retry",
@@ -1139,15 +1202,15 @@ export const enDictionary = {
         studentRestaurant: {
           title: "Manna House (dormitory cafeteria)",
           extractionNote: "AI extracts this menu from an image. Meals that cannot be read or whose availability is unclear are marked ‘Menu unavailable’.",
-          notConfigured: "Manna House menus are being prepared.",
+          notConfigured: "Manna House menus are currently unavailable. Please check with the cafeteria.",
           loading: "Loading Manna House menus.",
           errorTitle: "Could not load Manna House menus",
           errorMessage: "Please try again shortly. Check the dates of any menus still shown.",
           empty: "No Manna House menus have been published yet.",
-          staleTitle: "These Manna House menus are from previous dates",
-          staleMessage: "This week's menus are not available yet. Previous weeks are not displayed.",
-          upcomingTitle: "These Manna House menus are for upcoming dates",
-          upcomingMessage: "This week's menus are not available yet. Future weeks are not displayed.",
+          staleTitle: "This week's Manna House menu is unavailable",
+          staleMessage: "The available menu is from a previous week. Please check again before visiting the cafeteria.",
+          upcomingTitle: "Only future Manna House menus are available",
+          upcomingMessage: "We cannot confirm this week's menu. Please check again before visiting the cafeteria.",
           unknownMeal: "Menu unavailable",
           breakfastHours: "Breakfast: Unknown",
           lunchHours: "Lunch: Unknown",
@@ -1156,8 +1219,6 @@ export const enDictionary = {
           ingredientsUnavailable: "Ingredients unavailable",
           ingredientsNotListed: "Not listed",
           allergyMessage: "Separate allergen information is not provided. Printed ingredients are for reference and may not identify every allergen. Please confirm with the cafeteria directly.",
-          updatedAt: "Last successful analysis:",
-          koreaTime: "(Korea time)",
         },
         restaurantPicker: "Choose a cafeteria",
         suLoungeTitle: "SU-Lounge",
@@ -1179,7 +1240,7 @@ export const enDictionary = {
           weekend:
             "It is the weekend today. Weekend menu information may not be available.",
           pending:
-            "Today's menu data is still being prepared. Please check again shortly.",
+            "Today's menu is unavailable. Please check again before visiting the cafeteria.",
           missing:
             "Today's menu is unavailable. Check another date in the weekly menu.",
           closed:
@@ -1187,14 +1248,14 @@ export const enDictionary = {
         },
         weekendMessage:
           "It is the weekend today. Weekend menu information may not be available.",
-        pendingTitle: "Menu is being prepared",
+        pendingTitle: "Today's menu is unavailable",
         pendingMessage:
-          "Monday menu data is still being prepared. Please check again shortly.",
+          "Monday's menu is unavailable. Please check again before visiting the cafeteria.",
         missingToday:
           "Today's menu is unavailable. Check another date in the weekly menu.",
-        staleMenuTitle: "Menu update pending",
+        staleMenuTitle: "This week's menu is unavailable",
         staleMenuMessage:
-          "The latest menu could not be confirmed, so current menus are hidden. Please check again shortly.",
+          "We cannot confirm this week's menu. Please check again before visiting the cafeteria.",
         closedTodayTitle: "Closed today",
         closedTodayMessage:
           "The cafeteria is closed for a holiday or non-operating day. Check another date in the weekly menu.",
@@ -1303,7 +1364,11 @@ export const enDictionary = {
           "Please wait. If the map does not appear, you can still find building information through search.",
         unavailableTitle: "Could not load the map",
         unavailableMessage:
-          "Check the network status or Kakao Maps configuration. You can still use the search field and building list without the map.",
+          "The external map could not be connected. Building search and facility lists are still available.",
+        unavailableHelp: "If the map does not appear",
+        retry: "Reload map",
+        unavailableBrowserHelp:
+          "Check whether your browser blocks external content. If you restrict cookies or site data, review this site's settings or try another browser.",
         basementFloor: "B",
         floorSuffix: "F",
         categories: {
@@ -1315,6 +1380,7 @@ export const enDictionary = {
           convenience: "Convenience",
           office: "Office",
           study: "Study",
+          research: "Research",
         },
       },
       phone: {
@@ -1339,14 +1405,14 @@ export const enDictionary = {
         notice:
           "Notice: For more phone numbers, please refer to the university website.",
         answer: {
-          eyebrow: "AI answer summary",
+          eyebrow: "Key information",
           title: "Campus contact search",
           question:
             "Where should I call for Sahmyook University academic records, classes, or certificates?",
           body:
             "You can search {count} contacts by department, work description, or phone number. For graduation, academic records, classes, or certificates, check {department} ({description}) at {phone}.",
           emptyBody:
-            "No contact data is available here right now. Check the official university phone directory.",
+            "No contact information is currently available. Check the official university phone directory.",
           source: "Source: campus phone directory data",
           updatedPrefix: "Checked",
           totalLabel: "Registered contacts",
@@ -1359,7 +1425,7 @@ export const enDictionary = {
       },
       gym: {
         title: "Sports Facilities",
-        description: "Healthy bodies support healthy minds",
+        description: "Find sports facilities and visitor information",
         metaDescription:
           "Check Sahmyook University sports facilities and Sports Culture Center information.",
         locationContact: "Location and Contact",
@@ -1609,10 +1675,13 @@ export const enDictionary = {
           "Share useful information or links for campus life. After review, it may be added to the service.",
         metaDescription:
           "Suggest a link or note to add to the Campus Tips collection.",
-        backToTips: "Campus Tips",
         validationTitle: "Please check your input",
         validationMessage: "Fix the highlighted fields and submit again.",
         submitFailed: "Could not submit your tip",
+        submitRetry: "Your entries remain in the form. Please try submitting again shortly.",
+        submitUnconfirmedTitle: "Receipt could not be confirmed",
+        submitUnconfirmed: "Your entries remain in the form. Check your connection before retrying; submitting again may create a duplicate.",
+        rateLimited: "There are too many submissions right now. Please wait before submitting again.",
         successTitle: "Tip submitted",
         successMessage: "After review, it may be added to Campus Tips.",
         summaryTitle: "Title",
@@ -1644,7 +1713,7 @@ export const enDictionary = {
         titleRequired: "Please enter a title",
         categoryRequired: "Please choose a category",
         descriptionRequired: "Please enter the tip details",
-        invalidUrl: "The related link format is invalid",
+        invalidUrl: "Enter the full address starting with http:// or https://",
       },
       notificationPrivacy: {
         title: "Notifications and Privacy",
@@ -1652,7 +1721,6 @@ export const enDictionary = {
           "Review notification permissions, analytics, and privacy information in one place.",
         metaDescription:
           "Information about SYU CAMPUS browser notification permissions and analytics tools.",
-        backToMore: "More",
         statusTitle: "Notification settings",
         permissionLabel: "Browser notification permission",
         tokenLabel: "Notification registration in this browser",
@@ -1749,6 +1817,10 @@ export const enDictionary = {
         validationTitle: "Please check your input",
         validationMessage: "Fix the highlighted fields and submit again.",
         submitFailed: "Could not submit your inquiry",
+        submitRetry: "Your entries remain in the form. Please try submitting again shortly.",
+        submitUnconfirmedTitle: "Receipt could not be confirmed",
+        submitUnconfirmed: "Your entries remain in the form. Check your connection before retrying; submitting again may create a duplicate.",
+        rateLimited: "There are too many submissions right now. Please wait before submitting again.",
         successTitle: "Inquiry submitted",
         successMessage:
           "Individual replies may not be possible, but your submission will be used to improve the service.",
@@ -1772,7 +1844,7 @@ export const enDictionary = {
         submit: "Submit inquiry",
         titleRequired: "Please enter a title",
         messageRequired: "Please enter your inquiry message",
-        invalidPageUrl: "The related page URL format is invalid",
+        invalidPageUrl: "Enter the full address starting with http:// or https://",
       },
     },
   } as const;

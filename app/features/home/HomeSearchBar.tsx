@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Container } from "@/app/components/Container";
 import { SearchBar } from "@/app/components/SearchBar";
+import { ServiceSearchLinks } from "@/app/components/ServiceSearchLinks";
 
 export function useHomeSearch() {
   const pathname = usePathname();
@@ -28,12 +29,14 @@ export function useHomeSearch() {
 
 export function HomeSearchBar() {
   const { searchQuery, handleSearch } = useHomeSearch();
+  const [draft, setDraft] = useState("");
   if (searchQuery) return null;
 
   return (
     <Container className="pt-5 sm:pt-8">
-      <h1 className="sr-only">SYU CAMPUS</h1>
-      <SearchBar onSearch={handleSearch} className="mt-2" />
+      <p className="sr-only">SYU CAMPUS</p>
+      <SearchBar onSearch={handleSearch} onQueryChange={setDraft} className="mt-2" />
+      <ServiceSearchLinks query={draft} />
     </Container>
   );
 }

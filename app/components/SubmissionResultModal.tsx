@@ -49,7 +49,7 @@ export function SubmissionResultModal({
         </div>
         <h2
           id="submission-result-title"
-          className="text-lg font-bold text-neutral-900"
+          className="text-balance break-keep text-lg font-bold text-neutral-900"
         >
           {title}
         </h2>

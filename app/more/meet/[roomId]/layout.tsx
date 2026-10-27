@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { createPageMetadata } from "@/lib/page-metadata";
 
 import {
   LOCALE_HEADER_NAME,
@@ -18,7 +19,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.pages.meetRoom.metaTitle} | SYU CAMPUS`,
+    ...createPageMetadata({
+      title: `${dictionary.pages.meetRoom.metaTitle} | SYU CAMPUS`,
+      description: dictionary.pages.meet.metaDescription,
+      pathname: "/more/meet",
+      locale,
+    }),
     robots: {
       index: false,
       follow: false,

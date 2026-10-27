@@ -1,0 +1,60 @@
+:root {
+  --motion-short: 140ms;
+  --motion-medium: 200ms;
+  --motion-easing: cubic-bezier(.2, 0, 0, 1);
+}
+
+.m3-root .m3-site :is(button, a.ui-button, .m3-menu a, .m3-header a, .m3-bottom-nav a, .m3-select-item, summary) {
+  transition: background-color var(--motion-short) var(--motion-easing),
+    border-color var(--motion-short) var(--motion-easing),
+    color var(--motion-short) var(--motion-easing),
+    box-shadow var(--motion-short) var(--motion-easing),
+    scale var(--motion-short) var(--motion-easing);
+}
+
+/* Press feedback is limited to controls; timetable and availability grids stay still. */
+.m3-root .m3-site :is(.ui-button, .m3-icon-button, .m3-search-trigger, .m3-select-trigger, .m3-motion-control, [data-selection-value], .m3-segmented button):active:not(:disabled):not([aria-disabled="true"]) {
+  scale: .96;
+}
+
+.m3-select-icon,
+.m3-disclosure-trigger::after,
+.notice-inline-summary-more > summary svg {
+  transition: rotate var(--motion-short) var(--motion-easing), transform var(--motion-short) var(--motion-easing);
+}
+
+.m3-root .m3-site [role="dialog"]:not([hidden]) > div {
+  /* Keep the containing block stable for viewport-positioned Select popups. */
+  animation: m3-dialog-enter var(--motion-medium) var(--motion-easing);
+}
+
+.m3-menu {
+  /* Hover menus must keep touching their trigger throughout entry. */
+  animation: m3-dialog-enter var(--motion-short) var(--motion-easing);
+}
+
+.m3-select-content {
+  animation: m3-surface-enter var(--motion-short) var(--motion-easing);
+}
+
+@keyframes m3-surface-enter {
+  from { opacity: 0; transform: translateY(6px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes m3-dialog-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m3-root .m3-site *,
+  .m3-root .m3-site *::before,
+  .m3-root .m3-site *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .m3-root .m3-site :is(.ui-button, .m3-icon-button, .m3-search-trigger, .m3-select-trigger, .m3-motion-control, [data-selection-value], .m3-segmented button):active {
+    scale: none !important;
+  }
+}

@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { expect, it, vi } from "vitest";
 import { getDictionary } from "@/lib/i18n";
 import { getAnnouncementPage } from "@/lib/server/announcements";
-import AnnouncementsPage from "./page";
+import AnnouncementsPage, { generateMetadata } from "./page";
 import AcademicAnnouncementsPage from "../academic/announcements/page";
 import CampusAnnouncementsPage from "../campus/announcements/page";
 import ScholarshipPage from "../academic/scholarship/page";
@@ -23,6 +23,29 @@ it.each([
   vi.mocked(getAnnouncementPage).mockResolvedValue(initialPage);
 
   const element = await Page();
-  expect(getAnnouncementPage).toHaveBeenLastCalledWith({ category });
+  expect(getAnnouncementPage).toHaveBeenLastCalledWith({ category, page: 1, query: "" });
   expect(element.props).toMatchObject({ category, title, initialPage });
+});
+
+it.each([
+  ["all", AnnouncementsPage], ["academic", AcademicAnnouncementsPage],
+  ["campus", CampusAnnouncementsPage], ["scholarship", ScholarshipPage], ["sw", SwNoticesPage],
+] as const)("renders the requested %s search and page on the server", async (category, Page) => {
+  vi.mocked(headers).mockResolvedValue(new Headers({ "x-syu-locale": "ko" }) as Awaited<ReturnType<typeof headers>>);
+  const initialPage = { items: [], total: 80, page: 3, limit: 10, totalPages: 8, fallbackSources: [] };
+  vi.mocked(getAnnouncementPage).mockResolvedValue(initialPage);
+  const element = await Page({ searchParams: Promise.resolve({ search: " 장학 ", page: "3", lang: "ko" }) });
+  expect(getAnnouncementPage).toHaveBeenLastCalledWith({ category, query: " 장학 ", page: 3 });
+  expect(element.props).toMatchObject({ category, initialQuery: " 장학 ", initialPage });
+});
+
+it("overrides only list alternates and search indexing while inheriting the layout title", async () => {
+  vi.mocked(headers).mockResolvedValue(new Headers({ "x-syu-locale": "en" }) as Awaited<ReturnType<typeof headers>>);
+  const metadata = await generateMetadata({ searchParams: Promise.resolve({ page: "2" }) });
+  expect(metadata.alternates?.canonical).toBe("/en/announcements?page=2");
+  expect(metadata).not.toHaveProperty("title");
+  expect(metadata).not.toHaveProperty("description");
+  const searchMetadata = await generateMetadata({ searchParams: Promise.resolve({ page: "2", search: "장학" }) });
+  expect(searchMetadata.robots).toEqual({ index: false, follow: true });
+  expect(searchMetadata.alternates?.canonical).toBe("/en/announcements");
 });

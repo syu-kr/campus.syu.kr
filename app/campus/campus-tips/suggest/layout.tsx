@@ -1,10 +1,10 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
-  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
@@ -19,20 +19,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const dictionary = getDictionary(locale);
 
   return {
-    title: `${dictionary.pages.campusTipsSuggest.title} | SYU CAMPUS`,
-    description: dictionary.pages.campusTipsSuggest.metaDescription,
+    ...createPageMetadata({
+      title: `${dictionary.pages.campusTipsSuggest.title} | SYU CAMPUS`,
+      description: dictionary.pages.campusTipsSuggest.metaDescription,
+      pathname: "/campus/campus-tips/suggest",
+      locale,
+    }),
     robots: {
       index: false,
       follow: true,
-    },
-    openGraph: {
-      title: `${dictionary.pages.campusTipsSuggest.title} | SYU CAMPUS`,
-      description: dictionary.pages.campusTipsSuggest.metaDescription,
-      type: "website",
-      url: `https://campus.syu.kr${localizePath(
-        "/campus/campus-tips/suggest",
-        locale,
-      )}`,
     },
   };
 }

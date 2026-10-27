@@ -1,0 +1,126 @@
+/* Shared field presentation. Context selectors retain their original cascade weight. */
+.m3-root input:where(:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file])),
+.m3-root textarea,
+.m3-root select,
+.m3-root :where(button.m3-select-trigger),
+.m3-content:is([data-site-route="/academic/timetable"],[data-site-route="/academic/graduation"]) :is(input,select,textarea,:where(button.m3-select-trigger)):where(:not([type=checkbox]):not([type=radio]):not([type=file])),
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input:where(:not([type=checkbox]):not([type=radio]):not([type=file])),select,textarea,:where(button.m3-select-trigger)){
+  min-height:48px;
+  border-color:var(--sys-outline);
+  border-radius:var(--shape-control);
+}
+.m3-root input:where(:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file])),
+.m3-root textarea,
+.m3-root select,
+.m3-root :where(button.m3-select-trigger),
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input:where(:not([type=checkbox]):not([type=radio]):not([type=file])),select,textarea,:where(button.m3-select-trigger)){
+  background-color:var(--sys-surface-lowest);
+  color:var(--sys-on-surface);
+}
+.m3-root input:where(:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file])),.m3-root textarea,.m3-root select,.m3-root :where(button.m3-select-trigger){font-size:var(--type-label-size)}
+.m3-root :where(button.m3-select-trigger){padding:10px 14px;border-width:1px;border-style:solid;line-height:1.5}
+.m3-home-stop :is(select,:where(button.m3-select-trigger)){min-height:48px}
+.m3-root select{padding-right:28px}
+.m3-root textarea{line-height:1.7}
+.m3-root input::placeholder,.m3-root textarea::placeholder{color:var(--sys-on-surface-variant);opacity:1}
+.m3-root input[type=checkbox],.m3-root input[type=radio]{accent-color:var(--sys-primary)}
+
+/* Preserve the academic tonal surface and the room/form field spacing. */
+.m3-content:is([data-site-route="/academic/timetable"],[data-site-route="/academic/graduation"]) :is(input,select,textarea,:where(button.m3-select-trigger)):where(:not([type=checkbox]):not([type=radio]):not([type=file])){
+  min-width:0;
+  background-color:var(--academic-surface-low);
+  line-height:1.5;
+}
+.m3-content:is([data-site-route="/academic/timetable"],[data-site-route="/academic/graduation"]) :is(input,select,textarea,:where(button.m3-select-trigger)):where(:not([type=checkbox]):not([type=radio])):focus{
+  background-color:var(--academic-surface);
+}
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input:where(:not([type=checkbox]):not([type=radio]):not([type=file])),select,textarea,:where(button.m3-select-trigger)){
+  min-width:0;
+  padding:12px 14px;
+  border-width:1px;
+  border-style:solid;
+  line-height:1.5;
+  box-shadow:none;
+}
+.m3-root :is(input,textarea,select,:where(button.m3-select-trigger)):focus,
+.m3-content:is([data-site-route="/academic/timetable"],[data-site-route="/academic/graduation"]) :is(input,select,textarea,:where(button.m3-select-trigger)):where(:not([type=checkbox]):not([type=radio])):focus,
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input,select,textarea,:where(button.m3-select-trigger)):focus{
+  border-color:var(--sys-primary);
+}
+.m3-root :is(input,textarea,select,:where(button.m3-select-trigger)):focus,
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input,select,textarea,:where(button.m3-select-trigger)):focus{
+  box-shadow:0 0 0 1px var(--sys-primary);
+}
+.m3-root .m3-site :is(input,textarea,select):disabled,
+.m3-root :where(button.m3-select-trigger):is(:disabled,[data-disabled]){
+  background-color:var(--sys-disabled-container);
+  color:var(--sys-disabled-content);
+  border-color:var(--sys-outline-variant);
+  opacity:1;
+  cursor:not-allowed;
+}
+.m3-root .m3-site :is(input,textarea,select,:where(button.m3-select-trigger))[aria-invalid=true],
+.m3-site :is(.m3-content[data-site-route^="/campus/roommates"],.m3-content[data-site-route^="/more/meet"],.m3-content[data-site-route="/admin"],[role="dialog"]:has(#inquiry-type)) :is(input,select,textarea,:where(button.m3-select-trigger))[aria-invalid=true]{
+  border-color:var(--sys-error);
+  box-shadow:0 0 0 1px var(--sys-error);
+}
+.m3-root .m3-site :is(input,textarea,select,:where(button.m3-select-trigger))[aria-invalid=true]:focus{
+  border-color:var(--sys-error);
+  outline-color:var(--sys-error);
+  box-shadow:0 0 0 1px var(--sys-error);
+}
+.m3-site [id$="-error"]{color:var(--sys-error)}
+.m3-root [role=dialog] :is(input,textarea,select,:where(button.m3-select-trigger)){font-size:16px}
+@media(max-width:899px){
+  .m3-root input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),.m3-root textarea,.m3-root select,.m3-root :where(button.m3-select-trigger){font-size:16px}
+}
+
+/* Pointer activation has no UA ring; keyboard focus keeps the shared M3 ring. */
+.m3-root :is(a,button,summary,[role="button"],input,select,textarea,label){-webkit-tap-highlight-color:transparent}
+.m3-root :is(a,button,summary,[role="button"],[tabindex]):focus:not(:focus-visible){outline:none;box-shadow:none}
+.m3-root :is(input,textarea,select,:where(button.m3-select-trigger)):focus{outline:none}
+.m3-root :is(button,a,input,select,textarea,summary,[role="button"]):focus-visible{outline:3px solid var(--sys-primary);outline-offset:3px}
+.m3-root :is(.ui-button,[class*="focus:ring"],[class*="focus-visible:ring"]):focus-visible{box-shadow:none}
+.m3-root :is(input,textarea,select,:where(button.m3-select-trigger))[aria-invalid="true"]:focus-visible{outline-color:var(--sys-error)}
+.m3-root :is(h1,h2,h3)[tabindex="-1"]:focus{outline:none}
+.m3-root select:not([multiple]){appearance:none;max-width:100%;min-width:0;padding:10px 40px 10px 14px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6679' stroke-width='2'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:18px;border:1px solid var(--sys-outline);border-radius:var(--shape-control);line-height:1.5}
+.m3-root select:not(:disabled):hover{background-color:var(--sys-surface-low)}
+.m3-root select option{background:var(--sys-surface-lowest);color:var(--sys-on-surface)}
+/* Keep native values, events, labels and keyboard behavior; style supported pickers. */
+@supports (appearance:base-select){
+  .m3-root select:not([multiple]),.m3-root select:not([multiple])::picker(select){appearance:base-select}
+  .m3-root select:not([multiple]){display:inline-flex;align-items:center;justify-content:space-between;background-image:none;padding-right:14px;gap:12px;text-align:start;white-space:normal}
+  .m3-root select::picker-icon{content:"";display:block;box-sizing:border-box;flex:0 0 20px;width:20px;height:20px;align-self:center;margin-block:0;margin-inline-start:auto;margin-inline-end:0;border:0;rotate:0deg;translate:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235b6679' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/20px 20px no-repeat}
+  .m3-root select:open::picker-icon{rotate:180deg}
+  .m3-root select::picker(select){margin-block:6px;padding:6px;border:1px solid var(--sys-outline-variant);border-radius:16px;background:var(--sys-surface-lowest);box-shadow:var(--elevation-menu);font-family:var(--font-ui);font-size:var(--type-label-size);min-width:anchor-size(width);max-width:calc(100dvw - 24px);max-height:min(360px,55dvh);overflow:auto}
+  .m3-root select option{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 12px;border-radius:8px;white-space:normal;line-height:1.5}
+  .m3-root select option:checked{background:var(--sys-secondary-container);color:var(--sys-on-secondary-container);font-weight:650}
+  .m3-root select option:hover{background:var(--sys-surface-high)}
+  .m3-root select option:focus-visible{outline:2px solid var(--sys-primary);outline-offset:-2px}
+  .m3-root select option:disabled{color:var(--sys-disabled-content);background:var(--sys-disabled-container)}
+  .m3-root select option::checkmark{display:block;box-sizing:border-box;flex:0 0 20px;width:20px;height:20px;align-self:center;line-height:20px;text-align:center;color:var(--sys-primary);margin-inline-start:auto;margin-inline-end:0;order:1}
+}
+.m3-root .m3-pagination{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:680px;margin:32px auto 0}
+.m3-pagination-step{display:flex;align-items:center;justify-content:center;gap:20px}
+.m3-pagination-pages{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;max-width:100%}
+.m3-pagination-status{min-width:64px;text-align:center;font-size:13px;color:var(--sys-on-surface-variant)}
+.m3-pagination-jump{display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;color:var(--sys-on-surface-variant)}
+.m3-root .m3-pagination-jump .m3-select-trigger{min-width:144px;width:144px}
+
+/* Explicit action roles share targets; dense calendar/time cells keep their grid. */
+.m3-root .m3-site :is(.m3-content,[role=dialog]) .ui-button{min-height:var(--target-min);min-width:var(--target-min)}
+.m3-root .m3-site button.m3-icon-button{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;width:var(--target-min);height:var(--target-min);min-width:var(--target-min);min-height:var(--target-min);padding:0;border:0;border-radius:var(--shape-full);background-color:var(--sys-surface-container);color:var(--sys-primary);box-shadow:none}
+.m3-root .m3-site form[role=search] button.m3-icon-button{width:var(--target-min);height:var(--target-min);min-width:var(--target-min);min-height:var(--target-min);border-radius:var(--shape-full);right:4px;background-color:var(--sys-secondary-container);color:var(--sys-on-secondary-container)}
+.m3-root .m3-site form[role=search] button.m3-search-clear{right:56px;background-color:transparent;color:var(--sys-on-surface-variant)}
+.m3-root .m3-site form[role=search] button.m3-icon-button:disabled{background-color:var(--sys-disabled-container);color:var(--sys-disabled-content);background-image:none}
+.m3-root .m3-site :is(.m3-home-picker button,.m3-home-status button,.m3-home-message button){min-height:var(--target-min);min-width:var(--target-min)}
+.m3-root .m3-site .m3-disclosure-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:var(--target-min);list-style:none;cursor:pointer;border-radius:var(--shape-small)}
+.m3-root .m3-site .m3-disclosure-trigger.hidden{display:none}
+.m3-disclosure-trigger::marker{content:""}
+.m3-disclosure-trigger>:is(svg,span:has(>svg)){display:none}
+.m3-disclosure-trigger::-webkit-details-marker{display:none}
+.m3-disclosure-trigger::after{content:"";display:block;flex:0 0 20px;width:20px;height:20px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center/20px 20px no-repeat}
+details[open]>.m3-disclosure-trigger::after{transform:rotate(180deg)}
+@media(hover:hover){.m3-root .m3-site .m3-disclosure-trigger:hover{background-image:linear-gradient(color-mix(in srgb,currentColor 8%,transparent),color-mix(in srgb,currentColor 8%,transparent))}}
+.m3-root .m3-site .m3-disclosure-trigger:is(:focus-visible,:active){background-image:linear-gradient(color-mix(in srgb,currentColor 10%,transparent),color-mix(in srgb,currentColor 10%,transparent))}
+.m3-content[data-site-route="/admin"] .m3-admin-status-options>button{min-height:var(--target-min)}

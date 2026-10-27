@@ -1,10 +1,10 @@
+import { createPageMetadata } from "@/lib/page-metadata";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
-  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
@@ -18,16 +18,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
   const dictionary = getDictionary(locale);
 
-  return {
+  return createPageMetadata({
     title: `${dictionary.pages.phone.metaTitle} | SYU CAMPUS`,
     description: dictionary.pages.phone.metaDescription,
-    openGraph: {
-      title: `${dictionary.pages.phone.metaTitle} | SYU CAMPUS`,
-      description: dictionary.pages.phone.metaDescription,
-      type: "website",
-      url: `https://campus.syu.kr${localizePath("/campus/phone", locale)}`,
-    },
-  };
+    pathname: "/campus/phone",
+    locale,
+  });
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

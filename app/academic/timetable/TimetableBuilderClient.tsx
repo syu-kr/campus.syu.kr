@@ -1,8 +1,8 @@
 "use client";
+import { AcademicTimetablePresentation, AcademicTimetableCell, publicCourseFields } from "@/app/features/academic/AcademicTimetablePresentation";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { preload } from "react-dom";
-import Link from "next/link";
+import { flushSync, preload } from "react-dom";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
@@ -12,12 +12,14 @@ import { buttonStyles } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
 import { Icon } from "@/app/components/Icon";
 import { Modal } from "@/app/components/Modal";
+import { M3Select } from "@/app/components/M3Select";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
+import { PublicContentTranslation, useContentTranslation } from "@/app/components/ContentTranslation";
 import { fetchJson } from "@/lib/fetch-json";
 import type { Dictionary } from "@/lib/i18n";
-import { localizePath, type Locale } from "@/lib/i18n/routing";
+import type { Locale } from "@/lib/i18n/routing";
 import {
   FILTERABLE_LECTURE_DAYS,
   filterLectureTimetableCourses,
@@ -720,7 +722,7 @@ export function TimetableBuilderClient() {
       );
 
       if (!share.success || !share.shareId || !share.ownerToken) {
-        setShareMessage(share.error ?? text.shareCreateFailed);
+        setShareMessage(text.shareCreateFailed);
         setShareFallbackUrl("");
         return;
       }
@@ -807,16 +809,13 @@ export function TimetableBuilderClient() {
   async function downloadTimetableImage() {
     if (!hasShareableCourses || isDownloadingImage) return;
 
-    const exportSurface = timetableExportRef.current;
-    if (!exportSurface) {
-      setImageDownloadMessage(text.imageDownloadFailed);
-      return;
-    }
-
-    setIsDownloadingImage(true);
+    // Mount the export-only grid for this action instead of retaining a second offscreen timetable.
+    flushSync(() => setIsDownloadingImage(true));
     setImageDownloadMessage("");
 
     try {
+      const exportSurface = timetableExportRef.current;
+      if (!exportSurface) throw new Error("Timetable export surface unavailable");
       await document.fonts?.ready;
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(exportSurface, {
@@ -872,16 +871,9 @@ export function TimetableBuilderClient() {
       className="timetable-page min-w-0 max-w-[88rem] overflow-x-clip py-6 sm:py-8 2xl:max-w-[112rem]"
     >
       <div className="mb-6">
-        <Link
-          href={localizePath("/academic", locale)}
-          className={buttonStyles("ghost", "mb-4")}
-        >
-          <Icon name="chevron-right" size={16} className="rotate-180" />
-          {text.backToAcademic}
-        </Link>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <span className="mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
+            <span className="m3-timetable-desktop-hint mb-2 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">
               {text.desktopHint}
             </span>
             <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
@@ -892,7 +884,7 @@ export function TimetableBuilderClient() {
             </p>
             {response.data.updatedAt && (
               <p className="mt-1 text-xs text-neutral-500">
-                {text.sourceUpdatedAt}: {response.data.updatedAt}
+                {text.sourceUpdatedAt}: {formatSourceUpdatedAt(response.data.updatedAt, locale)}
               </p>
             )}
           </div>
@@ -900,7 +892,7 @@ export function TimetableBuilderClient() {
             type="button"
             onClick={toggleCompareMode}
             aria-pressed={timetableWorkspace.isCompareMode}
-            className={buttonStyles("secondary", "hidden shrink-0 xl:inline-flex")}
+            className={buttonStyles("secondary", "m3-timetable-compare-toggle shrink-0")}
           >
             {timetableWorkspace.isCompareMode
               ? text.leaveCompareMode
@@ -937,7 +929,7 @@ export function TimetableBuilderClient() {
         </div>
       )}
 
-      <section className="mb-5 rounded-card border border-neutral-200 bg-white p-3 shadow-card sm:p-4">
+      <section data-empty={selectedCourses.length === 0} className="m3-timetable-summary mb-5 rounded-card border border-neutral-200 bg-white p-3 shadow-card sm:p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
           <SummaryMetric
             label={text.totalCredits}
@@ -1036,7 +1028,7 @@ export function TimetableBuilderClient() {
               ? text.shareLoading
               : shareMessage ||
                 (shouldLoadShareFromUrl
-                  ? shareResponse.error || text.shareLoadFailed
+                  ? text.shareLoadFailed
                   : "")}
           </p>
         )}
@@ -1085,18 +1077,16 @@ export function TimetableBuilderClient() {
       </section>
 
       {isLoading ? (
-        <div className="space-y-6">
-          <Skeleton height="620px" />
+        <div className="m3-timetable-loading space-y-6" role="status" aria-live="polite" aria-busy="true">
+          <p>{dictionary.errorBoundary.loading}</p>
+          <Skeleton height="360px" />
           <Skeleton count={3} height="120px" />
         </div>
       ) : !hasCourses ? (
         <StateCard
           type={isError || !response.success ? "error" : "info"}
-          title={text.loadFailedTitle}
-          message={
-            response.error ??
-            text.loadFailedMessage
-          }
+          title={isError || !response.success ? text.loadFailedTitle : text.emptyCoursesTitle}
+          message={isError || !response.success ? text.loadFailedMessage : text.emptyCoursesMessage}
           action={
             <button
               type="button"
@@ -1109,18 +1099,18 @@ export function TimetableBuilderClient() {
         />
       ) : (
         <div className="space-y-6">
-          <section className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
+          <section className="m3-timetable-workspace grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_400px] 2xl:grid-cols-[minmax(0,1fr)_440px]">
             <div className="min-w-0">
               {timetableWorkspace.isCompareMode ? (
                 <>
-                  <div className="hidden xl:block">
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div className="m3-timetable-comparison">
+                    <div className="m3-timetable-comparison-header mb-4 flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <h2 className="text-lg font-bold text-neutral-900">
                           {text.compareTimetables}
                         </h2>
                         <p className="text-sm text-neutral-500">
-                          {text.compareTimetablesDescription}
+                          {text.presentation.compareDescription}
                         </p>
                       </div>
                       <button
@@ -1134,12 +1124,13 @@ export function TimetableBuilderClient() {
                         {text.addTimetable}
                       </button>
                     </div>
-                    <div className="grid min-w-0 grid-cols-2 gap-4">
+                    <div className="m3-timetable-comparison-grid">
                       {timetableWorkspace.timetables.map(
                         (timetable, timetableIndex) => (
                           <ComparisonTimetableCard
                             key={timetable.id}
                             timetableIndex={timetableIndex}
+                            referenceCourses={timetableWorkspace.timetables.flatMap((item) => getCoursesForTimetable(item, courseById))}
                             courses={getCoursesForTimetable(
                               timetable,
                               courseById,
@@ -1179,13 +1170,7 @@ export function TimetableBuilderClient() {
                       )}
                     </div>
                   </div>
-                  <div className="space-y-4 xl:hidden">
-                    <StateCard type="info" message={text.compareDesktopOnly} />
-                    <TimetableOverviewCard
-                      selectedCourses={selectedCourses}
-                      conflictCourseIds={conflictSummary.courseIds}
-                    />
-                  </div>
+
                 </>
               ) : (
                 <TimetableOverviewCard
@@ -1267,7 +1252,7 @@ export function TimetableBuilderClient() {
           </section>
 
           {pickerLayout === "desktop" && (
-            <div className="hidden lg:block xl:hidden">
+            <div className="m3-timetable-inline-picker hidden lg:block xl:hidden">
               <CoursePicker
                 completionTypeFilter={completionTypeFilter}
                 departments={departments}
@@ -1340,12 +1325,12 @@ export function TimetableBuilderClient() {
           )}
         </div>
       )}
-      <TimetableExportSurface
+      {isDownloadingImage && <TimetableExportSurface
         containerRef={timetableExportRef}
         courseById={courseById}
         semesterBaseLabel={semesterBaseLabel}
         workspace={timetableWorkspace}
-      />
+      />}
     </Container>
   );
 }
@@ -1402,11 +1387,22 @@ function TimetableOverviewCard({
           {text.weeklyTimetableDescription}
         </p>
       </div>
-      <TimetableGrid
-        ariaLabel={text.weeklyTimetable}
+      <AcademicTimetablePresentation
         selectedCourses={selectedCourses}
         conflictCourseIds={conflictCourseIds}
-        fillAvailableHeight={matchDesktopSidebar}
+        dayLabel={(day) => getDayLabel(day, text)}
+        periodLabel={(period) => formatPeriodLabel(period, text)}
+        periodTimeLabel={getPeriodTimeLabel}
+        completionLabel={(value) => formatCompletionType(value, text)}
+        renderWeek={(onOpenCourse) => (
+          <TimetableGrid
+            ariaLabel={text.weeklyTimetable}
+            selectedCourses={selectedCourses}
+            conflictCourseIds={conflictCourseIds}
+            fillAvailableHeight={matchDesktopSidebar}
+            onOpenCourse={onOpenCourse}
+          />
+        )}
       />
     </Card>
   );
@@ -1414,6 +1410,7 @@ function TimetableOverviewCard({
 
 function ComparisonTimetableCard({
   timetableIndex,
+  referenceCourses,
   courses,
   isActive,
   canDuplicate,
@@ -1425,6 +1422,7 @@ function ComparisonTimetableCard({
   onScroll,
 }: {
   timetableIndex: number;
+  referenceCourses: LectureTimetableCourse[];
   courses: LectureTimetableCourse[];
   isActive: boolean;
   canDuplicate: boolean;
@@ -1446,8 +1444,12 @@ function ComparisonTimetableCard({
   return (
     <Card
       hover={false}
+      as="section"
+      aria-label={timetableLabel}
+      data-timetable-index={timetableIndex}
+      data-timetable-active={isActive}
       className={clsx(
-        "min-w-0 overflow-hidden border",
+        "m3-timetable-comparison-card min-w-0 overflow-hidden border",
         isActive
           ? "border-primary-400 ring-2 ring-primary-100"
           : "border-neutral-200",
@@ -1498,13 +1500,27 @@ function ComparisonTimetableCard({
           )}
         </div>
       </div>
-      <TimetableGrid
-        ariaLabel={timetableLabel}
+      <AcademicTimetablePresentation
+        contextLabel={timetableLabel}
+        referenceCourses={referenceCourses}
         selectedCourses={courses}
         conflictCourseIds={conflictSummary.courseIds}
-        compact
-        scrollContainerRef={scrollContainerRef}
-        onScroll={onScroll}
+        dayLabel={(day) => getDayLabel(day, text)}
+        periodLabel={(period) => formatPeriodLabel(period, text)}
+        periodTimeLabel={getPeriodTimeLabel}
+        completionLabel={(value) => formatCompletionType(value, text)}
+        renderWeek={(onOpenCourse) => (
+          <TimetableGrid
+            ariaLabel={timetableLabel}
+            selectedCourses={courses}
+            conflictCourseIds={conflictSummary.courseIds}
+            compact
+            referenceCourses={referenceCourses}
+            onOpenCourse={onOpenCourse}
+            scrollContainerRef={scrollContainerRef}
+            onScroll={onScroll}
+          />
+        )}
       />
     </Card>
   );
@@ -1603,7 +1619,7 @@ function DesktopWorkspaceSidebar({
   return (
     <aside className="sticky top-[96px] h-[calc(100vh-7rem)] self-start overflow-y-auto pr-1">
       <div
-        className="sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm"
+        className="m3-timetable-view-switch sticky top-0 z-20 mb-3 grid grid-cols-2 rounded-lg border border-neutral-200 bg-white p-1 shadow-sm" role="group"
         aria-label={text.desktopPanelLabel}
       >
         <button
@@ -1730,6 +1746,15 @@ function CoursePicker({
           />
         </div>
 
+        <FilterSelect
+          id={`${idPrefix}-department-filter`}
+          label={text.department}
+          value={departmentFilter}
+          onChange={onDepartmentFilterChange}
+          options={departments}
+          allLabel={text.allDepartments}
+        />
+
         <details open={!collapseFilters || undefined} className="group/filters">
           <summary className={clsx(
             "flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-neutral-800 [&::-webkit-details-marker]:hidden",
@@ -1813,14 +1838,6 @@ function CoursePicker({
                 compact ? "grid-cols-1 2xl:grid-cols-3" : "sm:grid-cols-3",
               )}
             >
-              <FilterSelect
-                id={`${idPrefix}-department-filter`}
-                label={text.department}
-                value={departmentFilter}
-                onChange={onDepartmentFilterChange}
-                options={departments}
-                allLabel={text.allDepartments}
-              />
               <FilterSelect
                 id={`${idPrefix}-grade-filter`}
                 label={text.grade}
@@ -1936,9 +1953,14 @@ function MobileCoursePickerSheet({
       size="lg"
       overlayClassName="lg:hidden"
       className="rounded-t-2xl sm:rounded-xl"
-      bodyClassName="max-h-[calc(88vh-64px)] pb-2"
+      bodyClassName="m3-academic-picker-body max-h-[calc(88vh-64px)] pb-2"
     >
-      {children}
+      <div className="m3-academic-picker-contents">{children}</div>
+      <div className="m3-academic-picker-done">
+        <button type="button" onClick={onClose} className={buttonStyles("primary", "w-full")}>
+          {text.presentation.viewTimetable}
+        </button>
+      </div>
     </Modal>
   );
 }
@@ -1960,15 +1982,32 @@ function FilterSelect({
   allLabel: string;
   getOptionLabel?: (value: string) => string;
 }) {
+  const departmentOptions = id.endsWith("-department-filter") ? [...options].sort((first, second) => first.localeCompare(second, "en-US")) : [];
+  const translation = useContentTranslation({ kind: "course", id: "__departments__" }, Object.fromEntries(departmentOptions.map((option, index) => [`departments.${index}`, option])));
+  const optionLabel = (option: string) => departmentOptions.length ? translation.text(`departments.${departmentOptions.indexOf(option)}`, getOptionLabel ? getOptionLabel(option) : option) : getOptionLabel ? getOptionLabel(option) : option;
   return (
     <div>
       <label
+        id={`${id}-label`}
         htmlFor={id}
         className="mb-1 block text-sm font-semibold text-neutral-800"
       >
         {label}
       </label>
-      <select
+      {id.endsWith("-department-filter") ? (
+        <M3Select
+          id={id}
+          value={value}
+          onValueChange={onChange}
+          options={[
+            { value: "", label: allLabel },
+            ...options.map((option) => ({
+              value: option,
+              label: optionLabel(option),
+            })),
+          ]}
+        />
+      ) : <select
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -1977,10 +2016,10 @@ function FilterSelect({
         <option value="">{allLabel}</option>
         {options.map((option) => (
           <option key={option} value={option}>
-            {getOptionLabel ? getOptionLabel(option) : option}
+            {optionLabel(option)}
           </option>
         ))}
-      </select>
+      </select>}
     </div>
   );
 }
@@ -2010,6 +2049,7 @@ function CourseResultCard({
 }) {
   const text = useDictionary().pages.timetable;
   const locale = useLocale();
+  const translation = useContentTranslation({ kind: "course", id: course.id }, publicCourseFields(course));
   const visibleSearchMatches = getLectureCourseSearchMatches(
     course,
     searchQuery,
@@ -2040,17 +2080,13 @@ function CourseResultCard({
             )}
             {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
-          <h3 className="break-keep text-base font-bold text-neutral-900">
-            {course.courseName}
+          <h3 lang={translation.lang} className="break-keep text-base font-bold text-neutral-900">
+            {translation.text("courseName", course.courseName)}
           </h3>
           <p className="mt-1 text-sm text-neutral-600">
-            {joinParts([
-              course.professor || text.professorMissing,
-              course.departmentName,
-              course.grade
-                ? formatGrade(course.grade.toString(), text, locale)
-                : undefined,
-            ])}
+            <span lang={course.professor ? "ko" : locale} translate="no">{course.professor || text.professorMissing}</span>
+            {course.departmentName && <> · <span lang={translation.lang}>{translation.text("departmentName", course.departmentName)}</span></>}
+            {course.grade ? <> · {formatGrade(course.grade.toString(), text, locale)}</> : null}
           </p>
           {visibleSearchMatches.length > 0 && (
             <p className="mt-2 text-xs font-semibold text-primary-700">
@@ -2068,7 +2104,7 @@ function CourseResultCard({
             <div
               className="flex flex-wrap justify-end gap-1"
               role="group"
-              aria-label={`${course.courseName} ${text.addToTimetable}`}
+              aria-label={`${translation.text("courseName", course.courseName)} ${text.addToTimetable}`}
             >
               {timetableMemberships.map((membership) => (
                 <button
@@ -2107,22 +2143,22 @@ function CourseResultCard({
       </div>
 
       <dl className="mt-3 grid gap-2 text-sm text-neutral-700">
-        <CourseMeta label={text.time} value={course.classTime || text.timeMissing} />
-        <CourseMeta label={text.place} value={course.place || text.placeMissing} />
+        <CourseMeta label={text.time} value={course.classTime || text.timeMissing} translate="no" />
+        <CourseMeta label={text.place} value={translation.text("place", course.place || text.placeMissing)} />
         {course.areaType && (
-          <CourseMeta label={text.areaType} value={course.areaType} />
+          <CourseMeta label={text.areaType} value={translation.text("areaType", course.areaType)} />
         )}
-        {course.note && <CourseMeta label={text.note} value={course.note} />}
+        {course.note && <CourseMeta label={text.note} value={translation.text("note", course.note)} />}
       </dl>
     </article>
   );
 }
 
-function CourseMeta({ label, value }: { label: string; value: string }) {
+function CourseMeta({ label, value, translate }: { label: string; value: string; translate?: "no" }) {
   return (
     <div className="grid grid-cols-[3rem_1fr] gap-2">
       <dt className="font-semibold text-neutral-500">{label}</dt>
-      <dd className="break-keep text-neutral-800">{value}</dd>
+      <dd translate={translate} className="break-keep text-neutral-800">{value}</dd>
     </div>
   );
 }
@@ -2134,6 +2170,8 @@ function TimetableGrid({
   compact = false,
   exportMode = false,
   fillAvailableHeight = false,
+  referenceCourses,
+  onOpenCourse,
   onScroll,
   scrollContainerRef,
 }: {
@@ -2143,12 +2181,14 @@ function TimetableGrid({
   compact?: boolean;
   exportMode?: boolean;
   fillAvailableHeight?: boolean;
+  referenceCourses?: LectureTimetableCourse[];
+  onOpenCourse?: (course: LectureTimetableCourse) => void;
   onScroll?: (scrollTop: number) => void;
   scrollContainerRef?: (container: HTMLDivElement | null) => void;
 }) {
   const text = useDictionary().pages.timetable;
-  const visibleDays = getVisibleTimetableDays(selectedCourses);
-  const visiblePeriods = getVisibleTimetablePeriods(selectedCourses);
+  const visibleDays = getVisibleTimetableDays(referenceCourses ?? selectedCourses);
+  const visiblePeriods = getVisibleTimetablePeriods(referenceCourses ?? selectedCourses);
   const gridTemplateColumns = `56px repeat(${visibleDays.length}, minmax(0, 1fr))`;
   const minimumGridWidth = 56 + visibleDays.length * 68;
 
@@ -2161,6 +2201,7 @@ function TimetableGrid({
       tabIndex={exportMode ? undefined : 0}
       className={clsx(
         "w-full max-w-full rounded-lg border border-neutral-200",
+        referenceCourses && "m3-timetable-compare-week",
         exportMode
           ? "overflow-visible"
           : "overflow-x-auto overflow-y-auto",
@@ -2204,8 +2245,9 @@ function TimetableGrid({
         {visiblePeriods.map((period) => (
           <div
             key={period}
+            data-timetable-period={period}
             className={clsx(
-              "grid border-b border-neutral-200 last:border-b-0",
+              "m3-timetable-period-row grid border-b border-neutral-200 last:border-b-0",
               compact
                 ? exportMode
                   ? "min-h-[52px]"
@@ -2243,8 +2285,9 @@ function TimetableGrid({
                 >
                   <div className="space-y-1">
                     {cellCourses.map((course) => (
-                      <div
-                        key={course.id}
+                      <PublicContentTranslation key={course.id} source={{ kind: "course", id: course.id }} content={publicCourseFields(course)}>{translation => <AcademicTimetableCell
+                        course={course}
+                        onOpenCourse={onOpenCourse}
                         className={clsx(
                           "min-w-0 rounded border px-1 py-1 text-[11px] leading-4 sm:px-2 sm:py-1.5",
                           conflictCourseIds.has(course.id)
@@ -2253,15 +2296,15 @@ function TimetableGrid({
                         )}
                       >
                         <p className="line-clamp-2 break-words font-bold sm:text-xs">
-                          {course.courseName}
+                          {translation.text("courseName", course.courseName)}
                         </p>
-                        <p className="mt-0.5 break-words text-[10px] text-neutral-700 sm:text-[11px]">
+                        <p translate="no" className="mt-0.5 break-words text-[10px] text-neutral-700 sm:text-[11px]">
                           {course.classTime || text.timeMissing}
                         </p>
                         <p className="mt-0.5 hidden text-[10px] text-neutral-600 sm:line-clamp-2 sm:block">
-                          {joinParts([course.professor, course.place])}
+                          <span lang="ko" translate="no">{course.professor}</span>{course.professor && course.place ? " · " : ""}{translation.text("place", course.place ?? "")}
                         </p>
-                      </div>
+                      </AcademicTimetableCell>}</PublicContentTranslation>
                     ))}
                   </div>
                 </div>
@@ -2361,6 +2404,7 @@ function SelectedCourseRow({
   onRemove: () => void;
 }) {
   const text = useDictionary().pages.timetable;
+  const translation = useContentTranslation({ kind: "course", id: course.id }, publicCourseFields(course));
 
   return (
     <div
@@ -2380,15 +2424,11 @@ function SelectedCourseRow({
             )}
             {hasConflict && <Badge tone="red">{text.conflictBadge}</Badge>}
           </div>
-          <p className="break-keep font-bold text-neutral-900">
-            {course.courseName}
+          <p lang={translation.lang} className="break-keep font-bold text-neutral-900">
+            {translation.text("courseName", course.courseName)}
           </p>
           <p className="mt-1 text-sm text-neutral-600">
-            {joinParts([
-              course.classTime || text.timeMissing,
-              course.professor || text.professorMissing,
-              course.place || text.placeMissing,
-            ])}
+            <span translate="no">{course.classTime || text.timeMissing}</span> · <span lang={course.professor ? "ko" : undefined} translate="no">{course.professor || text.professorMissing}</span> · {translation.text("place", course.place || text.placeMissing)}
           </p>
         </div>
         <button
@@ -2475,13 +2515,26 @@ function formatSemesterBaseLabel(
       .trim();
   }
 
-  const sourceLabel = [normalizedYear, normalizedSemester]
+  const term = normalizedSemester.match(/^(\d+)\s*(?:학기)?(?:\s*(정규|계절))?$/);
+  const semesterLabel = term ? `Semester ${term[1]}${term[2] === "정규" ? " (regular)" : term[2] === "계절" ? " (seasonal)" : ""}`
+    : normalizedSemester.replace(/하계(?:계절)?학기/g, "Summer session").replace(/동계(?:계절)?학기/g, "Winter session");
+  const sourceLabel = [normalizedYear, semesterLabel]
     .filter(Boolean)
     .join(" ");
 
   return sourceLabel
     ? `Based on ${sourceLabel} ${text.semesterBase}.`
     : text.semesterBase;
+}
+
+function formatSourceUpdatedAt(value: string, locale: Locale) {
+  if (locale === "ko") return value;
+  const match = value.trim().match(/^['’]?(\d{2}|\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})(?:\.?\s*\([^)]*\))?\.?$/);
+  if (!match) return value;
+  const year = Number(match[1]) + (match[1].length === 2 ? 2000 : 0), month = Number(match[2]), day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return value;
+  return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(date);
 }
 
 function getDayLabel(day: LectureDay, text: TimetableDictionary) {
@@ -2696,8 +2749,4 @@ function getCoursesForTimetable(
 
 function formatTimetableLabel(index: number, text: TimetableDictionary): string {
   return `${text.timetable} ${index + 1}`;
-}
-
-function joinParts(parts: Array<string | undefined>) {
-  return parts.filter(Boolean).join(" · ");
 }

@@ -37,14 +37,18 @@ export class RoommateApiError extends Error {
 
 export async function roommateRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api/roommates/${path}`, { ...init, cache: "no-store", credentials: "same-origin", headers: { "Content-Type": "application/json", ...init.headers } });
-  const data = await response.json().catch(() => ({}));
+  const data = await response.json().catch((error: unknown) => {
+    if (response.ok) throw error;
+    return null;
+  });
   if (!response.ok) {
-    const error = new RoommateApiError(response.status, data.code ?? "REQUEST_FAILED", data.field, data.retryAt);
+    const error = new RoommateApiError(response.status, data?.code ?? "REQUEST_FAILED", data?.field, data?.retryAt);
     if (response.status === 401 || (response.status === 503 && error.code === "FEATURE_DISABLED")) {
       window.dispatchEvent(new CustomEvent(ROOMMATE_CLEAR_EVENT, { detail: { disabled: response.status === 503 } }));
     }
     throw error;
   }
+  if (!data || typeof data !== "object") throw new Error("Invalid roommate response");
   return data as T;
 }
 
@@ -54,7 +58,7 @@ export function roommateErrorMessage(error: unknown, text: RoommateText, locale:
   if (error.code === "EMAIL_DISABLED") return text.emailDisabled;
   if (error.code === "WRITES_DISABLED") return text.writesDisabled;
   if (error.status === 400 && error.field) return text.validation[error.field.split(".")[0] as keyof typeof text.validation] ?? text.invalid;
-  const message = error.status === 401 ? text.expired : error.status === 403 ? text.forbidden : error.status === 404 ? text.closed : error.status === 409 ? text.conflict : error.status === 429 ? text.limited : error.status === 503 ? text.unavailable : text.invalid;
+  const message = error.status === 400 ? text.invalid : error.status === 401 ? text.expired : error.status === 403 ? text.forbidden : error.status === 404 ? text.closed : error.status === 409 ? text.conflict : error.status === 429 ? text.limited : error.status === 503 ? text.unavailable : text.failed;
   if (error.retryAt && Number.isFinite(Date.parse(error.retryAt))) return `${message} ${text.nextAllowed}: ${new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", dateStyle: "short", timeStyle: "short" }).format(new Date(error.retryAt))}`;
   return message;
 }

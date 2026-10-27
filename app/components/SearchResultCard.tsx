@@ -2,7 +2,7 @@
 
 import { Fragment } from "react";
 import Link from "next/link";
-import type { Announcement, PhoneNumber } from "@/types";
+import type { AcademicSchedule, Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
 import { getSearchSnippet, highlightText } from "@/lib/search";
 import { localizePath } from "@/lib/i18n";
@@ -13,6 +13,8 @@ import { Card } from "./Card";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 import { PhoneCallButton } from "./PhoneCallButton";
 import { getPhoneDisplayText } from "@/lib/phone";
+import { useContentTranslation } from "./ContentTranslation";
+import { announcementTranslationFields, splitPublicContentText } from "@/lib/content-translation";
 
 interface SearchResultCardProps {
   item: SearchCategoryItem;
@@ -20,36 +22,39 @@ interface SearchResultCardProps {
 }
 
 export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
-  const dictionary = useDictionary();
-  const locale = useLocale();
-
   if ("phone" in item && "department" in item) {
     return <PhoneSearchResultCard phone={item} query={query} />;
   }
 
-  if ("startDate" in item) {
-    return (
+  if ("startDate" in item) return <ScheduleSearchResultCard item={item} query={query} />;
+  return <AnnouncementSearchResultCard announcement={item as Announcement} query={query} />;
+}
+
+function ScheduleSearchResultCard({ item, query }: { item: AcademicSchedule; query: string }) {
+  const dictionary = useDictionary(), locale = useLocale();
+  const translation = useContentTranslation({ kind: "schedule", id: item.id }, { title: item.title, ...(item.description ? { description: item.description } : {}) });
+  return (
       <Link
         href={{
           pathname: localizePath("/academic/schedule", locale),
           query: query ? { search: query } : undefined,
         }}
         className="block rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        aria-label={item.title}
+        aria-label={translation.text("title", item.title)}
       >
         <Card key={item.id} clickable className="border border-neutral-200">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">
-              <h3 className="font-medium text-neutral-900">
-                {highlightText(item.title, query)}
+              <h3 lang={translation.lang} className="font-medium text-neutral-900">
+                {highlightText(translation.text("title", item.title), query)}
               </h3>
               <p className="mt-1 text-xs text-neutral-600">
                 {item.startDate}
                 {item.startDate !== item.endDate ? ` ~ ${item.endDate}` : ""}
               </p>
               {item.description && (
-                <p className="mt-2 line-clamp-2 text-xs text-neutral-600">
-                  {highlightText(getSearchSnippet(item.description, query), query)}
+                <p lang={translation.lang} className="mt-2 line-clamp-2 text-xs text-neutral-600">
+                  {highlightText(getSearchSnippet(translation.text("description", item.description), query), query)}
                 </p>
               )}
             </div>
@@ -60,9 +65,14 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
         </Card>
       </Link>
     );
-  }
+}
 
-  const announcement = item as Announcement;
+function AnnouncementSearchResultCard({ announcement, query }: { announcement: Announcement; query: string }) {
+  const dictionary = useDictionary();
+  const parts = splitPublicContentText(announcement.content || "");
+  const contentFields = announcement.aiSummary?.summary ? {} : Object.fromEntries(parts.map((part, index) => [`contentParts.${index}`, part]));
+  const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, { ...announcementTranslationFields(announcement), ...contentFields });
+  const translatedContent = translation.translated ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : announcement.content;
   return (
     <Card key={announcement.id} clickable={Boolean(announcement.url)} className="relative">
       {announcement.url && (
@@ -71,9 +81,9 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           className="absolute inset-0 z-10 rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-          aria-label={announcement.title}
+          aria-label={translation.text("title", announcement.title)}
         >
-          <span className="sr-only">{announcement.title}</span>
+          <span className="sr-only">{translation.text("title", announcement.title)}</span>
         </a>
       )}
       <div
@@ -96,14 +106,14 @@ export function SearchResultCard({ item, query = "" }: SearchResultCardProps) {
               </Badge>
             )}
           </div>
-          <h3 className="font-medium text-neutral-900 line-clamp-2">
-            {highlightText(announcement.title, query)}
+          <h3 lang={translation.lang} className="font-medium text-neutral-900 line-clamp-2">
+            {highlightText(translation.text("title", announcement.title), query)}
           </h3>
           {announcement.aiSummary?.summary ? (
-            <AnnouncementAiSummary aiSummary={announcement.aiSummary} compact />
+            <AnnouncementAiSummary aiSummary={announcement.aiSummary} compact translation={translation} />
           ) : (
-            <p className="mt-2 text-xs text-neutral-600 line-clamp-2">
-              {highlightText(getSearchSnippet(announcement.content, query), query)}
+            <p lang={translation.lang} className="mt-2 text-xs text-neutral-600 line-clamp-2">
+              {highlightText(getSearchSnippet(translatedContent, query), query)}
             </p>
           )}
           <p className="mt-2 text-xs text-neutral-500">
@@ -123,13 +133,14 @@ function PhoneSearchResultCard({
   query: string;
 }) {
   const dictionary = useDictionary();
+  const translation = useContentTranslation({ kind: "phone", id: phone.department }, { department: phone.department, ...(phone.description ? { description: phone.description } : {}) });
 
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="font-medium text-neutral-900">
-            {highlightText(phone.department, query)}
+          <h3 lang={translation.lang} className="font-medium text-neutral-900">
+            {highlightText(translation.text("department", phone.department), query)}
           </h3>
           <p className="text-sm text-primary-600 font-semibold mt-1 break-words">
             {getPhoneDisplayText(phone).split(", ").map((number, index) => (
@@ -140,13 +151,13 @@ function PhoneSearchResultCard({
             ))}
           </p>
           {phone.description && (
-            <p className="mt-1 text-xs text-neutral-600 line-clamp-2">
-              {highlightText(phone.description, query)}
+            <p lang={translation.lang} className="mt-1 text-xs text-neutral-600 line-clamp-2">
+              {highlightText(translation.text("description", phone.description), query)}
             </p>
           )}
         </div>
         <PhoneCallButton
-          department={phone.department}
+          department={translation.text("department", phone.department)}
           phone={phone.phone}
           phoneNumbers={phone.phoneNumbers}
           className="shrink-0 px-3"

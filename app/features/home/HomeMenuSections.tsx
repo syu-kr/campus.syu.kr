@@ -104,7 +104,9 @@ export function PwaInstallCard() {
   useEffect(() => {
     const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone;
-    setIsVisible(!isStandalone && localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) !== "true");
+    let dismissed = false;
+    try { dismissed = localStorage.getItem(PWA_INSTALL_DISMISSED_KEY) === "true"; } catch { /* Storage is optional. */ }
+    setIsVisible(!isStandalone && !dismissed);
 
     const handleInstalled = () => {
       setShowInstallHelp(false);
@@ -137,7 +139,7 @@ export function PwaInstallCard() {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "true");
+    try { localStorage.setItem(PWA_INSTALL_DISMISSED_KEY, "true"); } catch { /* Dismiss for this view. */ }
     setIsVisible(false);
   };
 
@@ -153,7 +155,7 @@ export function PwaInstallCard() {
           color="rgb(37, 99, 235)"
           className="mt-0.5 flex-shrink-0"
         />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 [overflow-wrap:anywhere]">
           <p className="text-sm font-semibold text-neutral-900">
             {dictionary.home.pwaTitle}
           </p>
@@ -173,7 +175,7 @@ export function PwaInstallCard() {
         <button
           type="button"
           onClick={handleDismiss}
-          className="rounded-lg p-1.5 text-neutral-500 transition-colors hover:bg-white hover:text-neutral-900"
+          className="m3-icon-button rounded-full p-1.5 text-neutral-500 transition-colors hover:bg-white hover:text-neutral-900"
           aria-label={dictionary.home.dismissPwa}
         >
           <Icon name="x" size={16} color="currentColor" />
@@ -247,7 +249,7 @@ export function RelatedLinksSection() {
           <Link
             key={link.path}
             href={localizePath(link.path, locale)}
-            className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50"
+            className="rounded-lg border border-neutral-200 p-4 transition-all hover:border-primary-500 hover:bg-primary-50 [overflow-wrap:anywhere]"
           >
             <Icon
               name={link.iconName}

@@ -45,7 +45,7 @@ describe("roommate email link completion", () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({ code: "AUTH_UNAVAILABLE" }, { status: 503 })); vi.stubGlobal("fetch", fetch);
     savePendingEmail({ email: "student@syuin.ac.kr", remember: false, next: "/campus/roommates/me" });
     show();
-    fireEvent.click(await screen.findByRole("button", { name: "접속 상태 다시 만들기" }));
+    fireEvent.click(await screen.findByRole("button", { name: "로그인 다시 시도" }));
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
     expect(mocks.signIn).toHaveBeenCalledTimes(1); expect(mocks.clearAuth).not.toHaveBeenCalled();
     expect(window.location.search).toBe("");
@@ -72,7 +72,7 @@ describe("roommate email link completion", () => {
   it("clears temporary auth when leaving an idle session retry screen", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ code: "AUTH_UNAVAILABLE" }, { status: 503 })));
     savePendingEmail({ email: "student@syuin.ac.kr", remember: true, next: "/campus/roommates" });
-    const view = show(); await screen.findByRole("button", { name: "접속 상태 다시 만들기" });
+    const view = show(); await screen.findByRole("button", { name: "로그인 다시 시도" });
     expect(mocks.clearAuth).not.toHaveBeenCalled(); view.unmount();
     await waitFor(() => expect(mocks.clearAuth).toHaveBeenCalled());
     expect(localStorage.getItem("syu-roommates-pending-email")).toBeNull();
@@ -95,12 +95,12 @@ describe("roommate email link completion", () => {
       const fetch = vi.fn().mockResolvedValue(Response.json({ code: "AUTH_UNAVAILABLE" }, { status: 503 })); vi.stubGlobal("fetch", fetch);
       savePendingEmail({ email: "student@syuin.ac.kr", remember: true, next: "/campus/roommates" });
       await act(async () => { show(); });
-      expect(screen.getByRole("button", { name: "접속 상태 다시 만들기" })).toBeVisible();
+      expect(screen.getByRole("button", { name: "로그인 다시 시도" })).toBeVisible();
       await act(async () => { await vi.advanceTimersByTimeAsync(299999); });
-      expect(screen.getByRole("button", { name: "접속 상태 다시 만들기" })).toBeVisible(); expect(mocks.clearAuth).not.toHaveBeenCalled();
+      expect(screen.getByRole("button", { name: "로그인 다시 시도" })).toBeVisible(); expect(mocks.clearAuth).not.toHaveBeenCalled();
       await act(async () => { await vi.advanceTimersByTimeAsync(1); });
-      expect(screen.queryByRole("button", { name: "접속 상태 다시 만들기" })).not.toBeInTheDocument();
-      expect(screen.getByRole("alert")).toHaveTextContent("접속 상태 발급 시간이 지났습니다");
+      expect(screen.queryByRole("button", { name: "로그인 다시 시도" })).not.toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent("로그인을 마칠 수 있는 시간이 지났습니다");
       expect(screen.getByRole("link", { name: "새 인증 메일 받기" })).toBeVisible();
       expect(mocks.clearAuth).toHaveBeenCalledTimes(1); expect(localStorage.getItem("syu-roommates-pending-email")).toBeNull();
       expect(mocks.signIn).toHaveBeenCalledTimes(1); expect(fetch).toHaveBeenCalledTimes(1);

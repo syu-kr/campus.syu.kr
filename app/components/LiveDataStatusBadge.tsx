@@ -14,8 +14,7 @@ interface LiveDataStatusBadgeProps {
   className?: string;
 }
 
-const STATUS_STYLES: Record<LiveDataSourceStatus, string> = {
-  fresh: "border-emerald-200 bg-emerald-50 text-emerald-700",
+const STATUS_STYLES: Record<Exclude<LiveDataSourceStatus, "fresh">, string> = {
   stale: "border-amber-200 bg-amber-50 text-amber-800",
   error: "border-red-200 bg-red-50 text-red-700",
 };
@@ -29,7 +28,8 @@ export function LiveDataStatusBadge({
   className,
 }: LiveDataStatusBadgeProps) {
   const text = useDictionary().liveData;
-  const status = sourceStatus ?? (stale ? "stale" : "fresh");
+  const status = sourceStatus === "error" ? "error" : stale || sourceStatus === "stale" ? "stale" : "fresh";
+  if (status === "fresh") return null;
   const formattedTime = formatTimestamp(timestamp, locale, text.unavailable);
 
   return (

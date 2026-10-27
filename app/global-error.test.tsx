@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { afterEach, expect, it, vi } from "vitest";
 
 import { koDictionary } from "@/lib/i18n/ko";
+import { enDictionary } from "@/lib/i18n/en";
 import GlobalError from "./global-error";
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
@@ -10,6 +11,16 @@ vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 afterEach(() => {
   vi.mocked(Sentry.captureException).mockClear();
   vi.unstubAllGlobals();
+  window.history.replaceState(null, "", "/");
+});
+
+it("uses English recovery copy without relying on the failed root provider", () => {
+  window.history.replaceState(null, "", "/en/campus");
+  const error = new Error("Internal provider exception");
+  const view = render(<GlobalError error={error} retry={vi.fn()} />, { container: document });
+  expect(document.documentElement).toHaveAttribute("lang", "en");
+  expect(view.getByRole("heading", { name: enDictionary.errorBoundary.globalTitle })).toBeInTheDocument();
+  expect(view.queryByText(error.message)).not.toBeInTheDocument();
 });
 
 it.each(["Error", "ChunkLoadError"])("keeps global reporting and recovers %s on request", (name) => {

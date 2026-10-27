@@ -32,8 +32,38 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   delete analyticsWindow[ANALYTICS_DISABLE_KEY];
   vi.unstubAllGlobals();
+});
+
+describe.each(["ko", "en"] as const)("Meet creation failure copy (%s)", (locale) => {
+  it.each(["network", "json", "null"])("keeps entries and hides technical %s failures", async (failure) => {
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      if (failure === "network") throw new TypeError("Failed to fetch private backend");
+      return failure === "json" ? new Response("upstream failure") : Response.json(null);
+    }));
+    const text = show(locale);
+    fireEvent.click(screen.getByRole("button", { name: text.createMode }));
+    fireEvent.change(screen.getByLabelText(text.titleLabel), { target: { value: "모임" } });
+    fireEvent.click(screen.getByRole("button", { name: text.createInvite }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(text.createFailed);
+    expect(screen.getByLabelText(text.titleLabel)).toHaveValue("모임");
+    expect(screen.queryByRole("link", { name: text.goToRoom })).not.toBeInTheDocument();
+  });
+
+  it("explains missing deletion permission while keeping the usable invite", async () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new DOMException("Blocked"); });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      roomId: "test-room", inviteUrl: "https://campus.test/more/meet/test-room", ownerToken: "test-owner",
+    })));
+    const text = show(locale);
+    fireEvent.click(screen.getByRole("button", { name: text.createMode }));
+    fireEvent.change(screen.getByLabelText(text.titleLabel), { target: { value: "모임" } });
+    fireEvent.click(screen.getByRole("button", { name: text.createInvite }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(text.ownerStorageUnavailable);
+    expect(screen.getByRole("link", { name: text.goToRoom })).toBeInTheDocument();
+  });
 });
 
 function show(locale: Locale) {
@@ -73,4 +103,18 @@ describe.each(["ko", "en"] as const)("Meet invitation navigation privacy (%s)", 
     fireEvent.click(invitation);
     expect(navigation.historyChange).toHaveBeenCalledWith(destination, true);
   });
+});
+
+it.each(["ko", "en"] as const)("keeps setup failures user-facing without changing the error-code mapping in %s", async (locale) => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({
+    error: "요청 제한 설정이 완료되지 않았습니다.", code: "RATE_LIMIT_CONFIG_MISSING",
+  }, { status: 503 })));
+  const text = show(locale);
+  fireEvent.click(screen.getByRole("button", { name: text.createMode }));
+  fireEvent.change(screen.getByLabelText(text.titleLabel), { target: { value: "모임" } });
+  fireEvent.click(screen.getByRole("button", { name: text.createInvite }));
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent(text.errors.rateLimitConfig);
+  expect(alert).not.toHaveTextContent(/요청 제한 설정|not configured|Content-Type|JSON/);
+  expect(screen.getByLabelText(text.titleLabel)).toHaveValue("모임");
 });
