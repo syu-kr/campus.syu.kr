@@ -11,6 +11,8 @@ describe("public display aliases", () => {
     expect(getPublicContentAlias("화랑대역(5번 출구) → 학교", "en")).toBe("Hwarangdae Station (Exit 5) → Campus");
     expect(getPublicContentAlias("학교 ↔ 석계역(4번 출구)", "en")).toBe("Campus ↔ Seokgye Station (Exit 4)");
     expect(getPublicContentAlias("별내", "en")).toBe("Byeollae");
+    expect(getPublicContentAlias("구리", "en")).toBe("Guri");
+    expect(getPublicContentAlias("구리", "ko")).toBe("구리");
   });
   it("describes known library labels without changing source indices", () => {
     expect(getPublicContentAlias("제1자료실A", "en")).toBe("Collection Room 1A");

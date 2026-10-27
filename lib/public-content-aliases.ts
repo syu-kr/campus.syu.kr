@@ -2,7 +2,7 @@ import type { Locale } from "./i18n/routing";
 
 const names: Record<string, string> = {
   화랑대역: "Hwarangdae Station", 석계역: "Seokgye Station", 별내역: "Byeollae Station",
-  화랑대: "Hwarangdae", 석계: "Seokgye", 별내: "Byeollae",
+  화랑대: "Hwarangdae", 석계: "Seokgye", 별내: "Byeollae", 구리: "Guri",
   학교: "Campus", 캠퍼스: "Campus", 열람실: "Reading Room", 집중실: "Focus Room",
 };
 

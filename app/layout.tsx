@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Suspense } from "react";
-import { ManagedBannerPlacement } from "./components/ManagedBannerPlacement";
+import { ManagedBanners } from "./components/ManagedBanners";
+import { getPublicBanners } from "@/lib/server/public-managed-content";
+import { getKoreaNow } from "@/lib/home";
 import { PageTranslationStatus } from "./components/ContentTranslation";
 import Script from "next/script";
 import { SEARCH_RETURN_BOOTSTRAP } from "@/lib/search-return-bootstrap";
@@ -154,6 +155,10 @@ export default async function RootLayout({
   const nonce = headerStore.get(CSP_NONCE_HEADER_NAME) || undefined;
   const pathname = await getRequestPathname();
   const isPrivateAnalyticsPage = /^\/(?:en\/)?(?:campus\/roommates(?:\/|$)|more\/meet\/[^/]+(?:\/|$))/.test(pathname);
+  const showSiteTopBanners = !isPrivateAnalyticsPage && !/^\/(?:en\/)?admin(?:\/|$)/.test(pathname);
+  const bannerNow = getKoreaNow().getTime();
+  // Resolve the bounded public snapshot before the first shell to avoid pushing visible content down.
+  const siteTopBanners = showSiteTopBanners ? await getPublicBanners("site-top", bannerNow) : [];
   const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 
@@ -198,7 +203,7 @@ export default async function RootLayout({
         <LocaleProvider locale={locale}>
           <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
-            {!isPrivateAnalyticsPage && !/^\/(?:en\/)?admin(?:\/|$)/.test(pathname) && <Suspense fallback={null}><ManagedBannerPlacement placement="site-top" /></Suspense>}
+            {showSiteTopBanners && <ManagedBanners placement="site-top" initialBanners={siteTopBanners} initialNow={bannerNow} />}
             <SiteContent initialPathname={pathname}>
               <PageTranslationStatus />
               {children}
