@@ -24,7 +24,11 @@ const nextConfig = {
   poweredByHeader: false,
   // Keep verified fallback snapshots in serverless functions after switching the primary store.
   outputFileTracingIncludes: {
-    "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json"],
+    "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json", "./public/service-notices/**/*.md"],
+  },
+  // Local verification files and credentials must never enter server function packages.
+  outputFileTracingExcludes: {
+    "/*": ["./output/**/*", "./.cache/**/*", "./.playwright-mcp/**/*", "./.env*", "./.vercel/**/*"],
   },
   turbopack: {
     root: __dirname,

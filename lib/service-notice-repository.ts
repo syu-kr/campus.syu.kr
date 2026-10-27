@@ -79,7 +79,7 @@ export function getServiceNoticePath(slug: string, locale: Locale = "ko"): strin
     return null;
   }
 
-  const noticesDir = path.resolve(locale === "en" ? path.join(NOTICES_DIR, "en") : NOTICES_DIR);
+  const noticesDir = locale === "en" ? path.resolve(NOTICES_DIR, "en") : path.resolve(NOTICES_DIR);
   const filePath = path.resolve(noticesDir, `${slug}.md`);
   const noticesDirPrefix = `${noticesDir}${path.sep}`;
 
