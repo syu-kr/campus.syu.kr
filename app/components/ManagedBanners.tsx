@@ -131,7 +131,7 @@ function ManagedBannerItem({ item, onDismiss }: { item: PublicBanner; onDismiss:
   if (item.placement === "popup") return <Modal isOpen title={translation.text("title", item.title)} titleLang={translation.lang} onClose={() => onDismiss(item, false)} initialFocus="none" showCloseButton={false} size="sm" className="m3-managed-popup" overlayClassName="m3-managed-popup-overlay" headerClassName="m3-managed-popup-header" bodyClassName="m3-managed-popup-body">
     {mediaPattern.test(item.imageDesktop) && <picture className="m3-managed-popup-image">
       {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" srcSet={item.imageMobile} />}
-      <Image src={item.imageDesktop} alt={translation.text("imageAlt", item.imageAlt)} width={1600} height={1000} unoptimized />
+      <Image src={item.imageDesktop} alt={translation.text("imageAlt", item.imageAlt)} width={1600} height={1000} loading="eager" fetchPriority="high" unoptimized />
     </picture>}
     <div className="m3-managed-popup-copy">
       {item.category === "ad" && <span className="m3-managed-banner-category">{labels.ad}</span>}

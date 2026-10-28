@@ -68,6 +68,22 @@ it("uses responsive media, an accessible description, and sponsored external lin
   const link = screen.getByRole("link");expect(link).toHaveAttribute("rel", "sponsored nofollow noopener noreferrer");
   expect(link.querySelector("button")).toBeNull();expect(screen.getByText("광고")).toBeVisible();
 });
+it("prioritizes only the displayed popup image while preserving responsive media and dismissal", () => {
+  const current = render(popupView());
+  const image = screen.getByRole("img", { name: popup.imageAlt });
+  expect(image).toHaveAttribute("loading", "eager");
+  expect(image).toHaveAttribute("fetchpriority", "high");
+  expect(image.closest("picture")?.querySelector("source")).toHaveAttribute("srcset", popup.imageMobile);
+  fireEvent.click(screen.getByRole("button", { name: "닫기" }));
+  expect(screen.queryByRole("img")).toBeNull();
+  current.unmount();
+  const dismissed = render(popupView());
+  expect(screen.queryByRole("img")).toBeNull();
+  dismissed.unmount();
+  render(view());
+  expect(screen.getByRole("img", { name: banner.imageAlt })).toHaveAttribute("loading", "lazy");
+  expect(screen.getByRole("img", { name: banner.imageAlt })).not.toHaveAttribute("fetchpriority", "high");
+});
 it("hides until the next Korean midnight and a new published revision appears again", () => {
   const { unmount } = render(view());fireEvent.click(screen.getByRole("button", { name: "오늘 그만 보기" }));
   expect(screen.queryByText(banner.title)).not.toBeInTheDocument();

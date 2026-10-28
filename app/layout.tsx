@@ -209,9 +209,9 @@ export default async function RootLayout({
             <SiteContent initialPathname={pathname}>
               <PageTranslationStatus />
               {children}
-              <NotificationPermissionPrompt />
             </SiteContent>
             <Footer locale={locale} />
+            <NotificationPermissionPrompt />
             <BottomNav />
           </Providers>
         </LocaleProvider>
