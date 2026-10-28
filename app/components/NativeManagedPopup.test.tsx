@@ -134,3 +134,9 @@ it("keeps prehydration keyboard ownership and respects a previously prevented Ta
   const prevented = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });prevented.preventDefault();
   fireEvent(last, prevented);expect(last).toHaveFocus();
 });
+it("closes the native dialog before React removes it so the browser can restore its return focus", () => {
+  const connectedAtClose: boolean[] = [];
+  close.mockImplementationOnce(function (this: HTMLDialogElement) { connectedAtClose.push(this.isConnected);this.removeAttribute("open"); });
+  const view = render(<NativeManagedPopup {...defaultProps}>{children}</NativeManagedPopup>);
+  view.unmount();expect(connectedAtClose).toEqual([true]);
+});

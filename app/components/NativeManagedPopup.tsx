@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useId, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { MANAGED_POPUP_BOOTSTRAP } from "@/lib/managed-popup-bootstrap";
 import { Modal } from "./Modal";
 
@@ -26,7 +26,7 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
   const starts = startsAt ? Date.parse(startsAt) : null;
   const ends = endsAt ? Date.parse(endsAt) : null;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const dialog = dialogRef.current;
     return () => {
       dialog?.__campusPopupCleanup?.();
