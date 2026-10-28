@@ -99,7 +99,3 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
     <script nonce={nonce} dangerouslySetInnerHTML={{ __html: MANAGED_POPUP_BOOTSTRAP }} />
   </>;
 }
-
-
-
-
