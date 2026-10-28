@@ -1127,6 +1127,7 @@ export const enDictionary = {
         vacationMonThu: "Vacation Mon-Thu",
         vacationFri: "Vacation Fri",
         specialSchedule: "Special Schedule",
+        onlineClassWeek: "Online class week",
         selectedSchedule: "Selected timetable",
         scheduleBase: "Current timetable",
         scheduleNotice:
