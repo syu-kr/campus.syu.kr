@@ -40,3 +40,12 @@
 .m3-managed-popup-actions button:hover{background:var(--sys-surface-high)}
 .m3-managed-popup-actions button:focus-visible,.m3-managed-popup-copy a:focus-visible{outline:3px solid var(--sys-primary);outline-offset:-4px}
 @media(max-width:359px){.m3-root .m3-managed-popup-header{padding:16px}.m3-managed-popup-copy{padding:16px}.m3-managed-popup .m3-page-translation{padding-inline:16px}}
+/* A closed native dialog stays hidden until its storage guard permits opening. */
+.m3-root dialog.m3-managed-popup-overlay{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;overflow:hidden;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;color:var(--sys-on-surface)}
+.m3-root dialog.m3-managed-popup-overlay:not([open]){display:none}
+.m3-root dialog.m3-managed-popup-overlay[open]{display:flex;align-items:center;justify-content:center}
+.m3-root dialog.m3-managed-popup-overlay::backdrop{background:#16233f66;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.m3-root dialog.m3-managed-popup-overlay>.m3-managed-popup{display:flex;flex-direction:column;width:100%;overflow:hidden}
+.m3-root dialog.m3-managed-popup-overlay .m3-managed-popup-body{min-height:0;overflow-y:auto}
+.m3-root dialog.m3-managed-popup-overlay .m3-managed-popup-header h2{margin:0;font-weight:700}
+body:has(dialog.m3-managed-popup-overlay[open]){overflow:hidden}

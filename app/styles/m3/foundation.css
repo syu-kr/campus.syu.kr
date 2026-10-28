@@ -26,7 +26,7 @@ body{margin:0;min-width:280px}button,input,textarea,select{font-family:inherit}b
 .m3-nav-group{position:relative}.m3-menu{position:absolute;top:100%;left:0;min-width:280px;max-height:calc(100dvh - 110px);overflow:auto;padding:12px;border:1px solid var(--site-outline);border-radius:var(--shape-card);background:var(--sys-surface-lowest);box-shadow:0 12px 24px #182e5614}.m3-menu a{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:48px;padding:10px 14px;border-radius:var(--shape-control);color:var(--sys-on-surface);font-size:14px}.m3-menu a:hover{background:#edf2fb}
 .m3-header-tools{display:flex;gap:4px;margin-left:auto}.m3-header-tools>button{color:var(--site-primary)}
 @media(max-width:480px){.m3-header .m3-brand{font-size:14px;gap:6px}.m3-header{gap:6px!important}.m3-header-tools{gap:0}.m3-header-tools>button{padding-inline:7px!important}.m3-header-tools .ui-button{font-size:12px;gap:4px}}
-.m3-content{min-width:0;padding:32px 16px 48px}.m3-content>[class*=max-w-6xl]{max-width:1440px}.m3-content :is(h1,h2,h3){letter-spacing:-.025em}.m3-content h1{font-size:var(--type-headline-size);font-weight:700;line-height:1.3}.m3-content .rounded-card{border:1px solid var(--site-outline);border-radius:var(--shape-card);box-shadow:none}.m3-content .shadow-card{box-shadow:none}
+.m3-content{min-width:0;padding:32px 16px 48px}.m3-content>[class*=max-w-6xl]{max-width:1440px}.m3-content :is(h1,h2,h3){letter-spacing:-.025em}.m3-content h1{font-size:var(--type-headline-size);font-weight:700;line-height:1.3}:is(.m3-content,.m3-notification-prompt) .rounded-card{border:1px solid var(--site-outline);border-radius:var(--shape-card);box-shadow:none}.m3-content .shadow-card{box-shadow:none}
 .m3-root .ui-button{min-height:var(--target-min);min-width:var(--target-min);border-radius:var(--shape-full);font-size:var(--type-label-size);line-height:1.5;font-weight:600;transition:background-color .15s,border-color .15s,color .15s,box-shadow .15s}
 .m3-root .ui-button-primary{background:var(--sys-primary);border-color:var(--sys-primary);color:var(--sys-on-primary)}
 .m3-root .ui-button-secondary{border-color:var(--sys-outline);color:var(--sys-primary);background:var(--sys-surface-lowest)}
@@ -34,10 +34,10 @@ body{margin:0;min-width:280px}button,input,textarea,select{font-family:inherit}b
 .m3-root .ui-button-danger{background:var(--sys-error);border-color:var(--sys-error);color:var(--sys-on-error)}
 /* Content colors define state layers; roles keep their container and shape. */
 @media(hover:hover){
-  .m3-root .m3-site :is(.m3-content,[role=dialog]) :is(.ui-button,button:not([data-slot])):hover:not(:disabled):not([aria-disabled=true]){background-image:linear-gradient(color-mix(in srgb,currentColor 8%,transparent),color-mix(in srgb,currentColor 8%,transparent))}
+  .m3-root .m3-site :is(.m3-content,.m3-notification-prompt,[role=dialog]) :is(.ui-button,button:not([data-slot])):hover:not(:disabled):not([aria-disabled=true]){background-image:linear-gradient(color-mix(in srgb,currentColor 8%,transparent),color-mix(in srgb,currentColor 8%,transparent))}
 }
-.m3-root .m3-site :is(.m3-content,[role=dialog]) :is(.ui-button,button:not([data-slot])):focus-visible:not(:disabled):not([aria-disabled=true]),
-.m3-root .m3-site :is(.m3-content,[role=dialog]) :is(.ui-button,button:not([data-slot])):active:not(:disabled):not([aria-disabled=true]){background-image:linear-gradient(color-mix(in srgb,currentColor 10%,transparent),color-mix(in srgb,currentColor 10%,transparent))}
+.m3-root .m3-site :is(.m3-content,.m3-notification-prompt,[role=dialog]) :is(.ui-button,button:not([data-slot])):focus-visible:not(:disabled):not([aria-disabled=true]),
+.m3-root .m3-site :is(.m3-content,.m3-notification-prompt,[role=dialog]) :is(.ui-button,button:not([data-slot])):active:not(:disabled):not([aria-disabled=true]){background-image:linear-gradient(color-mix(in srgb,currentColor 10%,transparent),color-mix(in srgb,currentColor 10%,transparent))}
 .m3-root .m3-site .ui-button:is(:disabled,[aria-disabled=true]){color:var(--sys-disabled-content);background-image:none;opacity:1;box-shadow:none;transform:none;cursor:not-allowed}
 .m3-root .m3-site :is(.ui-button-primary,.ui-button-danger):is(:disabled,[aria-disabled=true]){background-color:var(--sys-disabled-container);border-color:transparent}
 .m3-root .m3-site .ui-button-secondary:is(:disabled,[aria-disabled=true]){background-color:transparent;border-color:var(--sys-outline-variant)}

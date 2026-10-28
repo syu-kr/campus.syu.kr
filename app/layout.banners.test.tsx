@@ -8,9 +8,9 @@ vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-syu-pathn
 vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: request.read }));
 vi.mock("./components/ManagedBanners", () => ({ ManagedBanners: ({ initialBanners }: { initialBanners: PublicBanner[] }) => initialBanners.map(item => <aside key={item.id}>{item.title}</aside>) }));
 vi.mock("./components/Header", () => ({ Header: () => <header /> }));
-vi.mock("./components/Footer", () => ({ Footer: () => null }));
+vi.mock("./components/Footer", () => ({ Footer: () => <footer><button>Locale</button></footer> }));
 vi.mock("./components/BottomNav", () => ({ BottomNav: () => null }));
-vi.mock("./components/NotificationPermissionPrompt", () => ({ NotificationPermissionPrompt: () => null }));
+vi.mock("./components/NotificationPermissionPrompt", () => ({ NotificationPermissionPrompt: () => <section className="m3-notification-prompt">Notification setup</section> }));
 vi.mock("./components/ContentTranslation", () => ({ PageTranslationStatus: () => null }));
 vi.mock("./components/LocaleProvider", () => ({ LocaleProvider: ({ children }: { children: ReactNode }) => children }));
 vi.mock("./components/SiteContent", () => ({ SiteContent: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
@@ -32,6 +32,15 @@ it("includes a resolved site banner before content in the initial document", asy
   const html = renderToStaticMarkup(await layout);
   expect(html).toContain("Maintenance notice");
   expect(html.indexOf("Maintenance notice")).toBeLessThan(html.indexOf("<main>"));
+});
+
+it("keeps the delayed notification prompt after the footer so its controls do not move on first interaction", async () => {
+  request.pathname = "/more";
+  const document = new DOMParser().parseFromString(renderToStaticMarkup(await RootLayout({ children: <p>Campus content</p> })), "text/html");
+  const prompt = document.querySelector(".m3-notification-prompt");
+  expect(prompt).not.toBeNull();
+  expect(document.querySelector("main")?.contains(prompt)).toBe(false);
+  expect(document.querySelector("footer")?.nextElementSibling).toBe(prompt);
 });
 
 it.each(["/admin", "/en/admin", "/campus/roommates", "/en/campus/roommates/new", "/more/meet/private-room", "/en/more/meet/private-room"])("keeps banners and their reads out of excluded route %s", async pathname => {

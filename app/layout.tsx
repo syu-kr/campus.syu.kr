@@ -205,13 +205,13 @@ export default async function RootLayout({
           <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
             {showSiteTopBanners && <ManagedBanners placement="site-top" initialBanners={siteTopBanners} initialNow={bannerNow} />}
-            <ManagedBanners placement="popup" initialBanners={popupBanners} initialNow={bannerNow} />
+            <ManagedBanners placement="popup" initialBanners={popupBanners} initialNow={bannerNow} nonce={nonce} />
             <SiteContent initialPathname={pathname}>
               <PageTranslationStatus />
               {children}
-              <NotificationPermissionPrompt />
             </SiteContent>
             <Footer locale={locale} />
+            <NotificationPermissionPrompt />
             <BottomNav />
           </Providers>
         </LocaleProvider>
