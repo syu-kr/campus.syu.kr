@@ -156,6 +156,69 @@ describe("fall midterm shuttle extensions", () => {
   );
 });
 
+describe("fall online-class week shuttle", () => {
+  it.each(["2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02"])(
+    "uses the reduced Hwarangdae and Seokgye departures while preserving Byeollae on %s",
+    (date) => {
+      const morning = summarize(`${date}T08:11:00+09:00`);
+      expect(morning.isSpecialSchedule).toBe(true);
+      expect(morning.departures).toContainEqual({
+        routeName: buses[0].routeName, time: "08:20", minutesUntil: 9,
+      });
+      expect(morning.departures).toContainEqual({
+        routeName: buses[2].routeName,
+        time: date === "2026-10-30" ? "08:55" : "08:30",
+        minutesUntil: date === "2026-10-30" ? 44 : 19,
+      });
+      expect(summarize(`${date}T10:01:00+09:00`).departures).toContainEqual({
+        routeName: buses[0].routeName, time: "10:30", minutesUntil: 29,
+      });
+      expect(summarize(`${date}T12:01:00+09:00`).departures).toContainEqual({
+        routeName: buses[1].routeName, time: "12:30", minutesUntil: 29,
+      });
+    },
+  );
+
+  it.each([
+    ["2026-10-28", "17:30"],
+    ["2026-10-30", "15:30"],
+    ["2026-11-02", "17:30"],
+  ])("ends Seokgye service at the announced last departure on %s", (date, lastTime) => {
+    const lastDeparture = new Date(`${date}T${lastTime}:00+09:00`).getTime();
+    expect(summarize(new Date(lastDeparture - 60_000).toISOString()).departures).toContainEqual({
+      routeName: buses[1].routeName, time: lastTime, minutesUntil: 1,
+    });
+    const ended = summarize(new Date(lastDeparture + 60_000).toISOString());
+    expect(ended.departures).toEqual([]);
+    expect(ended.hasMoreToday).toBe(false);
+  });
+
+  it.each(["2026-10-27", "2026-11-03"])("keeps the ordinary timetable outside the announced dates: %s", (date) => {
+    const summary = summarize(`${date}T08:11:00+09:00`);
+    expect(summary.isSpecialSchedule).toBe(false);
+    expect(summary.departures).toContainEqual({
+      routeName: buses[0].routeName, time: "08:15", minutesUntil: 4,
+    });
+    expect(summarize(`${date}T12:01:00+09:00`).departures).toContainEqual({
+      routeName: buses[1].routeName, time: "12:25", minutesUntil: 24,
+    });
+  });
+
+  it.each(["2026-10-31", "2026-11-01"])("keeps the weekend closed during online-class week: %s", (date) => {
+    const summary = summarize(`${date}T08:11:00+09:00`);
+    expect(summary.operationStatus).toBe("closed");
+    expect(summary.isSpecialSchedule).toBe(false);
+    expect(summary.departures).toEqual([]);
+  });
+
+  it("changes the online-class schedule at Korean date boundaries", () => {
+    expect(summarize("2026-10-27T14:59:00Z").isSpecialSchedule).toBe(false);
+    expect(summarize("2026-10-27T15:00:00Z").isSpecialSchedule).toBe(true);
+    expect(summarize("2026-11-02T14:59:00Z").isSpecialSchedule).toBe(true);
+    expect(summarize("2026-11-02T15:00:00Z").isSpecialSchedule).toBe(false);
+  });
+});
+
 describe("festival night shuttle", () => {
   it.each(["18:16", "21:59", "22:00", "22:29", "22:30"])(
     "keeps both announced services available at %s after regular departures end",
