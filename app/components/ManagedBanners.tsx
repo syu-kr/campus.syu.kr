@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,7 +9,7 @@ import { useDictionary, useLocale } from "./LocaleContext";
 import { localizePath } from "@/lib/i18n/routing";
 import { getKoreaDateTimeParts } from "@/lib/korea-time";
 import { PageTranslationStatus, useContentTranslation } from "./ContentTranslation";
-import { Modal } from "./Modal";
+import { NativeManagedPopup } from "./NativeManagedPopup";
 import "@/app/styles/m3/managed-banners.css";
 
 function safeLink(value: string) {
@@ -30,7 +30,7 @@ function validBanner(value: unknown): value is PublicBanner {
 const storageKey = (item: PublicBanner) => `campus-banner:${item.id}:${item.revision}`;
 const visibleAt = (item: PublicBanner, now: number) => (!item.startsAt || Date.parse(item.startsAt) <= now) && (!item.endsAt || now < Date.parse(item.endsAt));
 
-export function ManagedBanners({ initialBanners, placement, initialNow }: { initialBanners: PublicBanner[]; placement: PublicBanner["placement"]; initialNow: number }) {
+export function ManagedBanners({ initialBanners, placement, initialNow, nonce }: { initialBanners: PublicBanner[]; placement: PublicBanner["placement"]; initialNow: number; nonce?: string }) {
   const labels = useDictionary().managedBanners;
   const pathname = usePathname() ?? "/";
   const excluded = /^\/(?:en\/)?(?:admin(?:\/|$)|campus\/roommates(?:\/|$)|more\/meet\/[^/]+(?:\/|$))/.test(pathname);
@@ -43,19 +43,24 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
   useEffect(() => {
     if (placement !== "popup" || excluded) return;
     const refresh = () => {
-      if (document.querySelector(".m3-managed-popup-overlay")) return;
-      setOtherDialogOpen(Boolean(document.querySelector('[role="dialog"][aria-modal="true"]')));
+      setOtherDialogOpen(Boolean(document.querySelector('[role="dialog"][aria-modal="true"]:not(.m3-managed-popup-overlay), dialog[open]:not(.m3-managed-popup-overlay)')));
     };
     refresh();
     const observer = new MutationObserver(refresh);
-    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["role", "aria-modal"] });
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["role", "aria-modal", "open", "hidden"] });
     return () => observer.disconnect();
   }, [placement, excluded]);
   useEffect(() => {
     const stored: Record<string, number> = {};
     for (const item of items) {
       try { const until = Number(localStorage.getItem(storageKey(item)));if (until > Date.now()) stored[storageKey(item)] = until; } catch { /* Reading remains available without browser storage. */ }
-      if (placement === "popup") try { if (sessionStorage.getItem(storageKey(item)) === "closed") stored[storageKey(item)] = Infinity; } catch { /* Dismissal remains available in memory. */ }
+      if (placement === "popup") {
+        try { if (sessionStorage.getItem(storageKey(item)) === "closed") stored[storageKey(item)] = Infinity; } catch { /* Dismissal remains available in memory. */ }
+        // The server-rendered dialog can be dismissed before React or browser storage is ready.
+        const early = Array.from(document.querySelectorAll<HTMLElement>("[data-managed-popup]")).find(dialog => dialog.dataset.managedPopup === storageKey(item))?.dataset.dismissedUntil;
+        if (early === "closed") stored[storageKey(item)] = Infinity;
+        else if (Number(early) > Date.now()) stored[storageKey(item)] = Number(early);
+      }
     }
     setDismissed(current => ({ ...stored, ...current }));
     setCheckedStorage(storageSnapshot);
@@ -116,34 +121,32 @@ export function ManagedBanners({ initialBanners, placement, initialNow }: { init
   if (excluded) return null;
   const shown = items.filter(item => item.placement === placement && visibleAt(item, now) && !(dismissed[storageKey(item)] > now)).slice(0, 3);
   if (!shown.length) return null;
-  if (placement === "popup") return !otherDialogOpen && checkedStorage === storageSnapshot ? <ManagedBannerItem key={storageKey(shown[0])} item={shown[0]} onDismiss={handleDismiss} /> : null;
+  if (placement === "popup") return !otherDialogOpen ? <ManagedBannerItem key={storageKey(shown[0])} item={shown[0]} onDismiss={handleDismiss} popupReady={checkedStorage === storageSnapshot} nonce={nonce} /> : null;
   return <section className={`m3-managed-banners m3-managed-banners-${placement}`} aria-label={labels.regionLabel}>
     {shown.map(item => <ManagedBannerItem key={`${item.id}:${item.revision}`} item={item} onDismiss={handleDismiss} />)}
   </section>;
 }
 
-function ManagedBannerItem({ item, onDismiss }: { item: PublicBanner; onDismiss: (item: PublicBanner, today: boolean) => void }) {
+function ManagedBannerItem({ item, onDismiss, popupReady = true, nonce }: { item: PublicBanner; onDismiss: (item: PublicBanner, today: boolean) => void; popupReady?: boolean; nonce?: string }) {
   const locale = useLocale(), labels = useDictionary().managedBanners;
-  const closeRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => { if (item.placement === "popup") closeRef.current?.focus({ preventScroll: true }); }, [item.id, item.revision, item.placement]);
-  const translation = useContentTranslation({ kind: "banner", id: item.id }, { title: item.title, ...(item.description ? { description: item.description } : {}), ...(item.imageAlt ? { imageAlt: item.imageAlt } : {}) });
+  const translation = useContentTranslation({ kind: "banner", id: item.id }, { title: item.title, ...(item.description ? { description: item.description } : {}), ...(item.imageAlt ? { imageAlt: item.imageAlt } : {}) }, popupReady);
   const href = safeLink(item.link), external = href.startsWith("https://");
-  if (item.placement === "popup") return <Modal isOpen title={translation.text("title", item.title)} titleLang={translation.lang} onClose={() => onDismiss(item, false)} initialFocus="none" showCloseButton={false} size="sm" className="m3-managed-popup" overlayClassName="m3-managed-popup-overlay" headerClassName="m3-managed-popup-header" bodyClassName="m3-managed-popup-body">
+  if (item.placement === "popup") return <NativeManagedPopup title={translation.text("title", item.title)} titleLang={translation.lang} onClose={() => onDismiss(item, false)} ready={popupReady} nonce={nonce} storageKey={storageKey(item)} startsAt={item.startsAt} endsAt={item.endsAt}>
     {mediaPattern.test(item.imageDesktop) && <picture className="m3-managed-popup-image">
-      {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" srcSet={item.imageMobile} />}
-      <Image src={item.imageDesktop} alt={translation.text("imageAlt", item.imageAlt)} width={1600} height={1000} loading="eager" fetchPriority="high" unoptimized />
+      {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" data-srcset={item.imageMobile} srcSet={popupReady ? item.imageMobile : undefined} suppressHydrationWarning />}
+      <Image src={popupReady ? item.imageDesktop : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'/%3E"} data-src={item.imageDesktop} alt={translation.text("imageAlt", item.imageAlt)} width={1600} height={1000} loading="eager" fetchPriority="high" unoptimized suppressHydrationWarning />
     </picture>}
     <div className="m3-managed-popup-copy">
       {item.category === "ad" && <span className="m3-managed-banner-category">{labels.ad}</span>}
       {item.description && <p lang={translation.lang}>{translation.text("description", item.description)}</p>}
-      {href && <Link href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined} onClick={() => onDismiss(item, false)}>{labels.details}{external && <span className="sr-only"> · {labels.external}</span>}</Link>}
+      {href && <Link href={external ? href : localizePath(href, locale)} target={external ? "_blank" : undefined} rel={external ? `${item.category === "ad" ? "sponsored nofollow " : ""}noopener noreferrer` : undefined} data-popup-action="close" onClick={() => onDismiss(item, false)}>{labels.details}{external && <span className="sr-only"> · {labels.external}</span>}</Link>}
     </div>
     <PageTranslationStatus translation={translation} />
     <div className="m3-managed-popup-actions">
-      <button type="button" onClick={() => onDismiss(item, true)}>{labels.hideToday}</button>
-      <button ref={closeRef} type="button" onClick={() => onDismiss(item, false)}>{labels.popupClose}</button>
+      <button type="button" data-popup-action="today" onClick={() => onDismiss(item, true)}>{labels.hideToday}</button>
+      <button type="button" data-popup-action="close" onClick={() => onDismiss(item, false)}>{labels.popupClose}</button>
     </div>
-  </Modal>;
+  </NativeManagedPopup>;
   const content = <>
         {mediaPattern.test(item.imageDesktop) && <picture className="m3-managed-banner-image">
           {mediaPattern.test(item.imageMobile) && <source media="(max-width: 599px)" srcSet={item.imageMobile} />}

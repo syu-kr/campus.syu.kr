@@ -8,17 +8,17 @@ import { watchContentTranslation, subscribePageTranslation, getPageTranslationSn
 import { useDictionary, useLocale } from "./LocaleContext";
 import { buttonStyles } from "./Button";
 
-export function useContentTranslation(source: ContentTranslationSource, original: PublicContentFields) {
+export function useContentTranslation(source: ContentTranslationSource, original: PublicContentFields, enabled = true) {
   const locale = useLocale();
   const key = JSON.stringify([source, original]);
   const [result, setResult] = useState<{ key: string; snapshot: TranslationSnapshot } | null>(null);
   useEffect(() => {
-    if (locale !== "en") return;
+    if (locale !== "en" || !enabled) return;
     let active = true;
     const [descriptor, fields] = JSON.parse(key) as [ContentTranslationSource, PublicContentFields];
     const stop = watchContentTranslation(descriptor, fields, snapshot => { if (active) setResult({ key, snapshot }); });
     return () => { active = false; stop(); };
-  }, [key, locale]);
+  }, [key, locale, enabled]);
   const current = locale === "en" && result?.key === key ? result.snapshot : null;
   const translated = Boolean(current?.fields && Object.keys(current.fields).length);
   return {

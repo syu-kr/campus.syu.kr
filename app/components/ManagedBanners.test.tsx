@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ManagedBanners } from "./ManagedBanners";
+import { renderToStaticMarkup } from "react-dom/server";
 import { LocaleProvider } from "./LocaleProvider";
 import { Modal } from "./Modal";
 import { PageTranslationStatus, PublicContentTranslation } from "./ContentTranslation";
@@ -235,4 +236,38 @@ it("waits for an existing dialog to close before opening an automatic popup", as
   active.rerender(<LocaleProvider locale="ko"><Modal isOpen={false} title="입력 중" onClose={() => undefined}>Content</Modal></LocaleProvider>);
   await act(async () => { await Promise.resolve(); });
   expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+});
+
+
+it("ships a closed popup without requesting media before the dismissal check", () => {
+  const html = renderToStaticMarkup(<LocaleProvider locale="ko"><ManagedBanners initialBanners={[popup]} placement="popup" initialNow={now} nonce="test-nonce" /></LocaleProvider>);
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const dialog = doc.querySelector("dialog");
+  expect(dialog?.hasAttribute("open")).toBe(false);
+  expect(dialog?.getAttribute("data-managed-popup")).toBe("campus-banner:banner-one:1");
+  expect(dialog?.nextElementSibling?.getAttribute("nonce")).toBe("test-nonce");
+  expect(doc.querySelector("img")?.getAttribute("data-src")).toBe(popup.imageDesktop);
+  expect(doc.querySelector("img")?.getAttribute("src")).toMatch(/^data:image/);
+  expect(doc.querySelector("source")?.hasAttribute("srcset")).toBe(false);
+});
+
+it("preserves a pre-hydration dismissal marker when browser storage is unavailable", () => {
+  vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("storage disabled"); });
+  const early = document.createElement("dialog");
+  early.dataset.managedPopup = "campus-banner:banner-one:1";
+  early.dataset.dismissedUntil = "closed";
+  document.body.append(early);
+  try {
+    render(popupView());
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("img")).toBeNull();
+  } finally { early.remove(); }
+});
+
+it("does not translate a popup that is already dismissed", async () => {
+  sessionStorage.setItem("campus-banner:banner-one:1", "closed");
+  render(<LocaleProvider locale="en"><ManagedBanners initialBanners={[popup]} placement="popup" initialNow={now} /></LocaleProvider>);
+  await act(async () => vi.advanceTimersByTimeAsync(100));
+  expect(fetch).not.toHaveBeenCalled();
+  expect(screen.queryByRole("dialog")).toBeNull();
 });
