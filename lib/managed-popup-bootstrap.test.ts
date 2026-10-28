@@ -219,6 +219,53 @@ describe("early managed popup controller", () => {
     expect(dialog.querySelector("img")).not.toHaveAttribute("src");
   });
 
+  it("wraps visible first/last controls while preserving ordinary native Tab", () => {
+    const controls = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+    for (const control of controls) vi.spyOn(control, "getClientRects").mockReturnValue([{} as DOMRect] as unknown as DOMRectList);
+    boot(); ready();
+    function tab(shiftKey = false) {
+      const event = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true });
+      document.dispatchEvent(event); return event;
+    }
+    // Initial focus is the last close button, as in the actual popup.
+    expect(tab().defaultPrevented).toBe(true);
+    expect(controls[0]).toHaveFocus();
+    expect(tab(true).defaultPrevented).toBe(true);
+    expect(controls[controls.length - 1]).toHaveFocus();
+    controls[1].focus();
+    expect(tab().defaultPrevented).toBe(false);
+    expect(controls[1]).toHaveFocus();
+    document.getElementById("previous")!.focus();
+    expect(tab(true).defaultPrevented).toBe(true);
+    expect(controls[controls.length - 1]).toHaveFocus();
+    document.getElementById("previous")!.focus();
+    expect(tab().defaultPrevented).toBe(true);
+    expect(controls[0]).toHaveFocus();
+  });
+
+  it("excludes hidden/disabled controls and leaves cancelled, non-Tab and handoff keys alone", () => {
+    const anchor = dialog.querySelector("a")!;
+    const today = dialog.querySelector<HTMLButtonElement>('[data-popup-action=today]')!;
+    const close = dialog.querySelector<HTMLButtonElement>('button[data-popup-action=close]')!;
+    vi.spyOn(anchor, "getClientRects").mockReturnValue([{} as DOMRect] as unknown as DOMRectList);
+    anchor.setAttribute("aria-hidden", "true");
+    today.disabled = true;
+    vi.spyOn(close, "getClientRects").mockReturnValue([{} as DOMRect] as unknown as DOMRectList);
+    boot(); ready();
+    const wrapped = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+    document.dispatchEvent(wrapped);
+    expect(wrapped.defaultPrevented).toBe(true);expect(close).toHaveFocus();
+    const cancelled = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });cancelled.preventDefault();
+    document.getElementById("previous")!.focus();document.dispatchEvent(cancelled);
+    expect(document.getElementById("previous")).toHaveFocus();
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });document.dispatchEvent(escape);
+    expect(escape.defaultPrevented).toBe(false);expect(dialog.open).toBe(true);
+    dialog.__campusPopupCleanup?.();
+    close.focus();
+    const handedOff = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });document.dispatchEvent(handedOff);
+    expect(handedOff.defaultPrevented).toBe(false);
+  });
+
   it("leaves malformed, unsupported and already hydrated markup untouched", () => {
     dialog.dataset.startsAt = "not-an-epoch";
     boot(); ready(); expect(dialog.open).toBe(false);

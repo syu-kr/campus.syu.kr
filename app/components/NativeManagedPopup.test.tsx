@@ -106,3 +106,31 @@ it("recovers a native showModal failure through the existing modal instead of fa
   expect(screen.getByRole("dialog", { name: defaultProps.title })).toBeVisible();
   expect(screen.getByRole("button", { name: "닫기" })).toHaveFocus();
 });
+it("preserves the existing first/last Tab cycle after handoff instead of leaving to browser chrome", () => {
+  vi.spyOn(HTMLElement.prototype, "getClientRects").mockReturnValue([{}] as unknown as DOMRectList);
+  const view = render(<NativeManagedPopup {...defaultProps}>{children}</NativeManagedPopup>);
+  const first = screen.getByRole("button", { name: "오늘 그만 보기" }), last = screen.getByRole("button", { name: "닫기" });
+  fireEvent.keyDown(last, { key: "Tab" });expect(first).toHaveFocus();
+  fireEvent.keyDown(first, { key: "Tab", shiftKey: true });expect(last).toHaveFocus();
+  const outside = document.createElement("button");document.body.append(outside);outside.focus();
+  fireEvent.keyDown(view.container.querySelector("dialog")!, { key: "Tab" });expect(first).toHaveFocus();
+  outside.focus();fireEvent.keyDown(view.container.querySelector("dialog")!, { key: "Tab", shiftKey: true });expect(last).toHaveFocus();outside.remove();
+});
+
+it("focuses the dialog when no visible controls are available", () => {
+  const view = render(<NativeManagedPopup {...defaultProps}><p>Only content</p><button disabled>Unavailable</button></NativeManagedPopup>);
+  const dialog = view.container.querySelector("dialog")!;
+  const event = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+  fireEvent(dialog, event);expect(event.defaultPrevented).toBe(true);expect(dialog).toHaveFocus();
+});
+
+it("keeps prehydration keyboard ownership and respects a previously prevented Tab event", () => {
+  vi.spyOn(HTMLElement.prototype, "getClientRects").mockReturnValue([{}] as unknown as DOMRectList);
+  const view = render(<NativeManagedPopup {...defaultProps} ready={false}>{children}</NativeManagedPopup>);
+  const last = view.container.querySelector<HTMLButtonElement>('button[data-popup-action="close"]')!;
+  const early = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+  fireEvent(last, early);expect(early.defaultPrevented).toBe(false);
+  view.rerender(<NativeManagedPopup {...defaultProps}>{children}</NativeManagedPopup>);
+  const prevented = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });prevented.preventDefault();
+  fireEvent(last, prevented);expect(last).toHaveFocus();
+});

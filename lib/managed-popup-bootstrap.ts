@@ -19,6 +19,7 @@ export const MANAGED_POPUP_BOOTSTRAP = `(function () {
     document.removeEventListener('DOMContentLoaded', check);
     document.removeEventListener('visibilitychange', check);
     document.removeEventListener('click', click, true);
+    document.removeEventListener('keydown', keydown, true);
     dialog.removeEventListener('cancel', cancel);
   }
   dialog.__campusPopupCleanup = cleanup;
@@ -61,6 +62,21 @@ export const MANAGED_POPUP_BOOTSTRAP = `(function () {
       dismiss(false);
     }
   }
+  function keydown(event) {
+    if (!owned() || !dialog.open || event.key !== 'Tab' || event.defaultPrevented) return;
+    var controls = Array.from(dialog.querySelectorAll('a[href], button:not([disabled])')).filter(function (control) {
+      return control.getAttribute('aria-hidden') !== 'true' && control.getClientRects().length > 0;
+    });
+    var first = controls[0], last = controls[controls.length - 1];
+    var target = !dialog.contains(document.activeElement) ? (event.shiftKey ? last : first)
+      : event.shiftKey && document.activeElement === first ? last
+      : !event.shiftKey && document.activeElement === last ? first : null;
+    if (!controls.length || target) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      (target || dialog).focus({ preventScroll: true });
+    }
+  }
   function cancel(event) {
     if (!owned()) return;
     event.preventDefault();
@@ -96,6 +112,7 @@ export const MANAGED_POPUP_BOOTSTRAP = `(function () {
     } catch { /* The hydrated component can retry if the document is not active. */ }
   }
   document.addEventListener('click', click, true);
+  document.addEventListener('keydown', keydown, true);
   dialog.addEventListener('cancel', cancel);
   document.addEventListener('visibilitychange', check);
   observer = new MutationObserver(function () {

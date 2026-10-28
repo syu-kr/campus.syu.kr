@@ -72,8 +72,23 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
   </Modal>;
 
   return <>
-    <dialog ref={dialogRef} className="m3-managed-popup-overlay" aria-modal="true" aria-labelledby={titleId}
+    <dialog ref={dialogRef} className="m3-managed-popup-overlay" tabIndex={-1} aria-modal="true" aria-labelledby={titleId}
       data-managed-popup={storageKey} data-starts-at={starts ?? ""} data-ends-at={ends ?? ""} suppressHydrationWarning
+      onKeyDown={ready ? event => {
+        if (event.defaultPrevented || event.key !== "Tab") return;
+        const dialog = event.currentTarget;
+        const controls = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')).filter(control => control.getAttribute("aria-hidden") !== "true" && control.getClientRects().length > 0);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (!first) {
+          event.preventDefault();dialog.focus();
+        } else if (!dialog.contains(document.activeElement)) {
+          event.preventDefault();(event.shiftKey ? last : first).focus();
+        } else if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();first.focus();
+        }
+      } : undefined}
       onCancel={ready ? event => { event.preventDefault();onClose(); } : undefined}
       onClick={ready ? event => { if (event.target === event.currentTarget) onClose(); } : undefined}>
       <div className="m3-managed-popup">
@@ -84,6 +99,7 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
     <script nonce={nonce} dangerouslySetInnerHTML={{ __html: MANAGED_POPUP_BOOTSTRAP }} />
   </>;
 }
+
 
 
 
