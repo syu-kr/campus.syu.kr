@@ -263,6 +263,9 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   );
   const hasReplacementSpecialSchedule =
     activeReplacementSpecialPeriods.length > 0 || isException;
+  const specialScheduleLabel = !isException && activeReplacementSpecialPeriods.some(
+    (period) => period.id.startsWith("online-class-week-"),
+  ) ? text.onlineClassWeek : text.specialSchedule;
   const specialScheduleIsCurrent = canPredictDepartures && !isWeekendWithoutException && hasReplacementSpecialSchedule;
   const currentRegularScheduleType = isWeekendWithoutException || !canPredictDepartures || isException || hasDaytimeIntervals
     ? null
@@ -314,7 +317,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     selectedButtonIsCurrent || (hasDaytimeIntervals && selectedType === defaultType)
   );
   const selectedScheduleLabel = useSpecialSchedule
-    ? text.specialSchedule
+    ? specialScheduleLabel
     : selectedRegularButton?.label || text.selectedSchedule;
 
   // defaultType 변경 시 selectedType도 자동으로 업데이트 (방학 기간 변경 대응)
@@ -919,7 +922,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                 : "bg-purple-50 text-purple-800 hover:bg-purple-100"
             }`}
           >
-            {text.specialSchedule}
+            {specialScheduleLabel}
             {specialScheduleIsCurrent && (
               <span className="ml-1 text-xs bg-purple-700 text-white px-2 py-0.5 rounded-full">
                 {text.current}

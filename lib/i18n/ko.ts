@@ -1113,6 +1113,7 @@ export const koDictionary = {
         vacationMonThu: "방학(월-목)",
         vacationFri: "방학(금)",
         specialSchedule: "특별운행",
+        onlineClassWeek: "온라인 주간",
         selectedSchedule: "선택한 시간표",
         scheduleBase: "현재 시간표 기준",
         scheduleNotice:

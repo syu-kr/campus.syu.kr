@@ -8,6 +8,7 @@ import periods from "@/public/data/shuttle-special-periods.json";
 import type { PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
 import { getDictionary } from "@/lib/i18n";
 import { PUBLIC_HOLIDAY_SOURCE_URL } from "@/lib/public-holidays";
+import { LocaleProvider } from "@/app/components/LocaleProvider";
 
 let holidaySnapshot: PublicHolidaySnapshot | undefined;
 let shuttlePeriods: ShuttleSpecialPeriods;
@@ -403,4 +404,89 @@ describe("shuttle page festival announcement", () => {
     view.unmount();
     client.clear();
   });
+});
+
+describe("fall online class week timetable", () => {
+  const text = getDictionary("ko").pages.busInfo;
+
+  function mount(dateTime: string, locale: "ko" | "en" = "ko") {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(dateTime));
+    holidaySnapshot = { ...holidaySnapshot!, lastSuccessAt: dateTime };
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const view = render(<QueryClientProvider client={client}><LocaleProvider locale={locale}><ShuttleSection /></LocaleProvider></QueryClientProvider>);
+    return () => { view.unmount(); client.clear(); };
+  }
+
+  it.each(["2026-10-28", "2026-10-29", "2026-10-30", "2026-11-02"])(
+    "automatically selects the separately labeled online timetable on %s",
+    async (date) => {
+      const cleanup = mount(`${date}T12:10:00+09:00`);
+      const online = await screen.findByRole("button", { name: new RegExp(text.onlineClassWeek) });
+      await waitFor(() => expect(online).toHaveAttribute("aria-pressed", "true"));
+      expect(within(online).getByText(text.current)).toBeInTheDocument();
+      expect(screen.getByRole("region", { name: `${text.scheduleToggleLabel}: ${text.onlineClassWeek}` })).toBeInTheDocument();
+      expect(screen.queryByText(text.scheduleNotice)).not.toBeInTheDocument();
+      const source = shuttlePeriods.specialPeriods.find((period) => period.id === "online-class-week-fall-2026")!;
+      expect(screen.getByRole("link", { name: source.name })).toHaveAttribute("href", source.sourceUrl);
+      cleanup();
+    },
+  );
+
+  it("labels the online timetable and its current status in English", async () => {
+    const cleanup = mount("2026-10-28T12:10:00+09:00", "en");
+    const english = getDictionary("en").pages.busInfo;
+    const online = await screen.findByRole("button", { name: new RegExp(english.onlineClassWeek) });
+    await waitFor(() => expect(online).toHaveAttribute("aria-pressed", "true"));
+    expect(within(online).getByText(english.current)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: `${english.scheduleToggleLabel}: ${english.onlineClassWeek}` })).toBeInTheDocument();
+    cleanup();
+  });
+
+  it("switches between ordinary reference departures and the online timetable", async () => {
+    const cleanup = mount("2026-10-28T12:10:00+09:00");
+    const online = await screen.findByRole("button", { name: new RegExp(text.onlineClassWeek) });
+    await waitFor(() => expect(online).toHaveAttribute("aria-pressed", "true"));
+    const route = screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ });
+    fireEvent.click(route);
+    expect(within(route.parentElement!).getByText("12:30")).toBeInTheDocument();
+    expect(within(route.parentElement!).queryByText("12:25")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: text.semesterMonThu }));
+    expect(online).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("region", { name: `${text.scheduleToggleLabel}: ${text.semesterMonThu}` })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: text.upcomingBuses })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /학교 ↔ 석계역.*펼치기/ }));
+    expect(within(route.parentElement!).getByText("12:25")).toBeInTheDocument();
+
+    fireEvent.click(online);
+    expect(online).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("region", { name: text.upcomingBuses })).toHaveTextContent("12:30");
+    cleanup();
+  });
+
+  it.each(["15:20", "15:31"])("respects the Friday 15:30 last departure at %s", async (time) => {
+    const cleanup = mount(`2026-10-30T${time}:00+09:00`);
+    const online = await screen.findByRole("button", { name: new RegExp(text.onlineClassWeek) });
+    await waitFor(() => expect(online).toHaveAttribute("aria-pressed", "true"));
+    for (const name of [/학교 ↔ 석계역.*펼치기/, /학교 ↔ 별내역.*펼치기/]) {
+      const route = screen.getByRole("button", { name });
+      fireEvent.click(route);
+      expect(within(route.parentElement!).getByText("15:30")).toBeInTheDocument();
+      expect(within(route.parentElement!).queryByText("16:00")).not.toBeInTheDocument();
+      expect(within(route.parentElement!).queryByText("17:30")).not.toBeInTheDocument();
+    }
+    expect(screen.queryByRole("region", { name: text.upcomingBuses }) !== null).toBe(time === "15:20");
+    cleanup();
+  });
+
+  it.each(["2026-10-27", "2026-10-31", "2026-11-01", "2026-11-03"])(
+    "does not offer the online timetable outside its announced service dates: %s",
+    async (date) => {
+      const cleanup = mount(`${date}T12:10:00+09:00`);
+      await screen.findByRole("button", { name: /학교 ↔ 석계역.*펼치기/ });
+      expect(screen.queryByRole("button", { name: new RegExp(text.onlineClassWeek) })).not.toBeInTheDocument();
+      cleanup();
+    },
+  );
 });
