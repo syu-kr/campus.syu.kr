@@ -44,7 +44,7 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
       if (dialog.open) dialog.close();
       return;
     }
-    const otherDialog = Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"], dialog[open]')).some(node => node !== dialog && !node.closest('[hidden], [aria-hidden="true"]') && !(node instanceof HTMLDialogElement && !node.open));
+    const otherDialog = Array.from(document.querySelectorAll('[role="dialog"][aria-modal="true"], dialog[open]')).some(node => node !== dialog && !node.closest('[hidden], [aria-hidden="true"]') && !(node.tagName === "DIALOG" && !(node as HTMLDialogElement).open));
     if (otherDialog) {
       if (dialog.open) dialog.close();
       return;
@@ -84,5 +84,6 @@ export function NativeManagedPopup({ title, titleLang, onClose, children, ready,
     <script nonce={nonce} dangerouslySetInnerHTML={{ __html: MANAGED_POPUP_BOOTSTRAP }} />
   </>;
 }
+
 
 
