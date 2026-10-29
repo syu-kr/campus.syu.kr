@@ -211,6 +211,37 @@ describe("independent daily crawler publication", () => {
     expect(JSON.parse(await readFile(path.join(directory, "announcements-academic.json"), "utf8"))[0].title).toBe("재시도 성공 공지");
   });
 
+  it("clears stale holiday health after a child recovers without changing skipped sources", async () => {
+    const holidayPath = path.join(directory, "public-holidays.json");
+    const skippedFiles: DailyCrawlDataFile[] = [...NOTICE_FILES, "cafeteria-menu.json", "announcement-ai-metadata.json"];
+    const baselines = await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))));
+    const previousNoticeHealth = { status: "fresh", lastAttemptAt: PREVIOUS, lastSuccessAt: PREVIOUS };
+    await writeFile(healthPath, JSON.stringify({ files: {
+      "announcements-academic.json": previousNoticeHealth,
+      "public-holidays.json": { status: "stale", lastAttemptAt: PREVIOUS, lastSuccessAt: PREVIOUS, errorCode: "CRAWLER_FAILED" },
+    } }));
+    const recovered = JSON.parse(await readFile(holidayPath, "utf8"));
+    recovered.lastSuccessAt = ATTEMPT;
+    const fixturePath = path.join(directory, "holiday-retry.cjs");
+    await writeFile(fixturePath, [
+      `require("node:fs").writeFileSync(${JSON.stringify(holidayPath)}, ${JSON.stringify(JSON.stringify(recovered))});`,
+      'process.stdout.write("[retry] [public-holidays] code=CONNECT_TIMEOUT year=2026 page=1 attempt=1\\n");',
+    ].join("\n"));
+    vi.spyOn(process.stdout, "write").mockReturnValue(true);
+    const run = vi.fn(async (source: Parameters<typeof runCrawler>[0]) => runCrawler({
+      ...source, command: "node", script: path.relative(path.resolve("scripts"), fixturePath),
+    }));
+
+    const health = await runDailyCrawl({ ...options(), mode: "holidays", run });
+
+    expect(run).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ fileName: "public-holidays.json" }));
+    expect(health["public-holidays.json"]).toEqual({ status: "fresh", lastAttemptAt: ATTEMPT, lastSuccessAt: ATTEMPT });
+    expect(health["announcements-academic.json"]).toEqual(previousNoticeHealth);
+    expect(await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))))).toEqual(baselines);
+    expect(JSON.parse(await readFile(holidayPath, "utf8")).lastSuccessAt).toBe(ATTEMPT);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it("updates only holidays and preserves notice, cafeteria, AI bytes and skipped health", async () => {
     const skippedFiles: DailyCrawlDataFile[] = [...NOTICE_FILES, "cafeteria-menu.json", "announcement-ai-metadata.json"];
     const baselines = await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))));
