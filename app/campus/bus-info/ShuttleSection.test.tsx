@@ -282,17 +282,17 @@ describe("shuttle page festival announcement", () => {
     const route = await screen.findByRole("button", { name: /화랑대역\(5번 출구\) → 학교.*펼치기/ });
     await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
     const isFestivalDate = date === "2026-10-06";
-    expect(screen.queryByText(text.pages.busInfo.festivalShuttle.noticeTitle) !== null).toBe(isFestivalDate);
-    expect(screen.queryByText(/^현재$/) !== null).toBe(!isFestivalDate);
+    expect(screen.queryByRole("heading", { name: text.pages.busInfo.festivalShuttle.noticeTitle }) !== null).toBe(isFestivalDate);
+    expect(screen.getByText(/^현재$/)).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: text.pages.busInfo.upcomingBuses }) !== null).toBe(!isFestivalDate);
     expect(screen.queryByText(text.pages.busInfo.festivalShuttle.referenceSchedule) !== null).toBe(isFestivalDate);
     if (isFestivalDate) {
-      const notice = within(screen.getByRole("region", { name: new RegExp(text.pages.busInfo.festivalShuttle.noticeTitle) }));
+      const notice = within(screen.getByRole("heading", { name: text.pages.busInfo.festivalShuttle.noticeTitle }).parentElement!);
       expect(notice.getByText(/10:00 이전.*10분/)).toBeInTheDocument();
       expect(notice.getByText(/10:00 이후.*30분/)).toBeInTheDocument();
       expect(notice.getByText(/22:00~22:30 · 총 5대/)).toBeInTheDocument();
       expect(notice.getByText(/22:30 예정 출발 · 1대/)).toBeInTheDocument();
-      expect(screen.getByRole("region", { name: `${text.pages.busInfo.scheduleToggleLabel}: ${text.pages.busInfo.semesterMonThu}` })).toBeInTheDocument();
+      expect(screen.getByRole("region", { name: `${text.pages.busInfo.scheduleToggleLabel}: ${text.pages.busInfo.festivalShuttle.noticeTitle}` })).toBeInTheDocument();
     }
     fireEvent.click(route);
     expect(within(route.parentElement!).getByText("10:20")).toBeInTheDocument();
@@ -316,7 +316,7 @@ describe("shuttle page festival announcement", () => {
       </QueryClientProvider>,
     );
     await screen.findByText("학교 ↔ 석계역(4번 출구)");
-    expect(screen.queryByText(text.pages.busInfo.festivalShuttle.noticeTitle) !== null).toBe(visible);
+    expect(screen.queryByRole("heading", { name: text.pages.busInfo.festivalShuttle.noticeTitle }) !== null).toBe(visible);
     expect(screen.queryByRole("heading", { level: 2, name: "학교 → 화랑대" }) !== null).toBe(visible);
     expect(screen.queryByRole("heading", { level: 2, name: "학교 → 별내" }) !== null).toBe(visible);
     expect(fetchBusLocationStatus).toHaveBeenCalledTimes(

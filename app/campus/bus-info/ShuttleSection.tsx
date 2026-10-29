@@ -17,7 +17,7 @@ import {
   fetchShuttleSpecialPeriods,
   fetchPublicHolidays,
 } from "@/lib/api";
-import { BusLocation, ShuttleBusSchedule, ShuttleScheduleType } from "@/types";
+import { BusLocation, ShuttleBusSchedule } from "@/types";
 import type { AnswerSource, PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
 import { PUBLIC_HOLIDAY_SOURCE_URL, formatPublicHolidayName } from "@/lib/public-holidays";
 import {
@@ -43,6 +43,7 @@ import {
   getShuttleExceptionBuses,
   isDateInSpecialPeriod,
   isReplacementSpecialPeriod,
+  applyShuttleSpecialPeriods,
   isShuttleVacationDate,
   timeToMinutes,
   type NextShuttleDeparture,
@@ -54,12 +55,6 @@ import { getKoreaDateTimeParts } from "@/lib/korea-time";
 
 const ONE_MINUTE = 60 * 1000;
 const FIVE_MINUTES = 5 * ONE_MINUTE;
-const SCHEDULE_TYPES: ShuttleScheduleType[] = [
-  "mondayToThursday",
-  "friday",
-  "mondayToThursdayVacation",
-  "fridayVacation",
-];
 
 export type ShuttleInitialData = {
   buses: ShuttleBusSchedule[];
@@ -222,7 +217,6 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     | "mondayToThursdayVacation"
     | "fridayVacation"
   >(defaultType);
-  const [useSpecialSchedule, setUseSpecialSchedule] = useState(false);
 
   const activeSpecialPeriods = useMemo(
     () =>
@@ -261,12 +255,14 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   const timetableSpecialPeriods = activeSpecialPeriods.filter(
     (period) => !period.additionalServices?.length,
   );
-  const hasReplacementSpecialSchedule =
-    activeReplacementSpecialPeriods.length > 0 || isException;
+  const hasSpecialSchedule = activeSpecialPeriods.length > 0 || isException;
+  const [useSpecialSchedule, setUseSpecialSchedule] = useState(hasSpecialSchedule);
   const specialScheduleLabel = !isException && activeReplacementSpecialPeriods.some(
     (period) => period.id.startsWith("online-class-week-"),
-  ) ? text.onlineClassWeek : text.specialSchedule;
-  const specialScheduleIsCurrent = canPredictDepartures && !isWeekendWithoutException && hasReplacementSpecialSchedule;
+  ) ? text.onlineClassWeek : !isException && activeSpecialPeriods.length > 0
+    ? activeSpecialPeriods.map((period) => periodTranslation.text(`periods.${period.id}.name`, period.name)).join(" · ")
+    : text.specialSchedule;
+  const specialScheduleIsCurrent = canPredictDepartures && !isWeekendWithoutException && hasSpecialSchedule;
   const currentRegularScheduleType = isWeekendWithoutException || !canPredictDepartures || isException || hasDaytimeIntervals
     ? null
     : currentScheduleType;
@@ -314,7 +310,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     ? specialScheduleIsCurrent
     : Boolean(selectedRegularButton?.isActive);
   const canShowUpcomingDepartures = !busesError && !specialPeriodsError && canPredictDepartures && (
-    selectedButtonIsCurrent || (hasDaytimeIntervals && selectedType === defaultType)
+    selectedButtonIsCurrent
   );
   const selectedScheduleLabel = useSpecialSchedule
     ? specialScheduleLabel
@@ -326,127 +322,24 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
   }, [defaultType]);
 
   useEffect(() => {
-    setUseSpecialSchedule(hasReplacementSpecialSchedule);
-  }, [hasReplacementSpecialSchedule]);
+    setUseSpecialSchedule(hasSpecialSchedule);
+  }, [hasSpecialSchedule, dateInfo.dateStr]);
 
   useEffect(() => {
     setExpandedBuses(new Set());
   }, [selectedType, useSpecialSchedule]);
 
-  // 특수 기간 추가 시간을 병합한 버스 데이터
-  const busesWithSpecialPeriods = useMemo((): ShuttleBusSchedule[] => {
+  const todayBuses = useMemo((): ShuttleBusSchedule[] => {
     const busList = Array.isArray(buses) ? buses.filter(Boolean) : [];
-    const normalizedBusList = busList.map((bus) => ({
-      ...bus,
-      schedules: createScheduleCopy(bus.schedules),
-    }));
-    if (isException && useSpecialSchedule) {
-      return getShuttleExceptionBuses(normalizedBusList, dayStatus.serviceExceptions);
-    }
-    const additionalBuses = isException ? [] : getShuttleAdditionalServiceBuses({
-      specialPeriods, dateString: dateInfo.dateStr, locale,
-    });
-    const periodList = Array.isArray(specialPeriods?.specialPeriods)
-      ? specialPeriods.specialPeriods
-      : [];
-
-    if (normalizedBusList.length === 0) return additionalBuses;
-    if (periodList.length === 0) return normalizedBusList;
-
-    // 현재 날짜의 추가 운행과, 버튼으로 선택한 대체 시간표를 분리 적용한다.
-    const activeAddPeriods = periodList.filter(
-      (period) =>
-        isDateInSpecialPeriod(period, dateInfo.dateStr) &&
-        !isReplacementSpecialPeriod(period),
-    );
-    const replacementPeriodsToApply = useSpecialSchedule
-      ? activeReplacementSpecialPeriods
-      : [];
-    const applicableSpecialPeriods = [
-      ...activeAddPeriods,
-      ...replacementPeriodsToApply,
+    if (isException) return getShuttleExceptionBuses(busList, dayStatus.serviceExceptions);
+    return [
+      ...applyShuttleSpecialPeriods({ buses: busList, dateString: dateInfo.dateStr, specialPeriods }).buses,
+      ...getShuttleAdditionalServiceBuses({ specialPeriods, dateString: dateInfo.dateStr, locale }),
     ];
-
-    if (applicableSpecialPeriods.length === 0) {
-      return [...normalizedBusList, ...additionalBuses];
-    }
-
-    // 버스 데이터 복사하여 특수 기간 시간표 적용
-    return [...normalizedBusList.map((bus) => {
-      const schedulesCopy = createScheduleCopy(bus.schedules);
-
-      // 이 버스에 적용될 특수 기간 필터링
-      const applicablePeriodsForBus = applicableSpecialPeriods.filter(
-        (period) => {
-          // routes에 "all"이 있거나, 이 버스 ID가 포함된 경우
-          const routes = Array.isArray(period.routes) ? period.routes : [];
-          return routes.includes("all") || routes.includes(bus.id);
-        },
-      );
-
-      if (applicablePeriodsForBus.length === 0) {
-        return bus; // 적용될 특수 기간이 없으면 원본 반환
-      }
-
-      applicablePeriodsForBus
-        .filter(
-          (period) => useSpecialSchedule && isReplacementSpecialPeriod(period),
-        )
-        .forEach((period) => {
-          const replacement = period.replacementSchedules?.[bus.id];
-          if (!replacement) return;
-
-          SCHEDULE_TYPES.forEach((scheduleType) => {
-            const replacementTimes = Array.isArray(replacement)
-              ? replacement
-              : replacement[scheduleType];
-
-            if (Array.isArray(replacementTimes)) {
-              schedulesCopy[scheduleType] = [...replacementTimes].sort(
-                (a, b) =>
-                  (timeToMinutes(a) ?? 0) - (timeToMinutes(b) ?? 0),
-              );
-            }
-          });
-        });
-
-      // 이 버스에 추가할 시간 수집
-      const addedTimes = new Set<string>();
-      applicablePeriodsForBus
-        .filter((period) => (period.type ?? "add") !== "replace")
-        .forEach((period) => {
-          const periodAddedTimes = Array.isArray(period.addedTimes)
-            ? period.addedTimes
-            : [];
-          periodAddedTimes.forEach((time) => addedTimes.add(time));
-        });
-
-      // 각 시간표 타입에 추가 시간 병합 (정렬)
-      SCHEDULE_TYPES.forEach((key) => {
-        const times = schedulesCopy[key];
-        if (Array.isArray(times)) {
-          const mergedTimes = Array.from(new Set([...times, ...addedTimes]));
-          mergedTimes.sort((a, b) => {
-            const aMinutes = timeToMinutes(a) ?? 0;
-            const bMinutes = timeToMinutes(b) ?? 0;
-            return aMinutes - bMinutes;
-          });
-          schedulesCopy[key] = mergedTimes;
-        }
-      });
-
-      return { ...bus, schedules: schedulesCopy };
-    }), ...additionalBuses];
-  }, [
-    activeReplacementSpecialPeriods,
-    buses,
-    dateInfo.dateStr,
-    specialPeriods,
-    useSpecialSchedule,
-    isException,
-    dayStatus.serviceExceptions,
-    locale,
-  ]);
+  }, [buses, dateInfo.dateStr, specialPeriods, isException, dayStatus.serviceExceptions, locale]);
+  const busesWithSpecialPeriods = useMemo(() => useSpecialSchedule ? todayBuses :
+    (Array.isArray(buses) ? buses.filter(Boolean) : []).map((bus) => ({ ...bus, schedules: createScheduleCopy(bus.schedules) })),
+  [buses, todayBuses, useSpecialSchedule]);
 
   // 노선별 가장 빨리 출발하는 버스 (30분 이내인 경우만)
   const nextBusesWithin30Min = useMemo((): NextShuttleDeparture[] => {
@@ -480,9 +373,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
 
   // 현재 시간이 운영 시간 내인지 확인 (버스 데이터 기반)
   const isWithinOperationHours = useMemo(() => {
-    const operationBuses = isException
-      ? getShuttleExceptionBuses(Array.isArray(buses) ? buses : [], dayStatus.serviceExceptions)
-      : busesWithSpecialPeriods;
+    const operationBuses = todayBuses;
     const operationScheduleType = currentScheduleType ?? (isException ? defaultType : null);
     if (
       dayStatus.operationStatus === "closed" ||
@@ -535,13 +426,11 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     return currentMinutes >= operationStart && currentMinutes <= operationEnd;
   }, [
     activeSpecialPeriods,
-    busesWithSpecialPeriods,
+    todayBuses,
     currentScheduleType,
     dateInfo,
     now,
-    buses,
     dayStatus.operationStatus,
-    dayStatus.serviceExceptions,
     defaultType,
     isException,
   ]);
@@ -606,7 +495,8 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     text.locationError,
   ]);
 
-  const regularScheduleUpdateDates = Array.from(new Set((buses ?? []).map(bus => bus.lastUpdated.trim())));
+  const regularScheduleUpdateDates = Array.from(new Set((Array.isArray(buses) ? buses.filter(Boolean) : [])
+    .map(bus => typeof bus.lastUpdated === "string" ? bus.lastUpdated.trim() : "").filter(Boolean)));
 
   return (
     <Container className="py-6 sm:py-8">
@@ -627,7 +517,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         </Card>
       )}
 
-      {!specialPeriodsError && additionalServiceNotices.length > 0 && (
+      {useSpecialSchedule && !specialPeriodsError && additionalServiceNotices.length > 0 && (
         <div className="mb-6 space-y-3">
           {additionalServiceNotices.map((period) => (
             <ShuttleAdditionalServicesCard
@@ -908,7 +798,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
             )}
           </button>
         ))}
-        {hasReplacementSpecialSchedule && (
+        {hasSpecialSchedule && (
           <button
             type="button"
             aria-pressed={useSpecialSchedule}
@@ -932,18 +822,18 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         )}
       </div>
 
-      {(hasDaytimeIntervals || !canPredictDepartures) && (
+      {((useSpecialSchedule && hasDaytimeIntervals) || !canPredictDepartures) && (
       <Card
         role="status"
         className="mb-4 border border-neutral-200 bg-neutral-50"
         hover={false}
       >
-        {hasDaytimeIntervals && (
+        {useSpecialSchedule && hasDaytimeIntervals && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
             {text.festivalShuttle.referenceSchedule}
           </p>
         )}
-        {!canPredictDepartures && !hasDaytimeIntervals && (
+        {!canPredictDepartures && !(useSpecialSchedule && hasDaytimeIntervals) && (
           <p className="mt-2 text-xs leading-5 text-neutral-600">
             {dayStatus.operationStatus === "closed"
               ? dictionary.publicHolidays.referenceHolidaySchedule
@@ -953,7 +843,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
       </Card>
       )}
 
-      {timetableSpecialPeriods.length > 0 && (
+      {useSpecialSchedule && timetableSpecialPeriods.length > 0 && (
         <Card
           className="mb-4 border border-purple-200 bg-purple-50/70 text-sm text-purple-900"
           hover={false}
@@ -969,7 +859,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
         </Card>
       )}
 
-      {(selectedType === "mondayToThursdayVacation" ||
+      {!useSpecialSchedule && (selectedType === "mondayToThursdayVacation" ||
         selectedType === "fridayVacation") && (
         <Card
           className="mb-4 border border-amber-200 bg-amber-50/70 text-sm text-amber-900"

@@ -340,7 +340,7 @@ function getScheduleLabel(type: ShuttleScheduleType, isSpecial: boolean) {
   return "학기 월-목";
 }
 
-function applySpecialPeriods({
+export function applyShuttleSpecialPeriods({
   buses,
   dateString,
   specialPeriods,
@@ -405,7 +405,9 @@ function applySpecialPeriods({
       periodsForBus
         .filter((period) => (period.type ?? "add") !== "replace")
         .forEach((period) => {
-          period.addedTimes?.forEach((time) => addedTimes.add(time));
+          if (Array.isArray(period.addedTimes)) {
+            period.addedTimes.forEach((time) => addedTimes.add(time));
+          }
         });
 
       if (addedTimes.size > 0) {
@@ -481,7 +483,7 @@ export function getCurrentShuttleSummary({
   const { buses: effectiveBuses, isSpecialSchedule } = isException ? {
     buses: getShuttleExceptionBuses(Array.isArray(buses) ? buses : [], serviceExceptions),
     isSpecialSchedule: true,
-  } : applySpecialPeriods({
+  } : applyShuttleSpecialPeriods({
     buses: Array.isArray(buses) ? buses : [],
     dateString: dateInfo.dateString,
     specialPeriods,
