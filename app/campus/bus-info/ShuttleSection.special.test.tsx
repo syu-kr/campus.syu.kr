@@ -71,7 +71,7 @@ describe("separate additional-service timetable", () => {
     vi.useFakeTimers({ toFake: ["Date"] }); const data = fixture("2026-10-23T18:35:00+09:00"); vi.setSystemTime(new Date(data.nowISO));
     const client = new QueryClient(); const view = render(content(client, data));
     expect(screen.queryByRole("button", { name: /고사 연장 운행/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: new RegExp(text.semesterFri.replace(/[()]/g, "\\$&")) })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: name => name.startsWith(text.semesterFri) })).toHaveAttribute("aria-pressed", "true");
     view.unmount(); client.clear();
   });
   it("returns to the current ordinary timetable when the special day ends in KST", async () => {
