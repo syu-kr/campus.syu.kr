@@ -333,6 +333,7 @@ describe("shuttle page festival announcement", () => {
     const view = render(<QueryClientProvider client={client}><ShuttleSection /></QueryClientProvider>);
     const hwarangdae = await screen.findByRole("button", { name: "학교 → 화랑대 시간표 펼치기" });
     const byeollae = screen.getByRole("button", { name: "학교 → 별내 시간표 펼치기" });
+    await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
     fireEvent.click(hwarangdae);
     fireEvent.click(byeollae);
     expect(within(hwarangdae.parentElement!).getAllByText(/22:00~22:30 · 총 5대/)).toHaveLength(2);
