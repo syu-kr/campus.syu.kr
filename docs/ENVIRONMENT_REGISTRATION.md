@@ -174,10 +174,12 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 공휴일은 한국천문연구원 특일 정보에서 한국 시간 기준 올해와 다음 해를 조회합니다. 일일 전체 수집에서 갱신하고 식단·AI 전용 실행은 이전 공휴일 데이터와 수집 상태를 보존합니다. 인증 실패나 불완전 응답이면 마지막 검증 파일을 유지합니다. API 키와 인증 URL은 출력하거나 Pages에 저장하지 않습니다.
 
 1. 같은 시내버스 키를 Actions Secret `PUBLIC_DATA_SERVICE_KEY`에 등록합니다.
-2. 공휴일 파일을 이해하는 앱과 Pages publisher 변경을 먼저 배포합니다. 기존 앱은 새 공휴일 `sourceHealth` 키를 거부하므로 이 단계에서 수집은 비활성화 상태를 유지합니다.
+2. 공휴일 파일을 이해하는 앱과 선택한 데이터 publisher 변경을 먼저 배포합니다. 기존 앱은 새 공휴일 `sourceHealth` 키를 거부하므로 이 단계에서 수집은 비활성화 상태를 유지합니다.
 3. 앱 배포가 확인되면 Actions Variable `PUBLIC_HOLIDAYS_ENABLED=true`를 설정합니다. 미설정 또는 `false`이면 기존 일일 소스만 수집하고 공휴일 health 키를 발행하지 않습니다.
-4. `Daily Crawl`의 수동 실행에서 `crawl_scope=holidays`를 선택해 공휴일만 수집·발행합니다. 공지·학식은 현재 Pages에서 복원한 최신 값을 보존합니다. 이후 일일 전체 수집에서 자동 갱신됩니다.
-5. `/api/crawl-data/public-holidays.json`의 `X-Crawl-Data-Source: github-pages`, 데이터의 `years`·`lastSuccessAt`·`stale`, 홈·달력·셔틀의 같은 날짜 표시를 확인합니다. Pages `publishedAt`을 공휴일 수집 성공 시각으로 사용하지 않습니다.
+4. `Daily Crawl`의 수동 실행에서 `crawl_scope=holidays`, `ai_limit=0`, `ai_refresh_generation=false`를 선택해 공휴일만 수집·발행합니다. AI 단계는 실행하지 않고 다른 자료는 선택된 backend의 최신 정상본을 보존합니다. 이후 일일 전체 수집에서 자동 갱신됩니다.
+5. `/api/crawl-data/public-holidays.json`의 `X-Crawl-Data-Source`가 선택한 backend에 따라 `firebase-storage` 또는 `github-pages`인지 확인하고, 데이터의 `years`·`lastSuccessAt`·`stale`, 홈·달력·셔틀의 같은 날짜 표시를 확인합니다. snapshot의 `publishedAt`을 공휴일 수집 성공 시각으로 사용하지 않습니다.
+
+공휴일 원본은 연결·읽기 시간 초과, 연결 오류(TLS 오류 제외), HTTP 408·500·502·503·504, API 업무코드 01·05·23만 같은 페이지에서 최대 3회 시도하며 1초·2초 뒤 재시도합니다. 인증·일일 한도·TLS·파싱·페이징·완전성 오류는 즉시 실패합니다. 로그에는 고정 `code`와 가능한 `year`·`page`·`attempt`·`httpStatus`·두 자리 `apiCode`만 남기며 키·인증 URL·응답 본문·원문 예외는 출력하지 않습니다. 최종 실패는 이전 파일과 마지막 성공 시각을 보존하고, 다음 성공은 `stale`과 오류 상태를 해제합니다.
 
 3일 이상 성공한 갱신이 없거나 최신 수집에 실패하면 지연 상태를 표시합니다. 기존에 확인된 공휴일명은 유지하지만 데이터에 없는 날짜를 비공휴일로 확정하지 않습니다. 공휴일 파일이 없는 이전 Pages 버전도 복원·롤백 가능하며 공휴일 조회만 bundled fallback으로 처리합니다.
 
