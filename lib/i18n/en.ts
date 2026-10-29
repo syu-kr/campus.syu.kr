@@ -174,7 +174,7 @@ export const enDictionary = {
     home: {
       overview: {
         weather: {
-          current: "The campus weather is currently {temperature}°C and {description}.",
+          current: "Campus weather: {temperature}°C · {description}.",
           currentUnknownSky: "The campus temperature is currently {temperature}°C. The sky conditions need confirmation.",
           loading: "Checking the campus weather.",
           updating: "Updating the weather. Last known: {temperature}°C, {description}.",
