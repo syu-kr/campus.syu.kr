@@ -52,6 +52,115 @@ function click(selector: string) {
 async function mutations() { await Promise.resolve(); await Promise.resolve(); }
 
 describe("early managed popup controller", () => {
+  function shellReady() {
+    const marker = document.createElement("span");
+    marker.hidden = true;
+    marker.setAttribute("data-managed-popup-shell-ready", "");
+    document.body.append(marker);
+  }
+
+  it("opens once when the completed shell arrives before DOMContentLoaded", async () => {
+    boot();
+    document.body.append(document.createElement("article"));
+    await mutations();
+    expect(dialog.open).toBe(false);
+    expect(dialog.querySelector("img")).not.toHaveAttribute("src");
+    shellReady();
+    await mutations();
+    expect(document.readyState).toBe("loading");
+    expect(dialog.open).toBe(true);
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(dialog.querySelector("img")).toHaveAttribute("src", "/desktop.webp");
+    expect(dialog.querySelector("source")).toHaveAttribute("srcset", "/mobile.webp");
+    expect(document.activeElement).toBe(dialog.querySelector('button[data-popup-action="close"]'));
+    ready();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+  });
+
+  it.each(["close", "today"])("keeps an early shell %s dismissal closed when DOMContentLoaded arrives later", async action => {
+    boot(); shellReady(); await mutations();
+    expect(document.readyState).toBe("loading");
+    expect(dialog.open).toBe(true);
+    click('button[data-popup-action="' + action + '"]');
+    expect(dialog.open).toBe(false);
+    if (action === "close") expect(sessionStorage.getItem(key)).toBe("closed");
+    else expect(localStorage.getItem(key)).toBe(String(Date.parse("2026-10-27T15:00:00.000Z")));
+    ready(); await mutations();
+    expect(dialog.open).toBe(false);
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+  });
+
+  it("recognizes an already parsed shell without waiting for document readiness", () => {
+    shellReady();
+    boot();
+    expect(document.readyState).toBe("loading");
+    expect(dialog.open).toBe(true);
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    ready();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+  });
+
+  it("keeps an existing parser-late modal ahead of the shell-ready popup without loading media", async () => {
+    boot();
+    const other = document.createElement("section");
+    other.setAttribute("role", "dialog");
+    other.setAttribute("aria-modal", "true");
+    other.innerHTML = '<button id="editing">Continue editing</button>';
+    document.body.append(other);
+    const input = document.getElementById("editing")!;
+    input.focus();
+    shellReady();
+    await mutations();
+    expect(dialog.open).toBe(false);
+    expect(dialog.querySelector("img")).not.toHaveAttribute("src");
+    expect(dialog.querySelector("source")).not.toHaveAttribute("srcset");
+    expect(input).toHaveFocus();
+    other.remove();
+    await mutations();
+    expect(dialog.open).toBe(true);
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+  });
+
+  it("yields after the shell opens when a later dialog needs focus, then resumes without dismissal", async () => {
+    boot(); shellReady(); await mutations();
+    expect(dialog.open).toBe(true);
+    const other = document.createElement("section");
+    other.setAttribute("role", "dialog");
+    other.setAttribute("aria-modal", "true");
+    other.innerHTML = '<button id="later-editing">Continue editing</button>';
+    document.body.append(other);
+    const input = document.getElementById("later-editing")!;
+    input.focus();
+    await mutations();
+    expect(dialog.open).toBe(false);
+    expect(input).toHaveFocus();
+    expect(dialog.dataset.dismissedUntil).toBeUndefined();
+    expect(sessionStorage.getItem(key)).toBeNull();
+    other.remove(); await mutations();
+    expect(dialog.open).toBe(true);
+    expect(dialog.showModal).toHaveBeenCalledTimes(2);
+    expect(dialog.querySelector('button[data-popup-action="close"]')).toHaveFocus();
+  });
+
+  it("does not activate the shell marker or readiness listeners after cleanup", async () => {
+    boot();
+    dialog.__campusPopupCleanup?.();
+    shellReady(); await mutations(); ready();
+    expect(dialog.open).toBe(false);
+    expect(dialog.showModal).not.toHaveBeenCalled();
+    expect(dialog.querySelector("img")).not.toHaveAttribute("src");
+  });
+
+  it("leaves a hydration handoff in charge when the shell marker arrives later", async () => {
+    boot();
+    dialog.dataset.hydrated = "true";
+    await mutations();
+    shellReady(); await mutations(); ready();
+    expect(dialog.open).toBe(false);
+    expect(dialog.showModal).not.toHaveBeenCalled();
+    expect(dialog.querySelector("img")).not.toHaveAttribute("src");
+  });
+
   it("waits for document readiness, then activates responsive media and focuses close before hydration", () => {
     boot();
     expect(dialog.open).toBe(false);

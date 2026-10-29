@@ -90,6 +90,7 @@ export const MANAGED_POPUP_BOOTSTRAP = `(function () {
   }
   function check() {
     if (!owned()) return;
+    if (document.readyState === 'loading' && !document.querySelector('[data-managed-popup-shell-ready]')) return;
     clearTimeout(timer);
     var now = Date.now();
     var until = hiddenUntil(now);
@@ -116,10 +117,10 @@ export const MANAGED_POPUP_BOOTSTRAP = `(function () {
   dialog.addEventListener('cancel', cancel);
   document.addEventListener('visibilitychange', check);
   observer = new MutationObserver(function () {
-    if (owned() && document.readyState !== 'loading') check();
+    if (owned()) check();
   });
   observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['role', 'aria-modal', 'aria-hidden', 'hidden', 'open', 'data-hydrated'] });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check, { once: true });
-  else check();
+  check();
 })();`;
 
