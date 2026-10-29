@@ -59,3 +59,9 @@ twa-android/app/build/
 
 # Added by ggshield
 .cache_ggshield
+
+# Local execution reports and superseded design explorations
+/docs/*_20??-??-??.md
+/docs/design/pea-logo/green-bean.svg
+/docs/design/pea-logo/green-app-icon.svg
+/docs/M3_TWA_BRANDING_SYNC.md

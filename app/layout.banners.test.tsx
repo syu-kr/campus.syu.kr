@@ -9,7 +9,7 @@ vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: reques
 vi.mock("./components/ManagedBanners", () => ({ ManagedBanners: ({ initialBanners }: { initialBanners: PublicBanner[] }) => initialBanners.map(item => <aside key={item.id}>{item.title}</aside>) }));
 vi.mock("./components/Header", () => ({ Header: () => <header /> }));
 vi.mock("./components/Footer", () => ({ Footer: () => <footer><button>Locale</button></footer> }));
-vi.mock("./components/BottomNav", () => ({ BottomNav: () => null }));
+vi.mock("./components/BottomNav", () => ({ BottomNav: () => <nav id="bottom-navigation" /> }));
 vi.mock("./components/NotificationPermissionPrompt", () => ({ NotificationPermissionPrompt: () => <section className="m3-notification-prompt">Notification setup</section> }));
 vi.mock("./components/ContentTranslation", () => ({ PageTranslationStatus: () => null }));
 vi.mock("./components/LocaleProvider", () => ({ LocaleProvider: ({ children }: { children: ReactNode }) => children }));
@@ -49,4 +49,20 @@ it.each(["/admin", "/en/admin", "/campus/roommates", "/en/campus/roommates/new",
   expect(request.read).not.toHaveBeenCalled();
   expect(html).not.toContain("<aside");
   expect(html).toContain("Private content");
+});
+
+
+it("places the hidden popup shell-ready marker after every shell control", async () => {
+  const parsed = new DOMParser().parseFromString(renderToStaticMarkup(await RootLayout({ children: <p>Campus content</p> })), "text/html");
+  const marker = parsed.querySelector<HTMLElement>("[data-managed-popup-shell-ready]")!;
+  const bottomNav = parsed.getElementById("bottom-navigation")!;
+  expect(marker).not.toBeNull();
+  expect(marker.hidden).toBe(true);
+  expect(marker.textContent).toBe("");
+  expect(bottomNav.nextElementSibling).toBe(marker);
+  expect(parsed.body.lastElementChild).toBe(marker);
+  for (const control of [parsed.querySelector("footer"), parsed.querySelector(".m3-notification-prompt"), bottomNav]) {
+    expect(control).not.toBeNull();
+    expect(control!.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  }
 });

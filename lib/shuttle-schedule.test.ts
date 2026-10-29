@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  applyShuttleSpecialPeriods,
   getCurrentShuttleSummary,
   getShuttleDayStatus,
   getShuttleAdditionalServiceBuses,
@@ -280,4 +281,16 @@ describe("festival night shuttle", () => {
     expect(summarize("2026-10-05T11:55:00+09:00").departures.some((departure) => !departure.additionalService)).toBe(true);
   });
 
+});
+
+
+describe("special schedule input recovery", () => {
+  it("ignores malformed additional times without losing the ordinary timetable", () => {
+    const malformed = { ...specialPeriods, specialPeriods: [{
+      ...specialPeriods.specialPeriods.find(period => period.id === "midterm-fall-2026")!,
+      addedTimes: "18:40",
+    }] } as unknown as ShuttleSpecialPeriods;
+    const result = applyShuttleSpecialPeriods({ buses, specialPeriods: malformed, dateString: "2026-10-20" });
+    expect(result.buses.map(bus => bus.schedules)).toEqual(buses.map(bus => bus.schedules));
+  });
 });

@@ -49,7 +49,7 @@ npm run backfill-meet-participant-expiry # 기존 일정 참여자 expires_at �
 npm run notification-lock -- <dedupeKey> # 알림 dedupe lock 조회/복구
 ```
 
-`npm run check`는 lint → type-check → i18n → TWA → unused → Python → graduation → curriculum → crawl-data → unit test → build 순서로 실행하며 앞 단계가 실패하면 중단합니다. `npm audit`, Python 의존성 감사, 룸메이트 Emulator 통합·브라우저 테스트, TWA release 검사는 별도입니다. CI의 설정과 필수 검사는 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml), 기능별 추가 검증은 [문서 색인](./docs/README.md)을 확인합니다. 검사 통과 기록에는 실행한 커밋·도구 버전·명령과 생략한 외부 연동을 함께 남깁니다.
+`npm run check`는 lint → type-check → i18n → TWA → unused → Python → graduation → curriculum → crawl-data → unit test → build 순서로 실행하며 앞 단계가 실패하면 중단합니다. `npm audit`, Python 의존성 감사, 룸메이트/서비스 흐름 Emulator 통합·브라우저 테스트, TWA release 검사는 별도입니다. CI의 설정과 필수 검사는 [`.github/workflows/ci.yml`](./.github/workflows/ci.yml), 기능별 추가 검증은 [문서 색인](./docs/README.md)을 확인합니다. 검사 통과 기록에는 실행한 커밋·도구 버전·명령과 생략한 외부 연동을 함께 남깁니다.
 
 ## 프로젝트 구조
 
@@ -362,3 +362,9 @@ npm run notification-lock -- daily-summary:YYYY-MM-DD --delete-failed
 ## 최종 업데이트
 
 2026-10-18 — 저장소 코드·package.json·워크플로 기준. 외부 서비스의 현재 설정이나 배포 상태를 검증한 기록은 아닙니다.
+
+## 서비스 흐름 통합 회귀
+
+`npm run test:service-flows:integration`은 문의→관리자 상태 변경, 시간표 공유, Meet 참여, 알림 token/발송 handler, 관리 공지 저장을 실제 Firebase Auth/Firestore Emulator로 검증합니다. FCM transport만 모의 처리하므로 실제 메일·푸시 수신·운영 인덱스·IAM 검증은 아닙니다.
+
+[로컬 demo Emulator 준비](docs/ROOMMATES.md#재현-가능한-검증)를 따라 `demo-syu-roommates`의 Auth 127.0.0.1:9098·Firestore 127.0.0.1:8188을 사용합니다. 운영 환경/서비스 계정을 주입하지 않습니다. 각 테스트가 demo 계정·문서를 초기화하므로 다른 로컬 작업의 Emulator와도 공유하지 않습니다. 기본 `npm run check`에는 포함되지 않는 별도 검사입니다.

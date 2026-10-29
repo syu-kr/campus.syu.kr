@@ -52,6 +52,7 @@
     "check:crawl-data": "ts-node --files --project tsconfig.json scripts/publish-crawl-data.ts --dry-run",
     "test:unit": "vitest run",
     "test:roommates:integration": "vitest run --config vitest.roommates.integration.config.ts",
+    "test:service-flows:integration": "vitest run --config vitest.service-flows.integration.config.ts",
     "test:roommates:browser": "node tests/roommate-browser-server.cjs",
     "test:unit:watch": "vitest",
     "indexnow": "ts-node --files --project tsconfig.json scripts/indexnow.ts",

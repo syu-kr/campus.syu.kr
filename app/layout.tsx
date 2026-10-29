@@ -213,6 +213,7 @@ export default async function RootLayout({
             <Footer locale={locale} />
             <NotificationPermissionPrompt />
             <BottomNav />
+            <span hidden data-managed-popup-shell-ready />
           </Providers>
         </LocaleProvider>
       </body>
