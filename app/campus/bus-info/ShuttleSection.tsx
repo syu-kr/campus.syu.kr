@@ -717,7 +717,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                     };
                     const routeColors: Record<string | number, string> = {
                       1: "bg-blue-100 text-blue-700",
-                      2: "bg-green-100 text-green-700",
+                      2: "bg-green-100 text-green-800",
                       3: "bg-amber-100 text-amber-700",
                       4: "bg-violet-100 text-violet-700",
                     };
@@ -1029,7 +1029,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
                             const timeChipClass = isPassedTime
                               ? "bg-gray-100 border border-gray-300 text-gray-500"
                               : isWithin30Min
-                                ? "bg-green-100 border-2 border-green-500 text-green-700 font-bold"
+                                ? "bg-green-100 border-2 border-green-500 text-green-800 font-bold"
                                 : "bg-primary-50 border border-primary-200 text-primary-700";
 
                             return (

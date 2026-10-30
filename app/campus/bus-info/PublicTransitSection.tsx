@@ -295,7 +295,7 @@ export default function PublicTransitSection() {
               arrival.crowded1 === undefined || arrival.crowded1 < 0
                 ? { label: text.noInfo, color: "bg-gray-100 text-gray-700" }
                 : arrival.crowded1 === 0
-                  ? { label: text.relaxed, color: "bg-green-100 text-green-700" }
+                  ? { label: text.relaxed, color: "bg-green-100 text-green-800" }
                   : arrival.crowded1 === 1
                     ? { label: text.normal, color: "bg-yellow-100 text-yellow-700" }
                     : { label: text.crowded, color: "bg-red-100 text-red-700" };
