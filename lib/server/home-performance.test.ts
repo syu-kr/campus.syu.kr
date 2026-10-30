@@ -4,10 +4,18 @@ import { measureHomeTask, traceHomeData } from "./home-performance";
 
 afterEach(() => vi.restoreAllMocks());
 
-it("keeps fast successful requests quiet and preserves values", async () => {
+it("does not report a failed cache lookup as a hit", async () => {
+  const log = vi.spyOn(console, "info").mockImplementation(() => {});
+  await expect(traceHomeData("home", () => measureHomeTask("manifest-cache", async () => { throw new Error("cache unavailable"); }, () => false))).rejects.toThrow("cache unavailable");
+  expect(JSON.parse(log.mock.calls[0][1]).steps).toContainEqual(expect.objectContaining({ step: "manifest-cache", cache: "error", ok: false }));
+});
+
+it("records the first successful home request and then keeps fast requests quiet", async () => {
   const log = vi.spyOn(console, "info").mockImplementation(() => {});
   expect(await traceHomeData("home", () => measureHomeTask("announcements", async () => 12))).toBe(12);
-  expect(log).not.toHaveBeenCalled();
+  expect(log).toHaveBeenCalledTimes(1);
+  expect(await traceHomeData("home", () => measureHomeTask("manifest-cache", async () => 12, () => false))).toBe(12);
+  expect(log).toHaveBeenCalledTimes(1);
 });
 
 it("rethrows Next dynamic-rendering control flow without reporting a server failure", async () => {

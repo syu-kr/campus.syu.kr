@@ -15,7 +15,7 @@ export interface PublicDataStore {
 const digest = (payload: Buffer) => createHash("sha256").update(payload).digest("hex");
 function isConflict(error: unknown) { return typeof error === "object" && error !== null && "code" in error && [409, 412, "409", "412"].includes(error.code as number | string); }
 export function publicDataFirebaseEnabled() { return process.env.PUBLIC_DATA_BACKEND === "firebase"; }
-function publicDataBucketName() {
+export function publicDataBucketName() {
   const name = process.env.PUBLIC_DATA_STORAGE_BUCKET || process.env.MANAGED_CONTENT_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "";
   if (!name || /[\s/\\]/.test(name)) throw new Error("Public data bucket is not configured");
   return name;

@@ -7,19 +7,11 @@ import { LOCALE_HEADER_NAME, normalizeLocale } from "@/lib/i18n/routing";
 import { HomePageSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { HomeDashboardClient } from "@/app/features/home/HomeDashboardClient";
 import { HomeSearchBar } from "@/app/features/home/HomeSearchBar";
-import { getHomeAnnouncementSummary } from "@/lib/server/home-announcements";
+import { getHomePublicData } from "@/lib/server/home-public-data";
 import { measureHomeTask, traceHomeData } from "@/lib/server/home-performance";
-import {
-  getHomeAcademicSchedules,
-  getHomeCafeteriaSnapshot,
-  getHomeShuttleBuses,
-  getHomeShuttleSpecialPeriods,
-  getHomePublicHolidays,
-} from "@/lib/server/home-data";
 import { getKoreaNow } from "@/lib/home";
 import { getAllServiceNotices } from "@/lib/serviceNotices";
 import { getPublicBanners } from "@/lib/server/public-managed-content";
-import { publicDataFirebaseEnabled } from "@/lib/server/public-data-storage";
 
 export const revalidate = 300;
 
@@ -78,22 +70,12 @@ async function DeferredHomeContent({ content }: { content: ReturnType<typeof Hom
 
 async function HomeContent() {
   const [
-    initialAnnouncements,
+    initialData,
     serviceNoticeResult,
-    initialSchedules,
-    initialPublicHolidays,
-    initialCafeteria,
-    initialShuttles,
-    initialSpecialPeriods,
     initialBanners,
   ] = await traceHomeData("home", () => Promise.all([
-      measureHomeTask("announcements", getHomeAnnouncementSummary),
+      measureHomeTask("public-data", getHomePublicData),
       measureHomeTask("service-notices", getLocalizedHomeServiceNotices),
-      measureHomeTask("schedules", getHomeAcademicSchedules),
-      measureHomeTask("holidays", getHomePublicHolidays),
-      measureHomeTask("cafeteria", getOptionalCafeteriaSnapshot),
-      measureHomeTask("shuttles", getHomeShuttleBuses),
-      measureHomeTask("special-periods", getHomeShuttleSpecialPeriods),
       measureHomeTask("banners", () => getPublicBanners("home")),
     ]));
 
@@ -103,13 +85,10 @@ async function HomeContent() {
   return (
     <Activity mode="visible">
       <HomeDashboardClient
-        initialAnnouncements={initialAnnouncements}
+        {...initialData}
         initialServiceNotices={serviceNoticeResult.items}
         initialServiceNoticesFailed={serviceNoticeResult.failed}
         initialBanners={initialBanners}
-        initialSchedules={initialSchedules}
-        initialPublicHolidays={initialPublicHolidays}
-        initialOverviewData={{ cafeteria: initialCafeteria, shuttles: initialShuttles, specialPeriods: initialSpecialPeriods, firebaseDataEnabled: publicDataFirebaseEnabled() }}
         initialNowIso={getKoreaNow().toISOString()}
       />
     </Activity>
@@ -120,13 +99,4 @@ async function getLocalizedHomeServiceNotices() {
   const locale = normalizeLocale((await headers()).get(LOCALE_HEADER_NAME));
   try { return { items: await getAllServiceNotices(locale), failed: false }; }
   catch (error) { unstable_rethrow(error);return { items: [], failed: true }; }
-}
-
-async function getOptionalCafeteriaSnapshot() {
-  try {
-    return await getHomeCafeteriaSnapshot();
-  } catch (error) {
-    unstable_rethrow(error);
-    return undefined;
-  }
 }

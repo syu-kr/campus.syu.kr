@@ -15,7 +15,13 @@ const overviewReaders = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/server/announcements", () => readers);
-vi.mock("@/lib/server/home-announcements", () => ({ getHomeAnnouncementSummary: () => readers.getAnnouncementSummary(12) }));
+vi.mock("@/lib/server/home-public-data", () => ({ getHomePublicData: async () => {
+  const [initialAnnouncements, initialSchedules, initialPublicHolidays, cafeteria, shuttles, specialPeriods] = await Promise.all([
+    readers.getAnnouncementSummary(12), readers.getHomeAcademicSchedules(), readers.getHomePublicHolidays(),
+    overviewReaders.getHomeCafeteriaSnapshot().catch(() => undefined), overviewReaders.getHomeShuttleBuses(), overviewReaders.getHomeShuttleSpecialPeriods(),
+  ]);
+  return { initialAnnouncements, initialSchedules, initialPublicHolidays, initialOverviewData: { cafeteria, shuttles, specialPeriods, firebaseDataEnabled: process.env.PUBLIC_DATA_BACKEND === "firebase" } };
+} }));
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("@/lib/serviceNotices", () => readers);
 vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: vi.fn(async () => []) }));
