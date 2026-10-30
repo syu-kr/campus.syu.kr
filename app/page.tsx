@@ -7,7 +7,8 @@ import { LOCALE_HEADER_NAME, normalizeLocale } from "@/lib/i18n/routing";
 import { HomePageSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { HomeDashboardClient } from "@/app/features/home/HomeDashboardClient";
 import { HomeSearchBar } from "@/app/features/home/HomeSearchBar";
-import { getAnnouncementSummary } from "@/lib/server/announcements";
+import { getHomeAnnouncementSummary } from "@/lib/server/home-announcements";
+import { measureHomeTask, traceHomeData } from "@/lib/server/home-performance";
 import {
   getHomeAcademicSchedules,
   getHomeCafeteriaSnapshot,
@@ -85,16 +86,16 @@ async function HomeContent() {
     initialShuttles,
     initialSpecialPeriods,
     initialBanners,
-  ] = await Promise.all([
-      getAnnouncementSummary(12),
-      getLocalizedHomeServiceNotices(),
-      getHomeAcademicSchedules(),
-      getHomePublicHolidays(),
-      getOptionalCafeteriaSnapshot(),
-      getHomeShuttleBuses(),
-      getHomeShuttleSpecialPeriods(),
-      getPublicBanners("home"),
-    ]);
+  ] = await traceHomeData("home", () => Promise.all([
+      measureHomeTask("announcements", getHomeAnnouncementSummary),
+      measureHomeTask("service-notices", getLocalizedHomeServiceNotices),
+      measureHomeTask("schedules", getHomeAcademicSchedules),
+      measureHomeTask("holidays", getHomePublicHolidays),
+      measureHomeTask("cafeteria", getOptionalCafeteriaSnapshot),
+      measureHomeTask("shuttles", getHomeShuttleBuses),
+      measureHomeTask("special-periods", getHomeShuttleSpecialPeriods),
+      measureHomeTask("banners", () => getPublicBanners("home")),
+    ]));
 
   markHomeDataResolved();
 

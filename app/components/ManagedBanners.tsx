@@ -88,7 +88,7 @@ export function ManagedBanners({ initialBanners, placement, initialNow, nonce }:
         const body: unknown = await response.json();
         if (!disposed && body && typeof body === "object" && "banners" in body && Array.isArray(body.banners) && body.banners.every(validBanner)) {
           setItems(body.banners);
-          recovered ||= body.banners.length > 0;
+          recovered = true;
         }
       } catch { /* Preserve the last public snapshot; expiration is checked separately. */ }
       finally {

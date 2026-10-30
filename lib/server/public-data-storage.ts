@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { initializeFirebaseAdmin } from "../firebaseAdmin";
+import { measureHomeTask } from "./home-performance";
 import { parsePublicDataManifest, publicDataMaxBytes, publicDataPath, validatePublicData, type PublicDataFile, type PublicDataManifest } from "../public-data-snapshot";
 
 export interface ActivePublicData { manifest: PublicDataManifest; revision: number }
@@ -108,7 +109,7 @@ const dataCache = new Map<string, Promise<unknown>>();
 export async function getActivePublicData() {
   const bucket = publicDataBucketName(), now = Date.now();
   if (!activeCache || activeCache.bucket !== bucket || activeCache.expiresAt <= now) {
-    const promise = firebasePublicDataStore().readActive().then(value => { if (!value) throw new Error("Public data has no active Firebase snapshot"); return value; });
+    const promise = measureHomeTask("manifest", () => firebasePublicDataStore().readActive()).then(value => { if (!value) throw new Error("Public data has no active Firebase snapshot"); return value; });
     activeCache = { bucket, expiresAt: now + 30_000, promise };
     void promise.catch(() => { if (activeCache?.promise === promise) activeCache = undefined; });
   }
@@ -119,7 +120,7 @@ export async function readFirebasePublicData<T>(file: PublicDataFile, active?: A
   const key = `${publicDataBucketName()}/${current.manifest.version}/${file}/${current.manifest.files[file]?.sha256}`;
   let promise = dataCache.get(key);
   if (!promise) {
-    promise = readPublicSnapshotFile(firebasePublicDataStore(), current.manifest, file);
+    promise = measureHomeTask(`snapshot:${file}`, () => readPublicSnapshotFile(firebasePublicDataStore(), current.manifest, file));
     dataCache.set(key, promise);
     if (dataCache.size > 46) dataCache.delete(dataCache.keys().next().value!);
     void promise.catch(() => { if (dataCache.get(key) === promise) dataCache.delete(key); });

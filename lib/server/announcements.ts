@@ -5,6 +5,7 @@ import {
   preloadAnnouncementAiMetadata,
 } from "./announcement-ai";
 import { readDailyCrawlDataSnapshot } from "./crawl-data";
+import { readFirebasePublicData, type ActivePublicData } from "./public-data-storage";
 
 export interface AnnouncementQuery {
   category?: AnnouncementCategory | "all";
@@ -100,12 +101,13 @@ export async function getAnnouncementPage({
   };
 }
 
-export async function getAnnouncementSummary(limit = 12) {
+export async function getAnnouncementSummary(limit = 12, active?: ActivePublicData) {
   const sourceItems = await Promise.all(
     CATEGORY_ORDER.map(async (sourceCategory) => {
-      const source = await readAnnouncements(sourceCategory);
+      const source = active ? await readAnnouncementsFromSource(sourceCategory, active) : await readAnnouncements(sourceCategory);
       if (limit >= 1 && source.items.length > 0) {
-        preloadAnnouncementAiMetadata();
+        if (active) preloadAnnouncementAiMetadata(active);
+        else preloadAnnouncementAiMetadata();
       }
       return source;
     }),
@@ -113,6 +115,7 @@ export async function getAnnouncementSummary(limit = 12) {
 
   const items = await attachAnnouncementAiSummaries(
     orderedAnnouncements(sourceItems, true).slice(0, limit),
+    active,
   );
 
   return items.map((item) => ({
@@ -170,9 +173,12 @@ async function readAnnouncements(
 
 async function readAnnouncementsFromSource(
   category: AnnouncementCategory,
+  active?: ActivePublicData,
 ): Promise<AnnouncementSource> {
   const fileName = SOURCE_BY_CATEGORY[category];
-  const snapshot = await readDailyCrawlDataSnapshot<Announcement[]>(fileName);
+  const snapshot = active
+    ? { ...(await readFirebasePublicData<Announcement[]>(fileName, active)), source: "firebase-storage" }
+    : await readDailyCrawlDataSnapshot<Announcement[]>(fileName);
   const items = snapshot.data.map((item) => {
     const announcement = { ...item, category: item.category || category };
     announcementDates.set(announcement, parseAnnouncementDate(announcement.date));

@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import type { Announcement, AnnouncementAiSummary } from "@/types";
 import { readDailyCrawlDataJson } from "./crawl-data";
+import { readFirebasePublicData, type ActivePublicData } from "./public-data-storage";
 
 interface AnnouncementAiMetadataFile {
   version: number;
@@ -17,16 +18,17 @@ let metadataCache:
     }
   | undefined;
 
-export function preloadAnnouncementAiMetadata(): void {
-  void readAnnouncementAiMetadata();
+export function preloadAnnouncementAiMetadata(active?: ActivePublicData): void {
+  void readAnnouncementAiMetadata(active).catch(() => {});
 }
 
 export async function attachAnnouncementAiSummaries(
   announcements: Announcement[],
+  active?: ActivePublicData,
 ): Promise<Announcement[]> {
   if (announcements.length === 0) return announcements;
 
-  const metadata = await readAnnouncementAiMetadata();
+  const metadata = await readAnnouncementAiMetadata(active);
   if (!metadata) return announcements;
 
   return announcements.map((announcement) => {
@@ -121,7 +123,12 @@ function hashText(value: string) {
   return createHash("sha256").update(value).digest("hex").slice(0, 16);
 }
 
-async function readAnnouncementAiMetadata() {
+async function readAnnouncementAiMetadata(active?: ActivePublicData) {
+  if (active) {
+    const { data } = await readFirebasePublicData<AnnouncementAiMetadataFile>("announcement-ai-metadata.json", active);
+    if (!data || data.version !== 1 || !data.items) throw new Error("Invalid announcement AI metadata");
+    return data;
+  }
   const now = Date.now();
 
   if (metadataCache && metadataCache.expiresAt > now) {

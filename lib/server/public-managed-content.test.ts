@@ -3,7 +3,7 @@ import type { ManagedContentRecord } from "@/types/managed-content";
 const db = vi.hoisted(() => ({ read: vi.fn() }));
 vi.mock("next/cache", () => ({ unstable_cache: (fn: () => unknown) => fn }));
 vi.mock("./managed-content", () => ({ readPublishedManagedContentRecords: db.read, readPublishedManagedContentRecord: async (id: string) => (await db.read()).find((item: ManagedContentRecord) => item.id === id) ?? null }));
-import { getPublicBanners, getPublicManagedContentRecords, isVisiblePublication } from "./public-managed-content";
+import { getPublicBanners, readPublicBanners, getPublicManagedContentRecords, isVisiblePublication } from "./public-managed-content";
 const now = Date.parse("2026-10-26T09:00:00Z");
 function banner(id: string, priority = 0): ManagedContentRecord {
   const draft = { kind: "banner" as const, category: "event" as const, placement: "home" as const, title: id, description: "Public", imageDesktop: "", imageMobile: "", imageAlt: "", link: "/more", priority, dismissible: true, startsAt: null, endsAt: null };
@@ -32,6 +32,7 @@ it("returns only active public snapshots, placement and priority, capped at thre
 it("fails closed for banners and keeps notice DB errors observable", async () => {
   db.read.mockRejectedValue(new Error("unavailable"));
   expect(await getPublicBanners("home", now)).toEqual([]);
+  await expect(readPublicBanners("home", now)).rejects.toThrow("unavailable");
   await expect(getPublicManagedContentRecords()).rejects.toThrow("unavailable");
 });
 it("keeps popup publications separate from inline placements and excludes future popups", async () => {

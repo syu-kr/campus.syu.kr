@@ -15,6 +15,7 @@ const overviewReaders = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/server/announcements", () => readers);
+vi.mock("@/lib/server/home-announcements", () => ({ getHomeAnnouncementSummary: () => readers.getAnnouncementSummary(12) }));
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("@/lib/serviceNotices", () => readers);
 vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: vi.fn(async () => []) }));
