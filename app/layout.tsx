@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { ManagedBanners } from "./components/ManagedBanners";
 import { getPublicBanners } from "@/lib/server/public-managed-content";
+import { measureHomeTask, traceHomeData } from "@/lib/server/home-performance";
 import { getKoreaNow } from "@/lib/home";
 import { PageTranslationStatus } from "./components/ContentTranslation";
 import Script from "next/script";
@@ -159,7 +160,10 @@ export default async function RootLayout({
   const bannerNow = getKoreaNow().getTime();
   // Resolve the bounded public snapshot before the first shell to avoid pushing visible content down.
   const [siteTopBanners, popupBanners] = showSiteTopBanners
-    ? await Promise.all([getPublicBanners("site-top", bannerNow), getPublicBanners("popup", bannerNow)]) : [[], []];
+    ? await traceHomeData("layout-banners", () => Promise.all([
+      measureHomeTask("site-top", () => getPublicBanners("site-top", bannerNow)),
+      measureHomeTask("popup", () => getPublicBanners("popup", bannerNow)),
+    ])) : [[], []];
   const naverVerification = process.env.NAVER_SITE_VERIFICATION?.trim();
   const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
 

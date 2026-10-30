@@ -163,22 +163,37 @@ it("opens and closes even when local and session storage are unavailable", () =>
   render(popupView());expect(screen.getByRole("dialog")).toBeVisible();fireEvent.click(screen.getByRole("button", { name: "오늘 그만 보기" }));expect(screen.queryByRole("dialog")).toBeNull();
 });
 
-it("recovers a cold empty snapshot with bounded early retries instead of waiting thirty seconds", async () => {
-  vi.mocked(fetch).mockResolvedValueOnce(Response.json({ banners: [] })).mockResolvedValueOnce(Response.json({ banners: [] })).mockResolvedValue(Response.json({ banners: [popup] }));
+it("recovers a failed empty snapshot with bounded early retries instead of waiting thirty seconds", async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({}, { status: 503 })).mockRejectedValueOnce(new Error("offline")).mockResolvedValue(Response.json({ banners: [popup] }));
   render(popupView([]));
   await act(async () => vi.advanceTimersByTimeAsync(3011));
   expect(fetch).toHaveBeenCalledTimes(3);
   expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
 });
 
-it("bounds empty-state recovery and cancels it when the banner unmounts", async () => {
+it("accepts a successful empty response and keeps polling for newly published banners", async () => {
   vi.mocked(fetch).mockImplementation(async () => Response.json({ banners: [] }));
   const current = render(popupView([]));
   await act(async () => vi.advanceTimersByTimeAsync(10000));
-  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  vi.mocked(fetch).mockResolvedValue(Response.json({ banners: [popup] }));
+  await act(async () => vi.advanceTimersByTimeAsync(20000));
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(screen.getByRole("dialog", { name: popup.title })).toBeVisible();
+  vi.mocked(fetch).mockResolvedValue(Response.json({ banners: [] }));
+  await act(async () => vi.advanceTimersByTimeAsync(30000));
+  expect(screen.queryByRole("dialog")).toBeNull();
   current.unmount();
   await act(async () => vi.advanceTimersByTimeAsync(30000));
   expect(fetch).toHaveBeenCalledTimes(3);
+});
+
+it("does not accept malformed successful responses as recovery", async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json({ banners: [null] })).mockResolvedValue(Response.json({ banners: [] }));
+  render(popupView([]));
+  await act(async () => vi.advanceTimersByTimeAsync(10000));
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(screen.queryByRole("dialog")).toBeNull();
 });
 
 it("does not overlap an unfinished read when the tab becomes visible", async () => {

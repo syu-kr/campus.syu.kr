@@ -1,8 +1,10 @@
 // @vitest-environment node
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Announcement, AnnouncementAiSummary } from "@/types";
+import type { ActivePublicData } from "./public-data-storage";
 
-const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), metadata: vi.fn() }));
+const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), metadata: vi.fn(), firebase: vi.fn() }));
+vi.mock("./public-data-storage", () => ({ readFirebasePublicData: mocks.firebase }));
 vi.mock("./crawl-data", () => ({
   readDailyCrawlDataSnapshot: mocks.snapshot,
   readDailyCrawlDataJson: mocks.metadata,
@@ -37,6 +39,33 @@ beforeEach(() => {
   mocks.snapshot.mockReset().mockImplementation(async (file: string) =>
     snapshot(file === "announcements-academic.json" ? [announcement] : []));
   mocks.metadata.mockReset().mockResolvedValue(metadata);
+  mocks.firebase.mockReset();
+});
+
+it("builds the shared home result from one exact snapshot without old process caches or stale AI matches", async () => {
+  const { getAnnouncementSummary } = await import("./announcements");
+  expect((await getAnnouncementSummary())[0].aiSummary).toEqual(aiSummary);
+  const active = { manifest: { version: "new-snapshot" }, revision: 2 } as ActivePublicData;
+  const changed = { ...announcement, content: "새 공지 원문".repeat(100) };
+  mocks.firebase.mockImplementation(async (file: string) => ({ data: file === "announcement-ai-metadata.json" ? metadata : file === "announcements-academic.json" ? [changed] : [], manifest: active.manifest }));
+  const result = await getAnnouncementSummary(12, active);
+  expect(result[0].content).toBe(changed.content.slice(0, 240));
+  expect(result[0].aiSummary).toBeUndefined();
+  expect(mocks.firebase.mock.calls.every(([, snapshot]) => snapshot === active)).toBe(true);
+  expect(mocks.firebase.mock.calls.filter(([file]) => file !== "announcement-ai-metadata.json")).toHaveLength(4);
+  expect(mocks.snapshot).toHaveBeenCalledTimes(4);
+});
+
+it("does not let metadata failure become a successful immutable home cache result", async () => {
+  const active = { manifest: { version: "new-snapshot" }, revision: 2 } as ActivePublicData;
+  mocks.firebase.mockImplementation(async (file: string) => {
+    if (file === "announcement-ai-metadata.json") throw new Error("metadata unavailable");
+    return { data: file === "announcements-academic.json" ? [announcement] : [], manifest: active.manifest };
+  });
+  const { getAnnouncementSummary } = await import("./announcements");
+  await expect(getAnnouncementSummary(12, active)).rejects.toThrow("metadata unavailable");
+  mocks.firebase.mockImplementation(async (file: string) => ({ data: file === "announcement-ai-metadata.json" ? metadata : file === "announcements-academic.json" ? [announcement] : [], manifest: active.manifest }));
+  expect((await getAnnouncementSummary(12, active))[0].aiSummary).toEqual(aiSummary);
 });
 afterEach(() => { vi.useRealTimers(); });
 

@@ -41,6 +41,14 @@ export function isVisiblePublication(record: { archived: boolean; published: { s
 }
 
 export async function getPublicBanners(placement: PublicBanner["placement"], now = Date.now()): Promise<PublicBanner[]> {
+  try { return await readPublicBanners(placement, now); }
+  catch {
+    // A banner outage must not block campus services or reveal cached draft content.
+    return [];
+  }
+}
+
+export async function readPublicBanners(placement: PublicBanner["placement"], now = Date.now()): Promise<PublicBanner[]> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const records = await Promise.race([
@@ -53,8 +61,5 @@ export async function getPublicBanners(placement: PublicBanner["placement"], now
         ? [{ ...record.published, id: record.id, revision: record.publishedRevision ?? parseInt(createHash("sha256").update(JSON.stringify(record.published)).digest("hex").slice(0, 8), 16) }] : [])
       .sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id, "en"))
       .slice(0, 3);
-  } catch {
-    // A banner outage must not block campus services or reveal cached draft content.
-    return [];
   } finally { clearTimeout(timer); }
 }

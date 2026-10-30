@@ -2,6 +2,10 @@
 
 현재 코드의 경계와 재검증 방법을 유지합니다. 날짜별 실행 로그·캡처·성능 원본은 로컬에 보관하며 과거 측정을 현재 운영 상태로 승계하지 않습니다.
 
+홈의 Firebase 공지 12개는 활성 manifest를 먼저 확인한 뒤 그 immutable snapshot을 key로 Next 공유 캐시에 저장합니다. 이 경로는 원문과 AI metadata를 같은 snapshot에서 검증하고 기존 60초 프로세스 캐시를 건너뜁니다. 버전이 바뀌면 새 key를 사용하므로 공유 캐시 자체의 TTL을 기다리지 않습니다. 활성 manifest의 기존 30초 확인 주기는 유지합니다. 실패 결과와 번들 fallback은 공유 캐시에 저장하지 않습니다. Pages 백엔드·목록·검색·상세는 기존 경로를 유지합니다. Cache Components를 전역 도입하지 않고 기존 `unstable_cache` 패턴을 사용합니다.
+
+`[home-performance]` 로그는 홈 데이터 또는 공통 배너 조회가 1초 이상 걸리거나 실패할 때 작업별 시간·성공 여부·실행 지역을 기록합니다. manifest·snapshot miss도 같은 비동기 요청 범위에 포함합니다. 중첩 작업은 시간이 겹칠 수 있으므로 합산하지 않습니다. 로그에는 콘텐츠·사용자 정보·요청 URL·오류 메시지를 넣지 않습니다. 정상 빈 배너 응답은 복구 성공으로 처리하고 30초 갱신과 실제 오류 재시도는 유지합니다.
+
 ## 빌드와 분석
 
 ```bash
@@ -25,10 +29,10 @@ npm run build:analyze
 
 ### 홈의 메뉴와 서버 데이터
 
-- [홈](./app/page.tsx)의 [HomeSearchBar](./app/features/home/HomeSearchBar.tsx)는 두 언어 모두 데이터 조회 경계 밖에서 SSR·hydration합니다. 대시보드는 공지 요약·서비스 공지·학사일정·공휴일·학식·셔틀 시간표·특별 운행의 7개 병렬 작업을 기다립니다. [HomeDashboardClient](./app/features/home/HomeDashboardClient.tsx)의 `next/dynamic`과 `Activity mode="visible"`로 대시보드 JS 로딩을 검색과 분리하며 준비된 SSR 본문을 표시합니다. 비어 있지 않은 `?search`는 검색 결과 화면의 입력을 표시하고 같은 query 처리 hook으로 언어 경로와 다른 parameter를 유지합니다.
-- M3 홈에는 학식·일정·노선별 다음 셔틀과 선택한 실시간 교통 요약이 있습니다. 식당/교통 선택·실패 복구·공휴일 판정을 유지합니다. 화면·서버 작업 수와 원본 JSON 다운로드 수·시간은 다르며 이전 4조회 비교의 성능 감소율을 현재 7개 작업에 대입하지 않습니다.
-- 서버 프로세스에서 홈 데이터 조회가 한 번도 완료되지 않았으면 동기 `Home`이 `Suspense`와 스켈레톤을 바로 반환합니다. 이 경로에는 별도의 20ms 대기를 추가하지 않습니다. 7개 작업이 완료된 뒤에만 모듈의 `hasResolvedHomeData`를 설정합니다. 이 boolean은 렌더링 경로 선택용이며 데이터·버전·만료·로케일을 저장하는 캐시가 아닙니다.
-- 이후 요청의 `WarmHomeContent`도 동일한 7개 작업을 시작합니다. 조회 완료와 20ms 타이머를 `Promise.race`로 비교해 데이터가 먼저 준비되면 대시보드의 `Activity` 경계를 반환하고, 타이머가 먼저 끝나면 스켈레톤과 `DeferredHomeContent`에 같은 Promise를 전달해 스트리밍합니다. 이 제한은 데이터 준비 대기이며 SSR 모듈 로드를 포함한 전체 TTFB 상한이 아닙니다.
+- [홈](./app/page.tsx)의 [HomeSearchBar](./app/features/home/HomeSearchBar.tsx)는 두 언어 모두 데이터 조회 경계 밖에서 SSR·hydration합니다. 대시보드는 공지 요약·서비스 공지·학사일정·공휴일·학식·셔틀 시간표·특별 운행·홈 배너의 8개 병렬 작업을 기다립니다. [HomeDashboardClient](./app/features/home/HomeDashboardClient.tsx)의 `next/dynamic`과 `Activity mode="visible"`로 대시보드 JS 로딩을 검색과 분리하며 준비된 SSR 본문을 표시합니다. 비어 있지 않은 `?search`는 검색 결과 화면의 입력을 표시하고 같은 query 처리 hook으로 언어 경로와 다른 parameter를 유지합니다.
+- M3 홈에는 학식·일정·노선별 다음 셔틀과 선택한 실시간 교통 요약이 있습니다. 식당/교통 선택·실패 복구·공휴일 판정을 유지합니다. 화면·서버 작업 수와 원본 JSON 다운로드 수·시간은 다르며 이전 4조회 비교의 성능 감소율을 현재 8개 작업에 대입하지 않습니다.
+- 서버 프로세스에서 홈 데이터 조회가 한 번도 완료되지 않았으면 동기 `Home`이 `Suspense`와 스켈레톤을 바로 반환합니다. 이 경로에는 별도의 20ms 대기를 추가하지 않습니다. 8개 작업이 완료된 뒤에만 모듈의 `hasResolvedHomeData`를 설정합니다. 이 boolean은 렌더링 경로 선택용이며 데이터·버전·만료·로케일을 저장하는 캐시가 아닙니다.
+- 이후 요청의 `WarmHomeContent`도 동일한 8개 작업을 시작합니다. 조회 완료와 20ms 타이머를 `Promise.race`로 비교해 데이터가 먼저 준비되면 대시보드의 `Activity` 경계를 반환하고, 타이머가 먼저 끝나면 스켈레톤과 `DeferredHomeContent`에 같은 Promise를 전달해 스트리밍합니다. 이 제한은 데이터 준비 대기이며 SSR 모듈 로드를 포함한 전체 TTFB 상한이 아닙니다.
 - 큰 내부 `Suspense`는 데이터와 렌더가 완료돼도 React의 출력 크기 정책으로 본문을 숨김 segment에 보내고 나중에 표시할 수 있습니다. 설치된 React 19.3의 공개 `Activity`를 항상 `visible`로 사용해 이 표시 지연을 피하면서 선택적 hydration을 유지합니다([공식 설명](https://react.dev/reference/react/Activity#speeding-up-interactions-during-page-load)). private 렌더 설정이나 서버·브라우저별 renderer 분기는 사용하지 않습니다. 드문 대시보드 SSR 렌더·모듈 오류는 이전 내부 Suspense의 재시도 대신 기존 페이지 오류 경계에서 복구할 수 있으므로 오류 UI까지 같다고 가정하지 않습니다.
 - 조회의 버전·만료·갱신 정책과 오류 전파는 유지합니다. 타이머는 `finally`에서 정리하며, 조회 오류를 성공이나 빈 데이터로 바꾸지 않습니다. 이 경로 선택이 브라우저 hydration이나 검색·메뉴 조작 준비의 단축을 보장하지는 않습니다. Sentry의 초기 오류 수집과 라우터 전환 breadcrumb도 유지합니다.
 - [SearchBar](./app/components/SearchBar.tsx)는 서버 HTML 표시 후 hydration 전에 입력한 DOM 값을 초기 effect에서 state에 채택합니다. React에 이미 입력 state 갱신이 큐되어 있으면 그 값을 우선해 첫 입력을 덮어쓰지 않습니다. 초기 DOM 값이 기본값과 같으면 setState 호출 자체를 생략하며 실제 `defaultValue` prop 변경은 계속 동기화합니다. 입력 문구뿐 아니라 검색 버튼 활성화·제출 값·초기화 동작과 포커스도 함께 확인합니다.
