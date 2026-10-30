@@ -2260,7 +2260,7 @@ function TimetableGrid({
               <span className="text-[11px] leading-4 sm:text-sm">
                 {formatPeriodLabel(period, text)}
               </span>
-              <span className="text-[10px] leading-4 text-neutral-500">
+              <span className="text-[10px] leading-4 text-neutral-600">
                 {getPeriodTimeLabel(period)}
               </span>
             </div>
