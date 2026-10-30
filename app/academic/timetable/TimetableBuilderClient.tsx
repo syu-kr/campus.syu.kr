@@ -1880,7 +1880,7 @@ function CoursePicker({
         <div
           key={listKey}
           className={clsx(
-            "grid gap-3 overflow-y-auto pr-1",
+            "m3-academic-course-results grid gap-3 overflow-y-auto pr-1",
             compact
               ? "max-h-[520px] grid-cols-1"
               : "max-h-[60vh] lg:max-h-[620px] lg:grid-cols-2 2xl:grid-cols-3",
