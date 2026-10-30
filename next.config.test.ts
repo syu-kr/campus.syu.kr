@@ -73,3 +73,14 @@ it("lets crawlers follow suggestion redirects to the noindex form", async () => 
   }
   expect(robots).toContain("Sitemap: https://campus.syu.kr/sitemap.xml");
 });
+
+
+it.each([false, true])("generates private Sentry maps only when uploads are authenticated (%s)", (authenticated) => {
+  const { config, withSentryConfig } = loadConfig(authenticated ? { SENTRY_AUTH_TOKEN: "test-build-token" } : {});
+  expect(config.productionBrowserSourceMaps).toBe(authenticated);
+  expect(withSentryConfig).toHaveBeenCalledWith(config, expect.objectContaining({
+    sourcemaps: { disable: !authenticated, deleteSourcemapsAfterUpload: true },
+    release: { create: authenticated, finalize: authenticated },
+    telemetry: false,
+  }));
+});

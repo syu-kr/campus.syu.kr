@@ -41,7 +41,7 @@
 | `CONTENT_TRANSLATION_DAILY_CHARACTERS` | 선택 | 신규 번역 실제 입력의 UTC 일일 예약 한도. 기본 25,000. 공급자 할당량과 별도 |
 | `NAVER_SITE_VERIFICATION` | 선택 | 네이버 소유확인 메타태그의 `content` 값. Production에 등록하고 재배포. HTML에서 공개되며 미설정·공백이면 태그 생략 |
 | `BING_SITE_VERIFICATION` | 선택 | Bing `msvalidate.01` 메타태그의 `content` 값. Production에 등록하고 재배포. GSC 가져오기·DNS 인증 사용 시 불필요 |
-| `CRAWL_DATA_BASE_URL` | 선택 | 일일 크롤링 데이터 Pages base URL override. 기본 공식 URL 사용 시 등록하지 않음 |
+| `CRAWL_DATA_BASE_URL` | 선택 | Pages 모드의 일일 데이터 조회·발행 스크립트 base URL override. 기본 공식 URL 사용 시 등록하지 않으며 Firebase 정상 조회에는 사용하지 않음 |
 | `PUSH_API_KEY` | 필수 | 내부 푸시 발송 API 인증 키. 환경별로 별도 값 사용 |
 | `RATE_LIMIT_SECRET` | 운영 필수 | 서버리스 인스턴스 간 API rate limit 키를 HMAC 처리하는 32-byte 이상의 무작위 비밀 값. Production에서는 미등록 시 public write API가 실패함 |
 | `ROOMMATES_OWNER_KEY_SECRET` | 룸메이트 활성화 시 필수 | 검증된 학교 이메일의 작성자 키를 만드는 독립적인 무작위 32-byte 이상 HMAC 비밀값. 환경별 분리. 미설정이면 룸메이트 인증과 게시판은 503으로 거부 |
@@ -110,7 +110,7 @@ Admin API는 Firebase ID token 검증을 위해 Firebase Admin SDK를 사용합�
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase app id |
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | Web Push VAPID public key |
 | `NEXT_PUBLIC_SENTRY_DSN` | 오류 수집 시 필수 | 브라우저·Node·Edge Sentry 초기화 DSN. 공개 값이며 미설정하면 이벤트 전송을 구성할 수 없음 |
-| `NEXT_PUBLIC_CAFETERIA_JSON_URL` | 만나의집 사용 시 필수 | 공개 Pages의 만나의집 JSON URL. 공백이면 해당 식단을 앱에 연결하지 않음. 비공개 수집 endpoint를 넣지 않음 |
+| `NEXT_PUBLIC_CAFETERIA_JSON_URL` | Pages 모드 만나의집 사용 시 필수, Firebase 선택 | 검증된 공개 식단 JSON URL. Firebase 정상 조회에는 불필요하며, 조회 실패 후 로컬 식단·Firebase 전용 복구 사본도 없을 때 서버의 마지막 URL fallback으로 사용. Pages 모드에서는 공백이면 앱에 연결하지 않음. 비공개 수집 endpoint를 넣지 않음 |
 
 ### Sentry 빌드 설정
 
@@ -164,8 +164,10 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 1. `Settings -> Pages -> Build and deployment -> Source`를 `GitHub Actions`로 설정합니다.
 2. Pages 배포에는 Actions의 기본 `GITHUB_TOKEN`을 사용합니다. 공휴일 원본 수집에는 위 표의 `PUBLIC_DATA_SERVICE_KEY` Secret을 별도로 연결합니다.
 3. `crawl-daily.yml`의 준비 job은 `contents: read`, `pages: read`만 사용합니다.
-4. 배포 job만 `pages: write`, `id-token: write`를 사용하며 `github-pages` environment에 배포합니다.
+4. 일일·롤백의 Pages 배포 job과 주간 식단 job에 `pages: write`, `id-token: write`, `github-pages` environment가 설정되어 있습니다. Pages 모드에서 실제 Pages 배포에 사용합니다.
 5. Vercel에는 crawl data용 자격 증명이나 환경 변수를 등록하지 않습니다.
+
+Firebase 모드에서는 Pages 준비·업로드·배포를 건너뛰지만 위 권한과 environment 설정은 아직 남아 있습니다. 첫 Firebase 생산자 주기·구앱·fallback·복구 경로와 [Pages 종료 조건](FIREBASE_CUTOVER.md#8-복구와-pages-종료)을 확인한 뒤 별도 정리하며, 모드 전환만으로 제거하지 않습니다.
 
 상세 bootstrap과 롤백 절차는 [CRAWL_DATA_PAGES.md](./CRAWL_DATA_PAGES.md)를 따릅니다.
 
@@ -197,7 +199,7 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 
 URL은 비밀번호는 아니지만 공개 코드에서 감추기 위해 Variables에 둡니다.
 
-`PUBLIC_HOLIDAYS_ENABLED`는 공휴일 Pages 수집·health 발행 활성화 변수입니다. 호환되는 앱 배포 후 `true`로 설정합니다.
+`PUBLIC_HOLIDAYS_ENABLED`는 공휴일 수집·선택한 backend의 health 발행 활성화 변수입니다. 호환되는 앱 배포 후 `true`로 설정합니다.
 
 | 이름 | 필수 | 사용 워크플로 | 설명 |
 | --- | --- | --- | --- |
@@ -276,3 +278,9 @@ python scripts/crawl_announcements.py
 | Google Analytics gtag script | 브라우저가 직접 script를 로드 |
 | Firebase service worker CDN | service worker가 직접 `importScripts`로 로드 |
 | Firebase Web App `NEXT_PUBLIC_*` config | 클라이언트 SDK 초기화에 필요 |
+
+## Build tools and private source maps
+
+`vercel.json` pins install/build to the repository's existing `npm@10.9.4`, matching CI. It removes only unsupported `npm_config_cache_dir` / `NPM_CONFIG_CACHE_DIR` names from those subprocesses; npm's supported cache configuration is preserved. Review dependency lifecycle scripts through the lockfile and package source rather than granting a blanket `allowScripts` exception.
+
+Sentry browser maps are generated only when `SENTRY_AUTH_TOKEN` is present. The SDK uploads and deletes them; `postbuild` rejects any `.map` left in `.next/static` before publication. Without a build token, artifact upload/release creation is explicitly disabled while runtime error capture remains available. Verify real artifact processing and stack symbolication after an approved deployment. Never add the build token to untrusted PR workflows or public environment variables.

@@ -3,6 +3,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 const { withSentryConfig } = require("@sentry/nextjs/config");
+const uploadSentryArtifacts = Boolean(process.env.SENTRY_AUTH_TOKEN);
 
 const PERMANENT_REDIRECTS = [
   ["/index", "/"],
@@ -24,7 +25,7 @@ const nextConfig = {
   poweredByHeader: false,
   // Keep verified fallback snapshots in serverless functions after switching the primary store.
   outputFileTracingIncludes: {
-    "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json", "./public/service-notices/**/*.md"],
+    "/*": ["./public/data/*.json", "./public/cafeteria/student-restaurant-1.json", "./data-source/fallbacks/student-restaurant-1.json", "./public/service-notices/**/*.md"],
   },
   // Keep local files and contributor documentation out of server function packages.
   outputFileTracingExcludes: {
@@ -55,8 +56,8 @@ const nextConfig = {
   // 압축 설정
   compress: true,
 
-  // 빌드 최적화: 개발 중 불필요한 source map 제거
-  productionBrowserSourceMaps: false,
+  // Generate private browser maps only for builds that can upload them.
+  productionBrowserSourceMaps: uploadSentryArtifacts,
 
   // 온디맨드 페이지 생성 최적화
   onDemandEntries: {
@@ -253,6 +254,12 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   project: process.env.SENTRY_PROJECT || "javascript-nextjs",
   silent: !process.env.CI,
   widenClientFileUpload: true,
+  sourcemaps: {
+    disable: !uploadSentryArtifacts,
+    deleteSourcemapsAfterUpload: true,
+  },
+  release: { create: uploadSentryArtifacts, finalize: uploadSentryArtifacts },
+  telemetry: false,
   webpack: {
     treeshake: {
       removeDebugLogging: true,
