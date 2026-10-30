@@ -1,6 +1,6 @@
 # Firebase 데이터 전환 실행 가이드
 
-이 문서는 전환 준비와 실행 조건이다. PR 병합·배포·운영 설정 변경·데이터 활성화·Actions 수동 실행·GitHub Pages 종료를 수행했다는 기록이 아니다. 실제 실행은 담당자가 승인한 점검 창에서 단계별로 진행한다. 작성 기준은 2026-10-30의 코드와 앞선 리허설이며, 문서 작성 중 Cloud 설정을 새로 조회하거나 변경하지 않았다.
+이 문서는 전환 준비와 실행 조건이다. PR 병합·배포·운영 설정 변경·데이터 활성화·Actions 수동 실행·GitHub Pages 종료를 수행했다는 기록이 아니다. 실제 실행은 담당자가 승인한 점검 창에서 단계별로 진행한다. 작성 기준은 2026-10-30의 코드와 앞선 리허설이다. 특정 시점의 Cloud 설정·실제 실행 결과는 별도 실행 기록에서 확인한다.
 
 상세 계약은 [공개 snapshot 운영](PUBLIC_DATA_FIREBASE.md), [서비스 공지 이전](SERVICE_NOTICE_MIGRATION.md), [환경 등록](ENVIRONMENT_REGISTRATION.md), [TTL·규칙](FIRESTORE_RULES.md), [콘텐츠 번역](CONTENT_TRANSLATION.md)을 따른다. 비밀값·관리자 UID·비공개 공지 백업·원본 로그는 이 문서나 공개 PR에 넣지 않는다.
 
@@ -128,11 +128,20 @@ GitHub variable을 Firebase로 바꾸면 이후 자동 주기에 실제 쓰기�
 | `student-restaurant.yml` | active 복원 → 식단 수집 → `--publish --scope student-restaurant` | 만나의집만 갱신. 성공한 발행/배포 이후 분석 캐시 저장 |
 | `crawl-monthly.yml` | `public/data/phone-*.json`, `schedules-*.json` 검토 PR 생성 | Firebase에 직접 쓰지 않음. 검토·병합 경계 유지 |
 | `publish-reference-data.yml` | 같은 저장소의 최신 main push CI 성공 → `--publish --scope reference` | 참조 13파일. 같은 자료는 no-op, 오래된 CI는 skip |
-| `daily-announcement-notification.yml` | 공용 reader가 Firebase 자료 읽기 | FCM 발송은 별도 기능. 수동 검증은 먼저 `dry_run=true` |
+| `daily-announcement-notification.yml` | 공용 reader가 Firebase 자료 읽기 | FCM 발송은 별도 기능. `dry_run=true`도 문구 AI 호출 가능 |
 | `indexnow.yml` | 실제 배포 source SHA·active version·Firebase 출처 검증 | 검색 제출은 별도 외부 작업. 먼저 send=false 검증 |
 | `rollback-crawl-data.yml` | 예상 current를 요구하는 retained version rollback | 앱/환경/서비스 공지 rollback을 대신하지 않음 |
 
 Actions 자체·소스 저장소·월간 검토 PR·내부 분석 캐시·IndexNow 상태 artifact를 Firebase로 무조건 옮기지 않는다. 전환 대상은 공개 서비스 데이터의 저장/활성화/읽기다. 기존 `public-data-firebase` 공유 concurrency 그룹과 revision CAS를 유지한다.
+
+알림의 `dry_run=true`는 통계 조회와 `buildDailyPushCopy` 뒤에 FCM·Firestore 기록만 생략하므로 무료 검증이 아니다. 외부 호출 없는 준비에는 통계·문구 생성·발송·기록을 주입한 회귀 테스트를 사용한다. 실제 수동 실행은 AI 비용·원격 읽기·발송 범위를 따로 정한다.
+
+### 첫 정규 Weekly 관측
+
+- source SHA·Firebase backend·명시 버킷과 복원한 current version/revision을 고정하고, 23파일의 raw bytes·SHA256·size 및 일일 sourceHealth 9개를 기준본으로 남긴다.
+- 이미지 상태 cache 적중·새 분석·공개 자료 no-op를 구분한다. `student-restaurant` 발행 전후 나머지 22파일의 bytes·SHA256·size와 일일 sourceHealth 9개가 그대로인지 대조한다.
+- Firebase 발행 성공 또는 검증된 no-op 이후에만 성공 cache가 저장되고, Pages prepare/configure/upload/deploy가 모두 skipped인지 확인한다.
+- 공개 API와 기존 식단 URL의 source/version이 발행 결과와 일치하는지 확인하고, 식단의 날짜·메뉴·재료를 원문과 대조한다. no-op는 복원·검증·발행·cache 경로의 증거이며 새 이미지 분석·변경 식단 발행·전사 품질의 증거는 아니다.
 
 ## 7. 전환 후 판정
 
@@ -150,7 +159,7 @@ Actions 자체·소스 저장소·월간 검토 PR·내부 분석 캐시·IndexN
 - [ ] iOS Safari·Android·키보드/스크린리더·확대·설치 앱을 확인한다. Android 스토어의 새 출시는 별도 빌드·서명·실기기 검증 범위다.
 - [ ] 학사 용어·미검수 졸업 선택지·공개 데이터/이미지 재배포 근거와 삭제 요청 처리 경로를 검토한다.
 - [ ] 운영 cold/warm 응답·이미지 LCP·INP·읽기/다운로드·번역 비용을 관측한다. 초기 JS/폰트 비용·간헐적인 공개 snapshot fallback의 추가 분석은 별도 보류 작업이며 로컬 통과를 운영 CWV 합격으로 확대하지 않는다.
-- [ ] 첫 정상 수집 주기, 수동 dry-run 알림/IndexNow, 오류 관측과 실기기 검증을 마친다. 운영 발송·유료 호출이 있는 단계는 별도로 범위를 정한다.
+- [ ] 첫 정상 수집 주기, 외부 호출 없는 알림 회귀와 IndexNow `send=false` 검증, 오류 관측과 실기기 검증을 마친다. 실제 수동 실행·운영 발송·유료 호출은 별도로 범위를 정한다.
 
 ## 8. 복구와 Pages 종료
 
@@ -163,12 +172,14 @@ npm run migrate:service-notices -- --rollback <private-backup.json>
 
 첫 명령은 원격 active를 변경하는 실제 쓰기다. 두 번째는 공지 rollback 계획만 읽고, 검토 후 `--apply`를 명시해야 쓴다. 공지 importer는 이후 관리자 편집을 덮어쓰지 않으며 새 충돌은 강행하지 않는다. 복구 후 앱과 데이터의 source/version·언어·기능을 다시 확인한다.
 
+Firebase의 정상 읽기·생산자 경로는 backend 분기로 Pages를 사용하지 않으며 IndexNow의 자료 수집도 Firebase 경로에서 반환한다. 남은 Pages 의존은 로컬 식단과 Firebase 전용 복구 사본이 모두 없을 때의 조건부 만나의집 URL fallback, 이전 `github.io` URL을 직접 읽는 앱·설치 앱·외부 링크, 복구·운영 관찰 정책에서 확인한다. 정상 경로의 독립성만으로 이 의존까지 해소됐다고 판단하지 않는다.
+
 Pages 종료는 아래 조건을 모두 충족한 다음 별도 정리 PR과 승인된 운영 작업으로 진행한다.
 
-1. 일일·만나의집·참조 첫 Firebase 생산자 주기가 실제 성공하고 보존·재실행/no-op가 확인됐다.
+1. 일일·만나의집·참조 첫 Firebase 생산자 주기의 발행 또는 검증된 no-op가 성공하고 범위 밖 보존이 확인됐다. 실제 자료 변경 후 Reference 발행은 no-op와 별도 증거로 남기되, 검증을 위해 수집 비용이나 자료 변경을 강제하지 않는다.
 2. Vercel 소비자·공지 DB-only·알림·IndexNow가 Firebase를 읽고, 예전 앱/설치 앱/공유 링크의 구주소 의존도 확인됐다.
 3. 최신 원본·검증된 보존 버전·앱/환경 복구 경로가 확보됐으며 허용한 관찰 기간 동안 운영 지표가 정상이다.
-4. `github.io`, Pages current/versions, `NEXT_PUBLIC_CAFETERIA_JSON_URL`, 외부 공지/README 링크·fallback·rewrite의 남은 의존을 `rg`로 확인하고 호환 정책을 결정했다.
+4. 구앱의 직접 `github.io` 요청은 같은 출처 rewrite나 redirect로 대체됐다고 판단하지 않는다. 구앱은 redirect를 거부할 수 있고, Pages가 200이어도 Firebase Weekly 이후의 최신 식단을 보장하지 않는다. `github.io`, Pages current/versions, `NEXT_PUBLIC_CAFETERIA_JSON_URL`, 외부 공지/README 링크·fallback·rewrite의 남은 의존을 `rg`로 확인하고 호환 정책을 결정했다.
 5. 그 후 Pages configure/upload/deploy 단계·`pages: write`/`id-token: write` 등 불필요 권한과 설정을 정리하고 Pages를 종료한다. Actions 수집·월간 검토·Firebase 발행 자체는 유지한다.
 
-공지 Markdown·번들 JSON의 제거는 DB 검증뿐 아니라 CI/빌드·서버 장애 복구·이전 앱 호환 의존이 모두 해소된 다음 판단한다. 논리적 retained 목록은 7개지만 과거 Storage 객체의 자동 물리 삭제는 구현돼 있지 않으므로 활성/복구/구앱 의존을 확인한 별도 정책으로 정리한다.
+공지 Markdown·번들 JSON의 제거는 DB 검증뿐 아니라 CI/빌드·서버 장애 복구·이전 앱 호환 의존이 모두 해소된 다음 판단한다. 논리적 retained 목록은 최대 7개이며 발행 횟수에 따라 교체되므로 보존 기간을 보장하지 않는다. 검증한 로컬 current 아카이브도 실제 운영 rollback 실행 증거가 아니다. 과거 Storage 객체의 자동 물리 삭제는 구현돼 있지 않으므로 활성/복구/구앱 의존을 확인한 별도 정책으로 정리한다.

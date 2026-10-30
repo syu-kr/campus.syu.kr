@@ -154,7 +154,7 @@ Vercel Project Settings와 로컬 `.env.local`에 필요한 값입니다.
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | 필수 | Firebase client | Firebase app id |
 | `NEXT_PUBLIC_FIREBASE_VAPID_KEY` | 필수 | FCM web push | Web Push VAPID public key |
 | `FIREBASE_SERVICE_ACCOUNT` | 필수 | Firebase Admin, notifications, admin APIs | Firebase service account JSON 문자열 |
-| `CRAWL_DATA_BASE_URL` | 선택 | crawl data runtime/scripts | Pages 데이터 base URL override. 기본값은 공식 저장소의 GitHub Pages URL |
+| `CRAWL_DATA_BASE_URL` | 선택 | Pages 모드 runtime/scripts | Pages 데이터 base URL override. 기본값은 공식 저장소의 GitHub Pages URL이며 Firebase 정상 조회에는 사용하지 않음 |
 | `PUSH_API_KEY` | 필수 | `/api/notifications/send`, daily notification | 내부 푸시 발송 API 인증 키 |
 | `OPENAI_PUSH_MODEL` | 선택 | daily notification script | 일일 푸시 문구 모델. 기본값 `gpt-5.6-luna` |
 | `PUSH_COPY_AI_ENABLED` | 선택 | daily notification script | `false`이면 OpenAI를 호출하지 않고 결정론적 기본 문구 사용 |
@@ -249,7 +249,9 @@ python scripts/crawl_schedule.py
 python scripts/crawl_phone.py
 ```
 
-일일 워크플로는 다음 순서를 지킵니다.
+`PUBLIC_DATA_BACKEND=firebase`인 일일 워크플로는 활성 Firebase 스냅샷을 복원하고 아래 2번의 수집·검증·원복을 수행한 뒤 일일 범위만 Firebase에 발행합니다. 다른 범위는 보존하며 내용·상태가 같으면 재발행하지 않습니다. 복구에는 검증된 보존 버전과 `expected_current`가 필요합니다. 상세 절차는 [공개 데이터 운영](docs/PUBLIC_DATA_FIREBASE.md)을 따릅니다.
+
+다음은 `PUBLIC_DATA_BACKEND` 미설정/`pages`인 기존 Pages 모드의 순서입니다.
 
 1. `current.json`이 있으면 현재 스냅샷을 작업 디렉터리로 복원합니다.
 2. `npm run crawl:daily`와 `npm run crawl:daily -- --ai-only`로 출처별 실행·검증·원복을 수행합니다. 실패·불완전 경고가 있는 출처는 전체를 이전 검증본으로 복원하며 성공 출처의 갱신은 유지합니다. AI 생성 실패 경고도 기존 AI 파일 전체 보존으로 처리합니다. 기준본 검증·원복·상태 저장 실패는 게시를 중단합니다.
@@ -300,7 +302,7 @@ syu-kr/campus.syu.kr main push
 ```
 
 PR에서는 CI만 실행되며 개인 레포 동기화와 Vercel 배포는 실행하지 않습니다.
-일일 크롤러는 GitHub Pages 데이터 아티팩트만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. 월간 크롤러의 저빈도 정적 데이터 변경은 자동 PR로 제안하고 검토·CI 후 병합합니다.
+일일 크롤러는 선택한 backend의 데이터만 갱신하므로 앱 CI·개인 레포 동기화·Vercel 배포를 유발하지 않습니다. Firebase 모드는 Firebase 스냅샷을, 기존 Pages 모드는 Pages 데이터 아티팩트를 발행합니다. 월간 크롤러의 저빈도 정적 데이터 변경은 자동 PR로 제안하고 검토·CI 후 병합합니다.
 `sync-to-vercel-repo`의 수동 실행은 `main`만 허용하며, workflow_dispatch/workflow_call 경로는 dependency audit과 `npm run check`를 통과해야 개인 Vercel 레포에 push합니다.
 
 일일·월간 크롤러는 `main` 직접 push나 Ruleset bypass가 필요하지 않도록 구성합니다. GitHub의 실제 Ruleset, Secrets, Pages·Vercel 연결은 저장소 파일 밖의 설정이므로 변경 시 운영자가 별도로 확인합니다.
@@ -318,9 +320,9 @@ GitHub Actions는 다음 용도로 사용합니다.
 
 - CI: dependency audit, npm run check
 - sync-to-vercel-repo: CI 성공 후 개인 Vercel 연결 레포 동기화. 수동/재사용 호출은 dependency audit과 `npm run check` 필수
-- daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 Pages 데이터 아티팩트 배포
+- daily crawl: 학사공지, 장학공지, 캠퍼스 공지, 학식 갱신 후 변경 시 선택한 backend에 데이터 발행
 - monthly crawl: 학사 일정, 전화번호 검증 후 변경 시 PR 생성
-- daily notification: Pages 스냅샷의 학사/장학 공지를 기준일별로 집계하고, 조회 실패 시 번들 fallback으로 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
+- daily notification: 선택한 backend의 학사/장학 공지를 기준일별로 집계하고, 조회 실패 시 번들 fallback으로 일일 공지 푸시 발송. `daily-summary:YYYY-MM-DD` dedupe key로 같은 날 재발송을 차단
 
 알림 발송이 일시 오류로 실패하면 같은 dedupe key의 lock이 `failed` 상태로 남아 재발송을 막습니다. 먼저 상태를 조회한 뒤, 재시도해도 중복 발송이 아닌지 확인하고 실패 lock만 삭제합니다.
 

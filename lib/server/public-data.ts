@@ -8,15 +8,24 @@ import { getActivePublicData, publicDataFirebaseEnabled, readFirebasePublicData 
 
 async function readBundledPublicData<T>(file: PublicDataFile): Promise<T> {
   const directory = file === "student-restaurant-1.json" ? "cafeteria" : "data";
-  let content: string;
+  let content: string | undefined;
   try { content = await readFile(path.join(process.cwd(), "public", directory, file), "utf8"); }
   catch (error) {
     if (file !== "student-restaurant-1.json" || !(typeof error === "object" && error !== null && "code" in error && error.code === "ENOENT")) throw error;
-    const url = parseStudentRestaurantPublicUrl(process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL ?? "");
-    if (publicDataFirebaseEnabled() && url.hostname === "campus.syu.kr") throw new Error("The public cafeteria fallback must not point to this API");
-    const response = await fetch(url, { cache: "no-store", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", signal: AbortSignal.timeout(12_000) });
-    if (!response.ok) throw new Error("Public cafeteria menu is unavailable");
-    return parseStudentRestaurantMenu(JSON.parse(new TextDecoder().decode(await readResponseBytes(response, publicDataMaxBytes(file), "Public cafeteria menu")))) as T;
+    if (publicDataFirebaseEnabled()) {
+      // shortcut: This release snapshot is not weekly synced; refresh it when newer recovery data is required.
+      try { content = await readFile(path.join(process.cwd(), "data-source", "fallbacks", file), "utf8"); }
+      catch (fallbackError) {
+        if (!(typeof fallbackError === "object" && fallbackError !== null && "code" in fallbackError && fallbackError.code === "ENOENT")) throw fallbackError;
+      }
+    }
+    if (content === undefined) {
+      const url = parseStudentRestaurantPublicUrl(process.env.NEXT_PUBLIC_CAFETERIA_JSON_URL ?? "");
+      if (publicDataFirebaseEnabled() && url.hostname === "campus.syu.kr") throw new Error("The public cafeteria fallback must not point to this API");
+      const response = await fetch(url, { cache: "no-store", credentials: "omit", redirect: "error", referrerPolicy: "no-referrer", signal: AbortSignal.timeout(12_000) });
+      if (!response.ok) throw new Error("Public cafeteria menu is unavailable");
+      return parseStudentRestaurantMenu(JSON.parse(new TextDecoder().decode(await readResponseBytes(response, publicDataMaxBytes(file), "Public cafeteria menu")))) as T;
+    }
   }
   if (Buffer.byteLength(content, "utf8") > publicDataMaxBytes(file)) throw new Error("Bundled public data exceeds size limit");
   const data: unknown = JSON.parse(content); validatePublicData(file, data); return data as T;
