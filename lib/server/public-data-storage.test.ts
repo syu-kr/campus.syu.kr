@@ -3,6 +3,7 @@ import { buildPublicDataSnapshot, ownedPublicDataUnchanged, publicDataLocalPath 
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { DAILY_CRAWL_DATA_FILES } from "../crawl-data-contract";
 import { readHealthCache, writeHealthCache } from "../../scripts/publish-crawl-data";
 import { parsePublicDataManifest, PUBLIC_DATA_FILES, validatePublicData, type PublicDataManifest } from "../public-data-snapshot";
 import { activatePublicSnapshot, readPublicSnapshotFile, readStoredPublicManifest, uploadPublicSnapshot, type ActivePublicData, type PublicDataStore } from "./public-data-storage";
@@ -66,23 +67,47 @@ describe("Firebase public snapshots", () => {
     expect(next.manifest.retainedVersions).toEqual(["next-snapshot", "test-snapshot"]);
     expect(await ownedPublicDataUnchanged("public", "reference", (await store.readActive())!)).toBe(true);
   });
-  it("publishes the collector's new cafeteria menu instead of a legacy data copy", async () => {
+  it("publishes only the collector's menu and preserves all 22 files and daily health", async () => {
     const { store } = memoryStore();
-    await uploadPublicSnapshot(store, fixture.manifest, fixture.payloads);
-    await activatePublicSnapshot(store, fixture.manifest, null);
-    const directory = await mkdtemp(path.join(tmpdir(), "public-menu-snapshot-"));
+    const baseline: PublicDataManifest = structuredClone(fixture.manifest);
+    baseline.sourceHealth = Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, {
+      status: "fresh" as const, lastAttemptAt: "2026-10-25T00:00:00Z", lastSuccessAt: "2026-10-25T00:00:00Z",
+    }]));
+    baseline.sourceHealth["public-holidays.json"] = {
+      status: "stale", lastAttemptAt: "2026-10-25T00:00:00Z", lastSuccessAt: "2026-10-24T00:00:00Z", errorCode: "CRAWLER_FAILED",
+    };
+    await uploadPublicSnapshot(store, baseline, fixture.payloads);
+    await activatePublicSnapshot(store, baseline, null);
+    const previous = (await store.readActive())!;
+    const base = await mkdtemp(path.join(tmpdir(), "public-menu-snapshot-"));
+    const directory = path.join(base, "public");
     const oldMenu = { updatedAt: "2026-10-19T00:00:00Z", weekStart: "2026-10-19", days: [] };
     const newMenu = { ...oldMenu, updatedAt: "2026-10-20T00:00:00Z", days: [{ date: "2026-10-20", breakfast: ["new menu"], lunch: null, dinner: null }] };
     try {
-      await mkdir(path.join(directory, "data")); await mkdir(path.join(directory, "cafeteria"));
+      await mkdir(path.join(directory, "data"), { recursive: true }); await mkdir(path.join(directory, "cafeteria"));
       await writeFile(path.join(directory, "data", "student-restaurant-1.json"), JSON.stringify(oldMenu));
       await writeFile(publicDataLocalPath(directory, "student-restaurant-1.json"), JSON.stringify(newMenu));
-      const next = await buildPublicDataSnapshot(directory, "cafeteria-next", await store.readActive(), store, "student-restaurant");
+      await writeFile(publicDataLocalPath(directory, "phone-numbers.json"), "invalid unowned local input");
+      await writeHealthCache(path.join(base, ".cache", "crawl-data-health.json"), {});
+      const next = await buildPublicDataSnapshot(directory, "cafeteria-next", previous, store, "student-restaurant");
+      expect(next.payloads.size).toBe(23);
       expect(JSON.parse(next.payloads.get("student-restaurant-1.json")!.toString())).toEqual(newMenu);
       expect(publicDataLocalPath(directory, "student-restaurant-1.json")).toBe(path.join(directory, "cafeteria", "student-restaurant-1.json"));
+      const preserved = PUBLIC_DATA_FILES.filter(file => file !== "student-restaurant-1.json");
+      expect(preserved).toHaveLength(22);
+      for (const file of preserved) {
+        expect(next.payloads.get(file)?.equals(fixture.payloads.get(file)!), file).toBe(true);
+        expect(next.manifest.files[file]?.sha256).toBe(baseline.files[file]?.sha256);
+        expect(next.manifest.files[file]?.size).toBe(baseline.files[file]?.size);
+      }
+      expect(next.manifest.sourceHealth).toEqual(baseline.sourceHealth);
+      expect(Object.keys(next.manifest.sourceHealth)).toHaveLength(9);
+      await uploadPublicSnapshot(store, next.manifest, next.payloads);
+      await activatePublicSnapshot(store, next.manifest, previous);
+      expect(await ownedPublicDataUnchanged(directory, "student-restaurant", (await store.readActive())!)).toBe(true);
     } finally {
-      if (!path.resolve(directory).startsWith(path.resolve(tmpdir()) + path.sep) || !path.basename(directory).startsWith("public-menu-snapshot-")) throw new Error("Unexpected temporary directory");
-      await rm(directory, { recursive: true, force: true });
+      if (!path.resolve(base).startsWith(path.resolve(tmpdir()) + path.sep) || !path.basename(base).startsWith("public-menu-snapshot-")) throw new Error("Unexpected temporary directory");
+      await rm(base, { recursive: true, force: true });
     }
   });
   it("round-trips the crawler's wrapped health cache and preserves stale flags", async () => {

@@ -353,7 +353,7 @@ export function CampusTipSuggestionForm({
             {text.contactHelpPrefix}{" "}
             <Link
               href={localizePath("/privacy", locale)}
-              className="text-primary-600 hover:text-primary-700"
+              className="text-primary-600 underline underline-offset-2 hover:text-primary-700"
             >
               {text.privacyPolicy}
             </Link>

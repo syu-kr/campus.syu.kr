@@ -52,7 +52,7 @@ def twaManifest = [
 
 android {
     compileSdkVersion 36
-    namespace "kr.syukr.campus"
+    namespace = "kr.syukr.campus"
     defaultConfig {
         applicationId "kr.syukr.campus"
         minSdkVersion 23
@@ -160,7 +160,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     lintOptions {
-        checkReleaseBuilds false
+        checkReleaseBuilds = false
     }
 }
 
@@ -173,7 +173,10 @@ task generateShorcutsFile {
         assert s.icon != null, 'Missing `url` in shortcut #' + i
     }
 
-    def shortcutsFile = new File("$projectDir/src/main/res/xml", "shortcuts.xml")
+    // Launcher shortcuts are available from API 25; older devices use an empty fallback.
+    def shortcutsDirectory = file("$projectDir/src/main/res/xml-v25")
+    shortcutsDirectory.mkdirs()
+    def shortcutsFile = new File(shortcutsDirectory, "shortcuts.xml")
 
     def xmlWriter = new StringWriter()
     def xmlMarkup = new MarkupBuilder(new IndentPrinter(xmlWriter, "    ", true))

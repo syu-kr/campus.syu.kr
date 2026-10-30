@@ -140,8 +140,8 @@ IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알�
 - sitemap과 같은 공개 경로 목록을 사용하며 한·영 URL을 각각 관리합니다. 공지별 본문·유효한 AI 요약, 학식·공휴일 내용, 정적 자료·서비스 공지 및 페이지 코드 지문을 비교합니다. 이전 상태에만 남은 공개 URL은 삭제 알림 대상입니다. admin, roommate, API, 개인 방·공유 경로를 제출하지 않습니다.
 - 지문을 만들 때 객체 키·소스 파일 경로·홈 공지 날짜 정렬은 운영 기준선과 같은 `en-US`를 명시합니다. Windows의 한국어 기본 정렬 때문에 내용이 같은 졸업요건 URL을 변경으로 오탐하지 않으며, 기존 운영 기준선을 초기화할 필요가 없습니다.
 - 확인 시각·발행 시각·조회수·AI 생성 이력·오류 코드만 달라진 경우나 현재 시간·셔틀 countdown만 흐른 경우는 제출하지 않습니다. 학식·공휴일의 source-health stale 전환은 답변을 바꾸므로 알림 대상입니다. 코드 의존성은 명시적인 경로 매핑이며 공통 UI·번역 변경은 공개 페이지를 보수적으로 무효화합니다. 페이지나 데이터 공급 경로를 추가할 때 `scripts/indexnow-snapshot.ts`의 매핑과 회귀 테스트도 함께 갱신합니다.
-- 코드 SHA marker, 공개 키 파일, 운영 데이터 API의 `X-Crawl-Data-Source=github-pages`와 버전을 확인합니다. 새 활성 Pages 버전은 이번 실행에서 처음 관측한 시각부터 최대 6분의 캐시 갱신 구간을 둡니다. rollback의 옛 `publishedAt`을 새 게시 시각으로 취급하지 않습니다.
-- 변경된 정적 페이지와 각 공지 category/언어·서비스 공지 template의 대표 URL은 HTTP 200, 일치하는 canonical, noindex 없음이 모두 필요합니다. 전체 과거 공지에 대량 HTTP probe를 하지 않습니다. 삭제는 404/410, 리디렉션 또는 HTTP 200의 streaming noindex 응답만 인정하며, 503 등의 오류 응답을 삭제로 간주하지 않습니다. 제출 직전과 각 재시도 직전에 source SHA와 활성 Pages 버전을 다시 대조하며 중간에 배포가 바뀌면 중단합니다.
+- 코드 SHA marker, 공개 키 파일, 운영 데이터 API의 `X-Crawl-Data-Source`와 버전을 확인합니다. source는 `PUBLIC_DATA_BACKEND=firebase`일 때 `firebase-storage`, Pages 모드일 때 `github-pages`여야 합니다. 새 활성 데이터 버전은 이번 실행에서 처음 관측한 시각부터 최대 6분의 캐시 갱신 구간을 둡니다. rollback의 옛 `publishedAt`을 새 게시 시각으로 취급하지 않습니다.
+- 변경된 정적 페이지와 각 공지 category/언어·서비스 공지 template의 대표 URL은 HTTP 200, 일치하는 canonical, noindex 없음이 모두 필요합니다. 전체 과거 공지에 대량 HTTP probe를 하지 않습니다. 삭제는 404/410, 리디렉션 또는 HTTP 200의 streaming noindex 응답만 인정하며, 503 등의 오류 응답을 삭제로 간주하지 않습니다. 제출 직전과 각 재시도 직전에 source SHA와 선택한 backend의 활성 데이터 버전을 다시 대조하며 중간에 배포가 바뀌면 중단합니다.
 
 ### 상태, 재시도와 실패 복구
 

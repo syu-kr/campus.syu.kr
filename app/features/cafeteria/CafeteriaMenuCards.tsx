@@ -325,7 +325,7 @@ export function TodayMenuCardFrame({
           <h2 id={headingId} className="text-xl font-bold text-neutral-900">
             {text.todayMenu}
           </h2>
-          <span className="text-sm font-medium text-neutral-500">
+          <span className="text-sm font-medium text-neutral-600">
             {date}
           </span>
         </div>

@@ -40,6 +40,7 @@
   .m3-academic-unscheduled>p{margin:6px 0 0;color:var(--academic-muted,#5b6679);font-size:12px;line-height:1.7}
   .m3-content[data-site-route="/academic/timetable"] .m3-academic-picker-body{display:flex;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:12px}
   .m3-academic-picker-contents{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 3px 0}
+  .m3-academic-picker-contents .m3-academic-course-results{max-height:none;overflow:visible;padding-right:0}
   .m3-academic-picker-done{flex-shrink:0;padding-top:12px;margin-top:12px;border-top:1px solid var(--academic-outline,#d8deea);background:#fff}
   .m3-academic-picker-done>button{min-height:48px}
   .m3-content[data-site-route="/academic/timetable"] .m3-academic-course-dialog>div:first-child h2{overflow-wrap:anywhere;word-break:keep-all}
