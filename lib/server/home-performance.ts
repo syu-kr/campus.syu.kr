@@ -15,7 +15,7 @@ export async function measureHomeTask<T>(step: string, task: () => Promise<T>, c
   finally { entries.push({ step, ms: Math.round(performance.now() - start), ok, ...(cacheMiss ? { cache: cacheMiss() ? "miss" as const : ok ? "hit" as const : "error" as const } : {}) }); }
 }
 
-export async function traceHomeData<T>(scope: "home" | "layout-banners", task: () => Promise<T>): Promise<T> {
+export async function traceHomeData<T>(scope: "home" | "layout-banners" | "home-manifest", task: () => Promise<T>): Promise<T> {
   const entries: Timing[] = [];
   const start = performance.now();
   let ok = false;

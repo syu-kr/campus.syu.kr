@@ -2,13 +2,13 @@
 
 현재 코드의 경계와 재검증 방법을 유지합니다. 날짜별 실행 로그·캡처·성능 원본은 로컬에 보관하며 과거 측정을 현재 운영 상태로 승계하지 않습니다.
 
-홈은 Storage(`US-EAST1`)와 가까운 기존 기본 리전에서 실행하며, 서울 Firestore(`asia-northeast3`)의 manifest 단일 문서 조회만 별도 Firebase app의 `preferRest` 클라이언트를 사용합니다. SDK가 같은 문서 파싱·revision 검사·10초 deadline을 적용하며, 기존 기본 app의 gRPC 설정과 발행 transaction은 변경하지 않습니다. 서울 함수 배치는 manifest 조회를 줄였지만 새 snapshot의 미국 원본 다운로드를 4초대로 늘려 되돌렸습니다. `[home-performance]`의 `manifest-source-rest`로 새 연결 경로를 확인합니다.
+홈은 기존 Firebase gRPC 클라이언트와 배포 기본 리전을 사용합니다.
 
-홈의 Firebase 공개 데이터는 활성 manifest와 immutable snapshot을 각각 Next 공유 캐시에 저장합니다. manifest key는 bucket과 `Math.floor(Date.now() / 30000)` 구간을 포함하며 구간 경계에서 바뀝니다. 이전 구간의 값을 stale-while-revalidate로 제공하거나 프로세스 TTL을 한 번 더 쌓지 않으므로 기존 최대 30초 확인 한도를 늘리지 않습니다. 해당 구간의 최초 조회는 여전히 Firestore를 읽습니다.
+홈의 Firebase 공개 데이터는 활성 manifest와 immutable snapshot을 각각 Next 공유 캐시에 저장합니다. manifest는 15초 이후 요청에서 뒤에서 재검증하고, 원본 조회 시작 시각인 `checkedAt`을 함께 저장합니다. 캐시의 확인 시각이 30초 이상 지났거나 미래이면 재검증을 기다립니다. Next가 오래된 값을 계속 반환하거나 재검증이 실패해도 이 검사를 건너뛰지 않으므로 기존 30초 확인 상한을 늘리지 않습니다. 원본에 다른 프로세스 TTL을 쌓지 않습니다. 캐시가 없거나 오래 방문이 없었다면 동기 원본 조회가 남습니다.
 
 홈 snapshot은 같은 manifest로 계산한 공지 12개·일정·공휴일·식단·셔틀 시간표·특별 운행 결과만 저장합니다. 원문 SHA와 전체 본문의 AI source hash를 검증하며, 버전·revision·source health가 바뀌면 새 key를 사용합니다. 필수 원본 또는 metadata 실패를 빈 성공으로 저장하지 않고 기존 번들 복구 경로를 사용합니다. Pages 백엔드·목록·검색·상세·발행 도구는 기존 경로를 유지합니다. Cache Components를 전역 도입하지 않고 기존 `unstable_cache` 패턴을 사용합니다.
 
-`[home-performance]` 로그는 홈 데이터 또는 공통 배너 조회가 1초 이상 걸리거나 실패할 때, 각 프로세스의 첫 성공한 홈 요청, 캐시 miss에 작업별 시간·성공 여부·실행 지역을 기록합니다. `manifest-cache`와 `home-snapshot-cache`의 `hit/miss`는 캐시 채우기 callback 실행 여부로 판정하며 속도만으로 추정하지 않습니다. manifest·snapshot miss도 같은 비동기 요청 범위에 포함합니다. 중첩 작업은 시간이 겹칠 수 있으므로 합산하지 않습니다. 로그에는 콘텐츠·사용자 정보·요청 URL·오류 메시지를 넣지 않습니다. 정상 빈 배너 응답은 복구 성공으로 처리하고 30초 갱신과 실제 오류 재시도는 유지합니다.
+`[home-performance]` 로그는 홈 데이터 또는 공통 배너 조회가 1초 이상 걸리거나 실패할 때, 각 프로세스의 첫 성공한 홈 요청, 캐시 miss에 작업별 시간·성공 여부·실행 지역을 기록합니다. `manifest-cache`는 실제 반환된 값이 이번 원본 조회 결과인지로 `hit/miss`를 판정하며, 뒤에서 갱신하면서 캐시를 반환하는 요청도 정확히 hit로 기록합니다. `home-snapshot-cache`는 채우기 callback 실행 여부로 판정합니다. 원본 재검증은 `home-manifest` scope에서 별도로 기록해 응답 후 완료된 시간도 남깁니다. 중첩 작업은 시간이 겹칠 수 있으므로 합산하지 않습니다. 로그에는 콘텐츠·사용자 정보·요청 URL·오류 메시지를 넣지 않습니다. 정상 빈 배너 응답은 복구 성공으로 처리하고 30초 갱신과 실제 오류 재시도는 유지합니다.
 
 ## 빌드와 분석
 
