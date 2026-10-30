@@ -86,5 +86,5 @@ it("reports actual cache callback execution as miss or hit in request-scoped tel
   const second = JSON.parse(log.mock.calls[1][1]);
   expect(second.steps).toContainEqual(expect.objectContaining({ step: "manifest-cache", cache: "hit" }));
   expect(second.steps).toContainEqual(expect.objectContaining({ step: "home-snapshot-cache", cache: "hit" }));
-  expect(second.steps.some((step: { step: string }) => step.step === "home-snapshot-build" || step.step === "manifest-source")).toBe(false);
+  expect(second.steps.some((step: { step: string }) => step.step === "home-snapshot-build" || step.step.startsWith("manifest-source"))).toBe(false);
 });

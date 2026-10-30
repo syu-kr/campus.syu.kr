@@ -9,7 +9,7 @@ async function readActive() {
   let missed = false;
   const read = unstable_cache(async () => {
     missed = true;
-    const active = await measureHomeTask("manifest-source", () => firebasePublicDataStore().readActive());
+    const active = await measureHomeTask("manifest-source-rest", () => firebasePublicDataStore(true).readActive());
     if (!active) throw new Error("Public data has no active Firebase snapshot");
     return active;
   }, ["home-active-manifest-v1", publicDataBucketName(), String(Math.floor(Date.now() / 30_000))], { revalidate: false });

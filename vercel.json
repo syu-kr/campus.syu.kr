@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "app/page.tsx": { "regions": ["icn1"] }
-  },
   "installCommand": "env -u npm_config_cache_dir -u NPM_CONFIG_CACHE_DIR npx --yes npm@10.9.4 ci",
   "buildCommand": "env -u npm_config_cache_dir -u NPM_CONFIG_CACHE_DIR npx --yes npm@10.9.4 run build"
 }

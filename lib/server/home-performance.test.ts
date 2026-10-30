@@ -25,6 +25,14 @@ it("rethrows Next dynamic-rendering control flow without reporting a server fail
   expect(log).not.toHaveBeenCalled();
 });
 
+it("records fast cache misses after the first home so source latency stays observable", async () => {
+  const log = vi.spyOn(console, "info").mockImplementation(() => {});
+  await traceHomeData("home", async () => null); log.mockClear();
+  await traceHomeData("home", () => measureHomeTask("manifest-cache", async () => 12, () => true));
+  expect(log).toHaveBeenCalledTimes(1);
+  expect(JSON.parse(log.mock.calls[0][1]).steps).toContainEqual(expect.objectContaining({ step: "manifest-cache", cache: "miss" }));
+});
+
 it("records slow steps without serializing parallel work or logging content", async () => {
   const log = vi.spyOn(console, "info").mockImplementation(() => {});
   let clock = 0;

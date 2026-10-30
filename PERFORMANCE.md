@@ -2,13 +2,13 @@
 
 현재 코드의 경계와 재검증 방법을 유지합니다. 날짜별 실행 로그·캡처·성능 원본은 로컬에 보관하며 과거 측정을 현재 운영 상태로 승계하지 않습니다.
 
-홈 함수는 `vercel.json`의 경로별 `functions` 설정으로 Firestore(`asia-northeast3`)와 가까운 서울(`icn1`)에서 실행합니다. 다른 경로의 리전은 기존 기본값을 사용합니다. Storage는 `US-EAST1`이므로 새 snapshot의 최초 생성에는 미국 원본 다운로드 시간이 남으며, 이후에는 버전별 공유 캐시를 사용합니다. 설치된 Next의 `preferredRegion` export는 deprecated이므로 사용하지 않습니다. 배포 후 홈의 `x-vercel-id`와 `[home-performance].region`으로 실제 적용을 확인합니다([Vercel 경로별 설정](https://vercel.com/docs/functions/configuring-functions/region#per-function-configuration)).
+홈은 Storage(`US-EAST1`)와 가까운 기존 기본 리전에서 실행하며, 서울 Firestore(`asia-northeast3`)의 manifest 단일 문서 조회만 별도 Firebase app의 `preferRest` 클라이언트를 사용합니다. SDK가 같은 문서 파싱·revision 검사·10초 deadline을 적용하며, 기존 기본 app의 gRPC 설정과 발행 transaction은 변경하지 않습니다. 서울 함수 배치는 manifest 조회를 줄였지만 새 snapshot의 미국 원본 다운로드를 4초대로 늘려 되돌렸습니다. `[home-performance]`의 `manifest-source-rest`로 새 연결 경로를 확인합니다.
 
 홈의 Firebase 공개 데이터는 활성 manifest와 immutable snapshot을 각각 Next 공유 캐시에 저장합니다. manifest key는 bucket과 `Math.floor(Date.now() / 30000)` 구간을 포함하며 구간 경계에서 바뀝니다. 이전 구간의 값을 stale-while-revalidate로 제공하거나 프로세스 TTL을 한 번 더 쌓지 않으므로 기존 최대 30초 확인 한도를 늘리지 않습니다. 해당 구간의 최초 조회는 여전히 Firestore를 읽습니다.
 
 홈 snapshot은 같은 manifest로 계산한 공지 12개·일정·공휴일·식단·셔틀 시간표·특별 운행 결과만 저장합니다. 원문 SHA와 전체 본문의 AI source hash를 검증하며, 버전·revision·source health가 바뀌면 새 key를 사용합니다. 필수 원본 또는 metadata 실패를 빈 성공으로 저장하지 않고 기존 번들 복구 경로를 사용합니다. Pages 백엔드·목록·검색·상세·발행 도구는 기존 경로를 유지합니다. Cache Components를 전역 도입하지 않고 기존 `unstable_cache` 패턴을 사용합니다.
 
-`[home-performance]` 로그는 홈 데이터 또는 공통 배너 조회가 1초 이상 걸리거나 실패할 때, 그리고 각 프로세스의 첫 성공한 홈 요청에 작업별 시간·성공 여부·실행 지역을 기록합니다. `manifest-cache`와 `home-snapshot-cache`의 `hit/miss`는 캐시 채우기 callback 실행 여부로 판정하며 속도만으로 추정하지 않습니다. manifest·snapshot miss도 같은 비동기 요청 범위에 포함합니다. 중첩 작업은 시간이 겹칠 수 있으므로 합산하지 않습니다. 로그에는 콘텐츠·사용자 정보·요청 URL·오류 메시지를 넣지 않습니다. 정상 빈 배너 응답은 복구 성공으로 처리하고 30초 갱신과 실제 오류 재시도는 유지합니다.
+`[home-performance]` 로그는 홈 데이터 또는 공통 배너 조회가 1초 이상 걸리거나 실패할 때, 각 프로세스의 첫 성공한 홈 요청, 캐시 miss에 작업별 시간·성공 여부·실행 지역을 기록합니다. `manifest-cache`와 `home-snapshot-cache`의 `hit/miss`는 캐시 채우기 callback 실행 여부로 판정하며 속도만으로 추정하지 않습니다. manifest·snapshot miss도 같은 비동기 요청 범위에 포함합니다. 중첩 작업은 시간이 겹칠 수 있으므로 합산하지 않습니다. 로그에는 콘텐츠·사용자 정보·요청 URL·오류 메시지를 넣지 않습니다. 정상 빈 배너 응답은 복구 성공으로 처리하고 30초 갱신과 실제 오류 재시도는 유지합니다.
 
 ## 빌드와 분석
 

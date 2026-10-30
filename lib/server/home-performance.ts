@@ -30,7 +30,7 @@ export async function traceHomeData<T>(scope: "home" | "layout-banners", task: (
     const ms = Math.round(performance.now() - start);
     const firstHome = !frameworkSignal && ok && scope === "home" && !loggedFirstHome;
     if (firstHome) loggedFirstHome = true;
-    if (!frameworkSignal && (firstHome || ms >= 1000 || !ok || entries.some(entry => !entry.ok))) {
+    if (!frameworkSignal && (firstHome || ms >= 1000 || !ok || entries.some(entry => !entry.ok || entry.cache === "miss"))) {
       console.info("[home-performance]", JSON.stringify({ id: randomUUID(), scope, region: process.env.VERCEL_REGION ?? "local", ms, ok, steps: entries }));
     }
   }
