@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
-import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore, initializeFirestore } from "firebase-admin/firestore";
+import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { initializeFirebaseAdmin } from "../firebaseAdmin";
 import { measureHomeTask } from "./home-performance";
@@ -25,18 +24,13 @@ function deadline<T>(promise: Promise<T>, ms = 10_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
   return Promise.race([promise, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("Public data request timed out")), ms); })]).finally(() => clearTimeout(timer));
 }
-export function firebasePublicDataStore(restManifest = false): PublicDataStore {
-  const app = initializeFirebaseAdmin();
+export function firebasePublicDataStore(): PublicDataStore {
+  initializeFirebaseAdmin();
   const bucket = getStorage().bucket(publicDataBucketName());
   const ref = getFirestore().collection("site_public_data").doc("current");
-  // Isolate the home REST connection from existing gRPC clients and publication transactions.
-  const activeRef = restManifest ? initializeFirestore(
-    getApps().find(app => app.name === "home-public-manifest") ?? initializeApp(app.options, "home-public-manifest"),
-    { preferRest: true },
-  ).collection("site_public_data").doc("current") : ref;
   return {
     async readActive() {
-      const document = await deadline(activeRef.get());
+      const document = await deadline(ref.get());
       if (!document.exists) return null;
       const data = document.data()!;
       if (!Number.isSafeInteger(data.revision) || data.revision < 1) throw new Error("Invalid active public data revision");
