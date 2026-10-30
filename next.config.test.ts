@@ -79,6 +79,7 @@ it.each([false, true])("generates private Sentry maps only when uploads are auth
   const { config, withSentryConfig } = loadConfig(authenticated ? { SENTRY_AUTH_TOKEN: "test-build-token" } : {});
   expect(config.productionBrowserSourceMaps).toBe(authenticated);
   expect(withSentryConfig).toHaveBeenCalledWith(config, expect.objectContaining({
+    useRunAfterProductionCompileHook: authenticated,
     sourcemaps: { disable: !authenticated, deleteSourcemapsAfterUpload: true },
     release: { create: authenticated, finalize: authenticated },
     telemetry: false,

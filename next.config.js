@@ -254,6 +254,7 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   project: process.env.SENTRY_PROJECT || "javascript-nextjs",
   silent: !process.env.CI,
   widenClientFileUpload: true,
+  useRunAfterProductionCompileHook: uploadSentryArtifacts,
   sourcemaps: {
     disable: !uploadSentryArtifacts,
     deleteSourcemapsAfterUpload: true,
