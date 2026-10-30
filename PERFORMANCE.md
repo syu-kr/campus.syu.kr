@@ -2,6 +2,8 @@
 
 현재 코드의 경계와 재검증 방법을 유지합니다. 날짜별 실행 로그·캡처·성능 원본은 로컬에 보관하며 과거 측정을 현재 운영 상태로 승계하지 않습니다.
 
+홈 함수는 `vercel.json`의 경로별 `functions` 설정으로 Firestore(`asia-northeast3`)와 가까운 서울(`icn1`)에서 실행합니다. 다른 경로의 리전은 기존 기본값을 사용합니다. Storage는 `US-EAST1`이므로 새 snapshot의 최초 생성에는 미국 원본 다운로드 시간이 남으며, 이후에는 버전별 공유 캐시를 사용합니다. 설치된 Next의 `preferredRegion` export는 deprecated이므로 사용하지 않습니다. 배포 후 홈의 `x-vercel-id`와 `[home-performance].region`으로 실제 적용을 확인합니다([Vercel 경로별 설정](https://vercel.com/docs/functions/configuring-functions/region#per-function-configuration)).
+
 홈의 Firebase 공개 데이터는 활성 manifest와 immutable snapshot을 각각 Next 공유 캐시에 저장합니다. manifest key는 bucket과 `Math.floor(Date.now() / 30000)` 구간을 포함하며 구간 경계에서 바뀝니다. 이전 구간의 값을 stale-while-revalidate로 제공하거나 프로세스 TTL을 한 번 더 쌓지 않으므로 기존 최대 30초 확인 한도를 늘리지 않습니다. 해당 구간의 최초 조회는 여전히 Firestore를 읽습니다.
 
 홈 snapshot은 같은 manifest로 계산한 공지 12개·일정·공휴일·식단·셔틀 시간표·특별 운행 결과만 저장합니다. 원문 SHA와 전체 본문의 AI source hash를 검증하며, 버전·revision·source health가 바뀌면 새 key를 사용합니다. 필수 원본 또는 metadata 실패를 빈 성공으로 저장하지 않고 기존 번들 복구 경로를 사용합니다. Pages 백엔드·목록·검색·상세·발행 도구는 기존 경로를 유지합니다. Cache Components를 전역 도입하지 않고 기존 `unstable_cache` 패턴을 사용합니다.
