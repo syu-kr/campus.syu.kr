@@ -2,28 +2,34 @@ import { describe, expect, it } from "vitest";
 
 import { getDictionary } from "./i18n";
 import type { Locale } from "./i18n/routing";
-import { categorizeSearchResults, getFinalExamCountdown, getTodayInfo, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
+import { categorizeSearchResults, getSemesterEndCountdown, getTodayInfo, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
 import schedules from "@/public/data/schedules-major.json";
 import type { AcademicSchedule } from "@/types";
 
-describe("final exam countdown", () => {
+describe("semester end countdown", () => {
   const calendar = schedules as AcademicSchedule[];
-  it("uses the current term's official exam end date", () => {
-    expect(getFinalExamCountdown(calendar, "2026-10-31")).toEqual({ endDate: "2026-12-14", days: 44 });
-    expect(getFinalExamCountdown(calendar, "2026-04-01")).toEqual({ endDate: "2026-06-15", days: 75 });
-    expect(getFinalExamCountdown(calendar, "2026-12-14")).toEqual({ endDate: "2026-12-14", days: 0 });
+  it("counts to the day after the current term's final exams", () => {
+    expect(getSemesterEndCountdown(calendar, "2026-10-31")).toEqual({ days: 45 });
+    expect(getSemesterEndCountdown(calendar, "2026-04-01")).toEqual({ days: 76 });
+    expect(getSemesterEndCountdown(calendar, "2026-12-14")).toEqual({ days: 1 });
+    expect(getSemesterEndCountdown(calendar, "2026-06-15")).toEqual({ days: 1 });
+  });
+  it("starts on the actual opening day", () => {
+    expect(getSemesterEndCountdown(calendar, "2026-03-03")).toEqual({ days: 105 });
+    expect(getSemesterEndCountdown(calendar, "2026-09-01")).toEqual({ days: 105 });
+    expect(getSemesterEndCountdown(calendar.filter(item => !item.title.startsWith("개강")), "2026-10-31")).toBeNull();
   });
   it("falls back after exams, during vacation, or without this year's schedule", () => {
-    for (const date of ["2026-12-15", "2026-06-16", "2026-08-31", "2027-01-01", "2027-10-31", ""]) {
-      expect(getFinalExamCountdown(calendar, date)).toBeNull();
+    for (const date of ["2026-03-01", "2026-03-02", "2026-12-15", "2026-06-16", "2026-08-31", "2027-01-01", "2027-10-31", ""]) {
+      expect(getSemesterEndCountdown(calendar, date)).toBeNull();
     }
-    expect(getFinalExamCountdown([], "2026-10-31")).toBeNull();
+    expect(getSemesterEndCountdown([], "2026-10-31")).toBeNull();
   });
   it("counts calendar days at Korea midnight", () => {
     const before = getTodayInfo(new Date("2026-12-13T14:59:59Z")).dateStringDash;
     const after = getTodayInfo(new Date("2026-12-13T15:00:00Z")).dateStringDash;
-    expect(getFinalExamCountdown(calendar, before)?.days).toBe(1);
-    expect(getFinalExamCountdown(calendar, after)?.days).toBe(0);
+    expect(getSemesterEndCountdown(calendar, before)?.days).toBe(2);
+    expect(getSemesterEndCountdown(calendar, after)?.days).toBe(1);
   });
 });
 

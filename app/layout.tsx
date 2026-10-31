@@ -214,8 +214,8 @@ export default async function RootLayout({
               <PageTranslationStatus />
               {children}
             </SiteContent>
-            <Footer locale={locale} />
             <NotificationPermissionPrompt />
+            <Footer locale={locale} />
             <BottomNav />
             <span hidden data-managed-popup-shell-ready />
           </Providers>

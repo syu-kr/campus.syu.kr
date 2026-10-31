@@ -155,7 +155,8 @@ it("shows each regular route's next departure instead of one global first depart
   expect(within(list).getAllByRole("listitem")).toHaveLength(3);
   shuttles.forEach((bus) => expect(within(list).getByText(bus.routeName)).toBeInTheDocument());
   expect(within(list).getByText("08:10 예정 출발")).toBeInTheDocument();
-  expect(within(list).getByText("12:00 예정 출발")).toBeInTheDocument();
+  expect(within(list).queryByText("12:00 예정 출발")).not.toBeInTheDocument();
+  expect(within(list).getByText(text.shuttleNextNone)).toBeInTheDocument();
   expect(within(list).getByText("08:30 예정 출발")).toBeInTheDocument();
   expect(screen.getByRole("heading", { name: text.busTitle }).closest("section")!.querySelector(".m3-home-status")).toBeNull();
 });
@@ -343,14 +344,54 @@ it("keeps the weather introduction and useful cafeteria weekend notice on weeken
   expect(screen.getByText(getDictionary("ko").pages.cafeteria.weekendMessage)).toBeInTheDocument();
 });
 
-it.each(["ko", "en"] as const)("links the official countdown to the %s academic calendar", locale => {
+it.each(["ko", "en"] as const)("shows only the semester countdown linked to the %s academic calendar", locale => {
   const at = new Date("2026-10-31T00:00:00Z");
   render(view(locale, initial, at, schedules as AcademicSchedule[]));
   const label = getDictionary(locale).home.overview;
-  const link = screen.getByRole("link", { name: new RegExp(label.finalExamCountdown.replace("{days}", "44")) });
+  const expected = label.semesterEndCountdown.replace("{days}", "45");
+  const link = screen.getByRole("link", { name: expected });
   expect(link).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/academic/schedule`);
-  expect(link).toHaveTextContent(label.academicCalendarBasis);
-  expect(link.querySelector("time")).toHaveAttribute("datetime", "2026-12-14");
+  expect(link.textContent).toBe(expected);
+  expect(link.querySelector("time")).toBeNull();
+});
+
+it.each(["2026-03-02", "2026-12-15"])("falls back to the home hint outside the semester on %s", date => {
+  render(view("ko", initial, new Date(`${date}T00:00:00Z`), schedules as AcademicSchedule[]));
+  expect(screen.getByText(text.hint)).toBeInTheDocument();
+  expect(screen.queryByRole("link", { name: /종강까지/ })).not.toBeInTheDocument();
+});
+
+it.each([
+  [false, "09:00", true], [false, "09:01", false],
+  [true, "09:00", true], [true, "09:01", false],
+] as const)("limits shuttle previews to one hour (exception: %s, departure: %s)", (exception, time, visible) => {
+  const at = new Date("2026-10-26T08:00:00+09:00");
+  const data = operatingData(at);
+  data.shuttles = [{ ...shuttles[0], schedules: { ...shuttles[0].schedules, mondayToThursday: [time] } }];
+  if (exception) data.specialPeriods!.serviceExceptions = [{
+    date: "2026-10-26", routeId: shuttles[0].id, times: [time],
+    sourceUrl: "https://www.syu.ac.kr/notice/", verifiedAt: "2026-10-25T00:00:00Z",
+  }];
+  render(view("ko", data, at));
+  const bus = screen.getByRole("heading", { name: text.busTitle }).closest("section")!;
+  expect(bus.querySelector(".m3-home-shuttle-time, .m3-home-countdown") !== null).toBe(visible);
+  if (visible) expect(within(bus).getByText("60")).toBeInTheDocument();
+  else expect(within(bus).getByText(exception ? text.noMoreDepartures : text.shuttleNextNone)).toBeInTheDocument();
+});
+
+it.each([60, 61])("limits transit previews to one hour (%s minutes)", async minutes => {
+  fetchTransit.mockResolvedValue({
+    success: true, source: "public-transit-arrivals", timestamp: now.toISOString(), stale: false, sourceStatus: "fresh",
+    data: [{ stop: { id: "jungmun-up", direction: "up" }, lastUpdated: now.toISOString(),
+      arrivals: [{ routeName: "Test transit", predictTime1: minutes, arrivalMsg1: `${minutes}분 후` }] }],
+  });
+  render(view());
+  fireEvent.click(screen.getByRole("button", { name: text.publicTransit }));
+  if (minutes === 60) expect(await screen.findByText("60분 후")).toBeInTheDocument();
+  else {
+    expect(await screen.findByText(text.noArrivals)).toBeInTheDocument();
+    expect(screen.queryByText("Test transit")).not.toBeInTheDocument();
+  }
 });
 
 it.each(["2026-10-17", "2026-10-18"])("uses the same weekend notice for both restaurants on %s", date => {
