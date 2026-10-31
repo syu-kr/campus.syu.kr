@@ -60,7 +60,7 @@
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "fullScopeUrl": "https://campus.syu.kr/",
-  "minSdkVersion": 23,
+  "minSdkVersion": 24,
   "orientation": "portrait-primary",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
