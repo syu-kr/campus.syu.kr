@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-10-31T05:16:58.877Z",
+  "provider": "OSRM / OpenStreetMap",
+  "options": "overview=full, geometries=geojson, steps=true, ordered waypoints and bearing restrictions",
+  "coordinateOrder": "latitude,longitude",
+  "waypointSource": "Permissioned, one-time waypoint import; no runtime source reference",
+  "license": "ODbL; © OpenStreetMap contributors",
+  "licenseUrl": "https://www.openstreetmap.org/copyright",
+  "fieldVerified": false,
+  "notes": [
+    "Road-network geometry; not a measured shuttle GPS trace",
+    "Stop place pins are separate from road anchors",
+    "No routing service calls at runtime",
+    "Seokgye anchor chosen on ground-level Hwarang-ro rather than elevated motorway",
+    "User confirmed outbound sequence: Hwarangdae intersection -> northern arterial -> Bonghwa transfer parking intersection -> Hwarangdae",
+    "Outbound route geometry: 157 vertices, 5022.6m; rejected 11.8km and 13.2km wrong-way/unspecified entrance candidates"
+  ]
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { Container } from "@/app/components/Container";
 import { useDictionary } from "@/app/components/LocaleProvider";
@@ -8,7 +9,10 @@ import PublicTransitSection from "./PublicTransitSection";
 import ShuttleSection from "./ShuttleSection";
 import type { ShuttleInitialData } from "./ShuttleSection";
 
-export default function BusInfoPageClient({ initialData }: { initialData: ShuttleInitialData }) {
+export default function BusInfoPageClient({ initialData, shuttleContent }: {
+  initialData?: ShuttleInitialData;
+  shuttleContent?: ReactNode;
+}) {
   const dictionary = useDictionary();
   const text = dictionary.pages.busInfo;
   const pathname = usePathname();
@@ -46,7 +50,7 @@ export default function BusInfoPageClient({ initialData }: { initialData: Shuttl
       </Container>
 
       <div id="m3-bus-panel" role="region" aria-label={activeTab === "shuttle" ? text.shuttleTab : text.publicTransitTab}>
-        {activeTab === "shuttle" && <ShuttleSection initialData={initialData} />}
+        {activeTab === "shuttle" && (shuttleContent ?? <ShuttleSection initialData={initialData} />)}
         {activeTab === "public-transit" && <PublicTransitSection />}
       </div>
     </>

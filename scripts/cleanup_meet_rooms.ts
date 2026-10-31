@@ -11,6 +11,7 @@ async function cleanupExpiredFirestoreDocuments() {
     console.log("\nFirestore 만료 문서 정리 시작\n");
 
     const meetResult = await cleanupMeetRooms(db, now);
+    await deleteExpiredDocuments(db, "shuttle_pilot_receipts", now);
     const roommates = await cleanupRoommateDocuments(db, now);
     const deletedTimetableShares = await deleteExpiredDocuments(
       db,
