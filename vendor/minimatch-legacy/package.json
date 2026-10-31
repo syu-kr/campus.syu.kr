@@ -1,0 +1,14 @@
+{
+  "name": "minimatch",
+  "version": "11.0.3",
+  "private": true,
+  "main": "index.cjs",
+  "license": "MIT",
+  "description": "Legacy callable API backed by patched upstream minimatch",
+  "dependencies": {
+    "minimatch-v11": "npm:minimatch@11.0.3"
+  },
+  "engines": {
+    "node": "18 || 20 || >=22"
+  }
+}
