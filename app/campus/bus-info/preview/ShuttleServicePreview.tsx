@@ -32,18 +32,21 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
   const delayed=delayedAt!==null;
   const [timetableOpen,setTimetableOpen]=useState(false);
   const now=operatingPreview?new Date(Date.parse(data.nowISO)+elapsed*1000):clock;
+  const weekend=[0,6].includes(getKoreaDateTimeParts(now).dayOfWeek);
+  const receive=!operatingPreview&&!weekend;
   const route=serviceRoutes.find(item=>item.id===routeId)!;
   const labels=useMemo(()=>route.stops.map((stop,index)=>`${copy[stop.name]}${stop.exit?` (${locale==="ko"?`${stop.exit}${copy.exit}`:`${copy.exit} ${stop.exit}`})`:!route.oneWay?` · ${index===0?copy.schoolDeparture:copy.schoolArrival}`:""}`),[route,copy,locale]);
   const positions=useQuery({queryKey:["shuttle-preview-locations"],queryFn:async({signal})=>{
     const response=await fetch("/campus/bus-info/preview/locations",{cache:"no-store",signal});
     if(!response.ok) throw new Error("Received positions unavailable");
     return await response.json() as LiveDataResponse<BusLocation[]> & {collection?:string};
-  },enabled:!operatingPreview,staleTime:30_000,refetchInterval:operatingPreview?false:30_000,refetchIntervalInBackground:false,retry:1});
-  const state=receivedLocationState(operatingPreview?undefined:positions.data,operatingPreview?false:positions.isError,now);
+  },enabled:receive,staleTime:30_000,refetchInterval:receive?30_000:false,refetchIntervalInBackground:false,retry:1});
+  const state=receivedLocationState(receive?positions.data:undefined,receive&&positions.isError,now);
   const received=useMemo(()=>({locations:operatingPreview?demoLocations(route,delayedAt??elapsed,nextAvailable):state.locations.filter(bus=>bus.routeid===route.locationRouteId),stale:operatingPreview?delayed:state.stale}),[operatingPreview,route,elapsed,nextAvailable,delayed,delayedAt,state.locations,state.stale]);
   const today=serviceTimetable({route,date:koreaDateKey(now),now,data});
-  const closed=!operatingPreview&&today.status==="closed"&&!received.locations.length;
-  const estimates=useStopArrivals(now,!operatingPreview&&today.status==="ready");
+  const closed=!operatingPreview&&(weekend||today.status==="closed"&&!received.locations.length);
+  const pilotClosed=closed||positions.data?.collection==="closed";
+  const estimates=useStopArrivals(now,receive&&today.status==="ready");
   const arrivals=stopArrivalLabels(route,locale,operatingPreview,elapsed,nextAvailable,delayed,closed,estimates.minutes);
   function routeStatus(item:typeof route) {
     if(operatingPreview) return delayed?live.checking:demoProgress(item,elapsed,nextAvailable).length?live.running:demoStopArrival(item,elapsed,0,nextAvailable).state==="approaching"?live.scheduledStart:live.noSchedule;
@@ -58,6 +61,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
   }
   function positionStatus() {
     if(operatingPreview) return delayed?live.lastPosition:"";
+    if(weekend) return "";
     if(positions.isError) return live.locationError;
     if(closed) return "";
     if(positions.isPending) return live.loadingLocation;
@@ -89,7 +93,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{timetableOpen?live.timetableClose:live.timetableOpen}</summary>
       <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
     </details>
-    {!operatingPreview&&<PilotDiagnostics key={koreaDateKey(now)} closed={[0,6].includes(getKoreaDateTimeParts(now).dayOfWeek)||closed||positions.data?.collection==="closed"} etaStatus={estimates.status}/>}
+    {!operatingPreview&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status}/>}
     {operatingPreview&&<details className="border-t border-neutral-200 pt-2"><summary className="cursor-pointer text-sm font-semibold">{live.demoControls}</summary>
       <p className="my-2 text-xs text-neutral-600">{koreaDateKey(now)} {timeLabel(now)} · {live.demoMapNote}</p>
       <div className="flex flex-wrap gap-2"><Button variant="secondary" disabled={delayed} onClick={()=>setPlaying(value=>!value)}>{playing?copy.pause:live.demoPlay}</Button><Button variant="secondary" onClick={()=>setElapsed(value=>value+30)}>{live.stepShort}</Button><Button variant="secondary" onClick={()=>setElapsed(value=>value+300)}>{live.demoStep}</Button><Button variant="secondary" disabled={selected===null} onClick={()=>{setPlaying(false);setElapsed(demoEventTime(route,selected??0));}}>{live.demoArrive}</Button><Button variant="secondary" disabled={selected===null} onClick={()=>{setPlaying(false);setElapsed(demoEventTime(route,selected??0,true));}}>{live.demoPass}</Button><Button variant="ghost" onClick={reset}>{copy.reset}</Button></div>

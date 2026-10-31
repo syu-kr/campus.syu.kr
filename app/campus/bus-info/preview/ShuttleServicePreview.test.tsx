@@ -79,7 +79,8 @@ it("keeps real cached vehicles out of sample mode and does not jump routes at no
   expect(screen.getByRole("button",{name:"화랑대역 학교행"})).toHaveAttribute("aria-pressed","true");
 });
 it("keeps confirmed boarding rules visible when vehicle locations fail and ETA is unavailable",()=>{
-  positions.isError=true;positions.data!.data=[{id:"actual",name:"actual",lat:"37.62",lon:"127.08",status:1,routeid:2}];render(<ShuttleServicePreview data={testServiceData} />);seokgye();
+  const nowISO="2026-10-30T14:00:00+09:00";
+  positions.isError=true;positions.data!.timestamp=nowISO;positions.data!.data=[{id:"actual",name:"actual",lat:"37.62",lon:"127.08",status:1,routeid:2}];render(<ShuttleServicePreview data={{...testServiceData,nowISO}} />);seokgye();
   expect(screen.getByText(/위치 자료를 불러오지 못했습니다/)).toBeVisible();expect(screen.getByTestId("received-map")).toHaveAttribute("data-stale","true");
   expect(eta()).toHaveTextContent("예측 미제공");
   expect(screen.getByRole("button",{name:/석계역 \(4번 출구\).*승·하차/})).toBeVisible();
@@ -106,8 +107,15 @@ it("opens Seokgye after noon and distinguishes stale empty results from fresh ze
   expect(screen.getByRole("button",{name:"석계역 순환"})).toHaveAttribute("aria-pressed","true");expect(screen.queryByText(/현재 수신된 차량이 없습니다/)).not.toBeInTheDocument();
 });
 it("summarizes only the selected route's vehicles in one line",()=>{
+  const nowISO="2026-10-30T14:00:00+09:00";positions.data!.timestamp=nowISO;
   positions.data!.data=[1,2,3].map((id)=>({id:String(id),name:"internal-"+id,lat:"37.62",lon:"127.08",routeid:id===3?1:2,status:1}));
-  render(<ShuttleServicePreview data={testServiceData} />);seokgye();
+  render(<ShuttleServicePreview data={{...testServiceData,nowISO}} />);seokgye();
   expect(screen.getByText(/지도에 표시된 차량 2대/)).toBeVisible();
   expect(screen.queryByText(/internal-/)).not.toBeInTheDocument();
+});
+it("disables receiver polling and hides cached vehicles on a KST weekend",()=>{
+  positions.data!.data=[{id:"last",name:"last",routeid:1,status:1,lat:"37.62",lon:"127.08"}];
+  render(<ShuttleServicePreview data={testServiceData}/>);
+  expect(useQuery).toHaveBeenCalledWith(expect.objectContaining({queryKey:["shuttle-preview-locations"],enabled:false,refetchInterval:false}));
+  expect(screen.getByTestId("received-map")).toHaveAttribute("data-positions","[]");
 });
