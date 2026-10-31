@@ -58,9 +58,9 @@ export function StudentRestaurantMenu({ today, firebaseDataEnabled = false }: { 
   const locale = useLocale();
   const { data, isPending, isError, refetch, isFetching, isConfigured } = useStudentRestaurantMenu(firebaseDataEnabled);
   const weeklyMenus = getCafeteriaWeekMenus(data?.days, today);
-  const todayMenu = data?.days.find((day) => day.date === today);
   const dayOfWeek = new Date(`${today}T00:00:00Z`).getUTCDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const todayMenu = !isWeekend ? data?.days.find((day) => day.date === today) : undefined;
   const hasOtherWeek = Boolean(data?.days.length && weeklyMenus.length === 0);
   const latestDate = data?.days.at(-1)?.date;
   const isPreviousWeek = Boolean(latestDate && latestDate < today);
@@ -73,14 +73,15 @@ export function StudentRestaurantMenu({ today, firebaseDataEnabled = false }: { 
       <p className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm leading-6 text-neutral-600">{text.extractionNote}</p>
       <section id="today-menu" className="scroll-mt-24 md:scroll-mt-40" aria-labelledby="manna-today-heading">
         {!todayMenu && <h2 id="manna-today-heading" className="mb-4 text-xl font-bold text-neutral-900">{cafeteriaText.todayMenu}</h2>}
-        {!isConfigured && <StateCard type="info" className="mb-8" message={text.notConfigured} />}
-        {isConfigured && isPending && (
+        {isWeekend && <StateCard type="info" className="mb-8" message={cafeteriaText.weekendMessage} />}
+        {!isWeekend && !isConfigured && <StateCard type="info" className="mb-8" message={text.notConfigured} />}
+        {!isWeekend && isConfigured && isPending && (
           <div role="status" aria-busy="true" aria-label={text.loading}>
             <Skeleton count={1} height="200px" />
             <p className="sr-only">{text.loading}</p>
           </div>
         )}
-        {isError && (
+        {!isWeekend && isError && (
           <StateCard
             type="error"
             className="mb-8"
@@ -89,7 +90,7 @@ export function StudentRestaurantMenu({ today, firebaseDataEnabled = false }: { 
             action={<Button onClick={() => refetch()} disabled={isFetching}>{dictionary.home.dashboard.retry}</Button>}
           />
         )}
-        {data && !todayMenu && <StateCard type="info" className="mb-8" message={isWeekend ? cafeteriaText.weekendMessage : cafeteriaText.missingToday} />}
+        {!isWeekend && data && !todayMenu && <StateCard type="info" className="mb-8" message={cafeteriaText.missingToday} />}
         {todayMenu && (
           <TodayMenuCardFrame date={todayMenu.date} location={text.title} headingId="manna-today-heading">
             <StudentRestaurantMeals day={todayMenu} />
@@ -101,6 +102,8 @@ export function StudentRestaurantMenu({ today, firebaseDataEnabled = false }: { 
 
       <section className="mb-8" aria-labelledby="manna-weekly-heading">
         <h2 id="manna-weekly-heading" className="mb-4 text-lg font-bold text-neutral-900">{cafeteriaText.weeklyMenu}</h2>
+        {isWeekend && isError && <StateCard type="error" message={text.errorMessage}
+          action={<Button onClick={() => refetch()} disabled={isFetching}>{dictionary.home.dashboard.retry}</Button>} />}
         {isConfigured && isPending && <Skeleton count={3} height="200px" />}
         {hasOtherWeek && (
           <StateCard

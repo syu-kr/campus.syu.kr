@@ -6,6 +6,8 @@ import { ClientLocaleProvider } from "@/app/components/LocaleContext";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { toCafeteriaMenus } from "@/lib/cafeteria";
 import shuttles from "@/public/data/shuttle-bus-schedule.json";
+import schedules from "@/public/data/schedules-major.json";
+import type { AcademicSchedule } from "@/types";
 import { M3HomeOverview, type HomeOverviewData } from "./M3HomeOverview";
 
 const weatherApi = vi.hoisted(() => ({ fetchWeather: vi.fn() }));
@@ -46,10 +48,10 @@ beforeEach(() => {
 });
 afterEach(() => { client.clear(); vi.restoreAllMocks(); vi.unstubAllEnvs(); });
 
-function view(locale: Locale = "ko", data: HomeOverviewData = initial, at: Date = now) {
+function view(locale: Locale = "ko", data: HomeOverviewData = initial, at: Date = now, calendar: AcademicSchedule[] = []) {
   return <ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}>
     <QueryClientProvider client={client}>
-      <M3HomeOverview now={at} initial={data}><p>schedule</p></M3HomeOverview>
+      <M3HomeOverview now={at} initial={data} schedules={calendar}><p>schedule</p></M3HomeOverview>
     </QueryClientProvider>
   </ClientLocaleProvider>;
 }
@@ -339,4 +341,35 @@ it("keeps the weather introduction and useful cafeteria weekend notice on weeken
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("현재 캠퍼스 날씨는 14°C에 흐림입니다.");
   expect(container.querySelectorAll(".m3-home-weather")).toHaveLength(1);
   expect(screen.getByText(getDictionary("ko").pages.cafeteria.weekendMessage)).toBeInTheDocument();
+});
+
+it.each(["ko", "en"] as const)("links the official countdown to the %s academic calendar", locale => {
+  const at = new Date("2026-10-31T00:00:00Z");
+  render(view(locale, initial, at, schedules as AcademicSchedule[]));
+  const label = getDictionary(locale).home.overview;
+  const link = screen.getByRole("link", { name: new RegExp(label.finalExamCountdown.replace("{days}", "44")) });
+  expect(link).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/academic/schedule`);
+  expect(link).toHaveTextContent(label.academicCalendarBasis);
+  expect(link.querySelector("time")).toHaveAttribute("datetime", "2026-12-14");
+});
+
+it.each(["2026-10-17", "2026-10-18"])("uses the same weekend notice for both restaurants on %s", date => {
+  const at = new Date(`${date}T03:00:00Z`);
+  vi.stubEnv("NEXT_PUBLIC_CAFETERIA_JSON_URL", "https://example.github.io/data/cafeteria/student-restaurant-1.json");
+  client.setQueryData(["student-restaurant", "https://example.github.io/data/cafeteria/student-restaurant-1.json"], {
+    updatedAt: at.toISOString(), weekStart: "2026-10-12",
+    days: [{ date, breakfast: [], lunch: ["Weekend lunch"], dinner: [] }],
+  });
+  const data = { ...initial, cafeteria: { menus: toCafeteriaMenus([
+    { date, day: "", meals: { lunch: ["Weekend SU lunch"] } },
+  ]), checkedAt: at.toISOString(), stale: false } };
+  render(view("ko", data, at));
+  const meal = screen.getByRole("heading", { name: text.mealTitle }).closest("section")!;
+  expect(within(meal).getByText(getDictionary("ko").pages.cafeteria.weekendMessage)).toBeInTheDocument();
+  expect(within(meal).queryByRole("status")).not.toBeInTheDocument();
+  expect(within(meal).queryByText("Weekend SU lunch")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: getDictionary("ko").pages.cafeteria.mannaTab }));
+  expect(within(meal).getByText(getDictionary("ko").pages.cafeteria.weekendMessage)).toBeInTheDocument();
+  expect(within(meal).queryByRole("status")).not.toBeInTheDocument();
+  expect(within(meal).queryByText("Weekend lunch")).not.toBeInTheDocument();
 });

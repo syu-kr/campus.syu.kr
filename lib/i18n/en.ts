@@ -182,7 +182,10 @@ export const enDictionary = {
           failedWithPrevious: "Current weather is unavailable. The last reported weather was {temperature}°C, {description}.",
           stale: "Previous weather information: {temperature}°C, {description}. Current conditions need confirmation.",
         },
-        hint: "A quick look before your next class",
+        hint: "Find the campus information you need today",
+        finalExamCountdown: "{days} days until final exams end",
+        finalExamToday: "Today is the last day of final exams",
+        academicCalendarBasis: "Academic calendar",
         mealTitle: "Today’s meal",
         busTitle: "Bus at a glance",
         shuttleDepartures: "Next shuttle by route",
@@ -1213,9 +1216,11 @@ export const enDictionary = {
           upcomingTitle: "Only future Manna House menus are available",
           upcomingMessage: "We cannot confirm this week's menu. Please check again before visiting the cafeteria.",
           unknownMeal: "Menu unavailable",
-          breakfastHours: "Breakfast: Unknown",
-          lunchHours: "Lunch: Unknown",
-          dinnerHours: "Dinner: Unknown",
+          breakfastHours: "Breakfast: 07:40 ~ 08:50",
+          lunchHours: "Lunch: 11:50 ~ 13:40",
+          dinnerHours: "Dinner: 17:00 ~ 18:30",
+          hoursReference: "Reference hours from the official notice dated September 8, 2025. Confirm current hours with the cafeteria.",
+          hoursSource: "Official dormitory notice",
           ingredientsTitle: "Ingredients as printed:",
           ingredientsUnavailable: "Ingredients unavailable",
           ingredientsNotListed: "Not listed",
@@ -1239,7 +1244,7 @@ export const enDictionary = {
           menu:
             "Today's cafeteria menu for {date} at {location}: {items}.",
           weekend:
-            "It is the weekend today. Weekend menu information may not be available.",
+            "Menu information is not provided on weekends.",
           pending:
             "Today's menu is unavailable. Please check again before visiting the cafeteria.",
           missing:
@@ -1248,7 +1253,7 @@ export const enDictionary = {
             "Menus are not provided today because the cafeteria is closed or it is a non-operating day.",
         },
         weekendMessage:
-          "It is the weekend today. Weekend menu information may not be available.",
+          "Menu information is not provided on weekends.",
         pendingTitle: "Today's menu is unavailable",
         pendingMessage:
           "Monday's menu is unavailable. Please check again before visiting the cafeteria.",

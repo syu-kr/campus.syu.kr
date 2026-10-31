@@ -3,12 +3,16 @@ import { getCafeteriaWeekMenus } from "./cafeteria";
 import { getTodayInfo } from "./home";
 
 describe("cafeteria display week", () => {
+  it("does not choose next week when it contains only weekend menus", () => {
+    expect(getCafeteriaWeekMenus([{ date: "2026-10-12" }, { date: "2026-10-24" }], "2026-10-18"))
+      .toEqual([{ date: "2026-10-12" }]);
+  });
   const menus = ["2026-10-19", "2026-10-11", "2026-10-18", "2026-10-12", "2026-10-15"]
     .map((date) => ({ date, menu: date }));
 
   it.each(["2026-10-12", "2026-10-15", "2026-10-16"])("keeps this week on weekdays for %s", (today) => {
     expect(getCafeteriaWeekMenus(menus, today).map(({ date }) => date))
-      .toEqual(["2026-10-12", "2026-10-15", "2026-10-18"]);
+      .toEqual(["2026-10-12", "2026-10-15"]);
     expect(menus[0].date).toBe("2026-10-19");
   });
 
@@ -19,27 +23,27 @@ describe("cafeteria display week", () => {
 
   it.each(["2026-10-17", "2026-10-18"])("keeps this week when the next week is absent on %s", (today) => {
     expect(getCafeteriaWeekMenus(menus.filter(({ date }) => date !== "2026-10-19"), today).map(({ date }) => date))
-      .toEqual(["2026-10-12", "2026-10-15", "2026-10-18"]);
+      .toEqual(["2026-10-12", "2026-10-15"]);
   });
 
   it("switches to weekend preview at Korea's Saturday midnight rather than UTC midnight", () => {
     const friday = getTodayInfo(new Date("2026-10-16T14:59:59Z")).dateStringDash;
     const saturday = getTodayInfo(new Date("2026-10-16T15:00:00Z")).dateStringDash;
     expect(getCafeteriaWeekMenus(menus, friday).map(({ date }) => date))
-      .toEqual(["2026-10-12", "2026-10-15", "2026-10-18"]);
+      .toEqual(["2026-10-12", "2026-10-15"]);
     expect(getCafeteriaWeekMenus(menus, saturday).map(({ date }) => date)).toEqual(["2026-10-19"]);
   });
 
   it("keeps one Monday-to-Sunday week across a year boundary", () => {
     const dates = ["2026-12-27", "2026-12-28", "2027-01-01", "2027-01-03", "2027-01-04"];
     expect(getCafeteriaWeekMenus(dates.map((date) => ({ date })), "2027-01-01").map(({ date }) => date))
-      .toEqual(["2026-12-28", "2027-01-01", "2027-01-03"]);
+      .toEqual(["2026-12-28", "2027-01-01"]);
   });
 
   it("previews the next week across a year boundary without including either adjacent week", () => {
     const dates = ["2026-12-27", "2026-12-28", "2027-01-01", "2027-01-03", "2027-01-04"];
     expect(getCafeteriaWeekMenus(dates.map((date) => ({ date })), "2026-12-27").map(({ date }) => date))
-      .toEqual(["2026-12-28", "2027-01-01", "2027-01-03"]);
+      .toEqual(["2026-12-28", "2027-01-01"]);
   });
 
   it("does not preview a week farther away than next week", () => {

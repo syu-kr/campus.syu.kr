@@ -176,7 +176,10 @@ export const koDictionary = {
           failedWithPrevious: "현재 날씨를 확인하지 못했어요. 마지막으로 확인한 날씨는 {temperature}°C, {description}입니다.",
           stale: "이전 날씨 정보: {temperature}°C, {description}. 최신 상태는 확인이 필요해요.",
         },
-        hint: "수업 가기 전, 필요한 정보만 빠르게",
+        hint: "오늘 필요한 캠퍼스 정보를 확인하세요",
+        finalExamCountdown: "기말고사 종료까지 {days}일",
+        finalExamToday: "오늘은 기말고사 마지막 날이에요",
+        academicCalendarBasis: "학사일정 기준",
         mealTitle: "오늘의 학식",
         busTitle: "버스 빠르게 보기",
         shuttleDepartures: "노선별 다음 셔틀",
@@ -1198,9 +1201,11 @@ export const koDictionary = {
           upcomingTitle: "다음 주 이후의 만나의집 식단만 확인됩니다",
           upcomingMessage: "이번 주 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
           unknownMeal: "식단 확인 불가",
-          breakfastHours: "아침: 알 수 없음",
-          lunchHours: "점심: 알 수 없음",
-          dinnerHours: "저녁: 알 수 없음",
+          breakfastHours: "아침: 07:40 ~ 08:50",
+          lunchHours: "점심: 11:50 ~ 13:40",
+          dinnerHours: "저녁: 17:00 ~ 18:30",
+          hoursReference: "2025년 9월 8일 공식 안내 기준의 참고 시간입니다. 현재 적용 여부는 식당에 확인해주세요.",
+          hoursSource: "생활교육원 공식 안내",
           ingredientsTitle: "원문 재료:",
           ingredientsUnavailable: "재료 확인 불가",
           ingredientsNotListed: "표기 없음",
@@ -1224,7 +1229,7 @@ export const koDictionary = {
           menu:
             "{date} {location} 오늘 학식은 {items}입니다.",
           weekend:
-            "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
+            "주말에는 메뉴 정보를 제공하지 않습니다.",
           pending:
             "오늘 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",
           missing:
@@ -1233,7 +1238,7 @@ export const koDictionary = {
             "오늘은 공휴일 또는 운영하지 않는 날로 식단이 제공되지 않습니다.",
         },
         weekendMessage:
-          "오늘은 주말입니다. 주말 식단 정보는 제공되지 않을 수 있습니다.",
+          "주말에는 메뉴 정보를 제공하지 않습니다.",
         pendingTitle: "오늘 식단을 확인하지 못했습니다",
         pendingMessage:
           "월요일 식단을 아직 확인할 수 없습니다. 식당 이용 전 다시 확인해주세요.",

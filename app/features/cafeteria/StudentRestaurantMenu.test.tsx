@@ -47,6 +47,16 @@ afterEach(() => {
 });
 
 describe("Manna House menu", () => {
+  it.each(["2026-10-17", "2026-10-18"])("hides weekend meals even when published on %s", async today => {
+    vi.stubGlobal("fetch", mockJson({ ...menu, days: [...menu.days,
+      { date: today, breakfast: ["주말 조식"], lunch: ["주말 중식"], dinner: ["주말 석식"] }],
+    }));
+    renderMenu(today);
+    expect(screen.getByText(cafeteriaText.weekendMessage)).toBeInTheDocument();
+    expect(await screen.findByText("월요일 중식")).toBeInTheDocument();
+    expect(screen.queryByText("주말 중식")).not.toBeInTheDocument();
+    expect(screen.queryByText(cafeteriaText.missingToday)).not.toBeInTheDocument();
+  });
   it("shows today's menu above the weekly menu and distinguishes closed from unreadable meals", async () => {
     renderMenu();
     expect(await screen.findByText("목요일 중식")).toBeInTheDocument();
@@ -84,13 +94,17 @@ describe("Manna House menu", () => {
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "start" });
   });
 
-  it("places the extraction notice first and shows unknown operating hours for all three meals", async () => {
+  it("places the extraction notice first and labels historical official operating hours", async () => {
     renderMenu();
     const today = await screen.findByRole("region", { name: cafeteriaText.todayMenu });
     const note = screen.getByText(text.extractionNote);
     expect(note.compareDocumentPosition(today) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getAllByText(text.extractionNote)).toHaveLength(1);
-    expect(screen.getAllByText("알 수 없음")).toHaveLength(3);
+    for (const hours of ["07:40 ~ 08:50", "11:50 ~ 13:40", "17:00 ~ 18:30"]) {
+      expect(screen.getByText(hours)).toBeInTheDocument();
+    }
+    expect(screen.getByText(text.hoursReference)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: text.hoursSource })).toHaveAttribute("href", "https://www.syu.ac.kr/dorm/?p=93424");
     expect(screen.getByText("아침")).toBeInTheDocument();
     expect(screen.getByText("점심")).toBeInTheDocument();
     expect(screen.getByText("저녁")).toBeInTheDocument();
@@ -192,7 +206,7 @@ describe("Manna House menu", () => {
     expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
   });
 
-  it("includes Sunday in the current week and shows its menu as today", async () => {
+  it("hides Sunday from today and the weekly menu while keeping weekday menus", async () => {
     vi.stubGlobal("fetch", mockJson({
       ...menu,
       days: [...menu.days, {
@@ -200,14 +214,14 @@ describe("Manna House menu", () => {
       }],
     }));
     renderMenu("2026-10-18");
-    expect(await screen.findByText("일요일 조식")).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: cafeteriaText.todayMenu })).getByText("일요일 조식")).toBeInTheDocument();
-    expect(within(screen.getByRole("region", { name: cafeteriaText.weeklyMenu })).getByRole("heading", { name: /일요일.*2026-10-18/ })).toBeInTheDocument();
-    expect(screen.getByText("월요일 조식")).toBeInTheDocument();
+    expect(await screen.findByText("월요일 조식")).toBeInTheDocument();
+    expect(screen.getByText(cafeteriaText.weekendMessage)).toBeInTheDocument();
+    expect(screen.queryByText("일요일 조식")).not.toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: cafeteriaText.weeklyMenu })).queryByRole("heading", { name: /일요일.*2026-10-18/ })).not.toBeInTheDocument();
     expect(screen.queryByText(text.staleTitle)).not.toBeInTheDocument();
   });
 
-  it("retains a published Sunday meal as today while previewing only next week below", async () => {
+  it("shows the weekend notice while previewing only next week's weekdays below", async () => {
     vi.stubGlobal("fetch", mockJson({
       ...menu,
       days: [...menu.days,
@@ -218,9 +232,9 @@ describe("Manna House menu", () => {
     renderMenu("2026-10-18");
 
     const today = screen.getByRole("region", { name: cafeteriaText.todayMenu });
-    expect(await within(today).findByText("일요일 조식")).toBeInTheDocument();
+    expect(within(today).getByText(cafeteriaText.weekendMessage)).toBeInTheDocument();
     const weekly = screen.getByRole("region", { name: cafeteriaText.weeklyMenu });
-    expect(within(weekly).getByText("다음 주 조식")).toBeInTheDocument();
+    expect(await within(weekly).findByText("다음 주 조식")).toBeInTheDocument();
     expect(within(weekly).queryByText("일요일 조식")).not.toBeInTheDocument();
     expect(screen.queryByText("월요일 조식")).not.toBeInTheDocument();
   });
