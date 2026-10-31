@@ -25,6 +25,7 @@ export interface CafeteriaSnapshot {
 }
 
 export function getCafeteriaWeekMenus<T extends { date: string }>(menus: T[] | undefined, today: string): T[] {
+  const weekdays = (menus ?? []).filter(({ date }) => ![0, 6].includes(new Date(`${date}T00:00:00Z`).getUTCDay()));
   const monday = new Date(`${today}T00:00:00Z`);
   if (!Number.isFinite(monday.getTime())) return [];
   const dayOfWeek = monday.getUTCDay();
@@ -35,12 +36,12 @@ export function getCafeteriaWeekMenus<T extends { date: string }>(menus: T[] | u
   if (dayOfWeek === 0 || dayOfWeek === 6) {
     monday.setUTCDate(monday.getUTCDate() + 7);
     const nextEnd = monday.toISOString().slice(0, 10);
-    if (menus?.some(({ date }) => date >= end && date < nextEnd)) {
+    if (weekdays.some(({ date }) => date >= end && date < nextEnd)) {
       start = end;
       end = nextEnd;
     }
   }
-  return (menus ?? []).filter(({ date }) => date >= start && date < end)
+  return weekdays.filter(({ date }) => date >= start && date < end)
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 

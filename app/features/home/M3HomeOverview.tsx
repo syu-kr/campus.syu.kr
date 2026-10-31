@@ -7,14 +7,14 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Icon } from "@/app/components/Icon";
 import { M3Select } from "@/app/components/M3Select";
 import { localizePath } from "@/lib/i18n";
-import { getTodayInfo } from "@/lib/home";
+import { getFinalExamCountdown, getTodayInfo } from "@/lib/home";
 import { getCafeteriaWeekMenus, isCafeteriaMenuDataStale, isCafeteriaClosedDay, isClosedMealItems, type CafeteriaSnapshot } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { fetchCafeteriaSnapshot, fetchShuttleBuses, fetchShuttleSpecialPeriods, fetchPublicHolidays } from "@/lib/api";
 import { fetchJson } from "@/lib/fetch-json";
 import { readSessionValue, writeSessionValue } from "@/lib/browser-storage";
 import { useStudentRestaurantMenu } from "@/app/features/cafeteria/useStudentRestaurantMenu";
-import type { BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
+import type { AcademicSchedule, BusArrivalsAtStop, PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import type { LiveDataResponse } from "@/types/live-data";
 import { HomeWeatherLine } from "./HomeWeatherLine";
 import { PublicContentTranslation } from "@/app/components/ContentTranslation";
@@ -93,8 +93,8 @@ function SuMeal({ now, initial }: { now: Date | null; initial: HomeOverviewData 
   const meal = !stale && !today.isWeekend ? weekly.find((item) => item.date === today.dateStringDash) : undefined;
   const corner = meal && isClosedMealItems(meal.lunch.a) ? "b" : "a";
   const lunch = meal?.lunch[corner];
-  const message = food.isPending ? overview.mealLoading : food.isError ? overview.mealError :
-    today.isWeekend ? text.weekendMessage : stale ? text.staleMenuTitle :
+  const message = today.isWeekend ? text.weekendMessage : food.isPending ? overview.mealLoading : food.isError ? overview.mealError :
+    stale ? text.staleMenuTitle :
       !meal ? (today.dayOfWeek === 1 ? text.pendingTitle : text.missingToday) :
         isCafeteriaClosedDay(meal) ? text.closedTodayTitle : isClosedMealItems(lunch) ? overview.lunchClosed : null;
   return <>
@@ -106,17 +106,17 @@ function SuMeal({ now, initial }: { now: Date | null; initial: HomeOverviewData 
           <p lang={translation.lang} className="m3-home-sides">{lunch?.slice(1).map((item, index) => translation.text(`lunch.${corner}.${index + 1}`, item.name)).join(" · ")}</p>
         </>}</PublicContentTranslation>}
     </>}
-    <Status state={food.isPending || food.isFetching ? "loading" : food.isError ? "error" : stale ? "stale" : "fresh"}
-      busy={food.isFetching} onRetry={hasRetryableFailure(food) ? () => void food.refetch() : undefined} />
+    {!today.isWeekend && <Status state={food.isPending || food.isFetching ? "loading" : food.isError ? "error" : stale ? "stale" : "fresh"}
+      busy={food.isFetching} onRetry={hasRetryableFailure(food) ? () => void food.refetch() : undefined} />}
   </>;
 }
 
-function MannaMeal({ today, firebaseDataEnabled }: { today: string; firebaseDataEnabled?: boolean }) {
+function MannaMeal({ today, isWeekend, firebaseDataEnabled }: { today: string; isWeekend: boolean; firebaseDataEnabled?: boolean }) {
   const dictionary = useDictionary(), text = dictionary.pages.cafeteria, overview = dictionary.home.overview;
   const query = useStudentRestaurantMenu(firebaseDataEnabled);
   const day = query.data?.days.find((item) => item.date === today), lunch = day?.lunch;
   const missingDay = Boolean(query.data && !day);
-  const message = !query.isConfigured ? text.studentRestaurant.notConfigured :
+  const message = isWeekend ? text.weekendMessage : !query.isConfigured ? text.studentRestaurant.notConfigured :
     query.isPending ? overview.mealLoading : query.isError ? text.studentRestaurant.errorTitle :
       !day ? text.missingToday : lunch === null ? text.studentRestaurant.unknownMeal :
         !lunch?.length ? text.closedMeal : null;
@@ -129,9 +129,9 @@ function MannaMeal({ today, firebaseDataEnabled }: { today: string; firebaseData
           <p lang={translation.lang} className="m3-home-sides">{lunch?.slice(1).map((item, index) => translation.text(`lunch.${index + 1}`, item)).join(" · ")}</p>
         </>}</PublicContentTranslation>}
     </>}
-    <Status state={!query.isConfigured ? "unavailable" : query.isPending || query.isFetching ? "loading" :
+    {!isWeekend && <Status state={!query.isConfigured ? "unavailable" : query.isPending || query.isFetching ? "loading" :
       query.isError ? "error" : missingDay || lunch === null ? "stale" : "fresh"}
-      busy={query.isFetching} onRetry={query.isConfigured && hasRetryableFailure(query) ? () => void query.refetch() : undefined} />
+      busy={query.isFetching} onRetry={query.isConfigured && hasRetryableFailure(query) ? () => void query.refetch() : undefined} />}
   </>;
 }
 
@@ -232,11 +232,12 @@ function TransitSummary({ stop, onStop }: { stop: StopId; onStop: (value: StopId
   </>;
 }
 
-export function M3HomeOverview({ now, initial, children, banner }: {
+export function M3HomeOverview({ now, initial, children, banner, schedules = [] }: {
   now: Date | null;
   initial: HomeOverviewData;
   children: ReactNode;
   banner?: ReactNode;
+  schedules?: AcademicSchedule[];
 }) {
   const locale = useLocale(), dictionary = useDictionary(), text = dictionary.home.overview, today = getTodayInfo(now);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", {
@@ -246,11 +247,16 @@ export function M3HomeOverview({ now, initial, children, banner }: {
   const [busMode, setBusMode] = useHomeChoice("campus-m3-home-transport", "shuttle", TRANSPORTS);
   const [stop, setStop] = useHomeChoice("campus-m3-home-stop", "jungmun-up", STOP_IDS);
   const link = (path: string) => localizePath(path, locale);
+  const exam = getFinalExamCountdown(schedules, today.dateStringDash);
   return <div className="m3-home-overview">
     <header className="m3-home-intro"><div>
       <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
       <h1><HomeWeatherLine /></h1>
-    </div><span>{text.hint}</span></header>
+    </div><span className={exam ? "m3-home-academic-countdown" : undefined}>{exam ? <Link href={link("/academic/schedule")}>
+      {exam.days === 0 ? text.finalExamToday : text.finalExamCountdown.replace("{days}", String(exam.days))}
+      {" · "}<time dateTime={exam.endDate}>{exam.endDate.slice(5).replace("-", ".")}</time>
+      {" · "}{text.academicCalendarBasis}
+    </Link> : text.hint}</span></header>
     {banner}
     <div className="m3-home-essentials">
       <section className="m3-home-meal">
@@ -262,7 +268,7 @@ export function M3HomeOverview({ now, initial, children, banner }: {
             {value === "su-lounge" ? dictionary.pages.cafeteria.suLoungeTitle : dictionary.pages.cafeteria.mannaTab}
           </button>)}
         </div>
-        {restaurant === "su-lounge" ? <SuMeal now={now} initial={initial} /> : <MannaMeal today={today.dateStringDash} firebaseDataEnabled={initial.firebaseDataEnabled} />}
+        {restaurant === "su-lounge" ? <SuMeal now={now} initial={initial} /> : <MannaMeal today={today.dateStringDash} isWeekend={today.isWeekend} firebaseDataEnabled={initial.firebaseDataEnabled} />}
       </section>
       <section className="m3-home-schedules">{children}</section>
       <section className="m3-home-bus">

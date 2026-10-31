@@ -10,13 +10,9 @@
   "overrides": {
     "@fastify/busboy": "3.2.2",
     "@grpc/grpc-js": "1.14.6",
+    "glob": "14.0.3",
     "fast-glob@3.3.1": "$fast-glob",
-    "minimatch@^3.0.0": {
-      "brace-expansion": "$brace-expansion"
-    },
-    "minimatch@^10.0.0": {
-      "brace-expansion": "5.0.12"
-    },
+    "minimatch": "$minimatch",
     "postcss": "8.5.28",
     "protobufjs": "7.6.6",
     "sharp": "0.35.5",
@@ -27,12 +23,16 @@
       "brace-expansion"
     ],
     "ignoreIssues": {
+      "lib/glob-compat.test.ts": [
+        "unlisted"
+      ],
       "vendor/brace-expansion-compat/index.cjs": [
         "exports"
       ]
     },
     "workspaces": {
-      "vendor/eslint-root-glob": {}
+      "vendor/eslint-root-glob": {},
+      "vendor/minimatch-legacy": {}
     }
   },
   "scripts": {
@@ -104,6 +104,7 @@
     "fast-glob": "file:vendor/eslint-root-glob",
     "jsdom": "^30.0.1",
     "knip": "^6.29.0",
+    "minimatch": "file:vendor/minimatch-legacy",
     "postcss": "8.5.28",
     "tailwindcss": "^4.3.3",
     "ts-node": "^10.9.2",

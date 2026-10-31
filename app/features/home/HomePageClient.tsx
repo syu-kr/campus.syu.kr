@@ -200,7 +200,7 @@ export function HomePageClient({
 
   return (
     <Container className="m3-home-content space-y-6 pb-5 pt-6 sm:pb-8">
-      <M3HomeOverview now={now}
+      <M3HomeOverview now={now} schedules={schedules ?? []}
         banner={<ManagedBanners initialBanners={initialBanners} placement="home" initialNow={Date.parse(initialNowIso)} />}
         initial={{ ...initialOverviewData, holidays: initialPublicHolidays, updatedAt: Date.parse(initialNowIso) }}>
         <TodaySchedulesSection isLoading={schedulesLoading} isError={schedulesError}

@@ -211,7 +211,7 @@ describe("cafeteria selection and weekly menu", () => {
       .toBeTruthy();
     expect(screen.getByText("오늘의 SU 메뉴")).toBeInTheDocument();
     expect(screen.getByText("이번 주 월요일 메뉴")).toBeInTheDocument();
-    expect(screen.getByText("이번 주 일요일 메뉴")).toBeInTheDocument();
+    expect(screen.queryByText("이번 주 일요일 메뉴")).not.toBeInTheDocument();
     expect(screen.queryByText("지난주 일요일 메뉴")).not.toBeInTheDocument();
     expect(screen.queryByText("다음 주 월요일 메뉴")).not.toBeInTheDocument();
   });
@@ -291,7 +291,7 @@ describe("cafeteria selection and weekly menu", () => {
     render(tree);
 
     expect(screen.getByText("이번 주 월요일 메뉴")).toBeInTheDocument();
-    expect(screen.getByText("이번 주 일요일 메뉴")).toBeInTheDocument();
+    expect(screen.queryByText("이번 주 일요일 메뉴")).not.toBeInTheDocument();
     expect(screen.queryByText(text.staleMenuTitle)).not.toBeInTheDocument();
   });
 

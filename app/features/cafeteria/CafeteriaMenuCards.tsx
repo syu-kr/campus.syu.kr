@@ -253,6 +253,12 @@ export function CafeteriaInfoCards({ restaurant = "su-lounge" }: { restaurant?: 
                 </div>
               ))}
             </div>
+            {restaurant === "manna" && <p className="mt-3 text-xs leading-5 text-neutral-600">
+              {text.studentRestaurant.hoursReference}{" "}
+              <a className="underline underline-offset-2" href="https://www.syu.ac.kr/dorm/?p=93424" target="_blank" rel="noopener noreferrer">
+                {text.studentRestaurant.hoursSource}
+              </a>
+            </p>}
           </div>
         </div>
       </Card>

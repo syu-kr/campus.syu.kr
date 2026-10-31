@@ -2,7 +2,30 @@ import { describe, expect, it } from "vitest";
 
 import { getDictionary } from "./i18n";
 import type { Locale } from "./i18n/routing";
-import { categorizeSearchResults, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
+import { categorizeSearchResults, getFinalExamCountdown, getTodayInfo, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
+import schedules from "@/public/data/schedules-major.json";
+import type { AcademicSchedule } from "@/types";
+
+describe("final exam countdown", () => {
+  const calendar = schedules as AcademicSchedule[];
+  it("uses the current term's official exam end date", () => {
+    expect(getFinalExamCountdown(calendar, "2026-10-31")).toEqual({ endDate: "2026-12-14", days: 44 });
+    expect(getFinalExamCountdown(calendar, "2026-04-01")).toEqual({ endDate: "2026-06-15", days: 75 });
+    expect(getFinalExamCountdown(calendar, "2026-12-14")).toEqual({ endDate: "2026-12-14", days: 0 });
+  });
+  it("falls back after exams, during vacation, or without this year's schedule", () => {
+    for (const date of ["2026-12-15", "2026-06-16", "2026-08-31", "2027-01-01", "2027-10-31", ""]) {
+      expect(getFinalExamCountdown(calendar, date)).toBeNull();
+    }
+    expect(getFinalExamCountdown([], "2026-10-31")).toBeNull();
+  });
+  it("counts calendar days at Korea midnight", () => {
+    const before = getTodayInfo(new Date("2026-12-13T14:59:59Z")).dateStringDash;
+    const after = getTodayInfo(new Date("2026-12-13T15:00:00Z")).dateStringDash;
+    expect(getFinalExamCountdown(calendar, before)?.days).toBe(1);
+    expect(getFinalExamCountdown(calendar, after)?.days).toBe(0);
+  });
+});
 
 describe("festival promotion", () => {
   it("shows through the festival day and expires afterward", () => {
