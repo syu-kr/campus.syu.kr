@@ -7,7 +7,7 @@ import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
 import { Icon } from "@/app/components/Icon";
 import { M3Select } from "@/app/components/M3Select";
 import { localizePath } from "@/lib/i18n";
-import { getFinalExamCountdown, getTodayInfo } from "@/lib/home";
+import { getSemesterEndCountdown, getTodayInfo } from "@/lib/home";
 import { getCafeteriaWeekMenus, isCafeteriaMenuDataStale, isCafeteriaClosedDay, isClosedMealItems, type CafeteriaSnapshot } from "@/lib/cafeteria";
 import { getCurrentShuttleSummary } from "@/lib/shuttle-schedule";
 import { fetchCafeteriaSnapshot, fetchShuttleBuses, fetchShuttleSpecialPeriods, fetchPublicHolidays } from "@/lib/api";
@@ -22,6 +22,7 @@ import { getPublicContentAlias } from "@/lib/public-content-aliases";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 const THIRTY_MINUTES = 30 * 60 * 1000;
+const BUS_PREVIEW_MINUTES = 60;
 const RESTAURANTS = ["su-lounge", "manna"] as const;
 const TRANSPORTS = ["shuttle", "transit"] as const;
 const STOPS = [
@@ -161,7 +162,8 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
     holidays: holidays.data && { ...holidays.data, stale: holidays.data.stale || holidays.isError },
     now, limit: buses.data?.length || 2,
   });
-  const departure = summary.departures[0];
+  const departures = summary.departures.filter(item => item.minutesUntil <= BUS_PREVIEW_MINUTES);
+  const departure = departures[0];
   const showRouteList = summary.operationStatus === "regular" && summary.isOperatingPeriod &&
     summary.additionalServicePeriods.length === 0 && Boolean(buses.data?.length);
   return <>
@@ -169,7 +171,7 @@ function ShuttleSummary({ now, initial }: { now: Date | null; initial: HomeOverv
       error ? <p className="m3-home-empty">{text.serviceError}</p> :
         showRouteList ? <ul className="m3-home-shuttle-list" aria-label={text.shuttleDepartures}>
           {buses.data?.map((bus) => {
-            const next = summary.departures.find((item) => item.routeName === bus.routeName);
+            const next = departures.find((item) => item.routeName === bus.routeName);
             return <li key={bus.id} className="m3-home-shuttle-row">
               <div>
                 <PublicContentTranslation source={{ kind: "shuttle", id: bus.id }} content={getPublicContentAlias(bus.routeName, locale) === bus.routeName ? { routeName: bus.routeName } : {}}>{translation => <strong lang={getPublicContentAlias(bus.routeName, locale) === bus.routeName ? translation.lang : locale} title={bus.routeName} className="m3-home-shuttle-name">{translation.text("routeName", getPublicContentAlias(bus.routeName, locale))}</strong>}</PublicContentTranslation>
@@ -210,7 +212,8 @@ function TransitSummary({ stop, onStop }: { stop: StopId; onStop: (value: StopId
   });
   const [area, direction] = stop.split("-");
   const selected = query.data?.data.find((item) => item.stop.id.includes(area) && item.stop.direction === direction);
-  const arrivals = (selected?.arrivals ?? []).filter((item) => typeof item.predictTime1 === "number" && item.predictTime1 > 0)
+  const arrivals = (selected?.arrivals ?? []).filter((item) => typeof item.predictTime1 === "number" &&
+    item.predictTime1 > 0 && item.predictTime1 <= BUS_PREVIEW_MINUTES)
     .sort((a, b) => (a.predictTime1 ?? Infinity) - (b.predictTime1 ?? Infinity));
   const stale = query.data?.stale || query.data?.sourceStatus === "error";
   return <>
@@ -247,15 +250,13 @@ export function M3HomeOverview({ now, initial, children, banner, schedules = [] 
   const [busMode, setBusMode] = useHomeChoice("campus-m3-home-transport", "shuttle", TRANSPORTS);
   const [stop, setStop] = useHomeChoice("campus-m3-home-stop", "jungmun-up", STOP_IDS);
   const link = (path: string) => localizePath(path, locale);
-  const exam = getFinalExamCountdown(schedules, today.dateStringDash);
+  const semesterEnd = getSemesterEndCountdown(schedules, today.dateStringDash);
   return <div className="m3-home-overview">
     <header className="m3-home-intro"><div>
       <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
       <h1><HomeWeatherLine /></h1>
-    </div><span className={exam ? "m3-home-academic-countdown" : undefined}>{exam ? <Link href={link("/academic/schedule")}>
-      {exam.days === 0 ? text.finalExamToday : text.finalExamCountdown.replace("{days}", String(exam.days))}
-      {" · "}<time dateTime={exam.endDate}>{exam.endDate.slice(5).replace("-", ".")}</time>
-      {" · "}{text.academicCalendarBasis}
+    </div><span className={semesterEnd ? "m3-home-academic-countdown" : undefined}>{semesterEnd ? <Link href={link("/academic/schedule")}>
+      {text.semesterEndCountdown.replace("{days}", String(semesterEnd.days))}
     </Link> : text.hint}</span></header>
     {banner}
     <div className="m3-home-essentials">

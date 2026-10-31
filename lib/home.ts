@@ -51,20 +51,23 @@ export function getKoreaNow(): Date {
   return new Date();
 }
 
-export function getFinalExamCountdown(schedules: AcademicSchedule[], today: string) {
+export function getSemesterEndCountdown(schedules: AcademicSchedule[], today: string) {
   const month = Number(today.slice(5, 7));
   if (!today || month < 3 || (month > 6 && month < 9)) return null;
   const year = today.slice(0, 4);
   const termStart = `${year}.${month < 9 ? "03" : "09"}.01`;
   const termEnd = `${year}.${month < 9 ? "06.30" : "12.31"}`;
   const date = today.replaceAll("-", ".");
+  const opening = schedules.find(item => item.title.startsWith("개강") &&
+    item.startDate >= termStart && item.startDate <= termEnd);
+  if (!opening || date < opening.startDate) return null;
   const exam = schedules.filter(item => item.category === "exam" && item.title.startsWith("기말고사") &&
     item.startDate >= termStart && item.endDate <= termEnd && item.endDate >= date)
     .sort((a, b) => a.endDate.localeCompare(b.endDate))[0];
   if (!exam) return null;
   const endDate = exam.endDate.replaceAll(".", "-");
-  const days = (Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000;
-  return Number.isFinite(days) ? { endDate, days } : null;
+  const days = (Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000 + 1;
+  return Number.isFinite(days) ? { days } : null;
 }
 
 export function isFestivalPromotionVisible(date: string): boolean {

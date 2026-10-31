@@ -34,13 +34,14 @@ it("includes a resolved site banner before content in the initial document", asy
   expect(html.indexOf("Maintenance notice")).toBeLessThan(html.indexOf("<main>"));
 });
 
-it("keeps the delayed notification prompt after the footer so its controls do not move on first interaction", async () => {
+it("places the notification prompt between page content and the footer", async () => {
   request.pathname = "/more";
   const document = new DOMParser().parseFromString(renderToStaticMarkup(await RootLayout({ children: <p>Campus content</p> })), "text/html");
   const prompt = document.querySelector(".m3-notification-prompt");
   expect(prompt).not.toBeNull();
   expect(document.querySelector("main")?.contains(prompt)).toBe(false);
-  expect(document.querySelector("footer")?.nextElementSibling).toBe(prompt);
+  expect(document.querySelector("main")?.nextElementSibling).toBe(prompt);
+  expect(prompt?.nextElementSibling).toBe(document.querySelector("footer"));
 });
 
 it.each(["/admin", "/en/admin", "/campus/roommates", "/en/campus/roommates/new", "/more/meet/private-room", "/en/more/meet/private-room"])("keeps banners and their reads out of excluded route %s", async pathname => {
