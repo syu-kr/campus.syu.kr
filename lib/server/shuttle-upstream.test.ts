@@ -28,9 +28,9 @@ describe("validateShuttleEndpoint", () => {
   it("rejects URLs outside the configured origin", () => {
     expect(() =>
       validateShuttleEndpoint(
-        "https://internal.example/api",
-        "https://bus.syu.kr/",
-        "https://bus.syu.kr/page",
+        "https://outside.invalid/tracker",
+        "https://operator.invalid/view",
+        "https://operator.invalid/page",
       ),
     ).toThrow("origin");
   });

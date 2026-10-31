@@ -1,0 +1,7 @@
+{
+  "retrievedAt": "2026-10-30T16:21:37.9882879+00:00",
+  "scheduleVersion": "snapshot-20261030T071611618Z",
+  "sources": ["shuttle-bus-schedule.json", "public-holidays.json", "shuttle-special-periods.json"],
+  "officialGuide": "https://www.syu.ac.kr/school-life/school-bus/",
+  "officialGuideCheckedDate": "2026-10-31"
+}

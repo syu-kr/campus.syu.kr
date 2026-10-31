@@ -50,3 +50,14 @@ it("restores the bus view from a shared URL without touching the selected stop",
   expect(screen.getByText("Transit content")).toBeInTheDocument();
   expect(window.location.search).toContain("stop=humun-down");
 });
+
+it("renders preview content while preserving M3 transport tabs and URL state", () => {
+  const preview = () => <BusInfoPageClient shuttleContent={<p>Preview arrivals</p>} />;
+  const { rerender } = render(preview());
+  expect(screen.getByText("Preview arrivals")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: getDictionary("ko").pages.busInfo.publicTransitTab }));
+  rerender(preview());
+  expect(screen.getByText("Transit content")).toBeInTheDocument();
+  expect(screen.queryByText("Preview arrivals")).not.toBeInTheDocument();
+  expect(window.location.search).toContain("lang=en");
+});
