@@ -662,13 +662,5 @@
     "endDate": "2027.02.26",
     "category": "event",
     "description": "휴·복학 만기일"
-  },
-  {
-    "id": "schedule-588bcfff1b95",
-    "title": "재학생 등록기간",
-    "startDate": "2026.08.18",
-    "endDate": "2026.08.24",
-    "category": "event",
-    "description": "재학생 등록기간"
   }
 ]
