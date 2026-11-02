@@ -13,6 +13,9 @@ export function toBusLocation(item: unknown): BusLocation | null {
   const longitude = Number(record.lon);
   const status = Number(record.status);
   const routeid = Number(record.routeid);
+  const measuredAt = typeof record.measuredAt === "number" ? record.measuredAt :
+    typeof record.measuredAt === "string" && /^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(record.measuredAt)
+      ? Date.parse(record.measuredAt) : NaN;
 
   if (
     !/^[A-Za-z0-9가-힣_-]{1,128}$/.test(id) ||
@@ -39,5 +42,6 @@ export function toBusLocation(item: unknown): BusLocation | null {
     lon: String(longitude),
     status: status as BusLocation["status"],
     routeid: routeid as BusLocation["routeid"],
+    ...(Number.isSafeInteger(measuredAt) && measuredAt >= Date.UTC(2000, 0, 1) && measuredAt <= Date.now() ? { measuredAt } : {}),
   };
 }

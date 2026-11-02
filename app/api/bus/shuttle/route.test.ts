@@ -69,6 +69,17 @@ function configureEndpoint(origin: string) {
 }
 
 describe("GET /api/bus/shuttle", () => {
+  it("keeps an explicit device timestamp through the public receiver and cache", async () => {
+    configureEndpoint("https://upstream.example.com");
+    const measuredAt=Date.now()-1000;
+    const sent=mockUpstream(https,[{status:200,body:challengeHtml},{status:200,body:JSON.stringify({returnCode:"200",data:[{
+      id:"test-vehicle",name:"test",lat:37.64,lon:127.1,status:2,routeid:1,measuredAt,
+    }]})}]);
+    const {GET}=await import("./route");
+    expect((await (await GET()).json()).data[0].measuredAt).toBe(measuredAt);
+    expect((await (await GET()).json()).data[0].measuredAt).toBe(measuredAt);
+    expect(sent).toHaveLength(2);
+  });
   beforeEach(() => {
     vi.resetModules();
     vi.spyOn(console, "error").mockImplementation(() => {});
