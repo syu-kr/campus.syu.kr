@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { nextStopEtas, type EtaResponse } from "@/lib/shuttle-eta";
 
-export function useStopArrivals(now: Date, enabled: boolean) {
+export function useStopArrivals(now: Date, enabled: boolean, vehicleId?: string) {
   const query = useQuery({
-    queryKey: ["shuttle-stop-arrivals"],
+    queryKey: ["shuttle-stop-arrivals", vehicleId ?? null],
     queryFn: async ({ signal }): Promise<EtaResponse> => {
-      const response = await fetch("/campus/bus-info/preview/eta", { cache: "no-store", signal });
+      const response = await fetch(`/campus/bus-info/preview/eta${vehicleId === undefined ? "" : `?vehicleId=${encodeURIComponent(vehicleId)}`}`, { cache: "no-store", signal });
       if (!response.ok) throw new Error("Shuttle ETA unavailable");
       return response.json();
     },

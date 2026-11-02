@@ -5,6 +5,7 @@ import type { PublicHolidaySnapshot, ShuttleSpecialPeriods } from "@/types";
 import type { EtaRelease } from "@/lib/shuttle-eta";
 import { servicePattern } from "@/lib/server/shuttle-eta";
 import { GET } from "./route";
+import { shuttleVehicleKey } from "@/lib/server/shuttle-vehicle";
 
 const { releases, get, readBuses, readHolidays, readPeriods } = vi.hoisted(() => ({
   releases: [] as EtaRelease[], get: vi.fn(), readBuses: vi.fn(), readHolidays: vi.fn(), readPeriods: vi.fn(),
@@ -26,11 +27,12 @@ const model: EtaRelease = {
 const run = { runId: "private-run", vehicleKey: "private-vehicle", passenger: true, match: "verified", phase: "moving", route: "seokgye",
   serviceDate: "2026-11-03", from: "seokgye-4", fraction: .2, measuredAt: now, receivedAt: now, enteredAt: now - 60_000, shape: "test", pattern: model.pattern };
 beforeEach(() => {
+  vi.stubEnv("RATE_LIMIT_SECRET","synthetic-test-secret");
   vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(now);
   readBuses.mockResolvedValue(buses); readHolidays.mockResolvedValue(holidays); readPeriods.mockResolvedValue(periods);
   get.mockResolvedValue({ data: () => ({ runs: [run] }) });
 });
-afterEach(() => { vi.useRealTimers(); releases.length = 0; vi.clearAllMocks(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); releases.length = 0; vi.clearAllMocks(); });
 
 it("does not open the operational feed without a passing field release", async () => {
   releases.push({ ...model, validation: { ...model.validation, coverage: .89 } });
@@ -52,6 +54,28 @@ it("returns only the approved visit, prediction and source validity, with a shor
   }] });
   vi.setSystemTime(now + 90_000);
   expect((await (await GET()).json()).arrivals).toEqual([]);
+});
+it("returns the selected vehicle's ETA, rather than a faster vehicle's ETA, without exposing private identifiers",async()=>{
+  releases.push(model);
+  const first={...run,vehicleKey:shuttleVehicleKey("test-bus-A",now)};
+  const second={...run,runId:"second-run",vehicleKey:shuttleVehicleKey("test-bus-B",now),fraction:.6};
+  get.mockResolvedValue({data:()=>({runs:[first,second]})});
+  const res=await GET(new Request("https://example.invalid/preview/eta?vehicleId=test-bus-A"));
+  expect(res.headers.get("cache-control")).toBe("private, no-store");
+  const body=await res.json();
+  expect(body.arrivals).toHaveLength(1);expect(body.arrivals[0].arrivalAt).toBe(now+240_000);
+  for(const privateValue of [first.vehicleKey,second.vehicleKey,first.runId,"test-bus-A"])expect(JSON.stringify(body)).not.toContain(privateValue);
+  const next=await GET(new Request("https://example.invalid/preview/eta?vehicleId=test-bus-B"));
+  expect((await next.json()).arrivals[0].arrivalAt).toBe(now+120_000);
+});
+it.each(["vehicleId=","vehicleId=..%2Fprivate","vehicleId="+"a".repeat(129),"vehicleId=one&vehicleId=two"])("rejects invalid vehicle selectors before data access: %s",async query=>{
+  expect((await GET(new Request(`https://example.invalid/preview/eta?${query}`))).status).toBe(400);
+  expect(get).not.toHaveBeenCalled();expect(readBuses).not.toHaveBeenCalled();
+});
+it("keeps selected-vehicle predictions collecting until a field release passes",async()=>{
+  const res=await GET(new Request("https://example.invalid/preview/eta?vehicleId=test-bus-A"));
+  expect(await res.json()).toEqual({status:"collecting",arrivals:[]});
+  expect(res.headers.get("cache-control")).toBe("private, no-store");expect(get).not.toHaveBeenCalled();
 });
 it("does not serve cached numbers on a feed error, closure or stale holiday calendar", async () => {
   releases.push(model);

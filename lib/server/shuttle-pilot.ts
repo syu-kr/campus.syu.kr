@@ -1,11 +1,10 @@
-import { createHmac } from "node:crypto";
 import { GET as getPositions } from "@/app/api/bus/shuttle/route";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { etaServiceDate } from "../shuttle-eta";
 import { toBusLocation } from "../shuttle-location";
 import { getHomePublicHolidays, getHomeShuttleBuses, getHomeShuttleSpecialPeriods } from "./home-data";
 import { pilotRoutes, servicePattern } from "./shuttle-eta";
-import { requireServerEnv } from "./env";
+import { shuttleVehicleKey } from "./shuttle-vehicle";
 import { pilotVisits, type PilotFieldEvent, type PilotObservation } from "../shuttle-observations";
 import { savePilotSample } from "./shuttle-pilot-store";
 import { ApiError } from "./http";
@@ -58,9 +57,9 @@ export async function pilotPositions(save: boolean, field?: PilotFieldEvent) {
   const result = (collection:string) => ({success:true,source:"shuttle",stale:false,sourceStatus:"fresh",timestamp:value.timestamp,data,collection});
   if (!save) return result("ready");
   if (process.env.VERCEL_ENV !== "production") return result("local");
-  const secret = requireServerEnv("RATE_LIMIT_SECRET"), day = etaServiceDate(receipt);
+  const day = etaServiceDate(receipt);
   const rows: PilotObservation[] = data.map(bus => ({
-    vehicleKey:createHmac("sha256", secret).update(`shuttle-pilot:${day}:${bus.id}`).digest("hex").slice(0,24),
+    vehicleKey:shuttleVehicleKey(bus.id, receipt),
     routeId:bus.routeid as 1 | 2 | 3, lat:Number(bus.lat), lon:Number(bus.lon), status:bus.status as 1 | 2,
     observedAt:receipt, measuredAt:bus.measuredAt ?? receipt, measurementSource:bus.measuredAt === undefined ? "receiver" : "source",
     pattern:servicePattern((["hwarangdae", "seokgye", "byeollae"] as const)[bus.routeid - 1], now, ...calendar)!,
