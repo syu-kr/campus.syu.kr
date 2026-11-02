@@ -12,5 +12,5 @@ it("does not turn a zero time, intervening station or midnight crossing into tra
   expect(r.summary.linkedPairs).toBe(0);
 });
 it("rejects malformed dates, times and unknown stations",()=>{
-  for(const bad of [{...row("석계역","13:00"),date:"2026-02-30"},row("석계역","25:00"),row("unknown","13:00")])expect(()=>buildShuttleHistory({rows:[bad]})).toThrow();
+  for(const bad of [{...row("석계역","13:00"),date:"2026-02-30"},row("석계역","25:00"),row("unknown","13:00"),row("__proto__","13:00")])expect(()=>buildShuttleHistory({rows:[bad]})).toThrow();
 });

@@ -9,7 +9,7 @@ export function buildShuttleHistory(input:unknown) {
   const rows:Detection[]=raw.map(value=>{
     if(!value||typeof value!=="object")throw new Error("Invalid history row");
     const r=value as Detection;
-    if(!stations[r.station]||typeof r.date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||
+    if(!Object.hasOwn(stations,r.station)||typeof r.date!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(r.date)||
       new Date(`${r.date}T00:00:00Z`).toISOString().slice(0,10)!==r.date||!/^([01]\d|2[0-3]):[0-5]\d$/.test(r.timeHHMM)||
       typeof r.vehicleAlias!=="string"||!r.vehicleAlias||r.vehicleAlias.length>128)throw new Error("Invalid history fields");
     return {station:r.station,date:r.date,timeHHMM:r.timeHHMM,vehicleAlias:r.vehicleAlias};
