@@ -49,7 +49,7 @@ export default function BusInfoPageClient({ initialData, shuttleContent }: {
         </div>
       </Container>
 
-      <div id="m3-bus-panel" role="region" aria-label={activeTab === "shuttle" ? text.shuttleTab : text.publicTransitTab}>
+      <div id="m3-bus-panel" data-bus-view={activeTab} role="region" aria-label={activeTab === "shuttle" ? text.shuttleTab : text.publicTransitTab}>
         {activeTab === "shuttle" && (shuttleContent ?? <ShuttleSection initialData={initialData} />)}
         {activeTab === "public-transit" && <PublicTransitSection />}
       </div>

@@ -1,5 +1,5 @@
 /* The original page components own all state, content, filters and responsive visibility. */
-.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:has(>[data-bus-view]),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){
   --cm-primary:var(--sys-primary);
   --cm-on-container:var(--sys-on-secondary-container);
   --cm-container:var(--sys-secondary-container);
@@ -12,15 +12,15 @@
   color:var(--cm-text);
   line-height:1.6;
 }
-.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"])>.mx-auto,
-.m3-content[data-site-route="/campus/bus-info"]>div>.mx-auto{
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:has(>[data-bus-view]),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"])>.mx-auto,
+.m3-content:has(>[data-bus-view])>div>.mx-auto{
   width:100%;max-width:1320px;min-width:0;margin-inline:auto;padding:0;
 }
-.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{
   font-size:var(--type-headline-size);font-weight:700;line-height:1.3;letter-spacing:-.025em;
 }
-.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) .mx-auto>.mb-8:first-child{margin-bottom:28px;}
-.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1+p{margin-top:8px;color:var(--cm-muted);font-size:14px;line-height:1.7;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) .mx-auto>.mb-8:first-child{margin-bottom:28px;}
+.m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1+p{margin-top:8px;color:var(--cm-muted);font-size:14px;line-height:1.7;}
 .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"]{max-width:760px;margin-bottom:24px;}
 .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"] input{
   min-height:56px;padding-left:48px;border:1px solid var(--sys-outline);border-radius:var(--shape-full);background:var(--cm-surface);font-size:var(--type-body-size);
@@ -66,8 +66,8 @@
 
 /* Both restaurants use the same visual hierarchy without adding menu-day controls. */
 /* Attribution stays in normal flow so it cannot share the tabs' sticky position. */
-.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.m3-page-translation{position:static;}
-.m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:has(>.m3-segmented){margin-bottom:28px;border:0;background:var(--sys-surface);padding-block:12px;}
+.m3-content:is([data-site-route="/campus/cafeteria"],:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])))>.m3-page-translation{position:static;}
+.m3-content:is([data-site-route="/campus/cafeteria"],:has(>[data-bus-view]))>.mx-auto:has(>.m3-segmented){margin-bottom:28px;border:0;background:var(--sys-surface);padding-block:12px;}
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])),
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start;}
 .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label]))>*,
@@ -99,33 +99,33 @@
 .m3-content[data-site-route="/campus/cafeteria"] .mt-8.rounded-lg{margin-top:24px;padding:16px 20px;border-radius:14px;background:var(--cm-low);}
 
 /* Live transport, source status, route disclosure and off-service states remain original. */
-.m3-content[data-site-route="/campus/bus-info"] .rounded-card{padding:24px;border-radius:22px;}
-.m3-content[data-site-route="/campus/bus-info"] #shuttle-map{height:440px;margin-bottom:0;border-color:var(--cm-outline);border-radius:16px;}
-.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map){display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;}
-.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.mb-4{grid-column:1/-1;margin:0;}
-.m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{margin:0;padding:8px 0;}
-.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]{background:#edf3ff;border-color:#d5e2fa;}
-.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]>.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;}
-.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label]>.grid>div{padding:20px;border-color:#d5e2fa;border-radius:14px;background:#ffffffa8;}
-.m3-content[data-site-route="/campus/bus-info"] section.rounded-card[aria-label] strong{font-size:28px;font-variant-numeric:tabular-nums;color:var(--cm-primary);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed]){display:flex;flex-wrap:wrap;gap:6px;margin-top:28px;}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed])>button{min-height:48px;padding:10px 18px;border:1px solid var(--cm-outline);border-radius:100px;background:var(--cm-surface);color:var(--cm-muted);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed])>button[aria-pressed="true"]{border-color:transparent;background:var(--cm-container);color:var(--cm-on-container);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.grid:has(>button[aria-pressed]) .bg-green-600{background:#256b4e;color:#fff;}
-.m3-content[data-site-route="/campus/bus-info"] #shuttle-schedules{scroll-margin-top:calc(var(--header-height) + 92px);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-4:has(>.rounded-card>button[aria-expanded]){display:flex;flex-direction:column;gap:16px;}
-.m3-content[data-site-route="/campus/bus-info"] .space-y-4>.rounded-card:has(>button[aria-expanded]){margin:0;padding:12px;}
-.m3-content[data-site-route="/campus/bus-info"] .space-y-4>.rounded-card:has(>button[aria-expanded="true"]){border-color:#b8caeb;background:#fcfdff;}
-.m3-content[data-site-route="/campus/bus-info"] .m3-shuttle-updated{margin-top:24px;color:var(--cm-muted);font-size:12px;line-height:1.7;}
-.m3-content[data-site-route="/campus/bus-info"] .m3-shuttle-updated p{margin:0;}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3:has(>[role="button"]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{min-height:188px;margin:0;padding:24px;border-left-width:4px;}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:28px;font-weight:650;line-height:1.3;}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-semibold.text-blue-600{font-size:18px;color:var(--cm-primary);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>.border-l-gray-300{background:var(--cm-low);}
-.m3-content[data-site-route="/campus/bus-info"] .mx-auto>.rounded-lg:has(h2){padding:24px;border-color:var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
-.m3-content[data-site-route="/campus/bus-info"] .min-w-max>button[aria-pressed]{min-height:48px;padding:10px 18px;border-radius:100px;background:transparent;color:var(--cm-muted);}
-.m3-content[data-site-route="/campus/bus-info"] .min-w-max>button[aria-pressed="true"]{background:var(--cm-container);color:var(--cm-on-container);box-shadow:none;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card{padding:24px;border-radius:22px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) #shuttle-map{height:440px;margin-bottom:0;border-color:var(--cm-outline);border-radius:16px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map){display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map)>.mb-4{grid-column:1/-1;margin:0;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map)>.space-y-2{margin:0;padding:8px 0;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) section.rounded-card[aria-label]{background:#edf3ff;border-color:#d5e2fa;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) section.rounded-card[aria-label]>.grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) section.rounded-card[aria-label]>.grid>div{padding:20px;border-color:#d5e2fa;border-radius:14px;background:#ffffffa8;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) section.rounded-card[aria-label] strong{font-size:28px;font-variant-numeric:tabular-nums;color:var(--cm-primary);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.grid:has(>button[aria-pressed]){display:flex;flex-wrap:wrap;gap:6px;margin-top:28px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.grid:has(>button[aria-pressed])>button{min-height:48px;padding:10px 18px;border:1px solid var(--cm-outline);border-radius:100px;background:var(--cm-surface);color:var(--cm-muted);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.grid:has(>button[aria-pressed])>button[aria-pressed="true"]{border-color:transparent;background:var(--cm-container);color:var(--cm-on-container);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.grid:has(>button[aria-pressed]) .bg-green-600{background:#256b4e;color:#fff;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) #shuttle-schedules{scroll-margin-top:calc(var(--header-height) + 92px);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-4:has(>.rounded-card>button[aria-expanded]){display:flex;flex-direction:column;gap:16px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .space-y-4>.rounded-card:has(>button[aria-expanded]){margin:0;padding:12px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .space-y-4>.rounded-card:has(>button[aria-expanded="true"]){border-color:#b8caeb;background:#fcfdff;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .m3-shuttle-updated{margin-top:24px;color:var(--cm-muted);font-size:12px;line-height:1.7;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .m3-shuttle-updated p{margin:0;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3:has(>[role="button"]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"]{min-height:188px;margin:0;padding:24px;border-left-width:4px;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:28px;font-weight:650;line-height:1.3;}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"] p.font-semibold.text-blue-600{font-size:18px;color:var(--cm-primary);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>.border-l-gray-300{background:var(--cm-low);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.rounded-lg:has(h2){padding:24px;border-color:var(--cm-outline);border-radius:22px;background:var(--cm-surface);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .min-w-max>button[aria-pressed]{min-height:48px;padding:10px 18px;border-radius:100px;background:transparent;color:var(--cm-muted);}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .min-w-max>button[aria-pressed="true"]{background:var(--cm-container);color:var(--cm-on-container);box-shadow:none;}
 
 /* Reading-room availability and the existing operating-hours table are separate surfaces. */
 .m3-content[data-site-route="/campus/library"]>.mx-auto{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:24px;align-items:start;}
@@ -189,7 +189,7 @@
   .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel>section[aria-label]>.rounded-card .grid.gap-2{grid-template-columns:minmax(0,1fr);}
 }
 @media(min-width:768px){
-  .m3-content:is([data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"])>.mx-auto:has(>.m3-segmented){position:sticky;top:var(--header-height);z-index:30;}
+  .m3-content:is([data-site-route="/campus/cafeteria"],:has(>[data-bus-view]))>.mx-auto:has(>.m3-segmented){position:sticky;top:var(--header-height);z-index:30;}
 }
 @media(min-width:1024px){
   .m3-content[data-site-route="/campus/map"] .grid:has(>[class*="shadow-lg"]){grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);}
@@ -202,18 +202,18 @@
   .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:not(:has(strong)){grid-column:1;grid-row:auto;}
   .m3-content[data-site-route="/campus/library"] .space-y-6{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start;}
   .m3-content[data-site-route="/campus/library"] .space-y-6>.rounded-card{margin:0;}
-  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map){grid-template-columns:minmax(0,1fr);}
-  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map){grid-template-columns:minmax(0,1fr);}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map)>.space-y-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
 }
 @media(max-width:899px){
-  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:26px 20px 36px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:has(>[data-bus-view]),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:26px 20px 36px;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative{grid-template-columns:minmax(0,1fr) 150px;gap:10px 18px;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:first-child{grid-column:1/-1;grid-row:auto;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article h3{grid-column:1;grid-row:auto;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative>div:last-child{grid-column:2;grid-row:2 / span 2;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article button[aria-haspopup="dialog"]{grid-column:1;grid-row:auto;}
-  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3:has(>[role="button"]){grid-template-columns:minmax(0,1fr);}
-  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{min-height:auto;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3:has(>[role="button"]){grid-template-columns:minmax(0,1fr);}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"]{min-height:auto;}
   .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{grid-template-columns:minmax(0,1fr);gap:18px;}
   .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel :is(#today-menu>.rounded-card,section[aria-labelledby$="weekly-heading"] .rounded-card)>.space-y-4,
   .m3-content[data-site-route="/campus/cafeteria"] #cafeteria-panel:not(:has(>section[aria-label])) :is(#today-menu>.rounded-card,section[aria-labelledby$="weekly-heading"] .rounded-card)>.space-y-4{grid-template-columns:minmax(0,1fr);gap:18px;}
@@ -223,8 +223,8 @@
   .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"] :is(ul.grid,.grid.grid-cols-2){grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;}
 }
 @media(max-width:599px){
-  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:22px 16px 32px;}
-  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],[data-site-route="/campus/bus-info"],[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{font-size:26px;line-height:1.4;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/announcements/[category]/[id]"],[data-site-route="/academic"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:has(>[data-bus-view]),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"],[data-site-route="/campus/gym"],[data-site-route="/campus/health-center"]){padding:22px 16px 32px;}
+  .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/cafeteria"],:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])),[data-site-route="/campus/library"],[data-site-route="/campus/map"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) h1{font-size:26px;line-height:1.4;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/academic/competitions"],[data-site-route="/campus/announcements"],[data-site-route="/campus/phone"],[data-site-route="/campus/campus-tips"]) form[role="search"] input{font-size:16px;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article{padding:20px 18px;}
   .m3-content:is([data-site-route="/announcements"],[data-site-route="/academic/announcements"],[data-site-route="/academic/scholarship"],[data-site-route="/academic/sw-notices"],[data-site-route="/campus/announcements"]) article>div.relative{grid-template-columns:minmax(0,1fr);gap:12px;}
@@ -238,11 +238,11 @@
   .m3-content[data-site-route="/academic/competitions"] article h2{font-size:16px;}
   .m3-content[data-site-route="/campus/cafeteria"] #today-menu>.rounded-card{padding:22px 20px;}
   .m3-content[data-site-route="/campus/cafeteria"] section[aria-labelledby$="weekly-heading"]>div.space-y-6>.rounded-card{padding:20px;}
-  .m3-content[data-site-route="/campus/bus-info"] .rounded-card{padding:20px;}
-  .m3-content[data-site-route="/campus/bus-info"] #shuttle-map{height:340px;}
-  .m3-content[data-site-route="/campus/bus-info"] .rounded-card:has(>#shuttle-map)>.space-y-2{grid-template-columns:minmax(0,1fr);}
-  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"]{padding:20px;}
-  .m3-content[data-site-route="/campus/bus-info"] .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:25px;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card{padding:20px;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) #shuttle-map{height:340px;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .rounded-card:has(>#shuttle-map)>.space-y-2{grid-template-columns:minmax(0,1fr);}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"]{padding:20px;}
+  .m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) .mx-auto>.space-y-3>[role="button"] p.font-bold{font-size:25px;}
   .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:has(strong),
   .m3-content[data-site-route="/campus/library"]>.mx-auto>.mb-6:not(.rounded-card),
   .m3-content[data-site-route="/campus/library"]>.mx-auto>.rounded-card:not(:has(strong)){padding:20px;}
@@ -258,4 +258,4 @@
 
 /* Map symbols keep their visual size while their input targets stay stable. */
 
-.m3-content[data-site-route="/campus/bus-info"] [role="button"]{min-height:48px}
+.m3-content:is([data-site-route="/campus/bus-info"]:where(:not(:has([data-shuttle-surface]))),:has(>[data-bus-view="public-transit"])) [role="button"]{min-height:48px}
