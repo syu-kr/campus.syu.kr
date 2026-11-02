@@ -3,6 +3,7 @@ import type { LiveDataResponse } from "@/types/live-data";
 import { applyShuttleSpecialPeriods, getShuttleDayStatus, getShuttleExceptionBuses, getShuttleScheduleType, isDateInSpecialPeriod } from "@/lib/shuttle-schedule";
 import { koreaDateKey, shiftPreviewDate, sortedDepartures, upcomingDepartures, validPreviewDate } from "./preview-timetable";
 import type { Point, PreviewRoute, PreviewScheduleType, StopName } from "./preview-data";
+import { shuttlePlaces } from "@/lib/shuttle-visits";
 
 export type ShuttleServiceData = {
   buses: ShuttleBusSchedule[]; specialPeriods: ShuttleSpecialPeriods; holidays: PublicHolidaySnapshot;
@@ -14,14 +15,8 @@ export type ServiceRoute = Omit<PreviewRoute,"stops"> & { scheduleId: string; lo
 export const schoolBusSource = "https://www.syu.ac.kr/school-life/school-bus/";
 
 // Places search, 2026-10-30: registered places/exits, not field-verified boarding points.
-const school:PlaceStop={name:"school",point:[37.64356060815022,127.10530175580361],placeId:"1626772459"};
-const hwarang2:PlaceStop={name:"hwarangdae",exit:2,point:[37.6203782724801,127.08392300363889],placeId:"22905921"};
-const hwarang5:PlaceStop={name:"hwarangdae",exit:5,point:[37.61991729333184,127.08597269021702],placeId:"8163324"};
-const taereung6:PlaceStop={name:"taereung",exit:6,point:[37.61792394309624,127.07600281454886],placeId:"22906194"};
-const taereung7:PlaceStop={name:"taereung",exit:7,point:[37.617653603112934,127.07607049990334],placeId:"22906199"};
-const seokgye:PlaceStop={name:"seokgye",exit:4,point:[37.614812122928,127.06674604010642],placeId:"27467724"};
 // The official page reconfirmed Exit 2 on 2026-10-31; the older schedule JSON says Exit 3.
-const byeollae:PlaceStop={name:"byeollae",exit:2,point:[37.64218888708682,127.12679939783764],placeId:"22020399"};
+const {school,hwarang2,hwarang5,taereung6,taereung7,seokgye,byeollae}=shuttlePlaces;
 export const serviceRoutes:ServiceRoute[]=[
   {id:"hwarangdae",scheduleId:"shuttle-0",locationRouteId:1,name:"hwarangdae",color:"#3b82f6",oneWay:true,target:1,stops:[hwarang5,school],legs:[]},
   {id:"seokgye",scheduleId:"shuttle-1",locationRouteId:2,name:"seokgye",color:"#10b981",target:3,stops:[school,hwarang2,taereung6,seokgye,taereung7,school],legs:[]},
@@ -45,8 +40,9 @@ export function serviceTimetable({route,date,now,view="auto",data}: {
     data.source==="unavailable"||!bus?"unavailable":day.operationStatus==="closed"?"closed":day.operationStatus==="unconfirmed"?"unknown":!scheduleType&&day.operationStatus!=="exception"?"unavailable":"ready";
   if(status==="ready"&&type==="special"&&!applicable.length&&day.operationStatus!=="exception") status="no-special";
   const buses=!bus?[]:type==="regular"?[bus]:day.serviceExceptions.length?getShuttleExceptionBuses([bus],day.serviceExceptions):applyShuttleSpecialPeriods({buses:[bus],dateString:date,specialPeriods:calendar}).buses;
-  const times=status==="ready"?sortedDepartures(buses[0]?.schedules[scheduleType??"mondayToThursday"]??[]):[];
-  return {status,type,activeType,reference:type!==activeType,scheduleType,times,period:applicable[0]??null};
+  const scheduledTimes=sortedDepartures(buses[0]?.schedules[scheduleType??"mondayToThursday"]??[]);
+  const times=status==="ready"?scheduledTimes:[];
+  return {status,type,activeType,reference:type!==activeType,scheduleType,times,scheduledTimes,period:applicable[0]??null};
 }
 
 export function nextScheduledService({route,now,data}:{route:PreviewRoute;now:Date;data:ShuttleServiceData}) {
@@ -67,6 +63,6 @@ export function receivedLocationState(response:LiveDataResponse<BusLocation[]>|u
   const fetchedAt=response?Date.parse(response.timestamp):NaN;
   const age=now.getTime()-fetchedAt;
   const valid=!!response&&response.success&&Number.isFinite(fetchedAt)&&age>=-300_000&&age<=600_000;
-  return {available:valid,locations:valid?response.data:noLocations,stale:failed||!valid||response?.stale===true||response?.sourceStatus!=="fresh"||age>120_000,
+  return {available:valid,locations:valid?response.data:noLocations,stale:failed||!valid||response?.stale===true||response?.sourceStatus!=="fresh"||age>=90_000,
     timestamp:valid?response.timestamp:null};
 }

@@ -23,6 +23,13 @@ const patterns = { seokgye: "mondayToThursday" };
 const predict = (input: unknown = [fix], model = exampleRelease, now = t) => calculateCandidateArrivals(input, [model], patterns, now);
 
 describe("reviewed stop arrivals", () => {
+  it("scopes predictions to one vehicle without hiding conflicting trip IDs in the full feed",()=>{
+    const model={...exampleRelease,target:"seokgye-taereung-7",legs:[exampleRelease.legs[0]]};
+    const other={...fix,vehicleKey:"test-B",runId:"run-B",fraction:.2};
+    expect(calculateCandidateArrivals([fix,other],[model],patterns,t,"test-B")).toEqual(predict([other],model));
+    expect(calculateCandidateArrivals([fix,other],[model],patterns,t,"missing")).toEqual([]);
+    expect(calculateCandidateArrivals([fix,{...other,runId:fix.runId}],[model],patterns,t,fix.vehicleKey)).toEqual([]);
+  });
   it("reselects traffic at predicted segment entry (16:55 + 4 + 1 + 12 = 17:12), then counts down without re-anchoring", () => {
     const [eta] = predict();
     expect(eta).toEqual({ visitId: exampleRelease.target, measuredAt: t, validUntil: t + 90_000, arrivalAt: t + 17 * 60_000 });

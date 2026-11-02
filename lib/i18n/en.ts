@@ -161,6 +161,7 @@ export const enDictionary = {
       source: "Source",
       unavailable: "-",
       statuses: {
+        partial: "Some arrivals unavailable",
         stale: "Stale",
         error: "Error",
       },
@@ -915,7 +916,10 @@ export const enDictionary = {
         shareDeleted: "The share link was deleted.",
         shareDeleteFailed: "Could not delete the share link.",
         shareLoading: "Loading shared timetable.",
-        shareLoadFailed: "Could not load the shared timetable. Check your connection and link address, then open it again. If the link was deleted, ask for a new one.",
+        shareLoadFailed: "Could not load the shared timetable. Check your connection and try reloading it.",
+        shareUnavailable: "This share link is invalid, deleted, or expired. Check the address or ask for a new link.",
+        shareRateLimited: "Too many requests to load the shared timetable. Please try reloading shortly.",
+        retryShare: "Reload shared timetable",
         draftAutoSaveNotice:
           "Timetables you build are saved in this browser for 30 days.",
         draftStorageUnavailable:

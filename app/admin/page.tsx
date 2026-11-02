@@ -96,6 +96,7 @@ export default function AdminPage() {
   const [pageNotice, setPageNotice] = useState("");
   const [dashboardRefresh, setDashboardRefresh] = useState(0);
   const [countsLoaded, setCountsLoaded] = useState(false);
+  const countsScopeRef = useRef<string | null>(null);
 
   const replaceAuthSession = useCallback((nextUser: User | null) => {
     const nextGeneration = ++sessionGenerationRef.current;
@@ -115,6 +116,7 @@ export default function AdminPage() {
     setPageNotice("");
     setDashboardRefresh(0);
     setCountsLoaded(false);
+    countsScopeRef.current = null;
   }, []);
 
   const isCurrentSession = useCallback(
@@ -261,7 +263,7 @@ export default function AdminPage() {
   };
 
   const loadSubmissions = useCallback(
-    async (currentUser = user) => {
+    async (currentUser = user, refreshCounts = true) => {
       if (!currentUser || !isCurrentSession()) return;
 
       setIsLoading(true);
@@ -277,6 +279,10 @@ export default function AdminPage() {
           page: String(page),
           limit: String(PAGE_LIMIT),
         });
+        const countsScope = `${kindFilter}:${statusFilter}`;
+        if (!refreshCounts && countsScopeRef.current === countsScope) {
+          params.set("includeCounts", "false");
+        }
         const cursor = pageCursorsRef.current[page];
         if (page > 1 && !cursor) {
           return;
@@ -300,8 +306,11 @@ export default function AdminPage() {
         }
 
         setSubmissions(data.submissions || []);
-        setCounts({ ...emptyCounts, ...(data.counts || {}) });
-        setCountsLoaded(Boolean(data.counts));
+        if (data.counts) {
+          setCounts({ ...emptyCounts, ...data.counts });
+          setCountsLoaded(true);
+          countsScopeRef.current = countsScope;
+        }
         const nextPagination = data.pagination || emptyPagination;
         setPagination(nextPagination);
         pageCursorsRef.current = Object.fromEntries(
@@ -327,7 +336,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!user) return;
-    void loadSubmissions(user);
+    void loadSubmissions(user, false);
   }, [loadSubmissions, user]);
 
   const updateStatus = async (
@@ -381,6 +390,7 @@ export default function AdminPage() {
         [item.status]: Math.max(0, current[item.status] - 1),
         [status]: current[status] + 1,
       }));
+      countsScopeRef.current = null;
       if (statusFilter !== "all" && status !== statusFilter) {
         setPagination((current) => ({
           ...current,

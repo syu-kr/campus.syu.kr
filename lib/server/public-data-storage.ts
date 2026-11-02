@@ -3,6 +3,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { initializeFirebaseAdmin } from "../firebaseAdmin";
 import { measureHomeTask } from "./home-performance";
+import { recordShuttleMetric } from "./shuttle-metrics";
 import { parsePublicDataManifest, publicDataMaxBytes, publicDataPath, validatePublicData, type PublicDataFile, type PublicDataManifest } from "../public-data-snapshot";
 
 export interface ActivePublicData { manifest: PublicDataManifest; revision: number }
@@ -31,6 +32,7 @@ export function firebasePublicDataStore(): PublicDataStore {
   return {
     async readActive() {
       const document = await deadline(ref.get());
+      recordShuttleMetric("public-data.manifest", { reads: 1, cacheMisses: 1 });
       if (!document.exists) return null;
       const data = document.data()!;
       if (!Number.isSafeInteger(data.revision) || data.revision < 1) throw new Error("Invalid active public data revision");

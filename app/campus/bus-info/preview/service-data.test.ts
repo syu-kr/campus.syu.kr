@@ -59,7 +59,8 @@ describe("received positions, not GPS measurement timestamps",()=>{
   });
   it("marks ageing receipts and removes expired, invalid or far-future positions",()=>{
     const now=Date.parse(testServiceData.nowISO);
-    expect(receivedLocationState(response,false,new Date(now+120001)).stale).toBe(true);
+    expect(receivedLocationState(response,false,new Date(now+89999)).stale).toBe(false);
+    expect(receivedLocationState(response,false,new Date(now+90000))).toMatchObject({stale:true,available:true,locations:[position]});
     for(const date of [new Date(now+600001),new Date(now-300001)]) expect(receivedLocationState(response,false,date).locations).toEqual([]);
     expect(receivedLocationState({...response,timestamp:"invalid"},false,new Date(now)).timestamp).toBeNull();
   });

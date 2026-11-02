@@ -588,8 +588,8 @@ export async function fetchPublicTransitArrivals(): Promise<PublicTransitArrival
 
   return {
     data: results,
-    stale: failures.length > 0,
-    sourceStatus: failures.length > 0 ? "stale" : "fresh",
+    stale: false,
+    sourceStatus: failures.length > 0 ? "partial" : "fresh",
     error:
       failures.length > 0
         ? "일부 대중교통 도착 정보 제공처를 조회하지 못했습니다."

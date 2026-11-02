@@ -94,8 +94,8 @@ campus.syu.kr/
 
 - Next.js App Router가 페이지와 API Route를 담당합니다.
 - 화면 데이터는 `lib/api.ts`, feature helper, API Route를 통해 가져옵니다.
-- 일일 크롤링 데이터는 무료 GitHub Pages의 현재 스냅샷을 서버에서 읽고, 실패하면 `public/data/*.json` fallback을 사용합니다.
-- 학사 일정·연락처 등 저빈도 데이터는 `public/data/*.json`을 사용합니다.
+- 공개 데이터는 `PUBLIC_DATA_BACKEND=firebase`이면 Firebase Storage의 활성 스냅샷, 미설정/`pages`이면 기존 GitHub Pages 스냅샷을 서버에서 읽습니다. 일일 데이터의 원격 조회 실패는 `public/data/*.json` 번들로 복구하며 Firebase에서 Pages로 자동 전환하지 않습니다.
+- Firebase 모드의 `/data` rewrite는 build 때 결정되므로 runtime과 같은 backend 값을 지정해 재빌드합니다. 학사 일정·연락처 등 참조 JSON도 검토된 main의 CI 성공 뒤 Firebase에 발행합니다. backend 선택·발행·복구는 [공개 데이터 운영](docs/PUBLIC_DATA_FIREBASE.md)을 따릅니다.
 - 외부 API 키가 필요한 요청은 API Route에서 프록시/정규화합니다.
 - Firebase Admin은 서버 전용 코드에서만 사용합니다.
 - FCM 클라이언트 초기화와 포그라운드 알림은 브라우저에서만 실행합니다.
@@ -106,7 +106,7 @@ campus.syu.kr/
 Client UI
   -> TanStack Query
   -> lib/api.ts or app/api/*
-  -> GitHub Pages crawl-data snapshot, public/data fallback, Firebase Admin, external APIs
+  -> Firebase Storage or GitHub Pages snapshot, public/data fallback, Firebase Admin, external APIs
 ```
 
 ## 환경 변수

@@ -8,7 +8,6 @@ import type { useContentTranslation } from "./ContentTranslation";
 interface AnnouncementAiSummaryProps {
   aiSummary: AnnouncementAiSummaryData;
   compact?: boolean;
-  showPreview?: boolean;
   variant?: "action" | "preview";
   translation?: ReturnType<typeof useContentTranslation>;
 }

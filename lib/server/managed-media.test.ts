@@ -1,5 +1,6 @@
 // @vitest-environment node
 import sharp from "sharp";
+import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const storage = vi.hoisted(() => ({ file: vi.fn(), save: vi.fn(), metadata: vi.fn(), download: vi.fn(), initialize: vi.fn(), bucket: vi.fn(), bucketMetadata: vi.fn() }));
 vi.mock("@/lib/firebaseAdmin", () => ({ initializeFirebaseAdmin: storage.initialize }));
@@ -26,6 +27,7 @@ describe("banner image trust boundary", () => {
     expect(saved.url).toMatch(/^\/api\/content-media\/[a-f0-9-]{36}$/);
     expect(storage.file.mock.calls[0][0]).toMatch(/^managed-content\/[a-f0-9-]{36}\.webp$/);
     expect(storage.save.mock.calls[0][1]).toMatchObject({ resumable: false, preconditionOpts: { ifGenerationMatch: 0 }, metadata: { contentType: "image/webp" } });
+    expect(storage.save.mock.calls[0][1].metadata.metadata.sha256).toBe(createHash("sha256").update(storage.save.mock.calls[0][0]).digest("hex"));
   });
   it("scales oversized dimensions and accepts JPEG/WebP signatures without trusting file names", async () => {
     for (const format of ["jpeg", "webp"] as const) {
@@ -55,6 +57,81 @@ describe("banner image trust boundary", () => {
     expect(storage.file).toHaveBeenCalledWith(`managed-content/${id}.webp`);
     storage.metadata.mockRejectedValueOnce({ code: 404 });await expect(readManagedImage(id)).rejects.toMatchObject({ status: 404 });
     storage.metadata.mockRejectedValueOnce(new Error("private bucket credential failure"));await expect(readManagedImage(id)).rejects.toMatchObject({ status: 503, message: "이미지를 불러오지 못했습니다." });
+  });
+  it("skips downloading only when the saved hash and GCS generation match the body-issued validator", async () => {
+    const sha256 = "a".repeat(64);
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: 4, generation: "1001", metadata: { sha256 } }]);
+    expect(await readManagedImage(id, `"${sha256}-g1001"`)).toEqual({ data: null, etag: `"${sha256}-g1001"` });
+    expect(storage.metadata).toHaveBeenCalledTimes(1);expect(storage.download).not.toHaveBeenCalled();
+  });
+  it.each([null, '"different"'])("keeps full integrity validation when a validator is absent or different: %s", async validator => {
+    const data = Buffer.from("webp"), sha256 = createHash("sha256").update(data).digest("hex");
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: data.length, metadata: { sha256 } }]);
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id, validator)).toEqual({ data, etag: `"${sha256}"` });
+    expect(storage.download).toHaveBeenCalledExactlyOnceWith({ validation: "crc32c" });
+  });
+  it.each([undefined, "invalid", "a".repeat(63), 123])("falls back to the downloaded bytes for missing or invalid saved hashes: %s", async sha256 => {
+    const data = Buffer.from("webp"), etag = `"${createHash("sha256").update(data).digest("hex")}"`;
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: data.length, metadata: { sha256 } }]);
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id, etag)).toEqual({ data, etag });
+    expect(storage.download).toHaveBeenCalledExactlyOnceWith({ validation: "crc32c" });
+  });
+  it.each([undefined, "", "0", "invalid", 1001])("does not trust a saved hash without a valid GCS generation: %s", async generation => {
+    const data = Buffer.from("webp"), sha256 = createHash("sha256").update(data).digest("hex");
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: data.length, generation, metadata: { sha256 } }]);
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id, `"${sha256}"`)).toEqual({ data, etag: `"${sha256}"` });
+    expect(storage.download).toHaveBeenCalledExactlyOnceWith({ validation: "crc32c" });
+    expect(storage.file).toHaveBeenCalledTimes(1);
+  });
+  it("downloads an overwritten object even when its custom hash still describes the previous body", async () => {
+    const oldHash = createHash("sha256").update("old!").digest("hex"), data = Buffer.from("new!");
+    const hash = createHash("sha256").update(data).digest("hex");
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: data.length, generation: "1002", metadata: { sha256: oldHash } }]);
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id, `"${oldHash}-g1001"`)).toEqual({ data, etag: `"${hash}-g1002"` });
+    expect(storage.file).toHaveBeenLastCalledWith(`managed-content/${id}.webp`, { generation: "1002" });
+    expect(storage.download).toHaveBeenCalledExactlyOnceWith({ validation: "crc32c" });
+  });
+  it("migrates a bare legacy validator through full validation before returning the generation-bound ETag", async () => {
+    const data = Buffer.from("webp"), sha256 = createHash("sha256").update(data).digest("hex");
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: data.length, generation: "1001", metadata: { sha256 } }]);
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id, `"${sha256}"`)).toEqual({ data, etag: `"${sha256}-g1001"` });
+    expect(storage.download).toHaveBeenCalledOnce();
+  });
+  it("pins the downloaded generation when the live object changes after metadata was read", async () => {
+    const data = Buffer.from("old!"), sha256 = createHash("sha256").update(data).digest("hex");
+    let liveData = data;
+    const liveDownload = vi.fn(async () => [liveData]);
+    storage.metadata.mockImplementationOnce(async () => {
+      liveData = Buffer.from("new!");
+      return [{ contentType: "image/webp", size: data.length, generation: "1001", metadata: { sha256 } }];
+    });
+    storage.file.mockImplementation((_key, options) => options?.generation === "1001"
+      ? { download: storage.download }
+      : { getMetadata: storage.metadata, download: liveDownload });
+    storage.download.mockResolvedValue([data]);
+    expect(await readManagedImage(id)).toEqual({ data, etag: `"${sha256}-g1001"` });
+    expect(liveDownload).not.toHaveBeenCalled();
+    expect(storage.download).toHaveBeenCalledExactlyOnceWith({ validation: "crc32c" });
+  });
+  it.each([
+    { contentType: "image/svg+xml", size: 4 },
+    { contentType: "image/webp", size: 0 },
+    { contentType: "image/webp", size: 2 * 1024 * 1024 + 1 },
+    { contentType: "image/webp", size: "invalid" },
+  ])("rejects invalid object metadata before accepting a matching hash: %j", async metadata => {
+    const sha256 = "a".repeat(64);
+    storage.metadata.mockResolvedValue([{ ...metadata, metadata: { sha256 } }]);
+    await expect(readManagedImage(id, `"${sha256}"`)).rejects.toMatchObject({ status: 404 });
+    expect(storage.download).not.toHaveBeenCalled();
+  });
+  it("keeps rejecting downloaded data that does not match the validated size", async () => {
+    storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: 4 }]);storage.download.mockResolvedValue([Buffer.from("wrong-length")]);
+    await expect(readManagedImage(id, '"different"')).rejects.toMatchObject({ status: 404 });
   });
   it("uses the server-only bucket override and caches a bounded read-only health probe", async () => {
     vi.stubEnv("MANAGED_CONTENT_STORAGE_BUCKET", "managed-override.appspot.com");

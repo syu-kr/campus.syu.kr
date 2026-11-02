@@ -14,8 +14,9 @@ export default function ShuttleServiceSchedule({route,now,data}:{route:ServiceRo
   const locale=useLocale(),copy=getShuttlePreviewCopy(locale),live=getShuttleServiceCopy(locale);
   const context=referenceTables(route,now,data);
   const [choice,setChoice]=useState<{key:string;friday:boolean}|null>(null);
-  const key=choice?.key??context.defaultKey,friday=choice?.friday??context.defaultFriday;
-  const categories=[{key:"semester",label:live.semester},{key:"vacation",label:live.vacation},{key:"online",label:live.online},...(context.exception?[{key:"exception",label:live.specialName}]:[])];
+  const friday=choice?.friday??context.defaultFriday;
+  const categories=[{key:"semester",label:live.semester},...(route.id==="hwarangdae"?[{key:"vacation",label:live.vacation}]:[]),...(context.period?[{key:"online",label:live.online}]:[]),...(context.exception?[{key:"exception",label:live.specialName}]:[])];
+  const selectedKey=choice?.key??context.defaultKey,key=categories.some(item=>item.key===selectedKey)?selectedKey:"semester";
   const period=key==="online"?context.period:key==="exception"?context.current.period:undefined;
   const vacations=[...(data.specialPeriods.vacationPeriods??[])].sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const vacation=vacations.find(p=>p.endDate>=context.date)??vacations.at(-1);
@@ -30,7 +31,7 @@ export default function ShuttleServiceSchedule({route,now,data}:{route:ServiceRo
   const applied=context.current.status==="ready"&&key===context.currentKey&&friday===context.defaultFriday;
   return <section id="preview-timetable" tabIndex={-1} aria-label={copy.departureTimetable} className="shuttle-timetable p-4 space-y-3">
     <h2 className="text-base font-bold">{publishedWinter?live.vacationRoute:route.oneWay?`${copy.hwarangdae} → ${copy.school}`:`${copy.school} → ${copy[route.name]} → ${copy.school}`}</h2>
-    <div className="shuttle-table-categories" role="group" aria-label={live.tableCategory}>
+    <div className="shuttle-table-categories" role="group" aria-label={live.tableCategory} data-category-count={categories.length}>
       {categories.map(item=><button key={item.key} type="button" aria-label={`${item.label}${context.currentKey===item.key?` ${live.current}`:""}`} aria-pressed={key===item.key} onClick={()=>setChoice({key:item.key,friday})}>{item.label}{context.currentKey===item.key&&<small data-current-table={item.key}>{live.current}</small>}</button>)}
     </div>
     {key!=="exception"&&<div className="m3-segmented" role="group" aria-label={live.weekdayTable} data-selected-index={friday?1:0}>

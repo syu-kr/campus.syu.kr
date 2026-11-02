@@ -3,7 +3,6 @@
   "provider": "OSRM / OpenStreetMap",
   "options": "overview=full, geometries=geojson, steps=true, ordered waypoints and bearing restrictions",
   "coordinateOrder": "latitude,longitude",
-  "waypointSource": "Permissioned, one-time waypoint import; no runtime source reference",
   "license": "ODbL; © OpenStreetMap contributors",
   "licenseUrl": "https://www.openstreetmap.org/copyright",
   "fieldVerified": false,

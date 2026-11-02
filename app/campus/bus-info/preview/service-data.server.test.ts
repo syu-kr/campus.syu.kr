@@ -5,6 +5,7 @@ import { getHomePublicHolidays } from "@/lib/server/home-data";
 import { loadShuttleServiceData } from "./service-data.server";
 import { testServiceData } from "./service-test-data";
 import { nextScheduledService, serviceRoutes, serviceTimetable } from "./service-data";
+import provenance from "./data/provenance.json";
 vi.mock("@/lib/server/public-data",()=>({readPublicDataBundle:vi.fn()}));
 vi.mock("@/lib/server/home-data",()=>({getHomePublicHolidays:vi.fn()}));
 vi.mock("next/navigation",()=>({unstable_rethrow:vi.fn()}));
@@ -38,4 +39,19 @@ it("falls back to the actual imported snapshot without manufacturing collection 
   expect(result.buses).toHaveLength(3);
   expect(result.holidays.lastSuccessAt).toBe("2026-10-29T18:52:36.524687Z");
   expect(result.guideCorrections).toBe(true);
+});
+
+it("shares the corrected Friday, final-exam and winter calendar used by the UI and operational APIs",async()=>{
+  vi.mocked(readPublicDataBundle<readonly ["shuttle-bus-schedule.json","shuttle-special-periods.json"]>).mockResolvedValue({
+    data:{"shuttle-bus-schedule.json":testServiceData.buses,"shuttle-special-periods.json":testServiceData.specialPeriods},
+    source:"firebase-storage",version:provenance.scheduleVersion,
+  });
+  const result=await loadShuttleServiceData();
+  expect(result.buses.find(bus=>bus.id==="shuttle-2")!.schedules.friday).toContain("08:30");
+  expect(result.specialPeriods.specialPeriods).toContainEqual(expect.objectContaining({
+    id:"verified-final-fall-2026",addedTimes:["18:40","19:00"],
+  }));
+  expect(result.specialPeriods.vacationPeriods).toContainEqual(expect.objectContaining({
+    startDate:"2026-12-15",endDate:"2027-01-12",
+  }));
 });

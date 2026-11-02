@@ -3,6 +3,7 @@ import { FieldPath } from "firebase-admin/firestore";
 import type { ContentMutation, ManagedBannerDraft, ManagedContentDraft, ManagedContentRecord, ManagedNoticeDraft, NoticeOriginalMetadata, PublicManagedContentMetadata, PublicManagedPublication } from "@/types/managed-content";
 import { getFirestore } from "./firestore";
 import { ApiError } from "./http";
+import { recordShuttleMetric } from "./shuttle-metrics";
 
 const COLLECTION = "site_managed_content";
 const idPattern = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,119}$/;
@@ -184,6 +185,7 @@ export async function readPublishedManagedContentRecords(): Promise<PublicManage
   if (!process.env.FIREBASE_SERVICE_ACCOUNT) return [];
   try {
     const result = await getFirestore().collection(COLLECTION).select(...PUBLIC_META_FIELDS).limit(501).get();
+    recordShuttleMetric("content.list", { reads: Math.max(1, result.size), documents: result.size, cacheMisses: 1 });
     if (result.size > 500) throw new Error("Content list limit exceeded");
     return result.docs.map(doc => publicPublication(doc.id, doc.data(), false) as PublicManagedContentMetadata);
   } catch { throw new ApiError("게시된 콘텐츠 목록을 불러오지 못했습니다.", 503, undefined, "CONTENT_READ_FAILED"); }
@@ -194,6 +196,7 @@ export async function readPublishedManagedContentRecord(id: string): Promise<Pub
   if (!idPattern.test(id) || !process.env.FIREBASE_SERVICE_ACCOUNT) return null;
   try {
     const result = await getFirestore().collection(COLLECTION).where(FieldPath.documentId(), "==", id).select(...PUBLIC_DETAIL_FIELDS).limit(1).get();
+    recordShuttleMetric("content.detail", { reads: Math.max(1, result.size), documents: result.size });
     const doc = result.docs[0];
     return doc ? publicPublication(doc.id, doc.data(), true) as PublicManagedPublication : null;
   } catch { throw new ApiError("게시된 콘텐츠를 불러오지 못했습니다.", 503, undefined, "CONTENT_READ_FAILED"); }

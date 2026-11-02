@@ -1,8 +1,9 @@
 import { getKoreaDateTimeParts } from "./korea-time";
 import { serviceVisits, type ShuttleRoute } from "./shuttle-visits";
 
-export type StopEta = { visitId: string; arrivalAt: number; measuredAt: number; validUntil: number };
-export type EtaResponse = { status: "collecting" | "active"; arrivals: StopEta[] };
+export type StopEta = { visitId: string; arrivalAt: number; measuredAt: number; validUntil: number; basis?: "history" | "observed" | "route"; measurementSource?: "source" | "receiver" };
+export type ScheduledStopArrival = { visitId: string; departureAt: number; arrivalAt: number; travelSeconds: number };
+export type EtaResponse = { status: "collecting" | "active" | "learning"; arrivals: StopEta[]; scheduledArrivals?: ScheduledStopArrival[] };
 type Phase = "moving" | "dwelling";
 type Leg = {
   from: string;
@@ -57,12 +58,13 @@ function legSeconds(leg: Leg, entry: number) {
 }
 
 export function calculateCandidateArrivals(input: unknown, candidates: readonly EtaCandidate[],
-  patterns: Partial<Record<ShuttleRoute, string>>, now: number): StopEta[] {
+  patterns: Partial<Record<ShuttleRoute, string>>, now: number, selectedVehicleKey?: string): StopEta[] {
   if (!timestamp(now) || !Array.isArray(input) || input.length > 10) return [];
   const day = etaServiceDate(now), arrivals: StopEta[] = [];
   for (const [index, fix] of input.entries()) {
     if (!record(fix) || fix.passenger !== true || fix.match !== "verified" || fix.serviceDate !== day ||
       typeof fix.runId !== "string" || !fix.runId.trim() || typeof fix.vehicleKey !== "string" || !fix.vehicleKey.trim() ||
+      (selectedVehicleKey !== undefined && fix.vehicleKey !== selectedVehicleKey) ||
       input.some((other, n) => n !== index && record(other) && (other.runId === fix.runId || other.vehicleKey === fix.vehicleKey)) ||
       !timestamp(fix.measuredAt) || !timestamp(fix.receivedAt) || !timestamp(fix.enteredAt) ||
       fix.enteredAt > fix.measuredAt || fix.measuredAt > fix.receivedAt || fix.receivedAt > now ||

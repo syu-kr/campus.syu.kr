@@ -69,13 +69,15 @@ export async function GET(req: NextRequest) {
     }
     const { getFirestore } = await import("@/lib/server/firestore");
     const db = getFirestore();
-    const countsPromise = readSubmissionCounts(db, kind);
+    const countsPromise = searchParams.get("includeCounts") === "false"
+      ? null
+      : readSubmissionCounts(db, kind);
     const [submissionPage, counts] = await Promise.all([
       readSubmissions(db, kind, status, page, limit, cursor, countsPromise),
       countsPromise,
     ]);
 
-    return NextResponse.json({ ...submissionPage, counts });
+    return NextResponse.json({ ...submissionPage, ...(counts ? { counts } : {}) });
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -177,10 +179,10 @@ async function readSubmissions(
   page: number,
   limit: number,
   cursor: SubmissionCursor | null,
-  counts: Promise<Record<SubmissionStatus, number>>,
+  counts: Promise<Record<SubmissionStatus, number>> | null,
 ) {
-  const total = status === "all"
-    ? await countSubmissions(db, kind)
+  const total = status === "all" || !counts
+    ? await countSubmissions(db, kind, status)
     : (await counts)[status];
   const totalPages = Math.max(1, Math.ceil(total / limit));
   const reads: Promise<SubmissionRead[]>[] = [];
@@ -272,6 +274,7 @@ async function readCollection(
 async function countSubmissions(
   db: Firestore,
   kind: "all" | AdminSubmissionKind,
+  status: "all" | SubmissionStatus,
 ) {
   const collections: Array<"site_inquiries" | "campus_tip_suggestions"> = [];
 
@@ -284,7 +287,9 @@ async function countSubmissions(
   }
 
   const counts = await Promise.all(
-    collections.map((collection) => countCollection(db, collection)),
+    collections.map((collection) => status === "all"
+      ? countCollection(db, collection)
+      : countByStatus(db, collection, status)),
   );
 
   return counts.reduce((total, count) => total + count, 0);

@@ -17,13 +17,13 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 const SHUTTLE_LOCATION_SOURCE = "shuttle";
-const SHUTTLE_CACHE_TTL_MS = 30 * 1000;
+const SHUTTLE_CACHE_TTL_MS = 5 * 1000;
 const SHUTTLE_STALE_RETENTION_MS = 10 * 60 * 1000;
 const SHUTTLE_FORBIDDEN_COOLDOWN_MS = 5 * 60 * 1000;
 const SHUTTLE_REQUEST_TIMEOUT_MS = 3500;
 const MAX_SHUTTLE_ROWS = 100;
 const PUBLIC_CACHE_HEADERS = {
-  "Cache-Control": "public, s-maxage=30, stale-while-revalidate=300",
+  "Cache-Control": "public, s-maxage=5, stale-while-revalidate=30",
 };
 let cachedLocations:
   | {

@@ -1,152 +1,114 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { renderToString } from "react-dom/server";
-import { afterEach, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { mockKakaoMaps } from "@/tests/kakao-maps-mock";
+import type { BusLocation } from "@/types";
 import ShuttlePreviewMap from "./ShuttlePreviewMap";
-import { journeyStops, previewRoutes } from "./preview-data";
 import { serviceRoutes } from "./service-data";
 import { serviceRoadPaths } from "./service-visits";
+import { demoLocations } from "./service-demo";
 
-const loader = vi.hoisted(() => ({ ready: true }));
-vi.mock("@/lib/kakao-maps-loader", () => ({ loadKakaoMapsSdk: async () => loader.ready }));
-afterEach(() => { delete window.kakao; vi.unstubAllGlobals(); loader.ready = true; });
-const route = previewRoutes.find(item => item.id === "seokgye")!;
-const labels = ["학교 출발", "화랑대 2번", "태릉 6번", "석계", "태릉 7번", "학교 도착"];
-const indices = journeyStops(route, "campus");
-
-it("server-renders each fallback vehicle title as a single complete string",()=>{
-  const error=vi.spyOn(console,"error").mockImplementation(()=>{});
-  const html=renderToString(<ShuttlePreviewMap route={serviceRoutes[0]} elapsed={0} selected={0} mode="normal" labels={["화랑대","학교"]} locale="ko" demonstration received={{locations:[{id:"demo",name:"demo",lat:"37.62",lon:"127.08",status:1,routeid:1}],stale:false}} />);
-  expect(html).toContain("<title>화랑대역 · 예시 셔틀</title>");
-  expect(error).not.toHaveBeenCalled();
-});
-
-it("keeps direction-specific markers stable while the vehicle moves and cleans up listeners", async () => {
-  const sdk = mockKakaoMaps();
-  const OriginalMap = window.kakao!.maps.Map;
-  window.kakao!.maps.Map = class {
-    constructor(container: HTMLElement, options: ConstructorParameters<typeof OriginalMap>[1]) {
-      container.appendChild(document.createElement("canvas"));
-      return new OriginalMap(container, options);
-    }
-  } as unknown as typeof OriginalMap;
-  const OriginalMarker = window.kakao!.maps.Marker;
-  window.kakao!.maps.Marker = class {
-    constructor(options: ConstructorParameters<typeof OriginalMarker>[0]) {
-      return Object.assign(new OriginalMarker(options), { setPosition: vi.fn(), setImage: vi.fn(), setZIndex: vi.fn() });
-    }
-  } as unknown as typeof OriginalMarker;
-  Object.assign(window.kakao!.maps, { Polyline: class { setMap = vi.fn(); } });
-  vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
-  const onSelect = vi.fn();
-  const props = { route, selected: 3, mode: "normal" as const, labels, indices, locale: "ko" as const, onSelect };
-  const { rerender, unmount } = render(<ShuttlePreviewMap {...props} elapsed={120} />);
-  await waitFor(() => expect(sdk.markers).toHaveLength(4));
-  expect(sdk.event.addListener).toHaveBeenCalledTimes(2);
-  const fitCount = sdk.map.setBounds.mock.calls.length;
-  rerender(<ShuttlePreviewMap {...props} elapsed={150} />);
-  expect(sdk.markers).toHaveLength(4);
-  expect(sdk.map.setBounds).toHaveBeenCalledTimes(fitCount);
-  rerender(<ShuttlePreviewMap {...props} indices={journeyStops(route, "station")} selected={1} elapsed={150} />);
-  expect(screen.getByRole("region", { name: "선택한 노선 지도" }).querySelectorAll("canvas")).toHaveLength(1);
-  unmount();
-  expect(sdk.event.removeListener.mock.calls).toEqual(sdk.event.addListener.mock.calls);
-});
-
-it("shows the same directional stops in its fallback when the map SDK is unavailable", async () => {
-  loader.ready = false;
-  render(<ShuttlePreviewMap route={route} elapsed={120} selected={3} mode="normal" labels={labels} indices={indices} locale="ko" />);
-  expect(await screen.findByText("지도를 연결하지 못해 노선도로 표시합니다.")).toBeInTheDocument();
-  expect(screen.getByRole("img", { name: "선택한 노선 지도" })).toHaveTextContent("태릉 7번");
-  expect(screen.queryByText("태릉 6번")).not.toBeInTheDocument();
-});
-
-it("keeps one route-colored pin per internal vehicle when trips change or records are reordered", async () => {
-  loader.ready = false;
-  const runs: import("./preview-data").PreviewRun[] = [
-    {runId:"trip-one",vehicleId:"preview-bus-j",departure:0},
-    {runId:"trip-two",vehicleId:"preview-bus-j",departure:1800},
-  ];
-  const props = {route,selected:3,mode:"normal" as const,labels,indices,locale:"ko" as const};
-  const {container,rerender} = render(<ShuttlePreviewMap {...props} runs={runs} elapsed={120} />);
-  await screen.findByText("지도를 연결하지 못해 노선도로 표시합니다.");
-  const image = () => container.querySelector('[data-vehicle-id="preview-bus-j"] image')!;
-  const original = image().getAttribute("href");
-  expect(decodeURIComponent(original!)).toContain(`fill="${route.color}"`);
-  expect(decodeURIComponent(original!)).not.toContain("<text");
-  rerender(<ShuttlePreviewMap {...props} runs={[...runs].reverse()} elapsed={1920} />);
-  expect(image().getAttribute("href")).toBe(original);
-  expect(container.querySelectorAll('[data-vehicle-id="preview-bus-j"]')).toHaveLength(1);
-});
-
-it("shows supplied sketch lines and received positions without simulated actual vehicles",async()=>{
-  loader.ready=false;
-  const props={route:serviceRoutes[0],selected:0,elapsed:0,mode:"ended" as const,labels:["화랑대 5번","학교"],locale:"ko" as const};
-  const {container,rerender}=render(<ShuttlePreviewMap {...props} received={{locations:[],stale:false}} />);
-  await screen.findByText("배경 지도를 불러올 수 없어 간이 노선도를 표시합니다.");
-  expect(container.querySelectorAll("polyline")).toHaveLength(1);
-  expect(container.querySelectorAll("[data-stop-pin]")).toHaveLength(2);
-  rerender(<ShuttlePreviewMap {...props} received={{locations:[{id:"received-test",name:"test",lat:"37.62",lon:"127.08",status:1,routeid:1}],stale:false}} />);
-  expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(1);
-  expect(container.querySelectorAll("[data-vehicle-id]")).toHaveLength(0);
-});
-
-it("updates a received GPS marker without resetting the map or inferring motion",async()=>{
-  const sdk=mockKakaoMaps();
-  const OriginalMarker=window.kakao!.maps.Marker;
-  window.kakao!.maps.Marker=class {
-    constructor(options:ConstructorParameters<typeof OriginalMarker>[0]) {
-      return Object.assign(new OriginalMarker(options),{setPosition:vi.fn(),setImage:vi.fn(),setZIndex:vi.fn()});
-    }
-  } as unknown as typeof OriginalMarker;
-  vi.stubGlobal("ResizeObserver",class {observe(){} disconnect(){}});
-  const props={route:serviceRoutes[0],selected:0,elapsed:0,mode:"normal" as const,labels:["화랑대","학교"],locale:"ko" as const};
-  const bus={id:"received-test",name:"test",lat:"37.62",lon:"127.08",status:1 as const,routeid:1 as const};
-  const {rerender,unmount}=render(<ShuttlePreviewMap {...props} received={{locations:[bus],stale:false}} />);
-  await waitFor(()=>expect(sdk.markers).toHaveLength(3));
-  const fitCount=sdk.map.setBounds.mock.calls.length;
-  rerender(<ShuttlePreviewMap {...props} received={{locations:[{...bus,lat:"37.621"}],stale:true}} />);
-  expect(sdk.markers).toHaveLength(3);
-  expect(sdk.map.setBounds).toHaveBeenCalledTimes(fitCount);
-  rerender(<ShuttlePreviewMap {...props} selected={1} received={{locations:[bus,{...bus,id:"another"}],stale:false}} />);
-  expect(sdk.map.setBounds).toHaveBeenCalledTimes(fitCount);
-  unmount();
-  expect(sdk.markers.every(marker=>vi.mocked(marker.setMap).mock.calls.some(call=>call[0]===null))).toBe(true);
-});
-it("merges co-located campus visits on the map and keeps the final boarding exit selectable",async()=>{
-  const sdk=mockKakaoMaps(),onSelect=vi.fn();
-  const OriginalMarker=window.kakao!.maps.Marker;
-  window.kakao!.maps.Marker=class {
-    constructor(options:ConstructorParameters<typeof OriginalMarker>[0]) {
-      return Object.assign(new OriginalMarker(options),{setPosition:vi.fn(),setImage:vi.fn(),setZIndex:vi.fn()});
-    }
-  } as unknown as typeof OriginalMarker;
-  vi.stubGlobal("ResizeObserver",class {observe(){} disconnect(){}});
-  render(<ShuttlePreviewMap route={serviceRoutes[1]} elapsed={0} selected={3} mode="normal" labels={["학교 출발","화랑대2","태릉6","석계4","태릉7","학교 도착"]} locale="ko" onSelect={onSelect} received={{locations:[],stale:false}} />);
-  await waitFor(()=>expect(sdk.markers).toHaveLength(5));
-  expect(sdk.event.addListener).toHaveBeenCalledTimes(5);
-  const handler=sdk.event.addListener.mock.calls.at(-1)![2] as ()=>void;
-  handler();expect(onSelect).toHaveBeenCalledWith(4);
-});
-
-it("keeps full geographic road vertices through zoom, resize and vehicle updates",async()=>{
-  const sdk=mockKakaoMaps(),geometries:unknown[]=[];
-  const OriginalMarker=window.kakao!.maps.Marker;
-  window.kakao!.maps.Marker=class {constructor(options:ConstructorParameters<typeof OriginalMarker>[0]) {return Object.assign(new OriginalMarker(options),{setPosition:vi.fn(),setImage:vi.fn(),setZIndex:vi.fn()});}} as unknown as typeof OriginalMarker;
-  Object.assign(window.kakao!.maps,{Polyline:class {constructor(options:{path:unknown}) {geometries.push(options.path);}setMap(){}}});
+const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>()}));
+vi.mock("@/lib/kakao-maps-loader",()=>({loadKakaoMapsSdk:async()=>m.ready}));
+vi.mock("./use-stop-arrivals",()=>({useStopArrivals:(...args:unknown[])=>{m.eta(...args);return {minutes:m.minutes,status:"waiting"};}}));
+beforeEach(()=>{m.ready=true;m.minutes.clear();m.eta.mockClear();vi.stubGlobal("ResizeObserver",class {observe(){}disconnect(){}});});
+afterEach(()=>{delete window.kakao;vi.unstubAllGlobals();});
+const buses:BusLocation[]=[
+  {id:"bus-A",name:"not-shown-A",lat:"37.62",lon:"127.08",routeid:1,status:2},
+  {id:"bus-B",name:"not-shown-B",lat:"37.63",lon:"127.09",routeid:2,status:1},
+  {id:"bus-C",name:"not-shown-C",lat:"37.64",lon:"127.11",routeid:3,status:1},
+];
+const now=new Date("2026-11-02T12:00:00+09:00");
+const props={received:{locations:buses,stale:false},now,locale:"ko" as const,onClose:vi.fn()};
+const picker=()=>screen.getByRole("group",{name:"지도 차량 선택"});
+const choose=(name:RegExp)=>fireEvent.click(within(picker()).getByRole("button",{name}));
+function prepareSdk() {
+  const sdk=mockKakaoMaps(),geometries:{path:unknown;setMap:ReturnType<typeof vi.fn>}[]=[];
+  const OriginalMarker=window.kakao!.maps.Marker,OriginalMap=window.kakao!.maps.Map;
+  window.kakao!.maps.Marker=class {constructor(options:ConstructorParameters<typeof OriginalMarker>[0]){return Object.assign(new OriginalMarker(options),{setPosition:vi.fn(),setImage:vi.fn(),setZIndex:vi.fn(),setTitle:vi.fn()});}} as unknown as typeof OriginalMarker;
+  window.kakao!.maps.Map=class {constructor(container:HTMLElement,options:ConstructorParameters<typeof OriginalMap>[1]){container.appendChild(document.createElement("canvas"));return new OriginalMap(container,options);}} as unknown as typeof OriginalMap;
+  Object.assign(window.kakao!.maps,{Polyline:class {setMap=vi.fn();constructor(options:{path:unknown}){geometries.push({path:options.path,setMap:this.setMap});}}});
   const center={lat:37.63,lng:127.1};Object.assign(sdk.map,{getCenter:()=>center});
   let resize=()=>{};vi.stubGlobal("ResizeObserver",class {constructor(callback:()=>void){resize=callback;}observe(){}disconnect(){}});
-  const props={route:serviceRoutes[0],selected:0,elapsed:0,mode:"normal" as const,labels:["화랑대5","학교"],locale:"ko" as const};
-  const {rerender}=render(<ShuttlePreviewMap {...props} received={{locations:[],stale:false}} />);
-  await waitFor(()=>expect(geometries).toHaveLength(1));
-  const before=JSON.stringify(geometries);
-  expect(geometries[0]).toEqual(serviceRoadPaths(props.route)[0].map(([lat,lng])=>({lat,lng})));
-  const container=screen.getByRole("region",{name:"선택한 노선 지도"});
-  let width=900;Object.defineProperty(container,"clientWidth",{get:()=>width});resize();
-  const fits=sdk.map.setBounds.mock.calls.length;
-  width=390;resize();expect(sdk.map.setBounds).toHaveBeenCalledTimes(fits+1);
-  fireEvent.wheel(container);
-  width=320;resize();expect(sdk.map.setCenter).toHaveBeenCalledWith(center);expect(sdk.map.setBounds).toHaveBeenCalledTimes(fits+1);
-  resize();rerender(<ShuttlePreviewMap {...props} received={{locations:[],stale:true}} />);
-  expect(JSON.stringify(geometries)).toBe(before);expect(geometries).toHaveLength(1);
+  return {...sdk,markers:sdk.markers as (KakaoMarker&{setTitle:ReturnType<typeof vi.fn>})[],geometries,center,resize:()=>resize()};
+}
+
+it("initially shows vehicles from every route without drawing an unselected route",async()=>{
+  m.ready=false;const {container}=render(<ShuttlePreviewMap {...props}/>);
+  await screen.findByText("배경 지도를 불러올 수 없어 간이 노선도를 표시합니다.");
+  expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(3);
+  expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
+  expect(within(picker()).getAllByRole("button")).toHaveLength(3);
+  expect(screen.queryByText(/not-shown-/)).not.toBeInTheDocument();
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,undefined,true,"/campus/bus-info/preview/eta");
+});
+it("selects a vehicle's complete route and scopes predictions to that vehicle",async()=>{
+  m.ready=false;m.minutes.set("seokgye-4",7);
+  const {container,rerender}=render(<ShuttlePreviewMap {...props}/>);
+  choose(/석계역/);
+  const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
+  expect(within(panel).getByText(/약 7분/)).toBeInTheDocument();
+  expect(container.querySelectorAll("polyline")).toHaveLength(5);
+  expect(container.querySelectorAll("[data-stop-pin]")).toHaveLength(5);
+  expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(3);
+  expect(m.eta).toHaveBeenLastCalledWith(now,true,"bus-B",true,"/campus/bus-info/preview/eta");
+  fireEvent.click(within(panel).getByRole("button",{name:/석계역 4번 출구/}));
+  expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 약 7분");
+  rerender(<ShuttlePreviewMap {...props} received={{locations:buses,stale:true}}/>);
+  expect(within(panel).queryByText(/약 7분/)).not.toBeInTheDocument();
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B",true,"/campus/bus-info/preview/eta");
+  rerender(<ShuttlePreviewMap {...props} received={{locations:[buses[0],buses[2]],stale:false}}/>);
+  expect(screen.queryByRole("region",{name:"선택 차량 정류장별 도착예상"})).not.toBeInTheDocument();
+  expect(screen.getByText("선택한 차량의 위치를 다시 확인해 주세요.")).toBeInTheDocument();
+  expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
+});
+it("supports fallback marker keyboard selection and the Hwarangdae return movement",async()=>{
+  m.ready=false;const bus={...buses[0],status:1 as const};
+  const {container}=render(<ShuttlePreviewMap {...props} received={{locations:[bus],stale:false}}/>);
+  const marker=container.querySelector("[data-received-vehicle]")!;
+  fireEvent.keyDown(marker,{key:"Enter"});
+  expect(screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"})).toHaveTextContent("복귀 이동");
+  expect(container.querySelector('[data-stop-pin="hwarangdae-return-station"]')).not.toBeNull();
+  expect(container.querySelector('[data-stop-pin="hwarangdae-campus-arrival"]')).toBeNull();
+  expect(container.querySelectorAll("polyline").length).toBeGreaterThan(0);
+});
+it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
+  m.ready=false;const departures=[0,600],sample=demoLocations(serviceRoutes[1],700,true,departures);
+  render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:700,nextAvailable:true,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
+  expect(screen.getByRole("dialog",{name:"전체 셔틀 지도 · 예시 운행"})).toBeVisible();
+  choose(/차량 1/);
+  let panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("통과");
+  choose(/차량 2/);panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("약 10분");
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id,true,"/campus/bus-info/preview/eta");
+});
+it("keeps GPS markers stable, draws complete geographic vertices after a marker click, and cleans up",async()=>{
+  const sdk=prepareSdk();const {rerender,unmount}=render(<ShuttlePreviewMap {...props}/>);
+  await waitFor(()=>expect(sdk.markers).toHaveLength(3));
+  expect(sdk.geometries).toHaveLength(0);
+  act(()=>sdk.event.addListener.mock.calls[1][2]());
+  await waitFor(()=>expect(sdk.geometries).toHaveLength(5));
+  expect(sdk.geometries[0].path).toEqual(serviceRoadPaths(serviceRoutes[1])[0].map(([lat,lng])=>({lat,lng})));
+  const fits=sdk.map.setBounds.mock.calls.length,markers=sdk.markers.length;
+  rerender(<ShuttlePreviewMap {...props} received={{locations:[...buses].reverse().map(bus=>({...bus,lat:String(Number(bus.lat)+.001)})),stale:false}}/>);
+  expect(sdk.markers).toHaveLength(markers);expect(sdk.map.setBounds).toHaveBeenCalledTimes(fits);
+  expect(sdk.markers[0].setTitle).toHaveBeenLastCalledWith("화랑대역 · 차량 3 · 학교 방면");
+  expect(sdk.geometries).toHaveLength(5);
+  expect(screen.getByRole("region",{name:"전체 셔틀 지도"}).querySelectorAll("canvas")).toHaveLength(1);
+  choose(/별내역/);
+  expect(sdk.geometries.slice(0,5).every(line=>line.setMap.mock.calls.some(call=>call[0]===null))).toBe(true);
+  unmount();expect(sdk.event.removeListener).toHaveBeenCalledTimes(sdk.event.addListener.mock.calls.length);
+  for(const args of sdk.event.addListener.mock.calls)expect(sdk.event.removeListener).toHaveBeenCalledWith(...args);
+  expect(sdk.markers.every(marker=>vi.mocked(marker.setMap).mock.calls.some(call=>call[0]===null))).toBe(true);
+});
+it("retains the user's map center during resize and offers a fleet overview reset",async()=>{
+  const sdk=prepareSdk();render(<ShuttlePreviewMap {...props}/>);
+  await waitFor(()=>expect(sdk.markers).toHaveLength(3));
+  const region=screen.getByRole("region",{name:"전체 셔틀 지도"});
+  let width=900;Object.defineProperty(document.querySelector(".shuttle-fleet-canvas")!,"clientWidth",{get:()=>width});sdk.resize();
+  fireEvent.wheel(region);const fits=sdk.map.setBounds.mock.calls.length;
+  width=320;sdk.resize();expect(sdk.map.setCenter).toHaveBeenCalledWith(sdk.center);expect(sdk.map.setBounds).toHaveBeenCalledTimes(fits);
+  fireEvent.click(screen.getByRole("button",{name:"전체 차량 보기"}));expect(sdk.map.setBounds).toHaveBeenCalledTimes(fits+1);
+  fireEvent.keyDown(document,{key:"Escape"});expect(props.onClose).toHaveBeenCalled();
 });

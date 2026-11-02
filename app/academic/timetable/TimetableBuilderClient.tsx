@@ -18,6 +18,11 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { PublicContentTranslation, useContentTranslation } from "@/app/components/ContentTranslation";
 import { fetchJson } from "@/lib/fetch-json";
+import {
+  TimetableShareError,
+  timetableShareQueryOptions,
+  type TimetableShareResponse,
+} from "@/lib/timetable-share-query";
 import type { Dictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/routing";
 import {
@@ -77,19 +82,6 @@ interface TimetableApiResponse {
   data: LectureTimetableDataset;
   timestamp?: string;
   stale?: boolean;
-  error?: string;
-}
-
-interface TimetableShareResponse {
-  success: boolean;
-  data?: {
-    shareId: string;
-    courseIds: string[];
-    year: string | null;
-    semester: string | null;
-    createdAt: string | null;
-    workspace?: TimetableWorkspace;
-  };
   error?: string;
 }
 
@@ -257,19 +249,14 @@ export function TimetableBuilderClient() {
   const {
     data: shareResponse = emptyShareResponse,
     isFetching: isShareFetching,
+    error: shareError,
+    refetch: refetchShare,
   } = useQuery({
-    queryKey: ["lecture-timetable-share", shareId],
-    queryFn: () =>
-      fetchJson<TimetableShareResponse>(
-        `/api/lecture/timetable/shares/${encodeURIComponent(shareId)}`,
-        {
-          fallback: emptyShareResponse,
-          timeoutMs: 12_000,
-        },
-      ),
+    ...timetableShareQueryOptions(shareId),
     enabled: Boolean(shareId) && shareId !== createdShareId,
-    staleTime: 5 * 60 * 1000,
   });
+  const shareStatus = shareError instanceof TimetableShareError ? shareError.status : 0;
+  const isShareUnavailable = shareStatus === 400 || shareStatus === 404;
 
   const courses = response.data.courses;
 
@@ -1023,14 +1010,28 @@ export function TimetableBuilderClient() {
           <p
             className="mt-3 text-sm font-medium text-neutral-600"
             role="status"
+            aria-busy={isShareFetching}
           >
             {shouldLoadShareFromUrl && isShareFetching
               ? text.shareLoading
-              : shareMessage ||
-                (shouldLoadShareFromUrl
-                  ? text.shareLoadFailed
-                  : "")}
+              : shouldLoadShareFromUrl && !shareResponse.success
+                ? isShareUnavailable
+                  ? text.shareUnavailable
+                  : shareStatus === 429
+                    ? text.shareRateLimited
+                    : text.shareLoadFailed
+                : shareMessage}
           </p>
+        )}
+        {shouldLoadShareFromUrl && !shareResponse.success && !isShareUnavailable && (
+          <button
+            type="button"
+            onClick={() => void refetchShare()}
+            disabled={isShareFetching}
+            className={buttonStyles("secondary", "mt-2")}
+          >
+            {text.retryShare}
+          </button>
         )}
         {shareFallbackUrl && (
           <input

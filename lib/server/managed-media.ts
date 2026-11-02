@@ -65,16 +65,25 @@ export async function saveManagedImage(bytes: Uint8Array) {
   return { url: `/api/content-media/${id}`, width: encoded.width, height: encoded.height };
 }
 
-export async function readManagedImage(id: string) {
+export async function readManagedImage(id: string, ifNoneMatch: string | null = null) {
   if (!isManagedMediaId(id)) throw new ApiError("이미지를 찾을 수 없습니다.", 404);
-  const file = managedMediaBucket().file(`managed-content/${id}.webp`);
+  const bucket = managedMediaBucket(), key = `managed-content/${id}.webp`;
+  const file = bucket.file(key);
   try {
     const [metadata] = await file.getMetadata();
     const size = Number(metadata.size);
     if (metadata.contentType !== "image/webp" || !Number.isSafeInteger(size) || size <= 0 || size > MAX_MEDIA_OUTPUT) throw new ApiError("이미지를 찾을 수 없습니다.", 404);
-    const [data] = await file.download({ validation: "crc32c" });
+    const generation = typeof metadata.generation === "string" && /^[1-9][0-9]*$/.test(metadata.generation) ? metadata.generation : null;
+    const versionSuffix = generation ? `-g${generation}` : "";
+    // The body-issued validator binds the saved hash to a non-editable GCS object version.
+    const sha256 = metadata.metadata?.sha256;
+    if (generation && typeof sha256 === "string" && /^[a-f0-9]{64}$/.test(sha256) && ifNoneMatch === `"${sha256}${versionSuffix}"`) {
+      return { data: null, etag: `"${sha256}${versionSuffix}"` };
+    }
+    const version = generation ? bucket.file(key, { generation }) : file;
+    const [data] = await version.download({ validation: "crc32c" });
     if (data.byteLength !== size || data.byteLength > MAX_MEDIA_OUTPUT) throw new ApiError("이미지를 찾을 수 없습니다.", 404);
-    return { data, etag: `"${createHash("sha256").update(data).digest("hex")}"` };
+    return { data, etag: `"${createHash("sha256").update(data).digest("hex")}${versionSuffix}"` };
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (typeof error === "object" && error !== null && "code" in error && (error.code === 404 || error.code === "404")) throw new ApiError("이미지를 찾을 수 없습니다.", 404);
