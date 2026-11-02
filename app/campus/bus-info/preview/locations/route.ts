@@ -14,7 +14,8 @@ export async function POST(req: Request) {
   if (pilotWeekend(new Date())) return Response.json({collection:"closed"}, {headers});
   try {
     await requireAdmin(req);
-    const body = req.body ? await readJsonBody<unknown>(req, 2048) : undefined;
+    // Next may represent a bodyless POST as a non-null empty stream.
+    const body = await readJsonBody(req, 2048, true);
     if (body !== undefined && (!body || typeof body !== "object" || Array.isArray(body) ||
       Object.keys(body).length !== 1 || !("event" in body))) throw new ApiError("현장 기록 요청이 올바르지 않습니다");
     const field = body && typeof body === "object" && "event" in body ? readPilotFieldEvent(body.event) : undefined;

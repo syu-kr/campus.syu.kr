@@ -71,6 +71,11 @@ it("keeps collecting through a headway gap and the last trip",async()=>{
 const fieldRequest=(event:unknown)=>new Request("https://example.invalid/campus/bus-info/preview/locations",{
   method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event}),
 });
+it("accepts a bodyless POST represented by Next as an empty readable stream",async()=>{
+  const request=new Request(req.url,{method:"POST",body:new ReadableStream({start(controller){controller.close();}}),duplex:"half"} as RequestInit);
+  expect((await POST(request)).status).toBe(200);
+  expect(m.save).toHaveBeenCalledOnce();
+});
 it("does not mix conflicting receiver rows under one vehicle key",async()=>{
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),data:[payload().data[0],{...payload().data[0],status:2}]}));
   expect((await (await POST(req)).json()).collection).toBe("empty");
