@@ -64,7 +64,7 @@ export async function savePilotSample(rows: PilotObservation[], receipt: number,
       [...(!existing.exists?derived.flatMap(result=>result.events):[]),...(fieldEvent?[fieldEvent]:[])],learningReceipt);
     if(!stored?.receivedAt||receipt>=stored.receivedAt||fieldEvent) {
       transaction.set(latest,{...learning,schemaVersion:3,expires_at:admin.firestore.Timestamp.fromMillis(learningReceipt+30*86400_000)});
-      if(JSON.stringify(currentData.profiles)!==JSON.stringify(learning.profiles))transaction.set(model,{profiles:learning.profiles,updatedAt:receipt,schemaVersion:1});
+      if(JSON.stringify(currentData.profiles)!==JSON.stringify(learning.profiles))transaction.set(model,{profiles:learning.profiles,updatedAt:learningReceipt,schemaVersion:1});
     }
     return "saved";
   });

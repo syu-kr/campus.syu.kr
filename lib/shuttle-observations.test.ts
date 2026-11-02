@@ -8,6 +8,14 @@ const point = (offset: number, at: readonly [number, number] = shuttlePlaces.hwa
   observedAt:time+offset,measuredAt:time+offset,measurementSource:"receiver",
 });
 describe("pilot observation history", () => {
+  it("retains unverified arrival candidates at the observed campus and exit offsets",()=>{
+    const school=[shuttlePlaces.school.point[0]+.00135,shuttlePlaces.school.point[1]] as const;
+    const campus=advancePilotObservation(undefined,point(0,school));
+    expect(campus.events).toContainEqual(expect.objectContaining({visitId:"hwarangdae-campus-arrival",validation:"candidate"}));
+    const exit=[shuttlePlaces.taereung7.point[0]+.0009,shuttlePlaces.taereung7.point[1]] as const;
+    const received=advancePilotObservation(undefined,{...point(0,exit),routeId:2,status:2});
+    expect(received.events).toContainEqual(expect.objectContaining({visitId:"seokgye-taereung-7",validation:"candidate"}));
+  });
   it("keeps one run from observed origin to destination and records bounded candidate events", () => {
     const origin=advancePilotObservation(undefined,point(0));
     const moving=advancePilotObservation(origin.state,point(30_000,[37.63,127.095]));
