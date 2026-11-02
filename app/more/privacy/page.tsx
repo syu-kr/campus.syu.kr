@@ -194,6 +194,20 @@ export default function NotificationPrivacyPage() {
           <p className="mt-2 text-sm leading-6 text-neutral-600">
             {text.analyticsDescription}
           </p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            {text.analyticsCookies}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            {text.analyticsRefusal}
+          </p>
+          <a
+            href={`https://tools.google.com/dlpage/gaoptout?hl=${locale}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex min-h-11 w-fit items-center text-sm text-primary-700 underline"
+          >
+            {text.analyticsOptOutLink}
+          </a>
           <Link
             href={localizePath("/privacy", locale)}
             className="mt-4 inline-flex rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"

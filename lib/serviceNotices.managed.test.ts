@@ -13,9 +13,9 @@ afterEach(() => { vi.restoreAllMocks();vi.unstubAllEnvs(); });
 
 it("loads the repository seeds independently and keeps all original public identities", async () => {
   const seeds = await getRepositoryManagedContent();
-  expect(seeds).toHaveLength(19);expect(records.read).not.toHaveBeenCalled();
+  expect(seeds).toHaveLength(20);expect(records.read).not.toHaveBeenCalled();
   expect(seeds.every(seed => seed.revision === 0 && seed.source === "repository" && seed.publishedAt?.endsWith("Z"))).toBe(true);
-  expect(seeds.filter(seed => seed.draft.kind === "notice" && seed.draft.english)).toHaveLength(19);
+  expect(seeds.filter(seed => seed.draft.kind === "notice" && seed.draft.english)).toHaveLength(20);
 });
 it("keeps a saved edit private while preserving the public snapshot and original English", async () => {
   const [seed] = await getRepositoryManagedContent();
@@ -65,7 +65,7 @@ it("serves the same original identities, languages and Markdown using database r
   records.read.mockResolvedValue(sources.map(seed => ({ ...seed, source: "database", revision: 1 })));
   expect(await getRepositoryManagedContent()).toEqual([]);
   for (const locale of ["ko", "en"] as const) {
-    expect(await getAllServiceNotices(locale)).toHaveLength(19);
+    expect(await getAllServiceNotices(locale)).toHaveLength(20);
     for (const source of sources) {
       const detail = await getServiceNoticeBySlug(source.id, locale);
       const original = expected.get(`${locale}:${source.id}`)!;

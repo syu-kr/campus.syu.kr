@@ -94,9 +94,6 @@ async function cleanupMeetRooms(
 
       deletedRooms++;
       deletedParticipants += participantsDeleted;
-      console.log(
-        `일정 방 삭제: ${roomDoc.id} (참여자 ${participantsDeleted}명)`,
-      );
     }
   }
 

@@ -10,11 +10,11 @@ function seed(): ManagedContentRecord {
   return { id: draft.slug, draft, published: draft, publishedAt: "2026-10-16T00:00:00.000Z", updatedAt: "2026-10-16T00:00:00.000Z", revision: 0, archived: false, source: "repository", noticeMetadata: { publicId: "019", date: "2026-10-16", author: "Original author", lang: "ko", sourceSha256: "a".repeat(64), reviewedEnglishSourceSha256: "a".repeat(64) } };
 }
 
-it("imports all nineteen exact source snapshots with eighteen reviewed translations and the English original", async () => {
+it("imports all twenty exact source snapshots with nineteen reviewed translations and the English original", async () => {
   const sources = await readRepositoryManagedContent(true);
   const plan = checkNoticeMigrationBackup(planNoticeMigration(sources, new Map()));
-  expect(summarizeNoticeMigration(plan)).toMatchObject({ sourceRecords: 19, create: 19, enrich: 0, conflicts: 0 });
-  expect(sources.filter(row => row.noticeMetadata?.reviewedEnglishSourceSha256)).toHaveLength(18);
+  expect(summarizeNoticeMigration(plan)).toMatchObject({ sourceRecords: 20, create: 20, enrich: 0, conflicts: 0 });
+  expect(sources.filter(row => row.noticeMetadata?.reviewedEnglishSourceSha256)).toHaveLength(19);
   expect(sources.find(row => row.id.startsWith("012-"))?.noticeMetadata?.lang).toBe("en");
   for (let i = 0; i < sources.length; i++) {
     expect(plan.entries[i].after?.published).toEqual(sources[i].published);

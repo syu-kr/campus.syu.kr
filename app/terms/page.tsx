@@ -17,9 +17,14 @@ import type { ReactNode } from "react";
 import { createPageMetadata } from "@/lib/page-metadata";
 
 const REVISED_TERMS_EFFECTIVE_AT = Date.parse("2026-11-04T00:00:00+09:00");
+const CLARIFIED_TERMS_EFFECTIVE_AT = Date.parse("2026-12-04T00:00:00+09:00");
 
 function revisedTermsAreEffective() {
   return Date.now() >= REVISED_TERMS_EFFECTIVE_AT;
+}
+
+function clarifiedTermsAreEffective() {
+  return Date.now() >= CLARIFIED_TERMS_EFFECTIVE_AT;
 }
 
 async function getRequestLocale(): Promise<Locale> {
@@ -40,6 +45,28 @@ export async function generateMetadata(): Promise<Metadata> {
         description: "SYU CAMPUS 이용약관",
       };
   return createPageMetadata({ ...page, pathname: "/terms", locale });
+}
+
+function TermsClarificationNotice({ locale }: { locale: Locale }) {
+  const english = locale === "en";
+  const effective = clarifiedTermsAreEffective();
+  return (
+    <aside className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm leading-relaxed text-blue-900">
+      <p className="font-semibold">{english ? "Terms clarification announced November 3, 2026" : "이용약관 추가 개정 공지: 2026년 11월 3일"}</p>
+      <p className="mt-2">
+        {english
+          ? effective
+            ? "The clarified load-testing and timetable-sharing clauses below apply from 00:00 Korean time on December 4, 2026. Other clauses retain their November 4, 2026 revision."
+            : "The load-testing and timetable-sharing clauses will change at 00:00 Korean time on December 4, 2026. The text below keeps the November 4 revision until then. The notice preserves the existing clauses and shows the upcoming wording."
+          : effective
+            ? "아래의 부하 시험·시간표 공유 조항은 2026년 12월 4일 00:00(한국 시간)부터 적용됩니다. 다른 조항은 2026년 11월 4일 개정 내용을 유지합니다."
+            : "부하 시험·시간표 공유 조항은 2026년 12월 4일 00:00(한국 시간)에 변경됩니다. 그 전까지 아래 본문은 11월 4일 개정 내용을 유지하며, 추가 개정 공지에서 기존 조항과 시행 예정 문안을 확인할 수 있습니다."}
+      </p>
+      <Link href={localizePath("/service/notices/021-policy-clarifications", locale)} className="mt-2 inline-flex min-h-11 items-center font-medium underline underline-offset-4">
+        {english ? "Existing and upcoming clauses, reasons, and effective date" : "기존·시행 예정 조항과 변경 사유·시행일 확인"}
+      </Link>
+    </aside>
+  );
 }
 
 function TermsRevisionNotice({ locale }: { locale: Locale }) {
@@ -108,12 +135,14 @@ const serviceItems = [
   { title: "기타서비스", description: "PWA 지원으로 앱처럼 사용 가능" },
 ];
 
-const prohibitedActions = [
+const prohibitedActions = () => [
   "불법적인 콘텐츠의 게시, 배포, 공유",
   "타인의 개인정보 침해 행위",
   "서비스의 정상적 기능을 방해하는 행위",
   "크롤링, 스크래핑 등 악의적인 정보 수집",
-  "자동화 도구/봇을 이용한 서버 부하 행위 (개인적 서버 테스트 제외)",
+  clarifiedTermsAreEffective()
+    ? "제공자의 사전 허락 없이 자동화 도구·봇으로 운영 서비스에 부하 시험을 하는 행위. 본인이 관리하는 격리된 시험 환경에서는 테스트할 수 있습니다."
+    : "자동화 도구/봇을 이용한 서버 부하 행위 (개인적 서버 테스트 제외)",
   "부정한 접근, 해킹, 시스템 침해",
   "기타 불법적 또는 부당한 행위",
 ];
@@ -150,11 +179,14 @@ const englishServiceItems = [
   },
 ];
 
-const englishProhibitedActions = [
+const englishProhibitedActions = () => [
   "Posting, distributing, or sharing illegal content",
   "Infringing another person's privacy or personal information",
   "Interfering with normal service operation",
-  "Malicious crawling, scraping, automation, or server load generation",
+  clarifiedTermsAreEffective()
+    ? "Malicious crawling or scraping"
+    : "Malicious crawling, scraping, automation, or server load generation",
+  ...(clarifiedTermsAreEffective() ? ["Load testing the production service with automated tools or bots without the provider's prior permission. You may test in an isolated environment that you control."] : []),
   "Unauthorized access, hacking, or system intrusion",
   "Any other illegal or unfair use of the service",
 ];
@@ -203,12 +235,13 @@ function EnglishTermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title={revisedTermsAreEffective() ? "Terms of Use" : "Upcoming Terms of Use"}
-        description="SYU CAMPUS Terms amendment announced October 4, 2026. Effective November 4, 2026."
+        description={clarifiedTermsAreEffective() ? "SYU CAMPUS Terms of Use. Clarified clauses announced November 3, 2026 and effective December 4, 2026." : "SYU CAMPUS Terms amendment announced October 4, 2026. Effective November 4, 2026."}
         noticeTitle="Important Notice"
         noticeTone="red"
         notice="SYU CAMPUS is not an official Sahmyook University service. This English version is provided for convenience; if it differs from the Korean version, the Korean version applies."
       />
       <TermsRevisionNotice locale="en" />
+      <TermsClarificationNotice locale="en" />
 
       <div className="space-y-6 mb-8">
         <LegalSection title="Article 1. Purpose">
@@ -294,7 +327,7 @@ function EnglishTermsPage() {
           <div className="space-y-2 text-neutral-700">
             <p>Users must not engage in the following actions:</p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
-              {englishProhibitedActions.map((action) => (
+              {englishProhibitedActions().map((action) => (
                 <li key={action}>{action}</li>
               ))}
             </ul>
@@ -313,8 +346,9 @@ function EnglishTermsPage() {
               tokens only for service operation and improvement.
             </NumberedParagraph>
             <NumberedParagraph number={3}>
-              Timetable sharing may store selected course IDs, year, semester,
-              and request metadata for creating and loading share links.
+              {clarifiedTermsAreEffective()
+                ? "Timetable sharing stores selected course IDs, academic year and semester, the courses assigned to each compared timetable, the active timetable and comparison mode, and an owner-token hash for verifying deletion rights."
+                : "Timetable sharing may store selected course IDs, year, semester, and request metadata for creating and loading share links."}
             </NumberedParagraph>
             <NumberedParagraph number={4}>
               Campus-tip submissions and contact requests may be reviewed,
@@ -406,12 +440,13 @@ export default async function TermsPage() {
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title={revisedTermsAreEffective() ? "이용약관" : "이용약관 개정안 (시행 예정)"}
-        description="SYU CAMPUS 이용약관 개정안입니다. 2026년 10월 4일 공지, 2026년 11월 4일 시행."
+        description={clarifiedTermsAreEffective() ? "SYU CAMPUS 이용약관입니다. 추가 개정 조항은 2026년 11월 3일 공지, 2026년 12월 4일 시행." : "SYU CAMPUS 이용약관 개정안입니다. 2026년 10월 4일 공지, 2026년 11월 4일 시행."}
         noticeTitle="중요 공지"
         noticeTone="red"
         notice="본 서비스는 삼육대학교의 공식 서비스가 아닙니다. 학사·캠퍼스 안내는 참고용이며 학교 공식 웹사이트에서 확인해주세요. 룸메이트 모집글은 이용자가 작성한 내용입니다."
       />
       <TermsRevisionNotice locale={locale} />
+      <TermsClarificationNotice locale={locale} />
 
       <div className="space-y-6 mb-8">
         <LegalSection title="제1조 목적">
@@ -502,7 +537,7 @@ export default async function TermsPage() {
           <div className="space-y-2 text-neutral-700">
             <p>이용자는 서비스 이용 시 다음 행위를 하여서는 안 됩니다:</p>
             <ul className="list-disc list-inside space-y-2 text-sm text-neutral-600 ml-2">
-              {prohibitedActions.map((action) => (
+              {prohibitedActions().map((action) => (
                 <li key={action}>{action}</li>
               ))}
             </ul>
@@ -525,9 +560,9 @@ export default async function TermsPage() {
               저장될 수 있습니다.
             </NumberedParagraph>
             <NumberedParagraph number={4}>
-              시간표 공유 기능을 이용하는 경우, 선택한 강의 식별자, 학년도,
-              학기, 공유 링크 생성 시점의 브라우저 정보가 링크 생성과 조회를
-              위해 서버에 저장될 수 있습니다.
+              {clarifiedTermsAreEffective()
+                ? "시간표 공유 기능은 선택한 강의 식별자, 학년도·학기, 비교할 시간표별 강의 배치와 활성 시간표·비교 모드, 삭제 권한 확인용 소유 토큰 해시를 서버에 저장합니다."
+                : "시간표 공유 기능을 이용하는 경우, 선택한 강의 식별자, 학년도, 학기, 공유 링크 생성 시점의 브라우저 정보가 링크 생성과 조회를 위해 서버에 저장될 수 있습니다."}
             </NumberedParagraph>
             <NumberedParagraph number={5}>
               푸시 알림을 허용한 경우, 알림 발송을 위한 브라우저 알림 토큰이
