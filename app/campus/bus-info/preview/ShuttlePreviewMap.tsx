@@ -195,7 +195,7 @@ function FleetCanvas({locations,stale,locale,selectedVehicle,onVehicleSelect,pat
   const points=[...serviceRoutes.flatMap(route=>route.stops.map(stop=>stop.point)),...paths.flat(),...locations.map(bus=>[Number(bus.lat),Number(bus.lon)] as Point)];
   const minLat=Math.min(...points.map(p=>p[0])),maxLat=Math.max(...points.map(p=>p[0])),minLon=Math.min(...points.map(p=>p[1])),maxLon=Math.max(...points.map(p=>p[1]));
   const project=(point:readonly[number,number])=>[32+(point[1]-minLon)/(maxLon-minLon||1)*(size.width-64),size.height-32-(point[0]-minLat)/(maxLat-minLat||1)*(size.height-80)];
-  return <div ref={frame} className="shuttle-fleet-canvas">
+  return <div className="shuttle-fleet-map"><div ref={frame} className="shuttle-fleet-canvas">
     <div ref={element} role="region" aria-label={live.fleetMap} className={status==="ready"?"shuttle-fleet-sdk":"shuttle-fleet-sdk invisible"}
       onPointerMoveCapture={event=>{if(event.buttons)overview.current=false;}} onWheelCapture={()=>{overview.current=false;}} onDoubleClickCapture={()=>{overview.current=false;}}/>
     {status!=="ready"&&<div className="shuttle-fleet-fallback">
@@ -212,8 +212,8 @@ function FleetCanvas({locations,stale,locale,selectedVehicle,onVehicleSelect,pat
       <span className="shuttle-fleet-map-note">{status==="loading"?live.mapLoading:live.mapFallback}</span>
     </div>}
     {stopMessage&&<p className="shuttle-fleet-stop-message" role="status">{stopMessage}</p>}
-    <div className="shuttle-fleet-map-tools"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="text-xs underline">© OpenStreetMap</a><Button variant="secondary" disabled={status!=="ready"} onClick={fit}>{live.allVehicles}</Button></div>
-  </div>;
+    <div className="shuttle-fleet-map-tools"><Button variant="secondary" disabled={status!=="ready"} onClick={fit}>{live.allVehicles}</Button></div>
+  </div><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="shuttle-fleet-attribution">© OpenStreetMap</a></div>;
 }
 
 function stopPinSvg(color:string,active=false) {

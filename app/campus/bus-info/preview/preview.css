@@ -67,15 +67,17 @@
 .m3-root [role=dialog]>.shuttle-fleet-dialog { border-radius:0; }
 .shuttle-fleet-body { padding:0; overflow:hidden; }
 .shuttle-fleet-layout { display:grid; height:100%; min-height:0; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(200px,45dvh) minmax(0,1fr); }
-.shuttle-fleet-canvas { position:relative; min-height:0; overflow:hidden; background:var(--sys-surface-low); }
-.shuttle-fleet-sdk,.shuttle-fleet-fallback { position:absolute; inset:0; }
+.shuttle-fleet-map { display:flex; min-height:0; flex-direction:column; }
+.shuttle-fleet-canvas { position:relative; flex:1; min-height:0; overflow:hidden; background:var(--sys-surface-low); }
+.shuttle-fleet-sdk,.shuttle-fleet-fallback { position:absolute; inset:0; z-index:0; }
+.shuttle-fleet-attribution { flex:none; padding:4px 8px; font-size:11px; line-height:16px; text-decoration:underline; background:var(--sys-surface-lowest); }
 .shuttle-fleet-fallback svg { width:100%; height:100%; }
 .shuttle-fleet-fallback [role="button"] { cursor:pointer; }
 .shuttle-fleet-fallback [role="button"]:focus { outline:3px solid var(--sys-primary); outline-offset:4px; }
 .shuttle-fleet-map-note { position:absolute; top:8px; left:8px; right:8px; width:fit-content; max-width:calc(100% - 16px); padding:4px 8px; border-radius:var(--shape-control); background:var(--sys-surface-lowest); font-size:12px; }
-.shuttle-fleet-map-tools { position:absolute; bottom:8px; left:8px; right:8px; display:flex; align-items:end; justify-content:space-between; gap:8px; pointer-events:none; }
+.shuttle-fleet-map-tools { position:absolute; z-index:1; bottom:32px; left:8px; right:8px; display:flex; align-items:end; justify-content:flex-end; gap:8px; pointer-events:none; }
 .shuttle-fleet-map-tools>* { pointer-events:auto; background:var(--sys-surface-lowest); }
-.shuttle-fleet-stop-message { position:absolute; bottom:64px; left:8px; right:8px; padding:8px 12px; border-radius:var(--shape-control); background:var(--sys-secondary-container); color:var(--sys-on-secondary-container); font-size:13px; overflow-wrap:anywhere; }
+.shuttle-fleet-stop-message { position:absolute; z-index:1; bottom:88px; left:8px; right:8px; padding:8px 12px; border-radius:var(--shape-control); background:var(--sys-secondary-container); color:var(--sys-on-secondary-container); font-size:13px; overflow-wrap:anywhere; }
 .shuttle-fleet-sidebar { display:flex; min-width:0; min-height:0; flex-direction:column; gap:12px; padding:16px; overflow-y:auto; }
 .shuttle-fleet-vehicles { display:flex; flex-wrap:wrap; gap:8px; }
 .shuttle-fleet-vehicles button { min-height:44px; padding:8px 12px; border:1px solid var(--sys-outline-variant); border-radius:var(--shape-control); text-align:left; font-size:13px; }
