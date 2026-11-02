@@ -24,15 +24,14 @@ async function start(locale:Locale="ko"){
   fireEvent.click(screen.getByText(pilotCopy[locale].title));
   await act(async()=>{fireEvent.click(screen.getByRole("button",{name:pilotCopy[locale].start}));});
 }
-it("samples at randomized 5–10 second intervals while recording and cancels cleanly",async()=>{
+it("enables manual field events without starting a second automatic collector",async()=>{
   const {unmount}=render(view());await start();
-  expect(m.fetch).toHaveBeenCalledTimes(1);
+  expect(m.fetch).not.toHaveBeenCalled();
   await act(async()=>{await vi.advanceTimersByTimeAsync(5_000);});
-  expect(m.fetch).toHaveBeenCalledTimes(2);
-  const signal=m.fetch.mock.calls[1][1].signal as AbortSignal;
-  unmount();expect(signal.aborted).toBe(true);
+  expect(m.fetch).not.toHaveBeenCalled();
+  unmount();
   await act(async()=>{await vi.advanceTimersByTimeAsync(30_000);});
-  expect(m.fetch).toHaveBeenCalledTimes(2);
+  expect(m.fetch).not.toHaveBeenCalled();
 });
 it.each(["ko","en"] as const)("requires an explicit field attestation before saving a %s arrival",async locale=>{
   render(view(locale));await start(locale);const copy=pilotCopy[locale];
@@ -43,7 +42,7 @@ it.each(["ko","en"] as const)("requires an explicit field attestation before sav
   fireEvent.click(screen.getByRole("checkbox",{name:copy.confirm}));
   expect(button).toBeEnabled();
   await act(async()=>{fireEvent.click(button);});
-  const request=m.fetch.mock.calls[1][1];
+  const request=m.fetch.mock.calls[0][1];
   expect(JSON.parse(request.body)).toEqual({event:{vehicleId:bus.id,visitId:"hwarangdae-5-campus",event:"arrival",observedAt:Date.now()}});
   expect(request.headers["Content-Type"]).toBe("application/json");
   expect(screen.getByText(copy.fieldSaved)).toBeInTheDocument();

@@ -1,5 +1,6 @@
 import type { Locale } from "@/lib/i18n/routing";
 const ko={
+  scheduleBasis:"시간표 기준",lastDeparted:"막차 출발",lastPassed:"막차 통과",travelDirection:"위에서 아래로 운행",
   outboundVia:"화랑대사거리 → 북부간선도로 → 봉화환승주차장교차로 → 화랑대역",outboundRegion:"학교 → 화랑대 우회",outboundSample:"우회 이동·소요시간은 예시입니다. 실시간 차량·도착예상이 아닙니다.",outboundPlay:"우회 예시 5배 재생",outboundStep:"+5분 우회 이동",outboundReset:"우회 예시 초기화",
   shrinkMap:"작게 보기",arrivesIn:"약 {time} 뒤 도착 예정",vacationRoute:"학교 ↔ 화랑대역 (5번 출구)",stationDeparts:"화랑대역 5번 출구 출발",
   stopHighlight:"지도에서 이 정류장을 강조했습니다.",
@@ -8,7 +9,7 @@ const ko={
   running:"운행 중",scheduledStart:"운행 전",checking:"확인 중",noSchedule:"운행 종료",fullMap:"전체 보기",routeSketch:"사용자 제공 그림 기준 경로 초안 · 실제 도로·승차 위치 확인 필요",directionPending:"방향·회차 확인 중",departIn:"출발까지",stepShort:"+30초 이동",
   learningNotice:"관측 자료로 보정 중인 예상 시간입니다. 실제 운행에 따라 달라질 수 있어요.",
   fleetMap:"전체 셔틀 지도",selectVehicle:"차량을 선택하면 노선과 정류장별 도착예상을 볼 수 있어요.",fleetVehicles:"지도 차량 선택",vehicleNumber:"차량 {number}",vehicleArrivals:"선택 차량 정류장별 도착예상",vehicleMissing:"선택한 차량의 위치를 다시 확인해 주세요.",allVehicles:"전체 차량 보기",
-  tableCategory:"시간표 종류",weekdayTable:"시간표 요일",weekdays:"월~목",friday:"금요일",appliedToday:"오늘 적용",departureTableNote:"출발지 기준 시간표입니다. 정류장 도착예상은 위에서 확인하세요.",
+  tableCategory:"시간표 종류",weekdayTable:"시간표 요일",weekdays:"월~목",friday:"금요일",appliedToday:"오늘 적용",departureTableNote:"출발지 기준 시간표입니다.",
   arrivalHeading:"이 정류장 도착예상",arrivalUnknown:"도착정보 확인 중",arrivalUnavailable:"최신 위치가 확인된 차량의 도착예상을 안내합니다.",
   demoBadge:"예시 운행",demoShort:"차량 위치와 도착 시간은 예시입니다.",demoMapNote:"차량 위치와 도착 시간은 예시입니다. 선은 도로 좌표를 사용합니다.",
   demoControls:"예시 운행 조작",demoArrive:"선택 정류장 도착",demoPass:"선택 정류장 통과",demoNext:"후속 차량 있음",demoDelayed:"위치 지연",demoStep:"+5분 이동",demoPlay:"5배 재생",
@@ -17,7 +18,7 @@ const ko={
   operatingPreviewNote:"2026. 10. 30. (금) 11:50에 시각을 고정했습니다. 보관된 실제 시간표를 사용하며 실시간 차량 위치는 표시하지 않습니다.",previewLocations:"시간대 미리보기에서는 실시간 차량 위치를 표시하지 않습니다.",
   pageTitle:"셔틀버스",overview:"셔틀 운행 안내",noServiceToday:"오늘은 운행하지 않아요",departuresEnded:"오늘 예정 출발이 끝났어요",
   nextDepartureHeading:"다음 출발 예정",nextService:"다음 운행",nextServiceUnknown:"다음 운행일을 확인해 주세요.",scheduledNote:"시간표 기준 예정 시각입니다.",departureOriginSuffix:"출발 기준",
-  timetableOpen:"전체 시간표 보기",timetableClose:"전체 시간표 접기",mapOpen:"전체 셔틀 지도 보기",mapClose:"지도·정류장 접기",serviceInfo:"운행 정보·출처",serviceInfoClose:"운행 정보·출처 접기",
+  timetableOpen:"전체 시간표 보기",timetableClose:"전체 시간표 접기",mapOpen:"셔틀 위치 보기",mapClose:"지도·정류장 접기",serviceInfo:"운행 정보·출처",serviceInfoClose:"운행 정보·출처 접기",
   arrivalPendingShort:"최신 위치를 확인하면 도착예상을 안내합니다.",
   actualData:"실제 자료", previewNotice:"학교 시간표와 수신 위치를 바탕으로 도착예상을 계산하고 과거·현재 관측으로 보정합니다.",
   closedDay:"선택한 날짜는 운휴일입니다.", specialName:"특별운행", timetableNote:"학교 게시 시간표 · 출발지 기준 예정 시각입니다.",
@@ -40,6 +41,7 @@ const ko={
 };
 type Copy={ [K in keyof typeof ko]:string };
 const en:Copy={
+  scheduleBasis:"Timetable estimate",lastDeparted:"Last bus departed",lastPassed:"Last bus passed",travelDirection:"Buses travel from top to bottom",
   outboundVia:"Hwarangdae intersection → northern arterial → Bonghwa transfer parking intersection → Hwarangdae",outboundRegion:"Campus → Hwarangdae detour",outboundSample:"Detour movement and timing are samples, not live positions or arrivals.",outboundPlay:"Play detour at 5×",outboundStep:"Advance detour 5 minutes",outboundReset:"Reset detour",
   shrinkMap:"Minimize map",arrivesIn:"Expected in about {time}",vacationRoute:"Campus ↔ Hwarangdae (Exit 5)",stationDeparts:"From Hwarangdae Exit 5",
   stopHighlight:"This stop is highlighted on the map.",
@@ -48,7 +50,7 @@ const en:Copy={
   running:"Running",scheduledStart:"Not started",checking:"Checking",noSchedule:"Service ended",fullMap:"Show entire route",routeSketch:"Draft traced from supplied sketches · roads and stop locations need verification",directionPending:"Checking direction and trip",departIn:"Departs in",stepShort:"Advance 30 seconds",
   learningNotice:"Estimates are being adjusted from observations and may change with actual service.",
   fleetMap:"All shuttle vehicles",selectVehicle:"Select a vehicle to see its route and arrival predictions at each stop.",fleetVehicles:"Select a map vehicle",vehicleNumber:"Vehicle {number}",vehicleArrivals:"Selected vehicle arrivals",vehicleMissing:"Check the selected vehicle's position again.",allVehicles:"Show all vehicles",
-  tableCategory:"Timetable category",weekdayTable:"Timetable weekday",weekdays:"Mon–Thu",friday:"Friday",appliedToday:"Applies today",departureTableNote:"Published times at the route origin. Stop arrival predictions appear above.",
+  tableCategory:"Timetable category",weekdayTable:"Timetable weekday",weekdays:"Mon–Thu",friday:"Friday",appliedToday:"Applies today",departureTableNote:"Published times at the route origin.",
   arrivalHeading:"Arrival at this stop",arrivalUnknown:"Checking arrival information",arrivalUnavailable:"Predictions appear for vehicles with a fresh position.",
   demoBadge:"Sample service",demoShort:"Vehicle positions and arrival times are simulated.",demoMapNote:"Vehicle positions and arrival times are simulated. Lines use road coordinates.",
   demoControls:"Sample service controls",demoArrive:"Arrive at selected stop",demoPass:"Pass selected stop",demoNext:"Following vehicle available",demoDelayed:"Position delayed",demoStep:"Advance 5 minutes",demoPlay:"Play at 5×",
@@ -57,7 +59,7 @@ const en:Copy={
   operatingPreviewNote:"Clock fixed at 11:50 KST on Fri, Oct 30, 2026. Uses archived published timetables; live vehicle positions are not shown.",previewLocations:"Live vehicle positions are not shown in the service hours preview.",
   pageTitle:"Shuttle",overview:"Shuttle service overview",noServiceToday:"No service today",departuresEnded:"Today's scheduled departures have ended",
   nextDepartureHeading:"Next scheduled departure",nextService:"Next service",nextServiceUnknown:"Check the next operating day.",scheduledNote:"Based on the published timetable.",departureOriginSuffix:"departure point",
-  timetableOpen:"View full timetable",timetableClose:"Hide full timetable",mapOpen:"View all shuttles on map",mapClose:"Hide map and stops",serviceInfo:"Service information and sources",serviceInfoClose:"Hide service information and sources",
+  timetableOpen:"View full timetable",timetableClose:"Hide full timetable",mapOpen:"Shuttle locations",mapClose:"Hide map and stops",serviceInfo:"Service information and sources",serviceInfoClose:"Hide service information and sources",
   arrivalPendingShort:"Predictions appear when a fresh position is available.",
   actualData:"Actual data",previewNotice:"Estimates use published timetables and received positions and are refined from past and current observations.",
   closedDay:"No service on the selected date.",specialName:"Special service",timetableNote:"Published school timetable · scheduled times at the departure point.",

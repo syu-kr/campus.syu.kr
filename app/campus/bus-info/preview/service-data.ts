@@ -40,8 +40,9 @@ export function serviceTimetable({route,date,now,view="auto",data}: {
     data.source==="unavailable"||!bus?"unavailable":day.operationStatus==="closed"?"closed":day.operationStatus==="unconfirmed"?"unknown":!scheduleType&&day.operationStatus!=="exception"?"unavailable":"ready";
   if(status==="ready"&&type==="special"&&!applicable.length&&day.operationStatus!=="exception") status="no-special";
   const buses=!bus?[]:type==="regular"?[bus]:day.serviceExceptions.length?getShuttleExceptionBuses([bus],day.serviceExceptions):applyShuttleSpecialPeriods({buses:[bus],dateString:date,specialPeriods:calendar}).buses;
-  const times=status==="ready"?sortedDepartures(buses[0]?.schedules[scheduleType??"mondayToThursday"]??[]):[];
-  return {status,type,activeType,reference:type!==activeType,scheduleType,times,period:applicable[0]??null};
+  const scheduledTimes=sortedDepartures(buses[0]?.schedules[scheduleType??"mondayToThursday"]??[]);
+  const times=status==="ready"?scheduledTimes:[];
+  return {status,type,activeType,reference:type!==activeType,scheduleType,times,scheduledTimes,period:applicable[0]??null};
 }
 
 export function nextScheduledService({route,now,data}:{route:PreviewRoute;now:Date;data:ShuttleServiceData}) {
@@ -62,6 +63,6 @@ export function receivedLocationState(response:LiveDataResponse<BusLocation[]>|u
   const fetchedAt=response?Date.parse(response.timestamp):NaN;
   const age=now.getTime()-fetchedAt;
   const valid=!!response&&response.success&&Number.isFinite(fetchedAt)&&age>=-300_000&&age<=600_000;
-  return {available:valid,locations:valid?response.data:noLocations,stale:failed||!valid||response?.stale===true||response?.sourceStatus!=="fresh"||age>120_000,
+  return {available:valid,locations:valid?response.data:noLocations,stale:failed||!valid||response?.stale===true||response?.sourceStatus!=="fresh"||age>=90_000,
     timestamp:valid?response.timestamp:null};
 }

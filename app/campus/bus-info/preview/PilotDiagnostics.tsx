@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/app/components/Button";
 import { useLocale } from "@/app/components/LocaleProvider";
 import { pilotCopy } from "@/lib/i18n/shuttle-pilot";
 import { M3Select } from "@/app/components/M3Select";
 import { pilotVisits, type PilotFieldEvent } from "@/lib/shuttle-observations";
 import type { BusLocation } from "@/types";
-import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 
 async function saveSample(signal?: AbortSignal, event?: PilotFieldEvent): Promise<string> {
   const {auth} = await import("@/lib/firebase");
@@ -37,22 +36,14 @@ export default function PilotDiagnostics({closed, etaStatus, locations = []}:{cl
   const selectedVisit = visits.find(visit => visit.id === visitId) ?? visits[0];
   const selectionKey = `${vehicle?.id}:${vehicle?.status}:${selectedVisit?.id}`;
   const confirmed = confirmedFor === selectionKey;
-  useEffect(() => {
-    if (!recording || closed) return;
-    const controller = new AbortController();
-    let timer:ReturnType<typeof setTimeout>;
-    async function sample() {
-      try {
-        const collection = await saveSample(controller.signal);
-        if (controller.signal.aborted) return;
-        setResult(collection);
-        if (["login", "closed", "local"].includes(collection)) { setRecording(false); return; }
-        timer = setTimeout(sample, shuttleRefreshDelay());
-      } catch { if (!controller.signal.aborted) { setResult("error"); setRecording(false); } }
-    }
-    void sample();
-    return () => { controller.abort(); clearTimeout(timer); };
-  }, [recording, closed]);
+  async function toggleRecording() {
+    if (recording) { setRecording(false); return; }
+    setResult("");
+    const { auth } = await import("@/lib/firebase");
+    await auth.authStateReady();
+    if (!auth.currentUser) { setResult("login"); return; }
+    setRecording(true);
+  }
   async function recordField(event: PilotFieldEvent["event"], observedAt: number) {
     if (!recording || closed || !confirmed || !vehicle || !selectedVisit || fieldBusy) return;
     setFieldBusy(true); setFieldResult(copy.saving);
@@ -74,7 +65,7 @@ export default function PilotDiagnostics({closed, etaStatus, locations = []}:{cl
       <p>{closed ? copy.closed : copy.scope}</p>
       <p>{etaStatus === "collecting" ? copy.noModel : copy.requirements}</p>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" disabled={closed && !recording} onClick={()=>{setResult("");setRecording(!recording);}}>{recording?copy.stop:copy.start}</Button>
+        <Button variant="secondary" disabled={closed && !recording} onClick={()=>void toggleRecording()}>{recording?copy.stop:copy.start}</Button>
         <Button variant="ghost" onClick={()=>void check()}>{copy.check}</Button>
       </div>
       <p role="status">{closed ? "" : copy.states[result] ?? ""} {checked === null ? "" : checked ? copy.pass : copy.fail}</p>

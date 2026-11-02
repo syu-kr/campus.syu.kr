@@ -1,8 +1,16 @@
 import { expect, it } from "vitest";
 import { demoEventTime, demoProgress, demoLocations } from "./service-demo";
 import { serviceRoutes, serviceOutboundRoute } from "./service-data";
-import { serviceVisits, defaultServiceRoute, serviceRoadPaths, pointAlongPath } from "./service-visits";
+import { serviceVisits, defaultServiceRoute, serviceRoadPaths, pointAlongPath, receivedProgress } from "./service-visits";
 const [,route]=serviceRoutes;
+it("places real vehicles down the correct directional leg, hiding stale and off-route positions",()=>{
+  const point=pointAlongPath(serviceRoadPaths(route)[3],.6);
+  const bus={id:"test",name:"test",routeid:2 as const,status:2 as const,lat:String(point[0]),lon:String(point[1])};
+  expect(receivedProgress(route,[bus],false)[0].position).toBeCloseTo(3.6,1);
+  expect(receivedProgress(route,[bus],true)).toEqual([]);
+  expect(receivedProgress(route,[{...bus,lat:"38"}],false)).toEqual([]);
+  expect(receivedProgress(serviceRoutes[0],[{...bus,routeid:1,status:1}],false)).toEqual([]);
+});
 it("uses KST noon only for the initial route",()=>{
   expect(defaultServiceRoute(new Date("2026-10-30T02:59:59Z"))).toBe("hwarangdae");
   expect(defaultServiceRoute(new Date("2026-10-30T03:00:00Z"))).toBe("seokgye");
