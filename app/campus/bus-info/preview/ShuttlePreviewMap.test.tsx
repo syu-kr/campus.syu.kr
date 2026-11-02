@@ -75,6 +75,7 @@ it("supports fallback marker keyboard selection and the Hwarangdae return moveme
 it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
   m.ready=false;const sample=demoLocations(serviceRoutes[1],500,true);
   render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:500,nextAvailable:true,delayed:false}}/>);
+  expect(screen.getByRole("dialog",{name:"전체 셔틀 지도 · 예시 운행"})).toBeVisible();
   choose(/차량 1/);
   let panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("통과");

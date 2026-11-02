@@ -60,7 +60,7 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo}: Pr
     return minutes===undefined?live.arrivalUnknown:live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`);
   }
   const selectedVisit=visits.find(visit=>visit.id===stopId);
-  return <Modal isOpen title={live.fleetMap} onClose={onClose} size="lg" className="shuttle-fleet-dialog" overlayClassName="shuttle-fleet-overlay" bodyClassName="shuttle-fleet-body">
+  return <Modal isOpen title={`${live.fleetMap}${demo?` · ${live.demoBadge}`:""}`} onClose={onClose} size="lg" className="shuttle-fleet-dialog" overlayClassName="shuttle-fleet-overlay" bodyClassName="shuttle-fleet-body">
     <div className="shuttle-fleet-layout">
       <FleetCanvas locations={received.locations} stale={received.stale} locale={locale} selectedVehicle={vehicleId} onVehicleSelect={selectVehicle}
         paths={paths} visits={visits} color={route?.color??"#3b82f6"} selectedStop={stopId} onStopSelect={setStopId} vehicleLabel={vehicleLabel}
