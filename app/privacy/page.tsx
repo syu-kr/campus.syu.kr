@@ -3,12 +3,14 @@ import { Card } from "@/app/components/Card";
 import { LegalPageHeader } from "@/app/features/legal/LegalPageLayout";
 import {
   LOCALE_HEADER_NAME,
+  localizePath,
   normalizeLocale,
   type Locale,
 } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { createPageMetadata } from "@/lib/page-metadata";
+import Link from "next/link";
 
 const policySections = [
   ["개인정보의 처리 목적", "Purposes of Processing"],
@@ -151,10 +153,10 @@ function RoommateSharing({ english = false }: { english?: boolean }) {
 function RoommateOverseasProcessing({ english = false }: { english?: boolean }) {
   const rows = english ? [
     ["Google LLC (United States Firebase processing)", "United States. School email, authentication identifier and verification/sign-in information, IP address, and browser information. Sent over encrypted connections when requesting or completing an email link and checking authentication.", "Email delivery, mailbox verification, and authentication security. Authentication records and Google's deletion processing follow Article 2; signing out does not delete the authentication user."],
-    ["Vercel Inc. (privacy@vercel.com)", "United States (the configured server-function region is iad1). The email and authentication/session data needed by a request, submitted listing/report information, IP address, and browser information are processed over encrypted connections when using the server features.", "Website hosting, request handling, and security. Request contents are processed to complete the request; the application does not write roommate email, authentication credentials, listing contents, or contact links to runtime logs. Hobby runtime logs have a one-hour viewable retention window. Provider-generated security/service records follow Vercel's processing terms and are deleted or anonymized when their purpose ends."],
+    ["Vercel Inc. (privacy@vercel.com)", "United States (the configured server-function region is iad1). The email and authentication/session data needed by a request, submitted listing/report information, IP address, and browser information are processed over encrypted connections when using the server features.", "Website hosting, request handling, and security. Request contents are processed to complete the request; the application does not write roommate email, authentication credentials, listing contents, or contact links to runtime logs. Provider-generated security/service records follow Vercel's processing terms and are deleted or anonymized when their purpose ends."],
   ] : [
     ["Google LLC (Firebase 미국 처리)", "미국. 학교 이메일, 인증 식별정보와 인증·로그인 정보, IP 주소와 브라우저 정보가 인증 메일 요청·인증 완료·인증 상태 확인 시 암호화 통신으로 전달됩니다.", "인증 메일 발송, 메일 소유 확인과 인증 보안. 인증 자료의 보유와 Google의 삭제 처리는 제2조에 따르며 로그아웃만으로 인증 사용자 자료가 삭제되지 않습니다."],
-    ["Vercel Inc. (privacy@vercel.com)", "미국(현재 서버 함수 리전 iad1). 서버 기능 이용 시 요청에 필요한 이메일·인증·접속 정보, 입력한 모집글·신고 정보, IP 주소와 브라우저 정보를 암호화 통신으로 처리합니다.", "웹사이트 호스팅, 요청 처리와 보안. 입력 내용은 요청을 처리하기 위해 이용하며 앱은 룸메이트 이메일·인증 비밀값·글 본문·연락 링크를 실행 로그에 기록하지 않습니다. Hobby 실행 로그의 조회 가능 기간은 1시간입니다. 사업자가 생성하는 보안·서비스 기록은 Vercel 처리 약관에 따라 목적이 종료되면 삭제하거나 익명화합니다."],
+    ["Vercel Inc. (privacy@vercel.com)", "미국(현재 서버 함수 리전 iad1). 서버 기능 이용 시 요청에 필요한 이메일·인증·접속 정보, 입력한 모집글·신고 정보, IP 주소와 브라우저 정보를 암호화 통신으로 처리합니다.", "웹사이트 호스팅, 요청 처리와 보안. 입력 내용은 요청을 처리하기 위해 이용하며 앱은 룸메이트 이메일·인증 비밀값·글 본문·연락 링크를 실행 로그에 기록하지 않습니다. 사업자가 생성하는 보안·서비스 기록은 Vercel 처리 약관에 따라 목적이 종료되면 삭제하거나 익명화합니다."],
   ];
   return (
     <section className="space-y-3 border-t border-neutral-200 pt-4 text-sm">
@@ -199,7 +201,7 @@ function EnglishPrivacyPage() {
         title="Privacy Policy"
         description="Privacy policy for the SYU CAMPUS service."
         noticeTitle="Effective Date"
-        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated October 4, 2026."
+        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated November 3, 2026."
       />
 
       <PrivacyContents english />
@@ -284,7 +286,7 @@ function EnglishPrivacyPage() {
               <li>Contact, report, campus-tip, and optional contact details entered by users</li>
               <li>Schedule room titles, descriptions, candidate times, participant nicknames, and availability responses</li>
               <li>Schedule response edit-token hashes and room owner-token hashes used to protect edits and deletion</li>
-              <li>Timetable share course IDs, year, semester, and owner-token hash</li>
+              <li>Timetable share course IDs, year, semester, comparison/active timetable state, and owner-token hash</li>
               <li>Firebase Cloud Messaging tokens and notification delivery records when notifications are enabled</li>
               <li>Rate-limit counters and notification duplicate-send locks</li>
               <li>
@@ -292,6 +294,13 @@ function EnglishPrivacyPage() {
                 suggestions, when generated
               </li>
             </ul>
+            <p className="text-sm text-neutral-600">
+              Schedule edit/deletion tokens and timetable-share deletion tokens
+              are kept on your device and sent to the server when you edit or
+              delete the corresponding data. The server compares them with
+              hashes stored in those feature records. Timetable drafts remain
+              local unless you choose to share their course selections.
+            </p>
             <RoommateInformation english />
           </div>
         </Card>
@@ -394,8 +403,23 @@ function EnglishPrivacyPage() {
               email storage and removal are explained in Article 2.
             </p>
             <p className="text-sm text-neutral-600">
-              Blocking third-party cookies may limit map or shuttle-related
-              features.
+              Google Analytics uses first-party cookies: _ga distinguishes
+              visitors, and _ga_&lt;id&gt; maintains session state. Cookie expiry
+              and Analytics event retention are separate settings. Blocking
+              third-party cookies alone does not block these first-party
+              cookies, and clearing cookies alone does not stop all analytics
+              requests. Blocking this site&apos;s cookies can also prevent roommate
+              sign-in; blocking third-party cookies may limit map features.
+            </p>
+            <p className="text-sm text-neutral-600">
+              On supported desktop browsers, Google&apos;s{" "}
+              <a href="https://tools.google.com/dlpage/gaoptout?hl=en" target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">
+                Analytics Opt-out Browser Add-on
+              </a>{" "}
+              can prevent Google Analytics JavaScript from using visit data.
+              The add-on must be installed and active. It may not be available
+              in mobile or in-app browsers, and it does not block other service
+              providers&apos; data processing.
             </p>
           </div>
         </Card>
@@ -414,9 +438,12 @@ function EnglishPrivacyPage() {
             <p className="text-sm text-neutral-600">
               When the admin classification feature is enabled, selected contact
               request or suggestion content may be sent to a configured AI
-              classification API after contact details and obvious identifiers
-              are redacted where possible. The result is stored only as
-              admin-facing triage metadata.
+              classification API after obvious identifiers in the text are
+              redacted where possible. This can include the additional note
+              entered by the person submitting a campus tip; it is not an
+              administrator&apos;s internal note. The dedicated contact field and
+              roommate reports are not included in this classification input.
+              The result is stored only as admin-facing triage metadata.
             </p>
           </div>
         </Card>
@@ -438,8 +465,9 @@ function EnglishPrivacyPage() {
           <div className="space-y-3 text-neutral-700">
             <p className="text-sm">
               Users may request access, correction, deletion, or suspension of
-              processing by contacting the service operator through the contact
-              page or email.
+              processing through the footer&apos;s Contact the site button or the
+              email address in Article 9. The operator will handle the request
+              without undue delay.
             </p>
             <p className="text-sm text-neutral-600">
               For roommate records, you can ask the operator to review or
@@ -488,11 +516,23 @@ function EnglishPrivacyPage() {
               user rights are announced in advance or when legally required,
               and consent is obtained separately where required by law.
             </p>
+            <p className="text-sm text-neutral-600">
+              November 3, 2026 clarification: corrected who writes a suggestion
+              note and when edit/deletion tokens are sent, clarified analytics
+              cookies and refusal methods, and removed an unrelated hosting-plan
+              example. This clarification does not add collection or change
+              service retention periods.
+            </p>
+            <p className="text-sm">
+              <Link href={localizePath("/service/notices/021-policy-clarifications", "en")} className="inline-flex min-h-11 items-center text-primary-700 underline">
+                Policy clarification notice and Terms amendment
+              </Link>
+            </p>
             <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
               <p className="text-xs text-neutral-600">
                 <strong>Effective date</strong>: March 23, 2026
                 <br />
-                <strong>Last updated</strong>: October 4, 2026
+                <strong>Last updated</strong>: November 3, 2026
               </p>
             </div>
           </div>
@@ -515,7 +555,7 @@ export default async function PrivacyPage() {
         title="개인정보처리방침"
         description="SYU CAMPUS 서비스 개인정보처리방침입니다."
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 10월 4일 최종 개정되었습니다."
+        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 11월 3일 기존 동작에 맞춰 설명을 정정했습니다. 수집 범위와 서비스 보유기간은 변경하지 않았습니다."
       />
 
       <PrivacyContents />
@@ -695,14 +735,19 @@ export default async function PrivacyPage() {
                 2. 로컬 스토리지 저장 정보 (선택항목)
               </h3>
               <p className="text-sm text-neutral-600 mb-2">
-                사용자 기기에만 저장되며 서버에 전송되지 않습니다:
+                다음 정보는 사용자 기기에 저장됩니다:
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
-                <li>테마 설정 (다크 모드/라이트 모드)</li>
                 <li>시간표 초안</li>
                 <li>일정 응답 편집 토큰과 일정 방 삭제용 소유 토큰</li>
                 <li>시간표 공유 링크 삭제용 소유 토큰</li>
               </ul>
+              <p className="mt-2 text-sm text-neutral-600">
+                편집·삭제 토큰은 해당 자료를 수정하거나 삭제할 때 서버로 보내
+                권한을 확인합니다. 서버의 해당 기능 문서에는 토큰의 해시를
+                저장하고 요청받은 토큰과 비교합니다. 시간표 초안은 기기에
+                보관하며 공유를 선택한 경우 강의 선택 정보 등을 전송합니다.
+              </p>
             </div>
             <div>
               <h3 className="font-semibold text-sm mb-2">
@@ -756,6 +801,7 @@ export default async function PrivacyPage() {
               <ul className="list-disc list-inside space-y-1 text-sm text-neutral-600 ml-2">
                 <li>공유 링크에 포함된 강의 식별자 목록</li>
                 <li>학년도 및 학기 정보</li>
+                <li>비교 모드와 활성 시간표 등 공유 시간표 상태</li>
                 <li>공유 링크 삭제 권한 확인을 위한 소유 토큰 해시</li>
               </ul>
             </div>
@@ -930,8 +976,8 @@ export default async function PrivacyPage() {
                         설정된 AI 분류 API
                       </td>
                       <td className="border border-gray-300 p-2">
-                        마스킹 처리된 문의·제보 제목, 내용, 링크, 태그, 운영자
-                        메모
+                        마스킹 처리된 문의·제보 제목, 내용, 링크, 태그,
+                        제보자가 입력한 추가 메모
                       </td>
                       <td className="border border-gray-300 p-2">
                         운영자 문의·제보 분류 보조
@@ -986,6 +1032,11 @@ export default async function PrivacyPage() {
                 제한되며, 공개 사이트 기능은 계속 이용할 수 있습니다.
                 인증 대기 이메일의 브라우저 저장·삭제 기준은 제2조에 따릅니다.
               </p>
+              <p className="text-sm text-neutral-600 mb-3">
+                Google Analytics는 이용자 구분을 위한 자사 쿠키 _ga와 세션
+                상태 유지를 위한 _ga_&lt;id&gt;를 사용합니다. 쿠키 만료와 분석
+                이벤트 보유기간은 별도 설정입니다.
+              </p>
               <div className="space-y-2 text-sm mb-4 p-3 bg-gray-50 rounded border border-gray-200">
                 <p>
                   <span className="font-semibold">목적:</span>
@@ -1014,8 +1065,20 @@ export default async function PrivacyPage() {
                   <li>특정 사이트의 쿠키만 차단</li>
                 </ul>
                 <p className="text-sm text-amber-800 mt-2">
-                  다만, Kakao Maps 쿠키를 거부 시 캠퍼스 지도 및 셔틀버스 기능이
-                  제한될 수 있습니다.
+                  제3자 쿠키 차단만으로 자사 분석 쿠키가 차단되지는 않으며,
+                  쿠키 삭제만으로 모든 분석 요청이 중단되지는 않습니다.
+                  이 사이트의 쿠키를 차단하면 룸메이트 로그인이 제한될 수
+                  있고, Kakao Maps 쿠키를 거부하면 지도 기능이 제한될 수 있습니다.
+                </p>
+                <p className="text-sm text-amber-800 mt-2">
+                  지원되는 데스크톱 브라우저에서는 Google의{" "}
+                  <a href="https://tools.google.com/dlpage/gaoptout?hl=ko" target="_blank" rel="noopener noreferrer" className="underline">
+                    애널리틱스 차단 브라우저 부가 기능
+                  </a>
+                  을 설치하고 활성화해 Google Analytics의 방문 데이터 이용을
+                  거부할 수 있습니다. 모바일·앱 내 브라우저에서는 지원되지
+                  않을 수 있으며, 다른 서비스 제공자의 정보 처리까지 차단하지는
+                  않습니다.
                 </p>
               </div>
             </div>
@@ -1133,15 +1196,17 @@ export default async function PrivacyPage() {
                 운영자가 문의 및 제보를 빠르게 검토할 수 있도록, 설정된 경우 AI
                 분류 API를 이용해 접수 항목의 카테고리, 긴급도, 처리 힌트를
                 생성할 수 있습니다. 룸메이트 신고·근거·검토 메모는 이 AI
-                분류에 전송하지 않으며 관리자가 직접 검토합니다.
+                분류에 전송하지 않으며 관리자가 직접 검토합니다. 제보의 추가
+                메모는 제보자가 입력한 내용이며 운영자의 내부 메모가 아닙니다.
+                별도 연락처 입력란은 이 분류 입력에 포함하지 않습니다.
               </p>
               <div className="p-3 bg-gray-50 rounded border border-gray-200">
                 <p className="text-sm">
                   <span className="font-semibold">처리 정보:</span>
                   <span className="text-neutral-600">
                     {" "}
-                    마스킹 처리된 문의·제보 제목, 내용, 링크, 태그, 운영자
-                    메모와 AI 분류 결과
+                    마스킹 처리된 문의·제보 제목, 내용, 링크, 태그,
+                    제보자가 입력한 추가 메모와 AI 분류 결과
                   </span>
                 </p>
                 <p className="text-sm mt-1">
@@ -1224,8 +1289,8 @@ export default async function PrivacyPage() {
             </p>
             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
               <p className="text-sm text-blue-900">
-                권리 행사는 사이트 문의 페이지 또는 메일을 통해 문의하시면 지체 없이
-                처리하겠습니다.
+                권리 행사는 페이지 하단의 ‘사이트 문의하기’ 버튼 또는 제9조의
+                이메일로 접수할 수 있으며 지체 없이 처리하겠습니다.
               </p>
             </div>
             <p className="text-sm">
@@ -1262,8 +1327,8 @@ export default async function PrivacyPage() {
               </p>
             </div>
             <p className="text-sm text-neutral-600">
-              문의는 사이트 문의 페이지 또는 메인 페이지 하단의 Footer에서
-              확인하실 수 있습니다.
+              페이지 하단의 ‘사이트 문의하기’ 버튼을 누르거나 위 이메일로
+              문의할 수 있습니다.
             </p>
           </div>
         </Card>
@@ -1321,11 +1386,22 @@ export default async function PrivacyPage() {
               변경 사항은 본 페이지에 공시되며, 중대한 변경의 경우 사전 공지를
               통해 알려드립니다.
             </p>
+            <p className="text-sm text-neutral-600">
+              2026년 11월 3일 설명 정정: 제보 메모의 작성자와 편집·삭제 토큰의
+              전송 시점, 분석 쿠키와 거부 방법을 명확히 하고 관련 없는 호스팅
+              요금제 예시를 삭제했습니다. 수집 항목을 추가하거나 서비스의
+              보유기간을 변경하는 정정은 아닙니다.
+            </p>
+            <p className="text-sm">
+              <Link href={localizePath("/service/notices/021-policy-clarifications", locale)} className="inline-flex min-h-11 items-center text-primary-700 underline">
+                설명 정정 및 이용약관 개정 공지
+              </Link>
+            </p>
             <div className="p-3 bg-neutral-50 border border-neutral-200 rounded mt-3">
               <p className="text-xs text-neutral-600">
                 <strong>시행일</strong>: 2026년 3월 23일
                 <br />
-                <strong>최종 개정일</strong>: 2026년 10월 4일
+                <strong>최종 개정일</strong>: 2026년 11월 3일
               </p>
             </div>
           </div>

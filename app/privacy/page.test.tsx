@@ -75,6 +75,25 @@ describe.each(["ko", "en"])("privacy policy (%s)", (locale) => {
     expect(container).toHaveTextContent("asia-northeast3");
     expect(container).toHaveTextContent("iad1");
     expect(container).toHaveTextContent("singhic@outlook.kr");
-    expect(container).toHaveTextContent(locale === "en" ? "October 4, 2026" : "2026년 10월 4일");
+    expect(container).toHaveTextContent(locale === "en" ? "November 3, 2026" : "2026년 11월 3일");
+  });
+
+  it("explains token verification and the limited analytics refusal method", async () => {
+    request.locale = locale;
+    const { container } = render(await PrivacyPage());
+    const categories = container.querySelector("#privacy-article-3") as HTMLElement;
+    const analyticsCookies = container.querySelector("#privacy-article-5") as HTMLElement;
+    expect(categories).toHaveTextContent(locale === "en" ? "hashes stored in those feature records" : "서버의 해당 기능 문서에는 토큰의 해시");
+    expect(categories).not.toHaveTextContent("서버에 전송되지 않습니다");
+    expect(analyticsCookies).toHaveTextContent("_ga_<id>");
+    expect(analyticsCookies).toHaveTextContent(locale === "en" ? "clearing cookies alone does not stop all analytics requests" : "쿠키 삭제만으로 모든 분석 요청이 중단되지는 않습니다");
+    expect(within(analyticsCookies).getByRole("link", { name: locale === "en" ? "Analytics Opt-out Browser Add-on" : "애널리틱스 차단 브라우저 부가 기능" })).toHaveAttribute("href", `https://tools.google.com/dlpage/gaoptout?hl=${locale}`);
+    expect(container).toHaveTextContent(locale === "en" ? "the person submitting a campus tip" : "제보자가 입력한 추가 메모");
+    expect(container).not.toHaveTextContent("Hobby");
+    const rights = container.querySelector("#privacy-article-8") as HTMLElement;
+    expect(rights).toHaveTextContent(locale === "en" ? "footer's Contact the site button" : "페이지 하단의 ‘사이트 문의하기’ 버튼");
+    expect(rights).not.toHaveTextContent(locale === "en" ? "contact page" : "사이트 문의 페이지");
+    const changes = container.querySelector("#privacy-article-11") as HTMLElement;
+    expect(within(changes).getByRole("link", { name: locale === "en" ? "Policy clarification notice and Terms amendment" : "설명 정정 및 이용약관 개정 공지" })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/service/notices/021-policy-clarifications`);
   });
 });

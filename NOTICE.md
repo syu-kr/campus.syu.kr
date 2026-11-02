@@ -24,11 +24,14 @@ SYU CAMPUS는 삼육대학교 공식 서비스가 아닌 비공식 학생 편의
 | `public/data/cafeteria-menu.json` | 삼육대학교 공개 식단 페이지 | 서면 허가 미확인 | 메뉴 정보를 구조화한 가공 데이터 |
 | `public/data/phone-numbers.json` | 삼육대학교 공개 전화번호 안내 | 서면 허가 미확인 | 공개 업무 연락처를 구조화한 가공 데이터 |
 | `public/data/schedules-major.json` | 삼육대학교 공개 학사일정 | 서면 허가 미확인 | 일정 정보를 구조화한 가공 데이터 |
-| `public/data/graduation-requirements-2025.json`, `data-source/curriculum/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 서면 허가 미확인 | 참고용 구조화·OCR 가공 데이터 |
+| `public/data/graduation-requirements-2025.json`, `public/data/curriculum-courses-2025-verified.json`, `data-source/curriculum/curriculum-courses-2025-ocr.json` | 2025학년도 삼육대학교 요람 | 서면 허가 미확인 | 참고용 구조화·OCR 가공 데이터 |
+| `public/data/graduation-requirements-2026.json`, `public/data/curriculum-courses-2026-verified.json`, `public/data/curriculum-course-selection-rules-2026.json` | 2026학년도 삼육대학교 요람 | 서면 허가 미확인 | 원문 대조·선택 제한을 포함한 참고용 구조화 데이터. 원문 링크는 `public/data/graduation-sources.json` 참조 |
 | `public/data/shuttle-*.json` | 삼육대학교 공개 안내 및 운영 정보 | 서면 허가 미확인 | 실제 운영 정보와 다를 수 있음 |
 | `public/data/campus-tips.json` | 학교 공식 페이지 및 외부 공개 안내 | 항목별 확인 필요 | 각 항목의 원문 링크와 출처 유형 포함 |
 
 공개 웹페이지에서 접근할 수 있다는 사실만으로 재배포 허가가 확인되는 것은 아닙니다. 이 저장소는 위 데이터와 상표 자산에 대한 별도 재배포 라이선스 또는 서면 허가를 보증하지 않습니다. 운영자는 공개 전 제공처 이용약관과 허가 근거를 확인·보관해야 하며, 재사용자는 필요한 권리를 별도로 확인해야 합니다.
+
+출처별 근거에는 원문 주소, 적용 이용 조건과 확인일, 수집·가공·번역·AI 입력·공개 저장소 및 서비스 재배포의 허용 범위, 출처 표시 방법을 기록합니다. 문의·계약·권리 증빙 원문은 비공개로 보관합니다. 위 표의 ‘미확인’은 허가나 금지를 확정한 표기가 아니며, 별도 근거를 확인한 경우에만 상태를 갱신합니다.
 
 ## Permission Checks
 

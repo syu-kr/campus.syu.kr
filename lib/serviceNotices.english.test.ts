@@ -7,11 +7,11 @@ import { getAllServiceNotices, getServiceNoticeBySlug } from "./serviceNotices";
 
 const dir = path.join(process.cwd(), "public", "service-notices");
 
-it("serves nineteen English notices with the same source identities and original order", async () => {
+it("serves twenty English notices with the same source identities and original order", async () => {
   const originals = await getAllServiceNotices();
   const english = await getAllServiceNotices("en");
-  expect(originals).toHaveLength(19);
-  expect(english).toHaveLength(19);
+  expect(originals).toHaveLength(20);
+  expect(english).toHaveLength(20);
   const identity = (notice: typeof english[number]) => ({ id: notice.id, slug: notice.slug, date: notice.date, author: notice.author });
   expect(english.map(identity)).toEqual(originals.map(identity));
   expect(english.every(notice => notice.lang === "en" && !/[가-힣]/.test(notice.title + notice.excerpt))).toBe(true);
@@ -23,9 +23,9 @@ it("serves nineteen English notices with the same source identities and original
   expect(detail?.content).not.toMatch(/[가-힣]/);
 });
 
-it("binds all eighteen complete English variants to their source and preserves every Markdown link destination", async () => {
+it("binds all nineteen complete English variants to their source and preserves every Markdown link destination", async () => {
   const variants = (await readdir(path.join(dir, "en"))).filter(file => file.endsWith(".md"));
-  expect(variants).toHaveLength(18);
+  expect(variants).toHaveLength(19);
   const links = (value: string) => [...value.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map(match => match[1]).sort();
   for (const file of variants) {
     const original = (await readFile(path.join(dir, file), "utf8")).replace(/\r\n/g, "\n");

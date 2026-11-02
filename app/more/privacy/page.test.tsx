@@ -43,6 +43,17 @@ describe("NotificationPrivacyPage", () => {
     vi.useRealTimers();
   });
 
+  it.each(["ko", "en"] as const)("provides a scoped %s analytics refusal link without changing notification controls", (locale) => {
+    const text = dictionaries[locale].pages.notificationPrivacy;
+    renderPage(locale);
+    expect(screen.getByText(text.analyticsCookies)).toBeInTheDocument();
+    expect(screen.getByText(text.analyticsRefusal)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: text.analyticsOptOutLink })).toHaveAttribute("href", `https://tools.google.com/dlpage/gaoptout?hl=${locale}`);
+    expect(screen.getByRole("link", { name: text.privacyPolicyLink })).toHaveAttribute("href", locale === "en" ? "/en/privacy" : "/privacy");
+    expect(enablePushNotifications).not.toHaveBeenCalled();
+    expect(disablePushNotifications).not.toHaveBeenCalled();
+  });
+
   it.each(["ko", "en"] as const)("shows simple %s registration labels and progress", async (locale) => {
     const text = dictionaries[locale].pages.notificationPrivacy;
     vi.mocked(enablePushNotifications).mockImplementation((options) => {

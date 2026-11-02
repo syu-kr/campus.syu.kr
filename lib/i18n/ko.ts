@@ -1721,6 +1721,11 @@ export const koDictionary = {
         analyticsTitle: "분석 도구 사용",
         analyticsDescription:
           "서비스 품질 개선과 오류 파악을 위해 Google Analytics가 사용됩니다. 분석 데이터는 개인정보처리방침의 목적과 범위 안에서 다룹니다.",
+        analyticsCookies:
+          "Google Analytics는 이용자 구분과 세션 유지를 위해 자사 쿠키 _ga와 _ga_<id>를 사용합니다. 제3자 쿠키 차단이나 쿠키 삭제만으로 모든 분석 요청이 중단되지는 않습니다.",
+        analyticsRefusal:
+          "지원되는 데스크톱 브라우저에서는 Google의 분석 차단 부가 기능을 설치하고 활성화해 방문 데이터 이용을 거부할 수 있습니다. 모바일·앱 내 브라우저에서는 지원되지 않을 수 있습니다. 사이트 쿠키를 차단하면 룸메이트 로그인이 제한될 수 있습니다.",
+        analyticsOptOutLink: "Google 애널리틱스 차단 도구 보기",
         privacyPolicyLink: "개인정보처리방침 보기",
         permissionPrincipleTitle: "권한 요청 원칙",
         permissionPrincipleDescription:

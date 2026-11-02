@@ -1762,6 +1762,11 @@ export const enDictionary = {
         analyticsTitle: "Analytics Tools",
         analyticsDescription:
           "Google Analytics is used to improve service quality and identify errors. Analytics data is handled within the purposes and scope of the Privacy Policy.",
+        analyticsCookies:
+          "Google Analytics uses first-party _ga and _ga_<id> cookies to distinguish visitors and maintain sessions. Blocking third-party cookies or clearing cookies alone does not stop all analytics requests.",
+        analyticsRefusal:
+          "On supported desktop browsers, you can install and activate Google's Analytics Opt-out Browser Add-on to refuse use of visit data. It may not be available in mobile or in-app browsers. Blocking site cookies can prevent roommate sign-in.",
+        analyticsOptOutLink: "View Google's Analytics opt-out tool",
         privacyPolicyLink: "View Privacy Policy",
         permissionPrincipleTitle: "Permission Request Principle",
         permissionPrincipleDescription:
