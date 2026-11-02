@@ -903,7 +903,10 @@ export const koDictionary = {
         shareDeleted: "공유 링크를 삭제했습니다.",
         shareDeleteFailed: "공유 링크를 삭제하지 못했습니다.",
         shareLoading: "공유 시간표를 불러오는 중입니다.",
-        shareLoadFailed: "공유 시간표를 불러오지 못했습니다. 연결 상태와 링크 주소를 확인한 뒤 다시 열어주세요. 삭제된 링크라면 새 링크를 받아주세요.",
+        shareLoadFailed: "공유 시간표를 불러오지 못했습니다. 연결 상태를 확인한 뒤 다시 불러와주세요.",
+        shareUnavailable: "공유 링크가 올바르지 않거나 삭제·만료되었습니다. 링크를 확인하거나 새 링크를 받아주세요.",
+        shareRateLimited: "요청이 많아 공유 시간표를 불러오지 못했습니다. 잠시 후 다시 불러와주세요.",
+        retryShare: "공유 시간표 다시 불러오기",
         draftAutoSaveNotice:
           "직접 구성한 시간표는 이 브라우저에 30일간 자동 저장됩니다.",
         draftStorageUnavailable:

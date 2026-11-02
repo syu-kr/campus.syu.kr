@@ -71,12 +71,12 @@ function tokenFrom(init?: RequestInit) {
   return new Headers(init?.headers).get("Authorization")?.replace(/^Bearer /, "") || "";
 }
 
-function mockRequests(handler: (token: string, init?: RequestInit) => Response | Promise<Response>) {
+function mockRequests(handler: (token: string, init: RequestInit | undefined, input: string) => Response | Promise<Response>) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     if (!String(input).startsWith("/api/admin/submissions")) {
       throw new Error(`Unexpected fixture request: ${String(input)}`);
     }
-    return handler(tokenFrom(init), init);
+    return handler(tokenFrom(init), init, String(input));
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -105,6 +105,71 @@ beforeEach(() => {
   authMock.unsubscribe.mockClear();
   authMock.roommateMounts = 0;
   authMock.loadError = false;
+});
+
+describe("admin submission page counts", () => {
+  function paginatedResponse(input: string, item: AdminSubmissionItem, pending = 41) {
+    const params = new URL(input, "https://campus.test").searchParams;
+    const page = Number(params.get("page"));
+    return Response.json({
+      submissions: [{ ...item, status: params.get("status") === "accepted" ? "accepted" : "pending" }],
+      ...(params.get("includeCounts") === "false" ? {} : { counts: { pending, reviewing: 0, accepted: 0, rejected: 0, done: 0 } }),
+      pagination: { page, limit: 20, total: 41, totalPages: 3, hasNext: page < 3, nextCursor: page < 3 ? `fixture-cursor-${page}` : null },
+    });
+  }
+
+  it("retains counts while paging and refreshes them for manual reload, filter and session changes", async () => {
+    let pending = 41;
+    const fetchMock = mockRequests((token, _init, input) => paginatedResponse(input, fixtureItem(token), pending));
+    render(<AdminPage />);
+    await emitAuth(fixtureUser("admin-a"));
+    expect(await screen.findByRole("button", { name: /^대기\s*41$/ })).toBeVisible();
+    expect(String(fetchMock.mock.calls[0][0])).not.toContain("includeCounts=false");
+
+    fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    await screen.findByText("2 / 3");
+    expect(String(fetchMock.mock.calls.at(-1)![0])).toContain("includeCounts=false");
+    expect(screen.getByRole("button", { name: /^대기\s*41$/ })).toBeVisible();
+
+    pending = 43;
+    fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
+    expect(await screen.findByRole("button", { name: /^대기\s*43$/ })).toBeVisible();
+    expect(String(fetchMock.mock.calls.at(-1)![0])).not.toContain("includeCounts=false");
+
+    fireEvent.change(screen.getByDisplayValue("대기"), { target: { value: "accepted" } });
+    await waitFor(() => expect(String(fetchMock.mock.calls.at(-1)![0])).toContain("status=accepted&page=1"));
+    expect(String(fetchMock.mock.calls.at(-1)![0])).not.toContain("includeCounts=false");
+
+    pending = 7;
+    await emitAuth(null, fixtureUser("admin-b"));
+    expect(await screen.findByRole("button", { name: /^대기\s*7$/ })).toBeVisible();
+    expect(tokenFrom(fetchMock.mock.calls.at(-1)![1])).toBe("admin-b");
+    expect(String(fetchMock.mock.calls.at(-1)![0])).not.toContain("includeCounts=false");
+  });
+
+  it.each(["single", "bulk"] as const)("refreshes counts on the next read after a %s status change", async operation => {
+    const item = fixtureItem("A");
+    let changed = false;
+    const fetchMock = mockRequests((_token, init, input) => {
+      if (init?.method === "PATCH") { changed = true; return Response.json({ success: true }); }
+      return paginatedResponse(input, item, changed ? 40 : 41);
+    });
+    render(<AdminPage />);
+    await emitAuth(fixtureUser("admin-a"));
+    await screen.findByText(item.contact);
+    if (operation === "single") {
+      fireEvent.click(screen.getByRole("button", { name: "검토중" }));
+      await screen.findByText("처리 상태를 변경했습니다.");
+      fireEvent.click(screen.getByRole("button", { name: "다음" }));
+    } else {
+      fireEvent.click(screen.getByRole("checkbox", { name: `${item.title} 선택` }));
+      fireEvent.click(screen.getByRole("button", { name: "일괄 상태 변경" }));
+      await screen.findByText("1개 항목의 상태를 변경했습니다.");
+    }
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => !init?.method)).toHaveLength(2));
+    expect(String(fetchMock.mock.calls.at(-1)![0])).not.toContain("includeCounts=false");
+    expect(screen.getByRole("button", { name: /^대기\s*40$/ })).toBeVisible();
+  });
 });
 afterEach(() => vi.unstubAllGlobals());
 

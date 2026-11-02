@@ -6,11 +6,16 @@ import { TimetableBuilderClient } from "./TimetableBuilderClient";
 import { LocaleProvider } from "@/app/components/LocaleProvider";
 import { getDictionary } from "@/lib/i18n";
 import { TIMETABLE_DRAFT_STORAGE_KEY } from "@/lib/timetable-draft";
+import { TimetableShareError } from "@/lib/timetable-share-query";
 
 const responses = vi.hoisted(() => ({
   search: "",
   timetable: {} as Record<string, unknown>,
   share: {} as Record<string, unknown>,
+  shareError: null as Error | null,
+  shareFetching: false,
+  refetchTimetable: vi.fn(),
+  refetchShare: vi.fn(),
   loading: false,
 }));
 
@@ -19,13 +24,15 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/academic/timetable",
   useSearchParams: () => new URLSearchParams(responses.search),
 }));
-vi.mock("@tanstack/react-query", () => ({
+vi.mock("@tanstack/react-query", async importOriginal => ({
+  ...await importOriginal<typeof import("@tanstack/react-query")>(),
   useQuery: ({ queryKey }: { queryKey: unknown[] }) => ({
     data: queryKey[0] === "lecture-timetable" ? responses.timetable : responses.share,
     isLoading: queryKey[0] === "lecture-timetable" && responses.loading,
-    isFetching: false,
+    isFetching: queryKey[0] === "lecture-timetable-share" && responses.shareFetching,
     isError: false,
-    refetch: vi.fn(),
+    error: queryKey[0] === "lecture-timetable-share" ? responses.shareError : null,
+    refetch: queryKey[0] === "lecture-timetable-share" ? responses.refetchShare : responses.refetchTimetable,
   }),
 }));
 
@@ -66,6 +73,10 @@ describe("timetable recovery and mobile editing", () => {
     responses.search = "";
     responses.loading = false;
     responses.share = { success: false };
+    responses.shareError = null;
+    responses.shareFetching = false;
+    responses.refetchShare.mockReset();
+    responses.refetchTimetable.mockReset();
     responses.timetable = {
       success: true,
       data: {
@@ -106,6 +117,38 @@ describe("timetable recovery and mobile editing", () => {
     render(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
     expect(screen.getByText(text.shareLoadFailed)).toBeInTheDocument();
     expect(screen.queryByText("Internal share diagnostic")).not.toBeInTheDocument();
+  });
+
+  it.each(["ko", "en"] as const)("retries only the share and preserves the saved draft in %s", locale => {
+    responses.search = "share=test-share";
+    responses.shareError = new TimetableShareError(503);
+    localStorage.setItem(TIMETABLE_DRAFT_STORAGE_KEY, "saved local draft");
+    const text = getDictionary(locale).pages.timetable;
+    const view = render(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    fireEvent.click(screen.getByRole("button", { name: text.retryShare }));
+    expect(responses.refetchShare).toHaveBeenCalledTimes(1);
+    expect(responses.refetchTimetable).not.toHaveBeenCalled();
+    expect(localStorage.getItem(TIMETABLE_DRAFT_STORAGE_KEY)).toBe("saved local draft");
+    responses.shareFetching = true;
+    view.rerender(<LocaleProvider locale={locale}><TimetableBuilderClient /></LocaleProvider>);
+    expect(screen.getByRole("button", { name: text.retryShare })).toBeDisabled();
+    expect(screen.getByText(text.shareLoading).closest('[role="status"]')).toHaveAttribute("aria-busy", "true");
+  });
+
+  it.each([400, 404])("distinguishes an unavailable share (%i) from a temporary failure", status => {
+    responses.search = "share=deleted-share";
+    responses.shareError = new TimetableShareError(status);
+    const text = getDictionary("ko").pages.timetable;
+    render(<TimetableBuilderClient />);
+    expect(screen.getByText(text.shareUnavailable)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: text.retryShare })).not.toBeInTheDocument();
+  });
+
+  it("explains a share rate limit without leaking the server response", () => {
+    responses.search = "share=limited-share";
+    responses.shareError = new TimetableShareError(429);
+    render(<TimetableBuilderClient />);
+    expect(screen.getByText(getDictionary("ko").pages.timetable.shareRateLimited)).toBeInTheDocument();
   });
 
   it("automatically replaces public course fields inline without changing the draft", async () => {
