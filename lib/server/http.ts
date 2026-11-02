@@ -126,14 +126,18 @@ export async function enforceRateLimitKey(
   }
 }
 
+export function readJsonBody<T = unknown>(req: Request, maxBytes?: number, allowEmpty?: false): Promise<T>;
+export function readJsonBody<T = unknown>(req: Request, maxBytes: number, allowEmpty: true): Promise<T | undefined>;
 export async function readJsonBody<T = unknown>(
   req: Request,
   maxBytes = DEFAULT_MAX_JSON_BYTES,
-): Promise<T> {
+  allowEmpty = false,
+): Promise<T | undefined> {
   enforceSameOrigin(req);
 
   const contentType = req.headers.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.startsWith("application/json")) {
+  const isJson = contentType.startsWith("application/json");
+  if (!isJson && (!allowEmpty || contentType)) {
     throw new ApiError(
       "Content-Type은 application/json이어야 합니다.",
       415,
@@ -172,6 +176,9 @@ export async function readJsonBody<T = unknown>(
     }
   }
   const rawBody = new TextDecoder().decode(Buffer.concat(chunks, received));
+
+  if (allowEmpty && received === 0) return undefined;
+  if (!isJson) throw new ApiError("Content-Type은 application/json이어야 합니다.", 415, undefined, "UNSUPPORTED_CONTENT_TYPE");
 
   try {
     return JSON.parse(rawBody) as T;

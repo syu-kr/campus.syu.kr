@@ -92,4 +92,16 @@ describe("bounded JSON request bodies", () => {
     await expect(readJsonBody(makeRequest({ "content-length": "100" }), 10)).rejects.toMatchObject({ status: 413 });
     await expect(readJsonBody(makeRequest({}))).rejects.toMatchObject({ status: 400, code: "INVALID_JSON" });
   });
+  it("allows an empty stream only when requested and retains optional-body validation", async () => {
+    const makeRequest = (body: string, headers: Record<string,string> = {}) => new Request("https://campus.syu.kr/api/contact", {
+      method:"POST", body:new ReadableStream({start(controller){if(body)controller.enqueue(new TextEncoder().encode(body));controller.close();}}), headers, duplex:"half",
+    } as RequestInit);
+    await expect(readJsonBody(makeRequest(""), 2048, true)).resolves.toBeUndefined();
+    await expect(readJsonBody(makeRequest(""), 2048)).rejects.toMatchObject({status:415});
+    await expect(readJsonBody(makeRequest("{}"), 2048, true)).rejects.toMatchObject({status:415});
+    await expect(readJsonBody(makeRequest("", {origin:"https://other.test"}), 2048, true)).rejects.toMatchObject({status:403});
+    await expect(readJsonBody(makeRequest("x".repeat(2049)), 2048, true)).rejects.toMatchObject({status:413});
+    await expect(readJsonBody(makeRequest("{", {"content-type":"application/json"}), 2048, true)).rejects.toMatchObject({status:400});
+    await expect(readJsonBody(makeRequest("{}", {"content-type":"application/json"}), 2048, true)).resolves.toEqual({});
+  });
 });
