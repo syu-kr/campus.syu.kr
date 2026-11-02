@@ -1,10 +1,10 @@
 import type { PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import { applyShuttleSpecialPeriods, getShuttleDayStatus, getShuttleScheduleType, isDateInSpecialPeriod, timeToMinutes } from "../shuttle-schedule";
-import { calculateCandidateArrivals, etaServiceDate, passedFieldGate, type EtaResponse } from "../shuttle-eta";
+import { etaServiceDate, type EtaResponse } from "../shuttle-eta";
 import { shuttleScheduleIds, type ShuttleRoute } from "../shuttle-visits";
 import { getFirestore } from "./firestore";
 import { getHomePublicHolidays, getHomeShuttleBuses, getHomeShuttleSpecialPeriods } from "./home-data";
-import { shuttleEtaReleases } from "./shuttle-eta-releases";
+import { learningArrivals, type LearningState, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { shuttleVehicleKey } from "./shuttle-vehicle";
 
@@ -52,17 +52,27 @@ export function pilotRoutes(now: Date, buses: ShuttleBusSchedule[], periods: Shu
 }
 
 export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
-  const day = etaServiceDate(Date.now());
-  const models = shuttleEtaReleases.filter(m => m.validFrom <= day && day <= m.validThrough && passedFieldGate(m));
-  if (!models.length) return { status: "collecting", arrivals: [] };
+  const now=new Date(),day=etaServiceDate(+now);
+  if([0,6].includes(getKoreaDateTimeParts(now).dayOfWeek))return {status:"learning",arrivals:[]};
   const [buses, periods, holidays] = await Promise.all([getHomeShuttleBuses(), getHomeShuttleSpecialPeriods(), getHomePublicHolidays()]);
-  const patterns: Partial<Record<ShuttleRoute, string>> = {};
-  const now = new Date();
-  for (const route of new Set(models.map(m => m.route))) patterns[route] = servicePattern(route, now, buses, periods, holidays);
-  if (!models.some(m => patterns[m.route] === m.pattern)) return { status: "active", arrivals: [] };
-  const state = await getFirestore().collection("shuttle_eta").doc("current").get();
+  const allowed=pilotRoutes(now,buses,periods,holidays),plans:DeparturePlans={};
+  if(!allowed.length)return {status:"learning",arrivals:[]};
+  for(const routeId of allowed) {
+    const id=shuttleScheduleIds[(["hwarangdae","seokgye","byeollae"] as const)[routeId-1]],type=getShuttleScheduleType(now,periods);
+    const dayStatus=getShuttleDayStatus({dateString:day,specialPeriods:periods,holidays,now});
+    const times=dayStatus.operationStatus==="exception"?dayStatus.serviceExceptions.filter(e=>e.routeId===id).flatMap(e=>e.times):
+      type?applyShuttleSpecialPeriods({buses:buses.filter(b=>b.id===id),dateString:day,specialPeriods:periods}).buses[0]?.schedules[type]??[]:[];
+    plans[routeId]=times.filter(t=>timeToMinutes(t)!==null).map(t=>Date.parse(`${day}T${t}:00+09:00`)).sort((a,b)=>a-b);
+  }
+  const db=getFirestore();
+  const [state,history]=await Promise.all([db.collection("shuttle_eta").doc("current").get(),db.collection("shuttle_eta").doc("history").get()]);
   const readAt = Date.now();
-  if (etaServiceDate(readAt) !== day) return { status: "active", arrivals: [] };
-  return { status: "active", arrivals: calculateCandidateArrivals(state.data()?.runs, models, patterns, readAt,
-    vehicleId === undefined ? undefined : shuttleVehicleKey(vehicleId, readAt)) };
+  const stillAllowed=pilotRoutes(new Date(readAt),buses,periods,holidays);
+  if(etaServiceDate(readAt)!==day||!stillAllowed.length)return {status:"learning",arrivals:[]};
+  for(const id of Object.keys(plans))if(!stillAllowed.includes(Number(id)))delete plans[Number(id)];
+  const current=state.data();
+  const live=current?.schemaVersion===3&&Array.isArray(current.runs)?current as LearningState:undefined;
+  const compatible=live?{...live,runs:live.runs.filter(r=>r.pattern===servicePattern((["hwarangdae","seokgye","byeollae"] as const)[r.routeId-1],new Date(readAt),buses,periods,holidays))}:undefined;
+  return {status:"learning",arrivals:learningArrivals(compatible,
+    (history.data()?.profiles??{}) as TimingProfiles,plans,readAt,vehicleId===undefined?undefined:shuttleVehicleKey(vehicleId,readAt))};
 }

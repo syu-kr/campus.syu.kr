@@ -15,7 +15,7 @@ export default function ShuttleServiceSchedule({route,now,data}:{route:ServiceRo
   const context=referenceTables(route,now,data);
   const [choice,setChoice]=useState<{key:string;friday:boolean}|null>(null);
   const key=choice?.key??context.defaultKey,friday=choice?.friday??context.defaultFriday;
-  const categories=[{key:"semester",label:live.semester},{key:"vacation",label:live.vacation},{key:"online",label:live.online},...(context.exception?[{key:"exception",label:live.specialName}]:[])];
+  const categories=[{key:"semester",label:live.semester},...(route.id==="hwarangdae"?[{key:"vacation",label:live.vacation}]:[]),{key:"online",label:live.online},...(context.exception?[{key:"exception",label:live.specialName}]:[])];
   const period=key==="online"?context.period:key==="exception"?context.current.period:undefined;
   const vacations=[...(data.specialPeriods.vacationPeriods??[])].sort((a,b)=>a.startDate.localeCompare(b.startDate));
   const vacation=vacations.find(p=>p.endDate>=context.date)??vacations.at(-1);

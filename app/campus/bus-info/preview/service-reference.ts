@@ -8,10 +8,10 @@ export function referenceTables(route:ServiceRoute,now:Date,data:ShuttleServiceD
   const online=data.specialPeriods.specialPeriods.filter(p=>p.id.startsWith("online-class-week"));
   const period=online.find(p=>p.startDate<=date&&date<=p.endDate)??online.filter(p=>p.startDate<=date).sort((a,b)=>a.startDate.localeCompare(b.startDate)).at(-1);
   const affects=!!period&&(period.routes.includes("all")||period.routes.includes(route.scheduleId));
-  const activeOnline=affects&&period!.startDate<=date&&date<=period!.endDate&&(current.status==="closed"||current.period?.id===period!.id);
+  const activeOnline=!!period&&period.startDate<=date&&date<=period.endDate;
   const exception=current.status==="ready"&&current.activeType==="special"&&!current.period?.id.startsWith("online-class-week");
   const confirmed=data.source!=="unavailable"&&current.status!=="unknown"&&!!schedule;
-  const currentKey=confirmed?(exception?"exception":activeOnline?"online":vacation?"vacation":"semester"):null;
+  const currentKey=confirmed?(exception?"exception":activeOnline?"online":vacation&&route.id==="hwarangdae"?"vacation":vacation?null:"semester"):null;
   return {date,vacation,period,affects,current,currentKey,defaultKey:currentKey??"semester",defaultFriday:new Date(`${date}T12:00:00Z`).getUTCDay()===5,exception};
 }
 export function referenceTimes(route:ServiceRoute,now:Date,data:ShuttleServiceData,key:string,friday:boolean) {

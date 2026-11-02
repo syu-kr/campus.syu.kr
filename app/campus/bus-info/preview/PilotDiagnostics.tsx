@@ -7,6 +7,7 @@ import { pilotCopy } from "@/lib/i18n/shuttle-pilot";
 import { M3Select } from "@/app/components/M3Select";
 import { pilotVisits, type PilotFieldEvent } from "@/lib/shuttle-observations";
 import type { BusLocation } from "@/types";
+import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 
 async function saveSample(signal?: AbortSignal, event?: PilotFieldEvent): Promise<string> {
   const {auth} = await import("@/lib/firebase");
@@ -46,7 +47,7 @@ export default function PilotDiagnostics({closed, etaStatus, locations = []}:{cl
         if (controller.signal.aborted) return;
         setResult(collection);
         if (["login", "closed", "local"].includes(collection)) { setRecording(false); return; }
-        timer = setTimeout(sample, 15_000);
+        timer = setTimeout(sample, shuttleRefreshDelay());
       } catch { if (!controller.signal.aborted) { setResult("error"); setRecording(false); } }
     }
     void sample();

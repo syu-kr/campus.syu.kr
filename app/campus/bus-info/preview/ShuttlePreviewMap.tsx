@@ -82,6 +82,7 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo}: Pr
             <span>{visit.label[locale]}</span><strong>{arrivalMessage(visit)}</strong>
           </button></li>)}</ol>
           {!demo&&estimates.status==="collecting"&&<p className="text-xs text-neutral-600">{live.arrivalPendingShort}</p>}
+          {!demo&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
         </section>:vehicleId&&<p role="status">{live.vehicleMissing}</p>}
       </aside>
     </div>
