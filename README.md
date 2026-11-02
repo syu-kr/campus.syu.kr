@@ -99,7 +99,9 @@ campus.syu.kr/
 
 ## 데이터 갱신
 
-공지사항·장학금·학식 등 일일 크롤링 데이터는 공개 저장소의 무료 GitHub Pages 아티팩트에 버전형 스냅샷으로 게시하고 앱이 서버에서 조회합니다. `public/data/`의 동일 JSON은 Pages 장애나 무결성 검증 실패 때 사용하는 번들 fallback입니다. 학사 일정·연락처 등 저빈도 데이터는 저장소 JSON으로 관리하며 월간 크롤러는 변경 사항을 PR로 제안합니다.
+공개 데이터 backend는 `PUBLIC_DATA_BACKEND`로 선택합니다. 운영에서 사용하는 `firebase`는 Firebase Storage의 활성 스냅샷을 서버에서 읽으며, 미설정 또는 `pages`는 기존 GitHub Pages 스냅샷을 읽습니다. Firebase 모드에서는 `/data` 경로도 서버 API로 연결되므로 build와 runtime에 같은 값을 지정하고 재빌드해야 합니다. 일일 데이터의 원격 조회·무결성 검증이 실패하면 `public/data/`의 번들 fallback을 사용하며, Firebase 장애 때 Pages로 자동 전환하지 않습니다.
+
+학사 일정·연락처 등 참조 데이터는 검토된 저장소 JSON을 Firebase 스냅샷에 발행합니다. 월간 크롤러는 변경 사항을 PR로 제안하고, 병합된 main의 CI 성공 뒤 참조 발행이 진행됩니다. Pages 모드와 복구 절차는 [공개 데이터 운영](docs/PUBLIC_DATA_FIREBASE.md)을 따릅니다.
 
 ```bash
 pip install -r requirements.txt
