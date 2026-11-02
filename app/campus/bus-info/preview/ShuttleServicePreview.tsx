@@ -93,7 +93,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{timetableOpen?live.timetableClose:live.timetableOpen}</summary>
       <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
     </details>
-    {!operatingPreview&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status}/>}
+    {!operatingPreview&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status} locations={received.locations}/>}
     {operatingPreview&&<details className="border-t border-neutral-200 pt-2"><summary className="cursor-pointer text-sm font-semibold">{live.demoControls}</summary>
       <p className="my-2 text-xs text-neutral-600">{koreaDateKey(now)} {timeLabel(now)} · {live.demoMapNote}</p>
       <div className="flex flex-wrap gap-2"><Button variant="secondary" disabled={delayed} onClick={()=>setPlaying(value=>!value)}>{playing?copy.pause:live.demoPlay}</Button><Button variant="secondary" onClick={()=>setElapsed(value=>value+30)}>{live.stepShort}</Button><Button variant="secondary" onClick={()=>setElapsed(value=>value+300)}>{live.demoStep}</Button><Button variant="secondary" disabled={selected===null} onClick={()=>{setPlaying(false);setElapsed(demoEventTime(route,selected??0));}}>{live.demoArrive}</Button><Button variant="secondary" disabled={selected===null} onClick={()=>{setPlaying(false);setElapsed(demoEventTime(route,selected??0,true));}}>{live.demoPass}</Button><Button variant="ghost" onClick={reset}>{copy.reset}</Button></div>

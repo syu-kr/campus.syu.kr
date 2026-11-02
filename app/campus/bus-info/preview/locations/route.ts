@@ -1,5 +1,6 @@
 import { requireAdmin, AdminAuthError } from "@/lib/server/admin-auth";
-import { pilotPositions, pilotWeekend } from "@/lib/server/shuttle-pilot";
+import { pilotPositions, pilotWeekend, readPilotFieldEvent } from "@/lib/server/shuttle-pilot";
+import { ApiError, readJsonBody } from "@/lib/server/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,11 @@ export async function POST(req: Request) {
   if (pilotWeekend(new Date())) return Response.json({collection:"closed"}, {headers});
   try {
     await requireAdmin(req);
-    const {collection, timestamp, data} = await pilotPositions(true);
+    const body = req.body ? await readJsonBody<unknown>(req, 2048) : undefined;
+    if (body !== undefined && (!body || typeof body !== "object" || Array.isArray(body) ||
+      Object.keys(body).length !== 1 || !("event" in body))) throw new ApiError("현장 기록 요청이 올바르지 않습니다");
+    const field = body && typeof body === "object" && "event" in body ? readPilotFieldEvent(body.event) : undefined;
+    const {collection, timestamp, data} = await pilotPositions(true, field);
     return Response.json({collection, receiptAt:timestamp, vehicles:data.length}, {headers});
-  } catch (error) { return failure(error instanceof AdminAuthError ? error.status : 503); }
+  } catch (error) { return failure(error instanceof AdminAuthError || error instanceof ApiError ? error.status : 503); }
 }
