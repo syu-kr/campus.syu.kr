@@ -114,7 +114,7 @@ export function learningArrivals(state: LearningState | undefined, history: Timi
     // The published times are origin departures, never segment travel times or headways.
     if(run.leg===0&&run.fraction<.03&&run.stationary) {
       const planned=plans[run.routeId]?.find(t=>t>=run.measuredAt);
-      if(planned&&planned-run.measuredAt<=20*60_000)arrival=Math.max(arrival,planned);
+      if(planned)arrival=Math.max(arrival,planned);
     }
     for(let leg=run.leg;leg<visits.length-1;leg++) {
       const estimate=legTime(visits[leg].id,roadSeconds[route][leg],run.pattern,arrival,state.profiles,history);

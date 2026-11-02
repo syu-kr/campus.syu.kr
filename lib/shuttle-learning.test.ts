@@ -51,6 +51,7 @@ it("keeps scheduled departures as origin waiting, never as a headway travel esti
   const normal=learningArrivals(state,{}, {1:[]},t+5000)[0];
   const held=learningArrivals(state,{}, {1:[t+125000]},t+5000)[0];
   expect(held.arrivalAt-normal.arrivalAt).toBe(120000);
+  expect(learningArrivals(state,{}, {1:[t+30*60000]},t+5000)).toEqual([]);
 });
 it("rejects stale, future, off-route, wrong service and conflicting vehicle states",()=>{
   const state=advanceShuttleLearning(undefined,[point()],[],t);
