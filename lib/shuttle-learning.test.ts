@@ -1,8 +1,19 @@
 import {expect,it} from "vitest";
-import {advanceShuttleLearning,learningArrivals,projectShuttlePoint,recordTravel,type LearningPoint,type TimingProfiles} from "./shuttle-learning";
+import {advanceShuttleLearning,learningArrivals,scheduledShuttleArrivals,projectShuttlePoint,recordTravel,type LearningPoint,type TimingProfiles} from "./shuttle-learning";
 import {pointAlongPath,serviceRoadPaths} from "@/app/campus/bus-info/preview/service-visits";
 import type {PilotEvent} from "./shuttle-observations";
 const t=Date.parse("2026-11-02T13:20:00+09:00");
+it("adds learned travel time to the next scheduled departure and advances after a trip passes",()=>{
+  const plans={2:[t+5*60000,t+20*60000]},from="seokgye-campus-departure";
+  const profiles={[from]:{seconds:600,n:30,cells:{}}};
+  const first=scheduledShuttleArrivals({},profiles,plans,{2:"online"},t);
+  expect(first.find(r=>r.visitId===from)).toMatchObject({departureAt:t+5*60000,arrivalAt:t+5*60000,travelSeconds:0});
+  expect(first.find(r=>r.visitId==="seokgye-hwarangdae-2")).toMatchObject({departureAt:t+5*60000,arrivalAt:t+15*60000,travelSeconds:600});
+  const next=scheduledShuttleArrivals({},profiles,plans,{2:"online"},t+16*60000);
+  expect(next.find(r=>r.visitId==="seokgye-hwarangdae-2")?.departureAt).toBe(t+20*60000);
+  expect(scheduledShuttleArrivals({},profiles,plans,{},t)).toEqual([]);
+  expect(scheduledShuttleArrivals({},profiles,plans,{2:"online"},t+86400000)).toEqual([]);
+});
 const point=(fraction=.5,offset=0):LearningPoint=>{
   const p=pointAlongPath(serviceRoadPaths({id:"seokgye"})[3],fraction);
   return{vehicleKey:"private-vehicle",runId:"private-run",routeId:2,status:2,pattern:"online",lat:p[0],lon:p[1],observedAt:t+offset,measuredAt:t+offset,measurementSource:"receiver",advanced:true};

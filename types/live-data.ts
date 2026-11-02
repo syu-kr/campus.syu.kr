@@ -1,4 +1,4 @@
-export type LiveDataSourceStatus = "fresh" | "stale" | "error";
+export type LiveDataSourceStatus = "fresh" | "partial" | "stale" | "error";
 
 export interface LiveDataMeta {
   source: string;

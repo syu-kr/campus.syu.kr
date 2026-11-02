@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from "vitest";
-import { savePilotSample } from "./shuttle-pilot-store";
+let savePilotSample: typeof import("./shuttle-pilot-store").savePilotSample;
 import { shuttlePlaces } from "../shuttle-visits";
 import type { PilotObservation } from "../shuttle-observations";
 
@@ -31,14 +31,14 @@ const point=(offset=0):PilotObservation=>({vehicleKey:"daily-key",routeId:1,stat
   lat:shuttlePlaces.hwarang5.point[0],lon:shuttlePlaces.hwarang5.point[1],observedAt:time+offset,
   measuredAt:time+offset,measurementSource:"receiver"});
 const frame=(at=time)=>m.records.get(`shuttle_pilot_receipts/${at}`)!;
-beforeEach(()=>{m.records.clear();m.fail=false;});
+beforeEach(async()=>{vi.resetModules();m.records.clear();m.fail=false;({savePilotSample}=await import("./shuttle-pilot-store"));});
 
 it("stores the actual observation clock, its basis, trip and candidate events atomically",async()=>{
   expect(await savePilotSample([point()],time,()=>undefined)).toBe("saved");
   expect(frame()).toMatchObject({schemaVersion:2,measuredAt:time,observedAt:time,measurementSource:"receiver",expires_at:time+30*86400_000,
     rows:[expect.objectContaining({runId:expect.any(String),measuredAt:time,measurementSource:"receiver",sourceMeasuredAt:null})],
     events:[expect.objectContaining({event:"arrival",validation:"candidate"})]});
-  expect(m.records.get("shuttle_pilot_state/daily-key")).toMatchObject({observedAt:time});
+  expect(m.records.get("shuttle_eta/current")).toMatchObject({cursors:[expect.objectContaining({observedAt:time})]});
 });
 it("preserves device measurement time separately when supplied",async()=>{
   await savePilotSample([{...point(),measuredAt:time-1000,measurementSource:"source"}],time,()=>undefined);
@@ -48,15 +48,15 @@ it("deduplicates the same receiver receipt, but retains two new receipts in one 
   await savePilotSample([point()],time,()=>undefined);
   expect(await savePilotSample([point()],time,()=>undefined)).toBe("duplicate");
   expect(await savePilotSample([point(30_000)],time+30_000,()=>undefined)).toBe("saved");
-  expect(m.records.size).toBe(4);
+  expect(m.records.size).toBe(3);
   expect(m.records.get("shuttle_eta/current")).toMatchObject({schemaVersion:3,receivedAt:time+30_000});
   expect(frame(time+30_000)).toMatchObject({rows:[expect.objectContaining({runId:(frame().rows as {runId:string}[])[0].runId})]});
 });
-it("retains a late raw receipt without reversing the latest run cursor",async()=>{
+it("skips a late raw receipt without reversing the latest run cursor",async()=>{
   await savePilotSample([point(30_000)],time+30_000,()=>undefined);
   await savePilotSample([point()],time,()=>undefined);
-  expect(m.records.get("shuttle_pilot_state/daily-key")).toMatchObject({observedAt:time+30_000});
-  expect(frame()).toMatchObject({events:[],rows:[expect.objectContaining({advanced:false,runId:null})]});
+  expect(m.records.get("shuttle_eta/current")).toMatchObject({cursors:[expect.objectContaining({observedAt:time+30_000})]});
+  expect(frame()).toBeUndefined();
 });
 it("records and deduplicates an operator field event separately from a receiver candidate",async()=>{
   await savePilotSample([point()],time,()=>undefined);
@@ -71,7 +71,7 @@ it("records and deduplicates an operator field event separately from a receiver 
 it("does not attribute a delayed field report to another direction's newer run",async()=>{
   await savePilotSample([{...point(30_000),status:1}],time+30_000,()=>undefined);
   expect(await savePilotSample([point()],time,()=>undefined,{vehicleId:"test",vehicleKey:"daily-key",visitId:"hwarangdae-5-campus",event:"arrival",observedAt:time})).toBe("delayed");
-  expect(m.records.size).toBe(3);
+  expect(m.records.size).toBe(2);
 });
 it.each(["closed","delayed"] as const)("rechecks %s immediately before committing",async state=>{
   let checks=0;
@@ -83,11 +83,40 @@ it("reports a failed commit without leaving partial state or acknowledging a sav
   await expect(savePilotSample([point()],time,()=>undefined)).rejects.toThrow("Commit failed");
   expect(m.records.size).toBe(0);
 });
+it("keeps a coalesced delayed result from being acknowledged as a duplicate save",async()=>{
+  let checks=0;
+  const first=savePilotSample([point()],time,()=>++checks>=2?"delayed":undefined);
+  const second=savePilotSample([point()],time+100,()=>undefined);
+  expect(await Promise.all([first,second])).toEqual(["delayed","delayed"]);
+  expect(m.records.size).toBe(0);
+});
 it("clears vanished vehicles on fresh empty frames while retaining the learned model",async()=>{
   await savePilotSample([point()],time,()=>undefined);
   await savePilotSample([],time+5000,()=>undefined);
   expect(m.records.get("shuttle_eta/current")).toMatchObject({receivedAt:time+5000,runs:[]});
   expect(frame(time+5000)).toMatchObject({rows:[]});
+  expect(await savePilotSample([],time+10000,()=>undefined)).toBe("duplicate");
+  expect(frame(time+10000)).toBeUndefined();
+});
+it("coalesces same-window viewers and skips a different worker's later receipt in that window",async()=>{
+  const results=await Promise.all(Array.from({length:10},(_,i)=>savePilotSample([point(i*100)],time+i*100,()=>undefined)));
+  expect(results.filter(result=>result==="saved")).toHaveLength(1);
+  expect([...m.records.keys()].filter(key=>key.startsWith("shuttle_pilot_receipts/"))).toHaveLength(1);
+  vi.resetModules();
+  const other=await import("./shuttle-pilot-store");
+  expect(await other.savePilotSample([point(1000)],time+1000,()=>undefined)).toBe("duplicate");
+  expect([...m.records.keys()].filter(key=>key.startsWith("shuttle_pilot_receipts/"))).toHaveLength(1);
+});
+it("migrates a legacy cursor once and keeps later cursors in the current document",async()=>{
+  await savePilotSample([point()],time,()=>undefined);
+  const legacy=m.records.get("shuttle_eta/current")!;
+  const cursors=legacy.cursors as Record<string,unknown>[];
+  const runId=cursors[0].runId;
+  m.records.set("shuttle_pilot_state/daily-key",cursors[0]);
+  delete legacy.cursors;
+  await savePilotSample([point(10000)],time+10000,()=>undefined);
+  expect(m.records.get("shuttle_eta/current")).toMatchObject({cursors:[expect.objectContaining({runId,observedAt:time+10000})]});
+  expect(m.records.get("shuttle_pilot_state/daily-key")).toMatchObject({observedAt:time});
 });
 it("restores anonymized aggregates after raw live state expires",async()=>{
   const profiles={"hwarangdae-5-campus":{seconds:480,n:20,cells:{}}};

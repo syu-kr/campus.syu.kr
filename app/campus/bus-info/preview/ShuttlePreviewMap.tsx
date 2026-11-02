@@ -12,9 +12,11 @@ import type { Locale } from "@/lib/i18n";
 import type { Point } from "./preview-data";
 import { vehiclePinSvg } from "./preview-vehicles";
 import { serviceRoadPaths, serviceVisits } from "./service-visits";
-import { serviceOutboundRoute, serviceRoutes } from "./service-data";
+import { serviceOutboundRoute, serviceRoutes, serviceTimetable, type ShuttleServiceData } from "./service-data";
+import { koreaDateKey } from "./preview-timetable";
 import { demoStopArrival } from "./service-demo";
-import { useStopArrivals } from "./use-stop-arrivals";
+import { useStopArrivals, type ShuttleEtaEndpoint } from "./use-stop-arrivals";
+import { pilotRoutes } from "@/lib/shuttle-service-window";
 
 type Marker = KakaoMarker & { setPosition: (point: KakaoLatLng) => void; setImage: (image: KakaoMarkerImage) => void; setZIndex: (value: number) => void; setTitle: (title: string) => void };
 type Maps = KakaoMapsNamespace & {
@@ -23,10 +25,12 @@ type Maps = KakaoMapsNamespace & {
 type Visit = ReturnType<typeof pilotVisits>[number];
 type Props = {
   received: {locations: BusLocation[]; stale: boolean}; now: Date; locale: Locale; onClose: () => void;
-  demo?: {elapsed: number; nextAvailable: boolean; delayed: boolean};
+  demo?: {elapsed: number; nextAvailable: boolean; delayed: boolean;departuresByRoute?:Record<string,number[]>;epoch?:number};
+  data?: ShuttleServiceData;
+  etaEndpoint?: ShuttleEtaEndpoint;
 };
 
-export default function ShuttlePreviewMap({received,now,locale,onClose,demo}: Props) {
+export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data,etaEndpoint="/campus/bus-info/preview/eta"}: Props) {
   const copy=getShuttlePreviewCopy(locale),live=getShuttleServiceCopy(locale);
   const [vehicleId,setVehicleId]=useState<string|null>(null),[stopId,setStopId]=useState<string|null>(null);
   const vehicle=received.locations.find(bus=>bus.id===vehicleId);
@@ -38,23 +42,35 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo}: Pr
     if(route.oneWay) return serviceRoadPaths(direction===1?serviceOutboundRoute:route);
     return serviceRoadPaths(route);
   },[route,direction]);
-  const estimates=useStopArrivals(now,!demo&&!!vehicle&&!received.stale,vehicle?.id);
+  const collectionOpen=!data||pilotRoutes(now,data.buses,data.specialPeriods,data.holidays).length>0;
+  const estimates=useStopArrivals(now,!demo&&!!vehicle&&!received.stale&&collectionOpen,vehicle?.id,collectionOpen,etaEndpoint);
   const selectVehicle=useCallback((id:string)=>{setVehicleId(id);setStopId(null);},[]);
   const vehicleLabel=useCallback((bus:BusLocation,index:number)=>{
     const item=serviceRoutes.find(item=>item.locationRouteId===bus.routeid)!;
     return `${copy[item.name]} · ${live.vehicleNumber.replace("{number}",String(index+1))} · ${bus.status===2?copy.campusBound:copy.stationBound}`;
   },[copy,live]);
   function arrivalMessage(visit:Visit) {
+    if(!demo&&data&&route&&visit.id===serviceVisits[route.id][0].id) {
+      const date=koreaDateKey(now),timetable=serviceTimetable({route,date,now,data});
+      if(timetable.status==="closed")return live.dayClosed;
+      const departure=timetable.scheduledTimes.find(time=>Date.parse(`${date}T${time}:00+09:00`)>=now.getTime());
+      return departure?`${departure} ${live.departureAt}`:timetable.scheduledTimes.length?live.lastDeparted:live.arrivalUnknown;
+    }
     if(received.stale) return live.arrivalUnknown;
     if(demo&&route&&vehicle) {
       const index=serviceVisits[route.id].findIndex(item=>item.id===visit.id);
       if(index<0) return live.arrivalUnknown;
-      const arrival=demoStopArrival(route,demo.elapsed,index,demo.nextAvailable,demo.delayed,Number(vehicle.id.split("-").at(-1)));
+      const run=Number(vehicle.id.split("-").at(-1)),departures=demo.departuresByRoute?.[route.id];
+      if(index===0&&demo.epoch!==undefined&&departures?.[run]!==undefined) {
+        const time=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(demo.epoch+departures[run]*1000);
+        return `${time} ${live.departureAt}`;
+      }
+      const arrival=demoStopArrival(route,demo.elapsed,index,demo.nextAvailable,demo.delayed,run,departures);
       if(arrival.state==="passed") return copy.passed;
       if(arrival.state==="arrived") return copy.arrived;
       if(arrival.seconds===null) return live.arrivalUnknown;
       const time=`${Math.ceil(arrival.seconds/60)}${locale==="ko"?"":" "}${copy.minutes}`;
-      return arrival.state==="waiting"?`${copy.arrived} · ${live.departIn} ${time}`:live.arrivesIn.replace("{time}",time);
+      return live.arrivesIn.replace("{time}",time);
     }
     const minutes=estimates.minutes.get(visit.id);
     return minutes===undefined?live.arrivalUnknown:live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`);

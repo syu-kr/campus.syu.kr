@@ -39,7 +39,7 @@ it("initially shows vehicles from every route without drawing an unselected rout
   expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
   expect(within(picker()).getAllByRole("button")).toHaveLength(3);
   expect(screen.queryByText(/not-shown-/)).not.toBeInTheDocument();
-  expect(m.eta).toHaveBeenLastCalledWith(now,false,undefined);
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,undefined,true,"/campus/bus-info/preview/eta");
 });
 it("selects a vehicle's complete route and scopes predictions to that vehicle",async()=>{
   m.ready=false;m.minutes.set("seokgye-4",7);
@@ -51,12 +51,12 @@ it("selects a vehicle's complete route and scopes predictions to that vehicle",a
   expect(container.querySelectorAll("polyline")).toHaveLength(5);
   expect(container.querySelectorAll("[data-stop-pin]")).toHaveLength(5);
   expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(3);
-  expect(m.eta).toHaveBeenLastCalledWith(now,true,"bus-B");
+  expect(m.eta).toHaveBeenLastCalledWith(now,true,"bus-B",true,"/campus/bus-info/preview/eta");
   fireEvent.click(within(panel).getByRole("button",{name:/석계역 4번 출구/}));
   expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 약 7분");
   rerender(<ShuttlePreviewMap {...props} received={{locations:buses,stale:true}}/>);
   expect(within(panel).queryByText(/약 7분/)).not.toBeInTheDocument();
-  expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B");
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B",true,"/campus/bus-info/preview/eta");
   rerender(<ShuttlePreviewMap {...props} received={{locations:[buses[0],buses[2]],stale:false}}/>);
   expect(screen.queryByRole("region",{name:"선택 차량 정류장별 도착예상"})).not.toBeInTheDocument();
   expect(screen.getByText("선택한 차량의 위치를 다시 확인해 주세요.")).toBeInTheDocument();
@@ -73,15 +73,15 @@ it("supports fallback marker keyboard selection and the Hwarangdae return moveme
   expect(container.querySelectorAll("polyline").length).toBeGreaterThan(0);
 });
 it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
-  m.ready=false;const sample=demoLocations(serviceRoutes[1],500,true);
-  render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:500,nextAvailable:true,delayed:false}}/>);
+  m.ready=false;const departures=[0,600],sample=demoLocations(serviceRoutes[1],700,true,departures);
+  render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:700,nextAvailable:true,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
   expect(screen.getByRole("dialog",{name:"전체 셔틀 지도 · 예시 운행"})).toBeVisible();
   choose(/차량 1/);
   let panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("통과");
   choose(/차량 2/);panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("약 10분");
-  expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id);
+  expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id,true,"/campus/bus-info/preview/eta");
 });
 it("keeps GPS markers stable, draws complete geographic vertices after a marker click, and cleans up",async()=>{
   const sdk=prepareSdk();const {rerender,unmount}=render(<ShuttlePreviewMap {...props}/>);

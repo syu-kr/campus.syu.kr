@@ -2,12 +2,15 @@ import { GET as getPositions } from "@/app/api/bus/shuttle/route";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { etaServiceDate } from "../shuttle-eta";
 import { toBusLocation } from "../shuttle-location";
-import { getHomePublicHolidays, getHomeShuttleBuses, getHomeShuttleSpecialPeriods } from "./home-data";
-import { pilotRoutes, servicePattern } from "./shuttle-eta";
+import { loadShuttleServiceData } from "./shuttle-service-data";
+import { pilotRoutes, servicePattern } from "../shuttle-service-window";
 import { shuttleVehicleKey } from "./shuttle-vehicle";
 import { pilotVisits, type PilotFieldEvent, type PilotObservation } from "../shuttle-observations";
 import { savePilotSample } from "./shuttle-pilot-store";
 import { ApiError } from "./http";
+import { recordShuttleMetric } from "./shuttle-metrics";
+
+let refresh: { key: string; promise: ReturnType<typeof receivePositions> } | undefined;
 
 export function readPilotFieldEvent(value: unknown): PilotFieldEvent {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new ApiError("현장 기록 형식이 올바르지 않습니다");
@@ -29,13 +32,35 @@ export function pilotWeekend(now: Date) {
 
 // Only the server's receiver can supply observations. The requester cannot submit coordinates, dates or trip IDs.
 export async function pilotPositions(save: boolean, field?: PilotFieldEvent) {
+  if (field) return receivePositions(save, field);
+  const key = `${process.env.VERCEL_ENV}:${save}:${Math.floor(Date.now() / 5_000)}`;
+  if (refresh?.key === key) {
+    recordShuttleMetric("collection.refresh", { cacheHits: 1 });
+    const value = await refresh.promise;
+    if (Date.now() - Date.parse(value.timestamp) >= 90_000) return {
+      success: true, source: "shuttle", data: [], timestamp: new Date().toISOString(),
+      stale: true, sourceStatus: "stale", collection: "delayed",
+    };
+    return value;
+  }
+  recordShuttleMetric("collection.refresh", { cacheMisses: 1 });
+  const entry = { key, promise: receivePositions(save) };
+  refresh = entry;
+  void entry.promise.then(value => { if (value.collection === "delayed" && refresh === entry) refresh = undefined; }, () => undefined);
+  void entry.promise.catch(() => { if (refresh === entry) refresh = undefined; });
+  return entry.promise;
+}
+
+async function receivePositions(save: boolean, field?: PilotFieldEvent) {
   const start = new Date();
   const empty = (state: "closed" | "empty" | "delayed") => ({
     success:true, source:"shuttle", data:[], timestamp:new Date().toISOString(),
     stale:state==="delayed", sourceStatus:state==="delayed"?"stale":"fresh", collection:state,
   });
   if (pilotWeekend(start)) return empty("closed");
-  const calendar = await Promise.all([getHomeShuttleBuses(), getHomeShuttleSpecialPeriods(), getHomePublicHolidays()] as const);
+  const service = await loadShuttleServiceData();
+  if (service.source !== "firebase-storage") return empty("closed");
+  const calendar = [service.buses, service.specialPeriods, service.holidays] as const;
   const allowed = (at: Date) => pilotRoutes(at, ...calendar);
   if (!allowed(new Date()).length) return empty("closed");
   const res = await getPositions();
@@ -79,5 +104,7 @@ export async function pilotPositions(save: boolean, field?: PilotFieldEvent) {
     if (+final - receipt >= 90_000) return "delayed" as const;
   };
   const collection=await savePilotSample(rows,receipt,writeBlock,selected);
+  const blocked = writeBlock() ?? (collection === "closed" || collection === "delayed" ? collection : undefined);
+  if (blocked) return empty(blocked);
   return data.length?result(collection):empty(collection==="closed"?"closed":collection==="delayed"?"delayed":"empty");
 }

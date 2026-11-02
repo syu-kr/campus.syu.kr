@@ -2,7 +2,8 @@ import { getKoreaDateTimeParts } from "./korea-time";
 import { serviceVisits, type ShuttleRoute } from "./shuttle-visits";
 
 export type StopEta = { visitId: string; arrivalAt: number; measuredAt: number; validUntil: number; basis?: "history" | "observed" | "route"; measurementSource?: "source" | "receiver" };
-export type EtaResponse = { status: "collecting" | "active" | "learning"; arrivals: StopEta[] };
+export type ScheduledStopArrival = { visitId: string; departureAt: number; arrivalAt: number; travelSeconds: number };
+export type EtaResponse = { status: "collecting" | "active" | "learning"; arrivals: StopEta[]; scheduledArrivals?: ScheduledStopArrival[] };
 type Phase = "moving" | "dwelling";
 type Leg = {
   from: string;

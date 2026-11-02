@@ -1,13 +1,14 @@
 import { requireAdmin, AdminAuthError } from "@/lib/server/admin-auth";
 import { pilotPositions, pilotWeekend, readPilotFieldEvent } from "@/lib/server/shuttle-pilot";
 import { ApiError, readJsonBody } from "@/lib/server/http";
+import { handleShuttleLocations } from "@/lib/server/shuttle-handlers";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex" };
 function failure(status = 503) { return Response.json({ success:false, data:[] }, {status, headers}); }
 export async function GET() {
-  try { return Response.json(await pilotPositions(true), {headers}); } catch { return failure(); }
+  return handleShuttleLocations();
 }
 export async function POST(req: Request) {
   // Weekend short circuit precedes auth, GPS, calendar reads and Firestore access.

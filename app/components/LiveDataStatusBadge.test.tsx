@@ -6,7 +6,7 @@ import { LiveDataStatusBadge } from "./LiveDataStatusBadge";
 
 it.each(["ko", "en"] as const)("can omit the source while retaining live status and the update time in %s", (locale) => {
   const text = getDictionary(locale).liveData;
-  const props = { locale, timestamp: new Date(2026, 9, 6, 22, 15), sourceStatus: "stale" as const };
+  const props = { locale, timestamp: new Date("2026-10-06T13:15:00Z"), sourceStatus: "stale" as const };
   const view = render(<LocaleProvider locale={locale}>
     <LiveDataStatusBadge {...props} sourceLabel="SYU Shuttle" />
   </LocaleProvider>);
@@ -28,6 +28,13 @@ it.each(["ko", "en"] as const)("hides normal live-data status and metadata in %s
   expect(container).toBeEmptyDOMElement();
   rerender(<LocaleProvider locale={locale}><LiveDataStatusBadge locale={locale} /></LocaleProvider>);
   expect(container).toBeEmptyDOMElement();
+});
+
+it.each(["ko", "en"] as const)("distinguishes partially unavailable arrivals from cached old data in %s", locale => {
+  const text = getDictionary(locale).liveData;
+  render(<LocaleProvider locale={locale}><LiveDataStatusBadge locale={locale} sourceStatus="partial" stale={false} timestamp="2026-11-02T10:00:00Z" /></LocaleProvider>);
+  expect(screen.getByText(text.statuses.partial)).toBeVisible();
+  expect(screen.queryByText(text.statuses.stale)).not.toBeInTheDocument();
 });
 
 it.each(["ko", "en"] as const)("keeps stale and error information visible in %s", (locale) => {

@@ -155,6 +155,7 @@ export const koDictionary = {
       source: "원본",
       unavailable: "-",
       statuses: {
+        partial: "일부 도착정보 없음",
         stale: "이전 정보",
         error: "오류",
       },

@@ -4,24 +4,35 @@ import type { ShuttleSpecialPeriods } from "@/types";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import periods from "@/public/data/shuttle-special-periods.json";
 import { AdminAuthError } from "@/lib/server/admin-auth";
-import { GET, POST } from "./route";
-const m = vi.hoisted(()=>({auth:vi.fn(), receiver:vi.fn(), calendar:vi.fn(), holidays:vi.fn(), save:vi.fn()}));
+let GET: typeof import("./route").GET, POST: typeof import("./route").POST;
+const m = vi.hoisted(()=>({auth:vi.fn(), receiver:vi.fn(), calendar:vi.fn(), holidays:vi.fn(), save:vi.fn(),source:"firebase-storage"}));
 vi.mock("@/lib/server/admin-auth",async original=>({...await original<typeof import("@/lib/server/admin-auth")>(),requireAdmin:m.auth}));
 vi.mock("@/app/api/bus/shuttle/route",()=>({GET:m.receiver}));
 vi.mock("@/lib/server/shuttle-pilot-store",()=>({savePilotSample:m.save}));
-vi.mock("@/lib/server/home-data",()=>({getHomeShuttleBuses:()=>buses,getHomeShuttleSpecialPeriods:m.calendar,getHomePublicHolidays:m.holidays}));
+vi.mock("@/lib/server/shuttle-service-data",()=>({loadShuttleServiceData:async()=>({
+  buses,specialPeriods:await m.calendar(),holidays:await m.holidays(),source:m.source,version:"test",nowISO:new Date().toISOString(),
+})}));
 const req = new Request("https://example.invalid/campus/bus-info/preview/locations",{method:"POST"});
 const date = (day:string,time="12:00")=>new Date(`${day}T${time}:00+09:00`);
 const weekday = date("2026-11-03");
 const payload = () => ({success:true,stale:false,sourceStatus:"fresh",timestamp:new Date().toISOString(),data:[
   {id:"test-vehicle",name:"test-name",routeid:2,status:1,lat:37.62,lon:127.08}]});
 const holiday = () => ({schemaVersion:1,sourceUrl:"",years:[2026],holidays:[],lastSuccessAt:new Date().toISOString()});
-beforeEach(()=>{
+beforeEach(async()=>{
+  vi.resetModules();({GET,POST}=await import("./route"));
+  m.source="firebase-storage";
   vi.useFakeTimers({toFake:["Date"]}); vi.setSystemTime(weekday);
   vi.stubEnv("VERCEL_ENV","production"); vi.stubEnv("RATE_LIMIT_SECRET","test-value-not-a-secret");
   m.auth.mockResolvedValue({uid:"admin"}); m.calendar.mockResolvedValue(periods as ShuttleSpecialPeriods);
   m.holidays.mockImplementation(holiday); m.receiver.mockImplementation(()=>Response.json(payload()));
   m.save.mockImplementation(async(_rows,_receipt,writeBlock)=>writeBlock()??"saved");
+});
+
+it.each(["imported-snapshot","bundled-fallback","unavailable"])("keeps reference-only %s timetables from receiving or storing vehicle observations",async source=>{
+  m.source=source;
+  expect((await(await GET()).json()).collection).toBe("closed");
+  expect(m.receiver).not.toHaveBeenCalled();
+  expect(m.save).not.toHaveBeenCalled();
 });
 afterEach(()=>{vi.useRealTimers();vi.unstubAllEnvs();vi.resetAllMocks();});
 it.each([["2026-10-31","00:00"],["2026-11-01","23:59"]])("does not access even the calendar, receiver or store on KST weekend %s %s",async(day,time)=>{
@@ -41,13 +52,22 @@ it.each(["holiday","uncertain","explicitClosure","outside","gap","weekendExcepti
   expect(m.receiver).not.toHaveBeenCalled(); expect(m.save).not.toHaveBeenCalled();
 });
 it("automatically saves trusted refreshes while retaining admin authorization for field writes",async()=>{
-  expect((await (await GET()).json()).collection).toBe("saved");expect(m.save).toHaveBeenCalledOnce();m.save.mockClear();
+  expect((await (await GET()).json()).collection).toBe("saved");expect(m.save).toHaveBeenCalledOnce();
+  const row=m.save.mock.calls[0][0][0];m.save.mockClear();
   m.auth.mockRejectedValueOnce(new AdminAuthError("denied",403));
   expect((await POST(req)).status).toBe(403); expect(m.save).not.toHaveBeenCalled();
   const saved=await (await POST(req)).json();expect(saved).toMatchObject({collection:"saved",vehicles:1});
-  const row=m.save.mock.calls[0][0][0];expect(row.measuredAt).toBe(weekday.getTime());expect(row.measurementSource).toBe("receiver");
+  expect(m.save).not.toHaveBeenCalled();expect(row.measuredAt).toBe(weekday.getTime());expect(row.measurementSource).toBe("receiver");
   expect(JSON.stringify(row)).not.toContain("test-vehicle");expect(JSON.stringify(saved)).not.toContain("vehicleKey");
-  m.save.mockResolvedValueOnce("duplicate");expect((await (await POST(req)).json()).collection).toBe("duplicate");
+  vi.setSystemTime(+weekday+5000);m.save.mockResolvedValueOnce("duplicate");expect((await (await POST(req)).json()).collection).toBe("duplicate");
+});
+it.each(["closed","delayed"])("removes positions when storage blocks the frame as %s",async state=>{
+  m.save.mockResolvedValueOnce(state);
+  expect(await(await GET()).json()).toMatchObject({collection:state,data:[],stale:state==="delayed"});
+});
+it("withdraws positions that expire while the commit completes",async()=>{
+  m.save.mockImplementationOnce(async()=>{vi.setSystemTime(+weekday+90_000);return "saved";});
+  expect(await(await GET()).json()).toMatchObject({collection:"delayed",data:[],stale:true});
 });
 it("rejects stale/off-hours/local observations and clears ETA state on a fresh empty frame",async()=>{
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),stale:true}));

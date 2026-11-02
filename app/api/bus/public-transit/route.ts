@@ -66,6 +66,7 @@ export async function GET() {
       ? countRoutes(cachedArrivals.data)
       : 0;
     const usedRouteFallback =
+      freshTransit.stale &&
       Boolean(cachedArrivals && cachedArrivals.fallbackUntil > now) &&
       freshRouteCount < cachedRouteCount;
     const arrivals =

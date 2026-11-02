@@ -28,6 +28,7 @@ it("announces the selected bus category and updates it with the visible panel", 
   expect(shuttle).toHaveAttribute("aria-pressed", "true");
   expect(transit).toHaveAttribute("aria-pressed", "false");
   expect(screen.getByText("Shuttle content")).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: text.shuttleTab })).toHaveAttribute("data-bus-view", "shuttle");
 
   fireEvent.click(transit);
   rerender(busPage());
@@ -36,6 +37,7 @@ it("announces the selected bus category and updates it with the visible panel", 
   expect(shuttle).toHaveAttribute("aria-pressed", "false");
   expect(transit).toHaveAttribute("aria-pressed", "true");
   expect(screen.getByText("Transit content")).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: text.publicTransitTab })).toHaveAttribute("data-bus-view", "public-transit");
   expect(screen.queryByText("Shuttle content")).not.toBeInTheDocument();
 
   fireEvent.click(shuttle);

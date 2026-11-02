@@ -9,8 +9,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
-export default async function ShuttlePreviewPage({searchParams}:{searchParams:Promise<{scenario?:string|string[]}>}) {
-  const operatingPreview=(await searchParams).scenario==="operating";
+export default async function ShuttlePreviewPage({searchParams}:{searchParams:Promise<{scenario?:string|string[];view?:string|string[]}>}) {
+  const query=await searchParams;
+  const surface=query.view==="production"?"production":"preview";
+  const operatingPreview=surface==="preview"&&query.scenario==="operating";
   const data=await loadShuttleServiceData(operatingPreview);
-  return <BusInfoPageClient shuttleContent={<ShuttleServicePreview key={operatingPreview?"operating":"current"} data={data} operatingPreview={operatingPreview} />} />;
+  return <BusInfoPageClient shuttleContent={<ShuttleServicePreview key={`${surface}:${operatingPreview?"operating":"current"}`} data={data} operatingPreview={operatingPreview} surface={surface} />} />;
 }

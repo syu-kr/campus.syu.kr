@@ -1,25 +1,28 @@
 "use client";
 import type { CSSProperties } from "react";
+import { Button } from "@/app/components/Button";
 import type { Locale } from "@/lib/i18n";
 import { getShuttlePreviewCopy } from "@/lib/i18n/shuttle-preview";
 import { getShuttleServiceCopy } from "@/lib/i18n/shuttle-service-preview";
-import { demoProgress } from "./service-demo";
 import type { stopArrivalLabels } from "./service-arrival-labels";
 import { serviceVisits } from "./service-visits";
 import { vehiclePinSvg } from "./preview-vehicles";
 import type { ServiceRoute } from "./service-data";
 
-export default function ShuttleStopTimeline({route,locale,labels,selected,onSelect,elapsed,nextAvailable,delayedAt,sample,closed,arrivals}:{
-  route:ServiceRoute;locale:Locale;labels:string[];selected:number|null;onSelect:(index:number)=>void;elapsed:number;nextAvailable:boolean;delayedAt:number|null;sample:boolean;closed:boolean;arrivals:ReturnType<typeof stopArrivalLabels>;
+export default function ShuttleStopTimeline({route,locale,labels,selected,onSelect,delayedAt,sample,closed,arrivals,progress=[],onMapOpen}:{
+  route:ServiceRoute;locale:Locale;labels:string[];selected:number|null;onSelect:(index:number)=>void;delayedAt:number|null;sample:boolean;closed:boolean;arrivals:ReturnType<typeof stopArrivalLabels>;
+  progress?:{id:string;position:number;next:number}[];
+  onMapOpen:()=>void;
 }) {
   const copy=getShuttlePreviewCopy(locale),live=getShuttleServiceCopy(locale),visits=serviceVisits[route.id];
-  const buses=sample?demoProgress(route,delayedAt??elapsed,nextAvailable):[];
+  const buses=progress;
   const toward=(index:number)=>locale==="ko"?`${copy[visits[index].toward]} ${live.toward}`:`${live.toward} ${copy[visits[index].toward]}`;
   return <section id="preview-arrivals" tabIndex={-1} aria-label={live.allStops} className="shuttle-stop-section">
-    <h2 className="text-sm font-bold">{live.allStops}</h2>
-    {!sample&&!closed&&!arrivals.some(a=>a.verified)&&<p className="mt-1 text-xs text-neutral-600">{live.arrivalUnavailable}</p>}
+    <div className="shuttle-stop-heading"><h2 className="text-sm font-bold">{live.allStops}</h2><Button variant="secondary" aria-haspopup="dialog" onClick={onMapOpen}>{live.mapOpen}</Button></div>
+    <p className="shuttle-flow-direction"><DirectionArrow /> {live.travelDirection}</p>
     <div className="shuttle-stop-timeline" style={{"--route-color":route.color,"--half-stop-row":`${50/visits.length}%`} as CSSProperties}>
       <div className="shuttle-stop-track" aria-hidden="true">
+        {visits.slice(1).map((visit,index)=><DirectionArrow key={visit.id} className="shuttle-track-arrow" style={{top:`${(index+.5)/(visits.length-1)*100}%`}} />)}
         {buses.map((bus,i)=><svg key={bus.id} data-timeline-vehicle={bus.id} data-progress={bus.position} className="shuttle-timeline-bus" width="32" height="38" viewBox="0 0 40 48" style={{top:`${bus.position/(visits.length-1)*100}%`,left:i>0&&Math.abs(bus.position-buses[0].position)<.45?16:0}}><image width="40" height="48" href={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(vehiclePinSvg(route.color,delayedAt!==null))}`} /></svg>)}
       </div>
       <ol>{visits.map((visit,index)=>{
@@ -36,4 +39,10 @@ export default function ShuttleStopTimeline({route,locale,labels,selected,onSele
       {!sample&&!closed&&!arrivals.some(a=>a.verified)&&<p>{live.directionPending}</p>}
     </div>
   </section>;
+}
+
+function DirectionArrow({className,style}:{className?:string;style?:CSSProperties}) {
+  return <svg className={className} style={style} width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+    <path d="m3 5 5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>;
 }

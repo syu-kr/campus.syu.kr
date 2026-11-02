@@ -15,6 +15,7 @@ interface LiveDataStatusBadgeProps {
 }
 
 const STATUS_STYLES: Record<Exclude<LiveDataSourceStatus, "fresh">, string> = {
+  partial: "border-amber-200 bg-amber-50 text-amber-800",
   stale: "border-amber-200 bg-amber-50 text-amber-800",
   error: "border-red-200 bg-red-50 text-red-700",
 };
@@ -28,7 +29,7 @@ export function LiveDataStatusBadge({
   className,
 }: LiveDataStatusBadgeProps) {
   const text = useDictionary().liveData;
-  const status = sourceStatus === "error" ? "error" : stale || sourceStatus === "stale" ? "stale" : "fresh";
+  const status = sourceStatus === "error" ? "error" : stale || sourceStatus === "stale" ? "stale" : sourceStatus === "partial" ? "partial" : "fresh";
   if (status === "fresh") return null;
   const formattedTime = formatTimestamp(timestamp, locale, text.unavailable);
 
@@ -74,5 +75,6 @@ function formatTimestamp(
   return date.toLocaleTimeString(locale === "ko" ? "ko-KR" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Seoul",
   });
 }

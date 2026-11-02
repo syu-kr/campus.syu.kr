@@ -3,32 +3,80 @@ import { advancePilotObservation, type PilotEvent, type PilotFieldEvent, type Pi
 import { getFirestore, admin } from "./firestore";
 import { etaServiceDate } from "../shuttle-eta";
 import { advanceShuttleLearning, type LearningState } from "../shuttle-learning";
+import { publishShuttleState } from "./shuttle-eta-cache";
+import { recordShuttleMetric } from "./shuttle-metrics";
 
-export async function savePilotSample(rows: PilotObservation[], receipt: number, writeBlock: () => "closed" | "delayed" | undefined,
-  field?: PilotFieldEvent & { vehicleKey: string }) {
+type Cursor = ReturnType<typeof advancePilotObservation>["state"];
+type StoredState = LearningState & { cursors?: Cursor[]; lastFrameEmpty?: boolean; revision?: number };
+type Field = PilotFieldEvent & { vehicleKey: string };
+type WriteBlock = () => "closed" | "delayed" | undefined;
+const pending = new Map<number, Promise<string>>();
+let lastSavedWindow = -1;
+
+export async function savePilotSample(rows: PilotObservation[], receipt: number, writeBlock: WriteBlock, field?: Field): Promise<string> {
+  const blocked = writeBlock();
+  if (blocked) return blocked;
+  const window = Math.floor(receipt / 5_000);
+  if (!field) {
+    if (window <= lastSavedWindow) {
+      recordShuttleMetric("collection.frame", { cacheHits: 1 });
+      return "duplicate";
+    }
+    const existing = pending.get(window);
+    if (existing) return existing.then(result => writeBlock() ?? (result === "saved" || result === "duplicate" ? "duplicate" : result));
+    const operation = saveFrame(rows, receipt, writeBlock).then(result => {
+      if (result === "saved" || result === "duplicate") lastSavedWindow = Math.max(lastSavedWindow, window);
+      return result;
+    });
+    pending.set(window, operation);
+    try { return await operation; } finally { if (pending.get(window) === operation) pending.delete(window); }
+  }
+  return saveFrame(rows, receipt, writeBlock, field);
+}
+
+async function saveFrame(rows: PilotObservation[], receipt: number, writeBlock: WriteBlock, field?: Field) {
   const db = getFirestore(), expires_at = admin.firestore.Timestamp.fromMillis(receipt + 30 * 86400_000);
   const receipts = db.collection("shuttle_pilot_receipts"), sample = receipts.doc(String(receipt));
-  const cursors = rows.map(row => db.collection("shuttle_pilot_state").doc(row.vehicleKey));
   const latest = db.collection("shuttle_eta").doc("current");
   const model = db.collection("shuttle_eta").doc("model");
-  return db.runTransaction(async transaction => {
-    const existing = await transaction.get(sample);
+  let committed: StoredState | undefined, writes = 0;
+  const result = await db.runTransaction(async transaction => {
+    committed = undefined; writes = 0;
+    recordShuttleMetric("collection.transaction", { attempts: 1, reads: 1 });
+    const current = await transaction.get(latest);
+    const stored = current.data() as (StoredState & { schemaVersion?: number }) | undefined;
     const blocked = writeBlock();
     if (blocked) return blocked;
+    // The existing current document is the cross-worker watermark: one frame per five-second window.
+    if (!field && stored?.receivedAt && Math.floor(receipt / 5_000) <= Math.floor(stored.receivedAt / 5_000)) return "duplicate";
+    if (!field && rows.length === 0 && stored?.lastFrameEmpty) return "duplicate";
+    recordShuttleMetric("collection.transaction", { reads: 1 });
+    const existing = await transaction.get(sample);
     if (existing.exists && !field) return "duplicate";
-    const [current, ...previous] = await transaction.getAll(latest, ...cursors);
-    const stored=current.data();
-    let currentData=stored?.schemaVersion===3?stored as LearningState:undefined;
-    if(!currentData)currentData={receivedAt:receipt,runs:[],pending:[],learned:[],profiles:(await transaction.get(model)).data()?.profiles??{}};
-    const derived = rows.map((row, index) => advancePilotObservation(previous[index].data(), row));
+    let currentData = stored?.schemaVersion === 3 ? stored : undefined;
+    if (!currentData) {
+      recordShuttleMetric("collection.transaction", { reads: 1 });
+      currentData = { receivedAt: receipt, runs: [], pending: [], learned: [], profiles: (await transaction.get(model)).data()?.profiles ?? {} };
+    }
+    let oldCursors = currentData.cursors;
+    if (!Array.isArray(oldCursors)) {
+      const refs = rows.map(row => db.collection("shuttle_pilot_state").doc(row.vehicleKey));
+      recordShuttleMetric("collection.transaction", { reads: refs.length });
+      const previous = refs.length ? await transaction.getAll(...refs) : [];
+      oldCursors = previous.map(doc => doc.data() as Cursor).filter(Boolean);
+    }
+    const derived = rows.map(row => advancePilotObservation(oldCursors.find(cursor => cursor.vehicleKey === row.vehicleKey), row));
     let fieldRecord;
     let fieldEvent: PilotEvent | undefined;
     if (field) {
-      const index = rows.findIndex(row => row.vehicleKey === field.vehicleKey), state = derived[index].state;
+      const index = rows.findIndex(row => row.vehicleKey === field.vehicleKey);
+      if (index < 0) return "delayed";
+      const state = derived[index].state;
       if (state.routeId !== rows[index].routeId || state.status !== rows[index].status || state.pattern !== rows[index].pattern ||
         field.observedAt < state.firstObservedAt - 5_000) return "delayed";
       const key = createHash("sha256").update(`${state.runId}:${field.visitId}:${field.event}`).digest("hex");
       fieldRecord = receipts.doc(`field-${key}`);
+      recordShuttleMetric("collection.transaction", { reads: 1 });
       if ((await transaction.get(fieldRecord)).exists) return "duplicate";
       fieldEvent = {
         vehicleKey: state.vehicleKey, runId: state.runId, routeId: state.routeId, status: state.status, pattern: state.pattern,
@@ -37,7 +85,6 @@ export async function savePilotSample(rows: PilotObservation[], receipt: number,
         measuredAt: field.observedAt, measurementSource: "field-observer",
       };
     }
-    // A transaction retry must not write a fresh-looking sample after service closes or the receipt expires.
     const finalBlock = writeBlock();
     if (finalBlock) return finalBlock;
     const common = { schemaVersion: 2, serviceDate: etaServiceDate(receipt), receivedAt: receipt, recordedAt: Date.now(), measuredAt: receipt, measurementSource: "receiver", expires_at };
@@ -47,25 +94,38 @@ export async function savePilotSample(rows: PilotObservation[], receipt: number,
           runId: derived[index].advanced ? derived[index].state.runId : null,
           runOriginObserved: derived[index].advanced && derived[index].state.originObserved,
           advanced: derived[index].advanced, stopCatalog: "registered-places-20261030" })),
-        events: derived.flatMap(result => result.events),
+        events: derived.flatMap(value => value.events),
       });
-      derived.forEach((result, index) => {
-        if (result.advanced) transaction.set(cursors[index], { ...result.state, expires_at });
-      });
+      writes++;
     }
-    if (fieldRecord && fieldEvent) transaction.create(fieldRecord, {
-      ...common, observedAt: fieldEvent.observedAt, rows: [], events: [fieldEvent],
-      measurementSource: "field-observer", measuredAt: fieldEvent.observedAt, recordedAt: Date.now(),
-    });
-    const learningReceipt=Math.max(receipt,currentData.receivedAt);
-    const points=receipt<currentData.receivedAt?currentData.runs.map(run=>({...run,advanced:false})):
-      rows.map((row,index)=>({...row,runId:derived[index].state.runId,advanced:derived[index].advanced}));
-    const learning=advanceShuttleLearning(currentData,points,
-      [...(!existing.exists?derived.flatMap(result=>result.events):[]),...(fieldEvent?[fieldEvent]:[])],learningReceipt);
-    if(!stored?.receivedAt||receipt>=stored.receivedAt||fieldEvent) {
-      transaction.set(latest,{...learning,schemaVersion:3,expires_at:admin.firestore.Timestamp.fromMillis(learningReceipt+30*86400_000)});
-      if(JSON.stringify(currentData.profiles)!==JSON.stringify(learning.profiles))transaction.set(model,{profiles:learning.profiles,updatedAt:learningReceipt,schemaVersion:1});
+    if (fieldRecord && fieldEvent) {
+      transaction.create(fieldRecord, { ...common, observedAt: fieldEvent.observedAt, rows: [], events: [fieldEvent],
+        measurementSource: "field-observer", measuredAt: fieldEvent.observedAt, recordedAt: Date.now() });
+      writes++;
+    }
+    const learningReceipt = Math.max(receipt, currentData.receivedAt);
+    const points = receipt < currentData.receivedAt ? currentData.runs.map(run => ({ ...run, advanced: false })) :
+      rows.map((row, index) => ({ ...row, runId: derived[index].state.runId, advanced: derived[index].advanced }));
+    const learning = advanceShuttleLearning(currentData, points,
+      [...(!existing.exists ? derived.flatMap(value => value.events) : []), ...(fieldEvent ? [fieldEvent] : [])], learningReceipt);
+    if (!stored?.receivedAt || receipt >= stored.receivedAt || fieldEvent) {
+      const cursors = new Map(oldCursors.map(cursor => [cursor.vehicleKey, cursor]));
+      derived.forEach(value => { if (value.advanced) cursors.set(value.state.vehicleKey, value.state); });
+      committed = { ...learning,
+        revision: (stored?.revision ?? 0) + 1,
+        cursors: [...cursors.values()].filter(cursor => learningReceipt - cursor.observedAt <= 120_000).sort((a, b) => b.observedAt - a.observedAt).slice(0, 100),
+        lastFrameEmpty: receipt >= currentData.receivedAt ? rows.length === 0 : stored?.lastFrameEmpty ?? false,
+      };
+      transaction.set(latest, { ...committed, schemaVersion: 3, expires_at: admin.firestore.Timestamp.fromMillis(learningReceipt + 30 * 86400_000) });
+      writes++;
+      if (JSON.stringify(currentData.profiles) !== JSON.stringify(learning.profiles)) {
+        transaction.set(model, { profiles: learning.profiles, updatedAt: learningReceipt, schemaVersion: 1 });
+        writes++;
+      }
     }
     return "saved";
   });
+  if (committed) publishShuttleState(committed);
+  recordShuttleMetric("collection.transaction", { writes });
+  return result;
 }
