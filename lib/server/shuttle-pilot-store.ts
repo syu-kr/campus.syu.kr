@@ -57,11 +57,13 @@ export async function savePilotSample(rows: PilotObservation[], receipt: number,
       ...common, observedAt: fieldEvent.observedAt, rows: [], events: [fieldEvent],
       measurementSource: "field-observer", measuredAt: fieldEvent.observedAt, recordedAt: Date.now(),
     });
-    const learning=advanceShuttleLearning(currentData,
-      rows.map((row,index)=>({...row,runId:derived[index].state.runId,advanced:derived[index].advanced})),
-      [...(!existing.exists?derived.flatMap(result=>result.events):[]),...(fieldEvent?[fieldEvent]:[])],receipt);
-    if(!stored?.receivedAt||receipt>=stored.receivedAt) {
-      transaction.set(latest,{...learning,schemaVersion:3,expires_at});
+    const learningReceipt=Math.max(receipt,currentData.receivedAt);
+    const points=receipt<currentData.receivedAt?currentData.runs.map(run=>({...run,advanced:false})):
+      rows.map((row,index)=>({...row,runId:derived[index].state.runId,advanced:derived[index].advanced}));
+    const learning=advanceShuttleLearning(currentData,points,
+      [...(!existing.exists?derived.flatMap(result=>result.events):[]),...(fieldEvent?[fieldEvent]:[])],learningReceipt);
+    if(!stored?.receivedAt||receipt>=stored.receivedAt||fieldEvent) {
+      transaction.set(latest,{...learning,schemaVersion:3,expires_at:admin.firestore.Timestamp.fromMillis(learningReceipt+30*86400_000)});
       if(JSON.stringify(currentData.profiles)!==JSON.stringify(learning.profiles))transaction.set(model,{profiles:learning.profiles,updatedAt:receipt,schemaVersion:1});
     }
     return "saved";

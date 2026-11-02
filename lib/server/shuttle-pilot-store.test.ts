@@ -97,3 +97,12 @@ it("restores anonymized aggregates after raw live state expires",async()=>{
   expect(m.records.get("shuttle_eta/model")).not.toHaveProperty("expires_at");
   expect(JSON.stringify(m.records.get("shuttle_eta/model"))).not.toContain("daily-key");
 });
+it("keeps a late cached field event without reversing the latest position clock",async()=>{
+  await savePilotSample([point()],time,()=>undefined);
+  await savePilotSample([point(30_000)],time+30_000,()=>undefined);
+  await savePilotSample([point()],time,()=>undefined,{vehicleId:"not-stored",vehicleKey:"daily-key",visitId:"hwarangdae-5-campus",event:"departure",observedAt:time+31_000});
+  const current=m.records.get("shuttle_eta/current")!;
+  expect(current.receivedAt).toBe(time+30_000);
+  expect(current.runs).toEqual([expect.objectContaining({observedAt:time+30_000})]);
+  expect(current.pending).toContainEqual(expect.objectContaining({method:"field-observer",observedAt:time+31_000}));
+});
