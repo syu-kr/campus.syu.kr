@@ -6,6 +6,7 @@ import { getFirestore } from "./firestore";
 import { getHomePublicHolidays, getHomeShuttleBuses, getHomeShuttleSpecialPeriods } from "./home-data";
 import { shuttleEtaReleases } from "./shuttle-eta-releases";
 import { getKoreaDateTimeParts } from "../korea-time";
+import { shuttleVehicleKey } from "./shuttle-vehicle";
 
 export function servicePattern(route: ShuttleRoute, now: Date, buses: ShuttleBusSchedule[], periods: ShuttleSpecialPeriods, holidays: PublicHolidaySnapshot) {
   const dateString = etaServiceDate(now.getTime()), id = shuttleScheduleIds[route];
@@ -50,7 +51,7 @@ export function pilotRoutes(now: Date, buses: ShuttleBusSchedule[], periods: Shu
   return eligible;
 }
 
-export async function readShuttleEta(): Promise<EtaResponse> {
+export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
   const day = etaServiceDate(Date.now());
   const models = shuttleEtaReleases.filter(m => m.validFrom <= day && day <= m.validThrough && passedFieldGate(m));
   if (!models.length) return { status: "collecting", arrivals: [] };
@@ -62,5 +63,6 @@ export async function readShuttleEta(): Promise<EtaResponse> {
   const state = await getFirestore().collection("shuttle_eta").doc("current").get();
   const readAt = Date.now();
   if (etaServiceDate(readAt) !== day) return { status: "active", arrivals: [] };
-  return { status: "active", arrivals: calculateCandidateArrivals(state.data()?.runs, models, patterns, readAt) };
+  return { status: "active", arrivals: calculateCandidateArrivals(state.data()?.runs, models, patterns, readAt,
+    vehicleId === undefined ? undefined : shuttleVehicleKey(vehicleId, readAt)) };
 }

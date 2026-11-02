@@ -45,6 +45,6 @@ export function demoLocations(route:ServiceRoute,elapsed:number,nextAvailable:bo
   return demoProgress(route,elapsed,nextAvailable).map(bus=>{
     const segment=Math.min(paths.length-1,Math.floor(bus.position));
     const point=pointAlongPath(paths[segment],bus.position-segment);
-    return {id:bus.id,name:"demo",lat:String(point[0]),lon:String(point[1]),status:1,routeid:route.locationRouteId as BusLocation["routeid"]};
+    return {id:bus.id,name:"demo",lat:String(point[0]),lon:String(point[1]),status:route.oneWay||bus.position>=route.target?2:1,routeid:route.locationRouteId as BusLocation["routeid"]};
   });
 }

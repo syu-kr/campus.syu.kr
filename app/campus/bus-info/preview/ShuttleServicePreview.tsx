@@ -31,6 +31,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
   const [elapsed,setElapsed]=useState(0),[nextAvailable,setNextAvailable]=useState(true),[delayedAt,setDelayedAt]=useState<number|null>(null),[playing,setPlaying]=useState(false);
   const delayed=delayedAt!==null;
   const [timetableOpen,setTimetableOpen]=useState(false);
+  const [mapOpen,setMapOpen]=useState(false);
   const now=operatingPreview?new Date(Date.parse(data.nowISO)+elapsed*1000):clock;
   const weekend=[0,6].includes(getKoreaDateTimeParts(now).dayOfWeek);
   const receive=!operatingPreview&&!weekend;
@@ -42,7 +43,8 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
     return await response.json() as LiveDataResponse<BusLocation[]> & {collection?:string};
   },enabled:receive,staleTime:30_000,refetchInterval:receive?30_000:false,refetchIntervalInBackground:false,retry:1});
   const state=receivedLocationState(receive?positions.data:undefined,receive&&positions.isError,now);
-  const received=useMemo(()=>({locations:operatingPreview?demoLocations(route,delayedAt??elapsed,nextAvailable):state.locations.filter(bus=>bus.routeid===route.locationRouteId),stale:operatingPreview?delayed:state.stale}),[operatingPreview,route,elapsed,nextAvailable,delayed,delayedAt,state.locations,state.stale]);
+  const fleet=useMemo(()=>({locations:operatingPreview?serviceRoutes.flatMap(item=>demoLocations(item,delayedAt??elapsed,nextAvailable)):state.locations,stale:operatingPreview?delayed:state.stale}),[operatingPreview,elapsed,nextAvailable,delayed,delayedAt,state.locations,state.stale]);
+  const received=useMemo(()=>({...fleet,locations:fleet.locations.filter(bus=>bus.routeid===route.locationRouteId)}),[fleet,route]);
   const today=serviceTimetable({route,date:koreaDateKey(now),now,data});
   const closed=!operatingPreview&&(weekend||today.status==="closed"&&!received.locations.length);
   const pilotClosed=closed||positions.data?.collection==="closed";
@@ -51,13 +53,12 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
   function routeStatus(item:typeof route) {
     if(operatingPreview) return delayed?live.checking:demoProgress(item,elapsed,nextAvailable).length?live.running:demoStopArrival(item,elapsed,0,nextAvailable).state==="approaching"?live.scheduledStart:live.noSchedule;
     const timetable=serviceTimetable({route:item,date:koreaDateKey(now),now,data});
-    const located=state.locations.some(bus=>bus.routeid===item.locationRouteId);
-    if(timetable.status==="closed"&&!located) return live.dayClosed;
-    if(item.id===route.id&&arrivals.some(a=>a.verified)) return live.running;
-    if(located||state.stale||positions.isPending) return live.checking;
+    if(weekend||timetable.status==="closed") return live.dayClosed;
     if(timetable.status!=="ready"||!timetable.times.length) return live.checking;
     const time=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(now);
-    return time<timetable.times[0]?live.scheduledStart:time<=timetable.times.at(-1)!?live.scheduledRunning:live.noSchedule;
+    if(time<timetable.times[0]) return live.scheduledStart;
+    const located=!state.stale&&state.locations.some(bus=>bus.routeid===item.locationRouteId);
+    return time<=timetable.times.at(-1)!||located?live.running:live.noSchedule;
   }
   function positionStatus() {
     if(operatingPreview) return delayed?live.lastPosition:"";
@@ -67,7 +68,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
     if(positions.isPending) return live.loadingLocation;
     if(!state.available) return live.expiredReceipt;
     if(state.stale) return live.delayedReceipt;
-    return received.locations.length ? live.receivedCount.replace("{count}",String(received.locations.length)) : live.noVehicles;
+    return fleet.locations.length ? live.receivedCount.replace("{count}",String(fleet.locations.length)) : live.noVehicles;
   }
   const positionText=positionStatus();
   const timeLabel=(date:Date)=>new Intl.DateTimeFormat(locale==="ko"?"ko-KR":"en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date);
@@ -80,15 +81,16 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
     {operatingPreview&&<p className="text-xs text-neutral-600" role="note"><strong>{live.demoBadge}</strong> · <time dateTime={now.toISOString()}>{koreaDateKey(now)} {timeLabel(now)}</time><br />{live.demoShort}</p>}
     <ShuttleUpcomingDepartures data={data} now={now} />
     <div className="shuttle-preview-routes grid grid-cols-3 gap-2" role="group" aria-label={copy.routeSelect}>
-      {serviceRoutes.map(item=><button key={item.id} type="button" aria-label={`${copy[item.name]} ${item.oneWay?copy.campusService:copy.loop}`} aria-describedby={`route-status-${item.id}`} aria-pressed={item.id===route.id} onClick={()=>selectRoute(item.id)} className="px-2 py-2 text-sm font-semibold"><span className="shuttle-route-name"><span className="shuttle-preview-route-dot" aria-hidden="true" style={{backgroundColor:item.color}} />{copy[item.name]}<small id={`route-status-${item.id}`} className="shuttle-route-status">{routeStatus(item)}</small></span><span className="block text-xs font-normal">{item.oneWay?copy.campusService:copy.loop}</span></button>)}
+      {serviceRoutes.map(item=><button key={item.id} type="button" aria-label={`${copy[item.name]} ${item.oneWay?copy.campusService:copy.loop}`} aria-describedby={`route-status-${item.id}`} aria-pressed={item.id===route.id} onClick={()=>selectRoute(item.id)} className="px-2 py-2 text-sm font-semibold"><span className="shuttle-route-name"><span className="shuttle-route-label"><span className="shuttle-preview-route-dot" aria-hidden="true" style={{backgroundColor:item.color}} />{copy[item.name]}</span><small id={`route-status-${item.id}`} className="shuttle-route-status">{routeStatus(item)}</small></span><span className="block text-xs font-normal">{item.oneWay?copy.campusService:copy.loop}</span></button>)}
     </div>
-    <section aria-label={copy.routeDetails} className="shuttle-service-route grid gap-4 md:grid-cols-2">
-      <div className="space-y-2">
-        <ShuttlePreviewMap route={route} elapsed={0} selected={selected} mode="normal" labels={labels} locale={locale} onSelect={setSelected} received={received} demonstration={operatingPreview} arrivalMessages={arrivals.map(a=>a.message)} />
-        {positionText&&<div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-600"><p role="status">{positionText}{!operatingPreview&&received.locations.length>0&&state.timestamp?` · ${live.receivedAt} ${timeLabel(new Date(state.timestamp))}`:""}</p>{!operatingPreview&&(positions.isError||state.stale)&&<Button variant="ghost" disabled={positions.isFetching} onClick={()=>void positions.refetch()}>{live.refresh}</Button>}</div>}
+    <section aria-label={copy.routeDetails} className="shuttle-service-route space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button variant="secondary" aria-haspopup="dialog" onClick={()=>setMapOpen(true)}>{live.mapOpen}</Button>
+        {positionText&&<div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600"><p role="status">{positionText}{!operatingPreview&&fleet.locations.length>0&&state.timestamp?` · ${live.receivedAt} ${timeLabel(new Date(state.timestamp))}`:""}</p>{!operatingPreview&&(positions.isError||state.stale)&&<Button variant="ghost" disabled={positions.isFetching} onClick={()=>void positions.refetch()}>{live.refresh}</Button>}</div>}
       </div>
       <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} elapsed={elapsed} nextAvailable={nextAvailable} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} />
     </section>
+    {mapOpen&&<ShuttlePreviewMap received={fleet} now={now} locale={locale} onClose={()=>setMapOpen(false)} demo={operatingPreview?{elapsed:delayedAt??elapsed,nextAvailable,delayed}:undefined}/>}
     <details className="shuttle-service-disclosure border border-neutral-200" onToggle={event=>setTimetableOpen(event.currentTarget.open)}>
       <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{timetableOpen?live.timetableClose:live.timetableOpen}</summary>
       <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
