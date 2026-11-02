@@ -54,7 +54,7 @@ export function advancePilotObservation(value: unknown, point: PilotObservation)
     etaServiceDate(previous.observedAt) === etaServiceDate(point.observedAt) &&
     point.observedAt - previous.observedAt <= 120_000;
   // Learning candidates: observed school offsets reach 153m and field-reported exits 106m. Not verified ground truth.
-  const entryRadius=(visit:typeof visits[number])=>visit.toward==="school"&&visit.id.includes("campus")||visit.id.includes("campus-departure")||visit.id==="hwarangdae-return-campus"?180:125;
+  const entryRadius=(visit:typeof visits[number])=>visit.point===serviceVisits.hwarangdae[1].point?180:125;
   const oldStop = continuous ? visits.find(visit => visit.id === previous.stopId) : undefined;
   const stop = oldStop && distance(point, oldStop.point) <= entryRadius(oldStop)+50 ? oldStop :
     visits.find(visit => distance(point, visit.point) <= entryRadius(visit));

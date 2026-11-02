@@ -15,6 +15,8 @@ describe("pilot observation history", () => {
     const exit=[shuttlePlaces.taereung7.point[0]+.0009,shuttlePlaces.taereung7.point[1]] as const;
     const received=advancePilotObservation(undefined,{...point(0,exit),routeId:2,status:2});
     expect(received.events).toContainEqual(expect.objectContaining({visitId:"seokgye-taereung-7",validation:"candidate"}));
+    const station=[shuttlePlaces.hwarang5.point[0]+.00135,shuttlePlaces.hwarang5.point[1]] as const;
+    expect(advancePilotObservation(undefined,point(0,station)).events).toEqual([]);
   });
   it("keeps one run from observed origin to destination and records bounded candidate events", () => {
     const origin=advancePilotObservation(undefined,point(0));
