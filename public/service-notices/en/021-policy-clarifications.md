@@ -2,7 +2,7 @@
 title: "Privacy Clarifications and Further Terms Amendment"
 description: "We clarify the description of existing data processing. The load-testing and timetable-sharing Terms clauses will change at 00:00 Korean time on December 4, 2026."
 lang: en
-sourceSha256: 62de5853a8c4a0485754160c44ba19036ad07a8148b2e683914c8861fe43fc2a
+sourceSha256: 30290817af51624b5c4f4189b3b7f9da723d648e24eeb03b69fdf74ee1984118
 ---
 
 We are correcting descriptions that could misrepresent existing data processing and clarifying the load-testing and timetable-sharing Terms clauses.
@@ -29,19 +29,25 @@ The already announced **November 4, 2026 revision keeps its effective date**. Th
 
 ## Article 5 load testing: existing and upcoming wording
 
-| Version | Wording |
-| --- | --- |
-| Existing wording in the November 4 revision | Malicious crawling, scraping, automation, or server load generation |
-| Wording effective December 4 | Malicious crawling or scraping. Load testing the production service with automated tools or bots without the provider's prior permission. You may test in an isolated environment that you control. |
+### Existing wording in the November 4 revision
+
+Malicious crawling, scraping, automation, or server load generation
+
+### Wording effective December 4
+
+Malicious crawling or scraping. Load testing the production service with automated tools or bots without the provider's prior permission. You may test in an isolated environment that you control.
 
 Testing in an isolated environment that you control is permitted. Automated load testing of the production service requires the provider's prior permission. This clause does not grant access to other systems or permit other prohibited conduct.
 
 ## Article 6 timetable sharing: existing and upcoming wording
 
-| Version | Wording |
-| --- | --- |
-| Existing wording in the November 4 revision | Timetable sharing may store selected course IDs, year, semester, and request metadata for creating and loading share links. |
-| Wording effective December 4 | Timetable sharing stores selected course IDs, academic year and semester, the courses assigned to each compared timetable, the active timetable and comparison mode, and an owner-token hash for verifying deletion rights. |
+### Existing wording in the November 4 revision
+
+Timetable sharing may store selected course IDs, year, semester, and request metadata for creating and loading share links.
+
+### Wording effective December 4
+
+Timetable sharing stores selected course IDs, academic year and semester, the courses assigned to each compared timetable, the active timetable and comparison mode, and an owner-token hash for verifying deletion rights.
 
 This describes the information stored in current timetable share documents. Handling ordinary server requests is distinct from retaining browser information in a timetable share document. Browser information collection is not added to match this description.
 
