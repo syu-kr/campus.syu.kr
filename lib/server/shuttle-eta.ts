@@ -1,78 +1,59 @@
-import type { PublicHolidaySnapshot, ShuttleBusSchedule, ShuttleSpecialPeriods } from "@/types";
 import { applyShuttleSpecialPeriods, getShuttleDayStatus, getShuttleScheduleType, isDateInSpecialPeriod, timeToMinutes } from "../shuttle-schedule";
 import { etaServiceDate, type EtaResponse } from "../shuttle-eta";
 import { shuttleScheduleIds, type ShuttleRoute } from "../shuttle-visits";
-import { getFirestore } from "./firestore";
-import { getHomePublicHolidays, getHomeShuttleBuses, getHomeShuttleSpecialPeriods } from "./home-data";
-import { learningArrivals, type LearningState, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
+import { loadShuttleServiceData } from "./shuttle-service-data";
+import { learningArrivals, scheduledShuttleArrivals, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { shuttleVehicleKey } from "./shuttle-vehicle";
+import { pilotRoutes, servicePattern } from "../shuttle-service-window";
+import { readShuttleHistory, readShuttleModel, readShuttleState } from "./shuttle-eta-cache";
+export { servicePattern } from "../shuttle-service-window";
 
-export function servicePattern(route: ShuttleRoute, now: Date, buses: ShuttleBusSchedule[], periods: ShuttleSpecialPeriods, holidays: PublicHolidaySnapshot) {
-  const dateString = etaServiceDate(now.getTime()), id = shuttleScheduleIds[route];
-  const bus = buses.find(b => b.id === id);
-  if (!bus) return undefined;
-  const day = getShuttleDayStatus({ dateString, specialPeriods: periods, holidays, now });
-  const { dayOfWeek } = getKoreaDateTimeParts(now);
-  if (dayOfWeek === 0 || dayOfWeek === 6 || day.holiday.status !== "not-holiday" ||
-    periods.closedDates?.some(d => d.date === dateString)) return undefined;
-  if (day.operationStatus === "exception") {
-    return day.serviceExceptions.some(e => e.routeId === id) ? `exception:${dateString}` : undefined;
-  }
-  if (day.operationStatus !== "regular") return undefined;
-  const type = getShuttleScheduleType(now, periods);
-  if (!type) return undefined;
-  const onDate = periods.specialPeriods.filter(p => isDateInSpecialPeriod(p, dateString));
-  // A school-wide interval notice may have no route IDs. Its regular timetable is unsafe.
-  if (onDate.some(p => !p.routes.length)) return undefined;
-  const active = onDate.filter(p => p.routes.includes(id) || p.routes.includes("all"));
-  const schedule = applyShuttleSpecialPeriods({ buses: [bus], dateString, specialPeriods: periods }).buses[0];
-  if (!schedule.schedules[type].some(t => timeToMinutes(t) !== null) && !active.some(p => p.daytimeIntervals)) return undefined;
-  return [type, ...active.map(p => p.id).sort()].join(":");
-}
-
-// Opt out of unconfirmed notices, but keep observations across headways and the final trip.
-export function pilotRoutes(now: Date, buses: ShuttleBusSchedule[], periods: ShuttleSpecialPeriods, holidays: PublicHolidaySnapshot) {
-  const {hour, minute} = getKoreaDateTimeParts(now), clock = hour * 60 + minute, day = etaServiceDate(now.getTime());
-  const eligible: number[] = [];
-  for (const [index, route] of (["hwarangdae", "seokgye", "byeollae"] as const).entries()) {
-    const pattern = servicePattern(route, now, buses, periods, holidays);
-    if (!pattern) continue;
-    const id = shuttleScheduleIds[route];
-    const periodsToday = periods.specialPeriods.filter(p => isDateInSpecialPeriod(p, day) && (p.routes.includes(id) || p.routes.includes("all")));
-    if (periodsToday.some(p => p.daytimeIntervals || p.additionalServices?.length)) continue;
-    const type = getShuttleScheduleType(now, periods);
-    const times = pattern.startsWith("exception:") ? getShuttleDayStatus({dateString:day,specialPeriods:periods,holidays,now}).serviceExceptions.filter(e=>e.routeId===id).flatMap(e=>e.times)
-      : type ? applyShuttleSpecialPeriods({buses: buses.filter(b=>b.id===id), dateString: day, specialPeriods:periods}).buses[0]?.schedules[type] ?? [] : [];
-    const minutes = times.map(timeToMinutes).filter((n): n is number => n !== null);
-    // shortcut: last-trip collection ends 30 minutes after departure; extend after observing longer trips.
-    if (minutes.length && clock >= Math.min(...minutes) - 15 && clock <= Math.max(...minutes) + 30) eligible.push(index + 1);
-  }
-  return eligible;
-}
+const routeNames: ShuttleRoute[] = ["hwarangdae", "seokgye", "byeollae"];
+let scheduledProfiles: { version: string; live: TimingProfiles; history: TimingProfiles } | undefined;
 
 export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
-  const now=new Date(),day=etaServiceDate(+now);
-  if([0,6].includes(getKoreaDateTimeParts(now).dayOfWeek))return {status:"learning",arrivals:[]};
-  const [buses, periods, holidays] = await Promise.all([getHomeShuttleBuses(), getHomeShuttleSpecialPeriods(), getHomePublicHolidays()]);
-  const allowed=pilotRoutes(now,buses,periods,holidays),plans:DeparturePlans={};
-  if(!allowed.length)return {status:"learning",arrivals:[]};
-  for(const routeId of allowed) {
-    const id=shuttleScheduleIds[(["hwarangdae","seokgye","byeollae"] as const)[routeId-1]],type=getShuttleScheduleType(now,periods);
-    const dayStatus=getShuttleDayStatus({dateString:day,specialPeriods:periods,holidays,now});
-    const times=dayStatus.operationStatus==="exception"?dayStatus.serviceExceptions.filter(e=>e.routeId===id).flatMap(e=>e.times):
-      type?applyShuttleSpecialPeriods({buses:buses.filter(b=>b.id===id),dateString:day,specialPeriods:periods}).buses[0]?.schedules[type]??[]:[];
-    plans[routeId]=times.filter(t=>timeToMinutes(t)!==null).map(t=>Date.parse(`${day}T${t}:00+09:00`)).sort((a,b)=>a-b);
+  const now = new Date(), day = etaServiceDate(+now);
+  if ([0, 6].includes(getKoreaDateTimeParts(now).dayOfWeek)) return { status: "learning", arrivals: [] };
+  const data = await loadShuttleServiceData();
+  if (data.source !== "firebase-storage") return { status: "learning", arrivals: [] };
+  const { buses, specialPeriods: periods, holidays } = data;
+  const plans: DeparturePlans = {}, patterns: Partial<Record<number, string>> = {};
+  for (const [index, route] of routeNames.entries()) {
+    const pattern = servicePattern(route, now, buses, periods, holidays);
+    if (!pattern) continue;
+    const id = shuttleScheduleIds[route], routeId = index + 1;
+    if (periods.specialPeriods.some(p => isDateInSpecialPeriod(p, day) && (p.routes.includes("all") || p.routes.includes(id)) && (p.daytimeIntervals || p.additionalServices?.length))) continue;
+    patterns[routeId] = pattern;
+    const type = getShuttleScheduleType(now, periods);
+    const status = getShuttleDayStatus({ dateString: day, specialPeriods: periods, holidays, now });
+    const times = status.operationStatus === "exception" ? status.serviceExceptions.filter(e => e.routeId === id).flatMap(e => e.times) :
+      type ? applyShuttleSpecialPeriods({ buses: buses.filter(b => b.id === id), dateString: day, specialPeriods: periods }).buses[0]?.schedules[type] ?? [] : [];
+    plans[routeId] = times.filter(t => timeToMinutes(t) !== null).map(t => Date.parse(`${day}T${t}:00+09:00`)).sort((a, b) => a - b);
   }
-  const db=getFirestore();
-  const [state,history]=await Promise.all([db.collection("shuttle_eta").doc("current").get(),db.collection("shuttle_eta").doc("history").get()]);
-  const readAt = Date.now();
-  const stillAllowed=pilotRoutes(new Date(readAt),buses,periods,holidays);
-  if(etaServiceDate(readAt)!==day||!stillAllowed.length)return {status:"learning",arrivals:[]};
-  for(const id of Object.keys(plans))if(!stillAllowed.includes(Number(id)))delete plans[Number(id)];
-  const current=state.data();
-  const live=current?.schemaVersion===3&&Array.isArray(current.runs)?current as LearningState:undefined;
-  const compatible=live?{...live,runs:live.runs.filter(r=>r.pattern===servicePattern((["hwarangdae","seokgye","byeollae"] as const)[r.routeId-1],new Date(readAt),buses,periods,holidays))}:undefined;
-  return {status:"learning",arrivals:learningArrivals(compatible,
-    (history.data()?.profiles??{}) as TimingProfiles,plans,readAt,vehicleId===undefined?undefined:shuttleVehicleKey(vehicleId,readAt))};
+  if (!Object.keys(plans).length) return { status: "learning", arrivals: [] };
+  const version = JSON.stringify([day, plans, patterns, holidays.lastSuccessAt]);
+  const allowed = pilotRoutes(now, buses, periods, holidays);
+  if (!allowed.length) {
+    if (vehicleId !== undefined) return { status: "learning", arrivals: [] };
+    if (scheduledProfiles?.version !== version) {
+      const [history, live] = await Promise.all([readShuttleHistory(version), readShuttleModel()]);
+      scheduledProfiles = { version, history, live };
+    }
+    if (etaServiceDate(Date.now()) !== day) return { status: "learning", arrivals: [] };
+    return { status: "learning", arrivals: [], scheduledArrivals: scheduledShuttleArrivals(scheduledProfiles.live, scheduledProfiles.history, plans, patterns, Date.now()) };
+  }
+  const [live, history] = await Promise.all([readShuttleState(), readShuttleHistory(version)]);
+  const profiles = live?.profiles ?? await readShuttleModel();
+  const readAt = Date.now(), stillAllowed = pilotRoutes(new Date(readAt), buses, periods, holidays);
+  if (etaServiceDate(readAt) !== day) return { status: "learning", arrivals: [] };
+  for (const id of Object.keys(plans)) if (patterns[Number(id)] !== servicePattern(routeNames[Number(id) - 1], new Date(readAt), buses, periods, holidays)) delete plans[Number(id)];
+  scheduledProfiles = { version, live: profiles, history };
+  const compatible = live ? { ...live, runs: live.runs.filter(r => r.pattern === servicePattern(routeNames[r.routeId - 1], new Date(readAt), buses, periods, holidays)) } : undefined;
+  const livePlans = Object.fromEntries(Object.entries(plans).filter(([id]) => stillAllowed.includes(Number(id))));
+  return {
+    status: "learning",
+    arrivals: learningArrivals(compatible, history, livePlans, readAt, vehicleId === undefined ? undefined : shuttleVehicleKey(vehicleId, readAt)),
+    ...(vehicleId === undefined ? { scheduledArrivals: scheduledShuttleArrivals(profiles, history, plans, patterns, readAt) } : {}),
+  };
 }

@@ -1,6 +1,6 @@
 import roadData from "../app/campus/bus-info/preview/data/service-road-paths.json";
 import { serviceVisits, type ShuttleRoute } from "./shuttle-visits";
-import { etaServiceDate, type StopEta } from "./shuttle-eta";
+import { etaServiceDate, type StopEta, type ScheduledStopArrival } from "./shuttle-eta";
 import { getKoreaDateTimeParts } from "./korea-time";
 import type { PilotEvent, PilotObservation } from "./shuttle-observations";
 
@@ -52,6 +52,31 @@ function legTime(from: string, fallback: number, pattern: string, at: number, li
   const prior=timeProfile(history[from],pattern,at)??fallback,observed=timeProfile(live[from],pattern,at),n=live[from]?.n??0;
   const weight=n/(n+5);
   return {seconds:observed===null?prior:prior*(1-weight)+observed*weight,basis:n?"observed" as const:history[from]?"history" as const:"route" as const};
+}
+export function scheduledShuttleArrivals(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number): ScheduledStopArrival[] {
+  const next = new Map<string, ScheduledStopArrival>();
+  for (const [id, departures] of Object.entries(plans)) {
+    const route = routes[Number(id)], pattern = patterns[Number(id)];
+    if (!route || !pattern || !departures) continue;
+    const visits = serviceVisits[route];
+    for (const departureAt of departures) {
+      if (!Number.isSafeInteger(departureAt) || etaServiceDate(departureAt) !== etaServiceDate(now)) continue;
+      let arrivalAt = departureAt;
+      for (let index = 0; index < visits.length; index++) {
+        if (index > 0) {
+          if (index > 1) arrivalAt += legTime(`${visits[index - 1].id}:dwell`, 30, pattern, arrivalAt, live, history).seconds * 1000;
+          arrivalAt += legTime(visits[index - 1].id, roadSeconds[route][index - 1], pattern, arrivalAt, live, history).seconds * 1000;
+        }
+        if (etaServiceDate(arrivalAt) !== etaServiceDate(now)) continue;
+        const old = next.get(visits[index].id);
+        const replace = !old || (arrivalAt >= now ? old.arrivalAt < now || old.arrivalAt > arrivalAt : old.arrivalAt < now && old.arrivalAt < arrivalAt);
+        if (replace) next.set(visits[index].id, {
+          visitId: visits[index].id, departureAt, arrivalAt: Math.round(arrivalAt), travelSeconds: Math.round((arrivalAt - departureAt) / 1000),
+        });
+      }
+    }
+  }
+  return [...next.values()];
 }
 export function advanceShuttleLearning(value: LearningState | undefined, points: LearningPoint[], events: PilotEvent[], receipt: number): LearningState {
   const previous=value?.receivedAt&&value.receivedAt<=receipt?value:undefined;
