@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   crawl:
-    if: github.repository == 'syu-kr/campus.syu.kr'
+    if: github.repository == 'syu-kr/campus.syu.kr' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -50,9 +50,21 @@ jobs:
         run: python scripts/check_monthly_crawl_data.py
 
       - name: Open monthly crawl pull request
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          changes="$(mktemp)"
+          trap 'rm -f "$changes"' EXIT
+          git diff --name-only -z HEAD > "$changes"
+          git ls-files --others --exclude-standard -z >> "$changes"
+          while IFS= read -r -d '' file; do
+            if [[ ! "$file" =~ ^public/data/(phone-[^/]+|schedules-[^/]+)\.json$ ]]; then
+              echo "Refusing a change outside monthly data: $file"
+              exit 1
+            fi
+          done < "$changes"
+
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add public/data/phone-*.json public/data/schedules-*.json
@@ -62,12 +74,36 @@ jobs:
             exit 0
           fi
 
-          branch="automation/monthly-reference-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git switch -c "$branch"
-          git commit -m "chore: update monthly reference data"
-          git push origin "$branch"
-          gh pr create \
+          digest="$(git diff --cached --binary -- public/data/phone-*.json public/data/schedules-*.json | sha256sum | cut -d ' ' -f 1)"
+          branch="automation/monthly-reference-data-$digest"
+          remote="$(git ls-remote --heads origin "refs/heads/$branch")"
+          if [ -n "$remote" ]; then
+            git fetch --no-tags --depth 1 origin "refs/heads/$branch"
+            if ! git diff --cached --quiet FETCH_HEAD -- public/data/phone-*.json public/data/schedules-*.json; then
+              echo "Existing monthly branch has different data; refusing to replace it."
+              exit 1
+            fi
+          else
+            git switch -c "$branch"
+            git commit -m "chore: update monthly reference data"
+            git push origin "$branch"
+          fi
+
+          existing="$(gh pr list --state open --base main --head "$branch" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            echo "Monthly data already has open pull request #$existing."
+            exit 0
+          fi
+          if gh pr create \
             --base main \
             --head "$branch" \
             --title "chore: update monthly reference data" \
-            --body "Automated phone directory and academic schedule update. Review the data diff and required checks before merging."
+            --body "Automated phone directory and academic schedule update. Review the data diff and required checks before merging."; then
+            exit 0
+          else
+            status=$?
+            compare="https://github.com/$GITHUB_REPOSITORY/compare/main...$branch?expand=1"
+            echo "::error::Monthly data branch is available, but PR creation failed. Review it manually: $compare"
+            printf '## Monthly data review required\n\nPR creation failed; data has not been merged or published. Review the existing branch: %s\n' "$compare" >> "$GITHUB_STEP_SUMMARY"
+            exit "$status"
+          fi

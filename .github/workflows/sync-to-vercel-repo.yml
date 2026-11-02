@@ -33,10 +33,6 @@ on:
       VERCEL_PERSONAL_ACCOUNT_TOKEN:
         required: true
 
-concurrency:
-  group: sync-to-vercel-repo-${{ github.event.workflow_run.head_branch || inputs.source_ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
@@ -66,28 +62,38 @@ env:
   RATE_LIMIT_SECRET: "ci-placeholder-rate-limit-secret"
 
 jobs:
-  sync:
-    name: Sync
+  source:
+    name: Resolve trusted source
     if: >-
       github.repository == 'syu-kr/campus.syu.kr' &&
       (
         github.event_name != 'workflow_run' ||
         (
           github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_repository.full_name == github.repository &&
           github.event.workflow_run.head_branch == 'main' &&
           (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
         )
       )
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
+    timeout-minutes: 2
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+      sync: ${{ steps.source.outputs.sync }}
     steps:
       - name: Validate sync source
+        id: source
         env:
+          GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           SOURCE_REF: ${{ inputs.source_ref || github.event.workflow_run.head_sha }}
           VERIFY_BEFORE_SYNC: ${{ inputs.verify_before_sync }}
         run: |
+          echo "sync=false" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" != "workflow_run" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "Manual or reusable sync must run from main."
+            exit 1
+          fi
           if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$SOURCE_REF" != "main" ] && [ "$SOURCE_REF" != "refs/heads/main" ]; then
             echo "Manual sync is limited to main. Refusing source_ref=$SOURCE_REF"
             exit 1
@@ -98,10 +104,43 @@ jobs:
             exit 1
           fi
 
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ ! "$latest" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Cannot resolve a valid main commit."
+            exit 1
+          fi
+          if [ "$SOURCE_REF" = "main" ] || [ "$SOURCE_REF" = "refs/heads/main" ]; then
+            SOURCE_REF="$latest"
+          fi
+          if [[ ! "$SOURCE_REF" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Invalid source commit."
+            exit 1
+          fi
+          if [ "$SOURCE_REF" != "$latest" ]; then
+            echo "A newer main commit exists; skip this older source."
+            exit 0
+          fi
+          echo "sha=$SOURCE_REF" >> "$GITHUB_OUTPUT"
+          echo "sync=true" >> "$GITHUB_OUTPUT"
+
+  sync:
+    name: Sync
+    needs: source
+    if: needs.source.outputs.sync == 'true'
+    concurrency:
+      group: sync-to-vercel-repo-${{ vars.VERCEL_DESTINATION_REPO }}-main
+      cancel-in-progress: false
+      queue: max
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SOURCE_SHA: ${{ needs.source.outputs.sha }}
+    steps:
       - name: Checkout source repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ inputs.source_ref || github.event.workflow_run.head_sha }}
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
 
       - name: Setup Node.js
         if: inputs.verify_before_sync
@@ -136,7 +175,29 @@ jobs:
         if: inputs.verify_before_sync
         run: npm run check
 
+      - name: Verify latest source before copying
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "sync=false" >> "$GITHUB_OUTPUT"
+          if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || [ "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)" != "$SOURCE_SHA" ]; then
+            echo "Refusing an invalid or mismatched source checkout."
+            exit 1
+          fi
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ ! "$latest" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Cannot resolve a valid main commit."
+            exit 1
+          fi
+          if [ "$latest" != "$SOURCE_SHA" ]; then
+            echo "A newer main commit exists; skip this older source."
+            exit 0
+          fi
+          echo "sync=true" >> "$GITHUB_OUTPUT"
+
       - name: Clone destination repository
+        if: steps.current.outputs.sync == 'true'
         env:
           VERCEL_PERSONAL_ACCOUNT_TOKEN: ${{ secrets.VERCEL_PERSONAL_ACCOUNT_TOKEN }}
           VERCEL_DESTINATION_REPO: ${{ vars.VERCEL_DESTINATION_REPO }}
@@ -155,6 +216,7 @@ jobs:
           git clone --depth 1 "https://x-access-token:${VERCEL_PERSONAL_ACCOUNT_TOKEN}@github.com/${VERCEL_DESTINATION_REPO}.git" "$DESTINATION_DIR"
 
       - name: Copy source files
+        if: steps.current.outputs.sync == 'true'
         run: |
           find "$DESTINATION_DIR" -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
           rsync -a "$GITHUB_WORKSPACE"/ "$DESTINATION_DIR"/ \
@@ -176,7 +238,23 @@ jobs:
           printf '{"sourceSha":"%s"}\n' "$source_sha" > "$DESTINATION_DIR/public/indexnow-deployment.json"
 
       - name: Push changes to destination repository
+        if: steps.current.outputs.sync == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          if [[ ! "$SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || [ "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)" != "$SOURCE_SHA" ]; then
+            echo "Refusing an invalid or mismatched source checkout."
+            exit 1
+          fi
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ ! "$latest" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Cannot resolve a valid main commit."
+            exit 1
+          fi
+          if [ "$latest" != "$SOURCE_SHA" ]; then
+            echo "A newer main commit exists; skip this older source."
+            exit 0
+          fi
           cd "$DESTINATION_DIR"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

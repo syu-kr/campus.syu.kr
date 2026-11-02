@@ -149,7 +149,9 @@ HTTP 개발 페이지에서 Kakao SDK가 불러오는 지도 스크립트와 타
 
 ### 월간 크롤러 권한
 
-`crawl-monthly.yml`은 기본 `GITHUB_TOKEN`의 `contents: write`, `pull-requests: write` 권한으로 임시 브랜치와 PR을 생성합니다. 별도 Deploy Key, PAT 또는 Ruleset bypass를 등록하지 않습니다.
+`crawl-monthly.yml`은 신뢰하는 main에서만 기본 `GITHUB_TOKEN`의 `contents: write`, `pull-requests: write` 권한으로 검증된 월간 JSON의 브랜치와 PR을 준비합니다. 변경 내용 해시가 같은 브랜치가 있으면 재사용하며, 같은 브랜치의 열린 PR도 중복 생성하지 않습니다. 별도 Deploy Key, PAT 또는 Ruleset bypass를 등록하지 않습니다.
+
+토큰의 `pull-requests: write`만으로 PR 생성이 허용되지는 않습니다. 저장소와 조직의 Actions PR 생성·승인 정책도 허용돼야 합니다. 조직 정책으로 거부되면 워크플로는 실패 상태와 수동 검토 compare URL을 summary에 남깁니다. 권한을 우회하지 말고 이미 push된 브랜치에서 수동 PR을 열어 데이터와 필수 검사를 검토합니다. PR이 병합되기 전에는 데이터가 발행된 것으로 보지 않습니다. 이 브랜치 방식을 도입하기 전 run-attempt 형식의 PR이 남아 있으면 그 검토를 먼저 마친 뒤 월간 작업을 다시 실행합니다.
 
 ### Firebase 공개 데이터 발행 설정
 
