@@ -31,7 +31,7 @@ async function main() {
     const [existing,history]=await tx.getAll(importRef,historyRef);
     if(existing.exists)return "already-imported";
     if(history.exists&&history.data()?.digest!==digest)throw new Error("Review existing history before replacing it");
-    tx.create(importRef,{...summary,events:dataset.events,importedAt:now,expires_at:admin.firestore.Timestamp.fromMillis(now+30*86400000),sourceKind:"permissioned-minute-detections"});
+    tx.create(importRef,{...summary,events:dataset.events,importedAt:now,expires_at:admin.firestore.Timestamp.fromMillis(now+30*86400000),sourceKind:"minute-detections"});
     tx.set(historyRef,{schemaVersion:1,digest,profiles,summary,importedAt:now,sourceKind:"historical-and-receiver-prior"});
     return "imported";
   });
