@@ -161,6 +161,7 @@ export const enDictionary = {
       source: "Source",
       unavailable: "-",
       statuses: {
+        partial: "Some arrivals unavailable",
         stale: "Stale",
         error: "Error",
       },

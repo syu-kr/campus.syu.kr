@@ -352,7 +352,7 @@ interface RawShuttleLocationPayload {
 }
 
 function isLiveDataSourceStatus(value: unknown): value is LiveDataSourceStatus {
-  return value === "fresh" || value === "stale" || value === "error";
+  return value === "fresh" || value === "partial" || value === "stale" || value === "error";
 }
 
 export async function fetchBusLocationStatus(): Promise<
