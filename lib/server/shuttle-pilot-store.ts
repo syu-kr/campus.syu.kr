@@ -2,17 +2,24 @@ import { createHash } from "node:crypto";
 import { advancePilotObservation, type PilotEvent, type PilotFieldEvent, type PilotObservation } from "../shuttle-observations";
 import { getFirestore, admin } from "./firestore";
 import { etaServiceDate } from "../shuttle-eta";
+import { advanceShuttleLearning, type LearningState } from "../shuttle-learning";
 
 export async function savePilotSample(rows: PilotObservation[], receipt: number, writeBlock: () => "closed" | "delayed" | undefined,
   field?: PilotFieldEvent & { vehicleKey: string }) {
   const db = getFirestore(), expires_at = admin.firestore.Timestamp.fromMillis(receipt + 30 * 86400_000);
   const receipts = db.collection("shuttle_pilot_receipts"), sample = receipts.doc(String(receipt));
   const cursors = rows.map(row => db.collection("shuttle_pilot_state").doc(row.vehicleKey));
+  const latest = db.collection("shuttle_eta").doc("current");
+  const model = db.collection("shuttle_eta").doc("model");
   return db.runTransaction(async transaction => {
-    const [existing, ...previous] = await transaction.getAll(sample, ...cursors);
+    const existing = await transaction.get(sample);
     const blocked = writeBlock();
     if (blocked) return blocked;
     if (existing.exists && !field) return "duplicate";
+    const [current, ...previous] = await transaction.getAll(latest, ...cursors);
+    const stored=current.data();
+    let currentData=stored?.schemaVersion===3?stored as LearningState:undefined;
+    if(!currentData)currentData={receivedAt:receipt,runs:[],pending:[],learned:[],profiles:(await transaction.get(model)).data()?.profiles??{}};
     const derived = rows.map((row, index) => advancePilotObservation(previous[index].data(), row));
     let fieldRecord;
     let fieldEvent: PilotEvent | undefined;
@@ -50,6 +57,13 @@ export async function savePilotSample(rows: PilotObservation[], receipt: number,
       ...common, observedAt: fieldEvent.observedAt, rows: [], events: [fieldEvent],
       measurementSource: "field-observer", measuredAt: fieldEvent.observedAt, recordedAt: Date.now(),
     });
+    const learning=advanceShuttleLearning(currentData,
+      rows.map((row,index)=>({...row,runId:derived[index].state.runId,advanced:derived[index].advanced})),
+      [...(!existing.exists?derived.flatMap(result=>result.events):[]),...(fieldEvent?[fieldEvent]:[])],receipt);
+    if(!stored?.receivedAt||receipt>=stored.receivedAt) {
+      transaction.set(latest,{...learning,schemaVersion:3,expires_at});
+      if(JSON.stringify(currentData.profiles)!==JSON.stringify(learning.profiles))transaction.set(model,{profiles:learning.profiles,updatedAt:receipt,schemaVersion:1});
+    }
     return "saved";
   });
 }

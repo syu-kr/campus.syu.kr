@@ -16,18 +16,18 @@ function view(locale:Locale="ko",vehicle=bus,closed=false){
 }
 beforeEach(()=>{
   vi.useFakeTimers();vi.setSystemTime(new Date("2026-11-02T09:00:00+09:00"));
-  m.signedIn=true;m.fetch.mockReset().mockImplementation(async()=>Response.json({collection:"saved"}));
+  vi.spyOn(Math,"random").mockReturnValue(0);m.signedIn=true;m.fetch.mockReset().mockImplementation(async()=>Response.json({collection:"saved"}));
   vi.stubGlobal("fetch",m.fetch);
 });
-afterEach(()=>{vi.useRealTimers();vi.unstubAllGlobals();});
+afterEach(()=>{vi.useRealTimers();vi.unstubAllGlobals();vi.restoreAllMocks();});
 async function start(locale:Locale="ko"){
   fireEvent.click(screen.getByText(pilotCopy[locale].title));
   await act(async()=>{fireEvent.click(screen.getByRole("button",{name:pilotCopy[locale].start}));});
 }
-it("samples every 15 seconds while recording and cancels cleanly",async()=>{
+it("samples at randomized 5–10 second intervals while recording and cancels cleanly",async()=>{
   const {unmount}=render(view());await start();
   expect(m.fetch).toHaveBeenCalledTimes(1);
-  await act(async()=>{await vi.advanceTimersByTimeAsync(15_000);});
+  await act(async()=>{await vi.advanceTimersByTimeAsync(5_000);});
   expect(m.fetch).toHaveBeenCalledTimes(2);
   const signal=m.fetch.mock.calls[1][1].signal as AbortSignal;
   unmount();expect(signal.aborted).toBe(true);

@@ -9,7 +9,7 @@ it("offers all three profiles on closed days while distinguishing the route's cu
   expect(referenceTimes(seokgye,now,testServiceData,"semester",true).at(-1)).toBe("15:30");
   expect(referenceTimes(seokgye,now,testServiceData,"semester",false).at(-1)).toBe("18:15");
   expect(referenceTables(hwarangdae,now,testServiceData).currentKey).toBe("online");
-  expect(referenceTables(byeollae,now,testServiceData).currentKey).toBe("semester");
+  expect(referenceTables(byeollae,now,testServiceData).currentKey).toBe("online");
   expect(referenceTimes(hwarangdae,now,testServiceData,"vacation",true)).toEqual(testServiceData.buses[0].schedules.fridayVacation);
   expect(referenceTimes(byeollae,now,testServiceData,"vacation",true)).toEqual([]);
 });

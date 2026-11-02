@@ -23,6 +23,7 @@ import ShuttleServiceSchedule from "./ShuttleServiceSchedule";
 import ShuttleStopTimeline from "./ShuttleStopTimeline";
 import ShuttleUpcomingDepartures from "./ShuttleUpcomingDepartures";
 import { stopArrivalLabels } from "./service-arrival-labels";
+import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 
 export default function ShuttleServicePreview({data,operatingPreview=false}:{data:ShuttleServiceData;operatingPreview?:boolean}) {
   const locale=useLocale(),copy=getShuttlePreviewCopy(locale),live=getShuttleServiceCopy(locale);
@@ -41,14 +42,14 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
     const response=await fetch("/campus/bus-info/preview/locations",{cache:"no-store",signal});
     if(!response.ok) throw new Error("Received positions unavailable");
     return await response.json() as LiveDataResponse<BusLocation[]> & {collection?:string};
-  },enabled:receive,staleTime:30_000,refetchInterval:receive?30_000:false,refetchIntervalInBackground:false,retry:1});
+  },enabled:receive,staleTime:5_000,refetchInterval:receive?shuttleRefreshDelay:false,refetchIntervalInBackground:false,retry:1});
   const state=receivedLocationState(receive?positions.data:undefined,receive&&positions.isError,now);
   const fleet=useMemo(()=>({locations:operatingPreview?serviceRoutes.flatMap(item=>demoLocations(item,delayedAt??elapsed,nextAvailable)):state.locations,stale:operatingPreview?delayed:state.stale}),[operatingPreview,elapsed,nextAvailable,delayed,delayedAt,state.locations,state.stale]);
   const received=useMemo(()=>({...fleet,locations:fleet.locations.filter(bus=>bus.routeid===route.locationRouteId)}),[fleet,route]);
   const today=serviceTimetable({route,date:koreaDateKey(now),now,data});
   const closed=!operatingPreview&&(weekend||today.status==="closed"&&!received.locations.length);
   const pilotClosed=closed||positions.data?.collection==="closed";
-  const estimates=useStopArrivals(now,receive&&today.status==="ready");
+  const estimates=useStopArrivals(now,receive&&today.status==="ready"&&!received.stale&&received.locations.length>0);
   const arrivals=stopArrivalLabels(route,locale,operatingPreview,elapsed,nextAvailable,delayed,closed,estimates.minutes);
   function routeStatus(item:typeof route) {
     if(operatingPreview) return delayed?live.checking:demoProgress(item,elapsed,nextAvailable).length?live.running:demoStopArrival(item,elapsed,0,nextAvailable).state==="approaching"?live.scheduledStart:live.noSchedule;
@@ -88,6 +89,7 @@ export default function ShuttleServicePreview({data,operatingPreview=false}:{dat
         <Button variant="secondary" aria-haspopup="dialog" onClick={()=>setMapOpen(true)}>{live.mapOpen}</Button>
         {positionText&&<div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600"><p role="status">{positionText}{!operatingPreview&&fleet.locations.length>0&&state.timestamp?` · ${live.receivedAt} ${timeLabel(new Date(state.timestamp))}`:""}</p>{!operatingPreview&&(positions.isError||state.stale)&&<Button variant="ghost" disabled={positions.isFetching} onClick={()=>void positions.refetch()}>{live.refresh}</Button>}</div>}
       </div>
+      {!operatingPreview&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
       <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} elapsed={elapsed} nextAvailable={nextAvailable} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} />
     </section>
     {mapOpen&&<ShuttlePreviewMap received={fleet} now={now} locale={locale} onClose={()=>setMapOpen(false)} demo={operatingPreview?{elapsed:delayedAt??elapsed,nextAvailable,delayed}:undefined}/>}

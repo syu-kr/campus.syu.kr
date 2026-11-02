@@ -13,6 +13,8 @@ async function cleanupExpiredFirestoreDocuments() {
     const meetResult = await cleanupMeetRooms(db, now);
     await deleteExpiredDocuments(db, "shuttle_pilot_receipts", now);
     await deleteExpiredDocuments(db, "shuttle_pilot_state", now);
+    await deleteExpiredDocuments(db, "shuttle_history_imports", now);
+    await deleteExpiredDocuments(db, "shuttle_eta", now);
     const roommates = await cleanupRoommateDocuments(db, now);
     const deletedTimetableShares = await deleteExpiredDocuments(
       db,

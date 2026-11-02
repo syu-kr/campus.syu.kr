@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "private, no-store", "X-Robots-Tag": "noindex" };
 function failure(status = 503) { return Response.json({ success:false, data:[] }, {status, headers}); }
 export async function GET() {
-  try { return Response.json(await pilotPositions(false), {headers}); } catch { return failure(); }
+  try { return Response.json(await pilotPositions(true), {headers}); } catch { return failure(); }
 }
 export async function POST(req: Request) {
   // Weekend short circuit precedes auth, GPS, calendar reads and Firestore access.

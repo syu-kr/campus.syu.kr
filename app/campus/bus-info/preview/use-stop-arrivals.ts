@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { nextStopEtas, type EtaResponse } from "@/lib/shuttle-eta";
+import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 
 export function useStopArrivals(now: Date, enabled: boolean, vehicleId?: string) {
   const query = useQuery({
@@ -12,9 +13,9 @@ export function useStopArrivals(now: Date, enabled: boolean, vehicleId?: string)
       return response.json();
     },
     enabled, staleTime: 5_000, retry: false, refetchIntervalInBackground: false,
-    refetchInterval: enabled ? q => q.state.data?.status === "collecting" ? 300_000 : 15_000 : false,
+    refetchInterval: enabled ? shuttleRefreshDelay : false,
   });
   const minutes = nextStopEtas(enabled && !query.isError ? query.data?.arrivals ?? [] : [], now.getTime());
-  const status = query.isError ? "error" : query.isPending ? "loading" : query.data?.status === "collecting" ? "collecting" : "waiting";
+  const status = query.isError ? "error" : query.isPending ? "loading" : query.data?.status === "collecting" ? "collecting" : query.data?.status === "learning" ? "learning" : "waiting";
   return { minutes, status } as const;
 }

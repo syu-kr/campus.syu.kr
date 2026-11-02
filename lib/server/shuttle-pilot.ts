@@ -53,7 +53,6 @@ export async function pilotPositions(save: boolean, field?: PilotFieldEvent) {
   const seen = new Set<string>(), duplicates = new Set<string>();
   for (const bus of candidates) { if (seen.has(bus.id)) duplicates.add(bus.id); else seen.add(bus.id); }
   const data = candidates.filter(bus => !duplicates.has(bus.id));
-  if (!data.length) return empty("empty");
   const result = (collection:string) => ({success:true,source:"shuttle",stale:false,sourceStatus:"fresh",timestamp:value.timestamp,data,collection});
   if (!save) return result("ready");
   if (process.env.VERCEL_ENV !== "production") return result("local");
@@ -76,8 +75,9 @@ export async function pilotPositions(save: boolean, field?: PilotFieldEvent) {
   // Recheck the clock after I/O. A request initiated during service must not cross into closure.
   const writeBlock = () => {
     const final = new Date(), finalRoutes = allowed(final);
-    if (etaServiceDate(+final) !== day || !rows.every(r => finalRoutes.includes(r.routeId))) return "closed" as const;
+    if (etaServiceDate(+final) !== day || !finalRoutes.length || !rows.every(r => finalRoutes.includes(r.routeId))) return "closed" as const;
     if (+final - receipt >= 90_000) return "delayed" as const;
   };
-  return result(await savePilotSample(rows, receipt, writeBlock, selected));
+  const collection=await savePilotSample(rows,receipt,writeBlock,selected);
+  return data.length?result(collection):empty(collection==="closed"?"closed":collection==="delayed"?"delayed":"empty");
 }

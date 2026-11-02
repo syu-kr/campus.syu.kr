@@ -40,8 +40,8 @@ it.each(["holiday","uncertain","explicitClosure","outside","gap","weekendExcepti
   expect((await (await POST(req)).json()).collection).toBe("closed");
   expect(m.receiver).not.toHaveBeenCalled(); expect(m.save).not.toHaveBeenCalled();
 });
-it("authorizes writes and separates map reads, fresh receipts, duplicates and source timestamps",async()=>{
-  expect((await (await GET()).json()).collection).toBe("ready");expect(m.save).not.toHaveBeenCalled();
+it("automatically saves trusted refreshes while retaining admin authorization for field writes",async()=>{
+  expect((await (await GET()).json()).collection).toBe("saved");expect(m.save).toHaveBeenCalledOnce();m.save.mockClear();
   m.auth.mockRejectedValueOnce(new AdminAuthError("denied",403));
   expect((await POST(req)).status).toBe(403); expect(m.save).not.toHaveBeenCalled();
   const saved=await (await POST(req)).json();expect(saved).toMatchObject({collection:"saved",vehicles:1});
@@ -49,13 +49,14 @@ it("authorizes writes and separates map reads, fresh receipts, duplicates and so
   expect(JSON.stringify(row)).not.toContain("test-vehicle");expect(JSON.stringify(saved)).not.toContain("vehicleKey");
   m.save.mockResolvedValueOnce("duplicate");expect((await (await POST(req)).json()).collection).toBe("duplicate");
 });
-it("does not save stale, wrong-route, off-hours, empty or local observations",async()=>{
+it("rejects stale/off-hours/local observations and clears ETA state on a fresh empty frame",async()=>{
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),stale:true}));
   expect((await (await POST(req)).json()).collection).toBe("delayed");
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),data:[]}));
   expect((await (await POST(req)).json()).collection).toBe("empty");
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),data:[{...payload().data[0],routeid:4}]}));
   expect((await (await POST(req)).json()).collection).toBe("empty");
+  expect(m.save.mock.calls.every(call=>call[0].length===0)).toBe(true);m.save.mockClear();
   vi.stubEnv("VERCEL_ENV","preview");expect((await (await POST(req)).json()).collection).toBe("local");
   vi.stubEnv("VERCEL_ENV","production");m.receiver.mockImplementationOnce(()=>{const p=payload();vi.setSystemTime(date("2026-11-07"));return Response.json(p);});
   expect((await (await POST(req)).json()).collection).not.toBe("saved");expect(m.save).not.toHaveBeenCalled();
@@ -79,7 +80,7 @@ it("accepts a bodyless POST represented by Next as an empty readable stream",asy
 it("does not mix conflicting receiver rows under one vehicle key",async()=>{
   m.receiver.mockImplementationOnce(()=>Response.json({...payload(),data:[payload().data[0],{...payload().data[0],status:2}]}));
   expect((await (await POST(req)).json()).collection).toBe("empty");
-  expect(m.save).not.toHaveBeenCalled();
+  expect(m.save.mock.calls[0][0]).toEqual([]);
 });
 it("binds a field event to the authenticated receiver vehicle and its direction",async()=>{
   const event={vehicleId:"test-vehicle",visitId:"seokgye-campus-departure",event:"departure",observedAt:weekday.getTime()};
