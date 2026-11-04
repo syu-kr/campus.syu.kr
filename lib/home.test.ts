@@ -2,9 +2,42 @@ import { describe, expect, it } from "vitest";
 
 import { getDictionary } from "./i18n";
 import type { Locale } from "./i18n/routing";
-import { categorizeSearchResults, getSemesterEndCountdown, getTodayInfo, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
+import { categorizeSearchResults, getHomeNotices, getSemesterEndCountdown, getTodayInfo, isFestivalPromotionVisible, type HomeSearchResult } from "./home";
 import schedules from "@/public/data/schedules-major.json";
-import type { AcademicSchedule } from "@/types";
+import type { AcademicSchedule, Announcement, ServiceNotice } from "@/types";
+
+describe("home notices", () => {
+  const announcements: Announcement[] = ["2026.11.04", "2026.11.02", "2026.10.30"].map(date => ({
+    id: date, title: date, content: "", category: "academic", date,
+    author: "", views: 0, isImportant: false,
+  }));
+  const previous: ServiceNotice = {
+    id: "previous", slug: "previous", title: "Previous update", date: "2026-11-03", author: "SYU CAMPUS",
+  };
+
+  it.each([
+    "2026-11-04T13:34:39.482Z",
+    "2026-11-04T22:34:39.482+09:00",
+    "2026-11-04T13:34:39Z",
+  ])("includes a newly published service notice in the latest three for %s", (date) => {
+    const latest = { ...previous, id: "latest", slug: "latest", title: "Latest update", date };
+
+    expect(getHomeNotices(announcements, [previous, latest])).toEqual([
+      { type: "service", data: latest },
+      { type: "announcement", data: announcements[0] },
+      { type: "service", data: previous },
+    ]);
+  });
+
+  it("keeps invalid dates after valid notices", () => {
+    const invalid = { ...previous, date: "invalid-date" };
+
+    expect(getHomeNotices([announcements[0]], [invalid])).toEqual([
+      { type: "announcement", data: announcements[0] },
+      { type: "service", data: invalid },
+    ]);
+  });
+});
 
 describe("semester end countdown", () => {
   const calendar = schedules as AcademicSchedule[];
