@@ -47,6 +47,7 @@ export async function handleShuttleEta(req?: Request, previewDiagnostics = false
     if (vehicleId === undefined) {
       const now = Date.now();
       const expirySeconds = eta.arrivals.map(row => Math.floor((row.validUntil - now) / 1000));
+      if(eta.context) expirySeconds.push(Math.floor((eta.context.validUntil-now)/1000));
       const seconds = Math.min(eta.status === "collecting" ? 60 : 5, Math.floor((60_000 - now % 60_000) / 1000), ...expirySeconds);
       cache = seconds > 0 ? `public, max-age=0, s-maxage=${seconds}, must-revalidate` : "no-store";
     }

@@ -70,6 +70,11 @@ it("keeps the synthetic probe exclusive to preview without accessing observation
   expect(mocks.eta).not.toHaveBeenCalled();
   expect(mocks.positions).not.toHaveBeenCalled();
 });
+it("never caches a scheduled response past its model validity",async()=>{
+  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-11-03T15:00:10+09:00"));
+  mocks.eta.mockResolvedValueOnce({status:"learning",arrivals:[],context:{serviceDate:"2026-11-03",version:"test",generatedAt:Date.now()-299000,validUntil:Date.now()+1000}});
+  expect((await publicEta(new Request("https://example.invalid/api/bus/shuttle/eta"))).headers.get("cache-control")).toContain("s-maxage=1");
+});
 
 it("rejects conflicting selectors before a database read", async () => {
   const denied = await publicEta(new Request("https://example.invalid/api/bus/shuttle/eta?vehicleId=A&vehicleId=B"));

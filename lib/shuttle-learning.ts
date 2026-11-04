@@ -1,6 +1,6 @@
 import roadData from "../app/campus/bus-info/preview/data/service-road-paths.json";
 import { serviceVisits, type ShuttleRoute } from "./shuttle-visits";
-import { etaServiceDate, type StopEta, type ScheduledStopArrival } from "./shuttle-eta";
+import { etaServiceDate, type StopEta, type ScheduledStopArrival, type ScheduledShuttleTrip } from "./shuttle-eta";
 import { getKoreaDateTimeParts } from "./korea-time";
 import type { PilotEvent, PilotObservation } from "./shuttle-observations";
 
@@ -43,38 +43,61 @@ export function recordTravel(profiles: TimingProfiles, from: string, seconds: nu
   profiles[from]={seconds:old?old.seconds*.8+seconds*.2:seconds,n:(old?.n??0)+1,cells:bounded};
 }
 function timeProfile(profile: TimingProfile | undefined, pattern: string, at: number) {
-  if(!profile||!finite(profile.seconds)||profile.seconds<=0)return null;
-  const cell=profile.cells[cellKey(pattern,at)]??profile.cells[cellKey("history",at)];
+  if(!profile||!finite(profile.seconds)||profile.seconds<=0||profile.seconds>7200)return null;
+  const candidate=profile.cells?.[cellKey(pattern,at)]??profile.cells?.[cellKey("history",at)];
+  const cell=candidate&&finite(candidate.seconds)&&candidate.seconds>0&&candidate.seconds<=7200&&Number.isSafeInteger(candidate.n)&&candidate.n>0?candidate:undefined;
   const weight=cell?cell.n/(cell.n+5):0;
   return cell?profile.seconds*(1-weight)+cell.seconds*weight:profile.seconds;
 }
 function legTime(from: string, fallback: number, pattern: string, at: number, live: TimingProfiles, history: TimingProfiles) {
-  const prior=timeProfile(history[from],pattern,at)??fallback,observed=timeProfile(live[from],pattern,at),n=live[from]?.n??0;
+  const historical=timeProfile(history[from],pattern,at),prior=historical??fallback,observed=timeProfile(live[from],pattern,at);
+  const count=live[from]?.n,n=observed!==null&&Number.isSafeInteger(count)&&count>0?count:0;
   const weight=n/(n+5);
-  return {seconds:observed===null?prior:prior*(1-weight)+observed*weight,basis:n?"observed" as const:history[from]?"history" as const:"route" as const};
+  return {seconds:observed===null?prior:prior*(1-weight)+observed*weight,basis:n?"observed" as const:historical!==null?"history" as const:"route" as const};
 }
-export function scheduledShuttleArrivals(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number): ScheduledStopArrival[] {
-  const next = new Map<string, ScheduledStopArrival>();
+export function scheduledShuttleTrips(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number): ScheduledShuttleTrip[] {
+  const selected: ScheduledShuttleTrip[] = [];
   for (const [id, departures] of Object.entries(plans)) {
     const route = routes[Number(id)], pattern = patterns[Number(id)];
     if (!route || !pattern || !departures) continue;
     const visits = serviceVisits[route];
-    for (const departureAt of departures) {
+    const trips: ScheduledShuttleTrip[] = [];
+    for (const departureAt of [...new Set(departures)].sort((a,b)=>a-b)) {
       if (!Number.isSafeInteger(departureAt) || etaServiceDate(departureAt) !== etaServiceDate(now)) continue;
+      const key = `${etaServiceDate(now)}:${route}:${pattern}:${departureAt}`;
+      const stops: ScheduledStopArrival[] = [];
       let arrivalAt = departureAt;
+      let basis: ScheduledStopArrival["basis"] = "route";
       for (let index = 0; index < visits.length; index++) {
         if (index > 0) {
           if (index > 1) arrivalAt += legTime(`${visits[index - 1].id}:dwell`, 30, pattern, arrivalAt, live, history).seconds * 1000;
-          arrivalAt += legTime(visits[index - 1].id, roadSeconds[route][index - 1], pattern, arrivalAt, live, history).seconds * 1000;
+          const leg = legTime(visits[index - 1].id, roadSeconds[route][index - 1], pattern, arrivalAt, live, history);
+          arrivalAt += leg.seconds * 1000;
+          basis = index === 1 ? leg.basis : basis === "route" || leg.basis === "route" ? "route" : basis === "history" || leg.basis === "history" ? "history" : "observed";
         }
         if (etaServiceDate(arrivalAt) !== etaServiceDate(now)) continue;
-        const old = next.get(visits[index].id);
-        const replace = !old || (arrivalAt >= now ? old.arrivalAt < now || old.arrivalAt > arrivalAt : old.arrivalAt < now && old.arrivalAt < arrivalAt);
-        if (replace) next.set(visits[index].id, {
+        stops.push({
           visitId: visits[index].id, departureAt, arrivalAt: Math.round(arrivalAt), travelSeconds: Math.round((arrivalAt - departureAt) / 1000),
+          tripKey: key, basis,
         });
       }
+      if (stops.length === visits.length) trips.push({key,route,pattern,departureAt,stops});
     }
+    const active=trips.filter(trip=>trip.departureAt<=now&&trip.stops.at(-1)!.arrivalAt>=now);
+    const next=trips.find(trip=>trip.departureAt>now);
+    const last=[...trips].reverse().find(trip=>trip.stops.at(-1)!.arrivalAt<now);
+    selected.push(...active,...(next?[next]:[]),...(last?[last]:[]));
+  }
+  return selected;
+}
+export function scheduledShuttleArrivals(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number): ScheduledStopArrival[] {
+  return nextScheduledShuttleArrivals(scheduledShuttleTrips(live,history,plans,patterns,now),now);
+}
+export function nextScheduledShuttleArrivals(trips: ScheduledShuttleTrip[], now: number): ScheduledStopArrival[] {
+  const next=new Map<string,ScheduledStopArrival>();
+  for(const trip of trips) for(const stop of trip.stops) {
+    const old=next.get(stop.visitId);
+    if(!old||(stop.arrivalAt>=now?old.arrivalAt<now||old.arrivalAt>stop.arrivalAt:old.arrivalAt<now&&old.arrivalAt<stop.arrivalAt)) next.set(stop.visitId,stop);
   }
   return [...next.values()];
 }

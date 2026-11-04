@@ -1,8 +1,28 @@
 import {expect,it} from "vitest";
-import {advanceShuttleLearning,learningArrivals,scheduledShuttleArrivals,projectShuttlePoint,recordTravel,type LearningPoint,type TimingProfiles} from "./shuttle-learning";
+import {advanceShuttleLearning,learningArrivals,scheduledShuttleArrivals,scheduledShuttleTrips,projectShuttlePoint,recordTravel,type LearningPoint,type TimingProfiles} from "./shuttle-learning";
 import {pointAlongPath,serviceRoadPaths} from "@/app/campus/bus-info/preview/service-visits";
 import type {PilotEvent} from "./shuttle-observations";
 const t=Date.parse("2026-11-02T13:20:00+09:00");
+it("returns complete same-trip visits for active trips and only the next future departure",()=>{
+  const trips=scheduledShuttleTrips({},{},{2:[t-5*60000,t,t+10*60000,t+20*60000]},{2:"online"},t+8*60000);
+  expect(trips.filter(trip=>trip.departureAt>t+8*60000).map(trip=>trip.departureAt)).toEqual([t+10*60000]);
+  expect(trips.filter(trip=>trip.departureAt<=t+8*60000)).toHaveLength(2);
+  for(const trip of trips) {
+    expect(trip.stops).toHaveLength(6);
+    expect(new Set(trip.stops.map(stop=>stop.departureAt))).toEqual(new Set([trip.departureAt]));
+    expect(trip.stops.every(stop=>stop.tripKey===trip.key)).toBe(true);
+    expect(trip.stops.slice(1).every((stop,index)=>stop.arrivalAt>trip.stops[index].arrivalAt)).toBe(true);
+  }
+});
+it("recomputes the next departure in its own time cell and rejects malformed learned values",()=>{
+  const profiles={"seokgye-campus-departure":{seconds:600,n:30,cells:{"online:1:27":{seconds:1200,n:100,at:t}}}};
+  const trips=scheduledShuttleTrips({},profiles,{2:[t-5*60000,t+10*60000]},{2:"online"},t);
+  expect(trips.find(trip=>trip.departureAt===t+10*60000)!.stops[1].travelSeconds).toBe(1171);
+  expect(trips.find(trip=>trip.departureAt===t-5*60000)!.stops[1].travelSeconds).toBe(600);
+  const bad={"seokgye-campus-departure":{seconds:NaN,n:NaN,cells:{}}};
+  const fallback=scheduledShuttleTrips(bad,bad,{2:[t]},{2:"online"},t)[0].stops[1];
+  expect(Number.isFinite(fallback.arrivalAt)).toBe(true);expect(fallback.basis).toBe("route");
+});
 it("adds learned travel time to the next scheduled departure and advances after a trip passes",()=>{
   const plans={2:[t+5*60000,t+20*60000]},from="seokgye-campus-departure";
   const profiles={[from]:{seconds:600,n:30,cells:{}}};

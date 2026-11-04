@@ -2,7 +2,7 @@ import { applyShuttleSpecialPeriods, getShuttleDayStatus, getShuttleScheduleType
 import { etaServiceDate, type EtaResponse } from "../shuttle-eta";
 import { shuttleScheduleIds, type ShuttleRoute } from "../shuttle-visits";
 import { loadShuttleServiceData } from "./shuttle-service-data";
-import { learningArrivals, scheduledShuttleArrivals, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
+import { learningArrivals, scheduledShuttleTrips, nextScheduledShuttleArrivals, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { shuttleVehicleKey } from "./shuttle-vehicle";
 import { pilotRoutes, servicePattern } from "../shuttle-service-window";
@@ -10,7 +10,7 @@ import { readShuttleHistory, readShuttleModel, readShuttleState } from "./shuttl
 export { servicePattern } from "../shuttle-service-window";
 
 const routeNames: ShuttleRoute[] = ["hwarangdae", "seokgye", "byeollae"];
-let scheduledProfiles: { version: string; live: TimingProfiles; history: TimingProfiles } | undefined;
+let scheduledProfiles: { version: string; live: TimingProfiles; history: TimingProfiles; validUntil: number } | undefined;
 
 export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
   const now = new Date(), day = etaServiceDate(+now);
@@ -31,29 +31,55 @@ export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
       type ? applyShuttleSpecialPeriods({ buses: buses.filter(b => b.id === id), dateString: day, specialPeriods: periods }).buses[0]?.schedules[type] ?? [] : [];
     plans[routeId] = times.filter(t => timeToMinutes(t) !== null).map(t => Date.parse(`${day}T${t}:00+09:00`)).sort((a, b) => a - b);
   }
-  if (!Object.keys(plans).length) return { status: "learning", arrivals: [] };
-  const version = JSON.stringify([day, plans, patterns, holidays.lastSuccessAt]);
+  const version = JSON.stringify([data.version, day, plans, patterns, holidays.lastSuccessAt]);
   const allowed = pilotRoutes(now, buses, periods, holidays);
+  const dayEnd=Date.parse(`${day}T00:00:00+09:00`)+86400_000;
+  const holidayExpiry=Date.parse(holidays.lastSuccessAt??"")+3*86400_000;
+  const openings=Object.values(plans).flatMap(times=>times??[]).map(at=>at-15*60000).filter(at=>at>+now);
+  // shortcut: keep scheduled forecasts through a five-minute outage; tune only against observed disruption errors.
+  const validUntil=Math.min(dayEnd,holidayExpiry,allowed.length?+now+5*60000:Math.min(...openings,dayEnd));
+  const context={serviceDate:day,version:data.version,generatedAt:+now,validUntil:Number.isFinite(validUntil)?validUntil:+now};
+  if (!Object.keys(plans).length) return { status: "learning", arrivals: [], scheduledArrivals: [], trips: [], context };
+  const prior=scheduledProfiles?.version===version&&scheduledProfiles.validUntil>Date.now()?scheduledProfiles:undefined;
+  const scheduled=(live:TimingProfiles,history:TimingProfiles,at:number)=>{
+    const trips=scheduledShuttleTrips(live,history,plans,patterns,at);
+    return {trips,scheduledArrivals:nextScheduledShuttleArrivals(trips,at)};
+  };
   if (!allowed.length) {
-    if (vehicleId !== undefined) return { status: "learning", arrivals: [] };
-    if (scheduledProfiles?.version !== version) {
+    if (vehicleId !== undefined) return { status: "learning", arrivals: [], context };
+    if (!prior) {
       const [history, live] = await Promise.all([readShuttleHistory(version), readShuttleModel()]);
-      scheduledProfiles = { version, history, live };
+      scheduledProfiles = { version, history, live, validUntil };
     }
     if (etaServiceDate(Date.now()) !== day) return { status: "learning", arrivals: [] };
-    return { status: "learning", arrivals: [], scheduledArrivals: scheduledShuttleArrivals(scheduledProfiles.live, scheduledProfiles.history, plans, patterns, Date.now()) };
+    const profiles=prior??scheduledProfiles!;
+    return { status: "learning", arrivals: [], ...scheduled(profiles.live,profiles.history,Date.now()), context };
   }
-  const [live, history] = await Promise.all([readShuttleState(), readShuttleHistory(version)]);
-  const profiles = live?.profiles ?? await readShuttleModel();
+  const [stateResult,historyResult] = await Promise.allSettled([readShuttleState(), readShuttleHistory(version)]);
+  const live=stateResult.status==="fulfilled"?stateResult.value:undefined;
+  // A failed read is not evidence of an empty model. Only reuse an unexpired, same-plan snapshot.
+  const history=historyResult.status==="fulfilled"?historyResult.value:prior?.history;
+  if(!history) throw new Error("Shuttle history unavailable");
+  let profiles=live?.profiles;
+  let modelFailed=false;
+  if(!profiles) {
+    try {profiles=await readShuttleModel();}
+    catch {modelFailed=true;profiles=prior?.live;}
+  }
+  if(!profiles) throw new Error("Shuttle model unavailable");
+  const reused=historyResult.status==="rejected"||modelFailed;
+  const degraded=reused||stateResult.status==="rejected";
   const readAt = Date.now(), stillAllowed = pilotRoutes(new Date(readAt), buses, periods, holidays);
   if (etaServiceDate(readAt) !== day) return { status: "learning", arrivals: [] };
   for (const id of Object.keys(plans)) if (patterns[Number(id)] !== servicePattern(routeNames[Number(id) - 1], new Date(readAt), buses, periods, holidays)) delete plans[Number(id)];
-  scheduledProfiles = { version, live: profiles, history };
+  const forecastExpiry=reused?Math.min(validUntil,prior!.validUntil):validUntil;
+  scheduledProfiles = { version, live: profiles, history, validUntil:forecastExpiry };
   const compatible = live ? { ...live, runs: live.runs.filter(r => r.pattern === servicePattern(routeNames[r.routeId - 1], new Date(readAt), buses, periods, holidays)) } : undefined;
   const livePlans = Object.fromEntries(Object.entries(plans).filter(([id]) => stillAllowed.includes(Number(id))));
   return {
     status: "learning",
     arrivals: learningArrivals(compatible, history, livePlans, readAt, vehicleId === undefined ? undefined : shuttleVehicleKey(vehicleId, readAt)),
-    ...(vehicleId === undefined ? { scheduledArrivals: scheduledShuttleArrivals(profiles, history, plans, patterns, readAt) } : {}),
+    ...(vehicleId === undefined ? scheduled(profiles,history,readAt) : {}),
+    context:{...context,generatedAt:readAt,validUntil:forecastExpiry,...degraded?{degraded:true}:{}},
   };
 }
