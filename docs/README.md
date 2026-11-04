@@ -14,6 +14,7 @@
 | 학사·캠퍼스 API | [학사 데이터 계약](M3_ACADEMIC_API_MAPPING.md), [캠퍼스 API](m3-campus-api-integration.md) |
 | 룸메이트 | [인증·운영·통합 검증](ROOMMATES.md) |
 | 교통 | [버스 API](BUS_API_GUIDE.md) |
+| 채플 좌석 조회 | [구현 계약·동선 확장·검증 기준](design/chapel-seating-plan.md), [좌석 데이터 검수](design/chapel-seating-data.md) |
 | 검색·공유 | [인덱싱·OG](SEARCH_INDEXING_GUIDE.md) |
 | Android TWA | [빌드·서명·출시](TWA_ANDROID.md) |
 

@@ -29,6 +29,7 @@ const ROUTE_CODE: Record<string, readonly string[]> = {
   "/campus/bus-info": ["lib/kakao-maps-loader."],
   "/campus/library": ["lib/library."],
   "/campus/map": ["lib/kakao-maps-loader."],
+  "/campus/chapel-seats": ["app/features/chapel-seats/", "lib/chapel-seats/"],
   "/campus/phone": ["lib/phone.", "lib/use-pagination.", "lib/use-url-search."],
   "/campus/campus-tips": ["lib/use-pagination.", "lib/public-list-query.", "lib/campus-tip-filters.", "lib/use-list-search-navigation.", "lib/use-url-hash."],
   "/service/notices": ["lib/use-url-hash.", "lib/announcement-list-query.", "lib/public-list-query.", "app/styles/m3/styles-service-notices-m3.css"],

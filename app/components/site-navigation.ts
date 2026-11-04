@@ -33,6 +33,7 @@ export function getDesktopNavigationGroups(dictionary: Dictionary, roommatesEnab
       { path: "/campus/bus-info", label: campus.busTitle, icon: "bus" },
       { path: "/campus/library", label: campus.libraryTitle, icon: "book-open" },
       { path: "/campus/map", label: campus.mapTitle, icon: "map" },
+      { path: "/campus/chapel-seats", label: campus.chapelSeatsTitle, icon: "map-pin" },
       { path: "/campus/phone", label: campus.phoneTitle, icon: "phone" },
       { path: "/campus/campus-tips", label: campus.campusTipsTitle, icon: "lightbulb" },
       { path: "/campus/gym", label: campus.gymTitle, icon: "dumbbell" },

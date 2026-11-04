@@ -11,6 +11,7 @@ const services=[
   {path:'/academic/schedule',ko:'학사일정',en:'Academic calendar',terms:'학사일정 일정 시험 calendar exam'},
   {path:'/campus/library',ko:'도서관',en:'Library',terms:'도서관 좌석 열람실 library seat'},
   {path:'/campus/map',ko:'캠퍼스 지도',en:'Campus map',terms:'지도 건물 강의실 map building'},
+  {path:'/campus/chapel-seats',ko:'채플 좌석 찾기',en:'Chapel seat finder',terms:'채플 채플좌석 대강당 대강당좌석 좌석 chapel auditorium seat'},
   {path:'/campus/phone',ko:'교내 연락처',en:'Directory',terms:'전화 연락처 부서 phone contact'},
   {path:'/academic/scholarship',ko:'장학금',en:'Scholarships',terms:'장학금 장학 scholarship'},
   {path:'/academic/competitions',ko:'공모전',en:'Competitions',terms:'공모전 대회 competition'},

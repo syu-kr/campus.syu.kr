@@ -1,4 +1,5 @@
 import { koMeetPages } from "./meet";
+import { koChapelSeats } from "./chapel-seats";
 
 export const koDictionary = {
     managedBanners: {
@@ -350,6 +351,8 @@ export const koDictionary = {
         libraryDescription: "중앙도서관 열람실 정보",
         mapTitle: "캠퍼스 지도",
         mapDescription: "건물 위치 및 시설 안내",
+        chapelSeatsTitle: "채플 좌석 찾기",
+        chapelSeatsDescription: "대강당 구역과 번호로 좌석 위치 확인",
         phoneTitle: "연락처 검색",
         phoneDescription: "부서 및 담당자 연락처",
         campusTipsTitle: "캠퍼스 꿀팁",
@@ -482,6 +485,7 @@ export const koDictionary = {
       ],
     },
     pages: {
+      chapelSeats: koChapelSeats,
       serviceNotices: {
         metaTitle: "공지사항",
         metaDescription: "SYU CAMPUS 서비스 공지사항",

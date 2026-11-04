@@ -86,6 +86,13 @@ export default async function CampusPage() {
       href: "/campus/map",
     },
     {
+      id: "chapel-seats",
+      title: dictionary.campus.menus.chapelSeatsTitle,
+      description: dictionary.campus.menus.chapelSeatsDescription,
+      icon: "map-pin",
+      href: "/campus/chapel-seats",
+    },
+    {
       id: "phone",
       title: dictionary.campus.menus.phoneTitle,
       description: dictionary.campus.menus.phoneDescription,
