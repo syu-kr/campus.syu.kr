@@ -47,7 +47,7 @@ it("opens the fleet map only on demand and keeps every visit visible on closed d
   expect(eta("hwarangdae-5-campus")).toHaveTextContent("오늘 운휴");
   expect(screen.queryByText("전체 시간표 보기")).not.toBeInTheDocument();
   expect(screen.getAllByRole("link",{name:"학교 스쿨버스 안내"})).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button",{name:"학기중"}));
+  fireEvent.click(screen.getByRole("button",{name:/^학기중/}));
   fireEvent.click(screen.getByRole("button",{name:"금요일"}));
   expect(screen.getByRole("list",{name:"학기중"})).toHaveTextContent("08:15");
 });
@@ -108,7 +108,7 @@ it("keeps confirmed boarding rules visible when vehicle locations fail and ETA i
   expect(document.querySelectorAll("[data-timeline-vehicle]")).toHaveLength(0);expect(screen.getAllByText("운행 중").length).toBeGreaterThan(0);
   fireEvent.click(screen.getByRole("button",{name:"다시 조회"}));expect(positions.refetch).toHaveBeenCalled();
 });
-it("limits vacation to Hwarangdae and marks Byeollae online week current without changing its times",()=>{
+it("limits vacation to Hwarangdae and special timetables to routes with a registered change",()=>{
   demo();seokgye();
   const current=screen.getByRole("button",{name:"온라인수업 권장 주간 현재"});expect(current).toHaveAttribute("aria-pressed","true");
   expect(screen.getByRole("list",{name:"온라인수업 권장 주간"})).toHaveTextContent("15:30");
@@ -125,7 +125,8 @@ it("limits vacation to Hwarangdae and marks Byeollae online week current without
   expect(station.lastElementChild).toHaveTextContent("14:30");expect(campus.lastElementChild).toHaveTextContent("14:10");expect(campus).not.toHaveTextContent("17:10");
   expect(screen.getByRole("region",{name:"곧 출발하는 버스"})).toHaveTextContent("12:00");
   fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
-  expect(screen.getByText(/학기중 시간표와 동일/)).toBeVisible();expect(screen.getByRole("button",{name:"온라인수업 권장 주간 현재"})).toHaveAttribute("aria-pressed","true");
+  expect(screen.queryByRole("button",{name:/온라인수업 권장 주간/})).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"학기중 현재"})).toHaveAttribute("aria-pressed","true");
   expect(screen.queryByRole("button",{name:"방학"})).not.toBeInTheDocument();
 });
 it("opens Seokgye after noon and distinguishes stale empty results from fresh zero vehicles",()=>{
@@ -194,10 +195,10 @@ it("renders timetable and predictions together in preview with the operating exa
   expect(within(categories).getAllByRole("button")).toHaveLength(2);
 });
 it("fills the timetable category row when only semester remains",()=>{
-  const nowISO="2026-11-03T13:20:00+09:00";
+  const nowISO="2026-11-02T13:20:00+09:00";
   const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
   const view=render(<ShuttleServicePreview data={data}/>);
-  fireEvent.click(screen.getByRole("button",{name:"온라인수업 권장 주간"}));
+  fireEvent.click(screen.getByRole("button",{name:/^온라인수업 권장 주간/}));
   view.rerender(<ShuttleServicePreview data={{...data,specialPeriods:{...data.specialPeriods,specialPeriods:[]}}}/>);
   const categories=screen.getByRole("group",{name:"시간표 종류"});
   expect(categories).toHaveAttribute("data-category-count","1");
@@ -214,4 +215,17 @@ it.each([
   const button=screen.getByRole("button",{name:"석계역 순환"});
   expect(document.getElementById(button.getAttribute("aria-describedby")!)).toHaveTextContent(label);
   expect(screen.queryByText("확인 중")).not.toBeInTheDocument();
+});
+it("shows only the ordinary categories after a special timetable ends",()=>{
+  const nowISO="2026-11-04T13:20:00+09:00";
+  render(<ShuttleServicePreview data={{...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}}}/>);
+  const categories=()=>screen.getByRole("group",{name:"시간표 종류"});
+  expect(categories()).toHaveAttribute("data-category-count","1");
+  expect(within(categories()).queryByRole("button",{name:/온라인|특별/})).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button",{name:"화랑대역 학교행"}));
+  expect(categories()).toHaveAttribute("data-category-count","2");
+  expect(within(categories()).getByRole("button",{name:"방학"})).toBeVisible();
+  fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
+  expect(categories()).toHaveAttribute("data-category-count","1");
+  expect(within(categories()).queryByRole("button",{name:"방학"})).not.toBeInTheDocument();
 });

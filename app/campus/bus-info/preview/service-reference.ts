@@ -1,14 +1,17 @@
-import { applyShuttleSpecialPeriods, getShuttleScheduleType } from "@/lib/shuttle-schedule";
+import { applyShuttleSpecialPeriods, getShuttleScheduleType, isDateInSpecialPeriod } from "@/lib/shuttle-schedule";
 import { koreaDateKey, shiftPreviewDate, sortedDepartures } from "./preview-timetable";
 import { serviceTimetable, type ServiceRoute, type ShuttleServiceData } from "./service-data";
 
 export function referenceTables(route:ServiceRoute,now:Date,data:ShuttleServiceData) {
   const date=koreaDateKey(now),current=serviceTimetable({route,date,now,data});
   const schedule=getShuttleScheduleType(now,data.specialPeriods),vacation=schedule?.includes("Vacation")??false;
-  const online=data.specialPeriods.specialPeriods.filter(p=>p.id.startsWith("online-class-week"));
-  const period=online.find(p=>p.startDate<=date&&date<=p.endDate)??online.filter(p=>p.startDate<=date).sort((a,b)=>a.startDate.localeCompare(b.startDate)).at(-1);
+  const online=data.specialPeriods.specialPeriods.filter(p=>p.id.startsWith("online-class-week")&&
+    (p.routes.includes("all")||p.routes.includes(route.scheduleId))&&
+    (p.applicableDates.length?p.applicableDates.some(day=>day>=date):p.endDate>=date))
+    .sort((a,b)=>a.startDate.localeCompare(b.startDate));
+  const period=online.find(p=>isDateInSpecialPeriod(p,date))??online[0];
   const affects=!!period&&(period.routes.includes("all")||period.routes.includes(route.scheduleId));
-  const activeOnline=!!period&&period.startDate<=date&&date<=period.endDate;
+  const activeOnline=!!period&&isDateInSpecialPeriod(period,date);
   const exception=current.status==="ready"&&current.activeType==="special"&&!current.period?.id.startsWith("online-class-week");
   const confirmed=data.source!=="unavailable"&&current.status!=="unknown"&&!!schedule;
   const currentKey=confirmed?(exception?"exception":activeOnline?"online":vacation&&route.id==="hwarangdae"?"vacation":vacation?null:"semester"):null;
