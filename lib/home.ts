@@ -211,7 +211,7 @@ export function getHomeNotices(
 }
 
 function getNoticeTime(notice: HomeNotice): number {
-  const normalizedDate = notice.data.date.replace(/\./g, "-");
+  const normalizedDate = notice.data.date.replace(/^(\d{4})\.(\d{2})\.(\d{2})$/, "$1-$2-$3");
   const parsed = new Date(normalizedDate).getTime();
 
   return Number.isNaN(parsed) ? 0 : parsed;
