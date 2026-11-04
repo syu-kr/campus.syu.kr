@@ -153,6 +153,7 @@ export function SubmissionDetail({
             />
             <DetailItem label="접수일" value={formatDateTime(item.createdAt)} />
             <DetailItem label="수정일" value={formatDateTime(item.updatedAt)} />
+            <DetailItem label="완료·기각일" value={item.closedAt ? formatDateTime(item.closedAt) : item.status === "done" || item.status === "rejected" ? "기록 없음 · 처리 기록 확인 필요" : "미완료"} />
             <DetailItem label="문서 ID" value={item.id} />
           </dl>
 

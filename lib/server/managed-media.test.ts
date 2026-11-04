@@ -26,7 +26,7 @@ describe("banner image trust boundary", () => {
     const saved = await saveManagedImage(image);
     expect(saved.url).toMatch(/^\/api\/content-media\/[a-f0-9-]{36}$/);
     expect(storage.file.mock.calls[0][0]).toMatch(/^managed-content\/[a-f0-9-]{36}\.webp$/);
-    expect(storage.save.mock.calls[0][1]).toMatchObject({ resumable: false, preconditionOpts: { ifGenerationMatch: 0 }, metadata: { contentType: "image/webp" } });
+    expect(storage.save.mock.calls[0][1]).toMatchObject({ resumable: false, preconditionOpts: { ifGenerationMatch: 0 }, metadata: { contentType: "image/webp", cacheControl: "public, max-age=0, s-maxage=60, must-revalidate" } });
     expect(storage.save.mock.calls[0][1].metadata.metadata.sha256).toBe(createHash("sha256").update(storage.save.mock.calls[0][0]).digest("hex"));
   });
   it("scales oversized dimensions and accepts JPEG/WebP signatures without trusting file names", async () => {
@@ -63,6 +63,14 @@ describe("banner image trust boundary", () => {
     storage.metadata.mockResolvedValue([{ contentType: "image/webp", size: 4, generation: "1001", metadata: { sha256 } }]);
     expect(await readManagedImage(id, `"${sha256}-g1001"`)).toEqual({ data: null, etag: `"${sha256}-g1001"` });
     expect(storage.metadata).toHaveBeenCalledTimes(1);expect(storage.download).not.toHaveBeenCalled();
+  });
+  it("checks current object existence again before accepting a previously valid ETag", async () => {
+    const data = Buffer.from("webp"), sha256 = createHash("sha256").update(data).digest("hex");
+    storage.metadata.mockResolvedValueOnce([{ contentType: "image/webp", size: data.length, generation: "1001", metadata: { sha256 } }]).mockRejectedValueOnce({ code: 404 });
+    storage.download.mockResolvedValueOnce([data]);
+    const image = await readManagedImage(id);
+    await expect(readManagedImage(id, image.etag)).rejects.toMatchObject({ status: 404 });
+    expect(storage.metadata).toHaveBeenCalledTimes(2);expect(storage.download).toHaveBeenCalledTimes(1);
   });
   it.each([null, '"different"'])("keeps full integrity validation when a validator is absent or different: %s", async validator => {
     const data = Buffer.from("webp"), sha256 = createHash("sha256").update(data).digest("hex");

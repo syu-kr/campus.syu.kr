@@ -45,5 +45,8 @@ export function HomeWeatherLine() {
     .replace("{temperature}", weather ? String(weather.temperature) : "")
     .replace("{description}", description);
 
-  return <span className="m3-home-weather" data-weather-state={state} role="status" aria-live="polite">{message}</span>;
+  return <span className="m3-home-weather" data-weather-state={state} role="status" aria-live="polite">{message}{" "}
+    <a href="https://www.data.go.kr/data/15084084/openapi.do" target="_blank" rel="noopener noreferrer"
+      className="inline-block text-xs font-normal underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2">{dictionary.weather.sourceCredit}</a>
+  </span>;
 }

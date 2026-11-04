@@ -143,6 +143,7 @@ export const enDictionary = {
       skyCondition: "Sky condition",
       location: "Location",
       updated: "Weather base time",
+      sourceCredit: "Source: KMA short-term forecasts (processed)",
       close: "Close",
       none: "None",
       rain: "Rain",
@@ -574,7 +575,7 @@ export const enDictionary = {
           title: "How to check graduation requirements",
           question: "Where can I check Sahmyook University graduation requirements?",
           body:
-            "Select your admission year, college, department, admission type, and major track to review reference graduation requirements and items that still need confirmation based on {sourceTitle}. This data was last verified on {lastVerifiedAt}; final graduation approval must be confirmed through SU-WINGs and your department office.",
+            "Select your admission year, college, department, admission type, and major track to review reference graduation requirements and items that still need confirmation based on {sourceTitle}. The reference was last verified on {lastVerifiedAt}; update times may differ by source. Confirm transfer, department transfer, multi-major, teaching-track requirements, and final graduation approval through the official sources, SU-WINGs, and your department office.",
           source: "Source: {sourceTitle}",
           updatedPrefix: "Checked",
           sourceLabel: "Reference source",
@@ -1421,7 +1422,9 @@ export const enDictionary = {
             "You can search {count} contacts by department, work description, or phone number. For graduation, academic records, classes, or certificates, check {department} ({description}) at {phone}.",
           emptyBody:
             "No contact information is currently available. Check the official university phone directory.",
-          source: "Source: campus phone directory data",
+          academicUnavailableBody:
+            "The current data does not identify the contact for academic records, classes, or certificates. Check the responsible department in the official university phone directory.",
+          source: "Source: Sahmyook University phone directory",
           updatedPrefix: "Checked",
           totalLabel: "Registered contacts",
           totalValue: "{count} contacts",

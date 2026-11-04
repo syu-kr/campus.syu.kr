@@ -132,6 +132,7 @@ async function AnnouncementDetailContent({
           headline: announcement.title,
           inLanguage: "ko-KR",
           keywords: announcement.aiSummary?.keywords,
+          sourceUrl: announcement.url,
           url: detailUrl,
         })}
       />
