@@ -76,7 +76,7 @@ it("pauses at the selected stop then offers the next vehicle, or passed when no 
   fireEvent.click(screen.getByRole("button",{name:"선택 정류장 도착"}));expect(eta()).toHaveTextContent("도착");
   expect(document.querySelector('[data-timeline-vehicle="demo-seokgye-0"]')).toHaveAttribute("data-progress","3");
   fireEvent.click(screen.getByRole("button",{name:"선택 정류장 통과"}));expect(eta()).toHaveTextContent("약 30분");expect(eta()).toHaveTextContent("다음 버스");
-  fireEvent.click(screen.getByRole("checkbox",{name:"후속 차량 있음"}));expect(eta()).toHaveTextContent("통과");
+  fireEvent.click(screen.getByRole("checkbox",{name:"후속 차량 있음"}));expect(eta()).toHaveTextContent("막차 도착");
 });
 it("freezes both map and timeline during delay and restores predictions afterwards",()=>{
   demo();seokgye();open("예시 운행 조작");map();

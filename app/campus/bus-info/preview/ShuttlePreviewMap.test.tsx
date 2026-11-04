@@ -6,6 +6,7 @@ import ShuttlePreviewMap from "./ShuttlePreviewMap";
 import { serviceRoutes } from "./service-data";
 import { serviceRoadPaths } from "./service-visits";
 import { demoLocations } from "./service-demo";
+import { testServiceData } from "./service-test-data";
 
 const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>()}));
 vi.mock("@/lib/kakao-maps-loader",()=>({loadKakaoMapsSdk:async()=>m.ready}));
@@ -82,6 +83,25 @@ it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
   choose(/차량 2/);panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("약 10분");
   expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id,true,"/campus/bus-info/preview/eta");
+});
+it("labels only the final sample's confirmed terminal arrival as the last bus arrival",()=>{
+  m.ready=false;
+  const departures=[0,1800],sample=demoLocations(serviceRoutes[1],1260,false,departures);
+  const {rerender}=render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:1260,nextAvailable:false,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
+  choose(/석계역/);
+  const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).toHaveTextContent("막차 도착");
+  rerender(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:1260,nextAvailable:true,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).toHaveTextContent("도착");
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).not.toHaveTextContent("막차");
+});
+it("describes elapsed origin schedules without claiming an observed last departure",()=>{
+  m.ready=false;
+  const after=new Date("2026-11-02T20:00:00+09:00"),data={...testServiceData,nowISO:after.toISOString(),holidays:{...testServiceData.holidays,lastSuccessAt:after.toISOString()}};
+  render(<ShuttlePreviewMap {...props} now={after} data={data}/>);
+  choose(/석계역/);
+  const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/학교 출발/})).toHaveTextContent("막차 출발");
 });
 it("keeps GPS markers stable, draws complete geographic vertices after a marker click, and cleans up",async()=>{
   const sdk=prepareSdk();const {rerender,unmount}=render(<ShuttlePreviewMap {...props}/>);
