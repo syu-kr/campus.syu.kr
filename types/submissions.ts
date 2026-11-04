@@ -72,6 +72,7 @@ export interface AdminSubmissionItem {
   contact: string;
   createdAt: string | null;
   updatedAt: string | null;
+  closedAt?: string | null;
   userAgent: string;
   type?: SiteInquiryType;
   message?: string;
@@ -92,6 +93,10 @@ export interface AdminSubmissionPagination {
   hasNext: boolean;
   nextCursor: string | null;
 }
+
+export type AdminSubmissionStatusUpdate = Pick<AdminSubmissionItem, "id" | "kind" | "status" | "updatedAt"> & {
+  closedAt: string | null;
+};
 
 export interface AdminSubmissionPageResponse {
   submissions: AdminSubmissionItem[];

@@ -14,12 +14,16 @@ import { Skeleton } from "@/app/components/Skeleton";
 import { StateCard } from "@/app/components/StateCard";
 import { PhoneCallButton } from "@/app/components/PhoneCallButton";
 import { PaginationControls } from "@/app/components/PaginationControls";
+import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import { Fragment, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPhoneNumbers } from "@/lib/api";
 import { getPhoneDisplayText, matchesPhoneQuery } from "@/lib/phone";
 import { usePagination } from "@/lib/use-pagination";
 import { useUrlSearch } from "@/lib/use-url-search";
+import { createPhoneAnswerSummary, PHONE_DIRECTORY_SOURCE_URL } from "@/lib/academic-aeo";
+import { localizePath } from "@/lib/i18n/routing";
+import { createFAQPageSchema } from "@/lib/structured-data";
 import type { PhoneNumber } from "@/types";
 
 const ONE_HOUR = 60 * 60 * 1000;
@@ -27,10 +31,12 @@ const ONE_DAY = 24 * ONE_HOUR;
 
 type PhonePageClientProps = {
   initialPhoneNumbers: PhoneNumber[];
+  nonce?: string;
 };
 
 export default function PhonePageClient({
   initialPhoneNumbers,
+  nonce,
 }: PhonePageClientProps) {
   const dictionary = useDictionary();
   const locale = useLocale();
@@ -46,6 +52,7 @@ export default function PhonePageClient({
     staleTime: ONE_HOUR,
     gcTime: ONE_DAY,
   });
+  const answerSummary = createPhoneAnswerSummary({ locale, phoneNumbers: phoneData ?? [], text: text.answer });
 
   // 검색 필터링
   const filteredDirectory = useMemo(() => {
@@ -73,12 +80,31 @@ export default function PhonePageClient({
 
   return (
     <Container className="py-6 sm:py-8">
+      <StructuredDataScript
+        id="campus-phone-answer-schema"
+        nonce={nonce}
+        data={createFAQPageSchema({
+          inLanguage: dictionary.meta.inLanguage,
+          mainEntity: [{
+            acceptedAnswerText: answerSummary.answer,
+            questionName: answerSummary.question,
+            citationUrls: [PHONE_DIRECTORY_SOURCE_URL],
+          }],
+          url: `https://campus.syu.kr${localizePath("/campus/phone", locale)}`,
+        })}
+      />
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">
           {text.title}
         </h1>
         <p className="text-neutral-600">{text.description}</p>
       </div>
+
+      <section className="mb-6" aria-labelledby="phone-contact-question">
+        <h2 id="phone-contact-question" className="text-base font-semibold text-neutral-900">{answerSummary.question}</h2>
+        <p className="mt-2 text-sm leading-6 text-neutral-600">{answerSummary.answer}</p>
+        <a href={PHONE_DIRECTORY_SOURCE_URL} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block rounded text-sm text-primary-600 underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">{answerSummary.source}</a>
+      </section>
 
       <SearchBar
         className="mb-6"

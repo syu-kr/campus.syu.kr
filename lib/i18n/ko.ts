@@ -137,6 +137,7 @@ export const koDictionary = {
       skyCondition: "하늘상태",
       location: "위치",
       updated: "날씨 기준 시각",
+      sourceCredit: "출처: 기상청 단기예보 (가공)",
       close: "닫기",
       none: "없음",
       rain: "비",
@@ -567,7 +568,7 @@ export const koDictionary = {
           title: "졸업요건 확인 방법",
           question: "삼육대학교 졸업요건은 어디서 확인하나요?",
           body:
-            "입학년도, 단과대학, 학과, 입학유형, 전공 형태를 선택하면 {sourceTitle} 기준의 참고 졸업요건과 확인 필요 항목을 볼 수 있습니다. 이 데이터는 {lastVerifiedAt}에 마지막으로 검증되었으며, 최종 졸업 판정은 반드시 SU-WINGs와 학과사무실에서 확인해야 합니다.",
+            "입학년도, 단과대학, 학과, 입학유형, 전공 형태를 선택하면 {sourceTitle} 기준의 참고 졸업요건과 확인 필요 항목을 볼 수 있습니다. 기준 자료의 마지막 검증일은 {lastVerifiedAt}이며, 자료별 갱신 시점은 다를 수 있습니다. 편입·전과·다전공·교직 과정과 최종 졸업 판정은 공식 근거, SU-WINGs 및 학과사무실에서 확인하세요.",
           source: "출처: {sourceTitle}",
           updatedPrefix: "확인 시각",
           sourceLabel: "기준 자료",
@@ -1395,7 +1396,9 @@ export const koDictionary = {
             "현재 {count}개 연락처를 부서명, 업무 설명, 전화번호로 검색할 수 있습니다. 졸업·학적·수업·증명서 문의는 {department}({description}) {phone}에서 확인하세요.",
           emptyBody:
             "현재 확인할 수 있는 연락처가 없습니다. 학교 홈페이지의 공식 전화번호부를 확인해주세요.",
-          source: "출처: 교내 전화번호 데이터",
+          academicUnavailableBody:
+            "현재 자료에서 학적·수업·증명서 담당 연락처를 확인할 수 없습니다. 학교 공식 전화번호 안내에서 담당 부서의 연락처를 확인해주세요.",
+          source: "출처: 삼육대학교 업무별 전화번호 안내",
           updatedPrefix: "확인 시각",
           totalLabel: "등록 연락처",
           totalValue: "{count}개",

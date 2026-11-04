@@ -37,6 +37,7 @@ export type ArticleSchemaInput = {
   headline: string;
   inLanguage: string;
   keywords?: string[];
+  sourceUrl?: string;
   url: string;
 };
 
@@ -139,6 +140,7 @@ export function createArticleSchema({
   headline,
   inLanguage,
   keywords,
+  sourceUrl,
   url,
 }: ArticleSchemaInput): SchemaOrgDocument<SchemaOrgNode> {
   return {
@@ -148,6 +150,7 @@ export function createArticleSchema({
     description,
     url,
     inLanguage,
+    ...(sourceUrl ? { isBasedOn: sourceUrl } : {}),
     ...(datePublished ? { datePublished } : {}),
     author: {
       "@type": "Organization",

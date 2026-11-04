@@ -1,4 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PrivacyPage from "./page";
 
@@ -7,7 +10,10 @@ vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-syu-locale": request.locale }),
 }));
 
-beforeEach(() => { request.locale = "ko"; });
+beforeEach(() => {
+  request.locale = "ko";
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-04T12:00:00+09:00"));
+});
 
 describe.each(["ko", "en"])("privacy policy (%s)", (locale) => {
   it("links the contents to all eleven articles in their existing order", async () => {
@@ -96,4 +102,46 @@ describe.each(["ko", "en"])("privacy policy (%s)", (locale) => {
     const changes = container.querySelector("#privacy-article-11") as HTMLElement;
     expect(within(changes).getByRole("link", { name: locale === "en" ? "Policy clarification notice and Terms amendment" : "설명 정정 및 이용약관 개정 공지" })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/service/notices/021-policy-clarifications`);
   });
+
+  it.each([
+    ["2026-11-04T12:00:00+09:00", false],
+    ["2026-12-04T23:59:59.999+09:00", false],
+    ["2026-12-05T00:00:00+09:00", true],
+  ] as const)("changes inquiry purpose and retention at the announced Korean-time boundary: %s", async (now, effective) => {
+    request.locale = locale;
+    vi.spyOn(Date, "now").mockReturnValue(Date.parse(now));
+    const { container } = render(await PrivacyPage());
+    const notice = screen.getByRole("complementary", { name: locale === "en" ? "Submission retention amendment" : "문의·제보 보유기간 개정" });
+    expect(notice).toHaveTextContent(locale === "en" ? "December 5, 2026" : "2026년 12월 5일");
+    expect(notice).toHaveTextContent(locale === "en" ? "one year after completion or rejection" : "완료·기각 후 원문과 포함된 AI 분류 결과를 1년");
+    expect(notice).toHaveTextContent(locale === "en" ? "does not authorize extending retention of existing submissions" : "이 공지만으로 기존 자료의 보존을 연장하지 않습니다");
+    const purposes = container.querySelector("#privacy-article-1") as HTMLElement;
+    const retention = container.querySelector("#privacy-article-2") as HTMLElement;
+    const oldPeriod = locale === "en" ? "retained until the review or service-improvement purpose is fulfilled" : "서비스 개선 검토 목적 달성 시까지 보존하며";
+    const newPurpose = locale === "en" ? "Referring to previous questions and suggestions for one year" : "완료·기각 후 1년 동안 어떤 질문·제보가 있었는지";
+    if (effective) {
+      expect(purposes).toHaveTextContent(newPurpose);
+      expect(retention).not.toHaveTextContent(oldPeriod);
+      expect(retention).not.toHaveTextContent("운영자 검토 목적 달성 시까지 원 접수");
+      expect(retention).toHaveTextContent(locale === "en" ? "There is no automatic purge" : "자동 파기는 하지 않습니다");
+      expect(retention).toHaveTextContent(locale === "en" ? "does not make it anonymous" : "익명 자료가 되지는 않습니다");
+      expect(retention).toHaveTextContent(locale === "en" ? "instead of inventing a date" : "날짜를 임의로 만들지 않습니다");
+      expect(retention).toHaveTextContent(locale === "en" ? "manually deletes the original and included AI results" : "원문과 포함된 AI 결과를 수동으로 파기");
+    } else {
+      expect(purposes).not.toHaveTextContent(newPurpose);
+      expect(retention).toHaveTextContent(oldPeriod);
+      if (locale === "ko") expect(retention).toHaveTextContent("운영자 검토 목적 달성 시까지 원 접수");
+      expect(retention).not.toHaveTextContent(locale === "en" ? "one year to refer" : "원문과 포함된 AI 분류 결과를 1년");
+    }
+    const changes = container.querySelector("#privacy-article-11") as HTMLElement;
+    expect(within(changes).getByRole("link", { name: locale === "en" ? "Inquiry and suggestion retention amendment" : "문의·제보 보유기간 개정 공지" })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/service/notices/022-submission-retention`);
+  });
+});
+
+it.each([
+  ["021-policy-clarifications.md", "30290817af51624b5c4f4189b3b7f9da723d648e24eeb03b69fdf74ee1984118"],
+  ["en/021-policy-clarifications.md", "4eae30436cdf47006baa82968fa2df5cb407f9990a899ab622403bc18a1131cc"],
+])("preserves the prior clarification notice unchanged: %s", (file, hash) => {
+  const text = readFileSync(path.join(process.cwd(), "public/service-notices", file), "utf8").replace(/\r\n/g, "\n");
+  expect(createHash("sha256").update(text).digest("hex")).toBe(hash);
 });

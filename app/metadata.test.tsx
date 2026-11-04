@@ -74,7 +74,8 @@ describe("route metadata exports", () => {
     expect(document.querySelector('div.whitespace-pre-wrap')?.textContent).toBe(announcement.content);
     expect(document.querySelector("h2")?.textContent).toBe(getDictionary("en").pages.announcements.aiInsightTitle);
     const schema = JSON.parse(document.querySelector('#announcement-article-schema')!.textContent!);
-    expect(schema).toMatchObject({ inLanguage: "ko-KR", headline: announcement.title });
+    expect(schema).toMatchObject({ inLanguage: "ko-KR", headline: announcement.title, isBasedOn: announcement.url });
+    expect(document.querySelector(`a[href="${schema.isBasedOn}"]`)?.textContent).toBe(getDictionary("en").pages.announcements.originalLink);
     expect([...document.querySelectorAll("dd")].find(node => node.textContent === getDictionary("en").labels.aiSummaryDetails.empty)?.getAttribute("lang")).toBe("en");
   });
 });

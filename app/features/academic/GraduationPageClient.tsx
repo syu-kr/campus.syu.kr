@@ -23,6 +23,7 @@ import {
   createGraduationModel,
 } from "@/lib/graduation-model";
 import { localizePath, type Dictionary, type Locale } from "@/lib/i18n";
+import { createGraduationAnswerSummary } from "@/lib/academic-aeo";
 
 import {
   buildGraduationShareUrl as buildShareUrl,
@@ -50,6 +51,7 @@ export default function GraduationPageClient({ snapshot }: { snapshot: Graduatio
   const locale = useLocale();
   const text = dictionary.pages.graduation;
   const metadata = getGraduationMetadata();
+  const answerSummary = createGraduationAnswerSummary({ metadata, text: text.answer });
   const colleges = getColleges();
   const [selection, setSelection] =
     useState<GraduationSelection>(INITIAL_SELECTION);
@@ -506,12 +508,10 @@ export default function GraduationPageClient({ snapshot }: { snapshot: Graduatio
         </details>
       )}
       <details className="m3-graduation-source-notice mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-        <summary className="m3-disclosure-trigger">{text.sourceGuidanceLabel}</summary>
+        <summary className="m3-disclosure-trigger">{answerSummary.question}</summary>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="max-w-5xl">
-            {text.sourceNoticePrefix}
-            <span lang={referenceTranslation.lang}>{publicText(metadata.sourceTitle)}</span>
-            {text.sourceNoticeSuffix}
+            {answerSummary.answer}
           </p>
           <button
             type="button"
