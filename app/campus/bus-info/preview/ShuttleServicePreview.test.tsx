@@ -1,17 +1,21 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { useQuery } from "@tanstack/react-query";
 import type { BusLocation } from "@/types";
 import type { LiveDataResponse } from "@/types/live-data";
+import type { EtaResponse } from "@/lib/shuttle-eta";
 import ShuttleServicePreview from "./ShuttleServicePreview";
 import { testServiceData } from "./service-test-data";
-import { pointAlongPath,serviceRoadPaths } from "./service-visits";
+import { pointAlongPath,serviceRoadPaths,serviceVisits } from "./service-visits";
 const positions=vi.hoisted(()=>({data:undefined as LiveDataResponse<BusLocation[]>|undefined,isError:false,isPending:false,isFetching:false,refetch:vi.fn()}));
-const predictions=vi.hoisted(()=>({data:{status:"active",arrivals:[] as {visitId:string;arrivalAt:number;measuredAt:number;validUntil:number}[]},isError:false,isPending:false}));
+const predictions=vi.hoisted(()=>({data:{status:"active",arrivals:[]} as EtaResponse,isError:false,isPending:false}));
+const navigation=vi.hoisted(()=>({refresh:vi.fn()}));
+const refresh=navigation.refresh;
+vi.mock("next/navigation",()=>({useRouter:()=>navigation}));
 vi.mock("@tanstack/react-query",()=>({useQuery:vi.fn((options:{queryKey:string[]})=>options.queryKey[0]==="shuttle-stop-arrivals"?predictions:positions)}));
 vi.mock("./ShuttlePreviewMap",()=>({default:({received,onClose}:{received:{locations:BusLocation[];stale:boolean};onClose:()=>void})=><div data-testid="received-map" data-positions={JSON.stringify(received.locations)} data-stale={received.stale}><button onClick={onClose}>지도 닫기</button></div>}));
 beforeEach(()=>{
-  predictions.data.arrivals=[];predictions.data.status="active";
+  predictions.data={status:"active",arrivals:[]};predictions.isError=false;refresh.mockReset();
   Object.assign(positions,{data:{success:true,data:[],timestamp:testServiceData.nowISO,source:"shuttle",sourceStatus:"fresh",stale:false},isError:false,isPending:false,isFetching:false});
   vi.spyOn(globalThis,"setInterval").mockReturnValue(0 as unknown as ReturnType<typeof setInterval>);
 });
@@ -28,14 +32,17 @@ it("uses a verified ETA at its matching real visit only",()=>{
   expect(eta("seokgye-taereung-7")).toHaveTextContent("약 4분");
   expect(eta("seokgye-taereung-6")).not.toHaveTextContent("약 4분");
 });
-it("withdraws learning numbers immediately when the corresponding position refresh fails",()=>{
+it("keeps a valid observation ETA when the separate position refresh fails",()=>{
   const nowISO="2026-10-30T14:00:00+09:00",measuredAt=Date.parse(nowISO);
   predictions.data.status="learning";predictions.data.arrivals=[{visitId:"seokgye-taereung-7",arrivalAt:measuredAt+240000,measuredAt,validUntil:measuredAt+90000}];
   positions.data!.timestamp=nowISO;positions.data!.data=[{id:"actual",name:"actual",lat:"37.62",lon:"127.08",status:2,routeid:2}];
   const {rerender}=render(<ShuttleServicePreview data={{...testServiceData,nowISO}} />);
   expect(eta("seokgye-taereung-7")).toHaveTextContent("약 4분");
   positions.isError=true;rerender(<ShuttleServicePreview data={{...testServiceData,nowISO}} />);
-  expect(eta("seokgye-taereung-7")).not.toHaveTextContent("약 4분");
+  expect(eta("seokgye-taereung-7")).toHaveTextContent("약 4분");
+  expect(eta("seokgye-taereung-7")).toHaveTextContent("14:04");
+  positions.data!.data=[];rerender(<ShuttleServicePreview data={{...testServiceData,nowISO}} />);
+  expect(eta("seokgye-taereung-7")).toHaveTextContent("약 4분");
 });
 it("opens the fleet map only on demand and keeps every visit visible on closed days",()=>{
   render(<ShuttleServicePreview data={testServiceData} />);
@@ -47,7 +54,7 @@ it("opens the fleet map only on demand and keeps every visit visible on closed d
   expect(eta("hwarangdae-5-campus")).toHaveTextContent("오늘 운휴");
   expect(screen.queryByText("전체 시간표 보기")).not.toBeInTheDocument();
   expect(screen.getAllByRole("link",{name:"학교 스쿨버스 안내"})).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button",{name:"학기중"}));
+  fireEvent.click(screen.getByRole("button",{name:/^학기중/}));
   fireEvent.click(screen.getByRole("button",{name:"금요일"}));
   expect(screen.getByRole("list",{name:"학기중"})).toHaveTextContent("08:15");
 });
@@ -76,7 +83,7 @@ it("pauses at the selected stop then offers the next vehicle, or passed when no 
   fireEvent.click(screen.getByRole("button",{name:"선택 정류장 도착"}));expect(eta()).toHaveTextContent("도착");
   expect(document.querySelector('[data-timeline-vehicle="demo-seokgye-0"]')).toHaveAttribute("data-progress","3");
   fireEvent.click(screen.getByRole("button",{name:"선택 정류장 통과"}));expect(eta()).toHaveTextContent("약 30분");expect(eta()).toHaveTextContent("다음 버스");
-  fireEvent.click(screen.getByRole("checkbox",{name:"후속 차량 있음"}));expect(eta()).toHaveTextContent("통과");
+  fireEvent.click(screen.getByRole("checkbox",{name:"후속 차량 있음"}));expect(eta()).toHaveTextContent("막차 도착");
 });
 it("freezes both map and timeline during delay and restores predictions afterwards",()=>{
   demo();seokgye();open("예시 운행 조작");map();
@@ -108,7 +115,7 @@ it("keeps confirmed boarding rules visible when vehicle locations fail and ETA i
   expect(document.querySelectorAll("[data-timeline-vehicle]")).toHaveLength(0);expect(screen.getAllByText("운행 중").length).toBeGreaterThan(0);
   fireEvent.click(screen.getByRole("button",{name:"다시 조회"}));expect(positions.refetch).toHaveBeenCalled();
 });
-it("limits vacation to Hwarangdae and marks Byeollae online week current without changing its times",()=>{
+it("limits vacation to Hwarangdae and special timetables to routes with a registered change",()=>{
   demo();seokgye();
   const current=screen.getByRole("button",{name:"온라인수업 권장 주간 현재"});expect(current).toHaveAttribute("aria-pressed","true");
   expect(screen.getByRole("list",{name:"온라인수업 권장 주간"})).toHaveTextContent("15:30");
@@ -125,7 +132,8 @@ it("limits vacation to Hwarangdae and marks Byeollae online week current without
   expect(station.lastElementChild).toHaveTextContent("14:30");expect(campus.lastElementChild).toHaveTextContent("14:10");expect(campus).not.toHaveTextContent("17:10");
   expect(screen.getByRole("region",{name:"곧 출발하는 버스"})).toHaveTextContent("12:00");
   fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
-  expect(screen.getByText(/학기중 시간표와 동일/)).toBeVisible();expect(screen.getByRole("button",{name:"온라인수업 권장 주간 현재"})).toHaveAttribute("aria-pressed","true");
+  expect(screen.queryByRole("button",{name:/온라인수업 권장 주간/})).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"학기중 현재"})).toHaveAttribute("aria-pressed","true");
   expect(screen.queryByRole("button",{name:"방학"})).not.toBeInTheDocument();
 });
 it("opens Seokgye after noon and distinguishes stale empty results from fresh zero vehicles",()=>{
@@ -181,11 +189,15 @@ it("renders timetable and predictions together in preview with the operating exa
   const nowISO="2026-11-02T13:20:00+09:00";
   const point=pointAlongPath(serviceRoadPaths({id:"seokgye"})[0],.4);
   positions.data!.timestamp=nowISO;positions.data!.data=[{id:"real-position",name:"internal",routeid:2,status:1,lat:String(point[0]),lon:String(point[1])}];
-  const view=render(<ShuttleServicePreview data={{...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}}}/>);
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  const view=render(<ShuttleServicePreview data={data}/>);
   expect(screen.getByRole("link",{name:"운행 예시 보기"})).toBeVisible();
   expect(screen.queryByText("전체 시간표 보기")).not.toBeInTheDocument();
   expect(screen.getByRole("region",{name:"출발 시간표"})).toBeVisible();
   const heading=screen.getByRole("heading",{name:"전체 정류장 도착예상"});
+  const arrivals=screen.getByRole("region",{name:"전체 정류장 도착예상"}),timetable=screen.getByRole("region",{name:"출발 시간표"}),upcoming=screen.getByRole("region",{name:"곧 출발하는 버스"});
+  expect(arrivals.compareDocumentPosition(timetable)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(timetable.compareDocumentPosition(upcoming)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(within(heading.parentElement!).getByRole("button",{name:"셔틀 위치 보기"})).toBeVisible();
   expect(screen.queryByText("현재 표시할 차량 위치 없음")).not.toBeInTheDocument();
   expect(screen.getByText("위에서 아래로 운행")).toBeVisible();
@@ -193,16 +205,107 @@ it("renders timetable and predictions together in preview with the operating exa
   const categories=screen.getByRole("group",{name:"시간표 종류"});
   expect(within(categories).getAllByRole("button")).toHaveLength(2);
 });
-it("fills the timetable category row when only semester remains",()=>{
-  const nowISO="2026-11-03T13:20:00+09:00";
+it("shows a labeled estimated segment without inventing a map vehicle",()=>{
+  const nowISO="2026-11-02T13:20:00+09:00",now=Date.parse(nowISO),departureAt=now-5*60000;
+  const ids=["seokgye-campus-departure","seokgye-hwarangdae-2","seokgye-taereung-6","seokgye-4","seokgye-taereung-7","seokgye-campus-arrival"];
+  const stops=ids.map((visitId,index)=>({visitId,departureAt,arrivalAt:departureAt+index*120000,travelSeconds:index*120,tripKey:"planned-seokgye"}));
+  predictions.data={status:"learning",arrivals:[],scheduledArrivals:stops,trips:[{key:"planned-seokgye",route:"seokgye",pattern:"online",departureAt,stops}],context:{serviceDate:"2026-11-02",version:testServiceData.version,generatedAt:now,validUntil:now+300000}};
   const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
   const view=render(<ShuttleServicePreview data={data}/>);
-  fireEvent.click(screen.getByRole("button",{name:"온라인수업 권장 주간"}));
+  expect(screen.getByTestId("estimated-progress")).toHaveTextContent("예상 위치 · 13:15 예정편");
+  expect(eta()).toHaveTextContent("13:21");
+  expect(view.container.querySelector('[data-estimated-trip="planned-seokgye"]')).toBeInTheDocument();
+  expect(view.container.querySelector('[data-estimated-trip="planned-seokgye"]')).toHaveAttribute("data-progress","2.5");
+  expect(view.container.querySelector('[data-estimated-trip="planned-seokgye"] svg image')).toBeInTheDocument();
+  expect(view.container.querySelectorAll("[data-timeline-vehicle]")).toHaveLength(0);
+  map();expect(screen.getByTestId("received-map")).toHaveAttribute("data-positions","[]");
+  predictions.data.arrivals=[{visitId:"seokgye-4",arrivalAt:now+600000,measuredAt:now,validUntil:now+90000}];
+  view.rerender(<ShuttleServicePreview data={data}/>);
+  expect(eta()).toHaveTextContent("약 10분");
+  expect(screen.queryByTestId("estimated-progress")).not.toBeInTheDocument();
+  expect(screen.getByTestId("received-map")).toHaveAttribute("data-positions","[]");
+});
+it("hides the estimated vehicle when the display completes all stops or the selected stop",()=>{
+  const departure=Date.parse("2026-11-04T13:00:00+09:00"),now=departure+31*60000,nowISO=new Date(now).toISOString();
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO},
+    specialPeriods:{...testServiceData.specialPeriods,specialPeriods:[]},buses:testServiceData.buses.map(bus=>({...bus,schedules:{...bus.schedules,mondayToThursday:["13:00","13:10"]}}))};
+  const trip=(key:string,departureAt:number,minutes:number)=>({key,route:"seokgye" as const,pattern:"semester",departureAt,
+    stops:serviceVisits.seokgye.map((visit,index)=>({visitId:visit.id,departureAt,arrivalAt:departureAt+index*minutes*60000,travelSeconds:index*minutes*60,tripKey:key}))});
+  const forecasts=(earlierMinutes:number,finalMinutes:number)=>{
+    const earlier=trip("earlier",departure,earlierMinutes),final=trip("final",departure+10*60000,finalMinutes);
+    predictions.data={status:"learning",arrivals:[],scheduledArrivals:earlier.stops,trips:[earlier,final],
+      context:{serviceDate:"2026-11-04",version:data.version,generatedAt:now,validUntil:now+300000}};
+  };
+  forecasts(12,2);
+  const view=render(<ShuttleServicePreview data={data}/>);
+  expect(eta()).toHaveTextContent("막차 도착");
+  expect(screen.queryByTestId("estimated-progress")).not.toBeInTheDocument();
+  forecasts(40,4);view.rerender(<ShuttleServicePreview data={data}/>);
+  expect(screen.getByTestId("estimated-progress")).toBeInTheDocument();
+  const completed=screen.getByRole("button",{name:/화랑대역 \(2번 출구\).*하차/});
+  expect(completed).toHaveTextContent("막차 도착");
+  fireEvent.click(completed);
+  expect(screen.queryByTestId("estimated-progress")).not.toBeInTheDocument();
+});
+it("retries a persistent timetable mismatch after the refresh throttle without refreshing every clock tick",()=>{
+  const nowISO="2026-11-02T13:20:00+09:00",now=Date.parse(nowISO),data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(now);
+  predictions.data.context={serviceDate:"2026-11-02",version:"updated",generatedAt:now,validUntil:now+300000};
+  const {rerender,unmount}=render(<ShuttleServicePreview data={data}/>);
+  const tick=vi.mocked(setInterval).mock.calls.find(call=>call[1]===1000)![0] as ()=>void;
+  try {
+    expect(refresh).toHaveBeenCalledTimes(1);
+    act(()=>{vi.setSystemTime(now+1000);tick();});
+    expect(refresh).toHaveBeenCalledTimes(1);
+    act(()=>{vi.setSystemTime(now+30000);tick();});
+    predictions.data.context.version=data.version;rerender(<ShuttleServicePreview data={data}/>);
+    predictions.data.context.version="another-update";rerender(<ShuttleServicePreview data={data}/>);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    act(()=>{vi.setSystemTime(now+60000);tick();});
+    expect(refresh).toHaveBeenCalledTimes(2);
+    act(()=>{vi.setSystemTime(now+61000);tick();});
+    expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {unmount();vi.useRealTimers();}
+});
+it("refreshes a mismatched timetable once, and refreshes again after a long hidden interval",()=>{
+  const nowISO="2026-11-02T13:20:00+09:00",now=Date.parse(nowISO),data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(now);
+  predictions.data.context={serviceDate:"2026-11-02",version:"updated",generatedAt:now,validUntil:now+300000};
+  const {rerender,unmount}=render(<ShuttleServicePreview data={data}/>);
+  try {
+    expect(refresh).toHaveBeenCalledTimes(1);
+    rerender(<ShuttleServicePreview data={{...data}}/>);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    const hidden=vi.spyOn(document,"hidden","get").mockReturnValue(true);
+    fireEvent(document,new Event("visibilitychange"));
+    vi.setSystemTime(now+61000);hidden.mockReturnValue(false);
+    fireEvent(document,new Event("visibilitychange"));
+    expect(refresh).toHaveBeenCalledTimes(2);
+  } finally {unmount();vi.useRealTimers();}
+});
+it("fills the timetable category row when only semester remains",()=>{
+  const nowISO="2026-11-02T13:20:00+09:00";
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  const view=render(<ShuttleServicePreview data={data}/>);
+  fireEvent.click(screen.getByRole("button",{name:/^온라인수업 권장 주간/}));
   view.rerender(<ShuttleServicePreview data={{...data,specialPeriods:{...data.specialPeriods,specialPeriods:[]}}}/>);
   const categories=screen.getByRole("group",{name:"시간표 종류"});
   expect(categories).toHaveAttribute("data-category-count","1");
   expect(within(categories).getAllByRole("button")).toHaveLength(1);
   expect(within(categories).getByRole("button",{name:"학기중 현재"})).toHaveAttribute("aria-pressed","true");
+});
+it("shows only the ordinary categories after a special timetable ends",()=>{
+  const nowISO="2026-11-04T13:20:00+09:00";
+  render(<ShuttleServicePreview data={{...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}}}/>);
+  const categories=()=>screen.getByRole("group",{name:"시간표 종류"});
+  expect(categories()).toHaveAttribute("data-category-count","1");
+  expect(within(categories()).queryByRole("button",{name:/온라인|특별/})).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button",{name:"화랑대역 학교행"}));
+  expect(categories()).toHaveAttribute("data-category-count","2");
+  expect(within(categories()).getByRole("button",{name:"방학"})).toBeVisible();
+  fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
+  expect(categories()).toHaveAttribute("data-category-count","1");
+  expect(within(categories()).queryByRole("button",{name:"방학"})).not.toBeInTheDocument();
 });
 it.each([
   ["12:59:59","운행 전"],["13:00:00","운행 중"],["14:00:00","운행 중"],["15:00:00","운행 중"],["15:00:01","운행 종료"],

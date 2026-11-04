@@ -1,6 +1,7 @@
 import type { Locale } from "@/lib/i18n/routing";
 const ko={
-  scheduleBasis:"시간표 기준",lastDeparted:"막차 출발",lastPassed:"막차 통과",travelDirection:"위에서 아래로 운행",
+  expectedSegment:"예상 위치",estimatedBadge:"예상",expectedTrip:"{time} 예정편",locationReflected:"최근 위치 반영",operationEstimate:"운행 예측",predictionDetails:"예측 안내",expectedEnded:"막차 도착 예상",historyBasis:"누적 운행 자료 반영",observedBasis:"수집한 구간 소요시간 반영",routeBasis:"경로 기본 소요시간 반영",lastObservation:"마지막 관측",
+  scheduleBasis:"시간표 기준",lastDeparted:"막차 출발",lastPassed:"막차 도착",travelDirection:"위에서 아래로 운행",
   outboundVia:"화랑대사거리 → 북부간선도로 → 봉화환승주차장교차로 → 화랑대역",outboundRegion:"학교 → 화랑대 우회",outboundSample:"우회 이동·소요시간은 예시입니다. 실시간 차량·도착예상이 아닙니다.",outboundPlay:"우회 예시 5배 재생",outboundStep:"+5분 우회 이동",outboundReset:"우회 예시 초기화",
   shrinkMap:"작게 보기",arrivesIn:"약 {time} 뒤 도착 예정",vacationRoute:"학교 ↔ 화랑대역 (5번 출구)",stationDeparts:"화랑대역 5번 출구 출발",
   stopHighlight:"지도에서 이 정류장을 강조했습니다.",
@@ -41,7 +42,8 @@ const ko={
 };
 type Copy={ [K in keyof typeof ko]:string };
 const en:Copy={
-  scheduleBasis:"Timetable estimate",lastDeparted:"Last bus departed",lastPassed:"Last bus passed",travelDirection:"Buses travel from top to bottom",
+  expectedSegment:"Estimated position",estimatedBadge:"Est.",expectedTrip:"Scheduled {time} trip",locationReflected:"Recent position used",operationEstimate:"Service estimate",predictionDetails:"About predictions",expectedEnded:"Last bus expected to have arrived",historyBasis:"Uses historical travel times",observedBasis:"Uses collected segment timings",routeBasis:"Uses reference route timings",lastObservation:"Last observation",
+  scheduleBasis:"Timetable estimate",lastDeparted:"Last bus departed",lastPassed:"Last bus arrived",travelDirection:"Buses travel from top to bottom",
   outboundVia:"Hwarangdae intersection → northern arterial → Bonghwa transfer parking intersection → Hwarangdae",outboundRegion:"Campus → Hwarangdae detour",outboundSample:"Detour movement and timing are samples, not live positions or arrivals.",outboundPlay:"Play detour at 5×",outboundStep:"Advance detour 5 minutes",outboundReset:"Reset detour",
   shrinkMap:"Minimize map",arrivesIn:"Expected in about {time}",vacationRoute:"Campus ↔ Hwarangdae (Exit 5)",stationDeparts:"From Hwarangdae Exit 5",
   stopHighlight:"This stop is highlighted on the map.",

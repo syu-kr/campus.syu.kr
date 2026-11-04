@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Container } from "@/app/components/Container";
 import { Button, buttonStyles } from "@/app/components/Button";
@@ -25,9 +26,11 @@ import ShuttleUpcomingDepartures from "./ShuttleUpcomingDepartures";
 import { stopArrivalLabels } from "./service-arrival-labels";
 import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 import { pilotRoutes } from "@/lib/shuttle-service-window";
+import { estimatedProgress } from "./service-estimated-progress";
 
 export default function ShuttleServicePreview({data,operatingPreview:requestedOperatingPreview=false,surface="preview"}:{data:ShuttleServiceData;operatingPreview?:boolean;surface?:"preview"|"production"}) {
   const operatingPreview=surface==="preview"&&requestedOperatingPreview;
+  const router=useRouter(),refreshAt=useRef(0);
   const locale=useLocale(),copy=getShuttlePreviewCopy(locale),live=getShuttleServiceCopy(locale);
   const [clock,setClock]=useState(()=>new Date(data.nowISO));
   const [routeId,setRouteId]=useState(()=>defaultServiceRoute(new Date(data.nowISO))),[selected,setSelected]=useState<number|null>(null);
@@ -37,6 +40,8 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
   const apiBase=surface==="production"?"/api/bus/shuttle":"/campus/bus-info/preview";
   const etaEndpoint=`${apiBase}/eta` as "/api/bus/shuttle/eta"|"/campus/bus-info/preview/eta";
   const now=operatingPreview?new Date(Date.parse(data.nowISO)+elapsed*1000):clock;
+  const currentDay=koreaDateKey(now);
+  const clockMinute=Math.floor(now.getTime()/60_000);
   const weekend=[0,6].includes(getKoreaDateTimeParts(now).dayOfWeek);
   const collectionOpen=pilotRoutes(now,data.buses,data.specialPeriods,data.holidays).length>0;
   const receive=!operatingPreview&&collectionOpen;
@@ -54,10 +59,11 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
   const today=serviceTimetable({route,date:koreaDateKey(now),now,data});
   const closed=!operatingPreview&&(weekend||today.status==="closed"&&!received.locations.length);
   const pilotClosed=!collectionOpen||closed||positions.data?.collection==="closed";
-  const estimates=useStopArrivals(now,!operatingPreview&&!weekend&&today.status==="ready",undefined,collectionOpen,etaEndpoint);
+  const estimates=useStopArrivals(now,!operatingPreview&&!weekend&&today.status==="ready",undefined,collectionOpen,etaEndpoint,data.version);
   const progress=useMemo(()=>operatingPreview?demoProgress(route,delayedAt??elapsed,nextAvailable,demoSchedules[route.id]):receivedProgress(route,received.locations,received.stale),[operatingPreview,route,received.locations,received.stale,delayedAt,elapsed,nextAvailable,demoSchedules]);
   const arrivals=stopArrivalLabels(route,locale,operatingPreview,elapsed,nextAvailable,delayed,closed,
-    !received.stale&&received.locations.length?estimates.minutes:undefined,{now,departures:closed?[]:today.scheduledTimes,scheduled:estimates.scheduled,progress,demoDepartures:demoSchedules[route.id],demoEpoch:Date.parse(data.nowISO)});
+    estimates.minutes,{now,departures:closed?[]:today.scheduledTimes,scheduled:estimates.scheduled,observations:estimates.observations,trips:estimates.trips,progress,demoDepartures:demoSchedules[route.id],demoEpoch:Date.parse(data.nowISO)});
+  const expected=!operatingPreview&&!closed&&!progress.length&&!arrivals.some(row=>row.source==="observed")&&arrivals.some(row=>row.source==="scheduled")&&(selected===null||arrivals[selected]?.source==="scheduled")?estimatedProgress(route,estimates.trips,estimates.scheduled,selected,now.getTime()):null;
   function routeStatus(item:typeof route) {
     const timetable=serviceTimetable({route:item,date:koreaDateKey(now),now,data});
     if(weekend||timetable.status==="closed"||!timetable.scheduledTimes.length) return live.noSchedule;
@@ -76,24 +82,40 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
   const positionText=positionStatus();
   const timeLabel=(date:Date)=>new Intl.DateTimeFormat(locale==="ko"?"ko-KR":"en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date);
   useEffect(()=>{if(operatingPreview) return;const timer=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(timer);},[operatingPreview]);
+  useEffect(()=>{
+    if(operatingPreview)return;
+    const refresh=()=>{if(Date.now()-refreshAt.current<60_000)return;refreshAt.current=Date.now();router.refresh();};
+    if(estimates.versionMismatch||currentDay!==koreaDateKey(new Date(data.nowISO)))refresh();
+  },[operatingPreview,estimates.versionMismatch,currentDay,clockMinute,data.nowISO,router]);
+  useEffect(()=>{
+    if(operatingPreview)return;
+    let hiddenAt:number|null=null;
+    const visibility=()=>{
+      if(document.hidden){hiddenAt=Date.now();return;}
+      if(hiddenAt!==null&&Date.now()-hiddenAt>=60_000&&Date.now()-refreshAt.current>=60_000){refreshAt.current=Date.now();router.refresh();}
+      hiddenAt=null;
+    };
+    document.addEventListener("visibilitychange",visibility);
+    return()=>document.removeEventListener("visibilitychange",visibility);
+  },[operatingPreview,router]);
   useEffect(()=>{if(!operatingPreview||!playing||delayed) return;const timer=setInterval(()=>setElapsed(value=>value+5),1000);return()=>clearInterval(timer);},[operatingPreview,playing,delayed]);
   function reset() {setElapsed(0);setNextAvailable(true);setDelayedAt(null);setPlaying(false);}
   function selectRoute(id:string) {if(id===routeId) return;setRouteId(id);setSelected(null);}
   return <Container data-shuttle-surface={surface} className="shuttle-preview shuttle-service-compact space-y-3 py-3">
     <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-xl font-bold">{live.pageTitle}</h1>{surface==="preview"&&<Link href={localizePath(`/campus/bus-info/preview${operatingPreview?"":"?scenario=operating"}`,locale)} className={buttonStyles("ghost")}>{operatingPreview?live.returnCurrent:live.viewOperating}</Link>}</div>
     {operatingPreview&&<p className="text-xs text-neutral-600" role="note"><strong>{live.demoBadge}</strong> · <time dateTime={now.toISOString()}>{koreaDateKey(now)} {timeLabel(now)}</time><br />{live.demoShort}</p>}
-    <ShuttleUpcomingDepartures data={data} now={now} />
     <div className="shuttle-preview-routes grid grid-cols-3 gap-2" role="group" aria-label={copy.routeSelect}>
       {serviceRoutes.map(item=><button key={item.id} type="button" aria-label={`${copy[item.name]} ${item.oneWay?copy.campusService:copy.loop}`} aria-describedby={`route-status-${item.id}`} aria-pressed={item.id===route.id} onClick={()=>selectRoute(item.id)} className="px-2 py-2 text-sm font-semibold"><span className="shuttle-route-name"><span className="shuttle-route-label"><span className="shuttle-preview-route-dot" aria-hidden="true" style={{backgroundColor:item.color}} />{copy[item.name]}</span><small id={`route-status-${item.id}`} className="shuttle-route-status">{routeStatus(item)}</small></span><span className="block text-xs font-normal">{item.oneWay?copy.campusService:copy.loop}</span></button>)}
     </div>
     <div className="shuttle-service-columns">
-    <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
     <section aria-label={copy.routeDetails} className="shuttle-service-route space-y-3">
-      <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} progress={progress} onMapOpen={()=>setMapOpen(true)} />
+      <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} progress={progress} expected={expected} onMapOpen={()=>setMapOpen(true)} />
       {positionText&&<div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600"><p role="status">{positionText}</p>{!operatingPreview&&(positions.isError||state.stale)&&<Button variant="ghost" disabled={positions.isFetching} onClick={()=>void positions.refetch()}>{live.refresh}</Button>}</div>}
       {!operatingPreview&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
     </section>
+    <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
     </div>
+    <ShuttleUpcomingDepartures data={data} now={now} />
     {mapOpen&&<ShuttlePreviewMap received={fleet} now={now} locale={locale} data={data} etaEndpoint={etaEndpoint} onClose={()=>setMapOpen(false)} demo={operatingPreview?{elapsed:delayedAt??elapsed,nextAvailable,delayed,departuresByRoute:demoSchedules,epoch:Date.parse(data.nowISO)}:undefined}/>}
     {!operatingPreview&&surface==="preview"&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status} locations={received.locations}/>}
     {operatingPreview&&<details className="border-t border-neutral-200 pt-2"><summary className="cursor-pointer text-sm font-semibold">{live.demoControls}</summary>

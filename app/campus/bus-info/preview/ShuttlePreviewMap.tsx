@@ -53,7 +53,7 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
     if(!demo&&data&&route&&visit.id===serviceVisits[route.id][0].id) {
       const date=koreaDateKey(now),timetable=serviceTimetable({route,date,now,data});
       if(timetable.status==="closed")return live.dayClosed;
-      const departure=timetable.scheduledTimes.find(time=>Date.parse(`${date}T${time}:00+09:00`)>=now.getTime());
+      const departure=timetable.scheduledTimes.find(time=>Date.parse(`${date}T${time}:00+09:00`)>now.getTime());
       return departure?`${departure} ${live.departureAt}`:timetable.scheduledTimes.length?live.lastDeparted:live.arrivalUnknown;
     }
     if(received.stale) return live.arrivalUnknown;
@@ -66,8 +66,9 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
         return `${time} ${live.departureAt}`;
       }
       const arrival=demoStopArrival(route,demo.elapsed,index,demo.nextAvailable,demo.delayed,run,departures);
-      if(arrival.state==="passed") return copy.passed;
-      if(arrival.state==="arrived") return copy.arrived;
+      const lastRun=run===(demo.nextAvailable?(departures?.length??1):1)-1;
+      if(arrival.state==="passed") return lastRun?live.lastPassed:copy.passed;
+      if(arrival.state==="arrived") return lastRun?live.lastPassed:copy.arrived;
       if(arrival.seconds===null) return live.arrivalUnknown;
       const time=`${Math.ceil(arrival.seconds/60)}${locale==="ko"?"":" "}${copy.minutes}`;
       return live.arrivesIn.replace("{time}",time);
