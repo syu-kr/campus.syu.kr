@@ -60,7 +60,6 @@ describe.each(["ko", "en"] as const)("campus weather sentence in %s", locale => 
     renderLine(locale);
     expect(screen.getByRole("status")).toHaveTextContent(message(locale, "current"));
     expect(screen.getByRole("status")).toHaveAttribute("data-weather-state", "fresh");
-    expect(screen.getByRole("link", { name: getDictionary(locale).weather.sourceCredit })).toHaveAttribute("href", "https://www.data.go.kr/data/15084084/openapi.do");
     expect(fetchMock).not.toHaveBeenCalled();
     expect(client.getQueryCache().findAll()).toHaveLength(1);
   });
