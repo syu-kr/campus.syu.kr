@@ -110,6 +110,15 @@ describe("public content reader boundaries", () => {
     expect(view.container.querySelectorAll(".m3-public-translation")).toHaveLength(0);
   });
 
+  it.each(["ko", "en"] as const)("links only the auditorium to the localized chapel finder in %s", (locale) => {
+    const wrap = (buildingId: string) => <ClientLocaleProvider locale={locale} dictionary={getDictionary(locale)}><FacilityPanel buildingId={buildingId} /></ClientLocaleProvider>;
+    const view = render(wrap("grand-auditorium"));
+    const label = getDictionary(locale).campus.menus.chapelSeatsTitle;
+    expect(screen.getByRole("link", { name: label })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/campus/chapel-seats`);
+    view.rerender(wrap("practice-center-1"));
+    expect(screen.queryByRole("link", { name: label })).not.toBeInTheDocument();
+  });
+
   it("uses translated course labels in agenda and details without sending professor names or changing course IDs", () => {
     const course = { id: "public-course", courseName: "공개 강의명", normalizedName: "공개 강의명", professor: "담당 교수", place: "강의실", classTime: "월 1교시", credits: 3, timeSlots: [] };
     const view = render(english(<AcademicTimetablePresentation selectedCourses={[course]} conflictCourseIds={new Set()} dayLabel={value => value} periodLabel={String} periodTimeLabel={String} completionLabel={value => value} renderWeek={() => null} />));

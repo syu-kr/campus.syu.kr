@@ -162,6 +162,8 @@ describe("IndexNow content snapshots", () => {
     ["app/features/legal/LegalPageLayout.tsx", ["/privacy", "/terms"]],
     ["lib/kakao-maps-loader.ts", ["/campus/bus-info", "/campus/map"]],
     ["app/campus/map/data/buildings.json", ["/campus/map"]],
+    ["lib/chapel-seats/data.ts", ["/campus/chapel-seats"]],
+    ["app/features/chapel-seats/ChapelSeatsPageClient.tsx", ["/campus/chapel-seats"]],
     ["app/features/cafeteria/CafeteriaMenuCards.tsx", ["/", "/campus/cafeteria"]],
   ] as const)("tracks actual page dependencies in %s without changing unrelated pages", (file, routes) => {
     const before = files(), after = files();

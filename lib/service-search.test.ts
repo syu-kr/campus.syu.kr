@@ -16,3 +16,14 @@ it("uses the server-provided availability consistently without reading private c
   expect(findServices("룸메이트", true)[0].path).toBe("/campus/roommates");
   expect(hasServiceMatches("룸메이트", true)).toBe(true);
 });
+
+it("finds chapel seats by section-independent service terms without hiding library seats", () => {
+  for (const query of ["채플", "채플좌석", "대강당", "대강당 좌석", "chapel", "auditorium"]) {
+    expect(findServices(query).some((item) => item.path === "/campus/chapel-seats")).toBe(true);
+  }
+  for (const query of ["좌석", "seat"]) {
+    const paths = findServices(query).map((item) => item.path);
+    expect(paths).toContain("/campus/library");
+    expect(paths).toContain("/campus/chapel-seats");
+  }
+});

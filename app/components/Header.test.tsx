@@ -92,7 +92,7 @@ describe("M3 Header and BottomNav", () => {
     const { container } = render(<Header />);
     for (const [label, destinations] of [
       [dictionary.navigation.academic, ["/academic/announcements", "/academic/schedule", "/academic/sw-notices", "/academic/competitions", "/academic/scholarship", "/academic/graduation", "/academic/timetable", "https://sugang.syu.kr/testLogin", "https://sugang.syu.kr/basket"]],
-      [dictionary.navigation.campus, ["/campus/announcements", "/campus/cafeteria", "/campus/bus-info", "/campus/library", "/campus/map", "/campus/phone", "/campus/campus-tips", "/campus/gym", "/campus/health-center"]],
+      [dictionary.navigation.campus, ["/campus/announcements", "/campus/cafeteria", "/campus/bus-info", "/campus/library", "/campus/map", "/campus/chapel-seats", "/campus/phone", "/campus/campus-tips", "/campus/gym", "/campus/health-center"]],
       [dictionary.navigation.more, ["/service/notices", "/more/meet", "/more/privacy"]],
     ] as const) {
       fireEvent.mouseEnter(screen.getByRole("link", { name: label }).closest(".m3-nav-group")!);

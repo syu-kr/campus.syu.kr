@@ -32,6 +32,7 @@ describe("route metadata exports", () => {
     ["/campus/cafeteria", () => import("./campus/cafeteria/layout")],
     ["/campus/library", () => import("./campus/library/layout")],
     ["/campus/map", () => import("./campus/map/layout")],
+    ["/campus/chapel-seats", () => import("./campus/chapel-seats/page")],
     ["/campus/phone", () => import("./campus/phone/layout")],
     ["/campus/campus-tips", () => import("./campus/campus-tips/layout")],
     ["/campus/gym", () => import("./campus/gym/layout")],

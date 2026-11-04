@@ -27,6 +27,7 @@ export const PUBLIC_ROUTES = [
   { route: "/campus/cafeteria", changeFrequency: "daily", priority: 0.9 },
   { route: "/campus/library", changeFrequency: "hourly", priority: 0.9 },
   { route: "/campus/map", changeFrequency: "monthly", priority: 0.85 },
+  { route: "/campus/chapel-seats", changeFrequency: "monthly", priority: 0.8 },
   { route: "/campus/phone", changeFrequency: "monthly", priority: 0.8 },
   { route: "/campus/campus-tips", changeFrequency: "weekly", priority: 0.8 },
   { route: "/campus/gym", changeFrequency: "weekly", priority: 0.8 },
