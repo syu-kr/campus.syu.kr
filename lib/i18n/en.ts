@@ -1,4 +1,5 @@
 import { enMeetPages } from "./meet";
+import { enChapelSeats } from "./chapel-seats";
 
 export const enDictionary = {
     managedBanners: {
@@ -356,6 +357,8 @@ export const enDictionary = {
         libraryDescription: "Central Library reading room info",
         mapTitle: "Campus Map",
         mapDescription: "Building locations and facilities",
+        chapelSeatsTitle: "Chapel seat finder",
+        chapelSeatsDescription: "Find an auditorium seat by section and number",
         phoneTitle: "Contact Search",
         phoneDescription: "Department and staff contacts",
         campusTipsTitle: "Campus Tips",
@@ -489,6 +492,7 @@ export const enDictionary = {
       ],
     },
     pages: {
+      chapelSeats: enChapelSeats,
       serviceNotices: {
         metaTitle: "Service Notices",
         metaDescription: "SYU CAMPUS service notices and updates",
