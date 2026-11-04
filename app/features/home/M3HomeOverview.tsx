@@ -255,8 +255,6 @@ export function M3HomeOverview({ now, initial, children, banner, schedules = [] 
     <header className="m3-home-intro"><div>
       <p className="m3-home-date">{now ? <time dateTime={now.toISOString()}>{dateFormatter.format(now)}</time> : ""}</p>
       <h1><HomeWeatherLine /></h1>
-      <a href="https://www.data.go.kr/data/15084084/openapi.do" target="_blank" rel="noopener noreferrer"
-        className="inline-block text-xs underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2">{dictionary.weather.sourceCredit}</a>
     </div><span className={semesterEnd ? "m3-home-academic-countdown" : undefined}>{semesterEnd ? <Link href={link("/academic/schedule")}>
       {text.semesterEndCountdown.replace("{days}", String(semesterEnd.days))}
     </Link> : text.hint}</span></header>
