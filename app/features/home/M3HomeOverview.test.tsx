@@ -329,10 +329,7 @@ it.each(["ko", "en"] as const)("uses the shared weather sentence as the only int
     .replace("{temperature}", String(cachedWeather.temperature))
     .replace("{description}", dictionary.weather.cloudy);
   const heading = screen.getByRole("heading", { level: 1, name: expected });
-  const credit = screen.getByRole("link", { name: dictionary.weather.sourceCredit });
-  expect(credit).toBeVisible();
-  expect(credit).toHaveAttribute("href", "https://www.data.go.kr/data/15084084/openapi.do");
-  expect(heading).not.toContainElement(credit);
+  expect(screen.queryByRole("link", { name: dictionary.weather.sourceCredit })).not.toBeInTheDocument();
   expect(container.querySelectorAll(".m3-home-weather")).toHaveLength(1);
   expect(heading.querySelector('[role="status"]')).toHaveAttribute("data-weather-state", "fresh");
   const date = container.querySelector(".m3-home-date")!;

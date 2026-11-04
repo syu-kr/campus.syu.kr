@@ -103,7 +103,6 @@ export default function PhonePageClient({
       <section className="mb-6" aria-labelledby="phone-contact-question">
         <h2 id="phone-contact-question" className="text-base font-semibold text-neutral-900">{answerSummary.question}</h2>
         <p className="mt-2 text-sm leading-6 text-neutral-600">{answerSummary.answer}</p>
-        <a href={PHONE_DIRECTORY_SOURCE_URL} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block rounded text-sm text-primary-600 underline underline-offset-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">{answerSummary.source}</a>
       </section>
 
       <SearchBar

@@ -3,7 +3,7 @@ import { PublicContentTranslation } from "@/app/components/ContentTranslation";
 
 import Link from "next/link";
 import { Badge } from "@/app/components/Badge";
-import { Card } from "@/app/components/Card";
+import { Icon } from "@/app/components/Icon";
 import {
   HomeNoticeCard,
   ServiceNoticeCard,
@@ -176,43 +176,30 @@ export function TodaySchedulesSection({
         title={dictionary.home.dashboard.todaySchedules}
         href="/academic/schedule"
       />
-      <div className="space-y-4">
+      <div className="m3-home-schedule-list">
         {isLoading && <Skeleton count={2} />}
         {isError && <DashboardLoadError onRetry={onRetry} />}
         {!isLoading &&
           (schedules.length === 0 && !isError ? (
-            <StateCard
-              type="info"
-              message={dictionary.home.dashboard.scheduleEmpty}
-            />
+            <p className="m3-home-empty">{dictionary.home.dashboard.scheduleEmpty}</p>
           ) : schedules.length > 0 ? (
             schedules.map((schedule) => (
-              <div key={schedule.id} className="mb-3">
-                <Link href={localizePath("/academic/schedule", locale)}>
-                  <Card className="cursor-pointer hover:shadow-card-hover">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Badge
-                          color={schedule.category === "exam" || schedule.id.startsWith("public-holiday-") ? "red" : "blue"}
-                          size="sm"
-                        >
-                          {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, dictionary.categories)}
-                        </Badge>
-                        <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h3 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="mt-2 font-semibold text-neutral-900">{translation.text("title", schedule.id.startsWith("public-holiday-") ? schedule.title.split(" · ").map(name => formatPublicHolidayName(name, locale)).join(" · ") : schedule.title)}</h3>}</PublicContentTranslation>
-                        <p className="mt-1 text-xs text-neutral-600">
-                          {formatDate(schedule.startDate)} ~{" "}
-                          {formatDate(schedule.endDate)}
-                        </p>
-                      </div>
-                      <span className="text-xs font-semibold text-neutral-600">
-                        {schedule.category === "exam"
-                          ? dictionary.home.dashboard.exam
-                          : dictionary.home.dashboard.schedule}
-                      </span>
-                    </div>
-                  </Card>
-                </Link>
-              </div>
+              <Link key={schedule.id} href={localizePath("/academic/schedule", locale)} className="m3-home-schedule-row">
+                <div className="m3-home-schedule-copy">
+                  <Badge
+                    color={schedule.category === "exam" || schedule.id.startsWith("public-holiday-") ? "red" : "blue"}
+                    size="sm"
+                  >
+                    {schedule.id.startsWith("public-holiday-") ? dictionary.publicHolidays.label : getCategoryLabel(schedule.category, dictionary.categories)}
+                  </Badge>
+                  <PublicContentTranslation source={{ kind: "schedule", id: schedule.id }} content={schedule.id.startsWith("public-holiday-") ? {} : { title: schedule.title }}>{translation => <h3 lang={schedule.id.startsWith("public-holiday-") ? locale : translation.lang} className="m3-home-schedule-title">{translation.text("title", schedule.id.startsWith("public-holiday-") ? schedule.title.split(" · ").map(name => formatPublicHolidayName(name, locale)).join(" · ") : schedule.title)}</h3>}</PublicContentTranslation>
+                  <p className="m3-home-schedule-date">
+                    {formatDate(schedule.startDate)} ~{" "}
+                    {formatDate(schedule.endDate)}
+                  </p>
+                </div>
+                <Icon name="chevron-right" size={18} />
+              </Link>
             ))
           ) : null)}
       </div>
@@ -226,7 +213,7 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
 
   return (
     <div className="mb-3 flex items-center justify-between">
-      <h2 className="text-lg font-semibold text-neutral-900">{title}</h2>
+      <h2 className="text-lg font-semibold text-neutral-900"><Icon name="calendar" />{title}</h2>
       {href && (
         <Link
           href={localizePath(href, locale)}

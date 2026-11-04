@@ -38,7 +38,7 @@ it.each(["ko", "en"] as const)("serves the graduation schema's exact question an
   expect(document.querySelectorAll("h1")).toHaveLength(1);
 });
 
-it.each(["ko", "en"] as const)("serves the phone schema's exact answer and official source for populated, unmatched and empty directories in %s", async locale => {
+it.each(["ko", "en"] as const)("serves the phone schema's exact answer and citation without a visible source credit for populated, unmatched and empty directories in %s", async locale => {
   request.locale = locale;
   for (const phones of [
     [{ department: "교무처 학사지원팀", phone: "02-3399-3153", description: "졸업·학적·수업·증명서" }],
@@ -55,7 +55,7 @@ it.each(["ko", "en"] as const)("serves the phone schema's exact answer and offic
     const section = document.querySelector('section[aria-labelledby="phone-contact-question"]')!;
     expect(section.querySelector("h2")?.textContent).toBe(question.name);
     expect(section.querySelector("p")?.textContent).toBe(question.acceptedAnswer.text);
-    expect(section.querySelector("a")?.getAttribute("href")).toBe(PHONE_DIRECTORY_SOURCE_URL);
+    expect(section.querySelector("a")).toBeNull();
     expect(question.acceptedAnswer.citation).toEqual([PHONE_DIRECTORY_SOURCE_URL]);
     expect(document.querySelectorAll("h1")).toHaveLength(1);
   }
