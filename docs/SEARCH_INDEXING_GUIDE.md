@@ -139,7 +139,7 @@ IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알�
 1. 이 변경을 운영 배포한 뒤 `https://campus.syu.kr/indexnow-key.txt`의 본문이 저장소의 `public/indexnow-key.txt`와 같은지 확인합니다. 이 값은 공개 소유확인 키이며 비밀 API 토큰이 아닙니다. 별도 Naver/Bing 인증값이나 새 GitHub secret은 필요하지 않습니다. UTF-8 키 파일과 명시적인 `keyLocation`을 사용합니다. [네이버 키 규칙](https://searchadvisor.naver.com/guide/indexnow-api-key)
 2. 운영 `https://campus.syu.kr/indexnow-deployment.json`의 `sourceSha`가 원본 저장소의 배포 커밋인지 확인합니다. 이 파일은 기존 Sync workflow가 배포 저장소에만 생성하며, 인덱싱 대상에 넣지 않습니다.
 3. 원본 저장소 Actions variable `INDEXNOW_ENABLED=true`를 설정합니다. 미설정 상태에서는 `Notify IndexNow` job이 건너뛰므로 PR 작성·CI에서 운영 제출을 실행하지 않습니다.
-4. Actions의 `Notify IndexNow`를 main에서 수동 실행합니다. 기본 `send=false`는 dry-run입니다. 실제 처리는 `send=true`로 실행합니다. 첫 실제 실행은 확인된 현재 URL 지문을 **baseline으로 저장하고 전체 과거 URL을 제출하지 않습니다.** 이후 성공한 코드 동기화·Daily Crawl·Rollback 게시 완료가 자동 처리를 시작합니다.
+4. Actions의 `Notify IndexNow`를 main에서 수동 실행합니다. 기본 `send=false`는 dry-run입니다. `send=true`로 첫 실행을 하면 확인된 현재 URL 지문을 **baseline으로 저장하고 전체 과거 URL을 제출하지 않습니다.** 이후 신뢰된 main의 게시 workflow 성공, Daily Crawl 실패 또는 하루 한 번의 정기 대조가 자동 처리를 시작합니다. 실패한 수집 뒤에도 운영에 게시된 현재 상태를 기준으로 차이를 계산합니다.
 
 로컬에서는 `npm run indexnow`로 공개 데이터를 읽어 변경 계획만 확인합니다. `--send`를 지정하지 않으면 제출·운영 probe·이전 상태 수정은 없습니다. 실제 전송은 clean committed checkout에서만 허용됩니다. 수동 비교에는 `--state-file`, `--report-file` 경로를 지정할 수 있으며 기본 파일은 `.cache/indexnow/state.json`, `.cache/indexnow/report.json`입니다.
 
@@ -156,7 +156,7 @@ IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알�
 - 신뢰된 main의 동일 IndexNow workflow artifact 중 생성 시각이 가장 최신인 상태를 복원하며 실행은 직렬화합니다. 예전 실행을 재실행한 경우도 run 번호보다 artifact 생성 시각을 우선해 최신 제출 이력을 보존합니다. 손상된 상태·조회·다운로드 오류는 baseline으로 조용히 초기화하지 않습니다. 실제 첫 실행에만 baseline을 만들고, dry-run은 기존 상태를 변경하지 않습니다.
 - URL 중복을 제거하고 최대 10,000개씩 전송합니다. 같은 URL의 내용이 5분 내 다시 바뀌면 간격을 기다린 뒤 재검증합니다. 수락된 배치마다 지문을 저장하므로 뒷배치 실패 후 재실행할 때 완료된 작업을 반복하지 않습니다.
 - 네트워크·5xx는 짧은 backoff로 최대 3회 시도합니다. 400/403/422는 설정/입력 오류로 중단합니다. 429는 `Retry-After`를 존중하고 최소 10분 후 한 번만 재시도하며, 더 긴 대기가 요구되면 즉시 중단하고 나중에 실행하도록 기록합니다. 각 재시도의 상태·횟수·대기시간을 Actions 로그에 남깁니다.
-- `indexnow-state`와 `indexnow-report` artifact는 90일 보존합니다. 부분 실패에서도 마지막으로 저장된 상태와 오류 보고서를 유지합니다. 실패 후 원인을 수정하고 main에서 `send=true`로 다시 실행하면 남은 차이를 처리합니다. 90일 이상 상태가 없으면 이전 변경 이력을 추측하지 않고 새 baseline부터 시작합니다.
+- `indexnow-state`와 `indexnow-report` artifact는 90일 보존합니다. 부분 실패에서도 마지막으로 저장된 상태와 오류 보고서를 유지합니다. 접수 뒤 상태 artifact가 저장되기 전에 runner가 끊기면 다음 실행이 같은 URL을 다시 보낼 수 있습니다. 자동 처리는 신뢰된 상태를 찾을 수 없으면 실패합니다. 누락 원인과 복구 가능 여부를 먼저 확인한 뒤, 새 baseline이 필요한 경우 main에서 `send=true`로 수동 실행합니다.
 - 보고서의 accepted/키 검증 대기 수와 실제 Webmaster Tools 색인 상태는 별개로 확인합니다. 공개 키 파일을 회전할 때는 파일 배포를 먼저 확인합니다. 제출 성공으로 네이버·Bing 계정 소유확인까지 완료됐다고 판단하지 않습니다.
 
 ## Monitoring
