@@ -10,6 +10,10 @@ on:
       - Publish Reference Data
     types:
       - completed
+    branches:
+      - main
+  schedule:
+    - cron: "43 6 * * *"
   workflow_dispatch:
     inputs:
       send:
@@ -22,24 +26,26 @@ permissions:
   contents: read
   actions: read
 
-concurrency:
-  group: indexnow-production
-  cancel-in-progress: false
-
 jobs:
   notify:
     if: >-
       github.repository == 'syu-kr/campus.syu.kr' &&
       vars.INDEXNOW_ENABLED == 'true' &&
       (
-        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        ((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main') ||
         (
           github.event_name == 'workflow_run' &&
-          github.event.workflow_run.conclusion == 'success' &&
           github.event.workflow_run.head_repository.full_name == github.repository &&
-          github.event.workflow_run.head_branch == 'main'
+          github.event.workflow_run.head_branch == 'main' &&
+          (
+            github.event.workflow_run.conclusion == 'success' ||
+            (github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.path == '.github/workflows/crawl-daily.yml')
+          )
         )
       )
+    concurrency:
+      group: indexnow-production
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -80,8 +86,9 @@ jobs:
 
           while IFS=$'\t' read -r created_at artifact_id run_id; do
             [ -n "$artifact_id" ] || continue
+            # The serialized job has uploaded the artifact even if the workflow's final status is still pending.
             trusted="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" \
-              --jq '.workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber) and .head_repository.full_name == env.GITHUB_REPOSITORY and .head_branch == "main" and .path == ".github/workflows/indexnow.yml" and (.event == "workflow_run" or .event == "workflow_dispatch") and (.status == "completed" or (.id == (env.GITHUB_RUN_ID | tonumber) and ((env.GITHUB_RUN_ATTEMPT // "1") | tonumber) > 1))')"
+              --jq '.workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber) and .head_repository.full_name == env.GITHUB_REPOSITORY and .head_branch == "main" and .path == ".github/workflows/indexnow.yml" and (.event == "workflow_run" or .event == "workflow_dispatch" or .event == "schedule") and (.id != (env.GITHUB_RUN_ID | tonumber) or ((env.GITHUB_RUN_ATTEMPT // "1") | tonumber) > 1)')"
             [ "$trusted" = "true" ] || continue
             artifact_count="$(gh api \
               "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/artifacts?per_page=100" \
@@ -97,7 +104,11 @@ jobs:
             exit 0
           done <<< "$artifacts"
 
-          echo "No previous IndexNow state; the CLI will establish a baseline."
+          if [ "$GITHUB_EVENT_NAME" != 'workflow_dispatch' ]; then
+            echo "::error::No trusted IndexNow state is available. Restore it or explicitly establish a baseline on main with send=true."
+            exit 1
+          fi
+          echo "No previous IndexNow state. A manual run with send=true will establish a baseline without submitting URLs."
 
       - name: Verify production and process changed URLs
         env:
@@ -105,7 +116,7 @@ jobs:
           PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
           PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
-          SEND: ${{ github.event_name == 'workflow_run' || inputs.send }}
+          SEND: ${{ github.event_name == 'workflow_run' || github.event_name == 'schedule' || inputs.send }}
         run: |
           if [ "$SEND" = "true" ]; then
             npm run indexnow -- --state-file .cache/indexnow/state.json --report-file .cache/indexnow/report.json --send
