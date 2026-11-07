@@ -36,7 +36,8 @@ export function stopArrivalLabels(route: ServiceRoute, locale: Locale, sample: b
     if (verified !== undefined) {
       const time = `${verified}${locale === "ko" ? "" : " "}${copy.minutes}`;
       const observation=schedule?.observations?.get(serviceVisits[route.id][index].id);
-      return { verified: true, eta: `${copy.approx} ${time}`, detail: "", following: "", message: live.arrivesIn.replace("{time}", time),
+      const eta=live.arrivesIn.replace("{time}",time);
+      return { verified: true, eta, detail: "", following: "", message: eta,
         source:"observed",arrivalClock:observation?clock(observation.arrivalAt):undefined,basis:observation?.basis,measuredAt:observation?.measuredAt };
     }
     const visitId=serviceVisits[route.id][index].id;
@@ -53,7 +54,8 @@ export function stopArrivalLabels(route: ServiceRoute, locale: Locale, sample: b
       const minutes=Math.max(0,Math.ceil((scheduled.arrivalAt-now)/60000));
       const departure=clock(scheduled.departureAt);
       const time=`${minutes}${locale==="ko"?"":" "}${copy.minutes}`;
-      return {verified:false,eta:`${copy.approx} ${time}`,detail:live.expectedTrip.replace("{time}",departure),following:scheduled.departureAt>now?live.nextVehicle:"",message:live.arrivesIn.replace("{time}",time),
+      const eta=live.arrivesIn.replace("{time}",time);
+      return {verified:false,eta,detail:live.expectedTrip.replace("{time}",departure),following:scheduled.departureAt>now?live.nextVehicle:"",message:eta,
         source:"scheduled",arrivalClock:clock(scheduled.arrivalAt),basis:scheduled.basis,tripKey:scheduled.tripKey};
     }
     if(!sample&&!closed&&candidates.length&&schedule) {
@@ -66,7 +68,7 @@ export function stopArrivalLabels(route: ServiceRoute, locale: Locale, sample: b
     const detail = "";
     if (arrival) {
       switch (arrival.state) {
-        case "approaching": eta = `${copy.approx} ${minutes}`; break;
+        case "approaching": eta = live.arrivesIn.replace("{time}",minutes); break;
         case "arrived": eta = arrival.run===(nextAvailable?(schedule?.demoDepartures?.length??1):1)-1?live.lastPassed:copy.arrived; break;
         case "passed": eta = live.lastPassed; break;
         case "delayed": eta = live.arrivalUnknown; break;

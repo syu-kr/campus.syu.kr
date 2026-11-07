@@ -49,6 +49,7 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
     const item=serviceRoutes.find(item=>item.locationRouteId===bus.routeid)!;
     return `${copy[item.name]} · ${live.vehicleNumber.replace("{number}",String(index+1))} · ${bus.status===2?copy.campusBound:copy.stationBound}`;
   },[copy,live]);
+  const arrivalLabel=(minutes:number,arrivalAt?:number)=>`${live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`)}${arrivalAt===undefined?"":` · ${new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(arrivalAt)}`}`;
   function arrivalMessage(visit:Visit) {
     if(!demo&&data&&route&&visit.id===serviceVisits[route.id][0].id) {
       const date=koreaDateKey(now),timetable=serviceTimetable({route,date,now,data});
@@ -70,11 +71,10 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
       if(arrival.state==="passed") return lastRun?live.lastPassed:copy.passed;
       if(arrival.state==="arrived") return lastRun?live.lastPassed:copy.arrived;
       if(arrival.seconds===null) return live.arrivalUnknown;
-      const time=`${Math.ceil(arrival.seconds/60)}${locale==="ko"?"":" "}${copy.minutes}`;
-      return live.arrivesIn.replace("{time}",time);
+      return arrivalLabel(Math.ceil(arrival.seconds/60),demo.epoch===undefined?undefined:demo.epoch+(demo.elapsed+arrival.seconds)*1000);
     }
     const minutes=estimates.minutes.get(visit.id);
-    return minutes===undefined?live.arrivalUnknown:live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`);
+    return minutes===undefined?live.arrivalUnknown:arrivalLabel(minutes,estimates.observations?.get(visit.id)?.arrivalAt);
   }
   const selectedVisit=visits.find(visit=>visit.id===stopId);
   return <Modal isOpen title={`${live.fleetMap}${demo?` · ${live.demoBadge}`:""}`} onClose={onClose} size="lg" className="shuttle-fleet-dialog" overlayClassName="shuttle-fleet-overlay" bodyClassName="shuttle-fleet-body">
@@ -98,8 +98,6 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
           <ol>{visits.map(visit=><li key={visit.id}><button type="button" aria-pressed={stopId===visit.id} onClick={()=>setStopId(visit.id)}>
             <span>{visit.label[locale]}</span><strong>{arrivalMessage(visit)}</strong>
           </button></li>)}</ol>
-          {!demo&&estimates.status==="collecting"&&<p className="text-xs text-neutral-600">{live.arrivalPendingShort}</p>}
-          {!demo&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
         </section>:vehicleId&&<p role="status">{live.vehicleMissing}</p>}
       </aside>
     </div>
