@@ -18,7 +18,7 @@ export function formatPublicHolidayName(name: string, locale: Locale): string {
 
 export const PUBLIC_HOLIDAY_SOURCE_URL =
   "https://www.data.go.kr/data/15012690/openapi.do";
-const MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+export const PUBLIC_HOLIDAY_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
 
 export function emptyPublicHolidays(): PublicHolidaySnapshot {
   return { schemaVersion: 1, sourceUrl: PUBLIC_HOLIDAY_SOURCE_URL, lastSuccessAt: null, years: [], holidays: [] };
@@ -76,7 +76,7 @@ export function getPublicHoliday(date: string, snapshot?: PublicHolidaySnapshot,
   const dateKey = date.replaceAll(".", "-");
   const collectedAt = snapshot?.lastSuccessAt ? Date.parse(snapshot.lastSuccessAt) : NaN;
   const isStale = snapshot?.stale === true || !Number.isFinite(collectedAt) ||
-    now.getTime() - collectedAt > MAX_AGE_MS || collectedAt > now.getTime() + 5 * 60 * 1000;
+    now.getTime() - collectedAt > PUBLIC_HOLIDAY_MAX_AGE_MS || collectedAt > now.getTime() + 5 * 60 * 1000;
   const covered = isDate(dateKey) && snapshot?.years.includes(Number(dateKey.slice(0, 4)));
   const holiday = covered ? snapshot?.holidays.find((item) => item.date === dateKey) : undefined;
   return {
