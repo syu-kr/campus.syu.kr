@@ -10,20 +10,30 @@ function trip(departureAt:number):ScheduledShuttleTrip {
     visitId:visit.id,departureAt,arrivalAt:departureAt+index*60000,travelSeconds:index*60,tripKey:String(departureAt),
   }))};
 }
-it("shows one named active trip, and never builds progress from mixed next-per-stop arrivals",()=>{
-  const first=trip(t),second=trip(t+120000),now=t+150000;
-  const scheduled=new Map([[serviceVisits.seokgye[3].id,first.stops[3]],[serviceVisits.seokgye[1].id,second.stops[1]]]);
-  expect(estimatedProgress(route,[first,second],scheduled,null,now)).toMatchObject({key:second.key,from:0,next:1});
-  expect(estimatedProgress(route,[first,second],scheduled,3,now)).toMatchObject({key:first.key,from:2,next:3});
-  expect(estimatedProgress(route,[first,second],scheduled,1,t+60000)).toBeNull();
-  expect(estimatedProgress(route,[first],scheduled,null,t-1)).toBeNull();
-  expect(estimatedProgress(route,[first],scheduled,null,t+300000)).toBeNull();
-  expect(estimatedProgress(route,[{...first,stops:[...first.stops].reverse()}],scheduled,null,now)).toBeNull();
+it("returns every active trip with its own progress instead of selecting only the newest departure",()=>{
+  const first=trip(t),second=trip(t+120000);
+  expect(estimatedProgress(route,[second,first],t+150000)).toEqual([
+    {key:first.key,from:2,next:3,position:2.5,departureAt:t},
+    {key:second.key,from:0,next:1,position:.5,departureAt:t+120000},
+  ]);
 });
-it("moves the estimated bus continuously between the same trip's predicted stops",()=>{
-  const first=trip(t),scheduled=new Map([[serviceVisits.seokgye[1].id,first.stops[1]]]);
-  expect(estimatedProgress(route,[first],scheduled,null,t+15000)?.position).toBe(.25);
-  expect(estimatedProgress(route,[first],scheduled,null,t+45000)?.position).toBe(.75);
-  expect(estimatedProgress(route,[first],scheduled,null,t+60000)?.position).toBe(1);
-  expect(estimatedProgress(route,[first],scheduled,null,t+90000)?.position).toBe(1.5);
+it("keeps all three overlapping departures and removes only the trip that actually ends",()=>{
+  const trips=[trip(t),trip(t+60000),trip(t+120000)];
+  expect(estimatedProgress(route,trips,t+150000)).toHaveLength(3);
+  expect(estimatedProgress(route,trips,t+300000).map(item=>item.key)).toEqual([trips[1].key,trips[2].key]);
+});
+it("excludes future, completed, wrong-day, malformed and duplicate trips",()=>{
+  const first=trip(t);
+  expect(estimatedProgress(route,[first],t-1)).toEqual([]);
+  expect(estimatedProgress(route,[first],t+300000)).toEqual([]);
+  expect(estimatedProgress(route,[trip(t-86400000)],t+30000)).toEqual([]);
+  expect(estimatedProgress(route,[{...first,stops:[...first.stops].reverse()}],t+30000)).toEqual([]);
+  expect(estimatedProgress(route,[first,first],t+30000)).toHaveLength(1);
+});
+it("moves every estimated bus continuously within its own trip",()=>{
+  const first=trip(t);
+  expect(estimatedProgress(route,[first],t+15000)[0].position).toBe(.25);
+  expect(estimatedProgress(route,[first],t+45000)[0].position).toBe(.75);
+  expect(estimatedProgress(route,[first],t+60000)[0].position).toBe(1);
+  expect(estimatedProgress(route,[first],t+90000)[0].position).toBe(1.5);
 });

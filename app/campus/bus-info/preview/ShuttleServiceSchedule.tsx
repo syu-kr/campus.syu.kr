@@ -26,9 +26,9 @@ export default function ShuttleServiceSchedule({route,now,data}:{route:ServiceRo
   const winter=friday?winterDepartures.friday:winterDepartures.weekdays;
   const title=categories.find(item=>item.key===key)!.label;
   const groups=publishedWinter
-    ? [{label:live.stationDeparts,times:winter.station},{label:copy.schoolDeparture,times:winter.campus}]
+    ? [{label:copy.schoolDeparture,times:winter.campus},{label:live.stationDeparts,times:winter.station}]
     : [{label:title,times}];
-  const applied=context.current.status==="ready"&&key===context.currentKey&&friday===context.defaultFriday;
+  const applied=context.current.status==="ready"&&key===context.currentKey&&(key==="exception"||friday===context.defaultFriday);
   return <section id="preview-timetable" tabIndex={-1} aria-label={copy.departureTimetable} className="shuttle-timetable p-4 space-y-3">
     <h2 className="text-base font-bold">{publishedWinter?live.vacationRoute:route.oneWay?`${copy.hwarangdae} → ${copy.school}`:`${copy.school} → ${copy[route.name]} → ${copy.school}`}</h2>
     <div className="shuttle-table-categories" role="group" aria-label={live.tableCategory} data-category-count={categories.length}>
@@ -41,12 +41,15 @@ export default function ShuttleServiceSchedule({route,now,data}:{route:ServiceRo
     {period&&<p className="text-xs text-neutral-600">{period.startDate} ~ {period.endDate}{!context.affects?` · ${live.sameSemester}`:""}</p>}
     {key==="vacation"&&vacation&&<p className="text-xs text-neutral-600">{vacation.startDate} ~ {vacation.endDate}</p>}
     <p className="text-xs text-neutral-600">{live.departureTableNote}</p>
-    {groups.map(group=>group.times.length?<div key={group.label}>
+    {groups.map(group=>{
+      const departureAt=(time:string)=>Date.parse(`${context.date}T${time}:00+09:00`);
+      const next=applied?group.times.find(time=>departureAt(time)>=now.getTime()):undefined;
+      return group.times.length?<div key={group.label}>
       {publishedWinter&&<h4 className="text-sm font-semibold">{group.label}</h4>}
       <ul role="list" className="shuttle-timetable-grid" aria-label={group.label}>
-        {group.times.map(time=><li key={time}><time>{time}</time>{time===group.times.at(-1)&&<small>{copy.lastDeparture}</small>}</li>)}
+        {group.times.map(time=><li key={time} data-past={applied&&departureAt(time)<now.getTime()} data-next={time===next} aria-current={time===next?"true":undefined}><time>{time}</time>{time===group.times.at(-1)&&<small>{copy.lastDeparture}</small>}</li>)}
       </ul>
-    </div>:<p key={group.label} className="text-sm text-neutral-600">{data.source==="unavailable"?live.sourceUnavailable:key==="vacation"?live.noVacation:key==="online"?live.noOnline:copy.unavailableDay}</p>)}
+    </div>:<p key={group.label} className="text-sm text-neutral-600">{data.source==="unavailable"?live.sourceUnavailable:key==="vacation"?live.noVacation:key==="online"?live.noOnline:copy.unavailableDay}</p>;})}
     {(period?.additionalServices??[]).filter(item=>item.destination===route.id).map((item,index)=>{const entry=formatShuttleAdditionalService(item,locale);return <p key={index} className="text-sm">{live.extraService} · {entry.value}</p>;})}
     <SourceAttribution sources={[{name:live.sourceSchool,url:schoolBusSource},...(period?.sourceUrl?[{name:live.sourceSpecial,url:period.sourceUrl}]:[])]} />
   </section>;

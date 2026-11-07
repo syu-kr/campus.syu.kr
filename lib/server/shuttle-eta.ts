@@ -41,8 +41,8 @@ export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
   const context={serviceDate:day,version:data.version,generatedAt:+now,validUntil:Number.isFinite(validUntil)?validUntil:+now};
   if (!Object.keys(plans).length) return { status: "learning", arrivals: [], scheduledArrivals: [], trips: [], context };
   const prior=scheduledProfiles?.version===version&&scheduledProfiles.validUntil>Date.now()?scheduledProfiles:undefined;
-  const scheduled=(live:TimingProfiles,history:TimingProfiles,at:number)=>{
-    const trips=scheduledShuttleTrips(live,history,plans,patterns,at);
+  const scheduled=(live:TimingProfiles,history:TimingProfiles,at:number,until:number)=>{
+    const trips=scheduledShuttleTrips(live,history,plans,patterns,at,until);
     return {trips,scheduledArrivals:nextScheduledShuttleArrivals(trips,at)};
   };
   if (!allowed.length) {
@@ -53,7 +53,7 @@ export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
     }
     if (etaServiceDate(Date.now()) !== day) return { status: "learning", arrivals: [] };
     const profiles=prior??scheduledProfiles!;
-    return { status: "learning", arrivals: [], ...scheduled(profiles.live,profiles.history,Date.now()), context };
+    return { status: "learning", arrivals: [], ...scheduled(profiles.live,profiles.history,Date.now(),context.validUntil), context };
   }
   const [stateResult,historyResult] = await Promise.allSettled([readShuttleState(), readShuttleHistory(version)]);
   const live=stateResult.status==="fulfilled"?stateResult.value:undefined;
@@ -79,7 +79,7 @@ export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
   return {
     status: "learning",
     arrivals: learningArrivals(compatible, history, livePlans, readAt, vehicleId === undefined ? undefined : shuttleVehicleKey(vehicleId, readAt)),
-    ...(vehicleId === undefined ? scheduled(profiles,history,readAt) : {}),
+    ...(vehicleId === undefined ? scheduled(profiles,history,readAt,forecastExpiry) : {}),
     context:{...context,generatedAt:readAt,validUntil:forecastExpiry,...degraded?{degraded:true}:{}},
   };
 }

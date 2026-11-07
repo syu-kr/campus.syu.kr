@@ -80,7 +80,7 @@ it.each(["vehicleId=","vehicleId=..%2Fprivate","vehicleId="+"a".repeat(129),"veh
 it("keeps stale observations out while preserving known scheduled estimates on a current read error",async()=>{
   const saved=current();m.get.mockResolvedValue({data:()=>saved});vi.setSystemTime(now+90000);
   expect((await(await GET()).json()).arrivals).toEqual([]);
-  vi.setSystemTime(now+96000);m.get.mockRejectedValueOnce(new Error("private detail"));
+  vi.setSystemTime(now+121000);m.get.mockRejectedValueOnce(new Error("private detail"));
   const degraded=await(await GET()).json();
   expect(degraded.arrivals).toEqual([]);expect(degraded.scheduledArrivals.length).toBeGreaterThan(0);expect(degraded.context.degraded).toBe(true);
   m.get.mockClear();m.holidays.mockResolvedValue({...holidays,stale:true});expect((await(await GET()).json()).arrivals).toEqual([]);expect(m.get).not.toHaveBeenCalled();
@@ -97,6 +97,20 @@ it("publishes schedule identity, bounded trip visits and a fixed five-minute out
   expect(fallback.context).toMatchObject({degraded:true,validUntil:now+300000});
   expect(fallback.arrivals).toEqual([]);expect(fallback.scheduledArrivals.length).toBeGreaterThan(0);
   vi.setSystemTime(now+301000);expect((await GET()).status).toBe(503);
+});
+it("includes rapid departures within the actual normal and outage response deadline without extra reads",async()=>{
+  m.buses.mockResolvedValue(buses.map(bus=>bus.id==="shuttle-0"?{...bus,schedules:{...bus.schedules,mondayToThursday:["15:01","15:02","15:03","15:06","15:07"]}}:bus));
+  m.periods.mockResolvedValue({...periods,specialPeriods:[]});
+  const departures=(body:{trips:{route:string;departureAt:number}[]})=>body.trips.filter(trip=>trip.route==="hwarangdae").map(trip=>trip.departureAt);
+  const expected=[1,2,3,6].map(minute=>now+minute*60000);
+  const first=await(await GET()).json();
+  expect(departures(first)).toEqual(expected);
+  expect(m.get.mock.calls.map(call=>call[0])).toEqual(["current","history"]);
+  vi.setSystemTime(now+121000);m.get.mockRejectedValue(new Error("private storage failure"));
+  const fallback=await(await GET()).json();
+  expect(fallback.context).toMatchObject({degraded:true,validUntil:now+300000});
+  expect(departures(fallback)).toEqual(expected);
+  expect(m.get.mock.calls.map(call=>call[0])).toEqual(["current","history","current","model"]);
 });
 it("does not replace a failed initial history read with a road-only model",async()=>{
   m.get.mockImplementation(async id=>{if(id==="history")throw new Error("private history failure");return{data:()=>current()};});

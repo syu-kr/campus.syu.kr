@@ -10,26 +10,23 @@ type Cursor = ReturnType<typeof advancePilotObservation>["state"];
 type StoredState = LearningState & { cursors?: Cursor[]; lastFrameEmpty?: boolean; revision?: number };
 type Field = PilotFieldEvent & { vehicleKey: string };
 type WriteBlock = () => "closed" | "delayed" | undefined;
-const pending = new Map<number, Promise<string>>();
-let lastSavedWindow = -1;
+const SAVE_INTERVAL_MS = 60_000;
+let pending: Promise<string> | undefined;
+let nextReceiptAt = -Infinity;
 
 export async function savePilotSample(rows: PilotObservation[], receipt: number, writeBlock: WriteBlock, field?: Field): Promise<string> {
   const blocked = writeBlock();
   if (blocked) return blocked;
-  const window = Math.floor(receipt / 5_000);
   if (!field) {
-    if (window <= lastSavedWindow) {
+    if (receipt < nextReceiptAt) {
       recordShuttleMetric("collection.frame", { cacheHits: 1 });
       return "duplicate";
     }
-    const existing = pending.get(window);
-    if (existing) return existing.then(result => writeBlock() ?? (result === "saved" || result === "duplicate" ? "duplicate" : result));
-    const operation = saveFrame(rows, receipt, writeBlock).then(result => {
-      if (result === "saved" || result === "duplicate") lastSavedWindow = Math.max(lastSavedWindow, window);
-      return result;
-    });
-    pending.set(window, operation);
-    try { return await operation; } finally { if (pending.get(window) === operation) pending.delete(window); }
+    if (pending) return pending.then(result => writeBlock() ?? (result === "saved" || result === "duplicate" ?
+      receipt < nextReceiptAt ? "duplicate" : savePilotSample(rows, receipt, writeBlock) : result));
+    const operation = saveFrame(rows, receipt, writeBlock);
+    pending = operation;
+    try { return await operation; } finally { if (pending === operation) pending = undefined; }
   }
   return saveFrame(rows, receipt, writeBlock, field);
 }
@@ -39,20 +36,22 @@ async function saveFrame(rows: PilotObservation[], receipt: number, writeBlock: 
   const receipts = db.collection("shuttle_pilot_receipts"), sample = receipts.doc(String(receipt));
   const latest = db.collection("shuttle_eta").doc("current");
   const model = db.collection("shuttle_eta").doc("model");
-  let committed: StoredState | undefined, writes = 0;
+  let committed: StoredState | undefined, readback: StoredState | undefined, gate = -Infinity, writes = 0;
   const result = await db.runTransaction(async transaction => {
-    committed = undefined; writes = 0;
+    committed = undefined; readback = undefined; gate = -Infinity; writes = 0;
     recordShuttleMetric("collection.transaction", { attempts: 1, reads: 1 });
     const current = await transaction.get(latest);
     const stored = current.data() as (StoredState & { schemaVersion?: number }) | undefined;
+    if (stored?.receivedAt && Number.isSafeInteger(stored.receivedAt)) gate = stored.receivedAt + SAVE_INTERVAL_MS;
+    if (stored?.schemaVersion === 3 && Array.isArray(stored.runs)) readback = stored;
     const blocked = writeBlock();
     if (blocked) return blocked;
-    // The existing current document is the cross-worker watermark: one frame per five-second window.
-    if (!field && stored?.receivedAt && Math.floor(receipt / 5_000) <= Math.floor(stored.receivedAt / 5_000)) return "duplicate";
-    if (!field && rows.length === 0 && stored?.lastFrameEmpty) return "duplicate";
+    // Elapsed time, rather than minute buckets, prevents two writes around a clock boundary.
+    if (!field && receipt < gate) return "duplicate";
+    if (!field && rows.length === 0 && stored?.lastFrameEmpty) { gate = receipt + SAVE_INTERVAL_MS; return "duplicate"; }
     recordShuttleMetric("collection.transaction", { reads: 1 });
     const existing = await transaction.get(sample);
-    if (existing.exists && !field) return "duplicate";
+    if (existing.exists && !field) { gate = Math.max(gate, receipt + SAVE_INTERVAL_MS); return "duplicate"; }
     let currentData = stored?.schemaVersion === 3 ? stored : undefined;
     if (!currentData) {
       recordShuttleMetric("collection.transaction", { reads: 1 });
@@ -116,6 +115,7 @@ async function saveFrame(rows: PilotObservation[], receipt: number, writeBlock: 
         cursors: [...cursors.values()].filter(cursor => learningReceipt - cursor.observedAt <= 120_000).sort((a, b) => b.observedAt - a.observedAt).slice(0, 100),
         lastFrameEmpty: receipt >= currentData.receivedAt ? rows.length === 0 : stored?.lastFrameEmpty ?? false,
       };
+      gate = committed.receivedAt + SAVE_INTERVAL_MS;
       transaction.set(latest, { ...committed, schemaVersion: 3, expires_at: admin.firestore.Timestamp.fromMillis(learningReceipt + 30 * 86400_000) });
       writes++;
       if (JSON.stringify(currentData.profiles) !== JSON.stringify(learning.profiles)) {
@@ -126,6 +126,8 @@ async function saveFrame(rows: PilotObservation[], receipt: number, writeBlock: 
     return "saved";
   });
   if (committed) publishShuttleState(committed);
+  else if (readback) publishShuttleState(readback);
+  if (result === "saved" || result === "duplicate") nextReceiptAt = Math.max(nextReceiptAt, gate);
   recordShuttleMetric("collection.transaction", { writes });
   return result;
 }

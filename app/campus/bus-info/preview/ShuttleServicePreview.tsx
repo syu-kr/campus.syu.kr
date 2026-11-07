@@ -22,7 +22,6 @@ import { defaultServiceRoute, receivedProgress } from "./service-visits";
 import ShuttlePreviewMap from "./ShuttlePreviewMap";
 import ShuttleServiceSchedule from "./ShuttleServiceSchedule";
 import ShuttleStopTimeline from "./ShuttleStopTimeline";
-import ShuttleUpcomingDepartures from "./ShuttleUpcomingDepartures";
 import { stopArrivalLabels } from "./service-arrival-labels";
 import { shuttleRefreshDelay } from "@/lib/shuttle-polling";
 import { pilotRoutes } from "@/lib/shuttle-service-window";
@@ -63,7 +62,7 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
   const progress=useMemo(()=>operatingPreview?demoProgress(route,delayedAt??elapsed,nextAvailable,demoSchedules[route.id]):receivedProgress(route,received.locations,received.stale),[operatingPreview,route,received.locations,received.stale,delayedAt,elapsed,nextAvailable,demoSchedules]);
   const arrivals=stopArrivalLabels(route,locale,operatingPreview,elapsed,nextAvailable,delayed,closed,
     estimates.minutes,{now,departures:closed?[]:today.scheduledTimes,scheduled:estimates.scheduled,observations:estimates.observations,trips:estimates.trips,progress,demoDepartures:demoSchedules[route.id],demoEpoch:Date.parse(data.nowISO)});
-  const expected=!operatingPreview&&!closed&&!progress.length&&!arrivals.some(row=>row.source==="observed")&&arrivals.some(row=>row.source==="scheduled")&&(selected===null||arrivals[selected]?.source==="scheduled")?estimatedProgress(route,estimates.trips,estimates.scheduled,selected,now.getTime()):null;
+  const expected=!operatingPreview&&!closed&&!progress.length&&arrivals.some(row=>row.source)?estimatedProgress(route,estimates.trips,now.getTime()):[];
   function routeStatus(item:typeof route) {
     const timetable=serviceTimetable({route:item,date:koreaDateKey(now),now,data});
     if(weekend||timetable.status==="closed"||!timetable.scheduledTimes.length) return live.noSchedule;
@@ -71,15 +70,6 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
     if(now.getTime()<departure(timetable.scheduledTimes[0])) return live.scheduledStart;
     return now.getTime()<=departure(timetable.scheduledTimes.at(-1)!)?live.running:live.noSchedule;
   }
-  function positionStatus() {
-    if(operatingPreview) return delayed?live.lastPosition:"";
-    if(!collectionOpen||weekend||closed||positions.isPending) return "";
-    if(positions.isError) return live.locationError;
-    if(!state.available) return live.expiredReceipt;
-    if(state.stale) return live.delayedReceipt;
-    return "";
-  }
-  const positionText=positionStatus();
   const timeLabel=(date:Date)=>new Intl.DateTimeFormat(locale==="ko"?"ko-KR":"en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(date);
   useEffect(()=>{if(operatingPreview) return;const timer=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(timer);},[operatingPreview]);
   useEffect(()=>{
@@ -110,12 +100,9 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
     <div className="shuttle-service-columns">
     <section aria-label={copy.routeDetails} className="shuttle-service-route space-y-3">
       <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} progress={progress} expected={expected} onMapOpen={()=>setMapOpen(true)} />
-      {positionText&&<div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600"><p role="status">{positionText}</p>{!operatingPreview&&(positions.isError||state.stale)&&<Button variant="ghost" disabled={positions.isFetching} onClick={()=>void positions.refetch()}>{live.refresh}</Button>}</div>}
-      {!operatingPreview&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
     </section>
     <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
     </div>
-    <ShuttleUpcomingDepartures data={data} now={now} />
     {mapOpen&&<ShuttlePreviewMap received={fleet} now={now} locale={locale} data={data} etaEndpoint={etaEndpoint} onClose={()=>setMapOpen(false)} demo={operatingPreview?{elapsed:delayedAt??elapsed,nextAvailable,delayed,departuresByRoute:demoSchedules,epoch:Date.parse(data.nowISO)}:undefined}/>}
     {!operatingPreview&&surface==="preview"&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status} locations={received.locations}/>}
     {operatingPreview&&<details className="border-t border-neutral-200 pt-2"><summary className="cursor-pointer text-sm font-semibold">{live.demoControls}</summary>

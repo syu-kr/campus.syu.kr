@@ -55,7 +55,7 @@ function legTime(from: string, fallback: number, pattern: string, at: number, li
   const weight=n/(n+5);
   return {seconds:observed===null?prior:prior*(1-weight)+observed*weight,basis:n?"observed" as const:historical!==null?"history" as const:"route" as const};
 }
-export function scheduledShuttleTrips(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number): ScheduledShuttleTrip[] {
+export function scheduledShuttleTrips(live: TimingProfiles, history: TimingProfiles, plans: DeparturePlans, patterns: Partial<Record<number, string>>, now: number, validUntil = now): ScheduledShuttleTrip[] {
   const selected: ScheduledShuttleTrip[] = [];
   for (const [id, departures] of Object.entries(plans)) {
     const route = routes[Number(id)], pattern = patterns[Number(id)];
@@ -84,9 +84,10 @@ export function scheduledShuttleTrips(live: TimingProfiles, history: TimingProfi
       if (stops.length === visits.length) trips.push({key,route,pattern,departureAt,stops});
     }
     const active=trips.filter(trip=>trip.departureAt<=now&&trip.stops.at(-1)!.arrivalAt>=now);
-    const next=trips.find(trip=>trip.departureAt>now);
+    const future=trips.filter(trip=>trip.departureAt>now&&trip.departureAt<=validUntil);
+    const next=trips.find(trip=>trip.departureAt>Math.max(now,validUntil));
     const last=[...trips].reverse().find(trip=>trip.stops.at(-1)!.arrivalAt<now);
-    selected.push(...active,...(next?[next]:[]),...(last?[last]:[]));
+    selected.push(...active,...future,...(next?[next]:[]),...(last?[last]:[]));
   }
   return selected;
 }

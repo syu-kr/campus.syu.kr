@@ -8,10 +8,10 @@ import { serviceRoadPaths } from "./service-visits";
 import { demoLocations } from "./service-demo";
 import { testServiceData } from "./service-test-data";
 
-const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>()}));
+const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>(),observations:new Map<string,{arrivalAt:number}>()}));
 vi.mock("@/lib/kakao-maps-loader",()=>({loadKakaoMapsSdk:async()=>m.ready}));
-vi.mock("./use-stop-arrivals",()=>({useStopArrivals:(...args:unknown[])=>{m.eta(...args);return {minutes:m.minutes,status:"waiting"};}}));
-beforeEach(()=>{m.ready=true;m.minutes.clear();m.eta.mockClear();vi.stubGlobal("ResizeObserver",class {observe(){}disconnect(){}});});
+vi.mock("./use-stop-arrivals",()=>({useStopArrivals:(...args:unknown[])=>{m.eta(...args);return {minutes:m.minutes,observations:m.observations,status:"learning"};}}));
+beforeEach(()=>{m.ready=true;m.minutes.clear();m.observations.clear();m.eta.mockClear();vi.stubGlobal("ResizeObserver",class {observe(){}disconnect(){}});});
 afterEach(()=>{delete window.kakao;vi.unstubAllGlobals();});
 const buses:BusLocation[]=[
   {id:"bus-A",name:"not-shown-A",lat:"37.62",lon:"127.08",routeid:1,status:2},
@@ -48,20 +48,32 @@ it("selects a vehicle's complete route and scopes predictions to that vehicle",a
   choose(/석계역/);
   const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
-  expect(within(panel).getByText(/약 7분/)).toBeInTheDocument();
+  expect(within(panel).getByText(/7분 후/)).toBeInTheDocument();
   expect(container.querySelectorAll("polyline")).toHaveLength(5);
   expect(container.querySelectorAll("[data-stop-pin]")).toHaveLength(5);
   expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(3);
   expect(m.eta).toHaveBeenLastCalledWith(now,true,"bus-B",true,"/campus/bus-info/preview/eta");
   fireEvent.click(within(panel).getByRole("button",{name:/석계역 4번 출구/}));
-  expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 약 7분");
+  expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 7분 후");
   rerender(<ShuttlePreviewMap {...props} received={{locations:buses,stale:true}}/>);
-  expect(within(panel).queryByText(/약 7분/)).not.toBeInTheDocument();
+  expect(within(panel).queryByText(/7분 후/)).not.toBeInTheDocument();
   expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B",true,"/campus/bus-info/preview/eta");
   rerender(<ShuttlePreviewMap {...props} received={{locations:[buses[0],buses[2]],stale:false}}/>);
   expect(screen.queryByRole("region",{name:"선택 차량 정류장별 도착예상"})).not.toBeInTheDocument();
   expect(screen.getByText("선택한 차량의 위치를 다시 확인해 주세요.")).toBeInTheDocument();
   expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
+});
+it.each([
+  {locale:"ko" as const,group:"지도 차량 선택",vehicle:/석계역/,region:"선택 차량 정류장별 도착예상",stop:/석계역 4번 출구/,missing:/태릉입구역 7번 출구/,eta:"7분 후 · 12:07"},
+  {locale:"en" as const,group:"Select a map vehicle",vehicle:/Seokgye/,region:"Selected vehicle arrivals",stop:/Seokgye Exit 4/,missing:/Taereung Exit 7/,eta:"in 7 min · 12:07"},
+])("shows the countdown and exact arrival clock, with a dash for missing predictions: $locale",({locale,group,vehicle,region,stop,missing,eta})=>{
+  m.ready=false;m.minutes.set("seokgye-4",7);m.observations.set("seokgye-4",{arrivalAt:now.getTime()+7*60000});
+  render(<ShuttlePreviewMap {...props} locale={locale}/>);
+  fireEvent.click(within(screen.getByRole("group",{name:group})).getByRole("button",{name:vehicle}));
+  const panel=screen.getByRole("region",{name:region});
+  expect(within(panel).getByRole("button",{name:stop})).toHaveTextContent(eta);
+  expect(within(panel).getByRole("button",{name:missing})).toHaveTextContent("—");
+  expect(panel).not.toHaveTextContent(/예측 안내|최근 위치 반영|보정 중|최신 위치를 확인/);
 });
 it("supports fallback marker keyboard selection and the Hwarangdae return movement",async()=>{
   m.ready=false;const bus={...buses[0],status:1 as const};
@@ -81,7 +93,7 @@ it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
   let panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("통과");
   choose(/차량 2/);panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
-  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("약 10분");
+  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("10분 후");
   expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id,true,"/campus/bus-info/preview/eta");
 });
 it("labels only the final sample's confirmed terminal arrival as the last bus arrival",()=>{

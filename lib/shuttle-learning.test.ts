@@ -14,6 +14,19 @@ it("returns complete same-trip visits for active trips and only the next future 
     expect(trip.stops.slice(1).every((stop,index)=>stop.arrivalAt>trip.stops[index].arrivalAt)).toBe(true);
   }
 });
+it("keeps every departure inside the response lifetime and just one beyond it",()=>{
+  const plans={1:[t,t+60000,t+120000,t+300000,t+360000]},patterns={1:"regular"};
+  const issuedAt=t-1000,validUntil=issuedAt+300000;
+  const cached=scheduledShuttleTrips({},{},plans,patterns,issuedAt,validUntil);
+  expect(cached.map(trip=>trip.departureAt)).toEqual([t,t+60000,t+120000,t+300000]);
+  const later=t+121000;
+  const active=(trips:ReturnType<typeof scheduledShuttleTrips>)=>trips.filter(trip=>trip.departureAt<=later&&trip.stops.at(-1)!.arrivalAt>later);
+  expect(active(cached)).toHaveLength(3);
+  expect(active(cached).map(trip=>trip.key)).toEqual(active(scheduledShuttleTrips({},{},plans,patterns,later,validUntil)).map(trip=>trip.key));
+  const boundary=scheduledShuttleTrips({},{},plans,patterns,issuedAt,t+60000);
+  expect(boundary.map(trip=>trip.departureAt)).toEqual([t,t+60000,t+120000]);
+  expect(new Set(boundary.map(trip=>trip.key)).size).toBe(boundary.length);
+});
 it("recomputes the next departure in its own time cell and rejects malformed learned values",()=>{
   const profiles={"seokgye-campus-departure":{seconds:600,n:30,cells:{"online:1:27":{seconds:1200,n:100,at:t}}}};
   const trips=scheduledShuttleTrips({},profiles,{2:[t-5*60000,t+10*60000]},{2:"online"},t);
