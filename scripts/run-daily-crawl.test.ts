@@ -213,6 +213,7 @@ describe("independent daily crawler publication", () => {
 
   it("clears stale holiday health after a child recovers without changing skipped sources", async () => {
     const holidayPath = path.join(directory, "public-holidays.json");
+    const githubOutputPath = path.join(directory, "github-output");
     const skippedFiles: DailyCrawlDataFile[] = [...NOTICE_FILES, "cafeteria-menu.json", "announcement-ai-metadata.json"];
     const baselines = await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))));
     const previousNoticeHealth = { status: "fresh", lastAttemptAt: PREVIOUS, lastSuccessAt: PREVIOUS };
@@ -232,7 +233,7 @@ describe("independent daily crawler publication", () => {
       ...source, command: "node", script: path.relative(path.resolve("scripts"), fixturePath),
     }));
 
-    const health = await runDailyCrawl({ ...options(), mode: "holidays", run });
+    const health = await runDailyCrawl({ ...options(), mode: "holidays", run, githubOutputPath });
 
     expect(run).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ fileName: "public-holidays.json" }));
     expect(health["public-holidays.json"]).toEqual({ status: "fresh", lastAttemptAt: ATTEMPT, lastSuccessAt: ATTEMPT });
@@ -240,6 +241,7 @@ describe("independent daily crawler publication", () => {
     expect(await Promise.all(skippedFiles.map((fileName) => readFile(path.join(directory, fileName))))).toEqual(baselines);
     expect(JSON.parse(await readFile(holidayPath, "utf8")).lastSuccessAt).toBe(ATTEMPT);
     expect(console.warn).not.toHaveBeenCalled();
+    expect(await readFile(githubOutputPath, "utf8")).toContain("holiday_result=recovered\n");
   });
 
   it("updates only holidays and preserves notice, cafeteria, AI bytes and skipped health", async () => {
@@ -285,35 +287,45 @@ describe("independent daily crawler publication", () => {
     expect(await readFile(path.join(directory, "public-holidays.json"))).toEqual(previousData);
   });
 
-  it.each([0, 1])("preserves exact holiday baseline after invalid or failed collection (exit %s)", async (exitCode) => {
+  it.each([
+    { exitCode: 0, previousStatus: "fresh", lastSuccessAt: PREVIOUS, result: "first-failure", freshness: "within-freshness-window" },
+    { exitCode: 1, previousStatus: "stale", lastSuccessAt: "2026-09-30T03:00:00.000Z", result: "still-stale", freshness: "overdue" },
+    { exitCode: 1, previousStatus: "stale", lastSuccessAt: undefined, result: "still-stale", freshness: "no-recorded-success" },
+  ])("preserves the holiday baseline and reports $result with $freshness", async ({ exitCode, previousStatus, lastSuccessAt, result, freshness }) => {
     const holidayPath = path.join(directory, "public-holidays.json");
+    const githubOutputPath = path.join(directory, "github-output");
     const holidayBaseline = await readFile(holidayPath);
     await writeFile(healthPath, JSON.stringify({ files: {
-      "public-holidays.json": { status: "fresh", lastAttemptAt: PREVIOUS, lastSuccessAt: PREVIOUS },
+      "public-holidays.json": { status: previousStatus, lastAttemptAt: PREVIOUS, lastSuccessAt },
     } }));
-    const health = await runDailyCrawl({ ...options(), mode: "holidays", run: async () => {
+    const health = await runDailyCrawl({ ...options(), mode: "holidays", githubOutputPath, run: async () => {
       await writeFile(holidayPath, "partial holiday snapshot");
       return { exitCode };
     } });
 
+    const errorCode = exitCode === 0 ? "INVALID_DATA" : "CRAWLER_FAILED";
     expect(await readFile(holidayPath)).toEqual(holidayBaseline);
     expect(health["public-holidays.json"]).toEqual({
-      status: "stale", lastAttemptAt: ATTEMPT, lastSuccessAt: PREVIOUS,
-      errorCode: exitCode === 0 ? "INVALID_DATA" : "CRAWLER_FAILED",
+      status: "stale", lastAttemptAt: ATTEMPT, lastSuccessAt, errorCode,
     });
+    expect(await readFile(githubOutputPath, "utf8")).toBe(
+      `holiday_result=${result}\nholiday_health=lastAttemptAt=${ATTEMPT}, lastSuccessAt=${lastSuccessAt ?? "unknown"}, freshness=${freshness}, errorCode=${errorCode}\n`,
+    );
   });
 
   it.each(["cafeteria", "ai"] as const)("leaves holiday bytes and health unchanged during %s runs", async (mode) => {
     const holidayPath = path.join(directory, "public-holidays.json");
+    const githubOutputPath = path.join(directory, "github-output");
     const holidayBaseline = await readFile(holidayPath);
     const previousHealth = { status: "stale", lastAttemptAt: PREVIOUS, lastSuccessAt: PREVIOUS, errorCode: "CRAWLER_FAILED" };
     await writeFile(healthPath, JSON.stringify({ files: { "public-holidays.json": previousHealth } }));
     const run = vi.fn(async () => ({ exitCode: 0 }));
-    const health = await runDailyCrawl({ ...options(), mode, run });
+    const health = await runDailyCrawl({ ...options(), mode, run, githubOutputPath });
 
     expect(await readFile(holidayPath)).toEqual(holidayBaseline);
     expect(health["public-holidays.json"]).toEqual(previousHealth);
     expect(run.mock.calls).toHaveLength(1);
+    await expect(readFile(githubOutputPath)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("preserves AI health and bytes without running the child when AI is disabled", async () => {

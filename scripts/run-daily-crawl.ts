@@ -8,6 +8,7 @@ import {
   type CrawlSourceHealth,
   type DailyCrawlDataFile,
 } from "../lib/crawl-data-contract";
+import { PUBLIC_HOLIDAY_MAX_AGE_MS } from "../lib/public-holidays";
 
 interface CrawlSource {
   fileName: DailyCrawlDataFile;
@@ -94,6 +95,7 @@ function validatePayload(fileName: DailyCrawlDataFile, payload: Buffer) {
 export async function runDailyCrawl(options: {
   dataDir?: string;
   healthPath?: string;
+  githubOutputPath?: string;
   mode?: "all" | "cafeteria" | "holidays" | "ai";
   aiEnabled?: boolean;
   holidaysEnabled?: boolean;
@@ -122,6 +124,7 @@ export async function runDailyCrawl(options: {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
+  const previousHolidayStatus = health["public-holidays.json"]?.status;
 
   // Verify every backup before any child can modify it. Invalid baselines must stop publication.
   const backups = new Map<DailyCrawlDataFile, Buffer>();
@@ -169,6 +172,27 @@ export async function runDailyCrawl(options: {
   const temporaryPath = `${healthPath}.${process.pid}.tmp`;
   await writeFile(temporaryPath, `${JSON.stringify({ files: health }, null, 2)}\n`);
   await rename(temporaryPath, healthPath);
+
+  const holiday = health["public-holidays.json"];
+  if (options.githubOutputPath && holiday && sources.some(({ fileName }) => fileName === "public-holidays.json")) {
+    const result = holiday.status === "stale"
+      ? (previousHolidayStatus === "stale" ? "still-stale" : "first-failure")
+      : (previousHolidayStatus === "stale" ? "recovered" : null);
+    if (result) {
+      const freshness = !holiday.lastSuccessAt ? "no-recorded-success"
+        : Date.parse(holiday.lastAttemptAt) - Date.parse(holiday.lastSuccessAt) > PUBLIC_HOLIDAY_MAX_AGE_MS ? "overdue"
+          : "within-freshness-window";
+      const detail = [
+        `lastAttemptAt=${holiday.lastAttemptAt}`,
+        `lastSuccessAt=${holiday.lastSuccessAt ?? "unknown"}`,
+        `freshness=${freshness}`,
+        ...(holiday.errorCode ? [`errorCode=${holiday.errorCode}`] : []),
+      ].join(", ");
+      await appendFile(options.githubOutputPath, `holiday_result=${result}\nholiday_health=${detail}\n`).catch(() => {
+        console.warn("::warning::Could not report public holiday health to GitHub Actions. See the daily crawl summary.");
+      });
+    }
+  }
   return health;
 }
 
@@ -179,7 +203,7 @@ async function main() {
       ? "holidays"
       : process.env.CAFETERIA_ONLY_RUN === "true" ? "cafeteria" : "all";
   const aiEnabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
-  const health = await runDailyCrawl({ mode, aiEnabled });
+  const health = await runDailyCrawl({ mode, aiEnabled, githubOutputPath: process.env.GITHUB_OUTPUT });
   const summaryPath = process.env.GITHUB_STEP_SUMMARY;
   if (summaryPath) {
     const lines = [

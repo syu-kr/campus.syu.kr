@@ -52,6 +52,8 @@ jobs:
     outputs:
       changed: ${{ steps.prepare.outputs.changed }}
       version: ${{ steps.prepare.outputs.version }}
+      holiday_result: ${{ steps.collect.outputs.holiday_result }}
+      holiday_health: ${{ steps.collect.outputs.holiday_health }}
     env:
       PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
       PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
@@ -112,6 +114,7 @@ jobs:
           fi
 
       - name: Run independent daily crawlers with validated fallback
+        id: collect
         env:
           PUBLIC_DATA_SERVICE_KEY: ${{ secrets.PUBLIC_DATA_SERVICE_KEY }}
           HOLIDAYS_ONLY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.crawl_scope == 'holidays' }}
@@ -181,3 +184,27 @@ jobs:
       - name: Deploy crawl data to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+
+  public-holiday-health:
+    name: Public holiday health
+    needs: [crawl, deploy]
+    if: >-
+      !cancelled() &&
+      needs.crawl.result == 'success' &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') &&
+      needs.crawl.outputs.holiday_result != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Report public holiday health after publication
+        env:
+          HOLIDAY_RESULT: ${{ needs.crawl.outputs.holiday_result }}
+          HOLIDAY_HEALTH: ${{ needs.crawl.outputs.holiday_health }}
+        run: |
+          if [ "$HOLIDAY_RESULT" = "recovered" ]; then
+            printf '::notice title=Public holiday collection recovered::%s\n' "$HOLIDAY_HEALTH"
+          else
+            printf '::error title=Public holiday collection %s::%s\n' "$HOLIDAY_RESULT" "$HOLIDAY_HEALTH"
+            exit 1
+          fi
