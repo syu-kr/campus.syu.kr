@@ -8,7 +8,7 @@
     "node": ">=24.22.1 <25"
   },
   "overrides": {
-    "@fastify/busboy": "3.2.2",
+    "@fastify/busboy": "3.2.4",
     "@grpc/grpc-js": "1.14.6",
     "glob": "14.0.3",
     "fast-glob@3.3.1": "$fast-glob",
