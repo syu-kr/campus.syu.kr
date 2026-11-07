@@ -1,6 +1,6 @@
-# 셔틀 승객 화면의 운영 전환 리허설
+# 셔틀 승객 화면의 운영 전환 준비
 
-기본 `/campus/bus-info`는 기존 셔틀과 대중교통 화면을 유지한다. 새 승객용 셔틀 화면은 아래 리허설 경로에서 확인한다.
+다음 배포를 위한 기본 `/campus/bus-info` 진입점은 새 승객용 셔틀 화면을 사용하도록 준비했다. 실제 날짜의 공용 로더와 공개 API를 사용하며 기존 대중교통 탭·공유 URL·다국어 경로는 유지한다. 로컬 코드 변경과 실제 프로덕션 배포 완료는 구분한다. 프리뷰와 운영 리허설 경로도 계속 제공한다.
 
 - `/campus/bus-info/preview?view=production`은 실제 날짜의 데이터 로더와 운영용 API를 사용한다.
 - `view=production&scenario=operating`을 함께 전달해도 과거 운행 예시를 켜지 않는다.
@@ -25,14 +25,14 @@
 
 현재 날짜의 ETA 응답에서 운행일·시간표 버전과 `scheduledArrivals`를 확인한 뒤, 같은 버전의 화면에 숫자 예측이 표시되는지 확인한다. 종료 후 숫자가 없는 경우 자료 부재와 막차 표시 정책에 따른 종료를 구별한다. 위치 없는 예정 예측의 표시 성공은 현장 도착 오차 검증과 별개다.
 
-## 향후 진입점 교체
+## 기본 진입점
 
-운영 전환 시 `app/campus/bus-info/page.tsx`에서 기존 초기 데이터 대신 같은 서버 데이터 로더와 승객용 표면을 연결한다.
+`app/campus/bus-info/page.tsx`는 기존 초기 데이터 대신 같은 서버 데이터 로더와 `surface="production"`을 연결한다.
 
 ```tsx
 import BusInfoPageClient from "./BusInfoPageClient";
 import ShuttleServicePreview from "./preview/ShuttleServicePreview";
-import { loadShuttleServiceData } from "./preview/service-data.server";
+import { loadShuttleServiceData } from "@/lib/server/shuttle-service-data";
 import "./preview/preview.css";
 
 export default async function BusInfoPage() {
@@ -45,7 +45,9 @@ export default async function BusInfoPage() {
 }
 ```
 
-승객용 컴포넌트의 `data-shuttle-surface` 표식으로 새 셔틀 스타일을 적용하므로 실제 운영 경로에서도 동일한 폭·탭·반응형 스타일을 재사용한다. 대중교통 탭은 원래 컴포넌트와 공용 스타일을 사용한다. 현재 기본 진입점에는 이 교체를 적용하지 않는다. 되돌릴 때는 기본 진입점을 기존 `initialData` 연결로 복구한다.
+승객용 컴포넌트의 `data-shuttle-surface` 표식으로 새 셔틀 스타일을 적용하므로 기본 경로에서도 동일한 폭·탭·반응형 스타일을 재사용한다. 대중교통 탭은 원래 컴포넌트와 공용 스타일을 사용한다. 기본 경로에서는 예시 진입 링크·관리자 조작이 없으며 `scenario=operating`을 붙여도 예시로 전환하지 않는다. 되돌릴 때는 기본 진입점을 기존 `initialData` 연결로 복구한다.
+
+도착 예상은 소요시간·도착 시각과 필요한 운행 상태만 표시한다. 위치 반영·시간표 기준·예정편·학습 중 등의 근거 설명과 추가 설명 패널은 표시하지 않는다. 숫자를 제공할 자료가 없으면 `—`로 두고 예상 버스의 `예상` 배지는 유지한다. 기점 출발과 막차 출발·도착, 운휴 표시는 기존 정책을 따른다.
 
 ## 검증
 

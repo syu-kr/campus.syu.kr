@@ -1,25 +1,13 @@
 import BusInfoPageClient from "@/app/campus/bus-info/BusInfoPageClient";
-import { getKoreaNow } from "@/lib/home";
-import {
-  getHomeShuttleBuses,
-  getHomeShuttleSpecialPeriods,
-  getHomePublicHolidays,
-} from "@/lib/server/home-data";
+import ShuttleServicePreview from "./preview/ShuttleServicePreview";
+import { loadShuttleServiceData } from "@/lib/server/shuttle-service-data";
+import "./preview/preview.css";
 
 export default async function BusInfoPage() {
-  const [shuttleBuses, shuttleSpecialPeriods, holidays] = await Promise.all([
-    getHomeShuttleBuses(),
-    getHomeShuttleSpecialPeriods(),
-    getHomePublicHolidays(),
-  ]);
+  const data = await loadShuttleServiceData();
   return (
     <BusInfoPageClient
-      initialData={{
-        buses: shuttleBuses,
-        specialPeriods: shuttleSpecialPeriods,
-        holidays,
-        nowISO: getKoreaNow().toISOString(),
-      }}
+      shuttleContent={<ShuttleServicePreview data={data} surface="production" />}
     />
   );
 }
