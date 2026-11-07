@@ -80,7 +80,7 @@ it.each(["vehicleId=","vehicleId=..%2Fprivate","vehicleId="+"a".repeat(129),"veh
 it("keeps stale observations out while preserving known scheduled estimates on a current read error",async()=>{
   const saved=current();m.get.mockResolvedValue({data:()=>saved});vi.setSystemTime(now+90000);
   expect((await(await GET()).json()).arrivals).toEqual([]);
-  vi.setSystemTime(now+96000);m.get.mockRejectedValueOnce(new Error("private detail"));
+  vi.setSystemTime(now+121000);m.get.mockRejectedValueOnce(new Error("private detail"));
   const degraded=await(await GET()).json();
   expect(degraded.arrivals).toEqual([]);expect(degraded.scheduledArrivals.length).toBeGreaterThan(0);expect(degraded.context.degraded).toBe(true);
   m.get.mockClear();m.holidays.mockResolvedValue({...holidays,stale:true});expect((await(await GET()).json()).arrivals).toEqual([]);expect(m.get).not.toHaveBeenCalled();
