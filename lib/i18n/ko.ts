@@ -793,6 +793,7 @@ export const koDictionary = {
           "캠퍼스공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         swTitle: "삼육대학교 SW중심대학 공지",
         uispTitle: "삼육대학교 대학혁신지원사업단 공지",
+        uispPinnedNotices: "고정 공지",
         swDescription: "SW·AI 교육, 장학금 및 프로그램 공지를 확인하세요",
         uispDescription: "대학혁신지원사업단의 프로그램, 모집 및 주요 공지사항을 확인하세요",
         swError:

@@ -804,6 +804,7 @@ export const enDictionary = {
         campusError: "Could not load campus notices. Please try again shortly.",
         swTitle: "SW-Centered University Notices at Sahmyook University",
         uispTitle: "University Innovation Notices at Sahmyook University",
+        uispPinnedNotices: "Pinned notices",
         swDescription:
           "Check SW and AI education, scholarship, and program notices",
         uispDescription: "Check programs, recruitment, and notices from the University Innovation Support Office",
