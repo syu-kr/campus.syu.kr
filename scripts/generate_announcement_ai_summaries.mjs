@@ -4,7 +4,7 @@ import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseEnv } from "node:util";
-import { getUispNoticeUrl, redactUispOriginText } from "../lib/server/uisp-origin.mjs";
+import { getUispBoardUrl, getUispNoticeUrl, redactUispOriginText } from "../lib/server/uisp-origin.mjs";
 import {
   ANNOUNCEMENT_AI_DEFAULT_MODEL,
   ANNOUNCEMENT_AI_PROMPT_VERSION,
@@ -69,6 +69,7 @@ async function main() {
   );
   const enabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
   const uispEnabled = process.env.PUBLIC_UISP_ENABLED === "true";
+  const uispHostname = getUispBoardUrl()?.hostname;
   const refreshGeneration =
     process.env.ANNOUNCEMENT_AI_REFRESH_GENERATION === "true";
   const refreshSince = parseRefreshSince(
@@ -91,6 +92,9 @@ async function main() {
   const preEnrichedByKey = new Map();
 
   for (const announcement of announcements) {
+    const isUisp = announcement.category === "uisp";
+    if (isUisp && !uispHostname) continue;
+
     const key = getMetadataKey(announcement);
     const sourceHash = hashAnnouncement(announcement);
     const existingItem = findExistingMetadataItem(existing.metadata, announcement);
@@ -103,7 +107,7 @@ async function main() {
       nextItems[key] = sanitizeAnnouncementSummaryForPublication({
         ...existingItem,
         sourceHash,
-      });
+      }, isUisp ? uispHostname : undefined);
     }
   }
 
@@ -112,7 +116,7 @@ async function main() {
 
   for (const announcement of announcements) {
     if (candidates.length >= limit) break;
-    if (announcement.category === "uisp" && !uispEnabled) continue;
+    if (announcement.category === "uisp" && (!uispEnabled || !uispHostname)) continue;
 
     const key = getMetadataKey(announcement);
     const existingItem = nextItems[key];
@@ -193,6 +197,7 @@ async function main() {
   for (const [index, announcement] of candidates.entries()) {
     const key = getMetadataKey(announcement);
     const sourceHash = hashAnnouncement(announcement);
+    const privateHostname = announcement.category === "uisp" ? uispHostname : undefined;
     const requestStartedAt = Date.now();
 
     try {
@@ -211,6 +216,7 @@ async function main() {
       const result = await requestAnnouncementSummary({
         announcement: enrichedAnnouncement,
         apiKey: API_KEY,
+        privateHostname,
         model: MODEL_NAME,
         timeoutMs,
         maxRetries,
@@ -229,7 +235,7 @@ async function main() {
         ...(enrichedAnnouncement.detailContentHash
           ? { detailContentHash: enrichedAnnouncement.detailContentHash }
           : {}),
-      });
+      }, privateHostname);
       generatedCount += 1;
       report.succeeded += 1;
       addUsage(report.usage, result.usage);

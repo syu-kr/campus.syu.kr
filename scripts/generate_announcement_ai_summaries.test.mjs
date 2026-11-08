@@ -22,6 +22,8 @@ const SOURCE_FILES = [
   "announcements-sw.json",
   "announcements-uisp.json",
 ];
+const UISP_HOSTNAME = "source.example.invalid";
+const UISP_BOARD_URL = `https://${UISP_HOSTNAME}/bbs/board.php?bo_table=notice`;
 const temporaryDirectories = [];
 
 afterEach(async () => {
@@ -142,12 +144,22 @@ async function runGenerator(overrides, fixtures = {}) {
     );
   }
 
-  const { stdout } = await execFileAsync(process.execPath, [SCRIPT_PATH], {
+  const preload = fixtures.openAiResponse ? ["--import", `data:text/javascript,${encodeURIComponent(`
+    globalThis.fetch = async (request) => {
+      if (String(request) !== "https://model.example.invalid/v1/responses") {
+        throw new Error("Unexpected fetch in test fixture");
+      }
+      return Response.json(${JSON.stringify(fixtures.openAiResponse)});
+    };
+  `)}`] : [];
+  const { stdout } = await execFileAsync(process.execPath, [...preload, SCRIPT_PATH], {
     cwd: directory,
     env: {
       ...process.env,
       OPENAI_API_KEY: "",
+      OPENAI_BASE_URL: "https://model.example.invalid/v1",
       ANNOUNCEMENT_AI_DELAY_MS: "0",
+      UISP_NOTICE_BOARD_URL: "",
       ...overrides,
     },
   });
@@ -164,8 +176,78 @@ async function runGenerator(overrides, fixtures = {}) {
 }
 
 describe("announcement AI metadata artifact", () => {
-  it.each([["", 0], ["true", 1]])("gates new UISP candidates with PUBLIC_UISP_ENABLED=%s", async (value, expectedCandidates) => {
-    await runGenerator({ PUBLIC_UISP_ENABLED: value, ANNOUNCEMENT_AI_ENABLED: "false" }, {
+  it.each([
+    ["reused", UISP_BOARD_URL],
+    ["generated", UISP_BOARD_URL],
+    ["reused", ""],
+    ["reused", "malformed"],
+  ])("protects a %s UISP summary with configuration %s", async (mode, boardUrl) => {
+    const hostname = UISP_HOSTNAME;
+    const encodedHostname = hostname.replace(".", "%252E");
+    const announcement = {
+      id: "uisp-744", title: "프로그램 안내", date: "2026.11.06", author: "대학혁신지원사업단",
+      content: "재학생 프로그램 신청 안내", category: "uisp",
+    };
+    const summarySuffix = ` a@b.co https://${hostname}/x`;
+    const summaryText = "가".repeat(120 - summarySuffix.length);
+    const summary = {
+      summary: `${summaryText}${summarySuffix}`,
+      target: hostname.toUpperCase(),
+      deadline: `신청 기간 ${hostname} 확인`,
+      requiredAction: `원문 확인 ${encodedHostname}`,
+      keywords: [hostname, "프로그램"],
+      importance: "normal",
+      confidence: "medium",
+    };
+    const sourceHash = createHash("sha256").update([
+      "uisp", announcement.title, announcement.date, announcement.author, announcement.content, "",
+    ].join("\n")).digest("hex").slice(0, 16);
+    const key = `uisp:${announcement.id}`;
+
+    const result = await runGenerator({
+      PUBLIC_UISP_ENABLED: "true",
+      UISP_NOTICE_BOARD_URL: boardUrl,
+      ANNOUNCEMENT_AI_ENABLED: mode === "generated" ? "true" : "false",
+      ANNOUNCEMENT_DETAIL_FETCH_ENABLED: "false",
+      OPENAI_API_KEY: mode === "generated" ? "fixture-key" : "",
+    }, {
+      sources: { "announcements-uisp.json": [announcement] },
+      expectedCandidates: mode === "generated" ? 1 : 0,
+      ...(mode === "generated"
+        ? { openAiResponse: { status: "completed", model: hostname, output: [], output_text: JSON.stringify(summary) } }
+        : { metadata: { version: 1, items: { [key]: {
+          ...summary, sourceHash, generatedAt: "2026-11-06T00:00:00Z", model: hostname,
+          legacyField: { [encodedHostname]: true }, [hostname]: "legacy provenance",
+        } } } }),
+    });
+
+    if (boardUrl !== UISP_BOARD_URL) {
+      expect(result.items[key]).toBeUndefined();
+      return;
+    }
+
+    expect(result.items[key]).toMatchObject({
+      summary: `${summaryText} [연락처는 원문 확인]`,
+      target: "unknown",
+      deadline: "신청 기간 확인",
+      requiredAction: "unknown",
+      keywords: ["프로그램", "원문 확인"],
+      sourceHash,
+    });
+    const serialized = JSON.stringify(result).toLowerCase();
+    expect(serialized).not.toContain(hostname);
+    expect(serialized).not.toContain(encodedHostname.toLowerCase());
+  });
+
+  it.each([
+    ["", UISP_BOARD_URL, 0],
+    ["true", "", 0],
+    ["true", "malformed", 0],
+    ["true", UISP_BOARD_URL, 1],
+  ])("gates new UISP candidates with flag %s and configuration %s", async (flag, boardUrl, expectedCandidates) => {
+    await runGenerator({
+      PUBLIC_UISP_ENABLED: flag, UISP_NOTICE_BOARD_URL: boardUrl, ANNOUNCEMENT_AI_ENABLED: "false",
+    }, {
       sources: { "announcements-uisp.json": [{ id: "uisp-744", title: "프로그램 안내", date: "2026.11.06" }] },
       expectedCandidates,
     });
@@ -182,7 +264,7 @@ describe("announcement AI metadata artifact", () => {
       keywords: ["프로그램", "원문 확인"], importance: "normal", confidence: "low", generatedAt: "2026-11-06T00:00:00Z",
       sourceHash: hash([item.category, item.title, item.date, item.author, item.content, ""].join("\n")),
     }]));
-    const result = await runGenerator({ ANNOUNCEMENT_AI_ENABLED: "false" }, {
+    const result = await runGenerator({ ANNOUNCEMENT_AI_ENABLED: "false", UISP_NOTICE_BOARD_URL: UISP_BOARD_URL }, {
       sources: { "announcements-uisp.json": announcements }, metadata: { version: 1, items },
     });
     expect(result.items).toEqual(items);

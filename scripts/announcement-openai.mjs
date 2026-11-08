@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { containsUispOrigin, redactUispOriginText } from "../lib/server/uisp-origin.mjs";
 
 export const ANNOUNCEMENT_AI_PROVIDER = "openai";
 export const ANNOUNCEMENT_AI_DEFAULT_MODEL = "gpt-5.6-luna";
@@ -136,6 +137,7 @@ export async function requestAnnouncementSummary({
   announcement,
   apiKey,
   client,
+  privateHostname,
   model = ANNOUNCEMENT_AI_DEFAULT_MODEL,
   timeoutMs = 30_000,
   maxRetries = 3,
@@ -198,7 +200,7 @@ export async function requestAnnouncementSummary({
     }
 
     return {
-      value: normalizeAnnouncementSummary(parsed, announcement),
+      value: normalizeAnnouncementSummary(parsed, announcement, privateHostname),
       provider: ANNOUNCEMENT_AI_PROVIDER,
       model: response.model || model,
       promptVersion: ANNOUNCEMENT_AI_PROMPT_VERSION,
@@ -226,7 +228,7 @@ function buildAnnouncementSummaryInput(announcement) {
   };
 }
 
-export function normalizeAnnouncementSummary(input, announcement) {
+export function normalizeAnnouncementSummary(input, announcement, privateHostname) {
   if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new AnnouncementAiError("invalid-response", "AI summary must be an object");
   }
@@ -267,12 +269,18 @@ export function normalizeAnnouncementSummary(input, announcement) {
     keywords,
     importance,
     confidence,
-  });
+  }, privateHostname);
 }
 
-export function sanitizeAnnouncementSummaryForPublication(value) {
+export function sanitizeAnnouncementSummaryForPublication(value, privateHostname) {
+  const redact = (text, maxLength, fallback = "") => {
+    const withoutContact = redactPublishedContactInfo(text);
+    return privateHostname
+      ? compactText(redactUispOriginText(withoutContact, privateHostname)).slice(0, maxLength) || fallback
+      : withoutContact.slice(0, maxLength);
+  };
   const keywords = Array.isArray(value.keywords)
-    ? value.keywords.map((keyword) => redactPublishedContactInfo(keyword).slice(0, 30))
+    ? value.keywords.map((keyword) => redact(keyword, 30)).filter(Boolean)
     : [];
   const uniqueKeywords = [...new Set(keywords)];
   for (const fallback of ["원문 확인", "공지 안내"]) {
@@ -280,14 +288,20 @@ export function sanitizeAnnouncementSummaryForPublication(value) {
     if (!uniqueKeywords.includes(fallback)) uniqueKeywords.push(fallback);
   }
 
-  return {
+  const sanitized = {
     ...value,
-    summary: redactPublishedContactInfo(value.summary).slice(0, 120),
-    target: redactPublishedContactInfo(value.target).slice(0, 100),
-    deadline: redactPublishedContactInfo(value.deadline).slice(0, 100),
-    requiredAction: redactPublishedContactInfo(value.requiredAction).slice(0, 100),
+    summary: redact(value.summary, 120, "unknown"),
+    target: redact(value.target, 100, "unknown"),
+    deadline: redact(value.deadline, 100, "unknown"),
+    requiredAction: redact(value.requiredAction, 100, "unknown"),
     keywords: uniqueKeywords,
   };
+  if (!privateHostname) return sanitized;
+
+  return Object.fromEntries(Object.entries(sanitized).filter(([key, field]) =>
+    !containsUispOrigin(key, privateHostname) &&
+    !containsUispOrigin(JSON.stringify(field) ?? "", privateHostname),
+  ));
 }
 
 export function redactPublishedContactInfo(value) {
