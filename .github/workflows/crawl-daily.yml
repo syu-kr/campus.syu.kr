@@ -42,9 +42,9 @@ concurrency:
 
 jobs:
   crawl:
-    if: github.repository == 'syu-kr/campus.syu.kr'
+    if: github.repository == 'syu-kr/campus.syu.kr' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    # Departments: 15 minutes; eight other children: 5 each; leave 15 for setup/publication.
+    # Departments: 15 minutes; eight other sources and AI: 5 each; leave 10 for setup/publication.
     timeout-minutes: 70
     permissions:
       contents: read
@@ -73,6 +73,8 @@ jobs:
       CRAWL_CAFETERIA_URL: ${{ vars.CRAWL_CAFETERIA_URL }}
       # Enable only after deploying the app that accepts the public-holidays source-health key.
       PUBLIC_HOLIDAYS_ENABLED: ${{ vars.PUBLIC_HOLIDAYS_ENABLED }}
+      # Enable after the deployed app accepts the UISP snapshot entry.
+      PUBLIC_UISP_ENABLED: ${{ vars.PUBLIC_UISP_ENABLED }}
       CAFETERIA_ONLY_RUN: ${{ github.event_name == 'schedule' && (github.event.schedule == '17 20 * * *' || github.event.schedule == '17 1 * * *') }}
 
     steps:

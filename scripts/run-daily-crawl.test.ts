@@ -59,7 +59,7 @@ afterEach(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 
-const options = () => ({ dataDir: directory, healthPath, holidaysEnabled: true, now: () => new Date(ATTEMPT) });
+const options = () => ({ dataDir: directory, healthPath, holidaysEnabled: true, uispEnabled: true, now: () => new Date(ATTEMPT) });
 
 describe("crawler process diagnostics", () => {
   it.each([
@@ -99,6 +99,19 @@ describe("crawler process diagnostics", () => {
 });
 
 describe("independent daily crawler publication", () => {
+  it("skips UISP before activation and keeps its bundled baseline", async () => {
+    const visited: DailyCrawlDataFile[] = [];
+    const health = await runDailyCrawl({ ...options(), uispEnabled: false, run: async ({ fileName }) => {
+      visited.push(fileName);
+      return { exitCode: 0 };
+    } });
+
+    expect(visited).not.toContain("announcements-uisp.json");
+    expect(health["announcements-uisp.json"]).toBeUndefined();
+    expect(health["announcements-sw.json"]?.status).toBe("fresh");
+    expect(await readFile(path.join(directory, "announcements-uisp.json"))).toEqual(original);
+  });
+
   it("restores exact failed bytes while keeping another source's successful update", async () => {
     const visited: DailyCrawlDataFile[] = [];
     const health = await runDailyCrawl({ ...options(), run: async ({ fileName }) => {

@@ -67,6 +67,7 @@ async function main() {
     DEFAULT_MAX_RETRIES,
   );
   const enabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
+  const uispEnabled = process.env.PUBLIC_UISP_ENABLED === "true";
   const refreshGeneration =
     process.env.ANNOUNCEMENT_AI_REFRESH_GENERATION === "true";
   const refreshSince = parseRefreshSince(
@@ -110,6 +111,7 @@ async function main() {
 
   for (const announcement of announcements) {
     if (candidates.length >= limit) break;
+    if (announcement.category === "uisp" && !uispEnabled) continue;
 
     const key = getMetadataKey(announcement);
     const existingItem = nextItems[key];

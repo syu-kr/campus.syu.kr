@@ -1,0 +1,71 @@
+name: Verify UISP Crawl
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/crawl-daily.yml"
+      - ".github/workflows/verify-uisp-crawl.yml"
+      - "scripts/crawl_uisp_notices.py"
+      - "scripts/check_uisp_notices.py"
+      - "scripts/crawler_utils.py"
+      - "scripts/run-daily-crawl.ts"
+      - "scripts/publish-crawl-data.ts"
+      - "scripts/public-data-snapshot.ts"
+      - "lib/crawl-data-contract.ts"
+      - "lib/public-data-snapshot.ts"
+      - "public/data/announcements-uisp.json"
+      - "requirements.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: UISP live crawl (no publish)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "24.22.1"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          npm install -g npm@10.9.4
+          npm ci --ignore-scripts --no-audit
+
+      - name: Verify incremental crawl and preserved notices
+        run: |
+          python scripts/check_uisp_notices.py
+          data=public/data/announcements-uisp.json
+          baseline=$(mktemp "$RUNNER_TEMP/uisp-baseline.XXXXXX.json")
+          cp "$data" "$baseline"
+          timeout 300s python scripts/crawl_uisp_notices.py
+          python - "$baseline" "$data" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          before, after = (json.loads(Path(path).read_text(encoding="utf-8")) for path in sys.argv[1:])
+          ids = {item["id"] for item in after}
+          assert before and {item["id"] for item in before} <= ids, "Missing previously collected notices"
+          assert len(ids) == len(after), "Duplicate notice IDs"
+          assert len({item["url"] for item in after}) == len(after), "Duplicate notice URLs"
+          assert all(item["category"] == "uisp" for item in after), "Unexpected notice category"
+          print(f"Preserved {len(before)} baseline notices; {len(after)} collected, latest {max(item['date'] for item in after)}")
+          PY
+          npm run check:crawl-data

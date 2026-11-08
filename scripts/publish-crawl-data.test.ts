@@ -17,6 +17,7 @@ import {
   preparePagesArtifact,
   prepareRollbackArtifact,
   pullCurrent,
+  UISP_NOTICE_FILE,
 } from "./publish-crawl-data";
 
 vi.mock("node:timers/promises", () => ({ setTimeout: vi.fn(async () => {}) }));
@@ -214,6 +215,59 @@ describe("AI metadata publication bytes", () => {
 });
 
 describe("crawler health publication", () => {
+  it("omits an unpublished UISP source until enabled with a successful crawl", async () => {
+    const legacy = await fixtureManifest("pre-uisp");
+    delete legacy.files[UISP_NOTICE_FILE];
+    remote.set("current.json", Buffer.from(JSON.stringify(legacy)));
+    remote.set(`versions/${legacy.version}/manifest.json`, Buffer.from(JSON.stringify(legacy)));
+    vi.stubEnv("PUBLIC_UISP_ENABLED", "");
+    await cacheHealth({ [UISP_NOTICE_FILE]: fresh });
+    await preparePagesArtifact(path.join(root, "disabled"), dataDir, healthPath);
+    expect(await readFile(path.join(root, "github-output"), "utf8")).toBe(`changed=false\nversion=${legacy.version}\n`);
+
+    vi.stubEnv("PUBLIC_UISP_ENABLED", "true");
+    await cacheHealth({ [UISP_NOTICE_FILE]: stale });
+    await preparePagesArtifact(path.join(root, "failed"), dataDir, healthPath);
+    await expect(readFile(path.join(root, "failed", "crawl-data", "current.json"))).rejects.toMatchObject({ code: "ENOENT" });
+
+    await cacheHealth({ [UISP_NOTICE_FILE]: fresh });
+    const outputDir = path.join(root, "activated");
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+    const current = parseCrawlDataManifest(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "current.json"), "utf8")));
+    expect(current.files[UISP_NOTICE_FILE]).toBeDefined();
+    expect(current.sourceHealth?.[UISP_NOTICE_FILE]).toEqual(fresh);
+  });
+
+  it("preserves the active UISP bytes and health while disabled during an unrelated publication", async () => {
+    const manifest = await fixtureManifest("active-uisp", { [UISP_NOTICE_FILE]: fresh });
+    remote.set("current.json", Buffer.from(JSON.stringify(manifest)));
+    vi.stubEnv("PUBLIC_UISP_ENABLED", "");
+    await cacheHealth({ [UISP_NOTICE_FILE]: stale });
+    await writeFile(path.join(dataDir, UISP_NOTICE_FILE), "[ ]");
+    await writeFile(path.join(dataDir, "announcements-academic.json"), "[ ]");
+
+    const outputDir = path.join(root, "preserve-uisp");
+    await preparePagesArtifact(outputDir, dataDir, healthPath);
+
+    const current = parseCrawlDataManifest(JSON.parse(await readFile(path.join(outputDir, "crawl-data", "current.json"), "utf8")));
+    const entry = current.files[UISP_NOTICE_FILE]!;
+    expect(await readFile(path.join(outputDir, "crawl-data", entry.path))).toEqual(remote.get(manifest.files[UISP_NOTICE_FILE]!.path));
+    expect(current.sourceHealth?.[UISP_NOTICE_FILE]).toEqual(fresh);
+  });
+
+  it("blocks reactivating a retained UISP snapshot while the source is disabled", async () => {
+    const previous = await fixtureManifest("retained-uisp", { [UISP_NOTICE_FILE]: fresh });
+    const current = await fixtureManifest("current-legacy");
+    delete current.files[UISP_NOTICE_FILE];
+    current.retainedVersions.push(previous.version);
+    remote.set("current.json", Buffer.from(JSON.stringify(current)));
+    remote.set(`versions/${current.version}/manifest.json`, Buffer.from(JSON.stringify(current)));
+    vi.stubEnv("PUBLIC_UISP_ENABLED", "");
+
+    await expect(prepareRollbackArtifact(previous.version, path.join(root, "blocked-uisp")))
+      .rejects.toThrow("UISP activation requires PUBLIC_UISP_ENABLED");
+  });
+
   it("retries a transient Pages 503 on the same immutable AI file", async () => {
     const manifest = await fixtureManifest("pages-retry", { "cafeteria-menu.json": stale });
     remote.set("current.json", Buffer.from(JSON.stringify(manifest)));

@@ -100,12 +100,14 @@ export async function runDailyCrawl(options: {
   mode?: "all" | "cafeteria" | "holidays" | "ai";
   aiEnabled?: boolean;
   holidaysEnabled?: boolean;
+  uispEnabled?: boolean;
   run?: (source: CrawlSource) => Promise<CrawlResult>;
   now?: () => Date;
 } = {}) {
   const dataDir = options.dataDir || path.join(process.cwd(), "public", "data");
   const healthPath = options.healthPath || path.join(process.cwd(), ".cache", "crawl-data-health.json");
   const holidaysEnabled = options.holidaysEnabled ?? process.env.PUBLIC_HOLIDAYS_ENABLED === "true";
+  const uispEnabled = options.uispEnabled ?? process.env.PUBLIC_UISP_ENABLED === "true";
   if (options.mode === "holidays" && !holidaysEnabled) {
     throw new Error("Public holiday crawling is disabled; deploy the compatible app and enable PUBLIC_HOLIDAYS_ENABLED first.");
   }
@@ -115,7 +117,9 @@ export async function runDailyCrawl(options: {
       ? SOURCES.filter((source) => source.fileName === "cafeteria-menu.json")
       : options.mode === "holidays"
         ? SOURCES.filter((source) => source.fileName === "public-holidays.json")
-        : SOURCES.filter((source) => source.fileName !== "public-holidays.json" || holidaysEnabled);
+        : SOURCES.filter(({ fileName }) =>
+          (fileName !== "public-holidays.json" || holidaysEnabled) &&
+          (fileName !== "announcements-uisp.json" || uispEnabled));
   const run = options.run || runCrawler;
   const now = options.now || (() => new Date());
   let health: Partial<Record<DailyCrawlDataFile, CrawlSourceHealth>> = {};

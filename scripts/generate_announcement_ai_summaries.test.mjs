@@ -126,7 +126,7 @@ async function runGenerator(overrides, fixtures = {}) {
     );
   }
 
-  await execFileAsync(process.execPath, [SCRIPT_PATH], {
+  const { stdout } = await execFileAsync(process.execPath, [SCRIPT_PATH], {
     cwd: directory,
     env: {
       ...process.env,
@@ -135,6 +135,9 @@ async function runGenerator(overrides, fixtures = {}) {
       ...overrides,
     },
   });
+  if (fixtures.expectedCandidates !== undefined) {
+    expect(stdout).toContain(`Announcement AI summary candidates: ${fixtures.expectedCandidates}/`);
+  }
 
   return JSON.parse(
     await readFile(
@@ -145,6 +148,13 @@ async function runGenerator(overrides, fixtures = {}) {
 }
 
 describe("announcement AI metadata artifact", () => {
+  it.each([["", 0], ["true", 1]])("gates new UISP candidates with PUBLIC_UISP_ENABLED=%s", async (value, expectedCandidates) => {
+    await runGenerator({ PUBLIC_UISP_ENABLED: value, ANNOUNCEMENT_AI_ENABLED: "false" }, {
+      sources: { "announcements-uisp.json": [{ id: "uisp-744", title: "프로그램 안내", date: "2026.11.06" }] },
+      expectedCandidates,
+    });
+  });
+
   it("keeps different UISP posts distinct and resolves the same summaries at runtime", async () => {
     const hash = value => createHash("sha256").update(value).digest("hex").slice(0, 16);
     const announcements = [743, 744].map(id => ({
