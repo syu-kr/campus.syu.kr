@@ -42,6 +42,25 @@ it("initially shows vehicles from every route without drawing an unselected rout
   expect(screen.queryByText(/not-shown-/)).not.toBeInTheDocument();
   expect(m.eta).toHaveBeenLastCalledWith(now,false,undefined,true,"/campus/bus-info/preview/eta");
 });
+it.each([
+  {case:"weekend",nowISO:"2026-11-07T13:00:00+09:00",holiday:false,collectionOpen:false,stale:true},
+  {case:"holiday",nowISO:"2026-11-03T13:00:00+09:00",holiday:true,collectionOpen:false,stale:true},
+  {case:"after service",nowISO:"2026-11-03T20:00:00+09:00",holiday:false,collectionOpen:false,stale:true},
+  {case:"unavailable positions during service",nowISO:"2026-11-03T13:00:00+09:00",holiday:false,collectionOpen:true,stale:true},
+  {case:"fresh empty positions",nowISO:"2026-11-03T13:00:00+09:00",holiday:false,collectionOpen:true,stale:false},
+])("keeps the empty map usable without vehicle or delay messages: $case",async({nowISO,holiday,collectionOpen,stale})=>{
+  m.ready=false;
+  const clock=new Date(nowISO);
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO,
+    holidays:holiday?[...testServiceData.holidays.holidays,{date:nowISO.slice(0,10),names:["테스트 공휴일"]}]:testServiceData.holidays.holidays}};
+  render(<ShuttlePreviewMap {...props} now={clock} data={data} received={{locations:[],stale}}/>);
+  const dialog=screen.getByRole("dialog",{name:"전체 셔틀 지도"});
+  await within(dialog).findByText("배경 지도를 불러올 수 없어 간이 노선도를 표시합니다.");
+  expect(dialog).not.toHaveTextContent(/위치 수신 지연|현재 표시할 차량 위치 없음|차량을 선택하면/);
+  expect(within(dialog).queryByRole("group",{name:"지도 차량 선택"})).not.toBeInTheDocument();
+  expect(within(dialog).queryByRole("button",{name:"전체 차량 보기"})).not.toBeInTheDocument();
+  expect(m.eta).toHaveBeenLastCalledWith(clock,false,undefined,collectionOpen,"/campus/bus-info/preview/eta");
+});
 it("selects a vehicle's complete route and scopes predictions to that vehicle",async()=>{
   m.ready=false;m.minutes.set("seokgye-4",7);
   const {container,rerender}=render(<ShuttlePreviewMap {...props}/>);
@@ -57,11 +76,14 @@ it("selects a vehicle's complete route and scopes predictions to that vehicle",a
   expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 7분 후");
   rerender(<ShuttlePreviewMap {...props} received={{locations:buses,stale:true}}/>);
   expect(within(panel).queryByText(/7분 후/)).not.toBeInTheDocument();
+  expect(screen.getByText("위치 수신 지연 · 마지막 수신 자료")).toBeVisible();
   expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B",true,"/campus/bus-info/preview/eta");
   rerender(<ShuttlePreviewMap {...props} received={{locations:[buses[0],buses[2]],stale:false}}/>);
   expect(screen.queryByRole("region",{name:"선택 차량 정류장별 도착예상"})).not.toBeInTheDocument();
   expect(screen.getByText("선택한 차량의 위치를 다시 확인해 주세요.")).toBeInTheDocument();
   expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
+  rerender(<ShuttlePreviewMap {...props} received={{locations:[],stale:true}}/>);
+  expect(screen.queryByText(/선택한 차량의 위치|위치 수신 지연/)).not.toBeInTheDocument();
 });
 it.each([
   {locale:"ko" as const,group:"지도 차량 선택",vehicle:/석계역/,region:"선택 차량 정류장별 도착예상",stop:/석계역 4번 출구/,missing:/태릉입구역 7번 출구/,eta:"7분 후 · 12:07"},
