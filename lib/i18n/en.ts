@@ -805,6 +805,11 @@ export const enDictionary = {
         swTitle: "SW-Centered University Notices at Sahmyook University",
         uispTitle: "University Innovation Notices at Sahmyook University",
         uispPinnedNotices: "Pinned notices",
+        uispOriginalTitle: "Original notice",
+        uispPoster: "Notice poster",
+        uispOriginalUnavailable: "The original notice is unavailable. Please try again shortly.",
+        uispAttachments: "Attachments",
+        uispSourceLink: "Official source (HTTP)",
         swDescription:
           "Check SW and AI education, scholarship, and program notices",
         uispDescription: "Check programs, recruitment, and notices from the University Innovation Support Office",

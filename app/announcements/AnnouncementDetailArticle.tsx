@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Badge } from "@/app/components/Badge";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { useContentTranslation } from "@/app/components/ContentTranslation";
@@ -8,8 +9,13 @@ import { formatDateWithYear, getCategoryColor, getCategoryLabel } from "@/lib/ut
 import type { Locale } from "@/lib/i18n/routing";
 import type { Announcement } from "@/types";
 
-export function AnnouncementDetailArticle({ announcement, locale }: { announcement: Announcement; locale: Locale }) {
+export function AnnouncementDetailArticle({ announcement, locale, sourceContent }: {
+  announcement: Announcement;
+  locale: Locale;
+  sourceContent?: ReactNode;
+}) {
   const dictionary = useDictionary(), text = dictionary.pages.announcements, aiLabels = dictionary.labels.aiSummaryDetails;
+  const isUisp = announcement.category === "uisp";
   const parts = splitPublicContentText(announcement.content || "");
   const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, { ...announcementTranslationFields(announcement), ...Object.fromEntries(parts.map((part, index) => [`contentParts.${index}`, part])) });
   const detail = (field: "summary" | "target" | "deadline" | "requiredAction") => {
@@ -129,9 +135,11 @@ export function AnnouncementDetailArticle({ announcement, locale }: { announceme
                 </section>
               )}
 
-              <div lang={announcement.content ? translation.lang : locale} className="whitespace-pre-wrap text-base leading-8 text-neutral-800">
-                {parts.length ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : text.detailContentFallback}
-              </div>
+              {sourceContent ?? (
+                <div lang={announcement.content ? translation.lang : locale} className="whitespace-pre-wrap text-base leading-8 text-neutral-800">
+                  {parts.length ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : text.detailContentFallback}
+                </div>
+              )}
 
               {announcement.url && (
                 <div className="mt-8 border-t border-neutral-200 pt-5">
@@ -139,9 +147,11 @@ export function AnnouncementDetailArticle({ announcement, locale }: { announceme
                     href={announcement.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+                    className={isUisp
+                      ? "inline-flex min-h-12 items-center text-sm text-primary-700 underline underline-offset-4"
+                      : "inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"}
                   >
-                    {text.originalLink}
+                    {isUisp ? text.uispSourceLink : text.originalLink}
                   </a>
                 </div>
               )}

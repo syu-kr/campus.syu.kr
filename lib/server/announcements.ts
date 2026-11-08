@@ -139,6 +139,11 @@ export async function getAnnouncementById(
   return withAiSummary ?? announcement;
 }
 
+export async function hasUispAnnouncement(id: string) {
+  const { items } = await readAnnouncements("uisp");
+  return items.some((item) => item.category === "uisp" && item.id === id);
+}
+
 export async function getAnnouncementSitemapItems(): Promise<
   Pick<Announcement, "category" | "id">[]
 > {

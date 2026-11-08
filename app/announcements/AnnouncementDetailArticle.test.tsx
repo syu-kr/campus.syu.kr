@@ -19,11 +19,13 @@ const announcement: Announcement = {
   url: "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=744",
 };
 
-it("omits unavailable view counts and preserves the original notice link", () => {
-  render(<AnnouncementDetailArticle announcement={announcement} locale="ko" />);
+it("shows the supplied original content and retains the official source link", () => {
+  render(<AnnouncementDetailArticle announcement={announcement} locale="ko" sourceContent={<p>공식 게시글 본문</p>} />);
   const text = getDictionary("ko").pages.announcements;
   expect(screen.queryByText(text.views)).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: text.originalLink })).toHaveAttribute("href", announcement.url);
+  expect(screen.getByText("공식 게시글 본문")).toBeVisible();
+  expect(screen.queryByText(text.detailContentFallback)).not.toBeInTheDocument();
+  expect(screen.getByRole("link", { name: text.uispSourceLink })).toHaveAttribute("href", announcement.url);
 });
 
 it("shows a view count of zero when the source provides it", () => {

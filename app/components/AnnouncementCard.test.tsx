@@ -59,6 +59,26 @@ it("keeps the original notice as the only link when no AI summary is available",
   expect(original).toHaveFocus();
 });
 
+it("opens UISP notices in the localized detail page from list and home cards", () => {
+  const uispNotice: Announcement = {
+    ...announcement,
+    id: "uisp-743",
+    category: "uisp",
+    url: "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=743",
+  };
+  const { rerender } = render(<AnnouncementCard announcement={uispNotice} href={uispNotice.url} external />);
+  expect(screen.getByRole("link")).toHaveAttribute("href", "/announcements/uisp/uisp-743");
+  expect(screen.getByRole("link")).not.toHaveAttribute("target");
+
+  rerender(
+    <LocaleProvider locale="en">
+      <HomeNoticeCard notice={{ type: "announcement", data: uispNotice }} />
+    </LocaleProvider>,
+  );
+  expect(screen.getByRole("link")).toHaveAttribute("href", "/en/announcements/uisp/uisp-743");
+  expect(screen.getByRole("link")).not.toHaveAttribute("target");
+});
+
 it("shows summary, deadline and action inline while preserving the original notice link", () => {
   const dictionary = getDictionary("ko"), labels = dictionary.labels.aiSummaryDetails;
   const { container } = render(<AnnouncementCard announcement={summarizedAnnouncement} href={announcement.url} external />);

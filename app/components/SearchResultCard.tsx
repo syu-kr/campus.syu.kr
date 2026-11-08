@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import type { AcademicSchedule, Announcement, PhoneNumber } from "@/types";
 import type { SearchCategoryItem } from "@/lib/home";
+import { getAnnouncementDetailPath } from "@/lib/announcement-path";
 import { getSearchSnippet, highlightText } from "@/lib/search";
 import { localizePath } from "@/lib/i18n";
 import { getCategoryLabel } from "@/lib/utils";
@@ -68,27 +69,32 @@ function ScheduleSearchResultCard({ item, query }: { item: AcademicSchedule; que
 }
 
 function AnnouncementSearchResultCard({ announcement, query }: { announcement: Announcement; query: string }) {
-  const dictionary = useDictionary();
+  const dictionary = useDictionary(), locale = useLocale();
+  const isUisp = announcement.category === "uisp";
+  const href = isUisp
+    ? localizePath(getAnnouncementDetailPath(announcement.category, announcement.id), locale)
+    : announcement.url;
   const parts = splitPublicContentText(announcement.content || "");
   const contentFields = announcement.aiSummary?.summary ? {} : Object.fromEntries(parts.map((part, index) => [`contentParts.${index}`, part]));
   const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, { ...announcementTranslationFields(announcement), ...contentFields });
   const translatedContent = translation.translated ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : announcement.content;
   return (
-    <Card key={announcement.id} clickable={Boolean(announcement.url)} className="relative">
-      {announcement.url && (
-        <a
-          href={announcement.url}
-          target="_blank"
-          rel="noopener noreferrer"
+    <Card key={announcement.id} clickable={Boolean(href)} className="relative">
+      {href && (
+        <Link
+          href={href}
+          prefetch={false}
+          target={isUisp ? undefined : "_blank"}
+          rel={isUisp ? undefined : "noopener noreferrer"}
           className="absolute inset-0 z-10 rounded-card focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           aria-label={translation.text("title", announcement.title)}
         >
           <span className="sr-only">{translation.text("title", announcement.title)}</span>
-        </a>
+        </Link>
       )}
       <div
         className={
-          announcement.url
+          href
             ? "pointer-events-none relative z-20 flex items-start justify-between gap-3"
             : "flex items-start justify-between gap-3"
         }

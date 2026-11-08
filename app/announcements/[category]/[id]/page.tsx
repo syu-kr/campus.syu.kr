@@ -9,6 +9,7 @@ import { Container } from "@/app/components/Container";
 import { AnnouncementDetailSkeleton } from "@/app/components/PageLoadingSkeletons";
 import { StructuredDataScript } from "@/app/components/StructuredDataScript";
 import { AnnouncementDetailArticle } from "../../AnnouncementDetailArticle";
+import { UispOriginal } from "../../UispOriginal";
 import {
   getAnnouncementById,
 } from "@/lib/server/announcements";
@@ -119,6 +120,13 @@ async function AnnouncementDetailContent({
     announcement.aiSummary?.summary ||
     announcement.content ||
     text.detailFallbackDescription;
+  const uispOriginal = announcement.category === "uisp"
+    ? (
+      <Suspense fallback={<p role="status" className="text-neutral-700">{dictionary.errorBoundary.loading}</p>}>
+        <UispOriginal id={announcement.id} locale={locale} />
+      </Suspense>
+    )
+    : undefined;
 
   return (
     <>
@@ -140,10 +148,10 @@ async function AnnouncementDetailContent({
       <Container>
         <div className="py-6 md:py-8">
           <Card className="mb-6 md:mb-8" hover={false}>
-            <AnnouncementDetailArticle announcement={announcement} locale={locale} />
+            <AnnouncementDetailArticle announcement={announcement} locale={locale} sourceContent={uispOriginal} />
           </Card>
           <Link
-            href={localizePath("/announcements", locale)}
+            href={localizePath(announcement.category === "uisp" ? "/academic/uisp-notices" : "/announcements", locale)}
             prefetch={false}
             className="mb-6 inline-flex items-center gap-2 font-medium text-primary-600 transition-colors hover:text-primary-700"
           >
