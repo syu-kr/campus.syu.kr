@@ -64,7 +64,7 @@ it("opens UISP notices in the localized detail page from list and home cards", (
     ...announcement,
     id: "uisp-743",
     category: "uisp",
-    url: "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=743",
+    url: "http://uisp-fixture.invalid/bbs/board.php?bo_table=notice&wr_id=743",
   };
   const { rerender } = render(<AnnouncementCard announcement={uispNotice} href={uispNotice.url} external />);
   expect(screen.getByRole("link")).toHaveAttribute("href", "/announcements/uisp/uisp-743");

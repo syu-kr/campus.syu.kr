@@ -4,6 +4,7 @@ import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseEnv } from "node:util";
+import { getUispNoticeUrl, redactUispOriginText } from "../lib/server/uisp-origin.mjs";
 import {
   ANNOUNCEMENT_AI_DEFAULT_MODEL,
   ANNOUNCEMENT_AI_PROMPT_VERSION,
@@ -322,6 +323,7 @@ export function loadLocalEnvFiles(directory = process.cwd(), environment = proce
     "ANNOUNCEMENT_AI_ENABLED", "ANNOUNCEMENT_AI_REFRESH_GENERATION", "ANNOUNCEMENT_AI_REFRESH_SINCE",
     "ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS", "ANNOUNCEMENT_DETAIL_FETCH_ENABLED",
     "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED", "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT",
+    "UISP_NOTICE_BOARD_URL", "PUBLIC_UISP_ENABLED",
   ];
   for (const fileName of [".env.local", ".env"]) {
     const filePath = path.join(directory, fileName);
@@ -348,7 +350,7 @@ async function readAnnouncements() {
         category: toAnnouncementCategory(item.category, category),
         date: String(item.date || ""),
         author: String(item.author || ""),
-        url: typeof item.url === "string" ? item.url : "",
+        url: category !== "uisp" && typeof item.url === "string" ? item.url : "",
         isImportant: Boolean(item.isImportant),
         isPinned: Boolean(item.isPinned),
       }));
@@ -393,9 +395,14 @@ async function enrichAnnouncementContent(announcement, { timeoutMs }) {
     };
   }
 
+  const isUisp = announcement.category === "uisp";
+  const uispUrl = isUisp && announcement.id.startsWith("uisp-")
+    ? getUispNoticeUrl(announcement.id.slice("uisp-".length))
+    : null;
   const detailContent = await fetchAnnouncementDetailContent(
-    announcement.url,
+    isUisp ? uispUrl?.href : announcement.url,
     timeoutMs,
+    uispUrl?.hostname,
   );
 
   if (detailContent) {
@@ -414,8 +421,8 @@ async function enrichAnnouncementContent(announcement, { timeoutMs }) {
   };
 }
 
-export async function fetchAnnouncementDetailContent(url, timeoutMs) {
-  if (!canFetchDetailUrl(url)) return null;
+export async function fetchAnnouncementDetailContent(url, timeoutMs, privateHostname) {
+  if (!url || (!privateHostname && !canFetchDetailUrl(url))) return null;
 
   try {
     const signal = AbortSignal.timeout(timeoutMs);
@@ -433,6 +440,7 @@ export async function fetchAnnouncementDetailContent(url, timeoutMs) {
       if (![301, 302, 303, 307, 308].includes(response.status)) break;
       const location = response.headers.get("location");
       await response.body?.cancel();
+      if (privateHostname) throw new Error("UISP detail redirects are not allowed");
       if (!location || redirects === 5) throw new Error("Invalid or excessive detail redirects");
       const nextUrl = new URL(location, url).href;
       if (!canFetchDetailUrl(nextUrl)) throw new Error("Detail redirect left the school domain");
@@ -440,22 +448,22 @@ export async function fetchAnnouncementDetailContent(url, timeoutMs) {
     }
 
     if (!response.ok) {
-      console.warn(`Detail fetch failed ${response.status}: ${url}`);
-      return null;
+      throw new Error(`HTTP ${response.status}`);
     }
 
     const contentType = response.headers.get("content-type")?.toLowerCase() || "";
     if (!contentType.includes("text/html")) {
-      console.warn(`Detail fetch returned ${contentType || "unknown"}: ${url}`);
-      return null;
+      throw new Error(`Unexpected response type: ${contentType || "unknown"}`);
     }
 
     const html = await readDetailHtml(response);
-    const text = extractAnnouncementTextFromHtml(html);
+    const extracted = extractAnnouncementTextFromHtml(html);
+    const text = privateHostname ? redactUispOriginText(extracted, privateHostname).trim() : extracted;
 
     return text.length >= 80 ? text : null;
   } catch (error) {
-    console.warn(`Detail fetch failed: ${url}`, error?.message || error);
+    if (privateHostname) console.warn("UISP detail fetch failed");
+    else console.warn(`Detail fetch failed: ${url}`, error?.message || error);
     return null;
   }
 }
@@ -666,6 +674,7 @@ function isNoiseLine(line) {
 }
 
 function getMetadataKey(announcement) {
+  if (announcement.category === "uisp") return getLegacyMetadataKey(announcement);
   const canonicalUrl = canonicalizeAnnouncementUrl(announcement.url);
   if (canonicalUrl) {
     return `${announcement.category}:url:${hashText(canonicalUrl)}`;
@@ -745,11 +754,7 @@ function canonicalizeAnnouncementUrl(value) {
   try {
     const url = new URL(value);
     url.hash = "";
-    const board = url.searchParams.get("bo_table");
-    const post = url.searchParams.get("wr_id");
-    url.search = url.hostname === "uisp-origin.example.invalid" && url.pathname === "/bbs/board.php" && board === "notice" && post
-      ? new URLSearchParams({ bo_table: board, wr_id: post }).toString()
-      : "";
+    url.search = "";
     url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
   } catch {

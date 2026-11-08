@@ -128,15 +128,18 @@ def request_soup(
     timeout: int = 10,
     max_bytes: int = MAX_HTML_BYTES,
     method: str = "GET",
+    private_source: bool = False,
 ) -> Optional[BeautifulSoup]:
+    target = "비공개 원본" if private_source else url
+    redirect_options = {"allow_redirects": False} if private_source else {}
     for attempt in range(REQUEST_ATTEMPTS):
         response = None
         try:
-            response = session.request(method, url, timeout=timeout, stream=True)
+            response = session.request(method, url, timeout=timeout, stream=True, **redirect_options)
             if response.status_code != 200:
                 retrying = response.status_code >= 500 and attempt + 1 < REQUEST_ATTEMPTS
                 level = "retry" if retrying else "warn"
-                print(f"  [{level}] 요청 실패: {url} ({response.status_code})")
+                print(f"  [{level}] 요청 실패: {target} ({response.status_code})")
                 if not retrying:
                     return None
                 time.sleep(2**attempt)
@@ -144,12 +147,13 @@ def request_soup(
 
             content_type = response.headers.get("Content-Type", "").lower()
             if "text/html" not in content_type and "application/xhtml+xml" not in content_type:
-                print(f"  [warn] HTML이 아닌 응답: {url} ({content_type or 'unknown'})")
+                detail = "" if private_source else f" ({content_type or 'unknown'})"
+                print(f"  [warn] HTML이 아닌 응답: {target}{detail}")
                 return None
 
             content_length = response.headers.get("Content-Length")
             if content_length and int(content_length) > max_bytes:
-                print(f"  [warn] 응답이 너무 큽니다: {url}")
+                print(f"  [warn] 응답이 너무 큽니다: {target}")
                 return None
 
             chunks = []
@@ -157,7 +161,7 @@ def request_soup(
             for chunk in response.iter_content(chunk_size=64 * 1024):
                 received += len(chunk)
                 if received > max_bytes:
-                    print(f"  [warn] 응답이 너무 큽니다: {url}")
+                    print(f"  [warn] 응답이 너무 큽니다: {target}")
                     return None
                 chunks.append(chunk)
 
@@ -165,7 +169,8 @@ def request_soup(
         except (requests.RequestException, ValueError) as error:
             retrying = attempt + 1 < REQUEST_ATTEMPTS
             level = "retry" if retrying else "warn"
-            print(f"  [{level}] 요청 오류: {url} ({error})")
+            detail = "" if private_source else f" ({error})"
+            print(f"  [{level}] 요청 오류: {target}{detail}")
             if not retrying:
                 return None
             time.sleep(2**attempt)

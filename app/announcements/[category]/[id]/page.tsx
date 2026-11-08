@@ -111,6 +111,8 @@ async function AnnouncementDetailContent({
 
   const announcement = await getAnnouncementById(normalizedCategory, id);
   if (!announcement) notFound();
+  const { url: originalUrl, ...publicFields } = announcement;
+  const isUisp = announcement.category === "uisp";
 
   const dictionary = getDictionary(locale);
   const text = dictionary.pages.announcements;
@@ -120,7 +122,7 @@ async function AnnouncementDetailContent({
     announcement.aiSummary?.summary ||
     announcement.content ||
     text.detailFallbackDescription;
-  const uispOriginal = announcement.category === "uisp"
+  const uispOriginal = isUisp
     ? (
       <Suspense fallback={<p role="status" className="text-neutral-700">{dictionary.errorBoundary.loading}</p>}>
         <UispOriginal id={announcement.id} locale={locale} />
@@ -141,17 +143,17 @@ async function AnnouncementDetailContent({
           headline: announcement.title,
           inLanguage: "ko-KR",
           keywords: announcement.aiSummary?.keywords,
-          sourceUrl: announcement.url,
+          sourceUrl: isUisp ? undefined : originalUrl,
           url: detailUrl,
         })}
       />
       <Container>
         <div className="py-6 md:py-8">
           <Card className="mb-6 md:mb-8" hover={false}>
-            <AnnouncementDetailArticle announcement={announcement} locale={locale} sourceContent={uispOriginal} />
+            <AnnouncementDetailArticle announcement={isUisp ? publicFields : announcement} locale={locale} sourceContent={uispOriginal} />
           </Card>
           <Link
-            href={localizePath(announcement.category === "uisp" ? "/academic/uisp-notices" : "/announcements", locale)}
+            href={localizePath(isUisp ? "/academic/uisp-notices" : "/announcements", locale)}
             prefetch={false}
             className="mb-6 inline-flex items-center gap-2 font-medium text-primary-600 transition-colors hover:text-primary-700"
           >

@@ -15,7 +15,6 @@ export function AnnouncementDetailArticle({ announcement, locale, sourceContent 
   sourceContent?: ReactNode;
 }) {
   const dictionary = useDictionary(), text = dictionary.pages.announcements, aiLabels = dictionary.labels.aiSummaryDetails;
-  const isUisp = announcement.category === "uisp";
   const parts = splitPublicContentText(announcement.content || "");
   const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, { ...announcementTranslationFields(announcement), ...Object.fromEntries(parts.map((part, index) => [`contentParts.${index}`, part])) });
   const detail = (field: "summary" | "target" | "deadline" | "requiredAction") => {
@@ -141,17 +140,15 @@ export function AnnouncementDetailArticle({ announcement, locale, sourceContent 
                 </div>
               )}
 
-              {announcement.url && (
+              {announcement.category !== "uisp" && announcement.url && (
                 <div className="mt-8 border-t border-neutral-200 pt-5">
                   <a
                     href={announcement.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={isUisp
-                      ? "inline-flex min-h-12 items-center text-sm text-primary-700 underline underline-offset-4"
-                      : "inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"}
+                    className="inline-flex items-center justify-center rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
                   >
-                    {isUisp ? text.uispSourceLink : text.originalLink}
+                    {text.originalLink}
                   </a>
                 </div>
               )}

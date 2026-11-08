@@ -226,6 +226,7 @@ function validateAnnouncements(fileName: string, value: unknown) {
     throw new Error(`${fileName}이 배열이 아닙니다.`);
   }
 
+  const isUisp = fileName === "announcements-uisp.json";
   const ids = new Set<string>();
   for (const item of value) {
     if (
@@ -234,27 +235,25 @@ function validateAnnouncements(fileName: string, value: unknown) {
       !isLimitedString(item.title, 500) ||
       !/^\d{4}\.\d{2}\.\d{2}$/.test(String(item.date)) ||
       !isLimitedString(item.author, 200) ||
-      !isLimitedString(item.url, 2048) ||
-      !["academic", "campus", "event", "scholarship", "sw", "uisp"].includes(
-        String(item.category),
-      ) ||
       typeof item.isImportant !== "boolean" ||
       typeof item.isPinned !== "boolean"
     ) {
       throw new Error(`${fileName}에 올바르지 않은 공지 항목이 있습니다.`);
     }
 
-    const url = new URL(item.url);
-    // UISP serves HTTP only; keep this exception scoped to its official notice feed.
-    const isUispHttpNotice = fileName === "announcements-uisp.json" && item.category === "uisp" &&
-      url.protocol === "http:" && url.hostname === "uisp-origin.example.invalid" &&
-      !url.username && !url.password && !url.port && url.pathname === "/bbs/board.php" &&
-      url.searchParams.get("bo_table") === "notice" && /^[1-9][0-9]*$/.test(url.searchParams.get("wr_id") ?? "");
-    if (
-      (url.protocol !== "https:" && !isUispHttpNotice) ||
-      (url.hostname !== "syu.ac.kr" && !url.hostname.endsWith(".syu.ac.kr"))
-    ) {
-      throw new Error(`${fileName}에 허용되지 않은 공지 URL이 있습니다.`);
+    if (isUisp) {
+      if (item.category !== "uisp" || !/^uisp-[1-9]\d{0,8}$/.test(item.id) || "url" in item) {
+        throw new Error(`${fileName}에 올바르지 않은 사업단 공지 항목이 있습니다.`);
+      }
+    } else {
+      if (!["academic", "campus", "event", "scholarship", "sw"].includes(String(item.category)) || !isLimitedString(item.url, 2048)) {
+        throw new Error(`${fileName}에 올바르지 않은 공지 항목이 있습니다.`);
+      }
+
+      const url = new URL(item.url);
+      if (url.protocol !== "https:" || (url.hostname !== "syu.ac.kr" && !url.hostname.endsWith(".syu.ac.kr"))) {
+        throw new Error(`${fileName}에 허용되지 않은 공지 URL이 있습니다.`);
+      }
     }
     if (ids.has(item.id)) {
       throw new Error(`${fileName}에 중복 공지 ID가 있습니다.`);

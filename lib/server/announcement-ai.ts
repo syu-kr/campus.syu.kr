@@ -54,6 +54,7 @@ export function getMatchingAnnouncementAiSummary(
 }
 
 function getAnnouncementAiMetadataKey(announcement: Announcement) {
+  if (announcement.category === "uisp") return getLegacyAnnouncementAiMetadataKey(announcement);
   const canonicalUrl = canonicalizeAnnouncementUrl(announcement.url);
   if (canonicalUrl) {
     return `${announcement.category}:url:${hashText(canonicalUrl)}`;
@@ -111,11 +112,7 @@ function canonicalizeAnnouncementUrl(value: string | undefined) {
   try {
     const url = new URL(value);
     url.hash = "";
-    const board = url.searchParams.get("bo_table");
-    const post = url.searchParams.get("wr_id");
-    url.search = url.hostname === "uisp-origin.example.invalid" && url.pathname === "/bbs/board.php" && board === "notice" && post
-      ? new URLSearchParams({ bo_table: board, wr_id: post }).toString()
-      : "";
+    url.search = "";
     url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
   } catch {

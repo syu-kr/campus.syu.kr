@@ -62,9 +62,25 @@ describe("school announcement detail redirects", () => {
   });
   const redirect = (location) => new Response(null, { status: 302, headers: { location } });
 
-  it("extracts UISP content without the surrounding board navigation", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(`<article><h2>게시판 메뉴</h2><div id="bo_v_con"><p>${content}</p></div><footer>다음 글</footer></article>`, { headers: { "content-type": "text/html" } })));
-    expect(await fetchAnnouncementDetailContent("http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=744", 1000)).toBe(content);
+  it("extracts UISP content without emitting its origin or surrounding board navigation", async () => {
+    const hostname = "uisp-fixture.invalid";
+    const url = `http://${hostname}/bbs/board.php?bo_table=notice&wr_id=744`;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(`<article><h2>게시판 메뉴</h2><div id="bo_v_con"><p>${content} ${url}</p></div><footer>다음 글</footer></article>`, { headers: { "content-type": "text/html" } })));
+    const result = await fetchAnnouncementDetailContent(url, 1000, hostname);
+    expect(result).toContain(content);
+    expect(result).not.toMatch(/게시판 메뉴|다음 글|uisp-fixture\.invalid/);
+  });
+
+  it("stops a private detail redirect and omits its address from errors", async () => {
+    const hostname = "uisp-fixture.invalid";
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    const fetchMock = vi.fn().mockResolvedValueOnce(redirect("https://elsewhere.invalid/"));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await fetchAnnouncementDetailContent(`http://${hostname}/bbs/board.php?bo_table=notice&wr_id=744`, 1000, hostname);
+    expect(result).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledWith("UISP detail fetch failed");
+    warn.mockRestore();
   });
 
   it("keeps relative school redirects and HTTP to HTTPS upgrades within one timeout", async () => {
@@ -160,20 +176,18 @@ describe("announcement AI metadata artifact", () => {
     const announcements = [743, 744].map(id => ({
       id: `uisp-${id}`, category: "uisp", title: "프로그램 안내", date: "2026.11.06",
       author: "대학혁신지원사업단", content: "", views: 0, isImportant: false, isPinned: false,
-      url: `http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=${id}`,
     }));
-    const items = Object.fromEntries(announcements.map(item => [`uisp:url:${hash(item.url)}`, {
+    const items = Object.fromEntries(announcements.map(item => [`uisp:${item.id}`, {
       summary: `프로그램 안내 ${item.id}`, target: "재학생", deadline: "unknown", requiredAction: "원문 확인",
       keywords: ["프로그램", "원문 확인"], importance: "normal", confidence: "low", generatedAt: "2026-11-06T00:00:00Z",
-      sourceHash: hash([item.category, item.title, item.date, item.author, item.content, item.url].join("\n")),
+      sourceHash: hash([item.category, item.title, item.date, item.author, item.content, ""].join("\n")),
     }]));
-    const withTracking = announcements.map(item => ({ ...item, url: `${item.url}&page=2#content` }));
     const result = await runGenerator({ ANNOUNCEMENT_AI_ENABLED: "false" }, {
-      sources: { "announcements-uisp.json": withTracking }, metadata: { version: 1, items },
+      sources: { "announcements-uisp.json": announcements }, metadata: { version: 1, items },
     });
     expect(result.items).toEqual(items);
     const { getMatchingAnnouncementAiSummary } = await import("../lib/server/announcement-ai");
-    for (const item of withTracking) {
+    for (const item of announcements) {
       expect(getMatchingAnnouncementAiSummary(item, result.items)?.summary).toBe(`프로그램 안내 ${item.id}`);
     }
   });

@@ -1,7 +1,7 @@
 import { readResponseBytes } from "./read-response-bytes";
 import { isUispImageUrl, parseUispNotice, type UispNotice } from "./uisp-notice-parser";
+import { getUispBoardUrl, getUispNoticeUrl } from "./uisp-origin.mjs";
 
-const ORIGIN = "http://uisp-origin.example.invalid";
 const MAX_NOTICE_BYTES = 1024 * 1024;
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 const MAX_ATTACHMENT_BYTES = 32 * 1024 * 1024;
@@ -15,10 +15,12 @@ function fetchOrigin(url: string, signal: AbortSignal, headers: HeadersInit) {
   return fetch(url, { cache: "no-store", redirect: "error", signal, headers });
 }
 
-async function readOriginNotice(postId: string, signal?: AbortSignal) {
+async function readOriginNotice(postId: string, board: URL, signal?: AbortSignal) {
+  const postUrl = getUispNoticeUrl(postId, board);
+  if (!postUrl) return null;
   const timeout = AbortSignal.timeout(4_000);
   const response = await fetchOrigin(
-    `${ORIGIN}/bbs/board.php?bo_table=notice&wr_id=${postId}`,
+    postUrl.href,
     signal ? AbortSignal.any([signal, timeout]) : timeout,
     { Accept: "text/html" },
   );
@@ -32,21 +34,22 @@ async function readOriginNotice(postId: string, signal?: AbortSignal) {
   }
 
   const html = new TextDecoder().decode(await readResponseBytes(response, MAX_NOTICE_BYTES, "UISP notice"));
-  const notice = parseUispNotice(html, postId);
+  const notice = parseUispNotice(html, postId, board);
   const cookie = response.headers.getSetCookie()
     .map((value) => /^(PHPSESSID=[a-zA-Z0-9,-]{1,128})(?:;|$)/.exec(value)?.[1])
     .find(Boolean);
   return notice ? { notice, cookie } : null;
 }
 
-export async function readUispNotice(id: string): Promise<UispNotice | null> {
+export async function readUispNotice(id: string): Promise<Omit<UispNotice, "images"> | null> {
   const postId = getUispPostId(id);
-  if (!postId) return null;
+  const board = getUispBoardUrl();
+  if (!postId || !board) return null;
   try {
-    const source = await readOriginNotice(postId);
+    const source = await readOriginNotice(postId, board);
     if (!source) return null;
     return {
-      ...source.notice,
+      content: source.notice.content,
       attachments: source.notice.attachments.filter(({ name }) => ATTACHMENT_EXTENSION.test(name)),
     };
   } catch {
@@ -115,13 +118,14 @@ const ASSET_HEADERS = {
 };
 
 export async function readUispAsset(postId: string, kind: "image" | "attachment", index: string, signal: AbortSignal): Promise<Response | null> {
-  if (!/^[1-9][0-9]{0,8}$/.test(postId)) return null;
-  const source = await readOriginNotice(postId, signal);
+  const board = getUispBoardUrl();
+  if (!board) return null;
+  const source = await readOriginNotice(postId, board, signal);
   if (!source) return null;
 
   if (kind === "image") {
     const url = source.notice.images[Number(index)];
-    if (!url || !isUispImageUrl(url)) return null;
+    if (!url || !isUispImageUrl(url, board)) return null;
     const response = await fetchOrigin(url, AbortSignal.any([signal, AbortSignal.timeout(10_000)]),
       { Accept: "image/jpeg,image/png,image/gif,image/webp" });
     const type = mimeType(response);
@@ -144,7 +148,7 @@ export async function readUispAsset(postId: string, kind: "image" | "attachment"
   if (!source.cookie) throw new Error("Missing UISP download session");
   // GnuBoard checks that this public post was viewed by the same anonymous session.
   const response = await fetchOrigin(
-    `${ORIGIN}/bbs/download.php?bo_table=notice&wr_id=${postId}&no=${index}`,
+    `${board.origin}/bbs/download.php?bo_table=notice&wr_id=${postId}&no=${index}`,
     AbortSignal.any([signal, AbortSignal.timeout(30_000)]),
     { Cookie: source.cookie, "Accept-Encoding": "identity" },
   );

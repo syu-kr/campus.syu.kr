@@ -7,8 +7,10 @@ import { GET } from "./route";
 
 vi.mock("@/lib/server/announcements", () => ({ hasUispAnnouncement: vi.fn() }));
 
-const post = "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=743";
-const attachment = "http://uisp-origin.example.invalid/bbs/download.php?bo_table=notice&wr_id=743&no=0";
+const origin = "http://source.example.invalid";
+const board = `${origin}/bbs/board.php?bo_table=notice`;
+const post = `${board}&wr_id=743`;
+const attachment = `${origin}/bbs/download.php?bo_table=notice&wr_id=743&no=0`;
 const image = "https://www.syu.ac.kr/wp-content/uploads/2026/11/poster.png";
 const fetchUpstream = vi.fn<typeof fetch>();
 
@@ -31,15 +33,42 @@ function requestAsset(kind = "attachment", index = "0", id = "uisp-743") {
 }
 
 beforeEach(() => {
+  vi.stubEnv("UISP_NOTICE_BOARD_URL", board);
   fetchUpstream.mockReset();
   vi.stubGlobal("fetch", fetchUpstream);
   vi.mocked(hasUispAnnouncement).mockReset().mockResolvedValue(true);
   clearRateLimitBuckets();
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 describe("UISP public assets", () => {
+  it.each([
+    undefined,
+    "ftp://source.example.invalid/bbs/board.php?bo_table=notice",
+    "http://user@source.example.invalid/bbs/board.php?bo_table=notice",
+    "http://source.example.invalid:80/bbs/board.php?bo_table=notice",
+    "http://source.example.invalid/bbs/board.php?bo_table=notice&bo_table=notice",
+    "http://source.example.invalid/bbs/board.php?bo_table=notice#fragment",
+    "http://source.example.invalid/bbs/other.php?bo_table=notice",
+  ])("does not fetch without a valid server-only board address", async (configured) => {
+    vi.stubEnv("UISP_NOTICE_BOARD_URL", configured);
+    expect((await requestAsset()).status).toBe(404);
+    expect(await readUispNotice("uisp-743")).toBeNull();
+    expect(fetchUpstream).not.toHaveBeenCalled();
+  });
+
+  it("does not return internal image URLs in the public notice projection", async () => {
+    fetchUpstream.mockResolvedValueOnce(originNotice());
+    expect(await readUispNotice("uisp-743")).toEqual({
+      content: expect.arrayContaining([{ type: "image", src: "/api/uisp-assets/uisp-743/image/0", alt: "" }]),
+      attachments: [{ index: "0", name: "붙임 (공고).pdf" }],
+    });
+  });
+
   it("delivers bytes as a sanitized download and forwards only the ephemeral origin session", async () => {
     fetchUpstream.mockResolvedValueOnce(originNotice()).mockResolvedValueOnce(new Response("%PDF-1.6", {
       headers: {

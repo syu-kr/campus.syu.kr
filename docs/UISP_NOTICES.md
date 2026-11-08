@@ -2,7 +2,7 @@
 
 - 목록: `/academic/uisp-notices` (영문 `/en/academic/uisp-notices`)
 - 분류: `uisp`, 상세 경로: `/announcements/uisp/uisp-<게시글 번호>`
-- 원본: <http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice>
+- 원본 설정: 서버와 GitHub Actions의 비공개 환경변수 UISP_NOTICE_BOARD_URL
 - 데이터: `public/data/announcements-uisp.json`
 - 수집: `python scripts/crawl_uisp_notices.py`, 기존 `npm run crawl:daily`에 포함
 
@@ -10,13 +10,13 @@
 
 수집은 기존 Python 의존성을 사용한다. 원본은 확인 시점에 HTTP만 제공하므로 이 출처의 공식 게시판 URL에만 HTTP를 허용한다. 다른 공지 출처의 HTTPS 검증은 유지한다. 게시글 번호로 ID와 URL을 구분하며, 목록의 두 자리 연도를 변환하고 말줄임 제목은 원문에서 복원한다. 현재 상단 공지는 첫 페이지를 기준으로 갱신한다. 목록에서 제공하지 않는 조회수는 표시하지 않는다.
 
-목록·홈·검색의 공지 링크는 앱 상세 화면에서 원문과 첨부를 연다. 브라우저는 본문을 앱에서 받고 포스터와 첨부도 같은 출처에서 요청한다. 상세 화면에는 공식 HTTP 출처 주소를 표시한다. 원본 연결을 실패하면 앱에서 다시 시도할 수 있도록 안내한다.
+목록·홈·검색의 공지 링크는 앱 상세 화면에서 원문과 첨부를 연다. 브라우저는 본문을 앱에서 받고 포스터와 첨부도 같은 출처에서 요청한다. 공개 목록 데이터에는 게시글 ID를 저장하고, 앱과 수집기가 비공개 설정에서 원본 주소를 조합한다. 원본 연결에 실패하면 앱에서 다시 시도할 수 있도록 안내한다.
 
 서버는 공개 목록에 있는 글만 대상으로 원본 본문을 구조화하고, 등록된 포스터와 첨부만 전달한다. 첨부에는 원본 사이트에서 새로 발급한 익명 세션을 사용한다. HTML·스크립트를 첨부 응답으로 그대로 전달하지 않으며, 래스터 포스터는 4 MiB, 지원하는 첨부는 32 MiB로 제한한다. 브라우저와 앱 사이는 운영 HTTPS를 사용하지만, UISP 원본과 서버 사이는 원본 사이트가 제공하는 HTTP에 의존한다.
 
 목록·필수 필드·원문 제목 조회 실패나 반복 페이지는 저장 전에 실패한다. 일일 수집 실행기는 해당 출처의 이전 검증본을 보존하고 stale 상태를 기록한다. 정상 수집에서는 기존 글 구간을 만나면 종료하고 과거 글을 보존한다.
 
-1. 저장소 변수 `PUBLIC_UISP_ENABLED`를 비워 둔 채 앱을 배포한다. 최초 게시 전에는 앱에 포함된 UISP 기준본을 사용한다. 변수의 기본값은 비활성이며 일일 수집과 새 UISP AI 요약을 시작하지 않는다.
+1. Vercel의 서버 환경에 비공개 변수 `UISP_NOTICE_BOARD_URL`을, GitHub Actions에 같은 이름의 Secret을 등록한다. 값은 공지 게시판의 전체 주소이며 `NEXT_PUBLIC_` 접두사를 사용하지 않는다. 저장소 변수 `PUBLIC_UISP_ENABLED`를 비워 둔 채 앱을 배포한다. 최초 게시 전에는 앱에 포함된 UISP 기준본을 사용한다.
 2. 운영의 `/indexnow-deployment.json`에서 배포한 소스 SHA를 확인하고, `/api/public-data/current` 및 한영 UISP 목록이 정상 응답하는지 확인한다. 이후 저장소 변수 `PUBLIC_UISP_ENABLED=true`로 일일 수집을 활성화한다. UISP 수집에 처음 성공한 실행에서 새 파일과 상태를 게시한다.
 3. 첫 전체 수집의 UISP `fresh` 로그, 운영 manifest의 UISP 파일과 `sourceHealth`, 운영 공지 목록을 확인한다. 식단·참조 자료 게시가 먼저 실행되어도 UISP 파일을 최초 도입하지 않는다.
 
@@ -24,4 +24,4 @@
 
 초기 기준본은 2026-11-07에 원본 48페이지에서 수집한 714건이다. 게시일은 2019-03-27~2026-11-06이며 상단 공지는 4건이다. 새 AI 요약 생성과 실제 서비스 배포는 이 기준본 수집에 포함되지 않는다.
 
-수집기 회귀 검사는 `python scripts/check_uisp_notices.py`이며 기존 `npm run check:python`에도 연결되어 있다. 관련 파일을 변경하는 PR에서는 Linux에서 원본을 읽는 별도 검증도 실행한다. 이 검증은 작업 디렉터리에만 쓰고 데이터 게시 자격 증명을 사용하지 않는다.
+수집기 회귀 검사는 `python scripts/check_uisp_notices.py`이며 기존 `npm run check:python`에도 연결되어 있다. PR의 Linux 검증은 테스트용 주소와 공개 데이터 계약을 사용한다. 실제 원본 수집은 Secret이 주입되는 운영 워크플로에서 실행한다.

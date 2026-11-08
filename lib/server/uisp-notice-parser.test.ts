@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { isUispImageUrl, parseUispNotice } from "./uisp-notice-parser";
 
-const editorImage = "http://uisp-origin.example.invalid/data/editor/2611/thumb-notice_835x1181.jpg";
+const board = new URL("http://source.example.invalid/bbs/board.php?bo_table=notice");
+const editorImage = `${board.origin}/data/editor/2611/thumb-notice_835x1181.jpg`;
 const universityImage = "https://www.syu.ac.kr/wp-content/uploads/2026/11/%EA%B3%B5%EC%A7%80.jpg";
 
 describe("UISP notice parser", () => {
@@ -18,9 +19,9 @@ describe("UISP notice parser", () => {
           <a href="/bbs/download.php?bo_table=notice&amp;wr_id=744&amp;no=2">Wrong post</a>
           <a href="/bbs/download.php?bo_table=notice&amp;wr_id=743&amp;no=3&amp;no=2">Duplicate parameter</a>
           <a href="/bbs/download.php?bo_table=private&amp;wr_id=743&amp;no=4">Private board</a>
-          <a href="http://uisp-origin.example.invalid.evil.test/bbs/download.php?bo_table=notice&amp;wr_id=743&amp;no=5">Wrong host</a>
+          <a href="http://source.example.invalid.evil.test/bbs/download.php?bo_table=notice&amp;wr_id=743&amp;no=5">Wrong host</a>
         </section>
-      </article>`, "743");
+      </article>`, "743", board);
     expect(notice?.images).toEqual([editorImage]);
     expect(notice?.content).toEqual([{
       type: "element",
@@ -47,7 +48,7 @@ describe("UISP notice parser", () => {
         <img src="/data/editor/2611/%2fetc.jpg" alt="encoded slash">
         <img src="/data/editor/2611/notice.jpg?redirect=evil" alt="query">
         <table><tr><td>모집 대상</td></tr></table>
-      </div>`, "744");
+      </div>`, "744", board);
     expect(notice?.images).toEqual([universityImage]);
     expect(JSON.stringify(notice?.content)).toContain('"href":"https://naver.me/Example"');
     expect(JSON.stringify(notice?.content)).toContain('"tag":"tbody"');
@@ -57,9 +58,9 @@ describe("UISP notice parser", () => {
   });
 
   it("does not treat a login or an invalid requested post as a notice", () => {
-    expect(parseUispNotice('<form><p id="bo_v_con">로그인</p></form>', "743")).toBeNull();
-    expect(parseUispNotice('<div id="bo_v_con">안내</div>', "743&bo_table=secret")).toBeNull();
-    expect(parseUispNotice('<div id="bo_v_con">안내</div>' + " ".repeat(512 * 1024), "743")).toBeNull();
+    expect(parseUispNotice('<form><p id="bo_v_con">로그인</p></form>', "743", board)).toBeNull();
+    expect(parseUispNotice('<div id="bo_v_con">안내</div>', "743&bo_table=secret", board)).toBeNull();
+    expect(parseUispNotice('<div id="bo_v_con">안내</div>' + " ".repeat(512 * 1024), "743", board)).toBeNull();
   });
 
   it("bounds download names without losing the extension", () => {
@@ -68,26 +69,50 @@ describe("UISP notice parser", () => {
       <div id="bo_v_con">안내</div>
       <section id="bo_v_file">
         <a href="/bbs/download.php?bo_table=notice&amp;wr_id=743&amp;no=0">${name}</a>
-      </section>`, "743");
+      </section>`, "743", board);
     const attachment = notice?.attachments[0];
     expect(attachment?.name).toHaveLength(160);
     expect(attachment?.name.endsWith(".hwpx")).toBe(true);
   });
 
   it.each([
-    "http://uisp-origin.example.invalid/data/file/notice/hidden.jpg",
-    "http://uisp-origin.example.invalid/data/editor/../file/notice/hidden.jpg",
-    "http://uisp-origin.example.invalid/data/editor/2611/private%2fhidden.jpg",
-    "http://uisp-origin.example.invalid:8080/data/editor/2611/notice.jpg",
+    "http://source.example.invalid/data/file/notice/hidden.jpg",
+    "http://source.example.invalid/data/editor/../file/notice/hidden.jpg",
+    "http://source.example.invalid/data/editor/2611/private%2fhidden.jpg",
+    "http://source.example.invalid:8080/data/editor/2611/notice.jpg",
     "https://www.syu.ac.kr/wp-admin/notice.jpg",
     "https://www.syu.ac.kr/wp-content/uploads/2026/11/notice.jpg#external",
     "https://www.syu.ac.kr.evil.test/wp-content/uploads/2026/11/notice.jpg",
   ])("rejects image URL %s outside the fixed raster scopes", (url) => {
-    expect(isUispImageUrl(url)).toBe(false);
+    expect(isUispImageUrl(url, board)).toBe(false);
   });
 
   it("allows the UISP editor and university uploads image paths", () => {
-    expect(isUispImageUrl(editorImage)).toBe(true);
-    expect(isUispImageUrl(universityImage)).toBe(true);
+    expect(isUispImageUrl(editorImage, board)).toBe(true);
+    expect(isUispImageUrl(universityImage, board)).toBe(true);
+  });
+
+  it("removes the source reference from body text, alt, links and file names", () => {
+    const encodedHost = "source%252eexample%252einvalid";
+    const notice = parseUispNotice(`
+      <div id="bo_v_con">
+        <p>안내 HTTP://SOURCE.EXAMPLE.INVALID/notice</p>
+        <img src="${editorImage}" alt="http://source.example.invalid/poster.jpg">
+        <a href="https://source.example.invalid/notice">원문 링크</a>
+        <a href="https://links.example.invalid/?to=${encodedHost}">간접 링크</a>
+      </div>
+      <section id="bo_v_file">
+        <a href="/bbs/download.php?bo_table=notice&amp;wr_id=743&amp;no=0">공고 http://source.example.invalid/file.pdf</a>
+      </section>`, "743", board);
+    const projection = JSON.stringify({ content: notice?.content, attachments: notice?.attachments });
+    expect(projection).not.toMatch(/source\.example\.invalid|source%252eexample/i);
+    expect(projection).not.toContain('"href"');
+    expect(projection).toContain("안내");
+    expect(notice?.attachments[0]?.name).toBe("공고.pdf");
+  });
+
+  it("does not expose a hostname split across adjacent text nodes", () => {
+    const notice = parseUispNotice('<div id="bo_v_con"><b>source.example</b>.invalid</div>', "743", board);
+    expect(notice?.content).toEqual([]);
   });
 });

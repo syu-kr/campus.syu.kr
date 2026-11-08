@@ -119,6 +119,7 @@ jobs:
         id: collect
         env:
           PUBLIC_DATA_SERVICE_KEY: ${{ secrets.PUBLIC_DATA_SERVICE_KEY }}
+          UISP_NOTICE_BOARD_URL: ${{ vars.PUBLIC_UISP_ENABLED == 'true' && secrets.UISP_NOTICE_BOARD_URL || '' }}
           HOLIDAYS_ONLY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.crawl_scope == 'holidays' }}
         run: |
           if [ "$HOLIDAYS_ONLY_RUN" = "true" ]; then
@@ -132,6 +133,7 @@ jobs:
         id: announcement_ai
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          UISP_NOTICE_BOARD_URL: ${{ vars.PUBLIC_UISP_ENABLED == 'true' && secrets.UISP_NOTICE_BOARD_URL || '' }}
           OPENAI_ANNOUNCEMENT_MODEL: ${{ vars.OPENAI_ANNOUNCEMENT_MODEL }}
           ANNOUNCEMENT_AI_ENABLED: ${{ vars.ANNOUNCEMENT_AI_ENABLED }}
           ANNOUNCEMENT_AI_LIMIT: ${{ github.event_name == 'workflow_dispatch' && format('{0}', inputs.ai_limit) || vars.ANNOUNCEMENT_AI_LIMIT }}

@@ -20,6 +20,10 @@ const NOTICE_FILES: DailyCrawlDataFile[] = [
 let directory: string;
 let healthPath: string;
 let original: Buffer;
+const originalUisp = Buffer.from(`${JSON.stringify([{
+  id: "uisp-1", title: "이전 검증본", date: "2026.10.04", author: "대학혁신지원사업단",
+  category: "uisp", content: "", isImportant: false, isPinned: false,
+}], null, 2)}\r\n`);
 
 function notice(title: string) {
   return [{
@@ -33,7 +37,8 @@ beforeEach(async () => {
   directory = await mkdtemp(path.join(tmpdir(), "syu-daily-crawl-"));
   healthPath = path.join(directory, "health.json");
   original = Buffer.from(`${JSON.stringify(notice("이전 검증본"), null, 2)}\r\n`);
-  await Promise.all(NOTICE_FILES.map((fileName) => writeFile(path.join(directory, fileName), original)));
+  await Promise.all(NOTICE_FILES.map((fileName) => writeFile(path.join(directory, fileName),
+    fileName === "announcements-uisp.json" ? originalUisp : original)));
   await writeFile(path.join(directory, "cafeteria-menu.json"), JSON.stringify({
     id: "cafeteria", name: "식당", weekStart: "2026-10-05", lastUpdated: PREVIOUS, menus: [],
   }));
@@ -109,7 +114,7 @@ describe("independent daily crawler publication", () => {
     expect(visited).not.toContain("announcements-uisp.json");
     expect(health["announcements-uisp.json"]).toBeUndefined();
     expect(health["announcements-sw.json"]?.status).toBe("fresh");
-    expect(await readFile(path.join(directory, "announcements-uisp.json"))).toEqual(original);
+    expect(await readFile(path.join(directory, "announcements-uisp.json"))).toEqual(originalUisp);
   });
 
   it("restores exact failed bytes while keeping another source's successful update", async () => {

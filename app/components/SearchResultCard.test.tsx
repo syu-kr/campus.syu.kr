@@ -113,7 +113,7 @@ it("opens UISP search results in the localized detail page", () => {
         date: "2026-11-05",
         author: "대학혁신지원사업단",
         isImportant: false,
-        url: "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=743",
+        url: "http://uisp-fixture.invalid/bbs/board.php?bo_table=notice&wr_id=743",
       }} />
     </LocaleProvider>,
   );
