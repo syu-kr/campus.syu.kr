@@ -20,6 +20,7 @@ const SOURCE_FILES = [
   "announcements-events.json",
   "announcements-departments.json",
   "announcements-sw.json",
+  "announcements-uisp.json",
 ];
 const temporaryDirectories = [];
 
@@ -60,6 +61,11 @@ describe("school announcement detail redirects", () => {
     headers: { "content-type": "text/html; charset=utf-8" },
   });
   const redirect = (location) => new Response(null, { status: 302, headers: { location } });
+
+  it("extracts UISP content without the surrounding board navigation", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(`<article><h2>게시판 메뉴</h2><div id="bo_v_con"><p>${content}</p></div><footer>다음 글</footer></article>`, { headers: { "content-type": "text/html" } })));
+    expect(await fetchAnnouncementDetailContent("http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=744", 1000)).toBe(content);
+  });
 
   it("keeps relative school redirects and HTTP to HTTPS upgrades within one timeout", async () => {
     const fetchMock = vi.fn()
@@ -139,6 +145,28 @@ async function runGenerator(overrides, fixtures = {}) {
 }
 
 describe("announcement AI metadata artifact", () => {
+  it("keeps different UISP posts distinct and resolves the same summaries at runtime", async () => {
+    const hash = value => createHash("sha256").update(value).digest("hex").slice(0, 16);
+    const announcements = [743, 744].map(id => ({
+      id: `uisp-${id}`, category: "uisp", title: "프로그램 안내", date: "2026.11.06",
+      author: "대학혁신지원사업단", content: "", views: 0, isImportant: false, isPinned: false,
+      url: `http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=${id}`,
+    }));
+    const items = Object.fromEntries(announcements.map(item => [`uisp:url:${hash(item.url)}`, {
+      summary: `프로그램 안내 ${item.id}`, target: "재학생", deadline: "unknown", requiredAction: "원문 확인",
+      keywords: ["프로그램", "원문 확인"], importance: "normal", confidence: "low", generatedAt: "2026-11-06T00:00:00Z",
+      sourceHash: hash([item.category, item.title, item.date, item.author, item.content, item.url].join("\n")),
+    }]));
+    const withTracking = announcements.map(item => ({ ...item, url: `${item.url}&page=2#content` }));
+    const result = await runGenerator({ ANNOUNCEMENT_AI_ENABLED: "false" }, {
+      sources: { "announcements-uisp.json": withTracking }, metadata: { version: 1, items },
+    });
+    expect(result.items).toEqual(items);
+    const { getMatchingAnnouncementAiSummary } = await import("../lib/server/announcement-ai");
+    for (const item of withTracking) {
+      expect(getMatchingAnnouncementAiSummary(item, result.items)?.summary).toBe(`프로그램 안내 ${item.id}`);
+    }
+  });
   it("creates an empty artifact when AI generation is disabled", async () => {
     const metadata = await runGenerator({ ANNOUNCEMENT_AI_ENABLED: "false" });
 

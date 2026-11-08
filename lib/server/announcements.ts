@@ -38,6 +38,7 @@ const SOURCE_BY_CATEGORY: Record<
   campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json",
   sw: "announcements-sw.json",
+  uisp: "announcements-uisp.json",
 };
 
 const CATEGORY_ORDER: AnnouncementCategory[] = [
@@ -45,6 +46,7 @@ const CATEGORY_ORDER: AnnouncementCategory[] = [
   "campus",
   "scholarship",
   "sw",
+  "uisp",
 ];
 const ANNOUNCEMENT_CACHE_TTL_MS = 60 * 1000;
 const announcementDates = new WeakMap<Announcement, number>();
@@ -176,7 +178,7 @@ async function readAnnouncementsFromSource(
   active?: ActivePublicData,
 ): Promise<AnnouncementSource> {
   const fileName = SOURCE_BY_CATEGORY[category];
-  const snapshot = active
+  const snapshot = active?.manifest.files[fileName]
     ? { ...(await readFirebasePublicData<Announcement[]>(fileName, active)), source: "firebase-storage" }
     : await readDailyCrawlDataSnapshot<Announcement[]>(fileName);
   const items = snapshot.data.map((item) => {

@@ -40,6 +40,7 @@ const VALID_CATEGORIES: AnnouncementCategory[] = [
   "campus",
   "scholarship",
   "sw",
+  "uisp",
 ];
 
 async function getRequestContext() {

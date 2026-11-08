@@ -10,10 +10,12 @@ const ORIGIN = "https://campus.syu.kr";
 const SOURCES = {
   academic: "announcements-academic.json", campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json", sw: "announcements-sw.json",
+  uisp: "announcements-uisp.json",
 } as const;
 const COLLECTIONS = {
   academic: "/academic/announcements", campus: "/campus/announcements",
   scholarship: "/academic/scholarship", sw: "/academic/sw-notices",
+  uisp: "/academic/uisp-notices",
 } as const;
 const GRADUATION_FILES = [
   "graduation-department-rules.json", "curriculum-course-selection-rules-2026.json",

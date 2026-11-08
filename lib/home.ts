@@ -122,6 +122,11 @@ function createEmptySearchCategories(
       items: [],
       linkPath: localizePath("/academic/sw-notices", locale),
     },
+    uispAnnouncement: {
+      label: categories.uispAnnouncement,
+      items: [],
+      linkPath: localizePath("/academic/uisp-notices", locale),
+    },
     scholarship: {
       label: categories.scholarship,
       items: [],
@@ -166,6 +171,8 @@ export function categorizeSearchResults(
         categories.scholarship.items.push(result);
       } else if (result.category === "sw") {
         categories.swAnnouncement.items.push(result);
+      } else if (result.category === "uisp") {
+        categories.uispAnnouncement.items.push(result);
       }
     }
   });

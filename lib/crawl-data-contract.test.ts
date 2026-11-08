@@ -105,6 +105,25 @@ describe("crawl data contract", () => {
     expect(parseCrawlDataManifest(manifest).files["announcements-sw.json"]).toBeUndefined();
   });
 
+  it("accepts a legacy manifest without UISP notices", () => {
+    const manifest = createManifest();
+    delete manifest.files["announcements-uisp.json"];
+    expect(parseCrawlDataManifest(manifest).files["announcements-uisp.json"]).toBeUndefined();
+  });
+
+  it("allows HTTP only for the official UISP notice board in its own source", () => {
+    const notice = { id: "uisp-744", title: "프로그램 안내", date: "2026.11.06", author: "대학혁신지원사업단", category: "uisp", isImportant: false, isPinned: false, url: "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=744" };
+    expect(() => validateDailyCrawlData("announcements-uisp.json", [notice])).not.toThrow();
+    expect(() => validateDailyCrawlData("announcements-academic.json", [notice])).toThrow();
+    for (const url of [
+      "http://www.syu.ac.kr/notice/744", "http://uisp-origin.example.invalid/other",
+      "http://uisp-origin.example.invalid/bbs/board.php?bo_table=other&wr_id=744",
+      "http://uisp-origin.example.invalid/bbs/board.php?bo_table=notice",
+      "http://user@uisp-origin.example.invalid/bbs/board.php?bo_table=notice&wr_id=744",
+      "http://uisp-origin.example.invalid:8080/bbs/board.php?bo_table=notice&wr_id=744",
+    ]) expect(() => validateDailyCrawlData("announcements-uisp.json", [{ ...notice, url }])).toThrow();
+  });
+
   it("accepts legacy versions without holidays while validating new holiday entries", () => {
     const manifest = createManifest();
     delete manifest.files["public-holidays.json"];

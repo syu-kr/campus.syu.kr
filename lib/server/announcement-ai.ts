@@ -111,7 +111,11 @@ function canonicalizeAnnouncementUrl(value: string | undefined) {
   try {
     const url = new URL(value);
     url.hash = "";
-    url.search = "";
+    const board = url.searchParams.get("bo_table");
+    const post = url.searchParams.get("wr_id");
+    url.search = url.hostname === "uisp-origin.example.invalid" && url.pathname === "/bbs/board.php" && board === "notice" && post
+      ? new URLSearchParams({ bo_table: board, wr_id: post }).toString()
+      : "";
     url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
   } catch {

@@ -28,6 +28,7 @@ const SOURCES: CrawlSource[] = [
   { fileName: "announcements-events.json", script: "crawl_events.py", command: "python" },
   { fileName: "announcements-departments.json", script: "crawl_department_notices.py", command: "python" },
   { fileName: "announcements-sw.json", script: "crawl_swuniv_notices.py", command: "python" },
+  { fileName: "announcements-uisp.json", script: "crawl_uisp_notices.py", command: "python" },
   { fileName: "cafeteria-menu.json", script: "crawl_cafeteria.py", command: "python" },
   { fileName: "public-holidays.json", script: "crawl_public_holidays.py", command: "python" },
 ];

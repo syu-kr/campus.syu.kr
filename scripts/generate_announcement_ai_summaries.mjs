@@ -47,6 +47,7 @@ const SOURCES = [
   { category: "campus", file: "announcements-events.json" },
   { category: "campus", file: "announcements-departments.json" },
   { category: "sw", file: "announcements-sw.json" },
+  { category: "uisp", file: "announcements-uisp.json" },
 ];
 
 async function main() {
@@ -356,7 +357,7 @@ async function readAnnouncements() {
 }
 
 function toAnnouncementCategory(value, fallback) {
-  return ["academic", "campus", "scholarship", "sw"].includes(value)
+  return ["academic", "campus", "scholarship", "sw", "uisp"].includes(value)
     ? value
     : fallback;
 }
@@ -508,6 +509,7 @@ function canFetchDetailUrl(value) {
 
 function extractAnnouncementTextFromHtml(html) {
   const sections = [
+    extractElementByAttributeKeyword(html, "bo_v_con"),
     extractElementByAttributeKeyword(html, "single_cont"),
     extractElementByAttributeKeyword(html, "entry-content"),
     extractFirstElement(html, "article"),
@@ -741,7 +743,11 @@ function canonicalizeAnnouncementUrl(value) {
   try {
     const url = new URL(value);
     url.hash = "";
-    url.search = "";
+    const board = url.searchParams.get("bo_table");
+    const post = url.searchParams.get("wr_id");
+    url.search = url.hostname === "uisp-origin.example.invalid" && url.pathname === "/bbs/board.php" && board === "notice" && post
+      ? new URLSearchParams({ bo_table: board, wr_id: post }).toString()
+      : "";
     url.pathname = url.pathname.replace(/\/+$/, "");
     return url.toString();
   } catch {

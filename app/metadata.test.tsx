@@ -23,6 +23,7 @@ describe("route metadata exports", () => {
     ["/academic/announcements", () => import("./academic/announcements/layout")],
     ["/academic/scholarship", () => import("./academic/scholarship/layout")],
     ["/academic/sw-notices", () => import("./academic/sw-notices/layout")],
+    ["/academic/uisp-notices", () => import("./academic/uisp-notices/layout")],
     ["/academic/timetable", () => import("./academic/timetable/layout")],
     ["/academic/graduation", () => import("./academic/graduation/layout")],
     ["/academic/competitions", () => import("./academic/competitions/layout")],

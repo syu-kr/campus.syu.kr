@@ -44,12 +44,14 @@ export function AnnouncementDetailArticle({ announcement, locale }: { announceme
                   label={text.date}
                   value={formatDateWithYear(announcement.date)}
                 />
-                <MetaItem
-                  label={text.views}
-                  value={announcement.views.toLocaleString(
-                    locale === "ko" ? "ko-KR" : "en-US",
-                  )}
-                />
+                {announcement.views !== undefined && (
+                  <MetaItem
+                    label={text.views}
+                    value={announcement.views.toLocaleString(
+                      locale === "ko" ? "ko-KR" : "en-US",
+                    )}
+                  />
+                )}
               </dl>
 
               {announcement.aiSummary && (

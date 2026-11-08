@@ -8,6 +8,7 @@ const request = (rows: unknown) => vi.fn(async () => Response.json(rows));
 const source = (metadata: SnapshotFile) => ({
   "public/data/announcements-academic.json": { hash: "a", data: [] }, "public/data/announcements-campus-life.json": { hash: "b", data: [] },
   "public/data/announcements-scholarship.json": { hash: "c", data: [] }, "public/data/announcements-sw.json": { hash: "d", data: [] },
+  "public/data/announcements-uisp.json": { hash: "uisp", data: [] },
   "public/data/announcements-events.json": { hash: "e", data: [] }, "public/data/announcements-departments.json": { hash: "f", data: [] },
   "public/service-notices/001-old.md": { hash: "old" }, [SERVICE_NOTICE_SNAPSHOT_KEY]: metadata,
 });

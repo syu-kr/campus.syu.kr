@@ -19,21 +19,23 @@ GitHub Pages artifact
     └── versions/
         ├── <current-version>/
         │   ├── manifest.json
-        │   └── 9개 JSON
+        │   └── 10개 JSON
         └── <previous-version>/
             ├── manifest.json
-            └── 8~9개 JSON (공휴일 도입 전 버전 포함)
+            └── 8~10개 JSON (공휴일·대학혁신지원사업단 도입 전 버전 포함)
 ```
 
-`current.json`은 `version`, `publishedAt`, 9개 파일의 상대 경로·크기·SHA-256, `retainedVersions`와 optional `sourceHealth`를 포함합니다. 학사·학교생활·장학·행사·학과·SW 공지 6개, 학식·공휴일·AI 메타데이터 3개입니다. 공휴일이 없는 기존 8개 파일 manifest도 조회·복원·롤백할 수 있습니다. 현재 버전과 이전 버전을 합쳐 최대 7개를 한 아티팩트에 보존합니다. 버전 경로는 immutable이고 Pages 배포 전환은 아티팩트 단위이므로 미완성 아티팩트가 노출되지 않습니다.
+`current.json`은 `version`, `publishedAt`, 10개 파일의 상대 경로·크기·SHA-256, `retainedVersions`와 optional `sourceHealth`를 포함합니다. 학사·학교생활·장학·행사·학과·SW·대학혁신지원사업단 공지 7개, 학식·공휴일·AI 메타데이터 3개입니다. 공휴일 또는 대학혁신지원사업단 공지가 없는 기존 8~9개 파일 manifest도 조회·복원·롤백할 수 있습니다. 현재 버전과 이전 버전을 합쳐 최대 7개를 한 아티팩트에 보존합니다. 버전 경로는 immutable이고 Pages 배포 전환은 아티팩트 단위이므로 미완성 아티팩트가 노출되지 않습니다.
 
-만나의집(기숙사 식당)은 기존 SU Lounge와 별도인 `cafeteria/student-restaurant-1.json`을 사용합니다. 이 파일은 일일 manifest의 필드나 기존 9개 파일을 변경하지 않고 동일 아티팩트에 보존합니다. 일일·주간·롤백은 같은 concurrency 그룹으로 직렬화하며, 일일 자료 롤백 중에도 만나의집은 최신 정상 JSON을 유지합니다. [만나의집 운영 문서](STUDENT_RESTAURANT.md)에서 Secrets와 주간 예약을 설정합니다.
+만나의집(기숙사 식당)은 기존 SU Lounge와 별도인 `cafeteria/student-restaurant-1.json`을 사용합니다. 이 파일은 일일 manifest의 필드나 기존 10개 파일을 변경하지 않고 동일 아티팩트에 보존합니다. 일일·주간·롤백은 같은 concurrency 그룹으로 직렬화하며, 일일 자료 롤백 중에도 만나의집은 최신 정상 JSON을 유지합니다. [만나의집 운영 문서](STUDENT_RESTAURANT.md)에서 Secrets와 주간 예약을 설정합니다.
 
 운영 base URL:
 
 ```text
 https://syu-kr.github.io/campus.syu.kr/crawl-data
 ```
+
+대학혁신지원사업단 공지의 원본·검증·배포 순서는 [운영 문서](UISP_NOTICES.md)를 참고합니다.
 
 ## 최초 활성화
 
@@ -60,8 +62,8 @@ Pages 활성화와 배포에는 별도 Secret/Variable이 필요하지 않습니
 
 ## 일일 게시 순서
 
-1. Pages에 `current.json`이 있으면 그 버전의 8~9개 파일과 기존 출처 상태를 복원합니다. 기존 버전에 공휴일 파일이 없으면 배포에 포함된 공휴일 기준본을 유지합니다.
-2. `npm run crawl:daily`로 7개 출처를 독립 실행하고 공휴일 활성화 시 8개 출처를 실행합니다. AI는 `npm run crawl:daily -- --ai-only`로 실행합니다. 학과 공지 자식 실행 제한은 15분, 나머지 자식은 5분입니다. 수집·준비 job은 70분, 별도 배포 job은 10분입니다. Daily Crawl은 잠금 파일의 최소 Node 요구사항을 만족하는 24.22.1을 사용합니다.
+1. Pages에 `current.json`이 있으면 그 버전의 8~10개 파일과 기존 출처 상태를 복원합니다. 기존 버전에 공휴일 또는 대학혁신지원사업단 파일이 없으면 배포에 포함된 해당 기준본을 유지합니다.
+2. `npm run crawl:daily`로 8개 출처를 독립 실행하고 공휴일 활성화 시 9개 출처를 실행합니다. AI는 `npm run crawl:daily -- --ai-only`로 실행합니다. 학과 공지 자식 실행 제한은 15분, 나머지 자식은 5분입니다. 수집·준비 job은 70분, 별도 배포 job은 10분입니다. Daily Crawl은 잠금 파일의 최소 Node 요구사항을 만족하는 24.22.1을 사용합니다.
 3. 성공 출처는 새 자료를 사용합니다. 종료 실패·불완전 경고·잘못된 출력은 해당 출처 전체를 이전 검증본의 정확한 바이트로 복원합니다. 학과 경고도 학과 출처 전체를 보존합니다. 기준본 검증·복원·상태 저장 실패는 게시를 중단합니다.
 4. 결과 JSON을 검증하고 크기·SHA-256 및 출처 상태 manifest를 만듭니다. 내용과 상태가 모두 같으면 배포를 건너뜁니다.
 5. 내용 또는 상태가 바뀌면 새 버전과 이전 최대 6개 버전을 포함한 아티팩트를 준비합니다. 모든 출처가 실패해도 검증본과 실패 상태를 게시할 수 있습니다.

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { DAILY_CRAWL_DATA_FILES } from "../crawl-data-contract";
 import { readHealthCache, writeHealthCache } from "../../scripts/publish-crawl-data";
-import { parsePublicDataManifest, PUBLIC_DATA_FILES, validatePublicData, type PublicDataManifest } from "../public-data-snapshot";
+import { asDailyCrawlManifest, parsePublicDataManifest, PUBLIC_DATA_FILES, validatePublicData, type PublicDataManifest } from "../public-data-snapshot";
 import { activatePublicSnapshot, readPublicSnapshotFile, readStoredPublicManifest, uploadPublicSnapshot, type ActivePublicData, type PublicDataStore } from "./public-data-storage";
 
 let fixture: Awaited<ReturnType<typeof buildPublicDataSnapshot>>;
@@ -22,9 +22,21 @@ function memoryStore() {
   return { store, objects };
 }
 describe("Firebase public snapshots", () => {
+  it("reads older snapshots without UISP and adds the source on the next daily publication", async () => {
+    const legacy = structuredClone(fixture.manifest);
+    delete legacy.files["announcements-uisp.json"];
+    const parsed = parsePublicDataManifest(legacy);
+    expect(asDailyCrawlManifest(parsed).files["announcements-uisp.json"]).toBeUndefined();
+    const { store } = memoryStore();
+    await uploadPublicSnapshot(store, parsed, fixture.payloads);
+    await activatePublicSnapshot(store, parsed, null);
+    const next = await buildPublicDataSnapshot("public", "with-uisp", await store.readActive(), store, "daily");
+    expect(next.manifest.files["announcements-uisp.json"]).toBeDefined();
+    expect(next.manifest.files["phone-numbers.json"]?.sha256).toBe(parsed.files["phone-numbers.json"]?.sha256);
+  });
   it("validates every current public file without changing its bytes", () => {
-    expect(fixture.payloads.size).toBe(22);
-    expect(PUBLIC_DATA_FILES).toHaveLength(23);
+    expect(fixture.payloads.size).toBe(23);
+    expect(PUBLIC_DATA_FILES).toHaveLength(24);
     for (const [file, bytes] of fixture.payloads) expect(() => validatePublicData(file, JSON.parse(bytes.toString()))).not.toThrow();
     const requirements = JSON.parse(fixture.payloads.get("graduation-requirements-2026.json")!.toString());
     expect(requirements.requirementProfiles.some((profile: { totalCredits: number }) => profile.totalCredits === 0)).toBe(true);
@@ -67,7 +79,7 @@ describe("Firebase public snapshots", () => {
     expect(next.manifest.retainedVersions).toEqual(["next-snapshot", "test-snapshot"]);
     expect(await ownedPublicDataUnchanged("public", "reference", (await store.readActive())!)).toBe(true);
   });
-  it("publishes only the collector's menu and preserves all 22 files and daily health", async () => {
+  it("publishes only the collector's menu and preserves all 23 files and daily health", async () => {
     const { store } = memoryStore();
     const baseline: PublicDataManifest = structuredClone(fixture.manifest);
     baseline.sourceHealth = Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, {
@@ -90,18 +102,18 @@ describe("Firebase public snapshots", () => {
       await writeFile(publicDataLocalPath(directory, "phone-numbers.json"), "invalid unowned local input");
       await writeHealthCache(path.join(base, ".cache", "crawl-data-health.json"), {});
       const next = await buildPublicDataSnapshot(directory, "cafeteria-next", previous, store, "student-restaurant");
-      expect(next.payloads.size).toBe(23);
+      expect(next.payloads.size).toBe(24);
       expect(JSON.parse(next.payloads.get("student-restaurant-1.json")!.toString())).toEqual(newMenu);
       expect(publicDataLocalPath(directory, "student-restaurant-1.json")).toBe(path.join(directory, "cafeteria", "student-restaurant-1.json"));
       const preserved = PUBLIC_DATA_FILES.filter(file => file !== "student-restaurant-1.json");
-      expect(preserved).toHaveLength(22);
+      expect(preserved).toHaveLength(23);
       for (const file of preserved) {
         expect(next.payloads.get(file)?.equals(fixture.payloads.get(file)!), file).toBe(true);
         expect(next.manifest.files[file]?.sha256).toBe(baseline.files[file]?.sha256);
         expect(next.manifest.files[file]?.size).toBe(baseline.files[file]?.size);
       }
       expect(next.manifest.sourceHealth).toEqual(baseline.sourceHealth);
-      expect(Object.keys(next.manifest.sourceHealth)).toHaveLength(9);
+      expect(Object.keys(next.manifest.sourceHealth)).toHaveLength(10);
       await uploadPublicSnapshot(store, next.manifest, next.payloads);
       await activatePublicSnapshot(store, next.manifest, previous);
       expect(await ownedPublicDataUnchanged(directory, "student-restaurant", (await store.readActive())!)).toBe(true);

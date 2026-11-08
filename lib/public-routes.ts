@@ -17,6 +17,7 @@ export const PUBLIC_ROUTES = [
   { route: "/academic/graduation", changeFrequency: "monthly", priority: 0.85 },
   { route: "/academic/scholarship", changeFrequency: "weekly", priority: 0.85 },
   { route: "/academic/sw-notices", changeFrequency: "daily", priority: 0.85 },
+  { route: "/academic/uisp-notices", changeFrequency: "daily", priority: 0.85 },
   { route: "/campus", changeFrequency: "weekly", priority: 0.95 },
   {
     route: "/campus/announcements",

@@ -15,6 +15,7 @@ const NOTICE_FILES: DailyCrawlDataFile[] = [
   "announcements-events.json",
   "announcements-departments.json",
   "announcements-sw.json",
+  "announcements-uisp.json",
 ];
 let directory: string;
 let healthPath: string;
@@ -112,7 +113,8 @@ describe("independent daily crawler publication", () => {
       return { exitCode: 0 };
     } });
 
-    expect(visited).toHaveLength(8);
+    expect(visited).toHaveLength(9);
+    expect(visited).toContain("announcements-uisp.json");
     expect(visited).toContain("public-holidays.json");
     expect(await readFile(path.join(directory, "announcements-academic.json"))).toEqual(original);
     expect(JSON.parse(await readFile(path.join(directory, "announcements-sw.json"), "utf8"))[0].title).toBe("신규 공지");
@@ -155,7 +157,7 @@ describe("independent daily crawler publication", () => {
   it("keeps all baselines and records stale health when every crawler fails", async () => {
     const health = await runDailyCrawl({ ...options(), run: async () => ({ exitCode: 1 }) });
 
-    expect(Object.values(health)).toHaveLength(8);
+    expect(Object.values(health)).toHaveLength(9);
     expect(Object.values(health).every((entry) => entry.status === "stale")).toBe(true);
     expect(health["announcements-sw.json"]?.lastSuccessAt).toBeUndefined();
     expect(await readFile(path.join(directory, "announcements-sw.json"))).toEqual(original);
@@ -271,7 +273,7 @@ describe("independent daily crawler publication", () => {
       return { exitCode: 0 };
     } });
 
-    expect(visited).toHaveLength(7);
+    expect(visited).toHaveLength(8);
     expect(visited).not.toContain("public-holidays.json");
     expect(health["public-holidays.json"]).toBeUndefined();
     expect(await readFile(holidayPath)).toEqual(holidayBaseline);

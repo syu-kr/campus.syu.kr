@@ -7,6 +7,7 @@ export const DAILY_CRAWL_DATA_FILES = [
   "announcements-events.json",
   "announcements-departments.json",
   "announcements-sw.json",
+  "announcements-uisp.json",
   "cafeteria-menu.json",
   "announcement-ai-metadata.json",
   "public-holidays.json",
@@ -28,6 +29,7 @@ export const CRAWL_DATA_MAX_BYTES: Record<DailyCrawlDataFile, number> = {
   "announcements-events.json": 2 * 1024 * 1024,
   "announcements-departments.json": 1024 * 1024,
   "announcements-sw.json": 1024 * 1024,
+  "announcements-uisp.json": 1024 * 1024,
   "cafeteria-menu.json": 128 * 1024,
   "announcement-ai-metadata.json": 8 * 1024 * 1024,
   "public-holidays.json": 128 * 1024,
@@ -53,6 +55,7 @@ export const CRAWL_DATA_RETAINED_VERSION_LIMIT = 7;
 const DAILY_CRAWL_DATA_FILE_SET = new Set<string>(DAILY_CRAWL_DATA_FILES);
 const LEGACY_OPTIONAL_FILES = new Set<DailyCrawlDataFile>([
   "announcements-sw.json",
+  "announcements-uisp.json",
   "public-holidays.json",
 ]);
 const VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
@@ -232,7 +235,7 @@ function validateAnnouncements(fileName: string, value: unknown) {
       !/^\d{4}\.\d{2}\.\d{2}$/.test(String(item.date)) ||
       !isLimitedString(item.author, 200) ||
       !isLimitedString(item.url, 2048) ||
-      !["academic", "campus", "event", "scholarship", "sw"].includes(
+      !["academic", "campus", "event", "scholarship", "sw", "uisp"].includes(
         String(item.category),
       ) ||
       typeof item.isImportant !== "boolean" ||
@@ -242,8 +245,13 @@ function validateAnnouncements(fileName: string, value: unknown) {
     }
 
     const url = new URL(item.url);
+    // UISP serves HTTP only; keep this exception scoped to its official notice feed.
+    const isUispHttpNotice = fileName === "announcements-uisp.json" && item.category === "uisp" &&
+      url.protocol === "http:" && url.hostname === "uisp-origin.example.invalid" &&
+      !url.username && !url.password && !url.port && url.pathname === "/bbs/board.php" &&
+      url.searchParams.get("bo_table") === "notice" && /^[1-9][0-9]*$/.test(url.searchParams.get("wr_id") ?? "");
     if (
-      url.protocol !== "https:" ||
+      (url.protocol !== "https:" && !isUispHttpNotice) ||
       (url.hostname !== "syu.ac.kr" && !url.hostname.endsWith(".syu.ac.kr"))
     ) {
       throw new Error(`${fileName}에 허용되지 않은 공지 URL이 있습니다.`);

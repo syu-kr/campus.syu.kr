@@ -40,6 +40,7 @@ function getCategoryFilters(dictionary: Dictionary): Array<{
     },
     { id: "campus", label: dictionary.home.notices.campus, value: "campus" },
     { id: "sw", label: dictionary.home.notices.sw, value: "sw" },
+    { id: "uisp", label: dictionary.home.notices.uisp, value: "uisp" },
     { id: "service", label: dictionary.home.notices.service, value: "service" },
   ];
 }
@@ -251,6 +252,7 @@ function getNoticeListPath(selectedCategory?: HomeNoticeCategory) {
   if (selectedCategory === "scholarship") return "/academic/scholarship";
   if (selectedCategory === "campus") return "/campus/announcements";
   if (selectedCategory === "sw") return "/academic/sw-notices";
+  if (selectedCategory === "uisp") return "/academic/uisp-notices";
   if (selectedCategory === "service") return "/service/notices";
   if (selectedCategory === "academic") return "/academic/announcements";
   return "/announcements";
@@ -265,6 +267,7 @@ function getNoticeListLabel(
   }
   if (selectedCategory === "campus") return dictionary.home.notices.campusAll;
   if (selectedCategory === "sw") return dictionary.home.notices.swAll;
+  if (selectedCategory === "uisp") return dictionary.home.notices.uispAll;
   if (selectedCategory === "service") return dictionary.home.notices.serviceAll;
   if (selectedCategory === "academic") {
     return dictionary.home.notices.academicAll;
