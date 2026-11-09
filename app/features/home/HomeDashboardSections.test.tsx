@@ -5,6 +5,19 @@ import { getDictionary } from "@/lib/i18n";
 import { HomeNoticesSection, TodaySchedulesSection } from "./HomeDashboardSections";
 
 describe.each(["ko", "en"] as const)("remaining home sections for %s", (locale) => {
+  it("selects UISP and links to its localized notice list", () => {
+    const dictionary = getDictionary(locale), change = vi.fn();
+    render(
+      <ClientLocaleProvider locale={locale} dictionary={dictionary}>
+        <HomeNoticesSection selectedCategory="uisp" onCategoryChange={change} serviceNotices={[]}
+          serviceNoticesLoading={false} announcementsLoading={false}
+          hasError={false} onRetry={vi.fn()} homeNotices={[]} />
+      </ClientLocaleProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: dictionary.home.notices.uisp }));
+    expect(change).toHaveBeenCalledWith("uisp");
+    expect(screen.getByRole("link", { name: `${dictionary.home.notices.uispAll} →` })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/academic/uisp-notices`);
+  });
   it("uses the supplied schedule category label", () => {
     const dictionary = getDictionary(locale === "ko" ? "en" : "ko");
     render(

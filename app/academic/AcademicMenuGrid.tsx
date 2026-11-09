@@ -36,6 +36,14 @@ export function AcademicMenuGrid() {
       isExternal: false,
     },
     {
+      id: "uisp-notices",
+      title: dictionary.academic.menus.uispNoticesTitle,
+      description: dictionary.academic.menus.uispNoticesDescription,
+      icon: "megaphone",
+      href: "/academic/uisp-notices",
+      isExternal: false,
+    },
+    {
       id: "competitions",
       title: dictionary.academic.menus.competitionsTitle,
       description: dictionary.academic.menus.competitionsDescription,

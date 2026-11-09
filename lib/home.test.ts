@@ -78,7 +78,7 @@ describe("festival promotion", () => {
 describe.each(["ko", "en"] as const)("search categories for %s", (locale) => {
   it("uses the supplied category labels and keeps every result in its localized destination", () => {
     const labels = getDictionary(locale).categories;
-    const announcements = (["academic", "campus", "scholarship", "sw"] as const).map((category) => ({
+    const announcements = (["academic", "campus", "scholarship", "sw", "uisp"] as const).map((category) => ({
       id: category, title: category, content: "", category, date: "2026-10-20",
       author: "", views: 0, isImportant: false,
     }));
@@ -89,7 +89,7 @@ describe.each(["ko", "en"] as const)("search categories for %s", (locale) => {
     const prefix = locale === "en" ? "/en" : "";
     expect(grouped.academicSchedule).toEqual({ label: labels.academicSchedule, items: [schedule], linkPath: `${prefix}/academic/schedule` });
     expect(grouped.phoneNumbers).toEqual({ label: labels.phoneNumbers, items: [phone], linkPath: `${prefix}/campus/phone` });
-    for (const [index, key] of ["academicAnnouncement", "campusAnnouncement", "scholarship", "swAnnouncement"].entries()) {
+    for (const [index, key] of ["academicAnnouncement", "campusAnnouncement", "scholarship", "swAnnouncement", "uispAnnouncement"].entries()) {
       expect(grouped[key].items).toEqual([announcements[index]]);
       expect(grouped[key].label).toBe(labels[key as keyof typeof labels]);
       expect(grouped[key].linkPath.startsWith(`${prefix}/`)).toBe(true);
@@ -99,7 +99,7 @@ describe.each(["ko", "en"] as const)("search categories for %s", (locale) => {
 
 it("keeps empty groups and Korean paths for an unrecognized locale", () => {
   const grouped = categorizeSearchResults(undefined, getDictionary("ko").categories, "unknown" as Locale);
-  expect(Object.values(grouped)).toHaveLength(6);
+  expect(Object.values(grouped)).toHaveLength(7);
   expect(Object.values(grouped).every((group) => group.items.length === 0)).toBe(true);
   expect(grouped.academicSchedule.linkPath).toBe("/academic/schedule");
 });

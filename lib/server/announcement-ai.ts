@@ -54,6 +54,7 @@ export function getMatchingAnnouncementAiSummary(
 }
 
 function getAnnouncementAiMetadataKey(announcement: Announcement) {
+  if (announcement.category === "uisp") return getLegacyAnnouncementAiMetadataKey(announcement);
   const canonicalUrl = canonicalizeAnnouncementUrl(announcement.url);
   if (canonicalUrl) {
     return `${announcement.category}:url:${hashText(canonicalUrl)}`;

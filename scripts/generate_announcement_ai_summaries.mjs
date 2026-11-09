@@ -4,6 +4,7 @@ import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseEnv } from "node:util";
+import { getUispBoardUrl, getUispNoticeUrl, redactUispOriginText } from "../lib/server/uisp-origin.mjs";
 import {
   ANNOUNCEMENT_AI_DEFAULT_MODEL,
   ANNOUNCEMENT_AI_PROMPT_VERSION,
@@ -47,6 +48,7 @@ const SOURCES = [
   { category: "campus", file: "announcements-events.json" },
   { category: "campus", file: "announcements-departments.json" },
   { category: "sw", file: "announcements-sw.json" },
+  { category: "uisp", file: "announcements-uisp.json" },
 ];
 
 async function main() {
@@ -66,6 +68,8 @@ async function main() {
     DEFAULT_MAX_RETRIES,
   );
   const enabled = process.env.ANNOUNCEMENT_AI_ENABLED !== "false";
+  const uispEnabled = process.env.PUBLIC_UISP_ENABLED === "true";
+  const uispHostname = getUispBoardUrl()?.hostname;
   const refreshGeneration =
     process.env.ANNOUNCEMENT_AI_REFRESH_GENERATION === "true";
   const refreshSince = parseRefreshSince(
@@ -88,6 +92,9 @@ async function main() {
   const preEnrichedByKey = new Map();
 
   for (const announcement of announcements) {
+    const isUisp = announcement.category === "uisp";
+    if (isUisp && !uispHostname) continue;
+
     const key = getMetadataKey(announcement);
     const sourceHash = hashAnnouncement(announcement);
     const existingItem = findExistingMetadataItem(existing.metadata, announcement);
@@ -100,7 +107,7 @@ async function main() {
       nextItems[key] = sanitizeAnnouncementSummaryForPublication({
         ...existingItem,
         sourceHash,
-      });
+      }, isUisp ? uispHostname : undefined);
     }
   }
 
@@ -109,6 +116,7 @@ async function main() {
 
   for (const announcement of announcements) {
     if (candidates.length >= limit) break;
+    if (announcement.category === "uisp" && (!uispEnabled || !uispHostname)) continue;
 
     const key = getMetadataKey(announcement);
     const existingItem = nextItems[key];
@@ -189,6 +197,7 @@ async function main() {
   for (const [index, announcement] of candidates.entries()) {
     const key = getMetadataKey(announcement);
     const sourceHash = hashAnnouncement(announcement);
+    const privateHostname = announcement.category === "uisp" ? uispHostname : undefined;
     const requestStartedAt = Date.now();
 
     try {
@@ -207,6 +216,7 @@ async function main() {
       const result = await requestAnnouncementSummary({
         announcement: enrichedAnnouncement,
         apiKey: API_KEY,
+        privateHostname,
         model: MODEL_NAME,
         timeoutMs,
         maxRetries,
@@ -225,7 +235,7 @@ async function main() {
         ...(enrichedAnnouncement.detailContentHash
           ? { detailContentHash: enrichedAnnouncement.detailContentHash }
           : {}),
-      });
+      }, privateHostname);
       generatedCount += 1;
       report.succeeded += 1;
       addUsage(report.usage, result.usage);
@@ -319,6 +329,7 @@ export function loadLocalEnvFiles(directory = process.cwd(), environment = proce
     "ANNOUNCEMENT_AI_ENABLED", "ANNOUNCEMENT_AI_REFRESH_GENERATION", "ANNOUNCEMENT_AI_REFRESH_SINCE",
     "ANNOUNCEMENT_DETAIL_FETCH_TIMEOUT_MS", "ANNOUNCEMENT_DETAIL_FETCH_ENABLED",
     "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_ENABLED", "ANNOUNCEMENT_DETAIL_CHANGE_CHECK_LIMIT",
+    "UISP_NOTICE_BOARD_URL", "PUBLIC_UISP_ENABLED",
   ];
   for (const fileName of [".env.local", ".env"]) {
     const filePath = path.join(directory, fileName);
@@ -345,7 +356,7 @@ async function readAnnouncements() {
         category: toAnnouncementCategory(item.category, category),
         date: String(item.date || ""),
         author: String(item.author || ""),
-        url: typeof item.url === "string" ? item.url : "",
+        url: category !== "uisp" && typeof item.url === "string" ? item.url : "",
         isImportant: Boolean(item.isImportant),
         isPinned: Boolean(item.isPinned),
       }));
@@ -356,7 +367,7 @@ async function readAnnouncements() {
 }
 
 function toAnnouncementCategory(value, fallback) {
-  return ["academic", "campus", "scholarship", "sw"].includes(value)
+  return ["academic", "campus", "scholarship", "sw", "uisp"].includes(value)
     ? value
     : fallback;
 }
@@ -390,9 +401,14 @@ async function enrichAnnouncementContent(announcement, { timeoutMs }) {
     };
   }
 
+  const isUisp = announcement.category === "uisp";
+  const uispUrl = isUisp && announcement.id.startsWith("uisp-")
+    ? getUispNoticeUrl(announcement.id.slice("uisp-".length))
+    : null;
   const detailContent = await fetchAnnouncementDetailContent(
-    announcement.url,
+    isUisp ? uispUrl?.href : announcement.url,
     timeoutMs,
+    uispUrl?.hostname,
   );
 
   if (detailContent) {
@@ -411,8 +427,8 @@ async function enrichAnnouncementContent(announcement, { timeoutMs }) {
   };
 }
 
-export async function fetchAnnouncementDetailContent(url, timeoutMs) {
-  if (!canFetchDetailUrl(url)) return null;
+export async function fetchAnnouncementDetailContent(url, timeoutMs, privateHostname) {
+  if (!url || (!privateHostname && !canFetchDetailUrl(url))) return null;
 
   try {
     const signal = AbortSignal.timeout(timeoutMs);
@@ -430,6 +446,7 @@ export async function fetchAnnouncementDetailContent(url, timeoutMs) {
       if (![301, 302, 303, 307, 308].includes(response.status)) break;
       const location = response.headers.get("location");
       await response.body?.cancel();
+      if (privateHostname) throw new Error("UISP detail redirects are not allowed");
       if (!location || redirects === 5) throw new Error("Invalid or excessive detail redirects");
       const nextUrl = new URL(location, url).href;
       if (!canFetchDetailUrl(nextUrl)) throw new Error("Detail redirect left the school domain");
@@ -437,22 +454,22 @@ export async function fetchAnnouncementDetailContent(url, timeoutMs) {
     }
 
     if (!response.ok) {
-      console.warn(`Detail fetch failed ${response.status}: ${url}`);
-      return null;
+      throw new Error(`HTTP ${response.status}`);
     }
 
     const contentType = response.headers.get("content-type")?.toLowerCase() || "";
     if (!contentType.includes("text/html")) {
-      console.warn(`Detail fetch returned ${contentType || "unknown"}: ${url}`);
-      return null;
+      throw new Error(`Unexpected response type: ${contentType || "unknown"}`);
     }
 
     const html = await readDetailHtml(response);
-    const text = extractAnnouncementTextFromHtml(html);
+    const extracted = extractAnnouncementTextFromHtml(html);
+    const text = privateHostname ? redactUispOriginText(extracted, privateHostname).trim() : extracted;
 
     return text.length >= 80 ? text : null;
   } catch (error) {
-    console.warn(`Detail fetch failed: ${url}`, error?.message || error);
+    if (privateHostname) console.warn("UISP detail fetch failed");
+    else console.warn(`Detail fetch failed: ${url}`, error?.message || error);
     return null;
   }
 }
@@ -508,6 +525,7 @@ function canFetchDetailUrl(value) {
 
 function extractAnnouncementTextFromHtml(html) {
   const sections = [
+    extractElementByAttributeKeyword(html, "bo_v_con"),
     extractElementByAttributeKeyword(html, "single_cont"),
     extractElementByAttributeKeyword(html, "entry-content"),
     extractFirstElement(html, "article"),
@@ -662,6 +680,7 @@ function isNoiseLine(line) {
 }
 
 function getMetadataKey(announcement) {
+  if (announcement.category === "uisp") return getLegacyMetadataKey(announcement);
   const canonicalUrl = canonicalizeAnnouncementUrl(announcement.url);
   if (canonicalUrl) {
     return `${announcement.category}:url:${hashText(canonicalUrl)}`;

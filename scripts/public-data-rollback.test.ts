@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeAll, describe, expect, it } from "vitest";
 import { buildPublicDataSnapshot } from "./public-data-snapshot";
+import { canPublishUisp, UISP_NOTICE_FILE } from "./publish-crawl-data";
 import { activatePublicSnapshot, readStoredPublicManifest, uploadPublicSnapshot, type ActivePublicData, type PublicDataStore } from "../lib/server/public-data-storage";
 import type { PublicDataManifest } from "../lib/public-data-snapshot";
 
@@ -12,7 +13,7 @@ const start = source.indexOf('  const activate = value("--activate")');
 const end = source.indexOf('  if (args.includes("--publish")', start);
 if (start < 0 || end < 0) throw new Error("Rollback CLI branch changed; update its test boundary");
 const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as new (...args: string[]) => (...args: unknown[]) => Promise<void>;
-const cliBranch = new AsyncFunction("args", "value", "store", "active", "readStoredPublicManifest", "activatePublicSnapshot", "console", source.slice(start, end));
+const cliBranch = new AsyncFunction("args", "value", "store", "active", "readStoredPublicManifest", "activatePublicSnapshot", "console", "UISP_NOTICE_FILE", "canPublishUisp", source.slice(start, end));
 
 let fixture: Awaited<ReturnType<typeof buildPublicDataSnapshot>>;
 beforeAll(async () => { fixture = await buildPublicDataSnapshot("public", "rollback-a"); });
@@ -46,7 +47,7 @@ async function setup() {
   const b = (await store.readActive())!;
   const run = async (target: string, expected?: string) => {
     const args = ["--rollback", target, ...(expected === undefined ? [] : ["--expected-current", expected])];
-    await cliBranch(args, (flag: string) => { const index = args.indexOf(flag); return index < 0 ? undefined : args[index + 1]; }, store, b, readStoredPublicManifest, activatePublicSnapshot, { log() {} });
+    await cliBranch(args, (flag: string) => { const index = args.indexOf(flag); return index < 0 ? undefined : args[index + 1]; }, store, b, readStoredPublicManifest, activatePublicSnapshot, { log() {} }, UISP_NOTICE_FILE, canPublishUisp);
   };
   return { store, a, b, run, writes: () => writes, race(callback: () => Promise<void>) { beforeCompare = callback; } };
 }

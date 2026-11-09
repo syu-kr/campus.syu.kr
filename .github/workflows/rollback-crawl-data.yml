@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   prepare:
-    if: github.repository == 'syu-kr/campus.syu.kr'
+    if: github.repository == 'syu-kr/campus.syu.kr' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -32,6 +32,7 @@ jobs:
       PUBLIC_DATA_BACKEND: ${{ vars.PUBLIC_DATA_BACKEND }}
       PUBLIC_DATA_STORAGE_BUCKET: ${{ vars.PUBLIC_DATA_STORAGE_BUCKET }}
       NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ vars.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      PUBLIC_UISP_ENABLED: ${{ vars.PUBLIC_UISP_ENABLED }}
 
     steps:
       - name: Checkout code

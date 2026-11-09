@@ -30,6 +30,7 @@ export function getAnnouncementListMetadata(
     "/announcements": { title: text.allTitle, description: text.allDescription },
     "/academic/announcements": { title: text.academicTitle, description: text.academicDescription },
     "/academic/sw-notices": { title: text.swTitle, description: text.swDescription },
+    "/academic/uisp-notices": { title: text.uispTitle, description: text.uispDescription },
     "/campus/announcements": { title: text.campusTitle, description: text.campusDescription },
     "/academic/scholarship": { title: dictionary.pages.scholarship.title, description: dictionary.pages.scholarship.metaDescription },
   };

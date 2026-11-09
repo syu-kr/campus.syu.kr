@@ -9,6 +9,9 @@ it("ranks exact service names first and supports Korean and English", () => {
   expect(findServices("보건")[0].path).toBe("/campus/health-center");
   expect(findServices("알림")[0].path).toBe("/more/privacy");
   expect(findServices("헬스")[0].path).toBe("/campus/gym");
+  for (const query of ["대학혁신", "혁신지원사업단", "uisp", "innovation"]) {
+    expect(findServices(query)[0].path).toBe("/academic/uisp-notices");
+  }
 });
 it("uses the server-provided availability consistently without reading private client environment variables", () => {
   expect(findServices("룸메이트")).toEqual([]);

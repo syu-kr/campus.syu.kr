@@ -146,6 +146,7 @@ export function getCategoryColor(
     scholarship: "yellow",
     campus: "green",
     sw: "purple",
+    uisp: "blue",
   };
   return colors[category];
 }

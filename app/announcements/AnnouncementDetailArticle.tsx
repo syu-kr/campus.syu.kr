@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Badge } from "@/app/components/Badge";
 import { useDictionary } from "@/app/components/LocaleProvider";
 import { useContentTranslation } from "@/app/components/ContentTranslation";
@@ -8,7 +9,11 @@ import { formatDateWithYear, getCategoryColor, getCategoryLabel } from "@/lib/ut
 import type { Locale } from "@/lib/i18n/routing";
 import type { Announcement } from "@/types";
 
-export function AnnouncementDetailArticle({ announcement, locale }: { announcement: Announcement; locale: Locale }) {
+export function AnnouncementDetailArticle({ announcement, locale, sourceContent }: {
+  announcement: Announcement;
+  locale: Locale;
+  sourceContent?: ReactNode;
+}) {
   const dictionary = useDictionary(), text = dictionary.pages.announcements, aiLabels = dictionary.labels.aiSummaryDetails;
   const parts = splitPublicContentText(announcement.content || "");
   const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, { ...announcementTranslationFields(announcement), ...Object.fromEntries(parts.map((part, index) => [`contentParts.${index}`, part])) });
@@ -44,12 +49,14 @@ export function AnnouncementDetailArticle({ announcement, locale }: { announceme
                   label={text.date}
                   value={formatDateWithYear(announcement.date)}
                 />
-                <MetaItem
-                  label={text.views}
-                  value={announcement.views.toLocaleString(
-                    locale === "ko" ? "ko-KR" : "en-US",
-                  )}
-                />
+                {announcement.views !== undefined && (
+                  <MetaItem
+                    label={text.views}
+                    value={announcement.views.toLocaleString(
+                      locale === "ko" ? "ko-KR" : "en-US",
+                    )}
+                  />
+                )}
               </dl>
 
               {announcement.aiSummary && (
@@ -127,11 +134,13 @@ export function AnnouncementDetailArticle({ announcement, locale }: { announceme
                 </section>
               )}
 
-              <div lang={announcement.content ? translation.lang : locale} className="whitespace-pre-wrap text-base leading-8 text-neutral-800">
-                {parts.length ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : text.detailContentFallback}
-              </div>
+              {sourceContent ?? (
+                <div lang={announcement.content ? translation.lang : locale} className="whitespace-pre-wrap text-base leading-8 text-neutral-800">
+                  {parts.length ? parts.map((part, index) => translation.text(`contentParts.${index}`, part)).join("") : text.detailContentFallback}
+                </div>
+              )}
 
-              {announcement.url && (
+              {announcement.category !== "uisp" && announcement.url && (
                 <div className="mt-8 border-t border-neutral-200 pt-5">
                   <a
                     href={announcement.url}

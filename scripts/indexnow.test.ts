@@ -129,6 +129,14 @@ describe("IndexNow production readiness", () => {
     expect(fetchImpl.mock.calls.filter(([input]) => String(input).includes("/api/crawl-data/"))).toHaveLength(DAILY_CRAWL_DATA_FILES.length);
     expect(sleep).not.toHaveBeenCalled();
   });
+  it("samples UISP detail pages by locale instead of probing the whole archive", async () => {
+    const urls = [`${origin}/announcements/uisp/uisp-744`, `${origin}/announcements/uisp/uisp-743`,
+      `${origin}/en/announcements/uisp/uisp-744`, `${origin}/en/announcements/uisp/uisp-743`];
+    const fingerprints = Object.fromEntries(urls.map((item) => [item, newHash]));
+    await expect(verifyIndexNowProduction(sourceSha, manifest, urls, fingerprints, "12345678", {
+      fetchImpl: productionFetch(), sleep: vi.fn(), now: () => now, pagesChanged: false,
+    })).resolves.toEqual([urls[0], urls[2]]);
+  });
   it("waits after observing a new active version even when a rollback retains an old publication time", async () => {
     const sleep = vi.fn();
     await verifyIndexNowProduction(sourceSha, manifest, [url], target.fingerprints, "12345678", { fetchImpl: productionFetch(), sleep, now: () => now, observedAt: now });

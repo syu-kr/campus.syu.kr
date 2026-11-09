@@ -81,7 +81,10 @@ it("keeps the original notice link and localized full AI summary without a dupli
       }} />
     </LocaleProvider>,
   );
-  expect(screen.getByRole("link", { name: title })).toHaveAttribute("target", "_blank");
+  const sourceLink = screen.getByRole("link", { name: title });
+  expect(sourceLink).toHaveAttribute("href", "https://www.syu.ac.kr/notice/123");
+  expect(sourceLink).toHaveAttribute("target", "_blank");
+  expect(sourceLink).toHaveAttribute("rel", "noopener noreferrer");
   expect(screen.getAllByRole("link")).toHaveLength(1);
   expect(screen.queryByText("Summary details")).not.toBeInTheDocument();
   expect(screen.getByText("검색 테스트 요약")).toBeVisible();
@@ -96,4 +99,26 @@ it("keeps the original notice link and localized full AI summary without a dupli
   expect(summary.closest("details")).toHaveAttribute("open");
   expect(screen.getByText("전체 재학생")).toBeVisible();
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+it("opens UISP search results in the localized detail page", () => {
+  const title = "사업단 공지";
+  render(
+    <LocaleProvider locale="en">
+      <SearchResultCard item={{
+        id: "uisp-743",
+        title,
+        content: "",
+        category: "uisp",
+        date: "2026-11-05",
+        author: "대학혁신지원사업단",
+        isImportant: false,
+        url: "http://uisp-fixture.invalid/bbs/board.php?bo_table=notice&wr_id=743",
+      }} />
+    </LocaleProvider>,
+  );
+
+  const detailLink = screen.getByRole("link", { name: title });
+  expect(detailLink).toHaveAttribute("href", "/en/announcements/uisp/uisp-743");
+  expect(detailLink).not.toHaveAttribute("target");
 });

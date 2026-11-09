@@ -8,7 +8,7 @@ const notice = { id: "academic-abc", category: "academic", title: "등록 안내
 function files(): Record<string, SnapshotFile> {
   return Object.fromEntries([
     ["announcements-academic.json", [notice]], ["announcements-campus-life.json", []],
-    ["announcements-scholarship.json", []], ["announcements-sw.json", []],
+    ["announcements-scholarship.json", []], ["announcements-sw.json", []], ["announcements-uisp.json", []],
     ["announcements-events.json", []], ["announcements-departments.json", []],
     ["announcement-ai-metadata.json", { items: {} }],
     ["cafeteria-menu.json", { menus: [{ date: "2026-10-15", meals: { lunch: ["밥"] } }], lastUpdated: "2026-10-15T01:00:00Z" }],
@@ -173,7 +173,7 @@ describe("IndexNow content snapshots", () => {
   });
 
   it.each([
-    ["lib/announcement-list-query.ts", ["/", "/announcements", "/academic/announcements", "/academic/scholarship", "/academic/sw-notices", "/campus/announcements", "/announcements/academic/academic-abc", "/service/notices", "/service/notices/001-test"]],
+    ["lib/announcement-list-query.ts", ["/", "/announcements", "/academic/announcements", "/academic/scholarship", "/academic/sw-notices", "/academic/uisp-notices", "/campus/announcements", "/announcements/academic/academic-abc", "/service/notices", "/service/notices/001-test"]],
     ["lib/public-list-query.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
     ["lib/use-url-hash.ts", ["/academic/competitions", "/campus/campus-tips", "/service/notices"]],
     ["app/service/notices/ServiceNoticePagination.tsx", ["/service/notices"]],

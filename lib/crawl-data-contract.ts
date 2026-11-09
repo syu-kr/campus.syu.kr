@@ -7,6 +7,7 @@ export const DAILY_CRAWL_DATA_FILES = [
   "announcements-events.json",
   "announcements-departments.json",
   "announcements-sw.json",
+  "announcements-uisp.json",
   "cafeteria-menu.json",
   "announcement-ai-metadata.json",
   "public-holidays.json",
@@ -28,6 +29,7 @@ export const CRAWL_DATA_MAX_BYTES: Record<DailyCrawlDataFile, number> = {
   "announcements-events.json": 2 * 1024 * 1024,
   "announcements-departments.json": 1024 * 1024,
   "announcements-sw.json": 1024 * 1024,
+  "announcements-uisp.json": 1024 * 1024,
   "cafeteria-menu.json": 128 * 1024,
   "announcement-ai-metadata.json": 8 * 1024 * 1024,
   "public-holidays.json": 128 * 1024,
@@ -53,6 +55,7 @@ export const CRAWL_DATA_RETAINED_VERSION_LIMIT = 7;
 const DAILY_CRAWL_DATA_FILE_SET = new Set<string>(DAILY_CRAWL_DATA_FILES);
 const LEGACY_OPTIONAL_FILES = new Set<DailyCrawlDataFile>([
   "announcements-sw.json",
+  "announcements-uisp.json",
   "public-holidays.json",
 ]);
 const VERSION_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
@@ -223,6 +226,7 @@ function validateAnnouncements(fileName: string, value: unknown) {
     throw new Error(`${fileName}이 배열이 아닙니다.`);
   }
 
+  const isUisp = fileName === "announcements-uisp.json";
   const ids = new Set<string>();
   for (const item of value) {
     if (
@@ -231,22 +235,25 @@ function validateAnnouncements(fileName: string, value: unknown) {
       !isLimitedString(item.title, 500) ||
       !/^\d{4}\.\d{2}\.\d{2}$/.test(String(item.date)) ||
       !isLimitedString(item.author, 200) ||
-      !isLimitedString(item.url, 2048) ||
-      !["academic", "campus", "event", "scholarship", "sw"].includes(
-        String(item.category),
-      ) ||
       typeof item.isImportant !== "boolean" ||
       typeof item.isPinned !== "boolean"
     ) {
       throw new Error(`${fileName}에 올바르지 않은 공지 항목이 있습니다.`);
     }
 
-    const url = new URL(item.url);
-    if (
-      url.protocol !== "https:" ||
-      (url.hostname !== "syu.ac.kr" && !url.hostname.endsWith(".syu.ac.kr"))
-    ) {
-      throw new Error(`${fileName}에 허용되지 않은 공지 URL이 있습니다.`);
+    if (isUisp) {
+      if (item.category !== "uisp" || !/^uisp-[1-9]\d{0,8}$/.test(item.id) || "url" in item) {
+        throw new Error(`${fileName}에 올바르지 않은 사업단 공지 항목이 있습니다.`);
+      }
+    } else {
+      if (!["academic", "campus", "event", "scholarship", "sw"].includes(String(item.category)) || !isLimitedString(item.url, 2048)) {
+        throw new Error(`${fileName}에 올바르지 않은 공지 항목이 있습니다.`);
+      }
+
+      const url = new URL(item.url);
+      if (url.protocol !== "https:" || (url.hostname !== "syu.ac.kr" && !url.hostname.endsWith(".syu.ac.kr"))) {
+        throw new Error(`${fileName}에 허용되지 않은 공지 URL이 있습니다.`);
+      }
     }
     if (ids.has(item.id)) {
       throw new Error(`${fileName}에 중복 공지 ID가 있습니다.`);

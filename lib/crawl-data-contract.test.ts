@@ -105,6 +105,25 @@ describe("crawl data contract", () => {
     expect(parseCrawlDataManifest(manifest).files["announcements-sw.json"]).toBeUndefined();
   });
 
+  it("accepts a legacy manifest without UISP notices", () => {
+    const manifest = createManifest();
+    delete manifest.files["announcements-uisp.json"];
+    expect(parseCrawlDataManifest(manifest).files["announcements-uisp.json"]).toBeUndefined();
+  });
+
+  it("accepts UISP records only in their source and without an origin URL", () => {
+    const notice = { id: "uisp-744", title: "프로그램 안내", date: "2026.11.06", author: "대학혁신지원사업단", category: "uisp", isImportant: false, isPinned: false };
+    expect(() => validateDailyCrawlData("announcements-uisp.json", [notice])).not.toThrow();
+    for (const item of [
+      { ...notice, url: "https://example.invalid/legacy-source" },
+      { ...notice, url: null },
+      { ...notice, id: "uisp-0" },
+      { ...notice, id: "uisp-001" },
+      { ...notice, category: "academic" },
+    ]) expect(() => validateDailyCrawlData("announcements-uisp.json", [item])).toThrow();
+    expect(() => validateDailyCrawlData("announcements-academic.json", [{ ...notice, url: "https://www.syu.ac.kr/notice/" }])).toThrow();
+  });
+
   it("accepts legacy versions without holidays while validating new holiday entries", () => {
     const manifest = createManifest();
     delete manifest.files["public-holidays.json"];

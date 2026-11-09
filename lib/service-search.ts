@@ -4,6 +4,7 @@ const services=[
   {path:'/more',ko:'더보기',en:'More',terms:'더보기 기타 more services'},
   {path:'/academic/announcements',ko:'학사공지',en:'Academic notices',terms:'학사 공지 공지사항 academic announcements notices'},
   {path:'/academic/sw-notices',ko:'SW중심대학공지',en:'SW notices',terms:'sw 소프트웨어 중심 공지 software notices'},
+  {path:'/academic/uisp-notices',ko:'대학혁신지원사업단 공지',en:'University Innovation Notices',terms:'uisp 대학 혁신 지원 사업단 공지 university innovation support notices'},
   {path:'/academic/timetable',ko:'시간표 짜기',en:'Timetable',terms:'시간표 강의 수업 timetable lecture schedule'},
   {path:'/academic/graduation',ko:'졸업요건 자가진단',en:'Graduation requirements',terms:'졸업 학점 이수 graduation credits'},
   {path:'/campus/cafeteria',ko:'학식',en:'Cafeteria',terms:'학식 식당 식단 메뉴 만나 cafeteria menu lunch food'},

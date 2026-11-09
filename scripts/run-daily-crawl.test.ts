@@ -15,10 +15,15 @@ const NOTICE_FILES: DailyCrawlDataFile[] = [
   "announcements-events.json",
   "announcements-departments.json",
   "announcements-sw.json",
+  "announcements-uisp.json",
 ];
 let directory: string;
 let healthPath: string;
 let original: Buffer;
+const originalUisp = Buffer.from(`${JSON.stringify([{
+  id: "uisp-1", title: "이전 검증본", date: "2026.10.04", author: "대학혁신지원사업단",
+  category: "uisp", content: "", isImportant: false, isPinned: false,
+}], null, 2)}\r\n`);
 
 function notice(title: string) {
   return [{
@@ -32,7 +37,8 @@ beforeEach(async () => {
   directory = await mkdtemp(path.join(tmpdir(), "syu-daily-crawl-"));
   healthPath = path.join(directory, "health.json");
   original = Buffer.from(`${JSON.stringify(notice("이전 검증본"), null, 2)}\r\n`);
-  await Promise.all(NOTICE_FILES.map((fileName) => writeFile(path.join(directory, fileName), original)));
+  await Promise.all(NOTICE_FILES.map((fileName) => writeFile(path.join(directory, fileName),
+    fileName === "announcements-uisp.json" ? originalUisp : original)));
   await writeFile(path.join(directory, "cafeteria-menu.json"), JSON.stringify({
     id: "cafeteria", name: "식당", weekStart: "2026-10-05", lastUpdated: PREVIOUS, menus: [],
   }));
@@ -58,7 +64,7 @@ afterEach(async () => {
   await rm(directory, { recursive: true, force: true });
 });
 
-const options = () => ({ dataDir: directory, healthPath, holidaysEnabled: true, now: () => new Date(ATTEMPT) });
+const options = () => ({ dataDir: directory, healthPath, holidaysEnabled: true, uispEnabled: true, now: () => new Date(ATTEMPT) });
 
 describe("crawler process diagnostics", () => {
   it.each([
@@ -98,6 +104,19 @@ describe("crawler process diagnostics", () => {
 });
 
 describe("independent daily crawler publication", () => {
+  it("skips UISP before activation and keeps its bundled baseline", async () => {
+    const visited: DailyCrawlDataFile[] = [];
+    const health = await runDailyCrawl({ ...options(), uispEnabled: false, run: async ({ fileName }) => {
+      visited.push(fileName);
+      return { exitCode: 0 };
+    } });
+
+    expect(visited).not.toContain("announcements-uisp.json");
+    expect(health["announcements-uisp.json"]).toBeUndefined();
+    expect(health["announcements-sw.json"]?.status).toBe("fresh");
+    expect(await readFile(path.join(directory, "announcements-uisp.json"))).toEqual(originalUisp);
+  });
+
   it("restores exact failed bytes while keeping another source's successful update", async () => {
     const visited: DailyCrawlDataFile[] = [];
     const health = await runDailyCrawl({ ...options(), run: async ({ fileName }) => {
@@ -112,7 +131,8 @@ describe("independent daily crawler publication", () => {
       return { exitCode: 0 };
     } });
 
-    expect(visited).toHaveLength(8);
+    expect(visited).toHaveLength(9);
+    expect(visited).toContain("announcements-uisp.json");
     expect(visited).toContain("public-holidays.json");
     expect(await readFile(path.join(directory, "announcements-academic.json"))).toEqual(original);
     expect(JSON.parse(await readFile(path.join(directory, "announcements-sw.json"), "utf8"))[0].title).toBe("신규 공지");
@@ -155,7 +175,7 @@ describe("independent daily crawler publication", () => {
   it("keeps all baselines and records stale health when every crawler fails", async () => {
     const health = await runDailyCrawl({ ...options(), run: async () => ({ exitCode: 1 }) });
 
-    expect(Object.values(health)).toHaveLength(8);
+    expect(Object.values(health)).toHaveLength(9);
     expect(Object.values(health).every((entry) => entry.status === "stale")).toBe(true);
     expect(health["announcements-sw.json"]?.lastSuccessAt).toBeUndefined();
     expect(await readFile(path.join(directory, "announcements-sw.json"))).toEqual(original);
@@ -271,7 +291,7 @@ describe("independent daily crawler publication", () => {
       return { exitCode: 0 };
     } });
 
-    expect(visited).toHaveLength(7);
+    expect(visited).toHaveLength(8);
     expect(visited).not.toContain("public-holidays.json");
     expect(health["public-holidays.json"]).toBeUndefined();
     expect(await readFile(holidayPath)).toEqual(holidayBaseline);

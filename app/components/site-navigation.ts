@@ -19,6 +19,7 @@ export function getDesktopNavigationGroups(dictionary: Dictionary, roommatesEnab
       { path: "/academic/announcements", label: academic.announcementsTitle, icon: "megaphone" },
       { path: "/academic/schedule", label: academic.scheduleTitle, icon: "calendar" },
       { path: "/academic/sw-notices", label: academic.swNoticesTitle, icon: "lightbulb" },
+      { path: "/academic/uisp-notices", label: academic.uispNoticesTitle, icon: "megaphone" },
       { path: "/academic/competitions", label: academic.competitionsTitle, icon: "award" },
       { path: "/academic/scholarship", label: academic.scholarshipTitle, icon: "award" },
       { path: "/academic/graduation", label: academic.graduationTitle, icon: "check-circle" },
