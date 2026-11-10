@@ -6,7 +6,7 @@ on:
       - Sync to Vercel Repository
       - Daily Crawl - Notices, Cafeteria & Public Holidays
       - Rollback Crawl Data
-      - Weekly Crawl - 만나의집 (기숙사 식당)
+      - Daily Crawl - 만나의집 (기숙사 식당)
       - Publish Reference Data
     types:
       - completed

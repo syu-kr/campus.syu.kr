@@ -9,8 +9,10 @@ describe("student restaurant workflow security", () => {
     const triggers = workflow.split("permissions:")[0];
     expect(triggers).toContain("schedule:");
     expect(triggers).toContain("workflow_dispatch:");
-    expect(triggers).toContain('cron: "0 22 * * 0"');
-    expect(triggers).toContain('cron: "0 0 * * 1"');
+    expect([...triggers.matchAll(/cron: "([^"]+)"/g)].map((match) => match[1])).toEqual(["0 22 * * *", "0 0 * * *"]);
+    const workflowName = workflow.split(/\r?\n/)[0].replace("name: ", "");
+    expect(await readFile(path.join(process.cwd(), ".github/workflows/indexnow.yml"), "utf8"))
+      .toContain(`      - ${workflowName}`);
     expect(triggers).not.toMatch(/pull_request|push:|workflow_run/);
     expect(workflow).toContain("github.ref == 'refs/heads/main'");
     expect(workflow).not.toContain("contents: write");

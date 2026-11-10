@@ -45,13 +45,15 @@ AI는 이미지의 월·일·요일과 인쇄된 연도만 추출합니다. 연�
 
 1. Firebase 모드에서는 Actions와 Vercel에 같은 backend와 명시한 공개 버킷을 적용하고 서버 자격 증명과 기존 active snapshot을 확인합니다. Vercel은 build/runtime을 일치시켜 다시 배포합니다. 정상 Firebase 연동에는 `NEXT_PUBLIC_CAFETERIA_JSON_URL`이 필요하지 않습니다.
 2. Pages 모드에서는 저장소 `Settings → Pages → Build and deployment → Source`를 `GitHub Actions`로 설정합니다. Vercel에는 검증된 공개 Pages JSON 주소를 `NEXT_PUBLIC_CAFETERIA_JSON_URL`로 등록하고 다시 배포합니다. 기존 공개 [식단 JSON](https://syu-kr.github.io/campus.syu.kr/cafeteria/student-restaurant-1.json) 주소는 원본 API 주소와 구분합니다.
-3. `Actions → Weekly Crawl - 만나의집 (기숙사 식당)`의 정규 실행에서 현재 공개 데이터 복원·수집·검증과 선택한 모드의 발행 결과를 확인합니다. Firebase는 `--publish --scope student-restaurant`, Pages는 전용 아티팩트 준비·배포 경로를 사용합니다. 실제 첫 수집 전에는 식단 JSON이 없을 수 있으며 예시 메뉴를 실제 데이터로 게시하지 않습니다.
+3. `Actions → Daily Crawl - 만나의집 (기숙사 식당)`의 정규 실행에서 현재 공개 데이터 복원·수집·검증과 선택한 모드의 발행 결과를 확인합니다. Firebase는 `--publish --scope student-restaurant`, Pages는 전용 아티팩트 준비·배포 경로를 사용합니다. 실제 첫 수집 전에는 식단 JSON이 없을 수 있으며 예시 메뉴를 실제 데이터로 게시하지 않습니다.
 4. 앱의 `/api/public-data/student-restaurant-1.json` 응답에서 데이터·출처·버전을 확인합니다. Firebase 성공은 `X-Public-Data-Source: firebase-storage`와 기대한 `X-Public-Data-Version`으로 판단하며, HTTP 200인 `bundled-fallback`을 Firebase 성공으로 세지 않습니다.
 5. `/campus/cafeteria` 상단의 `SU-Lounge`·`만나의 집` 버튼으로 식당을 선택하고 오늘의 메뉴와 주간 메뉴를 확인합니다. Firebase 모드에서는 기존 `/cafeteria/student-restaurant-1.json` 주소도 같은 공개 API로 rewrite됩니다.
 
 워크플로는 예약 실행과 수동 실행만 허용하고 공식 저장소의 `main`에서만 동작합니다. PR 코드에 Secret을 전달하는 트리거가 없습니다. 저장소 쓰기 권한과 자동 커밋은 필요하지 않습니다. Pages 배포용 `pages: write`, `id-token: write`와 소스 조회용 `contents: read`만 사용합니다.
 
-예약은 월요일 오전 07:00 KST 수집과 09:00 KST 재확인입니다. 첫 수집 뒤에 새 이미지가 올라올 수 있어 재확인하며, 성공 체크포인트의 이미지·분석 문맥·공개 출력이 모두 같으면 AI 분석을 생략합니다. 공개 내용이 같으면 Firebase 발행은 no-op이고 Pages 재배포도 생략합니다. `.github/workflows/student-restaurant.yml`의 `cron: "0 22 * * 0"`은 일요일 22:00 UTC, `cron: "0 0 * * 1"`은 월요일 00:00 UTC를 뜻합니다. 변경할 때 KST에서 9시간을 빼고 요일도 함께 변환합니다. Actions 예약은 실행 대기나 지연이 발생할 수 있습니다.
+예약은 매일 오전 07:00 KST 수집과 09:00 KST 재확인입니다. 월요일 이후에 늦게 올라오는 식단도 다음 예약에서 확인합니다. 매번 API의 최신 이미지 파일명을 조회하고, 성공 체크포인트의 이미지 바이트·분석 문맥·공개 출력이 모두 같으면 AI 분석을 생략합니다. 파일명만 바뀌고 내용과 분석 문맥이 같으면 재분석하지 않으며, 같은 파일명을 유지한 채 이미지 내용이 바뀌어도 재분석합니다. 공개 내용이 같으면 Firebase 발행은 no-op이고 Pages 재배포도 생략합니다. `.github/workflows/student-restaurant.yml`의 `cron: "0 22 * * *"`은 매일 22:00 UTC, `cron: "0 0 * * *"`은 매일 00:00 UTC를 뜻합니다. 변경할 때 KST에서 9시간을 빼고 날짜도 함께 변환합니다. Actions 예약은 실행 대기나 지연이 발생할 수 있습니다.
+
+현재 공개 데이터에 새 파일이 추가된 뒤 과거 실행을 `Re-run jobs`하면, 당시 커밋의 허용 목록으로 현재 snapshot을 복원하다 `Invalid public data: manifest allowlist`로 중단될 수 있습니다. 이 경우 허용 목록 검증을 우회하거나 공개 파일을 삭제하지 말고, 해당 파일을 지원하는 최신 `main`에서 `Run workflow`로 새 실행을 시작합니다. 기존 실행의 재시도는 최신 코드를 가져오지 않습니다.
 
 ## 원본 해시 한정 수동검수
 
@@ -59,7 +61,7 @@ AI는 이미지의 월·일·요일과 인쇄된 연도만 추출합니다. 연�
 
 1. 원본과 날짜·메뉴·재료 셀을 대조해 공개 스키마의 JSON을 준비합니다. 읽을 수 없는 식사는 `null`로 남기고, 재료를 공식 알레르기 정보로 바꾸거나 내용을 추정하지 않습니다.
 2. 검수한 원본 이미지 바이트의 SHA-256을 계산합니다. 이미지가 바뀌었다면 새 원본으로 다시 검수합니다.
-3. `Actions → Weekly Crawl - 만나의집 (기숙사 식당) → Run workflow`에서 `main`을 선택하고 `reviewed_menu_json`에 검수 JSON, `reviewed_image_sha256`에 해당 해시를 함께 입력합니다. 두 입력을 모두 비우면 평소의 자동 분석 경로를 실행하므로 유료 분석이 발생할 수 있으며, 하나만 입력하면 중단합니다.
+3. `Actions → Daily Crawl - 만나의집 (기숙사 식당) → Run workflow`에서 `main`을 선택하고 `reviewed_menu_json`에 검수 JSON, `reviewed_image_sha256`에 해당 해시를 함께 입력합니다. 두 입력을 모두 비우면 평소의 자동 분석 경로를 실행하므로 유료 분석이 발생할 수 있으며, 하나만 입력하면 중단합니다.
 4. 수집기가 원본을 다시 다운로드해 이미지 해시·공개 스키마·이미지 수정 시각과 45일 이내인 날짜를 확인합니다. 수정 시각이 없거나 검증이 실패하면 이전 공개 JSON과 성공 체크포인트를 유지합니다. 정상 입력의 `updatedAt`은 실제 반영 시각으로 갱신합니다.
 5. 선택한 모드의 Firebase 발행/no-op 또는 Pages 준비·배포/no-op와 마지막 정상 체크포인트 저장이 성공했는지 확인하고, 공개 API 및 실제 앱의 메뉴와 재료를 원문과 다시 대조합니다.
 
@@ -81,7 +83,7 @@ Firebase 모드에서는 현재 active snapshot의 전체 자료를 검증·복�
 
 Pages 아티팩트는 전용 출력 디렉터리에서 허용된 JSON과 기존 Pages 진입 파일만 작성합니다. 저장소나 `public/` 전체를 업로드하지 않습니다. 기존 일일 공지·SU Lounge·공휴일 등의 버전 데이터는 그대로 함께 보존하며, 일일 수집과 롤백도 만나의집 JSON을 복원·검증해 유지합니다. 만나의집 JSON이 잘못되었거나 조회가 실패하면 배포를 중단합니다. 최초 파일이 없는 404만 허용합니다.
 
-주간·일일·롤백의 전체 실행은 Firebase 모드에서 `public-data-firebase`, Pages 모드에서 `crawl-data-pages` 공유 concurrency 그룹으로 직렬화하며 실행 중인 작업을 취소하지 않습니다. Firebase 참조 발행도 같은 Firebase 그룹을 사용합니다. 월간 전화번호·학사 일정 수집은 검토 PR 경계를 유지합니다. `Rollback Crawl Data`의 Firebase 경로는 보존된 공개 snapshot을 검증하고 예상 current/revision을 대조해 되돌립니다. 기존 Pages 경로는 버전형 일일 자료를 되돌리면서 만나의집 JSON의 최신 정상본을 유지합니다.
+만나의집 수집·일일 수집·롤백의 전체 실행은 Firebase 모드에서 `public-data-firebase`, Pages 모드에서 `crawl-data-pages` 공유 concurrency 그룹으로 직렬화하며 실행 중인 작업을 취소하지 않습니다. Firebase 참조 발행도 같은 Firebase 그룹을 사용합니다. 월간 전화번호·학사 일정 수집은 검토 PR 경계를 유지합니다. `Rollback Crawl Data`의 Firebase 경로는 보존된 공개 snapshot을 검증하고 예상 current/revision을 대조해 되돌립니다. 기존 Pages 경로는 버전형 일일 자료를 되돌리면서 만나의집 JSON의 최신 정상본을 유지합니다.
 
 ## 앱 연동과 갱신
 
