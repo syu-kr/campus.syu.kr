@@ -141,7 +141,7 @@ IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알�
 3. 원본 저장소 Actions variable `INDEXNOW_ENABLED=true`를 설정합니다. 미설정 상태에서는 `Notify IndexNow` job이 건너뛰므로 PR 작성·CI에서 운영 제출을 실행하지 않습니다.
 4. Actions의 `Notify IndexNow`를 main에서 수동 실행합니다. 기본 `send=false`는 dry-run입니다. `send=true`로 첫 실행을 하면 확인된 현재 URL 지문을 **baseline으로 저장하고 전체 과거 URL을 제출하지 않습니다.** 이후 신뢰된 main의 게시 workflow 성공, Daily Crawl 실패 또는 하루 한 번의 정기 대조가 자동 처리를 시작합니다. 실패한 수집 뒤에도 운영에 게시된 현재 상태를 기준으로 차이를 계산합니다.
 
-로컬에서는 `npm run indexnow`로 공개 데이터를 읽어 변경 계획만 확인합니다. `--send`를 지정하지 않으면 제출·운영 probe·이전 상태 수정은 없습니다. 실제 전송은 clean committed checkout에서만 허용됩니다. 수동 비교에는 `--state-file`, `--report-file` 경로를 지정할 수 있으며 기본 파일은 `.cache/indexnow/state.json`, `.cache/indexnow/report.json`입니다.
+로컬에서는 `npm run indexnow`로 공개 데이터를 읽어 변경 계획과 URL 허용 목록을 확인합니다. 이전 상태가 없는 첫 실행도 현재 snapshot의 모든 URL을 검사합니다. 잘못된 URL이 하나라도 있으면 운영 probe·전송·상태 저장 전에 실패합니다. `--send`를 지정하지 않으면 제출·운영 probe·이전 상태 수정은 없습니다. 실제 전송은 clean committed checkout에서만 허용됩니다. 수동 비교에는 `--state-file`, `--report-file` 경로를 지정할 수 있으며 기본 파일은 `.cache/indexnow/state.json`, `.cache/indexnow/report.json`입니다.
 
 ### 변경 판단과 게시 확인
 
@@ -158,6 +158,8 @@ IndexNow는 새로 추가·수정·삭제된 공개 URL을 검색엔진에 알�
 - 네트워크·5xx는 짧은 backoff로 최대 3회 시도합니다. 400/403/422는 설정/입력 오류로 중단합니다. 429는 `Retry-After`를 존중하고 최소 10분 후 한 번만 재시도하며, 더 긴 대기가 요구되면 즉시 중단하고 나중에 실행하도록 기록합니다. 각 재시도의 상태·횟수·대기시간을 Actions 로그에 남깁니다.
 - `indexnow-state`와 `indexnow-report` artifact는 90일 보존합니다. 부분 실패에서도 마지막으로 저장된 상태와 오류 보고서를 유지합니다. 접수 뒤 상태 artifact가 저장되기 전에 runner가 끊기면 다음 실행이 같은 URL을 다시 보낼 수 있습니다. 자동 처리는 신뢰된 상태를 찾을 수 없으면 실패합니다. 누락 원인과 복구 가능 여부를 먼저 확인한 뒤, 새 baseline이 필요한 경우 main에서 `send=true`로 수동 실행합니다.
 - 보고서의 accepted/키 검증 대기 수와 실제 Webmaster Tools 색인 상태는 별개로 확인합니다. 공개 키 파일을 회전할 때는 파일 배포를 먼저 확인합니다. 제출 성공으로 네이버·Bing 계정 소유확인까지 완료됐다고 판단하지 않습니다.
+
+허용 목록 오류를 복구할 때는 기존 상태와 오류 보고서를 보존하고, 생성된 공개 URL과 전송 허용 목록을 함께 수정·검증합니다. 수정된 main의 운영 배포를 확인한 뒤 기존 workflow의 자동 실행 결과를 먼저 확인하고, 필요할 때만 main에서 `send=true`로 새 실행을 시작합니다. 상태를 삭제하거나 baseline을 재생성하면 누락 URL이 전송 없이 기준선에 포함될 수 있으므로 기존 상태로 최신 변경분을 다시 계산합니다.
 
 ## Monitoring
 

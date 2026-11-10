@@ -26,7 +26,7 @@ export function assertIndexNowUrl(value: string) {
   const decodedPath = decodeURIComponent(url.pathname);
   const path = url.pathname === "/en" ? "/" : url.pathname.replace(/^\/en\//, "/");
   if (/[\\?#\s%]/.test(decodedPath) || (url.pathname.length > 1 && url.pathname.endsWith("/")) || (!publicPaths.has(path) &&
-    !/^\/announcements\/(academic|scholarship|campus|sw)\/[^/]+$/.test(path) &&
+    !/^\/announcements\/(academic|scholarship|campus|sw|uisp)\/[^/]+$/.test(path) &&
     !/^\/service\/notices\/[^/]+$/.test(path))) {
     throw new Error(`IndexNow URL is outside the public route allowlist: ${value}`);
   }
