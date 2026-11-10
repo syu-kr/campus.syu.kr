@@ -31,7 +31,9 @@ describe("submitIndexNow", () => {
   it("submits deduplicated public canonical URLs with the root key location and timeout", async () => {
     const urls = [url, `${INDEXNOW_ORIGIN}/`, `${INDEXNOW_ORIGIN}/en`,
       `${INDEXNOW_ORIGIN}/en/academic/schedule`, `${INDEXNOW_ORIGIN}/announcements/academic/123`,
-      `${INDEXNOW_ORIGIN}/en/announcements/sw/2026-123`, `${INDEXNOW_ORIGIN}/service/notices/service-update`];
+      `${INDEXNOW_ORIGIN}/en/announcements/sw/2026-123`, `${INDEXNOW_ORIGIN}/service/notices/service-update`,
+      `${INDEXNOW_ORIGIN}/announcements/uisp/uisp-100`, `${INDEXNOW_ORIGIN}/en/announcements/uisp/uisp-100`,
+      `${INDEXNOW_ORIGIN}/academic/uisp-notices`, `${INDEXNOW_ORIGIN}/en/academic/uisp-notices`];
     const fetchImpl = fetchReturning(200);
     const onAccepted = vi.fn();
     await expect(submitIndexNow([...urls, url], key, { fetchImpl, onAccepted }))
@@ -58,10 +60,23 @@ describe("submitIndexNow", () => {
     `${INDEXNOW_ORIGIN}/announcements/academic/id%2Fprivate`, `${INDEXNOW_ORIGIN}/announcements/academic/%252e%252e`,
     `${INDEXNOW_ORIGIN}/announcements/academic/id%3Ftoken`, `${INDEXNOW_ORIGIN}/service/notices/a%5Cb`,
     `${INDEXNOW_ORIGIN}/service/notices/bad%ZZ`,
+    `${INDEXNOW_ORIGIN}/announcements/uisp/uisp-100/`, `${INDEXNOW_ORIGIN}/announcements/uisp/uisp-100/private`,
+    `${INDEXNOW_ORIGIN}/en/announcements/uisp/uisp-100?token=private`,
+    `${INDEXNOW_ORIGIN}/announcements/uisp/id%2Fprivate`, `${INDEXNOW_ORIGIN}/ko/announcements/uisp/uisp-100`,
   ])("rejects unsafe or non-public URL before sending: %s", async (unsafeUrl) => {
     const fetchImpl = fetchReturning(200);
     await expect(submitIndexNow([url, unsafeUrl], key, { fetchImpl })).rejects.toThrow();
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid URL beyond the first batch before sending any batch", async () => {
+    const urls = Array.from({ length: 10_000 }, (_, id) => `${INDEXNOW_ORIGIN}/announcements/uisp/uisp-${id}`);
+    urls.push(`${INDEXNOW_ORIGIN}/admin`);
+    const fetchImpl = fetchReturning(200);
+    const onAccepted = vi.fn();
+    await expect(submitIndexNow(urls, key, { fetchImpl, onAccepted })).rejects.toThrow("allowlist");
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(onAccepted).not.toHaveBeenCalled();
   });
 
   it.each(["", "abc1234", "g1234567", "a".repeat(129)])("rejects invalid keys: %s", async (invalidKey) => {

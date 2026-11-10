@@ -2,6 +2,8 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import { buildIndexNowSnapshot, changedIndexNowUrls, type SnapshotFile } from "./indexnow-snapshot";
+import { assertIndexNowUrl } from "./indexnow-submit";
+import type { AnnouncementCategory } from "../types";
 
 const origin = "https://campus.syu.kr";
 const notice = { id: "academic-abc", category: "academic", title: "등록 안내", date: "2026.10.15", author: "학교", content: "등록 내용", url: "https://www.syu.ac.kr/notice", views: 1, isPinned: false, isImportant: false };
@@ -17,6 +19,25 @@ function files(): Record<string, SnapshotFile> {
 }
 
 describe("IndexNow content snapshots", () => {
+  it("keeps every generated public URL compatible with the submission allowlist", () => {
+    const input = files();
+    const sources = {
+      academic: "announcements-academic.json", campus: "announcements-campus-life.json",
+      scholarship: "announcements-scholarship.json", sw: "announcements-sw.json",
+      uisp: "announcements-uisp.json",
+    } satisfies Record<AnnouncementCategory, string>;
+    for (const [category, file] of Object.entries(sources)) {
+      input[`public/data/${file}`].data = [{ ...notice, category, id: `${category}-100` }];
+    }
+    input["public/service-notices/001-test.md"] = { hash: "notice" };
+    const snapshot = buildIndexNowSnapshot(input);
+    for (const category of Object.keys(sources)) {
+      expect(snapshot[`${origin}/announcements/${category}/${category}-100`]).toBeDefined();
+      expect(snapshot[`${origin}/en/announcements/${category}/${category}-100`]).toBeDefined();
+    }
+    expect(() => Object.keys(snapshot).forEach(assertIndexNowUrl)).not.toThrow();
+  });
+
   it("tracks Manna meals for cafeteria and home without notifying for update timestamps", () => {
     const before = files(), after = files();
     const menu = { updatedAt: "2026-10-19T00:00:00Z", weekStart: "2026-10-19", days: [{ date: "2026-10-19", lunch: ["rice"] }] };

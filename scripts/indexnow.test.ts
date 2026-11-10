@@ -23,9 +23,31 @@ describe("IndexNow submission state", () => {
   });
   it("dry-run reports a delta without probing, sending, or updating state", async () => {
     const saveState = vi.fn(), verify = vi.fn(), submit = vi.fn();
-    const report = await processIndexNowSnapshot(target, previous(), { send: false, key: "12345678", saveState, verify, submit });
-    expect(report.changed).toEqual([url]);
+    const uisp = [`${origin}/announcements/uisp/uisp-100`, `${origin}/en/announcements/uisp/uisp-100`];
+    const next = { ...target, fingerprints: { ...target.fingerprints, ...Object.fromEntries(uisp.map((item) => [item, newHash])) } };
+    const state = previous(), before = structuredClone(state);
+    const report = await processIndexNowSnapshot(next, state, { send: false, key: "12345678", saveState, verify, submit });
+    expect(report.changed).toEqual([url, ...uisp].sort());
     expect([saveState, verify, submit].every((fn) => fn.mock.calls.length === 0)).toBe(true);
+    expect(state).toEqual(before);
+  });
+  it.each([false, true])("rejects unsafe changes before any side effects (send=%s)", async (send) => {
+    const state = previous(); state.submittedAt[url] = new Date(now - 60_000).toISOString();
+    const before = structuredClone(state), unsafe = `${origin}/api/private`;
+    const saveState = vi.fn(), verify = vi.fn(), submit = vi.fn(), sleep = vi.fn(), onProgress = vi.fn();
+    await expect(processIndexNowSnapshot({ ...target, fingerprints: { ...target.fingerprints, [unsafe]: newHash } }, state, {
+      send, key: "12345678", now: () => now, saveState, verify, submit, sleep, onProgress,
+    })).rejects.toThrow("outside the public route allowlist");
+    for (const effect of [saveState, verify, submit, sleep]) expect(effect).not.toHaveBeenCalled();
+    expect(state).toEqual(before);
+    expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({ changed: [unsafe, url], probes: [], accepted: 0, pendingValidation: 0 }));
+  });
+  it.each([false, true])("rejects an unsafe first snapshot without establishing a baseline (send=%s)", async (send) => {
+    const saveState = vi.fn(), verify = vi.fn(), submit = vi.fn();
+    await expect(processIndexNowSnapshot({ ...target, fingerprints: { [`${origin}/admin`]: newHash } }, undefined, {
+      send, key: "12345678", saveState, verify, submit,
+    })).rejects.toThrow("outside the public route allowlist");
+    for (const effect of [saveState, verify, submit]) expect(effect).not.toHaveBeenCalled();
   });
   it("renews an unchanged baseline without submitting or inventing new readiness evidence", async () => {
     const saveState = vi.fn(), verify = vi.fn(), submit = vi.fn(), state = previous();
@@ -70,7 +92,10 @@ describe("IndexNow submission state", () => {
     expect(() => parseIndexNowState(input)).toThrow();
   });
   it("accepts a valid baseline and rejects empty or private history", () => {
-    const valid = { ...previous(), fingerprints: { [`${origin}/`]: oldHash, [`${origin}/en`]: oldHash, [url]: oldHash } };
+    const uisp = [`${origin}/announcements/uisp/uisp-100`, `${origin}/en/announcements/uisp/uisp-100`];
+    const valid = { ...previous(), fingerprints: { [`${origin}/`]: oldHash, [`${origin}/en`]: oldHash, [url]: oldHash,
+      ...Object.fromEntries(uisp.map((item) => [item, newHash])) },
+      submittedAt: Object.fromEntries(uisp.map((item) => [item, new Date(now).toISOString()])) };
     expect(parseIndexNowState(valid)).toEqual(valid);
     expect(() => parseIndexNowState({ ...valid, fingerprints: {} })).toThrow("homepage baseline");
     expect(() => parseIndexNowState({ ...valid, fingerprints: { ...valid.fingerprints, [`${origin}/campus/roommates`]: oldHash } })).toThrow("allowlist");
