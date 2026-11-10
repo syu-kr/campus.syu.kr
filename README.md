@@ -115,7 +115,7 @@ python scripts/crawl_phone.py
 
 ### 만나의집(기숙사 식당)
 
-SU Lounge와 별도로, 만나의집은 이미지가 변경될 때 OpenAI로 날짜별 조식·중식·석식을 추출해 Pages JSON으로 게시합니다. 분석·배포 실패 시 마지막 정상본을 유지하며, 앱은 이번 주 메뉴만 표시합니다. 원본 주소는 공개 파일이나 Vercel 환경변수에 넣지 않습니다. Actions Secrets, 최초 게시, 앱 연결, 주간 일정과 재실행 절차는 [설정·운영 문서](./docs/STUDENT_RESTAURANT.md)를 따릅니다.
+SU Lounge와 별도로, 만나의집은 이미지가 변경될 때 OpenAI로 날짜별 조식·중식·석식을 추출해 Pages JSON으로 게시합니다. 분석·배포 실패 시 마지막 정상본을 유지하며, 앱은 이번 주 메뉴만 표시합니다. 원본 주소는 공개 파일이나 Vercel 환경변수에 넣지 않습니다. Actions Secrets, 최초 게시, 앱 연결, 일일 확인 일정과 재실행 절차는 [설정·운영 문서](./docs/STUDENT_RESTAURANT.md)를 따릅니다.
 
 ## 배포
 
