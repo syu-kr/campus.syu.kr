@@ -5,7 +5,7 @@ import { loadShuttleServiceData } from "./shuttle-service-data";
 import { learningArrivals, scheduledShuttleTrips, nextScheduledShuttleArrivals, type TimingProfiles, type DeparturePlans } from "../shuttle-learning";
 import { getKoreaDateTimeParts } from "../korea-time";
 import { shuttleVehicleKey } from "./shuttle-vehicle";
-import { pilotRoutes, servicePattern } from "../shuttle-service-window";
+import { pilotRoutes, servicePattern, shuttleCollectionLeadMinutes } from "../shuttle-service-window";
 import { readShuttleHistory, readShuttleModel, readShuttleState } from "./shuttle-eta-cache";
 export { servicePattern } from "../shuttle-service-window";
 
@@ -35,7 +35,7 @@ export async function readShuttleEta(vehicleId?: string): Promise<EtaResponse> {
   const allowed = pilotRoutes(now, buses, periods, holidays);
   const dayEnd=Date.parse(`${day}T00:00:00+09:00`)+86400_000;
   const holidayExpiry=Date.parse(holidays.lastSuccessAt??"")+3*86400_000;
-  const openings=Object.values(plans).flatMap(times=>times??[]).map(at=>at-15*60000).filter(at=>at>+now);
+  const openings=Object.entries(plans).flatMap(([id,times])=>(times??[]).map(at=>at-shuttleCollectionLeadMinutes(patterns[Number(id)]!)*60000)).filter(at=>at>+now);
   // shortcut: keep scheduled forecasts through a five-minute outage; tune only against observed disruption errors.
   const validUntil=Math.min(dayEnd,holidayExpiry,allowed.length?+now+5*60000:Math.min(...openings,dayEnd));
   const context={serviceDate:day,version:data.version,generatedAt:+now,validUntil:Number.isFinite(validUntil)?validUntil:+now};

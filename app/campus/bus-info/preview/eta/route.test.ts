@@ -2,6 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import calendar from "@/public/data/shuttle-special-periods.json";
 import type {PublicHolidaySnapshot,ShuttleSpecialPeriods} from "@/types";
+import type { EtaResponse } from "@/lib/shuttle-eta";
 import {servicePattern} from "@/lib/server/shuttle-eta";
 import {advanceShuttleLearning} from "@/lib/shuttle-learning";
 import {pointAlongPath,serviceRoadPaths} from "../service-visits";
@@ -148,4 +149,25 @@ it("retains actual route-specific calendar patterns while showing the global onl
   const date=new Date("2026-11-02T15:00:00+09:00"),h={...holidays,lastSuccessAt:date.toISOString()};
   expect(servicePattern("seokgye",date,buses,periods,h)).toContain("online-class-week-fall-2026");
   expect(servicePattern("byeollae",date,buses,periods,h)).toBe("mondayToThursday");
+});
+
+it.each([
+  ["2026-11-23T13:50:00+09:00", [["seokgye", "14:00"], ["seokgye", "14:30"], ["byeollae", "14:30"]]],
+  ["2026-11-24T11:50:00+09:00", [["hwarangdae", "12:00"], ["seokgye", "12:00"], ["byeollae", "12:30"]]],
+] as const)("builds ETA trips from the essay exam departures at %s", async (clock, expected) => {
+  const time = Date.parse(clock);
+  vi.setSystemTime(time);
+  m.holidays.mockResolvedValue({ ...holidays, lastSuccessAt: new Date(time - 1000).toISOString() });
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const body: EtaResponse = await response.json();
+  expect(body.context?.serviceDate).toBe(clock.slice(0, 10));
+  if (clock.startsWith("2026-11-23")) {
+    expect(body.arrivals).toEqual([]);
+    expect(body.context?.validUntil).toBe(Date.parse("2026-11-23T14:00:00+09:00"));
+  }
+  const nextTrips = body.trips?.filter(trip => trip.departureAt > time);
+  expect(nextTrips?.map(trip => [trip.route, trip.departureAt])).toEqual(
+    expected.map(([route, departure]) => [route, Date.parse(`${clock.slice(0, 10)}T${departure}:00+09:00`)]),
+  );
 });

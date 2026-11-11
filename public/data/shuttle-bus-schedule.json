@@ -170,6 +170,7 @@
       ],
       "friday": [
         "07:55",
+        "08:30",
         "08:55",
         "09:30",
         "10:30",
@@ -182,6 +183,6 @@
       "mondayToThursdayVacation": [],
       "fridayVacation": []
     },
-    "lastUpdated": "2026-04-29"
+    "lastUpdated": "2026-11-11"
   }
 ]

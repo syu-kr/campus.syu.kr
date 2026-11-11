@@ -3,7 +3,11 @@ import { applyConfirmedGuideCorrections } from "./service-guide-corrections";
 import { serviceRoutes, serviceTimetable } from "./service-data";
 import { testServiceData } from "./service-test-data";
 import provenance from "./data/provenance.json";
-const original={...testServiceData,version:provenance.scheduleVersion};
+import buses from "./data/shuttle-bus-schedule.json";
+import calendar from "./data/shuttle-special-periods.json";
+import { withPublishedWinter } from "./published-vacation";
+import type { ShuttleSpecialPeriods } from "@/types";
+const original={...testServiceData,buses,specialPeriods:withPublishedWinter(calendar as ShuttleSpecialPeriods),version:provenance.scheduleVersion};
 const now=new Date(testServiceData.nowISO);
 it("corrects the inspected Friday Byeollae omission without changing source records",()=>{
   const before=JSON.stringify(original);

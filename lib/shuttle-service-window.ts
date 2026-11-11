@@ -27,6 +27,11 @@ export function servicePattern(route: ShuttleRoute, now: Date, buses: ShuttleBus
   return [type, ...active.map(p => p.id).sort()].join(":");
 }
 
+export function shuttleCollectionLeadMinutes(pattern: string) {
+  // Exam transport before the published restart may not serve regular passengers.
+  return pattern.includes(":essay-exam-") ? 0 : 15;
+}
+
 // Opt out of unconfirmed notices, but keep observations across headways and the final trip.
 export function pilotRoutes(now: Date, buses: ShuttleBusSchedule[], periods: ShuttleSpecialPeriods, holidays: PublicHolidaySnapshot) {
   const {hour, minute} = getKoreaDateTimeParts(now), clock = hour * 60 + minute, day = etaServiceDate(now.getTime());
@@ -42,7 +47,7 @@ export function pilotRoutes(now: Date, buses: ShuttleBusSchedule[], periods: Shu
       : type ? applyShuttleSpecialPeriods({buses: buses.filter(b=>b.id===id), dateString: day, specialPeriods:periods}).buses[0]?.schedules[type] ?? [] : [];
     const minutes = times.map(timeToMinutes).filter((n): n is number => n !== null);
     // shortcut: last-trip collection ends 30 minutes after departure; extend after observing longer trips.
-    if (minutes.length && clock >= Math.min(...minutes) - 15 && clock <= Math.max(...minutes) + 30) eligible.push(index + 1);
+    if (minutes.length && clock >= Math.min(...minutes) - shuttleCollectionLeadMinutes(pattern) && clock <= Math.max(...minutes) + 30) eligible.push(index + 1);
   }
   return eligible;
 }
