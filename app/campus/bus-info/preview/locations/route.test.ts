@@ -89,6 +89,31 @@ it("keeps collecting through a headway gap and the last trip",async()=>{
     expect((await (await POST(req)).json()).collection).toBe("saved");
   }
 });
+it.each([
+  ["2026-11-23","13:59",[]],
+  ["2026-11-23","14:00",[2]],
+  ["2026-11-23","14:29",[2]],
+  ["2026-11-23","14:30",[2,3]],
+  ["2026-11-24","08:59",[]],
+  ["2026-11-24","09:00",[1]],
+  ["2026-11-24","09:29",[1]],
+  ["2026-11-24","09:30",[1,3]],
+  ["2026-11-24","11:59",[1,3]],
+  ["2026-11-24","12:00",[1,2,3]],
+] as const)("only exposes and stores routes after the exam-day restart: %s %s",async(day,clock,routeIds)=>{
+  vi.setSystemTime(date(day,clock));
+  m.receiver.mockImplementation(()=>Response.json({...payload(),data:[1,2,3].map(routeid=>({...payload().data[0],id:`test-vehicle-${routeid}`,routeid,status:2}))}));
+  const response=await(await GET()).json();
+  expect(response.data.map((bus:{routeid:number})=>bus.routeid)).toEqual(routeIds);
+  if(routeIds.length) expect(m.save.mock.calls[0][0].map((row:{routeId:number})=>row.routeId)).toEqual(routeIds);
+  else {expect(m.receiver).not.toHaveBeenCalled();expect(m.save).not.toHaveBeenCalled();}
+});
+it.each(["2026-11-20","2026-11-25"])("retains the ordinary 15-minute collection lead outside exam days: %s",async day=>{
+  vi.setSystemTime(date(day,"07:40"));
+  m.receiver.mockImplementation(()=>Response.json({...payload(),data:[{...payload().data[0],routeid:3}]}));
+  expect((await(await GET()).json()).data).toHaveLength(1);
+  expect(m.save.mock.calls[0][0][0].routeId).toBe(3);
+});
 const fieldRequest=(event:unknown)=>new Request("https://example.invalid/campus/bus-info/preview/locations",{
   method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event}),
 });

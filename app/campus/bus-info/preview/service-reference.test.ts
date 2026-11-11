@@ -38,3 +38,33 @@ it("removes ended periods and respects explicit applicable dates and route scope
   const data={...testServiceData,specialPeriods:{...testServiceData.specialPeriods,specialPeriods:[period]}};
   expect(referenceTables(seokgye,new Date("2026-11-02T10:00:00+09:00"),data).period).toBeUndefined();
 });
+it.each([
+  ["2026-11-22T23:59:59+09:00","semester","2026-11-23"],
+  ["2026-11-23T00:00:00+09:00","exception","2026-11-23"],
+  ["2026-11-23T23:59:59+09:00","exception","2026-11-23"],
+  ["2026-11-24T00:00:00+09:00","exception","2026-11-24"],
+  ["2026-11-24T23:59:59+09:00","exception","2026-11-24"],
+  ["2026-11-25T00:00:00+09:00","semester",undefined],
+])("selects the applicable table at the Korea date boundary %s",(nowISO,key,date)=>{
+  const data={...testServiceData,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  for(const route of serviceRoutes) {
+    const result=referenceTables(route,new Date(nowISO),data);
+    expect(result.currentKey).toBe(key);
+    expect(result.defaultSpecialDate).toBe(date);
+    expect(result.specialDates).toEqual(date?["2026-11-23","2026-11-24"]:[]);
+  }
+});
+it("keeps references from one notice together without mixing another special notice or mutating the current timetable",()=>{
+  const nowISO="2026-11-24T11:00:00+09:00",now=new Date(nowISO);
+  const original=testServiceData.specialPeriods.specialPeriods.find(p=>p.id==="essay-exam-2026-11-24")!;
+  const other={...original,id:"other-notice",startDate:"2026-12-01",endDate:"2026-12-01",applicableDates:["2026-12-01"],sourceUrl:"https://www.syu.ac.kr/blog/another-notice/"};
+  const data={...testServiceData,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO},specialPeriods:{...testServiceData.specialPeriods,specialPeriods:[...testServiceData.specialPeriods.specialPeriods,other]}};
+  const before=JSON.stringify(data);
+  expect(referenceTables(seokgye,now,data).specialDates).toEqual(["2026-11-23","2026-11-24"]);
+  expect(referenceTimes(seokgye,now,data,"exception",true,"2026-11-23")[0]).toBe("14:00");
+  expect(referenceTimes(seokgye,now,data,"exception",true,"2026-11-24")[0]).toBe("12:00");
+  expect(referenceTimes(seokgye,now,data,"exception",false,"2026-12-01")).toEqual([]);
+  expect(referenceTimes(hwarangdae,now,data,"exception",false,"2026-11-23")).toEqual([]);
+  expect(referenceTables(seokgye,now,data).current.times[0]).toBe("12:00");
+  expect(JSON.stringify(data)).toBe(before);
+});

@@ -101,7 +101,7 @@ export default function ShuttleServicePreview({data,operatingPreview:requestedOp
     <section aria-label={copy.routeDetails} className="shuttle-service-route space-y-3">
       <ShuttleStopTimeline route={route} locale={locale} labels={labels} selected={selected} onSelect={setSelected} delayedAt={delayedAt} sample={operatingPreview} closed={closed} arrivals={arrivals} progress={progress} expected={expected} onMapOpen={()=>setMapOpen(true)} />
     </section>
-    <ShuttleServiceSchedule key={`${route.id}:${koreaDateKey(now)}`} route={route} now={now} data={data} />
+    <ShuttleServiceSchedule key={koreaDateKey(now)} route={route} now={now} data={data} />
     </div>
     {mapOpen&&<ShuttlePreviewMap received={fleet} now={now} locale={locale} data={data} etaEndpoint={etaEndpoint} onClose={()=>setMapOpen(false)} demo={operatingPreview?{elapsed:delayedAt??elapsed,nextAvailable,delayed,departuresByRoute:demoSchedules,epoch:Date.parse(data.nowISO)}:undefined}/>}
     {!operatingPreview&&surface==="preview"&&<PilotDiagnostics key={`${koreaDateKey(now)}:${pilotClosed}`} closed={pilotClosed} etaStatus={estimates.status} locations={received.locations}/>}

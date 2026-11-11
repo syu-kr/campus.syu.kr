@@ -205,7 +205,7 @@ it("renders timetable and predictions together in preview with the operating exa
   expect(screen.queryByText("위에서 아래로 운행")).not.toBeInTheDocument();
   expect(view.container.querySelector('[data-timeline-vehicle="real-position"]')).toBeInTheDocument();
   const categories=screen.getByRole("group",{name:"시간표 종류"});
-  expect(within(categories).getAllByRole("button")).toHaveLength(2);
+  expect(within(categories).getAllByRole("button")).toHaveLength(3);
 });
 it("shows a labeled estimated segment without inventing a map vehicle",()=>{
   const nowISO="2026-11-02T13:20:00+09:00",now=Date.parse(nowISO),departureAt=now-5*60000;
@@ -324,7 +324,7 @@ it("fills the timetable category row when only semester remains",()=>{
   expect(within(categories).getByRole("button",{name:"학기중 현재"})).toHaveAttribute("aria-pressed","true");
 });
 it("shows only the ordinary categories after a special timetable ends",()=>{
-  const nowISO="2026-11-04T13:20:00+09:00";
+  const nowISO="2026-11-25T13:20:00+09:00";
   render(<ShuttleServicePreview data={{...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}}}/>);
   const categories=()=>screen.getByRole("group",{name:"시간표 종류"});
   expect(categories()).toHaveAttribute("data-category-count","1");
@@ -335,6 +335,29 @@ it("shows only the ordinary categories after a special timetable ends",()=>{
   fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
   expect(categories()).toHaveAttribute("data-category-count","1");
   expect(within(categories()).queryByRole("button",{name:"방학"})).not.toBeInTheDocument();
+});
+it("preserves the selected exam date across routes and resets it on each Korea midnight",()=>{
+  const nowISO="2026-11-22T23:59:59+09:00",now=Date.parse(nowISO);
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO}};
+  vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(now);
+  const view=render(<ShuttleServicePreview surface="production" data={data}/>);
+  const tick=vi.mocked(setInterval).mock.calls.find(call=>call[1]===1000)![0] as ()=>void;
+  try {
+    fireEvent.click(screen.getByRole("button",{name:"특별운행"}));
+    fireEvent.click(screen.getByRole("button",{name:"11/24(화)"}));
+    fireEvent.click(screen.getByRole("button",{name:"별내역 순환"}));
+    expect(screen.getByRole("button",{name:"11/24(화)"})).toHaveAttribute("aria-pressed","true");
+    act(()=>{vi.setSystemTime(Date.parse("2026-11-23T00:00:00+09:00"));tick();});
+    expect(screen.getByRole("button",{name:"특별운행 현재"})).toHaveAttribute("aria-pressed","true");
+    expect(screen.getByRole("button",{name:"11/23(월)"})).toHaveAttribute("aria-pressed","true");
+    fireEvent.click(screen.getByRole("button",{name:"학기중"}));
+    act(()=>{vi.setSystemTime(Date.parse("2026-11-24T00:00:00+09:00"));tick();});
+    expect(screen.getByRole("button",{name:"특별운행 현재"})).toHaveAttribute("aria-pressed","true");
+    expect(screen.getByRole("button",{name:"11/24(화)"})).toHaveAttribute("aria-pressed","true");
+    act(()=>{vi.setSystemTime(Date.parse("2026-11-25T00:00:00+09:00"));tick();});
+    expect(screen.getByRole("button",{name:"학기중 현재"})).toHaveAttribute("aria-pressed","true");
+    expect(screen.queryByRole("button",{name:/특별운행/})).not.toBeInTheDocument();
+  } finally {view.unmount();vi.useRealTimers();}
 });
 it.each([
   ["12:59:59","운행 전"],["13:00:00","운행 중"],["14:00:00","운행 중"],["15:00:00","운행 중"],["15:00:01","운행 종료"],

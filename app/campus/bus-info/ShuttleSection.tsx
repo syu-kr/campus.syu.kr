@@ -495,8 +495,11 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
     text.locationError,
   ]);
 
-  const regularScheduleUpdateDates = Array.from(new Set((Array.isArray(buses) ? buses.filter(Boolean) : [])
-    .map(bus => typeof bus.lastUpdated === "string" ? bus.lastUpdated.trim() : "").filter(Boolean)));
+  const regularScheduleUpdates = (Array.isArray(buses) ? buses.filter(Boolean) : []).map(bus => ({
+    id: bus.id, routeName: bus.routeName,
+    date: typeof bus.lastUpdated === "string" ? bus.lastUpdated.trim() : "",
+  }));
+  const regularScheduleUpdateDates = Array.from(new Set(regularScheduleUpdates.map(bus => bus.date).filter(Boolean)));
 
   return (
     <Container className="py-6 sm:py-8">
@@ -1059,7 +1062,7 @@ export default function ShuttleSection({ initialData }: { initialData?: ShuttleI
           ) : (
             <>
               <p>{text.updateDateLabel} ({text.regularTimetable})</p>
-              {(buses ?? []).map(bus => <p key={bus.id}>{getPublicContentAlias(bus.routeName, locale)}: {bus.lastUpdated.trim() || text.unknown}</p>)}
+              {regularScheduleUpdates.map(bus => <p key={bus.id}>{getPublicContentAlias(bus.routeName, locale)}: {bus.date || text.unknown}</p>)}
             </>
           )}
         </div>
