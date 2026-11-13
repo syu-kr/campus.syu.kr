@@ -14,11 +14,6 @@ const {
   setupForegroundNotifications: vi.fn(),
 }));
 
-vi.mock("firebase/messaging", () => ({ deleteToken, getToken, isSupported }));
-vi.mock("@/lib/firebase", () => ({
-  messaging: {},
-  setupForegroundNotifications,
-}));
 vi.mock("@sentry/nextjs", () => ({ captureException }));
 
 const TOKEN_A = "token-a-long-enough-for-testing";
@@ -27,6 +22,8 @@ const SYNCED_KEY = "fcm_token_synced";
 const RETRY_KEY = "fcm_token_retry";
 const NOW = Date.UTC(2026, 9, 4, 12);
 const SYNC_INTERVAL = 24 * 60 * 60 * 1000;
+const INITIALIZATION_MESSAGE = "알림 서비스를 초기화하지 못했습니다.";
+const INITIALIZATION_PHASES = ["messaging-import", "support-check", "firebase-app-import"] as const;
 
 let push: typeof import("./push-notifications");
 let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>;
@@ -70,6 +67,12 @@ describe("push notifications", () => {
     isSupported.mockResolvedValue(true);
     setupForegroundNotifications.mockReset();
     captureException.mockReset();
+    vi.doMock("firebase/messaging", () => ({ deleteToken, getToken, isSupported }));
+    vi.doMock("@/lib/firebase", () => ({
+      messaging: {},
+      messagingInitializationFailure: undefined,
+      setupForegroundNotifications,
+    }));
     vi.stubEnv("NEXT_PUBLIC_FIREBASE_VAPID_KEY", "test-vapid-key");
     vi.stubGlobal("Notification", {
       permission: "granted",
@@ -125,6 +128,244 @@ describe("push notifications", () => {
     expect(setupForegroundNotifications).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(localStorage.getItem(SYNCED_KEY)).toBe(firstSuccess);
+  });
+
+  describe("Firebase initialization diagnostics", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
+      vi.spyOn(document, "visibilityState", "get").mockReturnValue("visible");
+    });
+
+    function stallPhase(phase: typeof INITIALIZATION_PHASES[number]) {
+      let resolve!: (supported: boolean) => void;
+      let reject!: (error: unknown) => void;
+      let signalStarted!: () => void;
+      const pending = new Promise<boolean>((complete, fail) => { resolve = complete; reject = fail; });
+      const started = new Promise<void>((complete) => { signalStarted = complete; });
+      const wait = () => { signalStarted(); return pending; };
+      if (phase === "messaging-import") {
+        vi.doMock("firebase/messaging", async () => {
+          await wait();
+          return { deleteToken, getToken, isSupported };
+        });
+      } else if (phase === "support-check") {
+        isSupported.mockImplementationOnce(wait);
+      } else {
+        vi.doMock("@/lib/firebase", async () => {
+          await wait();
+          return { messaging: {}, messagingInitializationFailure: undefined, setupForegroundNotifications };
+        });
+      }
+      return { resolve, reject, started };
+    }
+
+    it.each(INITIALIZATION_PHASES)("keeps %s pending at 9999 ms and times out once at 10000 ms", async (phase) => {
+      writeSynced();
+      const delayed = stallPhase(phase);
+      const statuses = vi.fn();
+      const settled = vi.fn();
+      const enabling = push.enablePushNotifications({ trigger: "automatic", onStatus: statuses });
+      void enabling.then(settled, settled);
+      const rejection = expect(enabling).rejects.toThrow(INITIALIZATION_MESSAGE);
+      const sharedRejection = expect(push.enablePushNotifications({ trigger: "automatic" }))
+        .rejects.toThrow(INITIALIZATION_MESSAGE);
+      await delayed.started;
+
+      await vi.advanceTimersByTimeAsync(9999);
+      expect(settled).not.toHaveBeenCalled();
+      expect(captureException).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      await rejection;
+      await sharedRejection;
+
+      expect(captureException).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ message: INITIALIZATION_MESSAGE }),
+        expect.objectContaining({
+          tags: expect.objectContaining({
+            feature: "push-notifications", step: "initializing-firebase", trigger: "automatic",
+            permission: "granted", firebase_phase: phase, firebase_failure: "timeout",
+          }),
+          fingerprint: ["{{ default }}", phase, "timeout"],
+          contexts: {
+            push_initialization: expect.objectContaining({
+              elapsed_ms: expect.objectContaining({ [phase]: 10000 }),
+              online: true, visibility: "visible", web_locks: false,
+            }),
+          },
+        }),
+      );
+      const durations = captureException.mock.calls[0][1].contexts.push_initialization.elapsed_ms;
+      expect(Object.keys(durations)).toEqual(INITIALIZATION_PHASES.slice(0, INITIALIZATION_PHASES.indexOf(phase) + 1));
+      expect(Object.values(durations).every((duration) => Number.isFinite(duration) && Number(duration) >= 0)).toBe(true);
+      expect(statuses.mock.calls.map(([status]) => status)).toEqual([
+        "requesting-permission", "registering-service-worker", "initializing-firebase",
+      ]);
+      expect(getToken).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(deleteToken).not.toHaveBeenCalled();
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBe(TOKEN_A);
+      expect(readSynced()).toEqual({ token: TOKEN_A, savedAt: NOW });
+      expect(push.getNotificationPreference()).toBe("enabled");
+
+      delayed.resolve(true);
+      await vi.dynamicImportSettled();
+      expect(getToken).not.toHaveBeenCalled();
+      expect(captureException).toHaveBeenCalledOnce();
+    });
+
+    it.each(INITIALIZATION_PHASES)("accepts %s completing at 9999 ms without leaving a timeout", async (phase) => {
+      const delayed = stallPhase(phase);
+      const enabling = push.enablePushNotifications();
+      await delayed.started;
+      await vi.advanceTimersByTimeAsync(9999);
+      delayed.resolve(true);
+
+      await expect(enabling).resolves.toBe(TOKEN_A);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(getToken).toHaveBeenCalledOnce();
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it("distinguishes an unsupported environment from a timeout", async () => {
+      isSupported.mockResolvedValue(false);
+      await expect(push.enablePushNotifications()).rejects.toThrow(
+        "이 브라우저에서는 Firebase 알림을 지원하지 않습니다.",
+      );
+      expect(captureException).toHaveBeenCalledExactlyOnceWith(expect.any(Error), expect.objectContaining({
+        tags: expect.objectContaining({ firebase_phase: "support-check", firebase_failure: "unsupported" }),
+        fingerprint: ["{{ default }}", "support-check", "unsupported"],
+      }));
+      expect(getToken).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it.each([true, false])("rethrows SDK rejection and reports safe diagnostics (known identifiers: %s)", async (known) => {
+      const secret = "private-token@example.test?token=do-not-report";
+      const sdkError = Object.assign(new Error(secret, { cause: secret }), {
+        name: known ? "FirebaseError" : secret,
+        code: known ? "messaging/indexed-db-unsupported" : secret,
+        customData: { token: secret },
+      });
+      isSupported.mockRejectedValue(sdkError);
+      vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+      vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+      Object.defineProperty(navigator, "locks", {
+        configurable: true,
+        value: { request: vi.fn(async (_name: string, operation: () => Promise<unknown>) => operation()) },
+      });
+
+      await expect(push.enablePushNotifications()).rejects.toBe(sdkError);
+
+      expect(captureException).toHaveBeenCalledExactlyOnceWith(expect.any(Error), expect.objectContaining({
+        tags: expect.objectContaining({
+          firebase_phase: "support-check", firebase_failure: "sdk-error",
+          ...(known ? { firebase_error_code: "messaging/indexed-db-unsupported" } : {}),
+        }),
+        fingerprint: ["{{ default }}", "support-check", "sdk-error", known ? "messaging/indexed-db-unsupported" : "Error"],
+        contexts: { push_initialization: expect.objectContaining({
+          online: false, visibility: "hidden", web_locks: true, original_error_type: known ? "FirebaseError" : "Error",
+        }) },
+      }));
+      if (!known) expect(captureException.mock.calls[0][1].tags).not.toHaveProperty("firebase_error_code");
+      const captured = captureException.mock.calls[0][0];
+      expect(captured).not.toBe(sdkError);
+      expect(captured.message).not.toContain(secret);
+      expect(captured.stack).not.toContain(secret);
+      expect(captured).not.toHaveProperty("cause");
+      expect(captured).not.toHaveProperty("customData");
+      expect(JSON.stringify(captureException.mock.calls)).not.toContain(secret);
+      expect(getToken).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it.each([false, true])("distinguishes a missing messaging instance (SDK failure: %s)", async (sdkFailed) => {
+      const secret = "private-getMessaging-cause";
+      const sdkError = Object.assign(new TypeError(secret, { cause: secret }), {
+        code: "messaging/unsupported-browser", customData: { token: secret },
+      });
+      vi.doMock("@/lib/firebase", () => ({
+        messaging: null,
+        messagingInitializationFailure: sdkFailed ? { error: sdkError } : undefined,
+        setupForegroundNotifications,
+      }));
+
+      const enabling = push.enablePushNotifications();
+      await expect(enabling).rejects.toThrow(INITIALIZATION_MESSAGE);
+      await expect(enabling).rejects.not.toHaveProperty("cause");
+      expect(captureException).toHaveBeenCalledExactlyOnceWith(expect.any(Error), expect.objectContaining({
+        tags: expect.objectContaining({
+          firebase_phase: "messaging-instance", firebase_failure: sdkFailed ? "sdk-error" : "missing-instance",
+          ...(sdkFailed ? { firebase_error_code: "messaging/unsupported-browser" } : {}),
+        }),
+        fingerprint: ["{{ default }}", "messaging-instance", sdkFailed ? "sdk-error" : "missing-instance", ...(sdkFailed ? ["messaging/unsupported-browser"] : [])],
+      }));
+      const captured = captureException.mock.calls[0][0];
+      expect(captured).not.toHaveProperty("cause");
+      expect(captured).not.toHaveProperty("customData");
+      expect(captured.stack).not.toContain(secret);
+      expect(JSON.stringify(captureException.mock.calls)).not.toContain(secret);
+      expect(setupForegroundNotifications).not.toHaveBeenCalled();
+      expect(getToken).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["automatic", "resolve"], ["automatic", "reject"],
+      ["manual", "resolve"], ["manual", "reject"],
+      ["disable", "resolve"], ["disable", "reject"],
+    ] as const)("releases the queue for %s after timeout and ignores a late %s", async (next, outcome) => {
+      const delayed = stallPhase("support-check");
+      const enabling = push.enablePushNotifications({ trigger: "automatic" });
+      const rejection = expect(enabling).rejects.toThrow(INITIALIZATION_MESSAGE);
+      await delayed.started;
+      const staleManual = next === "disable"
+        ? expect(push.enablePushNotifications({ trigger: "manual" })).resolves.toBeNull()
+        : undefined;
+      const queued = next === "disable"
+        ? push.disablePushNotifications()
+        : next === "manual" ? push.enablePushNotifications({ trigger: "manual" }) : undefined;
+      await vi.advanceTimersByTimeAsync(10_000);
+      await rejection;
+      if (next === "automatic") await expect(push.enablePushNotifications({ trigger: next })).resolves.toBe(TOKEN_A);
+      else await queued;
+      await staleManual;
+
+      const calls = fetchMock.mock.calls.length;
+      const synced = localStorage.getItem(SYNCED_KEY);
+      if (outcome === "resolve") delayed.resolve(true);
+      else delayed.reject(new Error("late SDK failure"));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(captureException).toHaveBeenCalledOnce();
+      expect(fetchMock).toHaveBeenCalledTimes(calls);
+      expect(fetchMock.mock.calls.map((call) => call[1]?.method)).toEqual([next === "disable" ? "DELETE" : "POST"]);
+      expect(getToken).toHaveBeenCalledTimes(next === "disable" ? 0 : 1);
+      expect(deleteToken).toHaveBeenCalledTimes(next === "disable" ? 1 : 0);
+      expect(push.getNotificationPreference()).toBe(next === "disable" ? "disabled" : "enabled");
+      expect(localStorage.getItem(push.FCM_TOKEN_KEY)).toBe(next === "disable" ? null : TOKEN_A);
+      expect(localStorage.getItem(SYNCED_KEY)).toBe(synced);
+    });
+
+    it.each(INITIALIZATION_PHASES)("consumes a late %s rejection after timeout without another capture", async (phase) => {
+      const delayed = stallPhase(phase);
+      const enabling = push.enablePushNotifications({ trigger: "automatic" });
+      const rejection = expect(enabling).rejects.toThrow(INITIALIZATION_MESSAGE);
+      await delayed.started;
+      await vi.advanceTimersByTimeAsync(10_000);
+      await rejection;
+      delayed.reject(new Error("late private SDK failure"));
+      await vi.dynamicImportSettled();
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(captureException).toHaveBeenCalledOnce();
+      expect(getToken).not.toHaveBeenCalled();
+      expect(fetchMock).not.toHaveBeenCalled();
+      expect(deleteToken).not.toHaveBeenCalled();
+      expect(JSON.stringify(captureException.mock.calls)).not.toContain("late private SDK failure");
+    });
   });
 
   it("saves a rotated token despite the old token's recent success", async () => {
