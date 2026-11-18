@@ -12,6 +12,7 @@ import { Footer } from "./components/Footer";
 import { BottomNav } from "./components/BottomNav";
 import { SiteContent } from "./components/SiteContent";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
+import { InAppBrowserNotice } from "./components/InAppBrowserNotice";
 import { LocaleProvider } from "./components/LocaleProvider";
 import { StructuredDataScript } from "./components/StructuredDataScript";
 import { Providers } from "./providers";
@@ -208,6 +209,7 @@ export default async function RootLayout({
         <LocaleProvider locale={locale}>
           <Providers roommatesEnabled={areRoommatesEnabled()}>
             <Header />
+            <InAppBrowserNotice />
             {showSiteTopBanners && <ManagedBanners placement="site-top" initialBanners={siteTopBanners} initialNow={bannerNow} />}
             <ManagedBanners placement="popup" initialBanners={popupBanners} initialNow={bannerNow} nonce={nonce} />
             <SiteContent initialPathname={pathname}>

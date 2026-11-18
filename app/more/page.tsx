@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Container } from "@/app/components/Container";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
+import { PwaInstallHelpButton } from "@/app/components/PwaInstallHelpButton";
 import {
   LOCALE_HEADER_NAME,
   getDictionary,
@@ -86,6 +87,12 @@ export default async function MorePage() {
           </Link>
         ))}
       </div>
+
+      <Card hover={false} className="mt-6 border border-neutral-200">
+        <h2 className="text-base font-bold text-neutral-900">{dictionary.home.pwaHelpAction}</h2>
+        <p className="mb-3 mt-1 text-sm leading-6 text-neutral-600">{dictionary.home.pwaDescription}</p>
+        <PwaInstallHelpButton />
+      </Card>
 
       <Card
         hover={false}

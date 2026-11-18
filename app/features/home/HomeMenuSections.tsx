@@ -3,7 +3,7 @@
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Button, buttonStyles } from "@/app/components/Button";
+import { Button } from "@/app/components/Button";
 import { Card } from "@/app/components/Card";
 import { Icon } from "@/app/components/Icon";
 import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
@@ -16,7 +16,7 @@ const FREQUENT_MENU_ICON_SIZE = 32;
 const FREQUENT_MENU_COMPACT_ICON_SIZE = 36;
 const FREQUENT_MENU_ICON_STROKE_WIDTH = 1.85;
 const InstallHelpModal = dynamic(() =>
-  import("@/app/components/Modal").then((module) => module.Modal),
+  import("@/app/components/PwaInstallHelp").then((module) => module.PwaInstallHelp),
 );
 
 export function FrequentMenuGrid() {
@@ -99,7 +99,6 @@ export function PwaInstallCard() {
   const [showInstallHelp, setShowInstallHelp] = useState(false);
   const installTrigger = useRef<HTMLButtonElement | null>(null);
   const dictionary = useDictionary();
-  const locale = useLocale();
 
   useEffect(() => {
     const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches ||
@@ -184,26 +183,11 @@ export function PwaInstallCard() {
     </Card>
     {showInstallHelp && (
       <InstallHelpModal
-        isOpen
-        title={dictionary.home.pwaAction}
-        description={dictionary.home.pwaInstallHelp}
         onClose={() => {
           setShowInstallHelp(false);
           window.requestAnimationFrame(() => installTrigger.current?.focus());
         }}
-        size="sm"
-      >
-        <ul className="space-y-3 text-sm leading-6 text-neutral-700">
-          <li>{dictionary.home.pwaInstallIos}</li>
-          <li>{dictionary.home.pwaInstallBrowser}</li>
-        </ul>
-        <Link
-          href={localizePath("/service/notices/005-pwa-installation-guide", locale)}
-          className={buttonStyles("secondary", "mt-4")}
-        >
-          {dictionary.home.pwaInstallGuide}
-        </Link>
-      </InstallHelpModal>
+      />
     )}
     </>
   );

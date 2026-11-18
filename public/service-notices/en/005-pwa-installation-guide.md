@@ -1,124 +1,49 @@
 ---
 title: "Install SYU CAMPUS and Use It Like an App"
 lang: en
-sourceSha256: c57b76a6e2384914902ab1c64d1a898c606a6912e6118eda24d4104acc16d402
+sourceSha256: c36e6d1666eaea651c783417d6b2141d5b768e9b617b7b32865f118d7c954e64
 ---
 
-Hello! Here is a more convenient way to use SYU CAMPUS.
+You can use SYU CAMPUS on the web without installing it. If you visit often, add it to your home screen and open it from its icon. This installation method is called a PWA.
 
-With **Progressive Web App (PWA)** technology, you can install SYU CAMPUS and use it like a mobile app!
+## If you opened the site inside Everytime or another app
 
----
+An app's built-in browser may lack an installation menu or restrict opening another browser. First open the site in Safari on iPhone or iPad, or Chrome on Android.
 
-## What is a PWA?
+1. If the installation guide shows **Open in Safari** or **Open in Chrome**, try that button. Opening the browser may be blocked by the app or device settings.
+2. If it does not open, look in the current app's menu or sharing menu for an option such as **Open in external browser**. Its name and availability vary by app.
+3. If there is no such option, choose **Copy address** in the installation guide, open Safari or Chrome yourself, and paste it into the address bar. If copying is blocked, press and hold the displayed address to copy it, or enter `https://campus.syu.kr/en` yourself.
 
-A PWA combines the advantages of websites and apps:
+The address in the installation guide is the public SYU CAMPUS home page. It does not transfer your current page, sign-in link, or invitation link. Sign-in state, settings, and locally saved data may differ between browsers and the installed web app. Automatic transfer is not guaranteed.
 
-- **Fast like an app**: Available offline too
-- **Small download**: Much lighter than a conventional app
-- **Easy installation**: Install directly without going through an app store
-- **Automatic updates**: Changes apply without a separate installation process
+## Add to the home screen on iPhone or iPad
 
----
+1. Open [SYU CAMPUS](/) in Safari.
+2. Choose **Share → Add to Home Screen**. The Share button's location can vary with your OS version and layout settings.
+3. If **Open as Web App** appears, turn it on, check the name, and tap **Add**.
+4. Open SYU CAMPUS using the new home screen icon.
 
-## How to install
+Safari is the recommended browser for following these instructions. Support for adding to the home screen in other browsers depends on the OS and browser version.
 
-### The Install app button on the home page
+## Install on Android
 
-Press **Install app** on the home page to open the installation confirmation in a supported browser. Approve installation in that window.
+1. Open [SYU CAMPUS](/) in Chrome.
+2. Press **Install app** on the home page. An installation confirmation appears when the browser supports it and has it ready.
+3. If no confirmation appears, look for **Install app** or **Add to Home screen** in Chrome's menu. Menu names and installation behavior vary by browser and device.
+4. After installation, open SYU CAMPUS from your home screen or app list.
 
-If the confirmation is unsupported or not ready, the page explains how to add the site to your screen. On iPhone and iPad, use Safari's **Share → Add to Home Screen → Add**.
+Other browsers, including Samsung Internet, may also offer installation or home screen options. If the site is added as a simple shortcut, it may open with the browser interface visible.
 
-### iOS (iPhone/iPad)
+## Cannot find an installation button or menu?
 
-1. Visit SYU CAMPUS in Safari.
-2. Tap the Share button. This is the square-and-arrow icon at the bottom of the screen.
-3. Select "Add to Home Screen." Check the app name and tap "Add."
-4. Done! The SYU CAMPUS icon appears on your home screen. You can use it like other apps.
+Even if you dismiss the home page's installation card, you can return to **More → App installation guide**. Device instructions and address copying are also available when the browser's installation confirmation is unsupported or not ready.
 
-**Tips:**
+First check that you opened the site in Safari or Chrome rather than inside another app. If you already installed it, check your home screen or app list. If the menu is still missing, check for OS and browser updates. You can also continue using the website without installing it.
 
-- On iOS, PWA installation is available only in Safari.
-- Installation is not available in Chrome or Firefox.
+## Using the app and keeping your data
 
----
-
-### Android
-
-### Method 1: Chrome (recommended)
-
-1. Visit SYU CAMPUS in Chrome.
-2. Click the install button beside the address bar. Look for the installation icon to the right of the address bar, or find it in the menu.
-3. Confirm installation. Tap "Install" in the popup.
-4. Done! SYU CAMPUS is installed on your home screen.
-
-### Method 2: Samsung Internet
-
-1. Visit SYU CAMPUS in Samsung Internet.
-2. Open the menu (≡) → "Install app."
-3. Confirm installation.
-
-### Method 3: Manual installation
-
-1. Open the menu (≡) → "Add to Home screen," or **Menu → "More" → "Add to Home screen."**
-2. **Check the app name and tap "Add."**
-
----
-
-## Using the installed app
-
-### App updates
-
-- Changes apply automatically.
-- No separate update button is needed.
-- New content loads automatically the next time you open the app.
-
-### Removing the app
-
-**iOS:**
-
-- Press and hold the SYU CAMPUS icon on your home screen → "Remove App."
-
-**Android:**
-
-- Open the context menu for SYU CAMPUS in your app drawer → "Uninstall," or follow your device's settings.
-
----
-
-## ❓ Frequently asked questions
-
-### Q1: Does installing the PWA take up much space?
-
-**A:** No. It is much lighter than a conventional app and takes roughly less than 50MB.
-
-### Q3: Can I still use the website after installing the PWA?
-
-**A:** Yes, at any time. The service is the same whether you open it in a browser or the installed app.
-
-### Q4: I installed it, but I cannot find it
-
-**A:** Please check the following:
-
-- Your browser version
-- Whether your device's date and time are correct
-- Try installing it again
-
-### Q5: Can I reinstall a PWA I already installed?
-
-**A:** Yes. You can remove the app and install it again. Your data will not be lost.
-
----
-
-## Install SYU CAMPUS as a PWA
-
-Use SYU CAMPUS conveniently **like an app**!
-
-Once it is on your home screen, you can open it with one tap next time.
-
-Enjoy a more convenient campus life!
-
----
-
-## **Feedback or suggestions?**
-
-You are always welcome to share your feedback through the contact information on the home page!
+- **Notifications:** To get alerts about service notices and important campus updates, open SYU CAMPUS from your home screen and choose **More → Notifications and Privacy → Enable notifications**. On a device that supports notifications, allow them when prompted. You can turn them off from the same page.
+- **Internet connection:** An internet connection is needed to view key information such as notices, meals, and shuttles. Installation does not make every feature available offline.
+- **Updates:** Web changes usually apply without reinstalling. An open screen may not show them immediately, so refresh or close and reopen it if needed. Update timing can depend on the connection and browser.
+- **Storage:** The space used depends on your device, browser, and saved data.
+- **Removal and reinstallation:** Use your device's uninstall or remove-from-home-screen menu. Removing the web app or clearing browser data may erase locally saved content, including timetable drafts and graduation progress. Keep a separate copy of anything you need first. Reinstalling does not guarantee recovery of previous data.
