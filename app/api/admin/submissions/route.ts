@@ -11,6 +11,7 @@ import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/server/http";
 import type {
   AdminSubmissionKind,
   AdminSubmissionItem,
+  AdminSubmissionStatusUpdate,
   SubmissionStatus,
 } from "@/types/submissions";
 
@@ -126,7 +127,7 @@ export async function PATCH(req: NextRequest) {
     );
     const db = getFirestore();
 
-    await db.runTransaction(async (transaction) => {
+    const updatedSubmissions = await db.runTransaction(async (transaction) => {
       const now = nowTimestamp();
       const auditExpiresAt = admin.firestore.Timestamp.fromDate(
         new Date(Date.now() + 365 * 86400000),
@@ -142,11 +143,25 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
-      for (const submissionRef of submissionRefs) {
-        transaction.update(submissionRef, {
+      const updates: AdminSubmissionStatusUpdate[] = [];
+      for (const [index, submissionRef] of submissionRefs.entries()) {
+        const changes: Record<string, unknown> = {
           status,
           updated_at: now,
-        });
+        };
+        const isClosed = status === "done" || status === "rejected";
+        const previousStatus = snapshots[index].get("status");
+        const wasClosed = previousStatus === "done" || previousStatus === "rejected";
+        let closedAt = snapshots[index].get("closed_at");
+        if (!isClosed) {
+          changes.closed_at = admin.firestore.FieldValue.delete();
+          closedAt = null;
+        } else if (!wasClosed) {
+          changes.closed_at = now;
+          closedAt = now;
+        }
+        transaction.update(submissionRef, changes);
+        updates.push({ ...targets[index], status: status as SubmissionStatus, updatedAt: timestampToIso(now), closedAt: timestampToIso(closedAt) });
       }
       transaction.set(db.collection("admin_audit_logs").doc(), {
         action: "submission_status_changed",
@@ -160,9 +175,10 @@ export async function PATCH(req: NextRequest) {
         created_at: now,
         expires_at: auditExpiresAt,
       });
+      return updates;
     });
 
-    return NextResponse.json({ success: true, updated: targets.length });
+    return NextResponse.json({ success: true, updated: targets.length, updatedSubmissions });
   } catch (error) {
     if (error instanceof AdminAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status });
@@ -430,6 +446,7 @@ function mapInquiry(
     contact: readString(data.contact),
     createdAt: timestampToIso(data.created_at),
     updatedAt: timestampToIso(data.updated_at),
+    closedAt: timestampToIso(data.closed_at),
     userAgent: readString(data.user_agent),
     aiClassification: normalizeStoredAdminSubmissionAiClassification(
       data.ai_classification,
@@ -457,6 +474,7 @@ function mapCampusTipSuggestion(
     contact: readString(data.contact),
     createdAt: timestampToIso(data.created_at),
     updatedAt: timestampToIso(data.updated_at),
+    closedAt: timestampToIso(data.closed_at),
     userAgent: readString(data.user_agent),
     aiClassification: normalizeStoredAdminSubmissionAiClassification(
       data.ai_classification,

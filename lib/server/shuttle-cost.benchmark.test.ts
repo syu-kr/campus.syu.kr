@@ -48,6 +48,7 @@ vi.mock("./firestore",()=>({
 }));
 const output=process.env.SHUTTLE_BENCHMARK_OUTPUT;
 const start=Date.parse("2026-11-03T08:00:00+09:00"),frames=4800,step=7500;
+const saveEvery=60_000/step,storedFrames=Math.ceil(frames/saveEvery);
 function points(count:number,at:number):PilotObservation[]{
   return Array.from({length:count},(_,i)=>({
     vehicleKey:"benchmark-"+i,routeId:1,status:2,pattern:"benchmark",
@@ -75,14 +76,14 @@ it.skipIf(!output)("measures ten-hour collection capacity with isolated mocked s
     const before=performance.now();
     for(let frame=0;frame<frames;frame++){
       const at=start+frame*step;vi.setSystemTime(at);
-      expect(await callers[0](points(vehicles,at),at,()=>undefined)).toBe("saved");
-      // Other instances receive the same five-second frame after its first commit.
+      expect(await callers[0](points(vehicles,at),at,()=>undefined)).toBe(frame%saveEvery===0?"saved":"duplicate");
+      // Each worker learns the remote watermark once, then skips reads for the rest of the minute.
       for(const caller of callers.slice(1))expect(await caller(points(vehicles,at+100),at+100,()=>undefined)).toBe("duplicate");
     }
-    const result={vehicles,instances,frames,...counts(),durationMs:Math.round(performance.now()-before)};
-    expect(result.writes).toBe(frames*2);
-    expect(result.reads).toBe(frames*(2+instances-1)+vehicles+1);
-    expect([...mock.records.keys()].filter(key=>key.startsWith("shuttle_pilot_receipts/"))).toHaveLength(frames);
+    const result={vehicles,instances,frames,storedFrames,...counts(),durationMs:Math.round(performance.now()-before)};
+    expect(result.writes).toBe(storedFrames*2);
+    expect(result.reads).toBe(storedFrames*(2+instances-1)+vehicles+1);
+    expect([...mock.records.keys()].filter(key=>key.startsWith("shuttle_pilot_receipts/"))).toHaveLength(storedFrames);
     capacity.push(result);
   }
   const [same]=await workers(1);
@@ -91,15 +92,15 @@ it.skipIf(!output)("measures ten-hour collection capacity with isolated mocked s
     await same(points(2,at),at,()=>undefined);
     for(let viewer=1;viewer<10;viewer++)expect(await same(points(2,at),at,()=>undefined)).toBe("duplicate");
   }
-  const sharedInstance={vehicles:2,viewers:10,frames,...counts()};
-  expect(sharedInstance.reads).toBe(9603);expect(sharedInstance.writes).toBe(9600);
+  const sharedInstance={vehicles:2,viewers:10,frames,storedFrames,...counts()};
+  expect(sharedInstance.reads).toBe(1203);expect(sharedInstance.writes).toBe(1200);
 
   const [empty]=await workers(1);vi.setSystemTime(start);await empty(points(2,start),start,()=>undefined);
-  let before=counts();vi.setSystemTime(start+step);await empty([],start+step,()=>undefined);
+  let before=counts();vi.setSystemTime(start+60000);await empty([],start+60000,()=>undefined);
   const firstEmpty=delta(before);expect(firstEmpty).toMatchObject({reads:2,writes:2});
   before=counts();
-  for(let frame=2;frame<4802;frame++){const at=start+frame*step;vi.setSystemTime(at);await empty([],at,()=>undefined);}
-  const continuedEmpty=delta(before);expect(continuedEmpty).toMatchObject({reads:4800,writes:0});
+  for(let frame=1;frame<=4800;frame++){const at=start+60000+frame*step;vi.setSystemTime(at);await empty([],at,()=>undefined);}
+  const continuedEmpty=delta(before);expect(continuedEmpty).toMatchObject({reads:600,writes:0});
 
   const retryWorkers=await workers(10);vi.setSystemTime(start);mock.rollbackOnce=true;
   const concurrent=await Promise.all(retryWorkers.map(caller=>caller(points(2,start),start,()=>undefined)));
@@ -126,9 +127,9 @@ it.skipIf(!output)("measures ten-hour collection capacity with isolated mocked s
 
   const report={
     mode:"mock transaction document operations; no Firebase connection",
-    assumptions:{hours:10,frames,intervalMs:step,source:"stationary synthetic vehicles",sampling:"one accepted frame per five-second window",transactions:"serialized lock holders; forced retry rolls back staged writes"},
+    assumptions:{hours:10,frames,intervalMs:step,storageIntervalMs:60_000,source:"stationary synthetic vehicles",sampling:"at least sixty elapsed seconds between accepted automatic frames",transactions:"serialized lock holders; forced retry rolls back staged writes"},
     capacity,sharedInstance,firstEmpty,continuedEmpty,retriedConcurrent,failed,recovered,fieldPass,fieldArrival,fieldDeparture,
-    etaAnalytic:{perInstanceCurrentReads:frames,historyReadsWithHourlyExpiry:10,historyReadsAtColdStart:1,modelReadsWithCurrentProfiles:0,extraSelectedVehicleReadsWhenSnapshotCached:0,
+    etaAnalytic:{perInstanceCurrentReadsUpperBound:1200,currentCacheMs:30_000,historyReadsWithHourlyExpiry:10,historyReadsAtColdStart:1,modelReadsWithCurrentProfiles:0,extraSelectedVehicleReadsWhenSnapshotCached:0,
       note:"ETA figures are analytical and separate from measured collection operations. Per-process caches do not share reads across instances."},
     limits:["Model-change writes are absent in stationary capacity cases; learned model and operator reports add writes.","Cloud network latency, distributed contention and billed operation counts are unmeasured.","The collector window function is stubbed open for a ten-hour storage capacity run."],
     durationMs:Math.round(performance.now()-began),

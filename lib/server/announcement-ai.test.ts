@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { Announcement, AnnouncementAiSummary } from "@/types";
+import { DAILY_CRAWL_DATA_FILES } from "../crawl-data-contract";
 import type { ActivePublicData } from "./public-data-storage";
 
 const mocks = vi.hoisted(() => ({ snapshot: vi.fn(), metadata: vi.fn(), firebase: vi.fn() }));
@@ -45,19 +46,19 @@ beforeEach(() => {
 it("builds the shared home result from one exact snapshot without old process caches or stale AI matches", async () => {
   const { getAnnouncementSummary } = await import("./announcements");
   expect((await getAnnouncementSummary())[0].aiSummary).toEqual(aiSummary);
-  const active = { manifest: { version: "new-snapshot" }, revision: 2 } as ActivePublicData;
+  const active = { manifest: { version: "new-snapshot", files: Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, { path: file, sha256: "a".repeat(64), size: 1 }])) }, revision: 2 } as ActivePublicData;
   const changed = { ...announcement, content: "새 공지 원문".repeat(100) };
   mocks.firebase.mockImplementation(async (file: string) => ({ data: file === "announcement-ai-metadata.json" ? metadata : file === "announcements-academic.json" ? [changed] : [], manifest: active.manifest }));
   const result = await getAnnouncementSummary(12, active);
   expect(result[0].content).toBe(changed.content.slice(0, 240));
   expect(result[0].aiSummary).toBeUndefined();
   expect(mocks.firebase.mock.calls.every(([, snapshot]) => snapshot === active)).toBe(true);
-  expect(mocks.firebase.mock.calls.filter(([file]) => file !== "announcement-ai-metadata.json")).toHaveLength(4);
-  expect(mocks.snapshot).toHaveBeenCalledTimes(4);
+  expect(mocks.firebase.mock.calls.filter(([file]) => file !== "announcement-ai-metadata.json")).toHaveLength(5);
+  expect(mocks.snapshot).toHaveBeenCalledTimes(5);
 });
 
 it("does not let metadata failure become a successful immutable home cache result", async () => {
-  const active = { manifest: { version: "new-snapshot" }, revision: 2 } as ActivePublicData;
+  const active = { manifest: { version: "new-snapshot", files: Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, { path: file, sha256: "a".repeat(64), size: 1 }])) }, revision: 2 } as ActivePublicData;
   mocks.firebase.mockImplementation(async (file: string) => {
     if (file === "announcement-ai-metadata.json") throw new Error("metadata unavailable");
     return { data: file === "announcements-academic.json" ? [announcement] : [], manifest: active.manifest };
@@ -66,6 +67,20 @@ it("does not let metadata failure become a successful immutable home cache resul
   await expect(getAnnouncementSummary(12, active)).rejects.toThrow("metadata unavailable");
   mocks.firebase.mockImplementation(async (file: string) => ({ data: file === "announcement-ai-metadata.json" ? metadata : file === "announcements-academic.json" ? [announcement] : [], manifest: active.manifest }));
   expect((await getAnnouncementSummary(12, active))[0].aiSummary).toEqual(aiSummary);
+});
+
+it("uses bundled UISP notices with an older pinned snapshot while keeping existing sources pinned", async () => {
+  const active = { manifest: { version: "before-uisp", files: Object.fromEntries(DAILY_CRAWL_DATA_FILES.filter(file => file !== "announcements-uisp.json").map(file => [file, { path: file, sha256: "a".repeat(64), size: 1 }])) }, revision: 1 } as ActivePublicData;
+  const uisp: Announcement = { ...announcement, id: "uisp-744", category: "uisp", title: "대학혁신지원사업단 안내" };
+  mocks.firebase.mockImplementation(async (file: string) => ({ data: file === "announcement-ai-metadata.json" ? metadata : file === "announcements-academic.json" ? [announcement] : [], manifest: active.manifest }));
+  mocks.snapshot.mockImplementation(async (file: string) => {
+    expect(file).toBe("announcements-uisp.json");
+    return { source: "bundled-fallback", data: [uisp] };
+  });
+  const { getAnnouncementSummary } = await import("./announcements");
+  expect((await getAnnouncementSummary(12, active)).map(item => item.id)).toEqual([announcement.id, uisp.id]);
+  expect(mocks.snapshot).toHaveBeenCalledOnce();
+  expect(mocks.firebase.mock.calls.every(([, pinned]) => pinned === active)).toBe(true);
 });
 afterEach(() => { vi.useRealTimers(); });
 
@@ -79,7 +94,7 @@ it("starts summary metadata on the first nonempty source before slower sources a
   const { getAnnouncementSummary } = await import("./announcements");
   let settled = false;
   const pending = getAnnouncementSummary(12).then((items) => { settled = true; return items; });
-  expect(mocks.snapshot).toHaveBeenCalledTimes(4);
+  expect(mocks.snapshot).toHaveBeenCalledTimes(5);
   expect(mocks.metadata).not.toHaveBeenCalled();
 
   academic.resolve(snapshot([announcement]));

@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getMessaging, onMessage, Messaging } from "firebase/messaging";
-import { setNotificationHandler } from "@/components/NotificationModal";
+import { setNotificationHandler } from "@/app/components/NotificationModal";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,15 +22,19 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 let messaging: Messaging | null = null;
+let messagingInitializationFailure: { error: unknown } | undefined;
 let foregroundListenerRegistered = false;
 
 if (typeof window !== "undefined" && "serviceWorker" in navigator) {
   try {
     messaging = getMessaging(app);
-  } catch {}
+  } catch (error) {
+    // Keep Auth usable even when Messaging cannot initialize.
+    messagingInitializationFailure = { error };
+  }
 }
 
-export { auth, messaging };
+export { auth, messaging, messagingInitializationFailure };
 
 export function setupForegroundNotifications() {
   if (!messaging) return;

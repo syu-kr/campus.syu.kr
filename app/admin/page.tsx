@@ -23,6 +23,7 @@ import type {
   AdminSubmissionKind,
   AdminSubmissionPageResponse,
   AdminSubmissionPagination,
+  AdminSubmissionStatusUpdate,
   SubmissionStatus,
 } from "@/types/submissions";
 import {
@@ -362,19 +363,22 @@ export default function AdminPage() {
       });
       if (!isCurrentSession()) return;
       if (response.status === 401 || response.status === 403) { handleAccessLost(); return; }
-      const data = await readAdminApiResponse<{ error?: string }>(response);
+      const data = await readAdminApiResponse<{ error?: string; updatedSubmissions?: AdminSubmissionStatusUpdate[] }>(response);
       if (!isCurrentSession()) return;
 
       if (!response.ok) {
         throw new Error(data.error || "상태를 변경하지 못했습니다");
       }
 
-      const updatedAt = new Date().toISOString();
+      const updated = data.updatedSubmissions?.find((current) => current.id === item.id && current.kind === item.kind);
+      if (!updated || updated.status !== status || typeof updated.updatedAt !== "string" || (updated.closedAt !== null && typeof updated.closedAt !== "string")) {
+        throw new Error("Incomplete submission status response");
+      }
       setSubmissions((items) =>
         items
           .map((current) =>
             current.id === item.id && current.kind === item.kind
-              ? { ...current, status, updatedAt }
+              ? { ...current, ...updated }
               : current,
           )
           .filter(

@@ -11,6 +11,32 @@ const DISABLED_REVISION_KEY = "notification_disabled_revision";
 // Keep the server heartbeat below the cleanup job's minimum retention (7 days).
 const TOKEN_SYNC_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const MAX_RETRY_MS = 60 * 60 * 1000;
+const FIREBASE_INIT_ERROR = "알림 서비스를 초기화하지 못했습니다.";
+
+type FirebaseInitPhase =
+  | "messaging-import"
+  | "support-check"
+  | "firebase-app-import"
+  | "messaging-instance";
+type FirebaseInitFailure = "timeout" | "unsupported" | "sdk-error" | "missing-instance";
+
+const firebaseInitErrorCodes = new Set([
+  "app/bad-app-name",
+  "app/duplicate-app",
+  "app/no-app",
+  "app/no-options",
+  "auth/already-initialized",
+  "auth/invalid-api-key",
+  "auth/operation-not-supported-in-this-environment",
+  "messaging/indexed-db-unsupported",
+  "messaging/missing-app-config-values",
+  "messaging/only-available-in-window",
+  "messaging/unsupported-browser",
+]);
+const firebaseInitErrorTypes = new Set([
+  "ChunkLoadError", "DOMException", "FirebaseError", "NetworkError",
+  "SecurityError", "SyntaxError", "TypeError",
+]);
 
 export type NotificationPreference = "enabled" | "disabled";
 export type PushNotificationStatus =
@@ -135,6 +161,18 @@ async function registerPushNotifications(
 
   let currentStatus: PushNotificationStatus = "requesting-permission";
   let permissionDeclined = false;
+  let firebasePhase: FirebaseInitPhase | undefined;
+  let firebasePhaseStart = 0;
+  let firebaseFailure: FirebaseInitFailure = "sdk-error";
+  let messagingFailure: { error: unknown } | undefined;
+  const firebaseElapsedMs: Partial<Record<FirebaseInitPhase, number>> = {};
+  const setFirebasePhase = (next?: FirebaseInitPhase) => {
+    const now = performance.now();
+    if (firebasePhase) firebaseElapsedMs[firebasePhase] = Math.round(now - firebasePhaseStart);
+    firebasePhase = next;
+    firebasePhaseStart = now;
+  };
+  const onFirebaseTimeout = () => { firebaseFailure = "timeout"; };
   const updateStatus = (status: PushNotificationStatus) => {
     currentStatus = status;
     options.onStatus?.(status);
@@ -166,26 +204,35 @@ async function registerPushNotifications(
     await waitForServiceWorkerReady();
 
     updateStatus("initializing-firebase");
+    setFirebasePhase("messaging-import");
     const { getToken, isSupported } = await withPushTimeout(
       import("firebase/messaging"),
-      "알림 서비스를 초기화하지 못했습니다.",
+      FIREBASE_INIT_ERROR,
+      onFirebaseTimeout,
     );
-    if (
-      !(await withPushTimeout(isSupported(), "알림 서비스를 초기화하지 못했습니다."))
-    ) {
+    setFirebasePhase("support-check");
+    if (!(await withPushTimeout(isSupported(), FIREBASE_INIT_ERROR, onFirebaseTimeout))) {
+      firebaseFailure = "unsupported";
       throw new Error("이 브라우저에서는 Firebase 알림을 지원하지 않습니다.");
     }
 
-    const { messaging, setupForegroundNotifications } = await withPushTimeout(
+    setFirebasePhase("firebase-app-import");
+    const firebase = await withPushTimeout(
       import("@/lib/firebase"),
-      "알림 서비스를 초기화하지 못했습니다.",
+      FIREBASE_INIT_ERROR,
+      onFirebaseTimeout,
     );
 
+    setFirebasePhase("messaging-instance");
+    const { messaging, setupForegroundNotifications } = firebase;
     if (!messaging) {
-      throw new Error("알림 서비스를 초기화하지 못했습니다.");
+      messagingFailure = firebase.messagingInitializationFailure;
+      if (!messagingFailure) firebaseFailure = "missing-instance";
+      throw new Error(FIREBASE_INIT_ERROR);
     }
 
     setupForegroundNotifications();
+    setFirebasePhase();
 
     const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
     if (!vapidKey) {
@@ -297,15 +344,22 @@ async function registerPushNotifications(
     return token;
   } catch (error) {
     if (!permissionDeclined && !(error instanceof PushSubscriptionError && error.fromCooldown)) {
-      const errorCode = readErrorCode(error);
-      Sentry.captureException(error, {
+      const phase = firebasePhase;
+      if (phase) setFirebasePhase();
+      const original = phase && firebaseFailure === "sdk-error"
+        ? describeFirebaseInitError(messagingFailure ? messagingFailure.error : error)
+        : undefined;
+      const errorCode = phase ? original?.code : readErrorCode(error);
+      // Sentry follows Error.cause, so keep the raw SDK exception out of the event.
+      Sentry.captureException(original ? new Error(FIREBASE_INIT_ERROR) : error, {
         tags: {
           feature: "push-notifications",
           step: currentStatus,
           trigger,
           permission:
             "Notification" in window ? Notification.permission : "unsupported",
-          ...(error instanceof PushSubscriptionError
+          ...(phase && { firebase_phase: phase, firebase_failure: firebaseFailure }),
+          ...(!phase && error instanceof PushSubscriptionError
             ? {
                 http_status: String(error.status),
                 error_code: error.code,
@@ -315,6 +369,19 @@ async function registerPushNotifications(
               ? { firebase_error_code: errorCode }
               : {}),
         },
+        ...(phase && {
+          // Dedupe ignores tags, so include the sanitized SDK identity.
+          fingerprint: ["{{ default }}", phase, firebaseFailure, ...(original ? [original.code ?? original.type] : [])],
+          contexts: {
+            push_initialization: {
+              elapsed_ms: firebaseElapsedMs,
+              online: navigator.onLine,
+              visibility: document.visibilityState,
+              web_locks: Boolean(navigator.locks?.request),
+              ...(original && { original_error_type: original.type }),
+            },
+          },
+        }),
       });
     }
     throw error;
@@ -369,6 +436,20 @@ function readRetryAt(response: Response): number {
 function readErrorCode(error: unknown) {
   if (!error || typeof error !== "object" || !("code" in error)) return null;
   return typeof error.code === "string" ? error.code : null;
+}
+
+function describeFirebaseInitError(error: unknown): { type: string; code?: string } {
+  try {
+    const isError = error instanceof Error;
+    const name = isError ? error.name : undefined;
+    const code = readErrorCode(error);
+    return {
+      type: name && firebaseInitErrorTypes.has(name) ? name : isError ? "Error" : typeof error,
+      code: code && firebaseInitErrorCodes.has(code) ? code : undefined,
+    };
+  } catch {
+    return { type: "unknown" };
+  }
 }
 
 async function requestNotificationPermission(): Promise<NotificationPermission> {

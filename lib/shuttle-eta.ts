@@ -2,8 +2,13 @@ import { getKoreaDateTimeParts } from "./korea-time";
 import { serviceVisits, type ShuttleRoute } from "./shuttle-visits";
 
 export type StopEta = { visitId: string; arrivalAt: number; measuredAt: number; validUntil: number; basis?: "history" | "observed" | "route"; measurementSource?: "source" | "receiver" };
-export type ScheduledStopArrival = { visitId: string; departureAt: number; arrivalAt: number; travelSeconds: number };
-export type EtaResponse = { status: "collecting" | "active" | "learning"; arrivals: StopEta[]; scheduledArrivals?: ScheduledStopArrival[] };
+export type ScheduledStopArrival = { visitId: string; departureAt: number; arrivalAt: number; travelSeconds: number; basis?: "history" | "observed" | "route"; tripKey?: string };
+export type ScheduledShuttleTrip = { key: string; route: ShuttleRoute; pattern: string; departureAt: number; stops: ScheduledStopArrival[] };
+export type EtaResponse = {
+  status: "collecting" | "active" | "learning"; arrivals: StopEta[]; scheduledArrivals?: ScheduledStopArrival[];
+  context?: { serviceDate: string; version: string; generatedAt: number; validUntil: number; degraded?: boolean };
+  trips?: ScheduledShuttleTrip[];
+};
 type Phase = "moving" | "dwelling";
 type Leg = {
   from: string;

@@ -232,3 +232,47 @@ it("keeps original notices without exposing source-retention diagnostics or quer
   expect(screen.queryByText(/저장된 공지|정보 기준|이전 확인 정보/)).not.toBeInTheDocument();
   expect(client.getQueryCache().findAll().map((query) => query.queryKey[0])).toEqual(["announcement-page"]);
 });
+
+const uispPinnedNotice = {
+  ...initialPage.items[0],
+  id: "uisp-pinned",
+  title: "사업단 고정 안내",
+  category: "uisp" as const,
+  isPinned: true,
+};
+
+it("controls the UISP pinned rows separately without removing or duplicating notices", () => {
+  const data = {
+    ...initialPage,
+    items: [uispPinnedNotice, { ...initialPage.items[0], category: "uisp" as const }],
+  };
+  render(
+    <QueryClientProvider client={client}>
+      <AnnouncementListPage category="uisp" title="사업단 공지" description="설명" errorMessage="실패" initialPage={data} />
+    </QueryClientProvider>,
+  );
+
+  const toggle = screen.getByRole("button", { name: "고정 공지 (1)" });
+  const pinnedGroup = document.getElementById(toggle.getAttribute("aria-controls")!);
+  expect(pinnedGroup).toContainElement(screen.getByRole("heading", { name: "사업단 고정 안내" }));
+  expect(pinnedGroup).not.toContainElement(screen.getByRole("heading", { name: "서버 초기 공지" }));
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+});
+
+it("leaves matching UISP pinned notices directly visible in search results", () => {
+  urlSearch.value = "고정";
+  const data = { ...initialPage, items: [uispPinnedNotice], total: 1, totalPages: 1 };
+  render(
+    <QueryClientProvider client={client}>
+      <AnnouncementListPage category="uisp" title="사업단 공지" description="설명" errorMessage="실패"
+        initialPage={data} initialQuery={urlSearch.value} />
+    </QueryClientProvider>,
+  );
+
+  expect(screen.getByRole("heading", { name: "사업단 고정 안내" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: /고정 공지/ })).not.toBeInTheDocument();
+});

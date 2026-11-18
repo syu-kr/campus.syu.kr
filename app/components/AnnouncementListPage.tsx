@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AnnouncementCard } from "@/app/components/AnnouncementCard";
+import { Button } from "@/app/components/Button";
 import { Container } from "@/app/components/Container";
+import { Icon } from "@/app/components/Icon";
 import { PaginationControls } from "@/app/components/PaginationControls";
 import { SearchBar } from "@/app/components/SearchBar";
 import { Skeleton } from "@/app/components/Skeleton";
@@ -13,7 +15,7 @@ import { useDictionary } from "@/app/components/LocaleProvider";
 import { fetchAnnouncementPage, type AnnouncementPageResponse } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 import { getAnnouncementListQuery } from "@/lib/announcement-list-query";
-import type { AnnouncementCategory } from "@/types";
+import type { Announcement, AnnouncementCategory } from "@/types";
 
 const ITEMS_PER_PAGE = 10;
 const ONE_MINUTE = 60 * 1000;
@@ -50,6 +52,8 @@ export function AnnouncementListPage({
   const [currentPage, setCurrentPage] = useState(urlPage);
   const resultsRef = useRef<HTMLDivElement>(null);
   const [pageLoadingHeight, setPageLoadingHeight] = useState(0);
+  const [pinnedExpanded, setPinnedExpanded] = useState(false);
+  const pinnedNoticesId = useId();
 
   useEffect(() => {
     if (isNavigating) return;
@@ -106,6 +110,12 @@ export function AnnouncementListPage({
   const isLoading = !hasServerPage && browserLoading;
   const isError = !hasServerPage && browserError;
   const announcements = data?.items || [];
+  const pinnedNotices = category === "uisp" && !searchQuery.trim()
+    ? announcements.filter((announcement) => announcement.isPinned)
+    : [];
+  const otherNotices = pinnedNotices.length
+    ? announcements.filter((announcement) => !announcement.isPinned)
+    : announcements;
   const total = data?.total || 0;
   const totalPages = data?.totalPages || 1;
   const showingPreviousPage = !hasServerPage && browserPlaceholder && inputQuery === searchQuery;
@@ -116,7 +126,7 @@ export function AnnouncementListPage({
   return (
     <Container className="py-6 sm:py-8">
       <div className="mb-8">
-        <h1 className="mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl">
+        <h1 className={`mb-2 text-2xl font-bold text-neutral-900 sm:text-3xl${category === "uisp" ? " max-md:break-keep max-md:text-balance" : ""}`}>
           {title}
         </h1>
         <p className="text-neutral-600">{description}</p>
@@ -151,16 +161,24 @@ export function AnnouncementListPage({
             }
           />
         )}
-        {!showLoading &&
-          announcements.map((announcement) => (
-            <div key={announcement.id} className="mb-2">
-              <AnnouncementCard
-                announcement={announcement}
-                href={announcement.url}
-                external={Boolean(announcement.url)}
-              />
+        {!showLoading && pinnedNotices.length > 0 && (
+          <>
+            <Button
+              variant="secondary"
+              className="w-full justify-between md:hidden"
+              aria-expanded={pinnedExpanded}
+              aria-controls={pinnedNoticesId}
+              onClick={() => setPinnedExpanded((expanded) => !expanded)}
+            >
+              {dictionary.pages.announcements.uispPinnedNotices} ({pinnedNotices.length})
+              <Icon name="chevron-down" size={20} className={pinnedExpanded ? "rotate-180" : undefined} />
+            </Button>
+            <div id={pinnedNoticesId} className={pinnedExpanded ? "contents" : "hidden md:contents"}>
+              {pinnedNotices.map(renderAnnouncement)}
             </div>
-          ))}
+          </>
+        )}
+        {!showLoading && otherNotices.map(renderAnnouncement)}
       </div>
       </div>
 
@@ -173,6 +191,14 @@ export function AnnouncementListPage({
         />
       )}
     </Container>
+  );
+}
+
+function renderAnnouncement(announcement: Announcement) {
+  return (
+    <div key={announcement.id} className="mb-2">
+      <AnnouncementCard announcement={announcement} href={announcement.url} external={Boolean(announcement.url)} />
+    </div>
   );
 }
 

@@ -2,7 +2,8 @@ export type AnnouncementCategory =
   | "academic"
   | "campus"
   | "scholarship"
-  | "sw";
+  | "sw"
+  | "uisp";
 
 export type HomeNoticeCategory = AnnouncementCategory | "service";
 
@@ -33,7 +34,7 @@ export interface Announcement {
   category: AnnouncementCategory;
   date: string;
   author: string;
-  views: number;
+  views?: number;
   isImportant: boolean;
   isPinned?: boolean;
   url?: string;

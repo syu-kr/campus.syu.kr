@@ -12,6 +12,12 @@ import { headers } from "next/headers";
 import { createPageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 
+const SUBMISSION_RETENTION_EFFECTIVE_AT = Date.parse("2026-12-05T00:00:00+09:00");
+
+function submissionRetentionIsEffective() {
+  return Date.now() >= SUBMISSION_RETENTION_EFFECTIVE_AT;
+}
+
 const policySections = [
   ["개인정보의 처리 목적", "Purposes of Processing"],
   ["개인정보의 처리 및 보유 기간", "Retention"],
@@ -54,6 +60,38 @@ function PrivacyContents({ english = false }: { english?: boolean }) {
 async function getRequestLocale(): Promise<Locale> {
   const headerStore = await headers();
   return normalizeLocale(headerStore.get(LOCALE_HEADER_NAME));
+}
+
+function SubmissionRetentionNotice({ locale, effective }: { locale: Locale; effective: boolean }) {
+  const english = locale === "en";
+  return (
+    <aside aria-label={english ? "Submission retention amendment" : "문의·제보 보유기간 개정"} className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm leading-relaxed text-blue-900">
+      <p className="font-semibold">{english ? "Inquiry and suggestion retention amendment announced November 4, 2026" : "문의·제보 보유기간 개정 공지: 2026년 11월 4일"}</p>
+      <p className="mt-2">
+        {english
+          ? effective
+            ? "The amended purpose and retention below apply from 00:00 Korean time on December 5, 2026: keep originals and their AI classification results for one year after completion or rejection to refer to previous questions and suggestions, then manually delete them after recording only useful content with personal information removed."
+            : "From 00:00 Korean time on December 5, 2026, originals and their AI classification results will be kept for one year after completion or rejection to refer to previous questions and suggestions, then manually deleted after recording only useful content with personal information removed. Until then, the existing purpose and retention below remain applicable."
+          : effective
+            ? "아래의 문의·제보 처리 목적과 보유기간은 2026년 12월 5일 00:00(한국 시간)부터 적용됩니다. 어떤 질문·제보가 있었는지 참고하기 위해 완료·기각 후 원문과 포함된 AI 분류 결과를 1년 보관하고, 이후 필요한 내용만 개인정보를 제거해 기록한 뒤 원문과 AI 결과를 수동 파기합니다."
+            : "2026년 12월 5일 00:00(한국 시간)부터 어떤 질문·제보가 있었는지 참고하기 위해 완료·기각 후 원문과 포함된 AI 분류 결과를 1년 보관하고, 이후 필요한 내용만 개인정보를 제거해 기록한 뒤 원문과 AI 결과를 수동 파기합니다. 그 전까지 아래 본문의 기존 목적과 보유기간을 유지합니다."}
+      </p>
+      <p className="mt-2">{english ? "Dedicated contact and browser-information fields are manually cleared when completion/rejection review ends. This does not remove personal information embedded in the original. The notice alone does not authorize extending retention of existing submissions." : "완료·기각 검토가 끝나면 전용 연락처·브라우저 정보는 수동으로 정리합니다. 원문 안의 개인정보까지 제거되는 것은 아니며, 이 공지만으로 기존 자료의 보존을 연장하지 않습니다."}</p>
+      <Link href={localizePath("/service/notices/022-submission-retention", locale)} className="mt-2 inline-flex min-h-11 items-center font-medium underline underline-offset-4">
+        {english ? "Existing and amended purposes, retention, and deletion requests" : "기존·개정 목적과 보유기간, 삭제 요청 안내"}
+      </Link>
+    </aside>
+  );
+}
+
+function SubmissionRetention({ english = false }: { english?: boolean }) {
+  return (
+    <div className="space-y-2 text-sm text-neutral-600">
+      <p>{english ? "While a submission is being handled, it is kept for review and service improvement. After completion or rejection, its original content and included AI classification results are retained for one year to refer to previous questions and suggestions. The operator then records only useful content after removing personal information and manually deletes the original and included AI results. There is no automatic purge." : "처리 중에는 문의·제보 검토와 서비스 개선을 위해 보관합니다. 완료·기각 후에는 어떤 질문·제보가 있었는지 참고하기 위해 원문과 포함된 AI 분류 결과를 1년 보관합니다. 이후 운영자가 필요한 내용만 개인정보를 제거해 기록한 뒤 원문과 포함된 AI 결과를 수동으로 파기하며 자동 파기는 하지 않습니다."}</p>
+      <p>{english ? "The operator manually clears dedicated contact and browser-information fields when completion/rejection review ends. The original may still contain personal information, so field cleanup alone does not make it anonymous. Personal information in titles, content, links, notes, and AI results is reviewed separately before any history record is retained." : "완료·기각 검토가 끝나면 운영자가 전용 연락처·브라우저 정보 필드를 수동으로 정리합니다. 원문에도 개인정보가 있을 수 있어 이 정리만으로 익명 자료가 되지는 않습니다. 이후 이력을 기록할 때 제목·본문·링크·메모·AI 결과의 개인정보도 별도로 검토합니다."}</p>
+      <p>{english ? "The period starts from the recorded completion/rejection date, not the last edit date. For older submissions without a reliable completion date, the operator checks status-transition audit evidence or handling records instead of inventing a date. Existing submissions also require a separate check of their original purpose and lawful retention basis; this notice does not extend their retention by itself. Deletion or suspension requests can be made through the privacy contact in Article 9, and any legally required exception is explained separately." : "보유기간은 최종 수정일이 아닌 기록된 완료·기각일을 기준으로 합니다. 신뢰할 완료일이 없는 기존 자료는 운영자가 상태 전환 감사 기록이나 처리 기록을 확인하며 날짜를 임의로 만들지 않습니다. 기존 자료는 기존 목적과 적법한 보존 근거도 별도로 확인하며 이 공지만으로 보존을 연장하지 않습니다. 삭제·처리정지는 제9조 연락처로 요청할 수 있고 법령상 보존이 필요한 예외는 별도로 안내합니다."}</p>
+    </div>
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -194,16 +232,17 @@ function RoommateOverseasProcessing({ english = false }: { english?: boolean }) 
   );
 }
 
-function EnglishPrivacyPage() {
+function EnglishPrivacyPage({ retentionEffective }: { retentionEffective: boolean }) {
   return (
     <Container className="py-6 sm:py-8">
       <LegalPageHeader
         title="Privacy Policy"
         description="Privacy policy for the SYU CAMPUS service."
         noticeTitle="Effective Date"
-        notice="This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated November 3, 2026."
+        notice={`This English version is provided for convenience. If it differs from the Korean Privacy Policy, the Korean version applies. Effective March 23, 2026. Last updated ${retentionEffective ? "December 5, 2026" : "November 3, 2026"}.`}
       />
 
+      <SubmissionRetentionNotice locale="en" effective={retentionEffective} />
       <PrivacyContents english />
 
       <div className="mb-8 space-y-6 [&_li]:leading-relaxed [&_p]:leading-relaxed">
@@ -219,6 +258,7 @@ function EnglishPrivacyPage() {
               <li>Providing and operating service features</li>
               <li>Analyzing service usage and improving quality</li>
               <li>Reviewing contact requests, reports, and suggestions</li>
+              {retentionEffective && <li>Referring to previous questions and suggestions for one year after completion or rejection</li>}
               <li>Creating schedule coordination links and collecting responses</li>
               <li>Creating timetable share links selected by users</li>
               <li>Sending service push notifications when users opt in</li>
@@ -248,8 +288,7 @@ function EnglishPrivacyPage() {
                 when browser data is cleared.
               </li>
               <li>
-                Contact requests and campus-tip suggestions are retained until
-                the review or service-improvement purpose is fulfilled.
+                {retentionEffective ? <SubmissionRetention english /> : "Contact requests and campus-tip suggestions are retained until the review or service-improvement purpose is fulfilled."}
               </li>
               <li>
                 Schedule coordination rooms, participant responses, and
@@ -528,11 +567,15 @@ function EnglishPrivacyPage() {
                 Policy clarification notice and Terms amendment
               </Link>
             </p>
+            <p className="text-sm">
+              November 4, 2026 advance notice: the inquiry and suggestion purpose and retention amendment takes effect at 00:00 Korean time on December 5, 2026.
+              {" "}<Link href={localizePath("/service/notices/022-submission-retention", "en")} className="inline-flex min-h-11 items-center text-primary-700 underline">Inquiry and suggestion retention amendment</Link>
+            </p>
             <div className="p-3 bg-neutral-50 border border-neutral-200 rounded">
               <p className="text-xs text-neutral-600">
                 <strong>Effective date</strong>: March 23, 2026
                 <br />
-                <strong>Last updated</strong>: November 3, 2026
+                <strong>Last updated</strong>: {retentionEffective ? "December 5, 2026" : "November 3, 2026"}
               </p>
             </div>
           </div>
@@ -544,9 +587,10 @@ function EnglishPrivacyPage() {
 
 export default async function PrivacyPage() {
   const locale = await getRequestLocale();
+  const retentionEffective = submissionRetentionIsEffective();
 
   if (locale === "en") {
-    return <EnglishPrivacyPage />;
+    return <EnglishPrivacyPage retentionEffective={retentionEffective} />;
   }
 
   return (
@@ -555,9 +599,10 @@ export default async function PrivacyPage() {
         title="개인정보처리방침"
         description="SYU CAMPUS 서비스 개인정보처리방침입니다."
         noticeTitle="시행일"
-        notice="본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 11월 3일 기존 동작에 맞춰 설명을 정정했습니다. 수집 범위와 서비스 보유기간은 변경하지 않았습니다."
+        notice={retentionEffective ? "본 개인정보처리방침은 2026년 3월 23일부터 시행되었습니다. 문의·제보 처리 목적과 보유기간 개정은 2026년 12월 5일부터 적용됩니다." : "본 개인정보처리방침은 2026년 3월 23일부터 시행되었으며, 2026년 11월 3일 기존 동작에 맞춰 설명을 정정했습니다. 수집 범위와 서비스 보유기간은 변경하지 않았습니다."}
       />
 
+      <SubmissionRetentionNotice locale="ko" effective={retentionEffective} />
       <PrivacyContents />
 
       <div className="mb-8 space-y-6 [&_li]:leading-relaxed [&_p]:leading-relaxed">
@@ -580,6 +625,7 @@ export default async function PrivacyPage() {
                 <li>서비스 품질 개선 및 신규 기능 개발</li>
                 <li>고객 문의 및 불만사항 처리</li>
                 <li>사용자 제보 및 문의 내용 검토와 서비스 개선 반영</li>
+                {retentionEffective && <li>완료·기각 후 1년 동안 어떤 질문·제보가 있었는지 참고하기 위한 이력 확인</li>}
                 <li>일정 잡기 초대 링크 생성 및 참여자 가능 시간 취합</li>
                 <li>사용자가 선택한 시간표 공유 링크 생성 및 조회</li>
                 <li>사용자가 허용한 경우 서비스 공지 푸시 알림 발송</li>
@@ -633,10 +679,7 @@ export default async function PrivacyPage() {
                 <h3 className="font-semibold text-sm mb-1">
                   4. 문의 및 제보 정보
                 </h3>
-                <p className="text-sm text-neutral-600">
-                  서비스 개선 검토 목적 달성 시까지 보존하며, 운영상 필요가
-                  없어진 경우 삭제합니다.
-                </p>
+                {retentionEffective ? <SubmissionRetention /> : <p className="text-sm text-neutral-600">서비스 개선 검토 목적 달성 시까지 보존하며, 운영상 필요가 없어진 경우 삭제합니다.</p>}
               </div>
               <div>
                 <h3 className="font-semibold text-sm mb-1">
@@ -681,8 +724,9 @@ export default async function PrivacyPage() {
                   9. AI 분류 결과
                 </h3>
                 <p className="text-sm text-neutral-600">
-                  문의 및 제보 항목의 운영자 검토 목적 달성 시까지 원 접수
-                  항목과 함께 보존되며, 운영상 필요가 없어진 경우 삭제합니다.
+                  {retentionEffective
+                    ? "원 접수 항목과 함께 이 조 제4항의 문의·제보 보유기간을 따릅니다. 완료·기각 후 1년이 지나면 필요한 내용의 개인정보를 제거해 기록한 뒤 원문과 함께 수동 파기합니다."
+                    : "문의 및 제보 항목의 운영자 검토 목적 달성 시까지 원 접수 항목과 함께 보존되며, 운영상 필요가 없어진 경우 삭제합니다."}
                 </p>
               </div>
               <div>
@@ -1397,11 +1441,15 @@ export default async function PrivacyPage() {
                 설명 정정 및 이용약관 개정 공지
               </Link>
             </p>
+            <p className="text-sm">
+              2026년 11월 4일 사전 공지: 문의·제보 처리 목적과 보유기간 개정은 2026년 12월 5일 00:00(한국 시간)부터 시행합니다.
+              {" "}<Link href={localizePath("/service/notices/022-submission-retention", locale)} className="inline-flex min-h-11 items-center text-primary-700 underline">문의·제보 보유기간 개정 공지</Link>
+            </p>
             <div className="p-3 bg-neutral-50 border border-neutral-200 rounded mt-3">
               <p className="text-xs text-neutral-600">
                 <strong>시행일</strong>: 2026년 3월 23일
                 <br />
-                <strong>최종 개정일</strong>: 2026년 11월 3일
+                <strong>최종 개정일</strong>: {retentionEffective ? "2026년 12월 5일" : "2026년 11월 3일"}
               </p>
             </div>
           </div>

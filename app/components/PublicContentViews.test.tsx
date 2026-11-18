@@ -59,8 +59,11 @@ it("replaces schedule and phone descriptions but preserves dates and telephone v
 
 it("replaces service notice copy inside its existing link and skips reviewed English", () => {
   const service = { id: "019", slug: "019-source", title: "공지 제목", excerpt: "서비스 소개", date: "2026-10-26", author: "원래 작성자", lang: "ko" as const };
-  const { rerender } = english(<ServiceNoticeCard notice={service} />);
+  const { container, rerender } = english(<ServiceNoticeCard notice={service} />);
   expect(screen.getByRole("heading", { name: "Translated title" })).toBeInTheDocument();expect(screen.getByText("Translated excerpt")).toBeInTheDocument();expect(screen.getByRole("link")).toHaveAttribute("href", "/en/service/notices/019-source");
+  expect(screen.getByRole("article")).toBeInTheDocument();expect(screen.getByText(getDictionary("en").home.notices.service)).toBeInTheDocument();
+  expect(screen.getByText("원래 작성자")).toHaveAttribute("translate", "no");expect(screen.getByText("원래 작성자")).toHaveAttribute("lang", "ko");expect(screen.getByText("2026.10.26")).toHaveAttribute("datetime", service.date);
+  screen.getByRole("link").focus();expect(screen.getByRole("link")).toHaveFocus();expect(container.querySelector("a a")).toBeNull();
   rerender(<ClientLocaleProvider locale="en" dictionary={getDictionary("en")}><ServiceNoticeCard notice={{ ...service, lang: "en", title: "Reviewed English", excerpt: "Reviewed introduction" }} /></ClientLocaleProvider>);
   expect(screen.getByRole("heading", { name: "Reviewed English" })).toHaveAttribute("lang", "en");expect(state.calls.at(-1)?.original).toEqual({});
 });

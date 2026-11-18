@@ -9,12 +9,14 @@ let history: (Cache<TimingProfiles> & { version: string }) | undefined;
 let model: Cache<TimingProfiles> | undefined;
 let published: { state: State; at: number; generation: number } | undefined;
 let generation = 0;
+// Saved fixes arrive once a minute; bound cross-worker lag without extending the fix's 90-second expiry.
+const CURRENT_CACHE_MS = 30_000;
 
 export function publishShuttleState(state: State) {
   if (published && published.state.receivedAt > state.receivedAt) return;
   if (published?.state.receivedAt === state.receivedAt && (published.state.revision ?? 0) > (state.revision ?? 0)) return;
   published = { state, at: Date.now(), generation: ++generation };
-  current = { until: Date.now() + 5_000, promise: Promise.resolve(state) };
+  current = { until: Date.now() + CURRENT_CACHE_MS, promise: Promise.resolve(state) };
 }
 
 export function readShuttleState() {
@@ -26,9 +28,17 @@ export function readShuttleState() {
   const startedGeneration = generation;
   const entry: Cache<State | undefined> = { until: Infinity, promise: getFirestore().collection("shuttle_eta").doc("current").get().then(doc => {
     const value = doc.data();
-    if (published && Date.now() - published.at < 5_000 && (published.generation > startedGeneration || !value?.receivedAt || published.state.receivedAt > value.receivedAt)) return published.state;
-    return value?.schemaVersion === 3 && Array.isArray(value.runs) ? value as LearningState : undefined;
-  }).finally(() => { entry.until = Date.now() + 5_000; }) };
+    const state=value?.schemaVersion === 3 && Array.isArray(value.runs) ? value as State : undefined;
+    if (published && state && (state.receivedAt > published.state.receivedAt ||
+      state.receivedAt === published.state.receivedAt && (state.revision ?? 0) > (published.state.revision ?? 0))) {
+      publishShuttleState(state);
+      return state;
+    }
+    if (published && (published.generation > startedGeneration ||
+      state && (published.state.receivedAt > state.receivedAt || published.state.receivedAt === state.receivedAt && (published.state.revision ?? 0) > (state.revision ?? 0)) ||
+      Date.now() - published.at < CURRENT_CACHE_MS && !state?.receivedAt)) return published.state;
+    return state;
+  }).finally(() => { entry.until = Date.now() + CURRENT_CACHE_MS; }) };
   current = entry;
   void entry.promise.catch(() => { if (current === entry) current = undefined; });
   return entry.promise;

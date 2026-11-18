@@ -42,18 +42,46 @@ const ghMock = `gh() {
 }
 `;
 
-function runRestore(rows: string, scenario = "normal") {
+function runRestore(rows: string, scenario = "normal", event = "workflow_run") {
   const cwd = mkdtempSync(path.join(os.tmpdir(), "indexnow-workflow-"));
   roots.push(cwd);
   const result = spawnSync(bash, ["--noprofile", "--norc", "-e", "-c", ghMock + restore], {
-    cwd, encoding: "utf8", env: { ...process.env, GITHUB_REPOSITORY: "syu-kr/campus.syu.kr", GITHUB_RUN_ID: "100", GITHUB_RUN_ATTEMPT: "2", MOCK_ROWS: rows, MOCK_CASE: scenario },
+    cwd, encoding: "utf8", env: { ...process.env, GITHUB_REPOSITORY: "syu-kr/campus.syu.kr", GITHUB_RUN_ID: "100", GITHUB_RUN_ATTEMPT: "2", GITHUB_EVENT_NAME: event, MOCK_ROWS: rows, MOCK_CASE: scenario },
   });
   return { ...result, cwd };
 }
 
+describe("IndexNow workflow triggers", () => {
+  it("serializes only eligible jobs and limits failed-parent recovery to the daily crawl on main", () => {
+    expect(workflow).toMatch(/\n    concurrency:\n      group: indexnow-production\n      cancel-in-progress: false/);
+    expect(workflow).not.toMatch(/^concurrency:/m);
+    expect(workflow).toContain(`github.event.workflow_run.head_repository.full_name == github.repository &&
+          github.event.workflow_run.head_branch == 'main' &&
+          (
+            github.event.workflow_run.conclusion == 'success' ||
+            (github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.path == '.github/workflows/crawl-daily.yml')
+          )`);
+  });
+
+  it("reconciles on a schedule and keeps manual sends opt-in", () => {
+    expect(workflow).toMatch(/^  schedule:\n    - cron:/m);
+    expect(workflow).toContain("((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main')");
+    expect(workflow).toContain("default: false\n        type: boolean");
+    expect(workflow).toContain("SEND: ${{ github.event_name == 'workflow_run' || github.event_name == 'schedule' || inputs.send }}");
+  });
+});
+
 describe("IndexNow workflow state restoration", () => {
   it("validates artifact ownership against the known main workflow", () => {
-    for (const guard of [".workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber)", ".head_repository.full_name == env.GITHUB_REPOSITORY", '.head_branch == "main"', '.path == ".github/workflows/indexnow.yml"', '.event == "workflow_run" or .event == "workflow_dispatch"']) expect(restore).toContain(guard);
+    for (const guard of [
+      ".workflow_id == (env.INDEXNOW_WORKFLOW_ID | tonumber)",
+      ".head_repository.full_name == env.GITHUB_REPOSITORY",
+      '.head_branch == "main"',
+      '.path == ".github/workflows/indexnow.yml"',
+      '.event == "workflow_run" or .event == "workflow_dispatch" or .event == "schedule"',
+      '.id != (env.GITHUB_RUN_ID | tonumber) or ((env.GITHUB_RUN_ATTEMPT // "1") | tonumber) > 1',
+    ]) expect(restore).toContain(guard);
+    expect(restore).not.toContain('.status == "completed"');
   });
   it.each([
     ["newer completed run", "2026-10-15T10:00:00Z\t900\t100\n2026-10-15T11:00:00Z\t901\t201", "201"],
@@ -66,10 +94,15 @@ describe("IndexNow workflow state restoration", () => {
     expect(result.status, result.stderr).toBe(0);
     expect(JSON.parse(readFileSync(path.join(result.cwd, ".cache/indexnow/state.json"), "utf8"))).toEqual({ sourceRun: expectedRun });
   });
-  it("establishes a baseline only when no trusted state exists", () => {
-    const result = runRestore("");
+  it("permits an explicit manual baseline when no trusted state exists", () => {
+    const result = runRestore("", "normal", "workflow_dispatch");
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain("establish a baseline");
+    expect(result.stdout).toContain("send=true will establish a baseline");
+  });
+  it.each(["workflow_run", "schedule"])("reports missing state instead of silently baselining from %s", (event) => {
+    const result = runRestore("", "normal", event);
+    expect(result.status, result.stderr).toBe(1);
+    expect(result.stdout).toContain("::error::No trusted IndexNow state");
   });
   it.each([
     ["workflow-failure", 21], ["list-failure", 22], ["run-failure", 23],

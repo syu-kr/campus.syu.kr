@@ -1,4 +1,5 @@
 import { koMeetPages } from "./meet";
+import { koChapelSeats } from "./chapel-seats";
 
 export const koDictionary = {
     managedBanners: {
@@ -137,6 +138,7 @@ export const koDictionary = {
       skyCondition: "하늘상태",
       location: "위치",
       updated: "날씨 기준 시각",
+      sourceCredit: "출처: 기상청 단기예보 (가공)",
       close: "닫기",
       none: "없음",
       rain: "비",
@@ -254,6 +256,7 @@ export const koDictionary = {
         scholarship: "장학금",
         campus: "캠퍼스",
         sw: "SW중심대학",
+        uisp: "대학혁신지원사업단",
         service: "서비스",
         emptyService: "선택한 서비스 공지가 없습니다.",
         emptyCategory: "선택한 분류에 공지사항이 없습니다.",
@@ -261,6 +264,7 @@ export const koDictionary = {
         academicAll: "학사공지 전체보기",
         campusAll: "캠퍼스공지 전체보기",
         swAll: "SW중심대학 공지 전체보기",
+        uispAll: "대학혁신지원사업단 공지 전체보기",
         scholarshipAll: "장학금 전체보기",
         serviceAll: "서비스공지 전체보기",
       },
@@ -322,7 +326,9 @@ export const koDictionary = {
         scholarshipTitle: "장학금",
         scholarshipDescription: "장학금 공지 및 신청",
         swNoticesTitle: "SW중심대학 공지",
+        uispNoticesTitle: "대학혁신지원사업단 공지",
         swNoticesDescription: "SW·AI 교육, 장학금 및 프로그램 안내",
+        uispNoticesDescription: "대학혁신지원사업 프로그램 및 참여 안내",
         graduationTitle: "졸업요건 확인",
         graduationDescription: "내 상황에 맞는 졸업요건 체크",
         timetableTitle: "시간표 짜기",
@@ -349,6 +355,8 @@ export const koDictionary = {
         libraryDescription: "중앙도서관 열람실 정보",
         mapTitle: "캠퍼스 지도",
         mapDescription: "건물 위치 및 시설 안내",
+        chapelSeatsTitle: "채플 좌석 찾기",
+        chapelSeatsDescription: "대강당 구역과 번호로 좌석 위치 확인",
         phoneTitle: "연락처 검색",
         phoneDescription: "부서 및 담당자 연락처",
         campusTipsTitle: "캠퍼스 꿀팁",
@@ -381,11 +389,13 @@ export const koDictionary = {
       academicAnnouncement: "학사공지",
       campusAnnouncement: "캠퍼스공지",
       swAnnouncement: "SW중심대학 공지",
+      uispAnnouncement: "대학혁신지원사업단 공지",
       scholarship: "장학금",
       phoneNumbers: "연락처",
       academic: "학사공지",
       campus: "캠퍼스",
       sw: "SW중심대학",
+      uisp: "대학혁신지원사업단",
       registration: "수강신청",
       exam: "시험",
       holiday: "휴무",
@@ -481,6 +491,7 @@ export const koDictionary = {
       ],
     },
     pages: {
+      chapelSeats: koChapelSeats,
       serviceNotices: {
         metaTitle: "공지사항",
         metaDescription: "SYU CAMPUS 서비스 공지사항",
@@ -567,7 +578,7 @@ export const koDictionary = {
           title: "졸업요건 확인 방법",
           question: "삼육대학교 졸업요건은 어디서 확인하나요?",
           body:
-            "입학년도, 단과대학, 학과, 입학유형, 전공 형태를 선택하면 {sourceTitle} 기준의 참고 졸업요건과 확인 필요 항목을 볼 수 있습니다. 이 데이터는 {lastVerifiedAt}에 마지막으로 검증되었으며, 최종 졸업 판정은 반드시 SU-WINGs와 학과사무실에서 확인해야 합니다.",
+            "입학년도, 단과대학, 학과, 입학유형, 전공 형태를 선택하면 {sourceTitle} 기준의 참고 졸업요건과 확인 필요 항목을 볼 수 있습니다. 기준 자료의 마지막 검증일은 {lastVerifiedAt}이며, 자료별 갱신 시점은 다를 수 있습니다. 편입·전과·다전공·교직 과정과 최종 졸업 판정은 공식 근거, SU-WINGs 및 학과사무실에서 확인하세요.",
           source: "출처: {sourceTitle}",
           updatedPrefix: "확인 시각",
           sourceLabel: "기준 자료",
@@ -781,9 +792,17 @@ export const koDictionary = {
         campusError:
           "캠퍼스공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         swTitle: "삼육대학교 SW중심대학 공지",
+        uispTitle: "삼육대학교 대학혁신지원사업단 공지",
+        uispPinnedNotices: "고정 공지",
+        uispOriginalTitle: "공지 원문",
+        uispPoster: "공지 포스터",
+        uispOriginalUnavailable: "지금 원문을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        uispAttachments: "첨부파일",
         swDescription: "SW·AI 교육, 장학금 및 프로그램 공지를 확인하세요",
+        uispDescription: "대학혁신지원사업단의 프로그램, 모집 및 주요 공지사항을 확인하세요",
         swError:
           "SW중심대학 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+        uispError: "대학혁신지원사업단 공지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
         listSearchPlaceholder: "제목 또는 작성자로 검색...",
         foundItems: "개 항목 찾음",
         searchQuery: "검색어",
@@ -1395,7 +1414,9 @@ export const koDictionary = {
             "현재 {count}개 연락처를 부서명, 업무 설명, 전화번호로 검색할 수 있습니다. 졸업·학적·수업·증명서 문의는 {department}({description}) {phone}에서 확인하세요.",
           emptyBody:
             "현재 확인할 수 있는 연락처가 없습니다. 학교 홈페이지의 공식 전화번호부를 확인해주세요.",
-          source: "출처: 교내 전화번호 데이터",
+          academicUnavailableBody:
+            "현재 자료에서 학적·수업·증명서 담당 연락처를 확인할 수 없습니다. 학교 공식 전화번호 안내에서 담당 부서의 연락처를 확인해주세요.",
+          source: "출처: 삼육대학교 업무별 전화번호 안내",
           updatedPrefix: "확인 시각",
           totalLabel: "등록 연락처",
           totalValue: "{count}개",

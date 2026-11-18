@@ -54,6 +54,20 @@ it("keeps Korean and English admin pages private and unindexed", async () => {
   }
 });
 
+it("applies the UISP asset sandbox after the common API security policy", async () => {
+  const headers = await loadConfig().config.headers!();
+  const apiIndex = headers.findIndex((entry) => entry.source === "/api/:path*");
+  const assetIndex = headers.findIndex((entry) => entry.source === "/api/uisp-assets/:path*");
+  expect(apiIndex).toBeGreaterThanOrEqual(0);
+  expect(assetIndex).toBeGreaterThan(apiIndex);
+  const commonPolicy = headers[apiIndex].headers.find(({ key }) => key === "Content-Security-Policy")?.value;
+  expect(commonPolicy).toContain("default-src 'none'");
+  expect(headers[assetIndex].headers).toContainEqual({
+    key: "Content-Security-Policy",
+    value: `${commonPolicy}; sandbox`,
+  });
+});
+
 it("lets crawlers follow suggestion redirects to the noindex form", async () => {
   const { config } = loadConfig();
   const redirects = await config.redirects!();

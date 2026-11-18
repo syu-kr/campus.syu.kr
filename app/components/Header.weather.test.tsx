@@ -39,6 +39,7 @@ describe("Header weather query", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     fireEvent.click(screen.getAllByRole("button", { name: /날씨: 20°C/ })[0]);
     expect(within(await screen.findByRole("dialog", { name: text.weather.label })).getByText("20°C")).toBeInTheDocument();
+    expect(within(screen.getByRole("dialog", { name: text.weather.label })).getByRole("link", { name: text.weather.sourceCredit })).toHaveAttribute("href", "https://www.data.go.kr/data/15084084/openapi.do");
     expect(fetchMock).toHaveBeenCalledOnce();
 
     fetchMock.mockResolvedValueOnce({ ...weather, temperature: 23 });

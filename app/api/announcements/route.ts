@@ -10,6 +10,7 @@ const VALID_CATEGORIES = new Set<AnnouncementCategory | "all">([
   "campus",
   "scholarship",
   "sw",
+  "uisp",
 ]);
 
 export async function GET(req: NextRequest) {

@@ -31,6 +31,8 @@ it("preserves public routes while excluding private, API, submission and meeting
   const urls = (await sitemap()).map((entry) => new URL(entry.url).pathname);
   expect(urls).toContain("/campus/cafeteria");
   expect(urls).toContain("/en/campus/cafeteria");
+  expect(urls).toContain("/campus/chapel-seats");
+  expect(urls).toContain("/en/campus/chapel-seats");
   expect(urls).toContain("/service/notices/017-roommate-board");
   expect(urls).toContain("/en/service/notices/017-roommate-board");
   expect(urls.some((url) => /\/(?:api|admin)(?:\/|$)|\/campus\/roommates(?:\/|$)|\/campus-tips\/suggest|\/more\/meet\//.test(url))).toBe(false);

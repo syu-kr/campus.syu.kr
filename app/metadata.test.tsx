@@ -23,6 +23,7 @@ describe("route metadata exports", () => {
     ["/academic/announcements", () => import("./academic/announcements/layout")],
     ["/academic/scholarship", () => import("./academic/scholarship/layout")],
     ["/academic/sw-notices", () => import("./academic/sw-notices/layout")],
+    ["/academic/uisp-notices", () => import("./academic/uisp-notices/layout")],
     ["/academic/timetable", () => import("./academic/timetable/layout")],
     ["/academic/graduation", () => import("./academic/graduation/layout")],
     ["/academic/competitions", () => import("./academic/competitions/layout")],
@@ -32,6 +33,7 @@ describe("route metadata exports", () => {
     ["/campus/cafeteria", () => import("./campus/cafeteria/layout")],
     ["/campus/library", () => import("./campus/library/layout")],
     ["/campus/map", () => import("./campus/map/layout")],
+    ["/campus/chapel-seats", () => import("./campus/chapel-seats/page")],
     ["/campus/phone", () => import("./campus/phone/layout")],
     ["/campus/campus-tips", () => import("./campus/campus-tips/layout")],
     ["/campus/gym", () => import("./campus/gym/layout")],
@@ -74,7 +76,8 @@ describe("route metadata exports", () => {
     expect(document.querySelector('div.whitespace-pre-wrap')?.textContent).toBe(announcement.content);
     expect(document.querySelector("h2")?.textContent).toBe(getDictionary("en").pages.announcements.aiInsightTitle);
     const schema = JSON.parse(document.querySelector('#announcement-article-schema')!.textContent!);
-    expect(schema).toMatchObject({ inLanguage: "ko-KR", headline: announcement.title });
+    expect(schema).toMatchObject({ inLanguage: "ko-KR", headline: announcement.title, isBasedOn: announcement.url });
+    expect(document.querySelector(`a[href="${schema.isBasedOn}"]`)?.textContent).toBe(getDictionary("en").pages.announcements.originalLink);
     expect([...document.querySelectorAll("dd")].find(node => node.textContent === getDictionary("en").labels.aiSummaryDetails.empty)?.getAttribute("lang")).toBe("en");
   });
 });

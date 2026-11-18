@@ -250,7 +250,7 @@ describe("public holiday shuttle display", () => {
     expect(screen.queryByText(/최종 업데이트: 2026-04-29/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "학기(월-목)" }));
     expect(screen.queryByText(text.pages.busInfo.scheduleNotice)).not.toBeInTheDocument();
-    expect(screen.getByText(new RegExp(`${text.pages.busInfo.updateDateLabel}: 2026-04-29`))).toBeInTheDocument();
+    expect(screen.getByText(`${buses[1].routeName}: ${buses[1].lastUpdated}`)).toBeInTheDocument();
     await waitFor(() => expect(fetchBusLocationStatus).toHaveBeenCalledTimes(1));
     cleanup();
   });

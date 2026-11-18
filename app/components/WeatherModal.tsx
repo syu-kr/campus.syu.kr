@@ -223,6 +223,14 @@ function WeatherModalComponent({
             </div>
           </div>
         </div>
+        <a
+          href="https://www.data.go.kr/data/15084084/openapi.do"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block text-xs text-neutral-600 underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          {dictionary.weather.sourceCredit}
+        </a>
         <LiveDataStatusBadge
           locale={locale}
           sourceLabel={dictionary.liveData.sources.weather}

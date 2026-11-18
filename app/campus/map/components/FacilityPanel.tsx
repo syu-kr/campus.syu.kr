@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { getBuildingById, categoryColors } from "../lib/mapData";
 import { Card } from "@/app/components/Card";
 import { useContentTranslation } from "@/app/components/ContentTranslation";
@@ -9,7 +10,8 @@ import { Icon } from "@/app/components/Icon";
 import {
   useDictionary,
   useLocale,
-} from "@/app/components/LocaleProvider";
+} from "@/app/components/LocaleContext";
+import { localizePath } from "@/lib/i18n/routing";
 import {
   formatMapCountSummary,
   formatMapFloor,
@@ -92,6 +94,15 @@ export function FacilityPanel({ buildingId }: FacilityPanelProps) {
             </p>
           </div>
         </div>
+        {building.id === "grand-auditorium" && (
+          <Link
+            href={localizePath("/campus/chapel-seats", locale)}
+            className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+          >
+            <Icon name="map-pin" size={18} />
+            {dictionary.campus.menus.chapelSeatsTitle}
+          </Link>
+        )}
       </Card>
 
       <div className="space-y-2">

@@ -6,6 +6,8 @@ import { ApiError } from "./http";
 import { isManagedMediaId } from "./managed-content";
 
 export const MAX_MEDIA_INPUT = 5 * 1024 * 1024;
+// shortcut: expiry-based withdrawal; add targeted CDN deletion if faster revocation is required.
+export const MANAGED_MEDIA_CACHE_CONTROL = "public, max-age=0, s-maxage=60, must-revalidate";
 const MAX_MEDIA_OUTPUT = 2 * 1024 * 1024;
 function bucketName() { return process.env.MANAGED_CONTENT_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ""; }
 function managedMediaBucket() {
@@ -60,7 +62,7 @@ export async function saveManagedImage(bytes: Uint8Array) {
   const encoded = await encodeManagedImage(bytes), id = randomUUID();
   await bucket.file(`managed-content/${id}.webp`).save(encoded.data, {
     resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
-    metadata: { contentType: "image/webp", cacheControl: "public, max-age=31536000, immutable", metadata: { sha256: encoded.etag.slice(1, -1) } },
+    metadata: { contentType: "image/webp", cacheControl: MANAGED_MEDIA_CACHE_CONTROL, metadata: { sha256: encoded.etag.slice(1, -1) } },
   });
   return { url: `/api/content-media/${id}`, width: encoded.width, height: encoded.height };
 }

@@ -30,3 +30,9 @@ describe("campus roommate entry", () => {
     expect(screen.getByRole("link", { name: /룸메이트 구하기/ })).toHaveAttribute("href", "/campus/roommates");
   });
 });
+
+it.each(["ko", "en"] as const)("links to chapel seats from the campus menu in %s", async (locale) => {
+  request.locale = locale;
+  render(await CampusPage());
+  expect(screen.getByRole("link", { name: /채플 좌석 찾기|Chapel seat finder/ })).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/campus/chapel-seats`);
+});

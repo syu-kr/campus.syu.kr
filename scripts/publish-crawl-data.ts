@@ -13,6 +13,7 @@ import {
   CRAWL_DATA_MAX_BYTES,
   DAILY_CRAWL_DATA_FILES,
   type CrawlDataManifest,
+  type CrawlSourceHealth,
   type DailyCrawlDataFile,
   parseCrawlDataManifest,
   parseCrawlSourceHealthMap,
@@ -29,6 +30,7 @@ const FETCH_TIMEOUT_MS = 10_000;
 const MAX_MANIFEST_BYTES = 64 * 1024;
 const STUDENT_RESTAURANT_FILE = "student-restaurant-1.json";
 const MAX_STUDENT_RESTAURANT_BYTES = 128 * 1024;
+export const UISP_NOTICE_FILE = "announcements-uisp.json";
 
 interface CrawlDataSnapshot {
   manifest: CrawlDataManifest;
@@ -87,6 +89,7 @@ export async function preparePagesArtifact(
 ) {
   const localSnapshot = await buildLocalSnapshot(dataDir, healthPath);
   const remoteCurrent = await fetchManifest("current.json", true);
+  await applyUispPublicationGate(localSnapshot, remoteCurrent);
   const remoteStudentRestaurant = await fetchStudentRestaurant();
   const studentRestaurant = (await readLocalStudentRestaurant(dataDir)) ?? remoteStudentRestaurant;
   const sameStudentRestaurant = studentRestaurant === undefined
@@ -147,6 +150,11 @@ export async function prepareRollbackArtifact(version: string, outputDir: string
   const snapshots = await Promise.all(
     orderedVersions.map((item) => downloadSnapshot(item)),
   );
+  const target = snapshots[0].manifest;
+  if (target.files[UISP_NOTICE_FILE] && !current.files[UISP_NOTICE_FILE] &&
+      !canPublishUisp(false, target.sourceHealth?.[UISP_NOTICE_FILE])) {
+    throw new Error("UISP activation requires PUBLIC_UISP_ENABLED and a verified successful crawl.");
+  }
   const studentRestaurant = await fetchStudentRestaurant();
 
   await writePagesArtifact(outputDir, snapshots, version, orderedVersions, studentRestaurant);
@@ -217,6 +225,36 @@ export async function buildLocalSnapshot(
   });
 
   return { manifest, payloads };
+}
+
+export function canPublishUisp(previousExists: boolean, health?: CrawlSourceHealth): boolean {
+  return process.env.PUBLIC_UISP_ENABLED === "true" &&
+    (previousExists || (health?.status === "fresh" && health.lastSuccessAt === health.lastAttemptAt));
+}
+
+async function applyUispPublicationGate(snapshot: CrawlDataSnapshot, previous?: CrawlDataManifest) {
+  const { manifest, payloads } = snapshot;
+  const entry = previous?.files[UISP_NOTICE_FILE];
+  if (canPublishUisp(Boolean(entry), manifest.sourceHealth?.[UISP_NOTICE_FILE])) return;
+
+  const health = { ...manifest.sourceHealth };
+  delete health[UISP_NOTICE_FILE];
+  if (entry) {
+    const local = manifest.files[UISP_NOTICE_FILE];
+    if (local?.sha256 !== entry.sha256 || local.size !== entry.size) {
+      const bytes = await fetchBuffer(entry.path);
+      verifyPayload(UISP_NOTICE_FILE, bytes, entry.sha256, entry.size);
+      payloads.set(UISP_NOTICE_FILE, bytes);
+    }
+    manifest.files[UISP_NOTICE_FILE] = { ...entry, path: `versions/${manifest.version}/${UISP_NOTICE_FILE}` };
+    const previousHealth = previous?.sourceHealth?.[UISP_NOTICE_FILE];
+    if (previousHealth) health[UISP_NOTICE_FILE] = previousHealth;
+  } else {
+    delete manifest.files[UISP_NOTICE_FILE];
+    payloads.delete(UISP_NOTICE_FILE);
+  }
+  if (Object.keys(health).length > 0) manifest.sourceHealth = health;
+  else delete manifest.sourceHealth;
 }
 
 async function downloadAvailableSnapshots(
@@ -474,10 +512,9 @@ export function manifestsHaveSameFiles(
   return DAILY_CRAWL_DATA_FILES.every((fileName) => {
     const currentFile = current.files[fileName];
     const nextFile = next.files[fileName];
-    if (!currentFile || !nextFile) return false;
     return (
-      currentFile.sha256 === nextFile.sha256 &&
-      currentFile.size === nextFile.size &&
+      currentFile?.sha256 === nextFile?.sha256 &&
+      currentFile?.size === nextFile?.size &&
       JSON.stringify(current.sourceHealth?.[fileName]) ===
         JSON.stringify(next.sourceHealth?.[fileName])
     );

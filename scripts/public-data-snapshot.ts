@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { DAILY_CRAWL_DATA_FILES, validateCrawlDataVersion } from "../lib/crawl-data-contract";
-import { readHealthCache, writeHealthCache } from "./publish-crawl-data";
+import { canPublishUisp, readHealthCache, UISP_NOTICE_FILE, writeHealthCache } from "./publish-crawl-data";
 import { PUBLIC_DATA_FILES, REFERENCE_DATA_FILES, parsePublicDataManifest, publicDataMaxBytes, publicDataPath, validatePublicData, type PublicDataFile, type PublicDataManifest } from "../lib/public-data-snapshot";
 import { activatePublicSnapshot, firebasePublicDataStore, readPublicSnapshotFile, readStoredPublicManifest, uploadPublicSnapshot, type ActivePublicData, type PublicDataStore } from "../lib/server/public-data-storage";
 
@@ -19,18 +19,32 @@ async function readLocalPublicData(directory: string, file: PublicDataFile) {
   }
 }
 export function publicDataLocalPath(directory: string, file: PublicDataFile) { return path.join(directory, file === "student-restaurant-1.json" ? "cafeteria" : "data", file); }
+
+async function publicationHealth(directory: string, scope: Scope, previous?: PublicDataManifest) {
+  const previousHealth = previous?.sourceHealth ?? {};
+  if (!belongs(UISP_NOTICE_FILE, scope)) return previousHealth;
+  return readHealthCache(path.join(directory, "..", ".cache", "crawl-data-health.json"), previousHealth);
+}
+
+function validatePayload(file: PublicDataFile, bytes: Buffer | undefined): asserts bytes is Buffer {
+  if (!bytes) throw new Error(`Missing public data: ${file}`);
+  if (bytes.length > publicDataMaxBytes(file)) throw new Error(`Public data exceeds size limit: ${file}`);
+  validatePublicData(file, JSON.parse(bytes.toString("utf8")));
+}
+
 export async function ownedPublicDataUnchanged(directory: string, scope: Scope, active: ActivePublicData) {
+  const health = await publicationHealth(directory, scope, active.manifest);
+  const publishUisp = canPublishUisp(Boolean(active.manifest.files[UISP_NOTICE_FILE]), health[UISP_NOTICE_FILE]);
   for (const file of PUBLIC_DATA_FILES.filter(file => belongs(file, scope))) {
+    if (file === UISP_NOTICE_FILE && !publishUisp) continue;
     const bytes = await readLocalPublicData(directory, file);
     if (!bytes && file === "student-restaurant-1.json") continue;
-    if (!bytes) throw new Error(`Missing public data: ${file}`);
-    if (bytes.length > publicDataMaxBytes(file)) throw new Error(`Public data exceeds size limit: ${file}`);
-    validatePublicData(file, JSON.parse(bytes.toString("utf8")));
+    validatePayload(file, bytes);
     if (hash(bytes) !== active.manifest.files[file]?.sha256) return false;
   }
   if (scope === "all" || scope === "daily") {
-    const health = await readHealthCache(path.join(directory, "..", ".cache", "crawl-data-health.json"), active.manifest.sourceHealth);
-    if (DAILY_CRAWL_DATA_FILES.some(file => JSON.stringify(health[file]) !== JSON.stringify(active.manifest.sourceHealth[file]))) return false;
+    if (DAILY_CRAWL_DATA_FILES.some(file => (file !== UISP_NOTICE_FILE || publishUisp) &&
+      JSON.stringify(health[file]) !== JSON.stringify(active.manifest.sourceHealth[file]))) return false;
   }
   return true;
 }
@@ -38,11 +52,20 @@ export async function buildPublicDataSnapshot(directory: string, version: string
   validateCrawlDataVersion(version);
   const payloads = new Map<PublicDataFile, Buffer>();
   const files: PublicDataManifest["files"] = {};
+  const sourceHealth = { ...await publicationHealth(directory, scope, previous?.manifest) };
+  const publishUisp = belongs(UISP_NOTICE_FILE, scope) &&
+    canPublishUisp(Boolean(previous?.manifest.files[UISP_NOTICE_FILE]), sourceHealth[UISP_NOTICE_FILE]);
+  if (!publishUisp) {
+    const previousHealth = previous?.manifest.files[UISP_NOTICE_FILE] && previous.manifest.sourceHealth[UISP_NOTICE_FILE];
+    if (previousHealth) sourceHealth[UISP_NOTICE_FILE] = previousHealth;
+    else delete sourceHealth[UISP_NOTICE_FILE];
+  }
   for (const file of PUBLIC_DATA_FILES) {
+    const entry = previous?.manifest.files[file];
+    if (file === UISP_NOTICE_FILE && !publishUisp && !entry) continue;
     let bytes: Buffer;
-    if (previous?.manifest.files[file] && !belongs(file, scope)) {
+    if (entry && (!belongs(file, scope) || (file === UISP_NOTICE_FILE && !publishUisp))) {
       if (!store) throw new Error("A remote store is required to preserve existing public data");
-      const entry = previous.manifest.files[file]!;
       bytes = await store.readObject(entry.path, publicDataMaxBytes(file));
       if (bytes.length !== entry.size || hash(bytes) !== entry.sha256) throw new Error(`Previous public data failed integrity: ${file}`);
     } else {
@@ -57,13 +80,8 @@ export async function buildPublicDataSnapshot(directory: string, version: string
       if (!local) throw new Error(`Missing public data: ${file}`);
       bytes = local;
     }
-    if (bytes.length > publicDataMaxBytes(file)) throw new Error(`Public data exceeds size limit: ${file}`);
-    validatePublicData(file, JSON.parse(bytes.toString("utf8")));
+    validatePayload(file, bytes);
     payloads.set(file, bytes); files[file] = { path: publicDataPath(version, file), sha256: hash(bytes), size: bytes.length };
-  }
-  let sourceHealth = previous?.manifest.sourceHealth ?? {};
-  if (scope === "all" || scope === "daily") {
-    sourceHealth = await readHealthCache(path.join(directory, "..", ".cache", "crawl-data-health.json"), sourceHealth);
   }
   const manifest = parsePublicDataManifest({ schemaVersion: 1, version, publishedAt: new Date().toISOString(), files, retainedVersions: [version, ...(previous?.manifest.retainedVersions ?? []).filter(item => item !== version)].slice(0, 7), sourceHealth });
   return { manifest, payloads };
@@ -107,6 +125,10 @@ async function main() {
     if (expected === undefined || expected !== (active?.manifest.version ?? "none")) throw new Error("--expected-current must match the active version (or none)");
     if (args.includes("--rollback") && !active?.manifest.retainedVersions.includes(activate)) throw new Error("Rollback version is not retained");
     const manifest = await readStoredPublicManifest(store, activate);
+    if (manifest.files[UISP_NOTICE_FILE] && !active?.manifest.files[UISP_NOTICE_FILE] &&
+        !canPublishUisp(false, manifest.sourceHealth[UISP_NOTICE_FILE])) {
+      throw new Error("UISP activation requires PUBLIC_UISP_ENABLED and a verified successful crawl.");
+    }
     manifest.retainedVersions = [activate, ...(active?.manifest.retainedVersions ?? []).filter(version => version !== activate)].slice(0, 7);
     await activatePublicSnapshot(store, manifest, active);
     console.log(JSON.stringify({ activated: true, version: activate, previous: expected })); return;
@@ -115,6 +137,7 @@ async function main() {
     console.log(JSON.stringify({ dryRun: false, changed: false, activated: false, version: active.manifest.version, files: Object.keys(active.manifest.files).length })); return;
   }
   const version = value("--version") ?? `snapshot-${new Date().toISOString().replace(/[-:.]/g, "")}`;
+  if (!apply) validatePayload(UISP_NOTICE_FILE, await readLocalPublicData(directory, UISP_NOTICE_FILE));
   const snapshot = await buildPublicDataSnapshot(directory, version, active, store, scope as Scope);
   const report = { dryRun: !apply, files: snapshot.payloads.size, bytes: [...snapshot.payloads.values()].reduce((total, bytes) => total + bytes.length, 0), version, previous: active?.manifest.version ?? null, changed: !active || !sameContents(active.manifest, snapshot.manifest), entries: Object.fromEntries(Object.entries(snapshot.manifest.files).map(([file, entry]) => [file, { sha256: entry!.sha256, size: entry!.size }])) };
   if (apply && report.changed) {

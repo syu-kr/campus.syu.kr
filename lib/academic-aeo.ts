@@ -1,5 +1,8 @@
-import { getDictionary, type Locale } from "@/lib/i18n";
-import type { AnswerSummary, PhoneNumber } from "@/types";
+import type { Dictionary, Locale } from "@/lib/i18n";
+import type { PhoneNumber } from "@/types";
+
+export const PHONE_DIRECTORY_SOURCE_URL =
+  "https://www.syu.ac.kr/about-sahmyook/phone-number-information/";
 
 type GraduationMetadata = {
   sourceTitle: string;
@@ -7,136 +10,51 @@ type GraduationMetadata = {
 };
 
 export function createGraduationAnswerSummary({
-  locale,
   metadata,
-  now,
+  text,
 }: {
-  locale: Locale;
   metadata: GraduationMetadata;
-  now: Date;
-}): AnswerSummary {
-  const dictionary = getDictionary(locale);
-  const answerText = dictionary.pages.graduation.answer;
-
+  text: Dictionary["pages"]["graduation"]["answer"];
+}) {
   return {
-    eyebrow: answerText.eyebrow,
-    title: answerText.title,
-    question: answerText.question,
-    answer: applyTemplate(answerText.body, {
+    question: text.question,
+    answer: applyTemplate(text.body, {
       lastVerifiedAt: metadata.lastVerifiedAt,
       sourceTitle: metadata.sourceTitle,
     }),
-    source: applyTemplate(answerText.source, {
-      sourceTitle: metadata.sourceTitle,
-    }),
-    updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
-    items: [
-      {
-        label: answerText.sourceLabel,
-        value: metadata.sourceTitle,
-      },
-      {
-        label: answerText.verifiedLabel,
-        value: metadata.lastVerifiedAt,
-      },
-      {
-        label: answerText.cautionLabel,
-        value: answerText.cautionValue,
-      },
-    ],
   };
 }
 
 export function createPhoneAnswerSummary({
   locale,
-  now,
   phoneNumbers,
+  text,
 }: {
   locale: Locale;
-  now: Date;
   phoneNumbers: PhoneNumber[];
-}): AnswerSummary {
-  const dictionary = getDictionary(locale);
-  const answerText = dictionary.pages.phone.answer;
-  const academicContact =
-    phoneNumbers.find(
-      (phone) =>
-        phone.department.includes("학사지원팀") ||
-        phone.description?.includes("학적"),
-    ) ?? phoneNumbers[0];
-  const scholarshipContact = phoneNumbers.find((phone) =>
-    phone.description?.includes("장학"),
+  text: Dictionary["pages"]["phone"]["answer"];
+}) {
+  const academicContact = phoneNumbers.find(
+    (phone) =>
+      phone.department.includes("학사지원팀") ||
+      phone.description?.includes("학적"),
   );
-  const contact = academicContact ?? scholarshipContact;
-  const answer = contact
-    ? applyTemplate(answerText.body, {
+  const answer = academicContact
+    ? applyTemplate(text.body, {
         count: phoneNumbers.length.toLocaleString(
           locale === "ko" ? "ko-KR" : "en-US",
         ),
-        department: contact.department,
-        description: contact.description ?? answerText.noDescription,
-        phone: contact.phone,
+        department: academicContact.department,
+        description: academicContact.description ?? text.noDescription,
+        phone: academicContact.phone,
       })
-    : answerText.emptyBody;
+    : phoneNumbers.length ? text.academicUnavailableBody : text.emptyBody;
 
   return {
-    eyebrow: answerText.eyebrow,
-    title: answerText.title,
-    question: answerText.question,
+    question: text.question,
     answer,
-    source: answerText.source,
-    updatedAt: formatUpdatedAt(now, locale, answerText.updatedPrefix),
-    items: [
-      {
-        label: answerText.totalLabel,
-        value: applyTemplate(answerText.totalValue, {
-          count: phoneNumbers.length.toLocaleString(
-            locale === "ko" ? "ko-KR" : "en-US",
-          ),
-        }),
-      },
-      ...(academicContact
-        ? [
-            {
-              label: answerText.academicLabel,
-              value: formatPhoneContact(academicContact, answerText),
-            },
-          ]
-        : []),
-      ...(scholarshipContact
-        ? [
-            {
-              label: answerText.scholarshipLabel,
-              value: formatPhoneContact(scholarshipContact, answerText),
-            },
-          ]
-        : []),
-    ],
+    source: text.source,
   };
-}
-
-function formatPhoneContact(
-  contact: PhoneNumber,
-  answerText: ReturnType<typeof getDictionary>["pages"]["phone"]["answer"],
-) {
-  return applyTemplate(answerText.contactValue, {
-    department: contact.department,
-    description: contact.description ?? answerText.noDescription,
-    phone: contact.phone,
-  });
-}
-
-function formatUpdatedAt(now: Date, locale: Locale, prefix: string) {
-  const dateTime = new Intl.DateTimeFormat(
-    locale === "ko" ? "ko-KR" : "en-US",
-    {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "Asia/Seoul",
-    },
-  ).format(now);
-
-  return `${prefix} ${dateTime}`;
 }
 
 function applyTemplate(template: string, values: Record<string, string>) {

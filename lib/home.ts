@@ -122,6 +122,11 @@ function createEmptySearchCategories(
       items: [],
       linkPath: localizePath("/academic/sw-notices", locale),
     },
+    uispAnnouncement: {
+      label: categories.uispAnnouncement,
+      items: [],
+      linkPath: localizePath("/academic/uisp-notices", locale),
+    },
     scholarship: {
       label: categories.scholarship,
       items: [],
@@ -166,6 +171,8 @@ export function categorizeSearchResults(
         categories.scholarship.items.push(result);
       } else if (result.category === "sw") {
         categories.swAnnouncement.items.push(result);
+      } else if (result.category === "uisp") {
+        categories.uispAnnouncement.items.push(result);
       }
     }
   });
@@ -211,7 +218,7 @@ export function getHomeNotices(
 }
 
 function getNoticeTime(notice: HomeNotice): number {
-  const normalizedDate = notice.data.date.replace(/\./g, "-");
+  const normalizedDate = notice.data.date.replace(/^(\d{4})\.(\d{2})\.(\d{2})$/, "$1-$2-$3");
   const parsed = new Date(normalizedDate).getTime();
 
   return Number.isNaN(parsed) ? 0 : parsed;

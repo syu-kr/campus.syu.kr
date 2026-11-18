@@ -44,16 +44,18 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
   },[route,direction]);
   const collectionOpen=!data||pilotRoutes(now,data.buses,data.specialPeriods,data.holidays).length>0;
   const estimates=useStopArrivals(now,!demo&&!!vehicle&&!received.stale&&collectionOpen,vehicle?.id,collectionOpen,etaEndpoint);
+  const hasLocations=received.locations.length>0;
   const selectVehicle=useCallback((id:string)=>{setVehicleId(id);setStopId(null);},[]);
   const vehicleLabel=useCallback((bus:BusLocation,index:number)=>{
     const item=serviceRoutes.find(item=>item.locationRouteId===bus.routeid)!;
     return `${copy[item.name]} · ${live.vehicleNumber.replace("{number}",String(index+1))} · ${bus.status===2?copy.campusBound:copy.stationBound}`;
   },[copy,live]);
+  const arrivalLabel=(minutes:number,arrivalAt?:number)=>`${live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`)}${arrivalAt===undefined?"":` · ${new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Seoul",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(arrivalAt)}`}`;
   function arrivalMessage(visit:Visit) {
     if(!demo&&data&&route&&visit.id===serviceVisits[route.id][0].id) {
       const date=koreaDateKey(now),timetable=serviceTimetable({route,date,now,data});
       if(timetable.status==="closed")return live.dayClosed;
-      const departure=timetable.scheduledTimes.find(time=>Date.parse(`${date}T${time}:00+09:00`)>=now.getTime());
+      const departure=timetable.scheduledTimes.find(time=>Date.parse(`${date}T${time}:00+09:00`)>now.getTime());
       return departure?`${departure} ${live.departureAt}`:timetable.scheduledTimes.length?live.lastDeparted:live.arrivalUnknown;
     }
     if(received.stale) return live.arrivalUnknown;
@@ -66,14 +68,14 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
         return `${time} ${live.departureAt}`;
       }
       const arrival=demoStopArrival(route,demo.elapsed,index,demo.nextAvailable,demo.delayed,run,departures);
-      if(arrival.state==="passed") return copy.passed;
-      if(arrival.state==="arrived") return copy.arrived;
+      const lastRun=run===(demo.nextAvailable?(departures?.length??1):1)-1;
+      if(arrival.state==="passed") return lastRun?live.lastPassed:copy.passed;
+      if(arrival.state==="arrived") return lastRun?live.lastPassed:copy.arrived;
       if(arrival.seconds===null) return live.arrivalUnknown;
-      const time=`${Math.ceil(arrival.seconds/60)}${locale==="ko"?"":" "}${copy.minutes}`;
-      return live.arrivesIn.replace("{time}",time);
+      return arrivalLabel(Math.ceil(arrival.seconds/60),demo.epoch===undefined?undefined:demo.epoch+(demo.elapsed+arrival.seconds)*1000);
     }
     const minutes=estimates.minutes.get(visit.id);
-    return minutes===undefined?live.arrivalUnknown:live.arrivesIn.replace("{time}",`${minutes}${locale==="ko"?"":" "}${copy.minutes}`);
+    return minutes===undefined?live.arrivalUnknown:arrivalLabel(minutes,estimates.observations?.get(visit.id)?.arrivalAt);
   }
   const selectedVisit=visits.find(visit=>visit.id===stopId);
   return <Modal isOpen title={`${live.fleetMap}${demo?` · ${live.demoBadge}`:""}`} onClose={onClose} size="lg" className="shuttle-fleet-dialog" overlayClassName="shuttle-fleet-overlay" bodyClassName="shuttle-fleet-body">
@@ -81,26 +83,25 @@ export default function ShuttlePreviewMap({received,now,locale,onClose,demo,data
       <FleetCanvas locations={received.locations} stale={received.stale} locale={locale} selectedVehicle={vehicleId} onVehicleSelect={selectVehicle}
         paths={paths} visits={visits} color={route?.color??"#3b82f6"} selectedStop={stopId} onStopSelect={setStopId} vehicleLabel={vehicleLabel}
         stopMessage={selectedVisit?`${selectedVisit.label[locale]} · ${arrivalMessage(selectedVisit)}`:undefined}/>
-      <aside className="shuttle-fleet-sidebar">
+      {(demo||hasLocations)&&<aside className="shuttle-fleet-sidebar">
         {demo&&<p className="text-xs text-neutral-600" role="note">{live.demoShort}</p>}
-        <p className="text-sm text-neutral-600">{live.selectVehicle}</p>
-        {received.stale&&<p role="status" className="text-sm text-neutral-600">{live.delayedReceipt}</p>}
-        <div className="shuttle-fleet-vehicles" role="group" aria-label={live.fleetVehicles}>
-          {received.locations.map((bus,index)=><button key={bus.id} type="button" aria-pressed={bus.id===vehicleId} onClick={()=>selectVehicle(bus.id)}>
-            <span className="shuttle-preview-route-dot" aria-hidden="true" style={{backgroundColor:serviceRoutes.find(item=>item.locationRouteId===bus.routeid)!.color}}/>{vehicleLabel(bus,index)}
-          </button>)}
-          {!received.locations.length&&<p role="status">{live.noVehicles}</p>}
-        </div>
+        {hasLocations&&<>
+          <p className="text-sm text-neutral-600">{live.selectVehicle}</p>
+          {received.stale&&(demo||collectionOpen)&&<p role="status" className="text-sm text-neutral-600">{live.delayedReceipt}</p>}
+          <div className="shuttle-fleet-vehicles" role="group" aria-label={live.fleetVehicles}>
+            {received.locations.map((bus,index)=><button key={bus.id} type="button" aria-pressed={bus.id===vehicleId} onClick={()=>selectVehicle(bus.id)}>
+              <span className="shuttle-preview-route-dot" aria-hidden="true" style={{backgroundColor:serviceRoutes.find(item=>item.locationRouteId===bus.routeid)!.color}}/>{vehicleLabel(bus,index)}
+            </button>)}
+          </div>
+        </>}
         {vehicle&&route?<section aria-label={live.vehicleArrivals} className="shuttle-fleet-arrivals">
           <h3 className="font-semibold">{vehicleLabel(vehicle,received.locations.indexOf(vehicle))}</h3>
           <p className="text-xs text-neutral-600">{visits[0].label[locale]} → {visits.at(-1)!.label[locale]}</p>
           <ol>{visits.map(visit=><li key={visit.id}><button type="button" aria-pressed={stopId===visit.id} onClick={()=>setStopId(visit.id)}>
             <span>{visit.label[locale]}</span><strong>{arrivalMessage(visit)}</strong>
           </button></li>)}</ol>
-          {!demo&&estimates.status==="collecting"&&<p className="text-xs text-neutral-600">{live.arrivalPendingShort}</p>}
-          {!demo&&estimates.status==="learning"&&<p className="text-xs text-neutral-600">{live.learningNotice}</p>}
-        </section>:vehicleId&&<p role="status">{live.vehicleMissing}</p>}
-      </aside>
+        </section>:hasLocations&&vehicleId&&<p role="status">{live.vehicleMissing}</p>}
+      </aside>}
     </div>
   </Modal>;
 }
@@ -229,7 +230,7 @@ function FleetCanvas({locations,stale,locale,selectedVehicle,onVehicleSelect,pat
       <span className="shuttle-fleet-map-note">{status==="loading"?live.mapLoading:live.mapFallback}</span>
     </div>}
     {stopMessage&&<p className="shuttle-fleet-stop-message" role="status">{stopMessage}</p>}
-    <div className="shuttle-fleet-map-tools"><Button variant="secondary" disabled={status!=="ready"} onClick={fit}>{live.allVehicles}</Button></div>
+    {locations.length>0&&<div className="shuttle-fleet-map-tools"><Button variant="secondary" disabled={status!=="ready"} onClick={fit}>{live.allVehicles}</Button></div>}
   </div><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="shuttle-fleet-attribution">© OpenStreetMap</a></div>;
 }
 

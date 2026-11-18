@@ -168,8 +168,7 @@ describe("fall online-class week shuttle", () => {
       });
       expect(morning.departures).toContainEqual({
         routeName: buses[2].routeName,
-        time: date === "2026-10-30" ? "08:55" : "08:30",
-        minutesUntil: date === "2026-10-30" ? 44 : 19,
+        time: "08:30", minutesUntil: 19,
       });
       expect(summarize(`${date}T10:01:00+09:00`).departures).toContainEqual({
         routeName: buses[0].routeName, time: "10:30", minutesUntil: 29,
@@ -217,6 +216,57 @@ describe("fall online-class week shuttle", () => {
     expect(summarize("2026-10-27T15:00:00Z").isSpecialSchedule).toBe(true);
     expect(summarize("2026-11-02T14:59:00Z").isSpecialSchedule).toBe(true);
     expect(summarize("2026-11-02T15:00:00Z").isSpecialSchedule).toBe(false);
+  });
+});
+
+describe("November essay exam shuttle", () => {
+  it.each([
+    ["2026-11-23", [
+      [],
+      ["14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:15"],
+      ["14:30", "15:30", "16:30", "17:30"],
+    ]],
+    ["2026-11-24", [
+      ["09:00", "09:10", "09:20", "09:30", "09:40", "09:50", "10:00", "10:30", "11:00", "11:30", "12:00"],
+      ["12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:15"],
+      ["09:30", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30", "17:30"],
+    ]],
+  ] as const)("uses only the announced date-specific departures on %s", (dateString, expected) => {
+    const result = applyShuttleSpecialPeriods({ buses, specialPeriods, dateString });
+    expect(result.isSpecialSchedule).toBe(true);
+    expect(result.buses.map(bus => bus.schedules.mondayToThursday)).toEqual(expected);
+    const regular = applyShuttleSpecialPeriods({ buses, specialPeriods, dateString: "2026-11-25" });
+    expect(regular.isSpecialSchedule).toBe(false);
+    expect(regular.buses.map(bus => bus.schedules.mondayToThursday))
+      .toEqual(buses.map(bus => bus.schedules.mondayToThursday));
+  });
+
+  it("counts down to the resumed departures and retains both noon departures", () => {
+    expect(summarize("2026-11-23T13:59:00+09:00").departures).toEqual([
+      { routeName: buses[1].routeName, time: "14:00", minutesUntil: 1 },
+      { routeName: buses[2].routeName, time: "14:30", minutesUntil: 31 },
+    ]);
+    expect(summarize("2026-11-24T09:59:00+09:00").departures[0])
+      .toEqual({ routeName: buses[0].routeName, time: "10:00", minutesUntil: 1 });
+    expect(summarize("2026-11-24T11:59:00+09:00").departures.slice(0, 2)).toEqual([
+      { routeName: buses[0].routeName, time: "12:00", minutesUntil: 1 },
+      { routeName: buses[1].routeName, time: "12:00", minutesUntil: 1 },
+    ]);
+  });
+
+  it.each(["2026-11-23", "2026-11-24"])("ends after the 18:15 last bus on %s", date => {
+    expect(summarize(`${date}T18:14:00+09:00`).departures).toEqual([
+      { routeName: buses[1].routeName, time: "18:15", minutesUntil: 1 },
+    ]);
+    expect(summarize(`${date}T18:16:00+09:00`).hasMoreToday).toBe(false);
+  });
+
+  it("changes the active schedule at Korean midnight", () => {
+    expect(summarize("2026-11-22T14:59:59Z")).toMatchObject({ isWeekend: true, departures: [] });
+    expect(summarize("2026-11-22T15:00:00Z")).toMatchObject({ isSpecialSchedule: true });
+    expect(summarize("2026-11-23T15:00:00Z").departures.map(({ time }) => time))
+      .toEqual(["09:00", "09:30", "12:00"]);
+    expect(summarize("2026-11-24T15:00:00Z")).toMatchObject({ isSpecialSchedule: false });
   });
 });
 

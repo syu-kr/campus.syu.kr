@@ -10,10 +10,12 @@ const ORIGIN = "https://campus.syu.kr";
 const SOURCES = {
   academic: "announcements-academic.json", campus: "announcements-campus-life.json",
   scholarship: "announcements-scholarship.json", sw: "announcements-sw.json",
+  uisp: "announcements-uisp.json",
 } as const;
 const COLLECTIONS = {
   academic: "/academic/announcements", campus: "/campus/announcements",
   scholarship: "/academic/scholarship", sw: "/academic/sw-notices",
+  uisp: "/academic/uisp-notices",
 } as const;
 const GRADUATION_FILES = [
   "graduation-department-rules.json", "curriculum-course-selection-rules-2026.json",
@@ -29,6 +31,7 @@ const ROUTE_CODE: Record<string, readonly string[]> = {
   "/campus/bus-info": ["lib/kakao-maps-loader."],
   "/campus/library": ["lib/library."],
   "/campus/map": ["lib/kakao-maps-loader."],
+  "/campus/chapel-seats": ["app/features/chapel-seats/", "lib/chapel-seats/"],
   "/campus/phone": ["lib/phone.", "lib/use-pagination.", "lib/use-url-search."],
   "/campus/campus-tips": ["lib/use-pagination.", "lib/public-list-query.", "lib/campus-tip-filters.", "lib/use-list-search-navigation.", "lib/use-url-hash."],
   "/service/notices": ["lib/use-url-hash.", "lib/announcement-list-query.", "lib/public-list-query.", "app/styles/m3/styles-service-notices-m3.css"],

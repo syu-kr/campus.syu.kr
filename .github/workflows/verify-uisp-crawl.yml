@@ -1,0 +1,54 @@
+name: Verify UISP Crawl
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/crawl-daily.yml"
+      - ".github/workflows/verify-uisp-crawl.yml"
+      - "scripts/crawl_uisp_notices.py"
+      - "scripts/check_uisp_notices.py"
+      - "scripts/crawler_utils.py"
+      - "scripts/run-daily-crawl.ts"
+      - "scripts/publish-crawl-data.ts"
+      - "scripts/public-data-snapshot.ts"
+      - "lib/crawl-data-contract.ts"
+      - "lib/public-data-snapshot.ts"
+      - "public/data/announcements-uisp.json"
+      - "requirements.txt"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: UISP crawler fixtures and public data
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "24.22.1"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          npm install -g npm@10.9.4
+          npm ci --ignore-scripts --no-audit
+
+      - name: Verify private origin, incremental fixtures and public dataset
+        run: |
+          python scripts/check_uisp_notices.py
+          npm run check:crawl-data

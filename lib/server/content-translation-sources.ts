@@ -232,7 +232,7 @@ async function resolveAnnouncement(source: ContentTranslationSource) {
     const raw = rows(await readDailyCrawlDataJson<unknown>(sourceFiles[category] as DailyCrawlDataFile)).find(row => row.id === source.id);
     const candidate = raw && toCompetitionCandidate(raw, category, 0);
     if (candidate) [item] = await attachAnnouncementAiSummaries([candidate]);
-  } else if (category === "academic" || category === "campus" || category === "scholarship" || category === "sw") {
+  } else if (category === "academic" || category === "campus" || category === "scholarship" || category === "sw" || category === "uisp") {
     item = await getAnnouncementById(category, source.id);
   }
   return announcementFields(item ?? missing());

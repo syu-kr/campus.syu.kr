@@ -1,15 +1,25 @@
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { buildPublicDataSnapshot, ownedPublicDataUnchanged, publicDataLocalPath } from "../../scripts/public-data-snapshot";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { DAILY_CRAWL_DATA_FILES } from "../crawl-data-contract";
-import { readHealthCache, writeHealthCache } from "../../scripts/publish-crawl-data";
-import { parsePublicDataManifest, PUBLIC_DATA_FILES, validatePublicData, type PublicDataManifest } from "../public-data-snapshot";
+import { readHealthCache, UISP_NOTICE_FILE, writeHealthCache } from "../../scripts/publish-crawl-data";
+import { asDailyCrawlManifest, parsePublicDataManifest, PUBLIC_DATA_FILES, publicDataPath, validatePublicData, type PublicDataManifest } from "../public-data-snapshot";
 import { activatePublicSnapshot, readPublicSnapshotFile, readStoredPublicManifest, uploadPublicSnapshot, type ActivePublicData, type PublicDataStore } from "./public-data-storage";
 
 let fixture: Awaited<ReturnType<typeof buildPublicDataSnapshot>>;
-beforeAll(async () => { fixture = await buildPublicDataSnapshot("public", "test-snapshot"); });
+beforeAll(async () => {
+  fixture = await buildPublicDataSnapshot("public", "test-snapshot");
+  const bytes = await readFile(publicDataLocalPath("public", UISP_NOTICE_FILE));
+  fixture.payloads.set(UISP_NOTICE_FILE, bytes);
+  fixture.manifest.files[UISP_NOTICE_FILE] = {
+    path: publicDataPath(fixture.manifest.version, UISP_NOTICE_FILE),
+    sha256: createHash("sha256").update(bytes).digest("hex"),
+    size: bytes.length,
+  };
+});
 function memoryStore() {
   let active: ActivePublicData | null = null;
   const objects = new Map<string, Buffer>();
@@ -22,9 +32,67 @@ function memoryStore() {
   return { store, objects };
 }
 describe("Firebase public snapshots", () => {
+  it("introduces UISP only after an enabled daily crawl succeeds, then preserves it when disabled", async () => {
+    const legacy = structuredClone(fixture.manifest);
+    delete legacy.files[UISP_NOTICE_FILE];
+    const parsed = parsePublicDataManifest(legacy);
+    expect(asDailyCrawlManifest(parsed).files[UISP_NOTICE_FILE]).toBeUndefined();
+    const { store } = memoryStore();
+    await uploadPublicSnapshot(store, parsed, fixture.payloads);
+    await activatePublicSnapshot(store, parsed, null);
+    const active = (await store.readActive())!;
+    const base = await mkdtemp(path.join(tmpdir(), "public-uisp-snapshot-"));
+    const directory = path.join(base, "public");
+    const healthPath = path.join(base, ".cache", "crawl-data-health.json");
+    const attempt = "2026-11-08T11:17:00.000Z";
+    const fresh = { status: "fresh" as const, lastAttemptAt: attempt, lastSuccessAt: attempt };
+    try {
+      await mkdir(path.join(directory, "data"), { recursive: true });
+      for (const [file, bytes] of fixture.payloads) await writeFile(publicDataLocalPath(directory, file), bytes);
+
+      vi.stubEnv("PUBLIC_UISP_ENABLED", "");
+      await writeHealthCache(healthPath, { [UISP_NOTICE_FILE]: fresh });
+      const disabled = await buildPublicDataSnapshot(directory, "uisp-disabled", active, store, "daily");
+      expect(disabled.manifest.files[UISP_NOTICE_FILE]).toBeUndefined();
+      expect(disabled.manifest.sourceHealth[UISP_NOTICE_FILE]).toBeUndefined();
+      expect(await ownedPublicDataUnchanged(directory, "daily", active)).toBe(true);
+
+      vi.stubEnv("PUBLIC_UISP_ENABLED", "true");
+      for (const scope of ["reference", "student-restaurant"] as const) {
+        const unrelated = await buildPublicDataSnapshot(directory, `uisp-${scope}`, active, store, scope);
+        expect(unrelated.manifest.files[UISP_NOTICE_FILE]).toBeUndefined();
+      }
+      await writeHealthCache(healthPath, { [UISP_NOTICE_FILE]: { status: "stale", lastAttemptAt: attempt, errorCode: "CRAWLER_FAILED" } });
+      const failed = await buildPublicDataSnapshot(directory, "uisp-failed", active, store, "daily");
+      expect(failed.manifest.files[UISP_NOTICE_FILE]).toBeUndefined();
+      expect(failed.manifest.sourceHealth[UISP_NOTICE_FILE]).toBeUndefined();
+
+      await writeHealthCache(healthPath, { [UISP_NOTICE_FILE]: fresh });
+      expect(await ownedPublicDataUnchanged(directory, "daily", active)).toBe(false);
+      const next = await buildPublicDataSnapshot(directory, "with-uisp", active, store, "daily");
+      expect(next.payloads.get(UISP_NOTICE_FILE)).toEqual(fixture.payloads.get(UISP_NOTICE_FILE));
+      expect(next.manifest.sourceHealth[UISP_NOTICE_FILE]).toEqual(fresh);
+      expect(next.manifest.files["phone-numbers.json"]?.sha256).toBe(parsed.files["phone-numbers.json"]?.sha256);
+      await uploadPublicSnapshot(store, next.manifest, next.payloads);
+      await activatePublicSnapshot(store, next.manifest, active);
+
+      vi.stubEnv("PUBLIC_UISP_ENABLED", "");
+      await writeFile(publicDataLocalPath(directory, UISP_NOTICE_FILE), "[]");
+      await writeHealthCache(healthPath, {});
+      const paused = (await store.readActive())!;
+      expect(await ownedPublicDataUnchanged(directory, "daily", paused)).toBe(true);
+      const preserved = await buildPublicDataSnapshot(directory, "uisp-paused", paused, store, "daily");
+      expect(preserved.payloads.get(UISP_NOTICE_FILE)).toEqual(next.payloads.get(UISP_NOTICE_FILE));
+      expect(preserved.manifest.sourceHealth[UISP_NOTICE_FILE]).toEqual(fresh);
+    } finally {
+      vi.unstubAllEnvs();
+      if (!path.resolve(base).startsWith(path.resolve(tmpdir()) + path.sep) || !path.basename(base).startsWith("public-uisp-snapshot-")) throw new Error("Unexpected temporary directory");
+      await rm(base, { recursive: true, force: true });
+    }
+  });
   it("validates every current public file without changing its bytes", () => {
-    expect(fixture.payloads.size).toBe(22);
-    expect(PUBLIC_DATA_FILES).toHaveLength(23);
+    expect(fixture.payloads.size).toBe(23);
+    expect(PUBLIC_DATA_FILES).toHaveLength(24);
     for (const [file, bytes] of fixture.payloads) expect(() => validatePublicData(file, JSON.parse(bytes.toString()))).not.toThrow();
     const requirements = JSON.parse(fixture.payloads.get("graduation-requirements-2026.json")!.toString());
     expect(requirements.requirementProfiles.some((profile: { totalCredits: number }) => profile.totalCredits === 0)).toBe(true);
@@ -67,7 +135,7 @@ describe("Firebase public snapshots", () => {
     expect(next.manifest.retainedVersions).toEqual(["next-snapshot", "test-snapshot"]);
     expect(await ownedPublicDataUnchanged("public", "reference", (await store.readActive())!)).toBe(true);
   });
-  it("publishes only the collector's menu and preserves all 22 files and daily health", async () => {
+  it("publishes only the collector's menu and preserves all 23 files and daily health", async () => {
     const { store } = memoryStore();
     const baseline: PublicDataManifest = structuredClone(fixture.manifest);
     baseline.sourceHealth = Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, {
@@ -90,18 +158,18 @@ describe("Firebase public snapshots", () => {
       await writeFile(publicDataLocalPath(directory, "phone-numbers.json"), "invalid unowned local input");
       await writeHealthCache(path.join(base, ".cache", "crawl-data-health.json"), {});
       const next = await buildPublicDataSnapshot(directory, "cafeteria-next", previous, store, "student-restaurant");
-      expect(next.payloads.size).toBe(23);
+      expect(next.payloads.size).toBe(24);
       expect(JSON.parse(next.payloads.get("student-restaurant-1.json")!.toString())).toEqual(newMenu);
       expect(publicDataLocalPath(directory, "student-restaurant-1.json")).toBe(path.join(directory, "cafeteria", "student-restaurant-1.json"));
       const preserved = PUBLIC_DATA_FILES.filter(file => file !== "student-restaurant-1.json");
-      expect(preserved).toHaveLength(22);
+      expect(preserved).toHaveLength(23);
       for (const file of preserved) {
         expect(next.payloads.get(file)?.equals(fixture.payloads.get(file)!), file).toBe(true);
         expect(next.manifest.files[file]?.sha256).toBe(baseline.files[file]?.sha256);
         expect(next.manifest.files[file]?.size).toBe(baseline.files[file]?.size);
       }
       expect(next.manifest.sourceHealth).toEqual(baseline.sourceHealth);
-      expect(Object.keys(next.manifest.sourceHealth)).toHaveLength(9);
+      expect(Object.keys(next.manifest.sourceHealth)).toHaveLength(10);
       await uploadPublicSnapshot(store, next.manifest, next.payloads);
       await activatePublicSnapshot(store, next.manifest, previous);
       expect(await ownedPublicDataUnchanged(directory, "student-restaurant", (await store.readActive())!)).toBe(true);

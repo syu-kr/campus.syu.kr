@@ -27,7 +27,7 @@ from crawler_utils import (
 def check_crawler_stdout() -> None:
     modules = (
         "crawl_announcements", "crawl_scholarships", "crawl_campus", "crawl_events",
-        "crawl_department_notices", "crawl_swuniv_notices", "crawl_cafeteria",
+        "crawl_department_notices", "crawl_swuniv_notices", "crawl_uisp_notices", "crawl_cafeteria",
     )
     with ThreadPoolExecutor(max_workers=1) as reader:
         for module in modules:
@@ -161,6 +161,9 @@ def main() -> None:
     from check_notice_snapshot_integrity import main as check_notice_integrity
 
     check_notice_integrity()
+    from check_uisp_notices import main as check_uisp
+
+    check_uisp()
     from check_phone_crawler import main as check_phone
 
     check_phone()

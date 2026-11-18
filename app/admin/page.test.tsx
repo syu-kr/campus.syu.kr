@@ -1,9 +1,10 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { useState, type ReactNode } from "react";
 import type { User } from "firebase/auth";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdminSubmissionItem } from "@/types/submissions";
 import AdminPage from "./page";
+import { formatDateTime, SubmissionDetail } from "./AdminSubmissionDetail";
 
 const authMock = vi.hoisted(() => ({
   auth: { currentUser: null as User | null },
@@ -151,7 +152,10 @@ describe("admin submission page counts", () => {
     const item = fixtureItem("A");
     let changed = false;
     const fetchMock = mockRequests((_token, init, input) => {
-      if (init?.method === "PATCH") { changed = true; return Response.json({ success: true }); }
+      if (init?.method === "PATCH") {
+        changed = true;
+        return Response.json({ success: true, updatedSubmissions: [{ id: item.id, kind: item.kind, status: "reviewing", updatedAt: "2026-10-04T00:00:00Z", closedAt: null }] });
+      }
       return paginatedResponse(input, item, changed ? 40 : 41);
     });
     render(<AdminPage />);
@@ -169,6 +173,58 @@ describe("admin submission page counts", () => {
     await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => !init?.method)).toHaveLength(2));
     expect(String(fetchMock.mock.calls.at(-1)![0])).not.toContain("includeCounts=false");
     expect(screen.getByRole("button", { name: /^대기\s*40$/ })).toBeVisible();
+  });
+});
+
+describe("admin submission completion date", () => {
+  it.each(["done", "rejected"] as const)("shows missing completion evidence honestly for a legacy %s item", (status) => {
+    render(<SubmissionDetail item={{ ...fixtureItem("legacy"), status }} isSaving={false} isClassifying={false} onStatusChange={vi.fn()} onClassify={vi.fn()} />);
+    const row = screen.getByText("완료·기각일").closest("div")!;
+    expect(within(row).getByText("기록 없음 · 처리 기록 확인 필요")).toBeVisible();
+  });
+
+  it("uses server completion/reopen dates while preserving other selections and the current filter", async () => {
+    const item = fixtureItem("A");
+    const other = { ...fixtureItem("B"), id: "another-submission" };
+    const completedAt = "2026-10-04T03:04:00Z";
+    const fetchMock = mockRequests((_token, init) => {
+      if (init?.method === "PATCH") {
+        const { status } = JSON.parse(init.body as string);
+        return Response.json({ success: true, updatedSubmissions: [{ id: item.id, kind: item.kind, status, updatedAt: completedAt, closedAt: status === "done" ? completedAt : null }] });
+      }
+      return Response.json({ submissions: [item, other], counts: { pending: 2, reviewing: 0, accepted: 0, rejected: 0, done: 0 }, pagination: { page: 1, limit: 20, total: 2, totalPages: 1, hasNext: false, nextCursor: null } });
+    });
+    render(<AdminPage />);
+    await emitAuth(fixtureUser("admin-a"));
+    await screen.findByText(item.contact);
+    fireEvent.change(screen.getByDisplayValue("대기"), { target: { value: "all" } });
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => !init?.method)).toHaveLength(2));
+    fireEvent.click(screen.getByRole("checkbox", { name: `${item.title} 선택` }));
+    fireEvent.click(screen.getByRole("checkbox", { name: `${other.title} 선택` }));
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    await screen.findByText("처리 상태를 변경했습니다.");
+    expect(within(screen.getByText("완료·기각일").closest("div")!).getByText(formatDateTime(completedAt))).toBeVisible();
+    expect(within(screen.getByText("수정일").closest("div")!).getByText(formatDateTime(completedAt))).toBeVisible();
+    expect(screen.getByRole("checkbox", { name: `${other.title} 선택` })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: `${item.title} 선택` })).not.toBeChecked();
+    expect(screen.getByDisplayValue("전체 상태")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: "검토중" }));
+    await waitFor(() => expect(within(screen.getByText("완료·기각일").closest("div")!).getByText("미완료")).toBeVisible());
+    expect(screen.getByRole("checkbox", { name: `${other.title} 선택` })).toBeChecked();
+    expect(fetchMock.mock.calls.filter(([, init]) => !init?.method)).toHaveLength(2);
+  });
+
+  it("requests a list refresh when a successful mutation omits the server dates", async () => {
+    const item = fixtureItem("A");
+    mockRequests((_token, init) => init?.method === "PATCH" ? Response.json({ success: true }) : pageResponse(item));
+    render(<AdminPage />);
+    await emitAuth(fixtureUser("admin-a"));
+    await screen.findByText(item.contact);
+    fireEvent.click(screen.getByRole("button", { name: "완료" }));
+    expect(await screen.findByText("변경 결과를 확인하지 못했습니다. 목록을 다시 불러와 처리 상태를 확인해주세요.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "대기" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(screen.getByText("완료·기각일").closest("div")!).getByText("미완료")).toBeVisible();
   });
 });
 afterEach(() => vi.unstubAllGlobals());

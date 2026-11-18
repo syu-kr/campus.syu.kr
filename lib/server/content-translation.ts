@@ -13,7 +13,7 @@ const pending = new Map<string, Promise<TranslationResult>>();
 const pendingFields = new Map<string, Promise<string>>();
 const HANGUL = /\p{Script=Hangul}/u;
 const kinds = new Set(["announcement", "competition", "cafeteria", "student-restaurant", "schedule", "tip", "service-notice", "phone", "shuttle", "library", "map", "course", "graduation", "banner"]);
-const categories = new Set(["academic", "campus", "scholarship", "sw", "event", "department"]);
+const categories = new Set(["academic", "campus", "scholarship", "sw", "uisp", "event", "department"]);
 
 export interface TranslationRequest { source: ContentTranslationSource; fields: string[]; target: "en" }
 export interface TranslationResult { translations: Record<string, string>; originals: Record<string, string>; sourceHash: string; target: "en"; provider: "google" }

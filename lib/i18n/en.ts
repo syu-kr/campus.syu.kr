@@ -1,4 +1,5 @@
 import { enMeetPages } from "./meet";
+import { enChapelSeats } from "./chapel-seats";
 
 export const enDictionary = {
     managedBanners: {
@@ -143,6 +144,7 @@ export const enDictionary = {
       skyCondition: "Sky condition",
       location: "Location",
       updated: "Weather base time",
+      sourceCredit: "Source: KMA short-term forecasts (processed)",
       close: "Close",
       none: "None",
       rain: "Rain",
@@ -260,6 +262,7 @@ export const enDictionary = {
         scholarship: "Scholarships",
         campus: "Campus",
         sw: "SW-Centered University",
+        uisp: "University Innovation",
         service: "Service",
         emptyService: "There are no service notices in this category.",
         emptyCategory: "There are no notices in the selected category.",
@@ -267,6 +270,7 @@ export const enDictionary = {
         academicAll: "All academic notices",
         campusAll: "All campus notices",
         swAll: "All SW-centered university notices",
+        uispAll: "All university innovation notices",
         scholarshipAll: "All scholarships",
         serviceAll: "All service notices",
       },
@@ -327,8 +331,10 @@ export const enDictionary = {
         scholarshipTitle: "Scholarships",
         scholarshipDescription: "Scholarship notices and applications",
         swNoticesTitle: "SW-Centered University Notices",
+        uispNoticesTitle: "University Innovation Notices",
         swNoticesDescription:
           "SW and AI education, scholarships, and program updates",
+        uispNoticesDescription: "University innovation programs and participation updates",
         graduationTitle: "Graduation Check",
         graduationDescription: "Check requirements for your situation",
         timetableTitle: "Timetable Builder",
@@ -355,6 +361,8 @@ export const enDictionary = {
         libraryDescription: "Central Library reading room info",
         mapTitle: "Campus Map",
         mapDescription: "Building locations and facilities",
+        chapelSeatsTitle: "Chapel seat finder",
+        chapelSeatsDescription: "Find an auditorium seat by section and number",
         phoneTitle: "Contact Search",
         phoneDescription: "Department and staff contacts",
         campusTipsTitle: "Campus Tips",
@@ -387,11 +395,13 @@ export const enDictionary = {
       academicAnnouncement: "Academic Notices",
       campusAnnouncement: "Campus Notices",
       swAnnouncement: "SW-Centered University Notices",
+      uispAnnouncement: "University Innovation Notices",
       scholarship: "Scholarships",
       phoneNumbers: "Contacts",
       academic: "Academic Notices",
       campus: "Campus",
       sw: "SW-Centered University",
+      uisp: "University Innovation",
       registration: "Course Registration",
       exam: "Exam",
       holiday: "Holiday",
@@ -488,6 +498,7 @@ export const enDictionary = {
       ],
     },
     pages: {
+      chapelSeats: enChapelSeats,
       serviceNotices: {
         metaTitle: "Service Notices",
         metaDescription: "SYU CAMPUS service notices and updates",
@@ -574,7 +585,7 @@ export const enDictionary = {
           title: "How to check graduation requirements",
           question: "Where can I check Sahmyook University graduation requirements?",
           body:
-            "Select your admission year, college, department, admission type, and major track to review reference graduation requirements and items that still need confirmation based on {sourceTitle}. This data was last verified on {lastVerifiedAt}; final graduation approval must be confirmed through SU-WINGs and your department office.",
+            "Select your admission year, college, department, admission type, and major track to review reference graduation requirements and items that still need confirmation based on {sourceTitle}. The reference was last verified on {lastVerifiedAt}; update times may differ by source. Confirm transfer, department transfer, multi-major, teaching-track requirements, and final graduation approval through the official sources, SU-WINGs, and your department office.",
           source: "Source: {sourceTitle}",
           updatedPrefix: "Checked",
           sourceLabel: "Reference source",
@@ -792,10 +803,18 @@ export const enDictionary = {
         campusDescription: "Check campus life and major notices",
         campusError: "Could not load campus notices. Please try again shortly.",
         swTitle: "SW-Centered University Notices at Sahmyook University",
+        uispTitle: "University Innovation Notices at Sahmyook University",
+        uispPinnedNotices: "Pinned notices",
+        uispOriginalTitle: "Original notice",
+        uispPoster: "Notice poster",
+        uispOriginalUnavailable: "The original notice is unavailable. Please try again shortly.",
+        uispAttachments: "Attachments",
         swDescription:
           "Check SW and AI education, scholarship, and program notices",
+        uispDescription: "Check programs, recruitment, and notices from the University Innovation Support Office",
         swError:
           "Could not load SW-centered university notices. Please try again shortly.",
+        uispError: "Could not load university innovation notices. Please try again shortly.",
         listSearchPlaceholder: "Search by title or author...",
         foundItems: "items found",
         searchQuery: "query",
@@ -1421,7 +1440,9 @@ export const enDictionary = {
             "You can search {count} contacts by department, work description, or phone number. For graduation, academic records, classes, or certificates, check {department} ({description}) at {phone}.",
           emptyBody:
             "No contact information is currently available. Check the official university phone directory.",
-          source: "Source: campus phone directory data",
+          academicUnavailableBody:
+            "The current data does not identify the contact for academic records, classes, or certificates. Check the responsible department in the official university phone directory.",
+          source: "Source: Sahmyook University phone directory",
           updatedPrefix: "Checked",
           totalLabel: "Registered contacts",
           totalValue: "{count} contacts",

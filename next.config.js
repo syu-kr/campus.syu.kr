@@ -87,6 +87,7 @@ const nextConfig = {
 
   // 캐싱 설정
   headers: async () => {
+    const apiContentSecurityPolicy = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
     const securityHeaders = [
       {
         key: "Permissions-Policy",
@@ -153,13 +154,17 @@ const nextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+            value: apiContentSecurityPolicy,
           },
           {
             key: "X-Robots-Tag",
             value: "noindex, nofollow",
           },
         ],
+      },
+      {
+        source: "/api/uisp-assets/:path*",
+        headers: [{ key: "Content-Security-Policy", value: `${apiContentSecurityPolicy}; sandbox` }],
       },
       ...sensitiveApiSources.map((source) => ({
         source,

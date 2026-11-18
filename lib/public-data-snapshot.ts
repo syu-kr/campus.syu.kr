@@ -28,7 +28,7 @@ export function publicDataMaxBytes(file: PublicDataFile): number {
 }
 export function publicDataPath(version: string, file: PublicDataFile | "manifest.json") { return `public-data/versions/${validateCrawlDataVersion(version)}/${file}`; }
 export function asDailyCrawlManifest(manifest: PublicDataManifest) {
-  return parseCrawlDataManifest({ ...manifest, files: Object.fromEntries(DAILY_CRAWL_DATA_FILES.map(file => [file, { ...manifest.files[file], path: `versions/${manifest.version}/${file}` }])) });
+  return parseCrawlDataManifest({ ...manifest, files: Object.fromEntries(DAILY_CRAWL_DATA_FILES.filter(file => manifest.files[file]).map(file => [file, { ...manifest.files[file], path: `versions/${manifest.version}/${file}` }])) });
 }
 
 export function parsePublicDataManifest(value: unknown): PublicDataManifest {
@@ -41,7 +41,7 @@ export function parsePublicDataManifest(value: unknown): PublicDataManifest {
   const files: PublicDataManifest["files"] = {};
   for (const file of PUBLIC_DATA_FILES) {
     const entry = value.files[file];
-    if (entry === undefined && file === "student-restaurant-1.json") continue;
+    if (entry === undefined && (file === "student-restaurant-1.json" || file === "announcements-uisp.json")) continue;
     requireData(record(entry) && entry.path === publicDataPath(version, file) && typeof entry.sha256 === "string" && /^[a-f0-9]{64}$/.test(entry.sha256) && Number.isSafeInteger(entry.size) && typeof entry.size === "number" && entry.size > 0 && entry.size <= publicDataMaxBytes(file), file);
     files[file] = { path: entry.path as string, sha256: entry.sha256, size: entry.size };
   }

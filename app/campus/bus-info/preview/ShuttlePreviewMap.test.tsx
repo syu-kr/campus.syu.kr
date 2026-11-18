@@ -6,11 +6,12 @@ import ShuttlePreviewMap from "./ShuttlePreviewMap";
 import { serviceRoutes } from "./service-data";
 import { serviceRoadPaths } from "./service-visits";
 import { demoLocations } from "./service-demo";
+import { testServiceData } from "./service-test-data";
 
-const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>()}));
+const m=vi.hoisted(()=>({ready:true,eta:vi.fn(),minutes:new Map<string,number>(),observations:new Map<string,{arrivalAt:number}>()}));
 vi.mock("@/lib/kakao-maps-loader",()=>({loadKakaoMapsSdk:async()=>m.ready}));
-vi.mock("./use-stop-arrivals",()=>({useStopArrivals:(...args:unknown[])=>{m.eta(...args);return {minutes:m.minutes,status:"waiting"};}}));
-beforeEach(()=>{m.ready=true;m.minutes.clear();m.eta.mockClear();vi.stubGlobal("ResizeObserver",class {observe(){}disconnect(){}});});
+vi.mock("./use-stop-arrivals",()=>({useStopArrivals:(...args:unknown[])=>{m.eta(...args);return {minutes:m.minutes,observations:m.observations,status:"learning"};}}));
+beforeEach(()=>{m.ready=true;m.minutes.clear();m.observations.clear();m.eta.mockClear();vi.stubGlobal("ResizeObserver",class {observe(){}disconnect(){}});});
 afterEach(()=>{delete window.kakao;vi.unstubAllGlobals();});
 const buses:BusLocation[]=[
   {id:"bus-A",name:"not-shown-A",lat:"37.62",lon:"127.08",routeid:1,status:2},
@@ -41,26 +42,60 @@ it("initially shows vehicles from every route without drawing an unselected rout
   expect(screen.queryByText(/not-shown-/)).not.toBeInTheDocument();
   expect(m.eta).toHaveBeenLastCalledWith(now,false,undefined,true,"/campus/bus-info/preview/eta");
 });
+it.each([
+  {case:"weekend",nowISO:"2026-11-07T13:00:00+09:00",holiday:false,collectionOpen:false,stale:true},
+  {case:"holiday",nowISO:"2026-11-03T13:00:00+09:00",holiday:true,collectionOpen:false,stale:true},
+  {case:"after service",nowISO:"2026-11-03T20:00:00+09:00",holiday:false,collectionOpen:false,stale:true},
+  {case:"unavailable positions during service",nowISO:"2026-11-03T13:00:00+09:00",holiday:false,collectionOpen:true,stale:true},
+  {case:"fresh empty positions",nowISO:"2026-11-03T13:00:00+09:00",holiday:false,collectionOpen:true,stale:false},
+])("keeps the empty map usable without vehicle or delay messages: $case",async({nowISO,holiday,collectionOpen,stale})=>{
+  m.ready=false;
+  const clock=new Date(nowISO);
+  const data={...testServiceData,nowISO,holidays:{...testServiceData.holidays,lastSuccessAt:nowISO,
+    holidays:holiday?[...testServiceData.holidays.holidays,{date:nowISO.slice(0,10),names:["테스트 공휴일"]}]:testServiceData.holidays.holidays}};
+  render(<ShuttlePreviewMap {...props} now={clock} data={data} received={{locations:[],stale}}/>);
+  const dialog=screen.getByRole("dialog",{name:"전체 셔틀 지도"});
+  await within(dialog).findByText("배경 지도를 불러올 수 없어 간이 노선도를 표시합니다.");
+  expect(dialog).not.toHaveTextContent(/위치 수신 지연|현재 표시할 차량 위치 없음|차량을 선택하면/);
+  expect(within(dialog).queryByRole("group",{name:"지도 차량 선택"})).not.toBeInTheDocument();
+  expect(within(dialog).queryByRole("button",{name:"전체 차량 보기"})).not.toBeInTheDocument();
+  expect(m.eta).toHaveBeenLastCalledWith(clock,false,undefined,collectionOpen,"/campus/bus-info/preview/eta");
+});
 it("selects a vehicle's complete route and scopes predictions to that vehicle",async()=>{
   m.ready=false;m.minutes.set("seokgye-4",7);
   const {container,rerender}=render(<ShuttlePreviewMap {...props}/>);
   choose(/석계역/);
   const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getAllByRole("listitem")).toHaveLength(6);
-  expect(within(panel).getByText(/약 7분/)).toBeInTheDocument();
+  expect(within(panel).getByText(/7분 후/)).toBeInTheDocument();
   expect(container.querySelectorAll("polyline")).toHaveLength(5);
   expect(container.querySelectorAll("[data-stop-pin]")).toHaveLength(5);
   expect(container.querySelectorAll("[data-received-vehicle]")).toHaveLength(3);
   expect(m.eta).toHaveBeenLastCalledWith(now,true,"bus-B",true,"/campus/bus-info/preview/eta");
   fireEvent.click(within(panel).getByRole("button",{name:/석계역 4번 출구/}));
-  expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 약 7분");
+  expect(screen.getByRole("status")).toHaveTextContent("석계역 4번 출구 · 7분 후");
   rerender(<ShuttlePreviewMap {...props} received={{locations:buses,stale:true}}/>);
-  expect(within(panel).queryByText(/약 7분/)).not.toBeInTheDocument();
+  expect(within(panel).queryByText(/7분 후/)).not.toBeInTheDocument();
+  expect(screen.getByText("위치 수신 지연 · 마지막 수신 자료")).toBeVisible();
   expect(m.eta).toHaveBeenLastCalledWith(now,false,"bus-B",true,"/campus/bus-info/preview/eta");
   rerender(<ShuttlePreviewMap {...props} received={{locations:[buses[0],buses[2]],stale:false}}/>);
   expect(screen.queryByRole("region",{name:"선택 차량 정류장별 도착예상"})).not.toBeInTheDocument();
   expect(screen.getByText("선택한 차량의 위치를 다시 확인해 주세요.")).toBeInTheDocument();
   expect(container.querySelectorAll("polyline,[data-stop-pin]")).toHaveLength(0);
+  rerender(<ShuttlePreviewMap {...props} received={{locations:[],stale:true}}/>);
+  expect(screen.queryByText(/선택한 차량의 위치|위치 수신 지연/)).not.toBeInTheDocument();
+});
+it.each([
+  {locale:"ko" as const,group:"지도 차량 선택",vehicle:/석계역/,region:"선택 차량 정류장별 도착예상",stop:/석계역 4번 출구/,missing:/태릉입구역 7번 출구/,eta:"7분 후 · 12:07"},
+  {locale:"en" as const,group:"Select a map vehicle",vehicle:/Seokgye/,region:"Selected vehicle arrivals",stop:/Seokgye Exit 4/,missing:/Taereung Exit 7/,eta:"in 7 min · 12:07"},
+])("shows the countdown and exact arrival clock, with a dash for missing predictions: $locale",({locale,group,vehicle,region,stop,missing,eta})=>{
+  m.ready=false;m.minutes.set("seokgye-4",7);m.observations.set("seokgye-4",{arrivalAt:now.getTime()+7*60000});
+  render(<ShuttlePreviewMap {...props} locale={locale}/>);
+  fireEvent.click(within(screen.getByRole("group",{name:group})).getByRole("button",{name:vehicle}));
+  const panel=screen.getByRole("region",{name:region});
+  expect(within(panel).getByRole("button",{name:stop})).toHaveTextContent(eta);
+  expect(within(panel).getByRole("button",{name:missing})).toHaveTextContent("—");
+  expect(panel).not.toHaveTextContent(/예측 안내|최근 위치 반영|보정 중|최신 위치를 확인/);
 });
 it("supports fallback marker keyboard selection and the Hwarangdae return movement",async()=>{
   m.ready=false;const bus={...buses[0],status:1 as const};
@@ -80,8 +115,27 @@ it("uses the selected sample vehicle instead of the next bus's ETA",()=>{
   let panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
   expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("통과");
   choose(/차량 2/);panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
-  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("약 10분");
+  expect(within(panel).getByRole("button",{name:/석계역 4번 출구/})).toHaveTextContent("10분 후");
   expect(m.eta).toHaveBeenLastCalledWith(now,false,sample[1].id,true,"/campus/bus-info/preview/eta");
+});
+it("labels only the final sample's confirmed terminal arrival as the last bus arrival",()=>{
+  m.ready=false;
+  const departures=[0,1800],sample=demoLocations(serviceRoutes[1],1260,false,departures);
+  const {rerender}=render(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:1260,nextAvailable:false,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
+  choose(/석계역/);
+  const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).toHaveTextContent("막차 도착");
+  rerender(<ShuttlePreviewMap {...props} received={{locations:sample,stale:false}} demo={{elapsed:1260,nextAvailable:true,delayed:false,departuresByRoute:{seokgye:departures}}}/>);
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).toHaveTextContent("도착");
+  expect(within(panel).getByRole("button",{name:/학교 도착/})).not.toHaveTextContent("막차");
+});
+it("describes elapsed origin schedules without claiming an observed last departure",()=>{
+  m.ready=false;
+  const after=new Date("2026-11-02T20:00:00+09:00"),data={...testServiceData,nowISO:after.toISOString(),holidays:{...testServiceData.holidays,lastSuccessAt:after.toISOString()}};
+  render(<ShuttlePreviewMap {...props} now={after} data={data}/>);
+  choose(/석계역/);
+  const panel=screen.getByRole("region",{name:"선택 차량 정류장별 도착예상"});
+  expect(within(panel).getByRole("button",{name:/학교 출발/})).toHaveTextContent("막차 출발");
 });
 it("keeps GPS markers stable, draws complete geographic vertices after a marker click, and cleans up",async()=>{
   const sdk=prepareSdk();const {rerender,unmount}=render(<ShuttlePreviewMap {...props}/>);

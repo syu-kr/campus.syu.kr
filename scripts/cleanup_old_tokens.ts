@@ -24,8 +24,8 @@ async function cleanupOldTokens() {
     console.log(
       "사용자가 앱을 다시 방문하면 새 토큰이 자동으로 저장됩니다.\n",
     );
-  } catch (error) {
-    console.error("토큰 정리 실패:", error);
+  } catch {
+    console.error("토큰 정리 실패: 설정과 동시 갱신 여부를 확인한 뒤 다시 실행하세요.");
     process.exit(1);
   }
 }
@@ -44,8 +44,7 @@ export async function deleteOldTokens(
     if (snapshot.empty) return deleted;
 
     const batch = db.batch();
-    snapshot.docs.forEach((doc, index) => {
-      console.log(`[${deleted + index + 1}] 삭제 예정: ${doc.id}`);
+    snapshot.docs.forEach((doc) => {
       // A concurrent subscription refresh must abort this batch, not remove the token.
       batch.delete(doc.ref, { lastUpdateTime: doc.updateTime });
     });

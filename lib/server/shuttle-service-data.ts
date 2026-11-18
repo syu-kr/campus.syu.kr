@@ -2,6 +2,8 @@ import { readPublicDataBundle } from "@/lib/server/public-data";
 import { getHomePublicHolidays } from "@/lib/server/home-data";
 import { unstable_rethrow } from "next/navigation";
 import { parsePublicHolidaySnapshot } from "@/lib/public-holidays";
+import bundledBuses from "@/public/data/shuttle-bus-schedule.json";
+import bundledCalendar from "@/public/data/shuttle-special-periods.json";
 import importedBuses from "@/app/campus/bus-info/preview/data/shuttle-bus-schedule.json";
 import importedCalendar from "@/app/campus/bus-info/preview/data/shuttle-special-periods.json";
 import importedHolidayData from "@/app/campus/bus-info/preview/data/public-holidays.json";
@@ -23,11 +25,12 @@ export async function loadShuttleServiceData(operatingPreview=false):Promise<Shu
   const importedHolidays=parsePublicHolidaySnapshot(importedHolidayData);
   const currentHolidays=holidayResult.status==="fulfilled"?holidayResult.value:null;
   const holidays=currentHolidays&&Date.parse(currentHolidays.lastSuccessAt??"")>=Date.parse(importedHolidays.lastSuccessAt??"")?currentHolidays:importedHolidays;
-  if(result.status==="fulfilled"&&result.value.source==="firebase-storage") {
+  if(result.status==="fulfilled") {
     const snapshot=result.value;
     return applyConfirmedGuideCorrections({buses:snapshot.data["shuttle-bus-schedule.json"] as ShuttleBusSchedule[],specialPeriods:withPublishedWinter(snapshot.data["shuttle-special-periods.json"] as ShuttleSpecialPeriods),
       holidays,source:snapshot.source,version:snapshot.version,nowISO:new Date().toISOString()});
   } else {
-    return importedData(new Date().toISOString(),holidays);
+    return {buses:bundledBuses,specialPeriods:withPublishedWinter(bundledCalendar as ShuttleSpecialPeriods),holidays,
+      source:"bundled-fallback",version:"bundled",nowISO:new Date().toISOString()};
   }
 }

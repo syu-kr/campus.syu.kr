@@ -97,7 +97,7 @@ export async function verifyIndexNowProduction(
   // Sample each dynamic template and check every changed static page without crawling the archive.
   const probes = new Map<string, string>();
   for (const url of urls) {
-    const key = new URL(url).pathname.replace(/\/announcements\/(academic|campus|scholarship|sw)\/[^/]+$/, "/announcements/$1/[id]")
+    const key = new URL(url).pathname.replace(/\/announcements\/(academic|campus|scholarship|sw|uisp)\/[^/]+$/, "/announcements/$1/[id]")
       .replace(/\/service\/notices\/[^/]+$/, "/service/notices/[slug]") + (next[url] ? ":present" : ":removed");
     if (!probes.has(key)) probes.set(key, url);
   }
@@ -175,6 +175,7 @@ export async function processIndexNowSnapshot(
   const changed = previous ? changedIndexNowUrls(previous.fingerprints, target.fingerprints) : [];
   const report: Report = { mode: send ? previous ? "send" : "baseline" : "dry-run", sourceSha: target.sourceSha, version: target.manifest.version, tracked: Object.keys(target.fingerprints).length, changed, probes: [], accepted: 0, pendingValidation: 0 };
   onProgress?.(report);
+  (previous ? changed : Object.keys(target.fingerprints)).forEach(assertIndexNowUrl);
   if (!send) return report;
   if (previous && changed.length === 0) {
     report.mode = "unchanged";

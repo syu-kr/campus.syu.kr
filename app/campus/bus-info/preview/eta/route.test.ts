@@ -2,6 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import buses from "@/public/data/shuttle-bus-schedule.json";
 import calendar from "@/public/data/shuttle-special-periods.json";
 import type {PublicHolidaySnapshot,ShuttleSpecialPeriods} from "@/types";
+import type { EtaResponse } from "@/lib/shuttle-eta";
 import {servicePattern} from "@/lib/server/shuttle-eta";
 import {advanceShuttleLearning} from "@/lib/shuttle-learning";
 import {pointAlongPath,serviceRoadPaths} from "../service-visits";
@@ -77,13 +78,68 @@ it("serves timetable-based upcoming trips from the model even without a fresh ve
 it.each(["vehicleId=","vehicleId=..%2Fprivate","vehicleId="+"a".repeat(129),"vehicleId=one&vehicleId=two"])("rejects invalid selectors before data access: %s",async query=>{
   expect((await GET(new Request(`https://example.invalid/preview/eta?${query}`))).status).toBe(400);expect(m.get).not.toHaveBeenCalled();
 });
-it("keeps stale data, holidays, weekends and storage errors from returning numbers",async()=>{
+it("keeps stale observations out while preserving known scheduled estimates on a current read error",async()=>{
   const saved=current();m.get.mockResolvedValue({data:()=>saved});vi.setSystemTime(now+90000);
   expect((await(await GET()).json()).arrivals).toEqual([]);
-  vi.setSystemTime(now+96000);m.get.mockRejectedValueOnce(new Error("private detail"));expect((await GET()).status).toBe(503);
+  vi.setSystemTime(now+121000);m.get.mockRejectedValueOnce(new Error("private detail"));
+  const degraded=await(await GET()).json();
+  expect(degraded.arrivals).toEqual([]);expect(degraded.scheduledArrivals.length).toBeGreaterThan(0);expect(degraded.context.degraded).toBe(true);
   m.get.mockClear();m.holidays.mockResolvedValue({...holidays,stale:true});expect((await(await GET()).json()).arrivals).toEqual([]);expect(m.get).not.toHaveBeenCalled();
   m.holidays.mockClear();vi.setSystemTime(Date.parse("2026-11-07T15:00:00+09:00"));
   expect((await(await GET()).json()).arrivals).toEqual([]);expect(m.holidays).not.toHaveBeenCalled();
+});
+it("publishes schedule identity, bounded trip visits and a fixed five-minute outage grace",async()=>{
+  const first=await(await GET()).json();
+  expect(first.context).toMatchObject({serviceDate:"2026-11-03",version:"test",generatedAt:now,validUntil:now+300000});
+  expect(first.trips.length).toBeGreaterThan(0);
+  expect(first.trips.every((trip:{key:string;stops:{tripKey:string}[]})=>trip.stops.every(stop=>stop.tripKey===trip.key))).toBe(true);
+  vi.setSystemTime(now+61000);m.get.mockRejectedValue(new Error("private storage failure"));
+  const fallback=await(await GET()).json();
+  expect(fallback.context).toMatchObject({degraded:true,validUntil:now+300000});
+  expect(fallback.arrivals).toEqual([]);expect(fallback.scheduledArrivals.length).toBeGreaterThan(0);
+  vi.setSystemTime(now+301000);expect((await GET()).status).toBe(503);
+});
+it("includes rapid departures within the actual normal and outage response deadline without extra reads",async()=>{
+  m.buses.mockResolvedValue(buses.map(bus=>bus.id==="shuttle-0"?{...bus,schedules:{...bus.schedules,mondayToThursday:["15:01","15:02","15:03","15:06","15:07"]}}:bus));
+  m.periods.mockResolvedValue({...periods,specialPeriods:[]});
+  const departures=(body:{trips:{route:string;departureAt:number}[]})=>body.trips.filter(trip=>trip.route==="hwarangdae").map(trip=>trip.departureAt);
+  const expected=[1,2,3,6].map(minute=>now+minute*60000);
+  const first=await(await GET()).json();
+  expect(departures(first)).toEqual(expected);
+  expect(m.get.mock.calls.map(call=>call[0])).toEqual(["current","history"]);
+  vi.setSystemTime(now+121000);m.get.mockRejectedValue(new Error("private storage failure"));
+  const fallback=await(await GET()).json();
+  expect(fallback.context).toMatchObject({degraded:true,validUntil:now+300000});
+  expect(departures(fallback)).toEqual(expected);
+  expect(m.get.mock.calls.map(call=>call[0])).toEqual(["current","history","current","model"]);
+});
+it("does not replace a failed initial history read with a road-only model",async()=>{
+  m.get.mockImplementation(async id=>{if(id==="history")throw new Error("private history failure");return{data:()=>current()};});
+  const response=await GET();expect(response.status).toBe(503);
+  expect(JSON.stringify(await response.json())).not.toContain("private history");
+});
+it("keeps pre-service predictions valid to the collection opening without adding idle reads",async()=>{
+  const morning=Date.parse("2026-11-03T07:00:00+09:00");vi.setSystemTime(morning);
+  m.holidays.mockResolvedValue({...holidays,lastSuccessAt:new Date(morning-1000).toISOString()});
+  const first=await(await GET()).json();
+  expect(first.context.validUntil).toBe(Date.parse("2026-11-03T07:40:00+09:00"));
+  m.get.mockClear();vi.setSystemTime(morning+30*60000);await GET();expect(m.get).not.toHaveBeenCalled();
+});
+it("reuses same-version history after a failed refresh without extending its outage deadline",async()=>{
+  await GET();
+  const cache=await import("@/lib/server/shuttle-eta-cache");
+  vi.spyOn(cache,"readShuttleHistory").mockRejectedValue(new Error("private history error"));
+  vi.setSystemTime(now+10000);
+  const body=await(await GET()).json();
+  expect(body.context).toMatchObject({degraded:true,validUntil:now+300000});
+  expect(body.scheduledArrivals.length).toBeGreaterThan(0);
+});
+it("bounds scheduled validity at holiday expiration and publishes authoritative empty service results",async()=>{
+  m.holidays.mockResolvedValue({...holidays,lastSuccessAt:new Date(now-3*86400000+60000).toISOString()});
+  const first=await(await GET()).json();expect(first.context.validUntil).toBe(now+60000);
+  m.periods.mockResolvedValue({...periods,closedDates:[{date:"2026-11-03",reason:"test"}]});
+  const closed=await(await GET()).json();
+  expect(closed).toMatchObject({arrivals:[],scheduledArrivals:[],trips:[],context:{version:"test",serviceDate:"2026-11-03"}});
 });
 it("runs the isolated synthetic check without a database read or collection",async()=>{
   expect(await(await GET(new Request("https://example.invalid/preview/eta?check=1"))).json()).toEqual({source:"synthetic",passed:true});
@@ -93,4 +149,25 @@ it("retains actual route-specific calendar patterns while showing the global onl
   const date=new Date("2026-11-02T15:00:00+09:00"),h={...holidays,lastSuccessAt:date.toISOString()};
   expect(servicePattern("seokgye",date,buses,periods,h)).toContain("online-class-week-fall-2026");
   expect(servicePattern("byeollae",date,buses,periods,h)).toBe("mondayToThursday");
+});
+
+it.each([
+  ["2026-11-23T13:50:00+09:00", [["seokgye", "14:00"], ["seokgye", "14:30"], ["byeollae", "14:30"]]],
+  ["2026-11-24T11:50:00+09:00", [["hwarangdae", "12:00"], ["seokgye", "12:00"], ["byeollae", "12:30"]]],
+] as const)("builds ETA trips from the essay exam departures at %s", async (clock, expected) => {
+  const time = Date.parse(clock);
+  vi.setSystemTime(time);
+  m.holidays.mockResolvedValue({ ...holidays, lastSuccessAt: new Date(time - 1000).toISOString() });
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const body: EtaResponse = await response.json();
+  expect(body.context?.serviceDate).toBe(clock.slice(0, 10));
+  if (clock.startsWith("2026-11-23")) {
+    expect(body.arrivals).toEqual([]);
+    expect(body.context?.validUntil).toBe(Date.parse("2026-11-23T14:00:00+09:00"));
+  }
+  const nextTrips = body.trips?.filter(trip => trip.departureAt > time);
+  expect(nextTrips?.map(trip => [trip.route, trip.departureAt])).toEqual(
+    expected.map(([route, departure]) => [route, Date.parse(`${clock.slice(0, 10)}T${departure}:00+09:00`)]),
+  );
 });

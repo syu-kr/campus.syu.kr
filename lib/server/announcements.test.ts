@@ -16,6 +16,17 @@ beforeEach(() => {
 });
 afterEach(() => { vi.useRealTimers(); });
 
+it("serves UISP separately and includes its notices in home, search, details and sitemap", async () => {
+  const item = notice("uisp-744", "2026.11.06", { category: "uisp", author: "대학혁신지원사업단" });
+  mocks.read.mockImplementation(async (file: string) => ({ source: "bundled-fallback", data: file === "announcements-uisp.json" ? [item] : [] }));
+  const { getAnnouncementPage, getAnnouncementSummary, getAnnouncementById, getAnnouncementSitemapItems } = await import("./announcements");
+  expect((await getAnnouncementPage({ category: "uisp" })).items).toEqual([item]);
+  expect((await getAnnouncementPage({ query: "대학혁신지원사업단" })).items).toEqual([item]);
+  expect(await getAnnouncementSummary()).toEqual([item]);
+  expect(await getAnnouncementById("uisp", item.id)).toEqual(item);
+  expect(await getAnnouncementSitemapItems()).toEqual([{ category: "uisp", id: item.id }]);
+});
+
 it("reports the date of bundled notices when the published source fails", async () => {
   const { getAnnouncementPage } = await import("./announcements");
   const page = await getAnnouncementPage({ category: "academic" });
@@ -49,7 +60,7 @@ it("preserves category priorities, global dates, stable ties and pagination whil
   expect(nextPage.items.map((item) => item.id)).toEqual(["tie", "important"]);
   expect(search.items.map((item) => item.id)).toEqual(["latest"]);
   expect(summary.map((item) => item.id)).toEqual(["campus", "latest", "tie"]);
-  expect(mocks.read).toHaveBeenCalledTimes(4);
+  expect(mocks.read).toHaveBeenCalledTimes(5);
   expect(sortCalls).toBe(0);
   expect(dateCalls).toBe(0);
 });
@@ -65,7 +76,7 @@ it("invalidates merged ordering when source caches expire and does not truncate 
   const page = await getAnnouncementPage({});
   expect(page.items.map((item) => item.id)).toEqual(["new"]);
   expect(page.total).toBe(1);
-  expect(mocks.read).toHaveBeenCalledTimes(8);
+  expect(mocks.read).toHaveBeenCalledTimes(10);
 });
 
 it("keeps source order for equal global dates while prioritizing pinned notices in a category", async () => {
@@ -101,7 +112,7 @@ it("lists every resolvable sitemap item without pagination or AI enrichment", as
   expect(items).toContainEqual({ category: "sw", id: "sw-notice" });
   expect(items.some((item) => item.id === "wrong-source")).toBe(false);
   expect(mocks.attach).not.toHaveBeenCalled();
-  expect(mocks.read).toHaveBeenCalledTimes(4);
+  expect(mocks.read).toHaveBeenCalledTimes(5);
 });
 
 it("refreshes sitemap items from published data after the source cache expires", async () => {

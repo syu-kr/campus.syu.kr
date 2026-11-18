@@ -24,8 +24,8 @@ beforeEach(async () => {
 });
 afterEach(async () => { vi.useRealTimers(); await rm(root, { recursive: true, force: true }); });
 
-function requests(bytes = image, lastModified?: string) {
-  return vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify(source()), { headers: { "content-type": "application/json" } }))
+function requests(bytes = image, lastModified?: string, uploadFileName?: string) {
+  return vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify(source(uploadFileName)), { headers: { "content-type": "application/json" } }))
     .mockResolvedValueOnce(new Response(bytes, { headers: { "content-type": "image/png", ...(lastModified ? { "last-modified": lastModified } : {}) } }));
 }
 
@@ -223,6 +223,31 @@ describe("Manna House collection", () => {
     await collectStudentRestaurant({ ...options, request: requests() });
     await collectStudentRestaurant({ ...options, request: requests(Buffer.concat([image, Buffer.from([2])])) });
     expect(analyze).toHaveBeenCalledTimes(2);
+  });
+  it("follows a newly uploaded filename and skips analysis on the next unchanged run", async () => {
+    const nextMenu = { ...menu, days: [{ ...menu.days[0], lunch: ["새 식단"] }] };
+    const analyze = vi.fn().mockResolvedValueOnce(menu).mockResolvedValueOnce(nextMenu);
+    const options = { apiUrl, outputPath, statePath, analyze };
+    await collectStudentRestaurant({ ...options, request: requests() });
+    const changed = Buffer.concat([image, Buffer.from([2])]);
+    const filename = "/uploadimages/sikdan/late-upload.png";
+    const request = requests(changed, undefined, filename);
+    await expect(collectStudentRestaurant({ ...options, request })).resolves.toBe("updated");
+    expect(request.mock.calls[1][0]).toEqual(new URL(filename, apiUrl.origin));
+    expect(JSON.parse(await readFile(outputPath, "utf8"))).toEqual(nextMenu);
+    await expect(collectStudentRestaurant({ ...options, request: requests(changed, undefined, filename) })).resolves.toBe("unchanged");
+    expect(analyze).toHaveBeenCalledTimes(2);
+  });
+  it("keeps the successful analysis when only the image filename changes", async () => {
+    const analyze = vi.fn().mockResolvedValue(menu);
+    const options = { apiUrl, outputPath, statePath, analyze };
+    await collectStudentRestaurant({ ...options, request: requests() });
+    const before = await readFile(outputPath, "utf8");
+    const request = requests(image, undefined, "/uploadimages/sikdan/renamed.png");
+    await expect(collectStudentRestaurant({ ...options, request })).resolves.toBe("unchanged");
+    expect(request.mock.calls[1][0]).toEqual(new URL("/uploadimages/sikdan/renamed.png", apiUrl.origin));
+    expect(analyze).toHaveBeenCalledTimes(1);
+    expect(await readFile(outputPath, "utf8")).toBe(before);
   });
   it("analyzes again when public output is missing or does not match the private checkpoint", async () => {
     const analyze = vi.fn().mockResolvedValue(menu);

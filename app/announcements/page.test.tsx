@@ -7,6 +7,7 @@ import AcademicAnnouncementsPage from "../academic/announcements/page";
 import CampusAnnouncementsPage from "../campus/announcements/page";
 import ScholarshipPage from "../academic/scholarship/page";
 import SwNoticesPage from "../academic/sw-notices/page";
+import UispNoticesPage from "../academic/uisp-notices/page";
 
 vi.mock("next/headers", () => ({ headers: vi.fn() }));
 vi.mock("@/lib/server/announcements", () => ({ getAnnouncementPage: vi.fn() }));
@@ -17,6 +18,7 @@ it.each([
   ["campus", CampusAnnouncementsPage, getDictionary("en").pages.announcements.campusTitle],
   ["scholarship", ScholarshipPage, getDictionary("en").pages.scholarship.title],
   ["sw", SwNoticesPage, getDictionary("en").pages.announcements.swTitle],
+  ["uisp", UispNoticesPage, getDictionary("en").pages.announcements.uispTitle],
 ] as const)("passes the initial %s page and request locale from the server", async (category, Page, title) => {
   const initialPage = { items: [], total: 0, page: 1, limit: 10, totalPages: 1, fallbackSources: [] };
   vi.mocked(headers).mockResolvedValue(new Headers({ "x-syu-locale": "en" }) as Awaited<ReturnType<typeof headers>>);
@@ -29,7 +31,7 @@ it.each([
 
 it.each([
   ["all", AnnouncementsPage], ["academic", AcademicAnnouncementsPage],
-  ["campus", CampusAnnouncementsPage], ["scholarship", ScholarshipPage], ["sw", SwNoticesPage],
+  ["campus", CampusAnnouncementsPage], ["scholarship", ScholarshipPage], ["sw", SwNoticesPage], ["uisp", UispNoticesPage],
 ] as const)("renders the requested %s search and page on the server", async (category, Page) => {
   vi.mocked(headers).mockResolvedValue(new Headers({ "x-syu-locale": "ko" }) as Awaited<ReturnType<typeof headers>>);
   const initialPage = { items: [], total: 80, page: 3, limit: 10, totalPages: 8, fallbackSources: [] };

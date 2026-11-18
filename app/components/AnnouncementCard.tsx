@@ -10,7 +10,9 @@ import {
   getCategoryColor,
   formatDateWithYear,
 } from "@/lib/utils";
-import { useDictionary } from "@/app/components/LocaleProvider";
+import { useDictionary, useLocale } from "@/app/components/LocaleProvider";
+import { getAnnouncementDetailPath } from "@/lib/announcement-path";
+import { localizePath } from "@/lib/i18n";
 import { AnnouncementAiSummary } from "./AnnouncementAiSummary";
 import { useContentTranslation } from "./ContentTranslation";
 import { announcementTranslationFields } from "@/lib/content-translation";
@@ -26,11 +28,15 @@ interface AnnouncementCardProps {
 function AnnouncementCardComponent({
   announcement,
   aiSummaryMode = "action",
-  href,
+  href: originalHref,
   clickable = true,
   external = false,
 }: AnnouncementCardProps) {
-  const dictionary = useDictionary();
+  const dictionary = useDictionary(), locale = useLocale();
+  const isUisp = announcement.category === "uisp";
+  const href = isUisp
+    ? localizePath(getAnnouncementDetailPath(announcement.category, announcement.id), locale)
+    : originalHref;
   const translation = useContentTranslation({ kind: "announcement", id: announcement.id, category: announcement.category }, announcementTranslationFields(announcement));
   const overlayLabel = `${translation.text("title", announcement.title)} ${dictionary.labels.notice}`;
   const overlayClassName =
@@ -42,7 +48,7 @@ function AnnouncementCardComponent({
       className={href ? "relative" : ""}
     >
       {href &&
-        (external ? (
+        (external && !isUisp ? (
           <a
             href={href}
             target="_blank"
