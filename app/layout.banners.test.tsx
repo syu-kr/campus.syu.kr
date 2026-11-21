@@ -8,6 +8,7 @@ vi.mock("next/headers", () => ({ headers: async () => new Headers({ "x-syu-pathn
 vi.mock("@/lib/server/public-managed-content", () => ({ getPublicBanners: request.read }));
 vi.mock("./components/ManagedBanners", () => ({ ManagedBanners: ({ initialBanners }: { initialBanners: PublicBanner[] }) => initialBanners.map(item => <aside key={item.id}>{item.title}</aside>) }));
 vi.mock("./components/Header", () => ({ Header: () => <header /> }));
+vi.mock("./components/InAppBrowserNotice", () => ({ InAppBrowserNotice: () => null }));
 vi.mock("./components/Footer", () => ({ Footer: () => <footer><button>Locale</button></footer> }));
 vi.mock("./components/BottomNav", () => ({ BottomNav: () => <nav id="bottom-navigation" /> }));
 vi.mock("./components/NotificationPermissionPrompt", () => ({ NotificationPermissionPrompt: () => <section className="m3-notification-prompt">Notification setup</section> }));
